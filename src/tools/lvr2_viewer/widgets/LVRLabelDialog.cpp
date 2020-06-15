@@ -144,17 +144,38 @@ void LVRLabelDialog::cellSelected(QTreeWidgetItem* item, int column)
             }
             return;
         }
-    }else if(column == LABEL_ID_COLUMN && item->parent())
+    }else if(column == LABEL_ID_COLUMN)
     {
         //Change 
         QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color"));
         if (label_color.isValid())
         {
             item->setData(LABEL_ID_COLUMN, 1, label_color);
-
-            //Update Color In picker
-            Q_EMIT(labelAdded(item));
-            return;
+            if(item->parent())
+            {
+                //Update Color In picker
+                Q_EMIT(labelAdded(item));
+                return;
+            }
+            else
+            {
+                //ask if all childs Should be updated
+    		QMessageBox colorUpdateDialog;
+		colorUpdateDialog.setText("Labelclass default color changed. Shall all instance colors be updated?");
+		colorUpdateDialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+	        colorUpdateDialog.setDefaultButton(QMessageBox::Yes);
+                int returnValue = colorUpdateDialog.exec();
+                if (returnValue == QMessageBox::Yes)
+                {
+                    //update All Childs 
+                    for (int i = 0; i < item->childCount(); i++)
+                    {
+                        item->child(i)->setData(LABEL_ID_COLUMN, 1, label_color);
+                        Q_EMIT(labelAdded(item->child(i)));
+                    }
+                }
+	
+            }
             }
     }
 }
@@ -356,7 +377,7 @@ void LVRLabelDialog::addNewLabel()
             return;
     }
 
-    QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color for first instance"));
+    QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose default Label Color for label Class(willbe used for first isntance)"));
     if (!label_color.isValid())
     {
             //Non Valid Color Return 
@@ -366,17 +387,19 @@ void LVRLabelDialog::addNewLabel()
     if (m_ui->treeWidget->topLevelItemCount() == 0)
     {
 
+        //Setting up Top Label
         QTreeWidgetItem * item = new QTreeWidgetItem();
         item->setText(0, "Unlabeled");
         item->setText(LABELED_POINT_COLUMN, QString::number(0));
         item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+        item->setData(LABEL_ID_COLUMN, 1, QColor(Qt::red));
 
         //Setting up new child item
         QTreeWidgetItem * childItem = new QTreeWidgetItem();
         childItem->setText(LABEL_NAME_COLUMN, QString("Unlabeled") + QString::number(1));
         childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
         childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-        childItem->setData(LABEL_ID_COLUMN, 1, label_color);
+        childItem->setData(LABEL_ID_COLUMN, 1, QColor(Qt::red));
         childItem->setData(LABEL_ID_COLUMN, 0, 0);
         item->addChild(childItem);
         m_ui->treeWidget->addTopLevelItem(item);    
@@ -391,6 +414,7 @@ void LVRLabelDialog::addNewLabel()
     item->setText(0, label_name);
     item->setText(LABELED_POINT_COLUMN, QString::number(0));
     item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+    item->setData(LABEL_ID_COLUMN, 1, label_color);
 
     //Setting up new child item
     QTreeWidgetItem * childItem = new QTreeWidgetItem();
@@ -450,7 +474,7 @@ void LVRLabelDialog::addNewInstance()
             return;
     }
 
-    QColor label_color = QColorDialog::getColor(Qt::red, m_dialog, tr("Choose Label Color for first instance"));
+    QColor label_color = QColorDialog::getColor(selectedTopLevelItem[0]->data(3,1).value<QColor>(), m_dialog, tr("Choose Label Color for first instance"));
     if (!label_color.isValid())
     {
             //Non Valid Color Return 
