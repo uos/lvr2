@@ -351,6 +351,8 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_actionAddLabelClass, SIGNAL(triggered()), this, SLOT(addLabelClass()));
 
+    QObject::connect(selectedInstanceComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(comboBoxIndexChanged(int)));
+
     QObject::connect(m_actionShowImage, SIGNAL(triggered()), this, SLOT(showImage()));
     QObject::connect(m_actionSetViewToCamera, SIGNAL(triggered()), this, SLOT(setViewToCamera()));
 
@@ -2735,6 +2737,7 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
         if(item->parent())
         {
             m_selectedLabelItem = item;
+
             Q_EMIT(labelChanged(item->data(LABEL_ID_COLUMN, 0).toInt()));
             
         }
@@ -2973,5 +2976,8 @@ void LVRMainWindow::exportLabels()
     }
 }
 
-
+void LVRMainWindow::comboBoxIndexChanged(int index)
+{
+	Q_EMIT(labelChanged(selectedInstanceComboBox->itemData(index).toInt()));
+}
 } /* namespace lvr2 */
