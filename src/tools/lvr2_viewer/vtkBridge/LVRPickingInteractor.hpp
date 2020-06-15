@@ -65,6 +65,7 @@ public:
     LVRPickingInteractor();
     vtkTypeMacro(LVRPickingInteractor, LVRInteractorStylePolygonPick);
     void setRenderer(vtkSmartPointer<vtkRenderer> renderer);
+    void removeLabel(const int&);
     //LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer);
     virtual ~LVRPickingInteractor();
 
@@ -111,7 +112,9 @@ public:
 
     void updateFocalPoint();
     void setPoints(vtkSmartPointer<vtkPolyData> points);
+    vtkSmartPointer<vtkPolyData> getPoints();
 
+    std::vector<uint16_t>& getLabeles();
 public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
@@ -122,6 +125,7 @@ public Q_SLOTS:
     void setLabel(int, std::vector<int>);
     void requestLabels();
 
+    void labelModeChanged(bool);
     void newLabel(QTreeWidgetItem*);
     void setLassoTool(bool);
     void labelSelected(uint16_t);
