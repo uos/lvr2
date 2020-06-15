@@ -418,6 +418,7 @@ void LVRInteractorStylePolygonPick::OnKeyDown()
         if ((this->StartPosition[0] != this->EndPosition[0]) ||
             (this->StartPosition[1] != this->EndPosition[1]))
         {
+            std::cout << "did this " << std::endl;
             this->Pick();
             firstPoint = true;
         }

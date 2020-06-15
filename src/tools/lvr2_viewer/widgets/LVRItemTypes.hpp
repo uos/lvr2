@@ -47,7 +47,9 @@ namespace lvr2
         LVRCamDataItemType,
         LVRCamerasItemType,
         LVRBoundingBoxItemType,
-        LVRCvImageItemType
+        LVRCvImageItemType,
+        LVRLabelClassType,
+        LVRLabelInstanceType
     };
 } // namespace lvr2
 

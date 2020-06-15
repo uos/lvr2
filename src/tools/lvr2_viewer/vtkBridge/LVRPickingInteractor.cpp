@@ -1337,6 +1337,7 @@ void LVRPickingInteractor::labelingOn()
     rwi->Render();
 
     m_labelingMode = true;
+    labelModeChanged(m_pickMode == PickLabel);
     //m_pickMode = PickLabel;
 
 }
@@ -1639,6 +1640,10 @@ void LVRPickingInteractor::OnKeyDown()
     if(key == "Return" && m_labelingMode)
     {
 	LVRInteractorStylePolygonPick::OnKeyDown();
+        if (m_pickMode == PickLabel && !lassoToolSelected)
+        {
+    	    calculateSelection(true);
+        } 
 	saveCurrentLabelSelection();
     }
     if(key == "x" && m_correspondenceMode)
@@ -1658,19 +1663,7 @@ void LVRPickingInteractor::OnKeyDown()
     }
     if(m_labelingMode && key == "l")
     {
-    //Check if no Labels were created
-        if( m_labelColors.empty())
-        {
-            QMessageBox noLabelDialog;
-            noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
-            noLabelDialog.setStandardButtons(QMessageBox::Ok);
-            noLabelDialog.setIcon(QMessageBox::Warning);
-            int returnValue = noLabelDialog.exec();
-            return;
-
-        }
-        Q_EMIT(labelingStarted(true));
-        m_pickMode = PickLabel;
+        labelModeChanged(m_pickMode == PickLabel);
     }
 
     if(key == "f")
@@ -1923,19 +1916,21 @@ void LVRPickingInteractor::newLabel(QTreeWidgetItem* item)
     }
     if(m_labelActors.find(item->data(3,0).toInt()) != m_labelActors.end())
     {
+        //Instance known just change color
         int r,g,b;
         m_labelColors[item->data(3,0).toInt()].getRgb(&r, &g, &b);
         m_labelActors[item->data(3,0).toInt()]->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
         this->GetInteractor()->GetRenderWindow()->Render();
         this->HighlightProp(NULL);
     }
+    /*
     if (item->data(3,0).toInt() == 0)
     {
         //Add Actor for all Unlabeled Points
-        
         auto unlabeledMapper = vtkSmartPointer<vtkDataSetMapper>::New();
         auto unlabeledActor = vtkSmartPointer<vtkActor>::New();
         unlabeledActor->SetMapper(unlabeledMapper);
+
         //Crete copy of points
         double point[3];
         auto selectedVtkPoints = vtkSmartPointer<vtkPoints>::New();
@@ -1966,12 +1961,13 @@ void LVRPickingInteractor::newLabel(QTreeWidgetItem* item)
 
         if(m_labelActors.find(0) != m_labelActors.end())
         {
+            this->CurrentRenderer->RemoveActor(m_labelActors[0]);
             std::cout << "remove actor bedore" << std::endl;
         }
-        //    m_labelActors[0] = unlabeledActor;
+        m_labelActors[0] = unlabeledActor;
 
-        //m_renderer->AddActor(unlabeledActor);
-    }
+        m_renderer->AddActor(unlabeledActor);
+    }*/
 }
 
 void LVRPickingInteractor::saveCurrentLabelSelection()
@@ -1993,7 +1989,7 @@ void LVRPickingInteractor::saveCurrentLabelSelection()
         }
         else
         {
-            //Check if Points were labeled before
+            //Check if Points were labeled before by this label
             if (m_pointLabels[i] == m_selectedLabel)
             {
                 //Set to unlabeled
@@ -2029,7 +2025,7 @@ void LVRPickingInteractor::saveCurrentLabelSelection()
 void LVRPickingInteractor::discardChanges()
 {
 	    //Undo Changes 
-	    this->CurrentRenderer->RemoveActor(m_selectedActor);
+	    m_renderer->RemoveActor(m_selectedActor);
 	    if(m_labelActors.find(m_selectedLabel) != m_labelActors.end())
 	    {
 		for (int i = 0; i < m_pointLabels.size(); i++)
@@ -2166,14 +2162,72 @@ void LVRPickingInteractor::updateActor(int labelId)
     int r, g, b;
     m_labelColors[labelId].getRgb(&r, &g, &b);
     updatedActor->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
-    if (m_labelActors.find(m_selectedLabel) != m_labelActors.end())
+
+    //Get Visiibility and Discard old Actor after that 
+    bool visibility = true;
+    if (m_labelActors.find(labelId) != m_labelActors.end())
     {
-       // m_renderer->RemoveActor(m_labelActors[labelId]);
+        visibility = m_labelActors[labelId]->GetVisibility();
+        m_renderer->RemoveActor(m_labelActors[labelId]);
     }
+    updatedActor->SetVisibility(visibility);
     m_labelActors[labelId] = updatedActor;
     m_renderer->AddActor(updatedActor);
 
     this->GetInteractor()->GetRenderWindow()->Render();
     this->HighlightProp(NULL);
 }
+
+void LVRPickingInteractor::labelModeChanged(bool setLabeling)
+{
+
+    //Check if no Labels were created
+    if( m_labelColors.empty())
+    {
+        QMessageBox noLabelDialog;
+        noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
+        noLabelDialog.setStandardButtons(QMessageBox::Ok);
+        noLabelDialog.setIcon(QMessageBox::Warning);
+        int returnValue = noLabelDialog.exec();
+        return;
+
+    }
+    Q_EMIT(labelingStarted(true));
+    m_pickMode = PickLabel;
+
+}
+
+std::vector<uint16_t>& LVRPickingInteractor::getLabeles()
+{
+    return m_pointLabels;
+}
+vtkSmartPointer<vtkPolyData> LVRPickingInteractor::getPoints()
+{
+    return m_points;
+}
+void LVRPickingInteractor::removeLabel(const int& id)
+{
+    if (m_labelActors.find(id) == m_labelActors.end())
+    {
+        //id unknown nothing to da
+        return;
+    }
+
+    //Remove Actor
+    m_renderer->RemoveActor(m_labelActors[id]);
+    m_labelActors.erase(id);
+
+    //update labeledpoints to unlabeled
+    for(auto & pointlabel : m_pointLabels)
+    {
+        if (pointlabel == id)
+        {
+            //Set all points with this label to Unlabeled
+            pointlabel = 0; 
+        }
+    }
+    updateActor(0);
+
+}
+
 } /* namespace lvr2 */

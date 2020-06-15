@@ -41,6 +41,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/IOUtils.hpp"
+#include "lvr2/io/descriptions/HDF5Kernel.hpp"
 
 #include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
@@ -72,6 +73,7 @@ namespace lvr2
 {
 
 using Vec = BaseVector<float>;
+const string LVRMainWindow::UNKNOWNNAME = "Unlabeled";
 
 LVRMainWindow::LVRMainWindow()
 {
@@ -125,11 +127,21 @@ LVRMainWindow::LVRMainWindow()
     m_actionLoadPointCloudData = new QAction("load PointCloud", this);
     m_actionUnloadPointCloudData = new QAction("unload PointCloud", this);
 
+    m_actionAddLabelClass = new QAction("Add label class", this);
+    m_actionAddNewInstance = new QAction("Add new instance", this);
+    m_actionRemoveInstance = new QAction("Remove instance", this);
+
     m_actionShowImage = new QAction("Show Image", this);
     m_actionSetViewToCamera = new QAction("Set view to camera", this);
 
     this->addAction(m_actionCopyModelItem);
     this->addAction(m_actionPasteModelItem);
+
+    m_labelTreeParentItemContextMenu = new QMenu();
+    m_labelTreeParentItemContextMenu->addAction(m_actionAddLabelClass);
+    m_labelTreeParentItemContextMenu->addAction(m_actionAddNewInstance);
+    m_labelTreeChildItemContextMenu = new QMenu();
+    m_labelTreeChildItemContextMenu->addAction(m_actionRemoveInstance);
 
     m_treeParentItemContextMenu = new QMenu;
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
@@ -146,6 +158,7 @@ LVRMainWindow::LVRMainWindow()
     this->dockWidgetSpectralSliderSettings->close();
     this->dockWidgetSpectralColorGradientSettings->close();
     this->dockWidgetPointPreview->close();
+    this->dockWidgetLabel->close();
  
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
@@ -316,10 +329,14 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
     QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
+    QObject::connect(this->actionOpenLabeledPointcloud, SIGNAL(triggered()), this, SLOT(loadLabels()));
+    QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
+
+    QObject::connect(labelTreeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showLabelTreeContextMenu(const QPoint&)));
 
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
@@ -331,6 +348,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionPasteModelItem, SIGNAL(triggered()), this, SLOT(pasteModelItem()));
     QObject::connect(m_actionLoadPointCloudData, SIGNAL(triggered()), this, SLOT(loadPointCloudData()));
     QObject::connect(m_actionUnloadPointCloudData, SIGNAL(triggered()), this, SLOT(unloadPointCloudData()));
+
+    QObject::connect(m_actionAddLabelClass, SIGNAL(triggered()), this, SLOT(addLabelClass()));
 
     QObject::connect(m_actionShowImage, SIGNAL(triggered()), this, SLOT(showImage()));
     QObject::connect(m_actionSetViewToCamera, SIGNAL(triggered()), this, SLOT(setViewToCamera()));
@@ -404,13 +423,21 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(uint16_t, int)), m_labelDialog, SLOT(updatePointCount(uint16_t, int)));
+    QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(const uint16_t, const int)), this, SLOT(updatePointCount(const uint16_t, const int)));
     QObject::connect(m_pickingInteractor, SIGNAL(responseLabels(std::vector<uint16_t>)), m_labelDialog, SLOT(responseLabels(std::vector<uint16_t>)));
 
+    QObject::connect(this, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
     QObject::connect(m_labelDialog, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
     QObject::connect(m_labelDialog, SIGNAL(labelLoaded(int, std::vector<int>)), m_pickingInteractor, SLOT(setLabel(int, std::vector<int>)));
     QObject::connect(m_labelDialog->m_ui->exportLabelButton, SIGNAL(pressed()), m_pickingInteractor, SLOT(requestLabels()));
     QObject::connect(m_labelDialog, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
+    QObject::connect(this, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
+
+    QObject::connect(labelTreeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(visibilityChanged(QTreeWidgetItem*, int)));
     QObject::connect(m_labelDialog, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
+    QObject::connect(this, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
+
+    QObject::connect(labelTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(cellSelected(QTreeWidgetItem*, int)));
     QObject::connect(m_labelDialog->m_ui->lassotoolButton, SIGNAL(toggled(bool)), m_pickingInteractor, SLOT(setLassoTool(bool)));
 
     // Interaction with interactor
@@ -425,7 +452,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->pushButtonFly , SIGNAL(pressed()), m_pickingInteractor, SLOT(modeShooter()));
 
 
-    QObject::connect(m_actionStart_labeling, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+    QObject::connect(this->actionSelected_Lasso, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+    QObject::connect(this->actionSelected_Polygon, SIGNAL(triggered()), this, SLOT(manualLabeling()));
     QObject::connect(m_actionStop_labeling, SIGNAL(triggered()), this, SLOT(manualLabeling()));
 //    QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), this, SLOT(manualLabeling()));
  //   QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), m_labelDialog, SLOT(labelPoints()));
@@ -886,6 +914,113 @@ void LVRMainWindow::alignPointClouds()
     updateView();
 }
 
+void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
+{
+    QList<QTreeWidgetItem*> items = labelTreeWidget->selectedItems();
+    QPoint globalPos = labelTreeWidget->mapToGlobal(p);
+    if(items.size() > 0)
+    {
+
+        QTreeWidgetItem* item = items.first();
+        if (item->type() == LVRLabelClassType)
+        {
+            auto selected = m_labelTreeParentItemContextMenu->exec(globalPos);
+            if(selected == m_actionAddNewInstance)
+            {
+                addNewInstance(item);
+            }
+            return;
+        }
+        if(item->type() == LVRLabelInstanceType)
+        {
+            auto selected = m_labelTreeChildItemContextMenu->exec(globalPos);
+            if(selected == m_actionRemoveInstance)
+            {
+                m_pickingInteractor->removeLabel(item->data(LABEL_ID_COLUMN, 0).toInt());
+                auto topLevelItem = item->parent();
+                //update the Count avoidign the standart "signal" case to avoid race conditions
+                topLevelItem->setText(LABELED_POINT_COLUMN, QString::number(topLevelItem->text(LABELED_POINT_COLUMN).toInt() - item->text(LABELED_POINT_COLUMN).toInt()));
+                topLevelItem->removeChild(item);
+            }
+            return;
+
+        }
+    }
+
+    m_actionAddNewInstance->setEnabled(false);
+    m_labelTreeParentItemContextMenu->exec(globalPos);
+    m_actionAddNewInstance->setEnabled(true);
+}
+
+void LVRMainWindow::addLabelClass()
+{
+    //Ask For the Label name 
+    bool accepted;
+    QString className = QInputDialog::getText(this, tr("Choose name for new Label class"),
+        tr("Class name:"), QLineEdit::Normal,
+        tr("Labelname") , &accepted);
+    if (!accepted || className.isEmpty())
+    {
+            //No valid Input
+            return;
+    }
+
+    QColor label_color = QColorDialog::getColor(Qt::red, this, tr("Choose default Label Color for label Class(willbe used for first isntance)"));
+    if (!label_color.isValid())
+    {
+            //Non Valid Color Return 
+            return;
+    }
+
+    if (labelTreeWidget->topLevelItemCount() == 0)
+    {
+
+        //Setting up Top Label
+        QTreeWidgetItem * item = new QTreeWidgetItem(LVRLabelClassType);
+        item->setText(0, QString::fromStdString(UNKNOWNNAME));
+        item->setText(LABELED_POINT_COLUMN, QString::number(0));
+        item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+        item->setData(LABEL_ID_COLUMN, 1, QColor(Qt::red));
+        //item->setFlags(item->flags() & ~ Qt::ItemIsSelectable);
+
+        //Setting up new child item
+        QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
+        childItem->setText(LABEL_NAME_COLUMN, QString::fromStdString(UNKNOWNNAME) + QString::number(1));
+        childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
+        childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+        childItem->setData(LABEL_ID_COLUMN, 1, QColor(Qt::red));
+        childItem->setData(LABEL_ID_COLUMN, 0, 0);
+        item->addChild(childItem);
+        labelTreeWidget->addTopLevelItem(item);    
+        //Added first Top Level item enable instance button
+        Q_EMIT(labelAdded(childItem));
+        selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), 0);
+    }
+
+    int id = m_id++;
+    //Setting up new Toplevel item
+    QTreeWidgetItem * item = new QTreeWidgetItem(LVRLabelClassType);
+    item->setText(0, className);
+    item->setText(LABELED_POINT_COLUMN, QString::number(0));
+    item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+    item->setData(LABEL_ID_COLUMN, 1, label_color);
+    //item->setFlags(item->flags() & ~ Qt::ItemIsSelectable);
+
+    //Setting up new child item
+    QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
+    childItem->setText(LABEL_NAME_COLUMN, className + QString::number(1));
+    childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
+    childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+    childItem->setData(LABEL_ID_COLUMN, 1, label_color);
+    childItem->setData(LABEL_ID_COLUMN, 0, id);
+    item->addChild(childItem);
+    m_selectedLabelItem = childItem;
+    labelTreeWidget->addTopLevelItem(item);    
+    
+    //Add label to combo box 
+    selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
+    Q_EMIT(labelAdded(childItem));
+}
 void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 {
     // Only display context menu for point clounds and meshes
@@ -1899,15 +2034,7 @@ void LVRMainWindow::manualLabeling()
 {
     if(!m_labeling)
     {
-        m_labelDialog->m_dialog->show();
-        m_labelDialog->m_dialog->raise();
-        m_labelDialog->m_dialog->activateWindow();
-
-        //TODO STOP beeing hacky 
-        m_labelDialog->showEvent();
-
         m_pickingInteractor->labelingOn();
-
 
     }else
     {
@@ -2521,6 +2648,329 @@ void LVRMainWindow::updateDisplayLists(actorMap lowRes, actorMap highRes)
           }
     }
     m_renderer->GetRenderWindow()->Render();
+}
+void LVRMainWindow::updatePointCount(uint16_t id, int selectedPointCount)
+{
+
+    int topItemCount = labelTreeWidget->topLevelItemCount();
+    for (int i = 0; i < topItemCount; i++)
+    {
+        QTreeWidgetItem* topLevelItem = labelTreeWidget->topLevelItem(i);
+        int childCount = topLevelItem->childCount();
+        for (int j = 0; j < childCount; j++)
+        {
+            if(id == topLevelItem->child(j)->data(LABEL_ID_COLUMN, 0).toInt())
+            {       
+                int pointCountDifference = selectedPointCount - topLevelItem->child(j)->text(LABELED_POINT_COLUMN).toInt();
+                topLevelItem->child(j)->setText(LABELED_POINT_COLUMN, QString::number(selectedPointCount));
+                //Add points to toplevel points
+                topLevelItem->setText(LABELED_POINT_COLUMN, QString::number(pointCountDifference + topLevelItem->text(LABELED_POINT_COLUMN).toInt()));
+                return;
+            }
+        }
+    }
+}
+void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
+{
+    if(column == LABEL_NAME_COLUMN)
+    {
+        //Edit Label name
+        bool accepted;
+        QString label_name = QInputDialog::getText(this, tr("Select Label Name"),
+            tr("Label name:"), QLineEdit::Normal,
+            item->text(LABEL_NAME_COLUMN), &accepted);
+        if (accepted && !label_name.isEmpty())
+        {
+            item->setText(LABEL_NAME_COLUMN, label_name);
+            if (!item->parent())
+            {
+                //Toplevel item nothing else to do
+                return;
+            }
+            /*
+            int comboBoxPos = m_ui->selectedLabelComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
+            if (comboBoxPos >= 0)
+            {
+                m_ui->selectedLabelComboBox->setItemText(comboBoxPos, label_name);
+
+            }*/
+            return;
+        }
+    }else if(column == LABEL_ID_COLUMN)
+    {
+        //Change 
+        QColor label_color = QColorDialog::getColor(Qt::red, this, tr("Choose Label Color"));
+        if (label_color.isValid())
+        {
+            item->setData(LABEL_ID_COLUMN, 1, label_color);
+            if(item->parent())
+            {
+                //Update Color In picker
+                Q_EMIT(labelAdded(item));
+                return;
+            }
+            else
+            {
+                //ask if all childs Should be updated
+    		QMessageBox colorUpdateDialog;
+		colorUpdateDialog.setText("Labelclass default color changed. Shall all instance colors be updated?");
+		colorUpdateDialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+	        colorUpdateDialog.setDefaultButton(QMessageBox::Yes);
+                int returnValue = colorUpdateDialog.exec();
+                if (returnValue == QMessageBox::Yes)
+                {
+                    //update All Childs 
+                    for (int i = 0; i < item->childCount(); i++)
+                    {
+                        item->child(i)->setData(LABEL_ID_COLUMN, 1, label_color);
+                        Q_EMIT(labelAdded(item->child(i)));
+                    }
+                }
+	
+            }
+            }
+    }
+    else
+    {
+        if(item->parent())
+        {
+            m_selectedLabelItem = item;
+            Q_EMIT(labelChanged(item->data(LABEL_ID_COLUMN, 0).toInt()));
+            
+        }
+    }
+}
+
+void LVRMainWindow::visibilityChanged(QTreeWidgetItem* changedItem, int column)
+{
+    if(column != LABEL_VISIBLE_COLUMN)
+    {
+        return;
+    }
+
+    //check if Instance or whole label changed
+    if (changedItem->parent())
+    {
+        //parent exists item is an instance
+        Q_EMIT(hidePoints(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_VISIBLE_COLUMN)));
+    } else
+    {
+        //Check if unlabeled item
+        for (int i = 0; i < changedItem->childCount(); i++)
+        {
+            QTreeWidgetItem* childItem = changedItem->child(i);
+
+            //sets child elements checkbox on toplevel box value if valuechanged a singal will be emitted and handeled
+            childItem->setCheckState(LABEL_VISIBLE_COLUMN, changedItem->checkState(LABEL_VISIBLE_COLUMN));
+        }
+    }
+
+
+}
+
+void LVRMainWindow::addNewInstance(QTreeWidgetItem * selectedTopLevelItem)
+{
+    
+    QString choosenLabel = selectedTopLevelItem->text(LABEL_NAME_COLUMN);
+
+    bool accepted;
+    QString instance_name = QInputDialog::getText(this, tr("Choose Name for new Instance"),
+    tr("Instance name:"), QLineEdit::Normal,
+                    QString(choosenLabel + QString::number(selectedTopLevelItem->childCount() + 1)) , &accepted);
+    if (!accepted || instance_name.isEmpty())
+    {
+            //No valid Input
+            return;
+    }
+
+    QColor label_color = QColorDialog::getColor(selectedTopLevelItem->data(LABEL_ID_COLUMN, 1).value<QColor>(), this, tr("Choose Label Color for first instance"));
+    if (!label_color.isValid())
+    {
+            //Non Valid Color Return 
+            return;
+    }
+
+    int id = m_id++;
+    QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
+    childItem->setText(LABEL_NAME_COLUMN, instance_name);
+    childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
+    childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+    childItem->setData(LABEL_ID_COLUMN, 1, label_color);
+    childItem->setData(LABEL_ID_COLUMN, 0, id);
+    selectedTopLevelItem->addChild(childItem);
+
+
+    //Add label to combo box 
+    selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
+    Q_EMIT(labelAdded(childItem));
+
+}
+
+void LVRMainWindow::loadLabels()
+{
+
+    //TODO: What should be done if elements exists?
+    QString fileName = QFileDialog::getOpenFileName(this,
+                tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
+    if(!QFile::exists(fileName))
+    {
+        return;
+    }
+
+    HDF5Kernel kernel(fileName.toStdString());
+    std::vector<std::string> pointCloudNames;
+    kernel.subGroupNames("pointclouds", pointCloudNames);
+    for (auto pointcloudName : pointCloudNames)
+    {
+        //pointclouds
+        boost::filesystem::path classGroup = (boost::filesystem::path("pointclouds") / boost::filesystem::path(pointcloudName) / boost::filesystem::path("labels"));
+        std::vector<std::string> labelClasses;
+        kernel.subGroupNames(classGroup.string(), labelClasses);
+        for (auto labelClass : labelClasses)
+        {
+            //Get TopLevel Item for tree view
+            QTreeWidgetItem * item = new QTreeWidgetItem();
+            item->setText(0, QString::fromStdString(labelClass));
+            item->setText(LABELED_POINT_COLUMN, QString::number(0));
+            item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+
+            labelTreeWidget->addTopLevelItem(item);   
+
+
+            //pointclouds/$name/labels/$labelname
+            boost::filesystem::path instanceGroup = (classGroup / boost::filesystem::path(labelClass));
+            std::vector<std::string> labelInstances;
+            kernel.subGroupNames(instanceGroup.string(), labelInstances);
+            for (auto instance : labelInstances)
+            {
+
+                int id = 0;
+                boost::filesystem::path finalGroup = instanceGroup;
+                //pointclouds/$name/labels/$labelname/instance
+                finalGroup = (instanceGroup / boost::filesystem::path(instance));
+                if (labelClass != UNKNOWNNAME)
+                {
+                    id = m_id++;
+
+                } 
+
+                //Get Color and IDs
+                boost::shared_array<int> rgbData;
+                std::vector<size_t> rgbDim;
+                boost::shared_array<int> idData;
+                std::vector<size_t> idDim;
+                idData = kernel.loadArray<int>(finalGroup.string(), "IDs", idDim);
+                rgbData = kernel.loadArray<int>(finalGroup.string(), "Color", rgbDim);
+
+                //Add Child to top Level
+                QTreeWidgetItem * childItem = new QTreeWidgetItem();
+                childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
+                childItem->setText(0, QString::fromStdString(instance));
+                QColor label_color(rgbData[0], rgbData[1], rgbData[2]);
+                childItem->setData(LABEL_ID_COLUMN, 1, label_color);
+                childItem->setData(LABEL_ID_COLUMN, 0, id);
+                item->addChild(childItem);
+                Q_EMIT(labelAdded(childItem));
+                std::vector<int> out(idData.get(), idData.get() + idDim[0]);
+                Q_EMIT(labelLoaded(id, out));
+                selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
+
+            }
+        }
+    }
+}
+void LVRMainWindow::exportLabels()
+{
+    std::vector<uint16_t> labeledPoints = m_pickingInteractor->getLabeles();
+    vtkSmartPointer<vtkPolyData> points;
+    std::map<uint16_t,std::vector<int>> idMap;
+
+    for (int i = 0; i < labeledPoints.size(); i++)
+    {
+        
+        if(idMap.find(labeledPoints[i]) == idMap.end())
+        {
+            //first occurence of id add new entry
+            idMap[labeledPoints[i]] = {};
+        }
+        idMap[labeledPoints[i]].push_back(i);
+    }
+    
+    QFileDialog dialog;
+    dialog.setDirectory(QDir::homePath());
+    dialog.setFileMode(QFileDialog::AnyFile);
+    QString strFile = dialog.getSaveFileName(this, "Creat New HDF5 File","","");
+
+    HDF5Kernel label_hdf5kernel((strFile + QString(".h5")).toStdString());
+    int topItemCount = labelTreeWidget->topLevelItemCount();
+
+
+    //TODO This should be for all Pointclouds
+    boost::filesystem::path pointcloudName;
+    QTreeWidgetItemIterator itu(treeWidget);
+    LVRPointCloudItem* citem;
+    while (*itu)
+    {
+        QTreeWidgetItem* item = *itu;
+
+        if ( item->type() == LVRPointCloudItemType)
+        {
+            citem = static_cast<LVRPointCloudItem*>(*itu);
+            pointcloudName = item->parent()->text(0).toStdString();
+            points = citem->getPointBufferBridge()->getPolyData();
+        }
+        itu++;
+    }
+
+    double* pointsData = new double[points->GetNumberOfPoints() * 3];
+    
+    for (int i = 0; i < points->GetNumberOfPoints(); i++)
+    {
+	auto point = points->GetPoint(i);
+        pointsData[(3 * i)] = point[0];
+        pointsData[(3 * i) + 1] = point[1];
+        pointsData[(3 * i) + 2] = point[2];
+
+    }
+
+    std::vector<size_t> pointsDimension = {3, points->GetNumberOfPoints()};
+    boost::shared_array<double> sharedPoints(pointsData);
+
+    //Unlabeled top item
+    QTreeWidgetItem* unlabeledItem;
+    
+    boost::filesystem::path pointGroup = (boost::filesystem::path("pointclouds") / pointcloudName);
+    label_hdf5kernel.saveDoubleArray(pointGroup.string(), "Points" , pointsDimension, sharedPoints);
+    for (int i = 0; i < topItemCount; i++)
+    {
+        QTreeWidgetItem* topLevelItem = labelTreeWidget->topLevelItem(i);
+        if(topLevelItem->text(LABEL_NAME_COLUMN) == QString::fromStdString(UNKNOWNNAME))
+        {
+            unlabeledItem = topLevelItem;
+        }
+        boost::filesystem::path topLabel = topLevelItem->text(LABEL_NAME_COLUMN).toStdString();
+        int childCount = topLevelItem->childCount();
+        for (int j = 0; j < childCount; j++)
+        {
+            int childID = topLevelItem->child(j)->data(LABEL_ID_COLUMN, 0).toInt();
+            int* sharedArrayData = new int[idMap[childID].size()];
+            std::memcpy(sharedArrayData, idMap[childID].data(), idMap[childID].size() * sizeof(int));
+            boost::shared_array<int> data(sharedArrayData);
+            std::vector<size_t> dimension = {idMap[childID].size()};
+            if(idMap.find(childID) != idMap.end())
+            { 
+                boost::filesystem::path childLabel = (topLevelItem->child(j)->text(LABEL_NAME_COLUMN)).toStdString();
+                boost::filesystem::path completeGroup = (pointGroup / boost::filesystem::path("labels") / topLabel / childLabel);
+
+                label_hdf5kernel.saveArray(completeGroup.string(), "IDs" , dimension, data);
+                int* rgbSharedData = new int[3];
+                (topLevelItem->child(j)->data(LABEL_ID_COLUMN, 1)).value<QColor>().getRgb(&rgbSharedData[0], &rgbSharedData[1], &rgbSharedData[2]);
+                boost::shared_array<int> rgbData(rgbSharedData);
+                std::vector<size_t> rgbDimension = {3};
+                label_hdf5kernel.saveArray(completeGroup.string(), "Color" , rgbDimension, rgbData);
+            }
+        }
+    }
 }
 
 

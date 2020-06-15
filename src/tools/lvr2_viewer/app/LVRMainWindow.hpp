@@ -107,6 +107,13 @@
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
 #include "../vtkBridge/LVRChunkedMeshCuller.hpp"
 
+#define LABEL_NAME_COLUMN 0
+#define LABELED_POINT_COLUMN 1
+#define LABEL_VISIBLE_COLUMN 2
+#define LABEL_ID_COLUMN 3
+
+
+
 using std::vector;
 using std::cout;
 using std::endl;
@@ -133,6 +140,7 @@ public Q_SLOTS:
             //                std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors);
 
 
+    void addNewInstance(QTreeWidgetItem *);
     void loadModel();
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();
@@ -140,6 +148,12 @@ public Q_SLOTS:
     void manualICP();
     void manualLabeling();
     void changePicker(bool labeling);
+    void showLabelTreeContextMenu(const QPoint&);
+    void updatePointCount(const uint16_t, const int);
+
+    void cellSelected(QTreeWidgetItem* item, int column);
+    void addLabelClass();
+
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
     void showColorDialog();
@@ -226,6 +240,7 @@ public Q_SLOTS:
     std::set<LVRModelItem*> getSelectedModelItems();
     std::set<LVRPointCloudItem*> getSelectedPointCloudItems();
     std::set<LVRMeshItem*> getSelectedMeshItems();
+    void exportLabels();
 
 protected Q_SLOTS:
     void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
@@ -233,8 +248,15 @@ protected Q_SLOTS:
     void restoreSliders();
     void highlightBoundingBoxes();
 
+    void visibilityChanged(QTreeWidgetItem*, int);
+    void loadLabels();
+
 Q_SIGNALS:
+    void labelChanged(uint16_t);
     void correspondenceDialogOpened();
+    void labelAdded(QTreeWidgetItem*);
+    void hidePoints(int, bool);
+    void labelLoaded(int, std::vector<int>);
 
 private:
     void setupQVTK();
@@ -266,6 +288,8 @@ private:
     QMenu*                                      m_treeParentItemContextMenu;
     QMenu*                                      m_treeChildItemContextMenu;
 
+    QMenu*                                      m_labelTreeParentItemContextMenu;
+    QMenu*                                      m_labelTreeChildItemContextMenu;
     // Toolbar item "File"
     QAction*                            m_actionOpen;
     QAction*                            m_actionOpenChunkedMesh;
@@ -344,6 +368,11 @@ private:
 
     QAction*                            m_actionShowImage;
     QAction*                            m_actionSetViewToCamera;
+    
+    //Label
+    QAction*                            m_actionAddLabelClass;
+    QAction*                            m_actionAddNewInstance;
+    QAction*                            m_actionRemoveInstance;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 
@@ -357,6 +386,9 @@ private:
 #endif
 
     bool m_labeling = false;
+    int m_id = 1;
+    static const string UNKNOWNNAME;
+    QTreeWidgetItem* m_selectedLabelItem;
 
     enum TYPE {
         MODELITEMS_ONLY,
