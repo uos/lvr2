@@ -140,6 +140,7 @@ public Q_SLOTS:
             //                std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors);
 
 
+    void comboBoxIndexChanged(int index);
     void addNewInstance(QTreeWidgetItem *);
     void loadModel();
     void loadModels(const QStringList& filenames);
