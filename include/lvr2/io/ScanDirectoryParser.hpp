@@ -46,7 +46,7 @@ struct ScanInfo
 {
     string              m_filename;
     size_t              m_numPoints;
-    Transformd m_pose;
+    Transformd          m_pose;
 };
 
 class ScanDirectoryParser
@@ -68,7 +68,7 @@ public:
     PointBufferPtr randomSubSample(const size_t& targetSize);
     PointBufferPtr octreeSubSample(const double& voxelSize, const size_t& minPoints = 5);
     
-    ~ScanDirectoryParser() = default;
+    ~ScanDirectoryParser();
 
 private:
 
@@ -87,7 +87,7 @@ private:
     size_t                  m_start;
     size_t                  m_end;
 
-    std::vector<ScanInfo>   m_scans;
+    std::vector<ScanInfo*>   m_scans;
 };
 
 } // namespace lvr2
