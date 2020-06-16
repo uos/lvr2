@@ -50,6 +50,7 @@ set(LVR2_SOURCES
     io/ScanIOUtils.cpp
     io/descriptions/ScanProjectSchemaSLAM.cpp
     io/descriptions/ScanProjectSchemaHyperlib.cpp
+    io/descriptions/ScanProjectSchemaHDF5V2.cpp
     io/descriptions/DirectoryKernel.cpp
     io/descriptions/DirectoryIO.cpp
     io/descriptions/MetaFormatFactory.cpp
