@@ -25,7 +25,7 @@ Description ScanProjectSchemaHDF5V2::position(const size_t &scanPosNo) const
 
     // Group name
     std::stringstream scan_stream;
-    scan_stream << "/raw/" << std::setw(8) << scanPosNo;
+    scan_stream << "/raw/" << std::setfill('0') << std::setw(8) << scanPosNo;
     d.groupName = scan_stream.str();
 
     // No dataset name 
@@ -42,7 +42,7 @@ Description ScanProjectSchemaHDF5V2::scan(const size_t &scanPosNo, const size_t 
 {
     // Group name
     std::stringstream group_stream;
-    group_stream << "/raw/" << std::setw(8) << scanPosNo << "/scans/data/";
+    group_stream << "/raw/" << std::setfill('0') << std::setw(8) << scanPosNo << "/scans/data/" << std::setfill('0') << std::setw(8) << scanNo;
   
     return scan(group_stream.str(), scanNo);
 }
@@ -50,14 +50,12 @@ Description ScanProjectSchemaHDF5V2::scan(const size_t &scanPosNo, const size_t 
 Description ScanProjectSchemaHDF5V2::scan(const std::string& scanPositionPath, const size_t &scanNo) const
 {
     Description d; 
-
+    std::cout << "DEBUG: " << scanPositionPath << std::endl;
     d.groupName = scanPositionPath;
 
-    // Scan name
-    std::stringstream scan_stream;
-    scan_stream << std::setw(8) << scanNo;
-
-    d.dataSetName = scan_stream.str();
+    // Scan name is always points in the 
+    // respective HDF5 group
+    d.dataSetName = "points";
 
     return d;
 }

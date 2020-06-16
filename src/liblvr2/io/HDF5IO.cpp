@@ -69,10 +69,10 @@ HDF5IO::HDF5IO(std::string filename, int open_flag) :
 
 HDF5IO::~HDF5IO()
 {
-    if(m_hdf5_file)
-    {
-        delete m_hdf5_file;
-    }
+    // if(m_hdf5_file)
+    // {
+    //     delete m_hdf5_file;
+    // }
 }
 
 void HDF5IO::setCompress(bool compress)

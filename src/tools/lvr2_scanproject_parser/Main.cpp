@@ -4,6 +4,7 @@
 #include "lvr2/io/descriptions/HDF5IO.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchemaSLAM.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -32,6 +33,12 @@ int main(int argc, char** argv)
     DirectoryKernelPtr slamCopyKernel2(new DirectoryKernel("./hyperlib_copy"));
     DirectoryIO slamIOCopy2(slamCopyKernel2, hyperlibSchema);
     slamIOCopy2.saveScanProject(slamProject);
+
+    // Copy project into HDF5
+    HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2);
+    HDF5KernelPtr hdf5Kernel(new HDF5Kernel("slam.h5"));
+    HDF5IO hdf5io(hdf5Kernel, hdf5Schema);
+    hdf5io.saveScanProject(slamProject);
 
     return 0;
 }
