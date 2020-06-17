@@ -35,6 +35,7 @@
 #include <QFileInfo>
 #include <QAbstractItemView>
 #include <QtGui>
+#include <numeric>
 
 #include "LVRMainWindow.hpp"
 
@@ -454,8 +455,10 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->pushButtonFly , SIGNAL(pressed()), m_pickingInteractor, SLOT(modeShooter()));
 
 
-    QObject::connect(this->actionSelected_Lasso, SIGNAL(triggered()), this, SLOT(manualLabeling()));
-    QObject::connect(this->actionSelected_Polygon, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+    //QObject::connect(this->actionSelected_Lasso, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+    QObject::connect(this->actionSelected_Lasso, SIGNAL(toggled(bool)), this, SLOT(lassoButtonToggled(bool)));
+    //QObject::connect(this->actionSelected_Polygon, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+    QObject::connect(this->actionSelected_Polygon, SIGNAL(toggled(bool)), this, SLOT(polygonButtonToggled(bool)));
     QObject::connect(m_actionStop_labeling, SIGNAL(triggered()), this, SLOT(manualLabeling()));
 //    QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), this, SLOT(manualLabeling()));
  //   QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), m_labelDialog, SLOT(labelPoints()));
@@ -997,6 +1000,22 @@ void LVRMainWindow::addLabelClass()
         //Added first Top Level item enable instance button
         Q_EMIT(labelAdded(childItem));
         selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), 0);
+        std::vector<int> out;
+        QTreeWidgetItemIterator itu(treeWidget);
+        LVRPointCloudItem* citem;
+        while (*itu)
+        {
+            QTreeWidgetItem* item = *itu;
+
+            if ( item->type() == LVRPointCloudItemType)
+            {
+                citem = static_cast<LVRPointCloudItem*>(*itu);
+                out = std::vector<int>(citem->getPointBufferBridge()->getPolyData()->GetNumberOfPoints());
+            }
+            itu++;
+        }
+        std::iota(out.begin(), out.end(), 0);
+        m_pickingInteractor->setLabel(0, out);
     }
 
     int id = m_id++;
@@ -1022,6 +1041,7 @@ void LVRMainWindow::addLabelClass()
     //Add label to combo box 
     selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
     Q_EMIT(labelAdded(childItem));
+    Q_EMIT(labelChanged(id));
 }
 void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 {
@@ -2736,9 +2756,17 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
     {
         if(item->parent())
         {
+            //Element double Clicked change selected Label
             m_selectedLabelItem = item;
-
-            Q_EMIT(labelChanged(item->data(LABEL_ID_COLUMN, 0).toInt()));
+            int comboCount = selectedInstanceComboBox->count();
+            for (int i = 0; i < comboCount; i++)
+            {
+                int comboBoxid = selectedInstanceComboBox->itemData(i).toInt();
+                if(item->data(LABEL_ID_COLUMN,0).toInt() == comboBoxid)
+                {
+                    selectedInstanceComboBox->setCurrentIndex(i);
+                }
+            }
             
         }
     }
@@ -2875,7 +2903,7 @@ void LVRMainWindow::loadLabels()
                 item->addChild(childItem);
                 Q_EMIT(labelAdded(childItem));
                 std::vector<int> out(idData.get(), idData.get() + idDim[0]);
-                Q_EMIT(labelLoaded(id, out));
+                m_pickingInteractor->setLabel(id, out);
                 selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
 
             }
@@ -2979,5 +3007,62 @@ void LVRMainWindow::exportLabels()
 void LVRMainWindow::comboBoxIndexChanged(int index)
 {
 	Q_EMIT(labelChanged(selectedInstanceComboBox->itemData(index).toInt()));
+}
+
+void LVRMainWindow::lassoButtonToggled(bool checked)
+{
+
+    if (checked)
+    {
+        if(labelTreeWidget->topLevelItemCount() == 0)
+        {
+            const QSignalBlocker blocker(this->actionSelected_Lasso);
+            QMessageBox noLabelDialog;
+            noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
+            noLabelDialog.setStandardButtons(QMessageBox::Ok);
+            noLabelDialog.setIcon(QMessageBox::Warning);
+            int returnValue = noLabelDialog.exec();
+            this->actionSelected_Lasso->setChecked(false);
+
+            return;
+        }
+        //check if Polygon tool was enabled
+        if (this->actionSelected_Polygon->isChecked())
+        {
+            const QSignalBlocker blocker(this->actionSelected_Polygon);
+            this->actionSelected_Polygon->setChecked(false);
+       }
+       m_pickingInteractor->labelingOn();
+    } else
+    {
+        m_pickingInteractor->labelingOff();
+    }
+}
+void LVRMainWindow::polygonButtonToggled(bool checked)
+{
+
+    if (checked)
+    {
+        if(labelTreeWidget->topLevelItemCount() == 0)
+        {
+            QMessageBox noLabelDialog;
+            noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
+            noLabelDialog.setStandardButtons(QMessageBox::Ok);
+            noLabelDialog.setIcon(QMessageBox::Warning);
+            int returnValue = noLabelDialog.exec();
+            return;
+        }
+        //check if lasso tool was enabled
+        if (this->actionSelected_Lasso->isChecked())
+        {
+            const QSignalBlocker blocker(this->actionSelected_Lasso);
+            this->actionSelected_Lasso->setChecked(false);
+        }
+        m_pickingInteractor->labelingOn();
+    } else
+    {
+        m_pickingInteractor->labelingOff();
+    }
+
 }
 } /* namespace lvr2 */

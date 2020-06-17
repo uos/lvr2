@@ -51,6 +51,7 @@ public:
   void SetLassoTool();
   void SetPolygonTool();
   void StartSelect();
+  void toggleSelectionMode();
 
   //@{
   /**
