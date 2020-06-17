@@ -1332,13 +1332,13 @@ void LVRPickingInteractor::correspondenceSearchOff()
 void LVRPickingInteractor::labelingOn()
 {
     vtkRenderWindowInteractor *rwi = this->Interactor;
-    m_textActor->SetInput("Press \"l\" to select Points");
+    m_textActor->SetInput("Labeling Mode");
     m_textActor->VisibilityOn();
-    rwi->Render();
 
     m_labelingMode = true;
-    labelModeChanged(m_pickMode == PickLabel);
-    //m_pickMode = PickLabel;
+    m_pickMode = PickLabel;
+    labelModeChanged(true);
+    rwi->Render();
 
 }
 void LVRPickingInteractor::labelingOff()
@@ -1347,6 +1347,7 @@ void LVRPickingInteractor::labelingOff()
 	m_labelingMode = false;
         m_pickMode = None;
 	m_textActor->VisibilityOff();
+        labelModeChanged(false);
         rwi->Render();
 }
 void LVRPickingInteractor::handlePicking()
@@ -2015,6 +2016,7 @@ void LVRPickingInteractor::saveCurrentLabelSelection()
         updateActor(modifiedActorLabel);
     }
 
+    std::cout << "saved " << m_selectedLabel << std::endl;
     //Save Current Actor
     m_labelActors[m_selectedLabel] = m_selectedActor;
 
@@ -2189,11 +2191,13 @@ void LVRPickingInteractor::labelModeChanged(bool setLabeling)
         noLabelDialog.setStandardButtons(QMessageBox::Ok);
         noLabelDialog.setIcon(QMessageBox::Warning);
         int returnValue = noLabelDialog.exec();
+        Q_EMIT(labelingStarted(true));
         return;
 
     }
-    Q_EMIT(labelingStarted(true));
     m_pickMode = PickLabel;
+    LVRInteractorStylePolygonPick::toggleSelectionMode();
+    Q_EMIT(labelingStarted(true));
 
 }
 

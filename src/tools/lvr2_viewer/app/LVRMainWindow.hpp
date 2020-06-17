@@ -154,6 +154,8 @@ public Q_SLOTS:
 
     void cellSelected(QTreeWidgetItem* item, int column);
     void addLabelClass();
+    void lassoButtonToggled(bool);
+    void polygonButtonToggled(bool);
 
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);

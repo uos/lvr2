@@ -124,15 +124,8 @@ void LVRInteractorStylePolygonPick::OnChar()
   {
     case 'l':
     case 'L':
-      // r toggles the rubber band selection mode for mouse button 1
-      if (this->CurrentMode == VTKISRBP_ORIENT)
-      {
-        this->CurrentMode = VTKISRBP_SELECT;
-      }
-      else
-      {
-        this->CurrentMode = VTKISRBP_ORIENT;
-      }
+      // l toggles the rubber band selection mode for mouse button 1
+      toggleSelectionMode();
       break;
     case 'p':
     case 'P':
@@ -424,4 +417,15 @@ void LVRInteractorStylePolygonPick::OnKeyDown()
         }
         this->Moving = 0;
     }
+}
+void LVRInteractorStylePolygonPick::toggleSelectionMode()
+{
+      if (this->CurrentMode == VTKISRBP_ORIENT)
+      {
+        this->CurrentMode = VTKISRBP_SELECT;
+      }
+      else
+      {
+        this->CurrentMode = VTKISRBP_ORIENT;
+      }
 }
