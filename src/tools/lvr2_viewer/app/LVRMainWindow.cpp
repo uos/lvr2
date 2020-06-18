@@ -427,6 +427,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(uint16_t, int)), m_labelDialog, SLOT(updatePointCount(uint16_t, int)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(const uint16_t, const int)), this, SLOT(updatePointCount(const uint16_t, const int)));
+    QObject::connect(m_pickingInteractor, SIGNAL(lassoSelected()), this->actionSelected_Lasso, SLOT(toggle()));
     QObject::connect(m_pickingInteractor, SIGNAL(responseLabels(std::vector<uint16_t>)), m_labelDialog, SLOT(responseLabels(std::vector<uint16_t>)));
 
     QObject::connect(this, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
@@ -3012,10 +3013,20 @@ void LVRMainWindow::comboBoxIndexChanged(int index)
 void LVRMainWindow::lassoButtonToggled(bool checked)
 {
 
+    std::cout << "lasso Toggled" << std::endl;
+    if (checked)
+    {
+        std::cout << "checked" << std::endl;
+    } else
+    {
+        std::cout << "not checked " << std::endl;
+    }
+
     if (checked)
     {
         if(labelTreeWidget->topLevelItemCount() == 0)
         {
+            //NO label was created - show warning
             const QSignalBlocker blocker(this->actionSelected_Lasso);
             QMessageBox noLabelDialog;
             noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
@@ -3031,8 +3042,10 @@ void LVRMainWindow::lassoButtonToggled(bool checked)
         {
             const QSignalBlocker blocker(this->actionSelected_Polygon);
             this->actionSelected_Polygon->setChecked(false);
-       }
-       m_pickingInteractor->labelingOn();
+        }
+        m_pickingInteractor->setLassoTool(true);
+        m_pickingInteractor->labelingOn();
+        std::cout << "Not the Problem " << std::endl;
     } else
     {
         m_pickingInteractor->labelingOff();
@@ -3045,11 +3058,14 @@ void LVRMainWindow::polygonButtonToggled(bool checked)
     {
         if(labelTreeWidget->topLevelItemCount() == 0)
         {
+            //NO label was created - show warning
+            const QSignalBlocker blocker(this->actionSelected_Polygon);
             QMessageBox noLabelDialog;
             noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
             noLabelDialog.setStandardButtons(QMessageBox::Ok);
             noLabelDialog.setIcon(QMessageBox::Warning);
             int returnValue = noLabelDialog.exec();
+            this->actionSelected_Polygon->setChecked(false);
             return;
         }
         //check if lasso tool was enabled
@@ -3058,6 +3074,7 @@ void LVRMainWindow::polygonButtonToggled(bool checked)
             const QSignalBlocker blocker(this->actionSelected_Lasso);
             this->actionSelected_Lasso->setChecked(false);
         }
+        m_pickingInteractor->setLassoTool(false);
         m_pickingInteractor->labelingOn();
     } else
     {

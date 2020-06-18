@@ -1662,9 +1662,16 @@ void LVRPickingInteractor::OnKeyDown()
         rwi->Render();
         m_pickMode = PickSecond;
     }
-    if(m_labelingMode && key == "l")
+    if(key == "l" || key == "l")
     {
-        labelModeChanged(m_pickMode == PickLabel);
+        std::cout << "l pressed" << std::endl;
+        Q_EMIT(lassoSelected());
+        //labelModeChanged(m_pickMode == PickLabel);
+    }
+    if(key == "p" || key == "P")
+    {
+        Q_EMIT(polygonSelected());
+        //labelModeChanged(m_pickMode == PickLabel);
     }
 
     if(key == "f")
@@ -2016,7 +2023,6 @@ void LVRPickingInteractor::saveCurrentLabelSelection()
         updateActor(modifiedActorLabel);
     }
 
-    std::cout << "saved " << m_selectedLabel << std::endl;
     //Save Current Actor
     m_labelActors[m_selectedLabel] = m_selectedActor;
 

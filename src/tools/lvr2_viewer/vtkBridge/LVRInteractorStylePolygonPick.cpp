@@ -125,7 +125,7 @@ void LVRInteractorStylePolygonPick::OnChar()
     case 'l':
     case 'L':
       // l toggles the rubber band selection mode for mouse button 1
-      toggleSelectionMode();
+      //toggleSelectionMode();
       break;
     case 'p':
     case 'P':
@@ -386,14 +386,11 @@ void LVRInteractorStylePolygonPick::PrintSelf(ostream& os, vtkIndent indent)
 
 void LVRInteractorStylePolygonPick::SetPolygonTool()
 {
-    std::cout << "lasso" << std::endl;
   lassoToolSelected = false; 
 }
 
 void LVRInteractorStylePolygonPick::SetLassoTool()
 {
-    std::cout << "no lasso" << std::endl;
-
   lassoToolSelected = true; 
 }
 void LVRInteractorStylePolygonPick::OnKeyDown()
@@ -411,7 +408,6 @@ void LVRInteractorStylePolygonPick::OnKeyDown()
         if ((this->StartPosition[0] != this->EndPosition[0]) ||
             (this->StartPosition[1] != this->EndPosition[1]))
         {
-            std::cout << "did this " << std::endl;
             this->Pick();
             firstPoint = true;
         }

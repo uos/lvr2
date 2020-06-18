@@ -145,6 +145,8 @@ public Q_SLOTS:
     void resetCamera();
 
 Q_SIGNALS:
+    void lassoSelected();
+    void polygonSelected();
     void clusterSelected(double*);
     void firstPointPicked(double*);
     void secondPointPicked(double*);
