@@ -428,6 +428,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(uint16_t, int)), m_labelDialog, SLOT(updatePointCount(uint16_t, int)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(const uint16_t, const int)), this, SLOT(updatePointCount(const uint16_t, const int)));
     QObject::connect(m_pickingInteractor, SIGNAL(lassoSelected()), this->actionSelected_Lasso, SLOT(toggle()));
+    QObject::connect(m_pickingInteractor, SIGNAL(polygonSelected()), this->actionSelected_Polygon, SLOT(toggle()));
     QObject::connect(m_pickingInteractor, SIGNAL(responseLabels(std::vector<uint16_t>)), m_labelDialog, SLOT(responseLabels(std::vector<uint16_t>)));
 
     QObject::connect(this, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
@@ -2858,16 +2859,30 @@ void LVRMainWindow::loadLabels()
         boost::filesystem::path classGroup = (boost::filesystem::path("pointclouds") / boost::filesystem::path(pointcloudName) / boost::filesystem::path("labels"));
         std::vector<std::string> labelClasses;
         kernel.subGroupNames(classGroup.string(), labelClasses);
+
+
+        //get Data points
+        boost::filesystem::path pointGroup = (boost::filesystem::path("pointclouds") / boost::filesystem::path(pointcloudName));
+        boost::shared_array<double> pointData;
+        std::vector<size_t> pointDim;
+        std::cout << pointGroup.string() << std::endl;
+        pointData = kernel.loadArray<double>(pointGroup.string(), "Points", pointDim);
+        for(int i = 0; i < (pointDim[1]); i++)
+        {
+
+            //TODO:somehow create model 
+            //std::cout <<i << ":   "<< pointData[i ] << pointData[i + pointDim[1]] << pointData[i + (pointDim[1] * 2)] << std::endl;
+        }
+
         for (auto labelClass : labelClasses)
         {
             //Get TopLevel Item for tree view
-            QTreeWidgetItem * item = new QTreeWidgetItem();
+            QTreeWidgetItem * item = new QTreeWidgetItem(LVRLabelClassType);
             item->setText(0, QString::fromStdString(labelClass));
             item->setText(LABELED_POINT_COLUMN, QString::number(0));
             item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
 
             labelTreeWidget->addTopLevelItem(item);   
-
 
             //pointclouds/$name/labels/$labelname
             boost::filesystem::path instanceGroup = (classGroup / boost::filesystem::path(labelClass));
@@ -2883,7 +2898,6 @@ void LVRMainWindow::loadLabels()
                 if (labelClass != UNKNOWNNAME)
                 {
                     id = m_id++;
-
                 } 
 
                 //Get Color and IDs
@@ -2895,7 +2909,7 @@ void LVRMainWindow::loadLabels()
                 rgbData = kernel.loadArray<int>(finalGroup.string(), "Color", rgbDim);
 
                 //Add Child to top Level
-                QTreeWidgetItem * childItem = new QTreeWidgetItem();
+                QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
                 childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
                 childItem->setText(0, QString::fromStdString(instance));
                 QColor label_color(rgbData[0], rgbData[1], rgbData[2]);

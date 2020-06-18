@@ -1668,7 +1668,7 @@ void LVRPickingInteractor::OnKeyDown()
         Q_EMIT(lassoSelected());
         //labelModeChanged(m_pickMode == PickLabel);
     }
-    if(key == "p" || key == "P")
+    if(key == "o" || key == "O")
     {
         Q_EMIT(polygonSelected());
         //labelModeChanged(m_pickMode == PickLabel);
@@ -2188,7 +2188,7 @@ void LVRPickingInteractor::updateActor(int labelId)
 
 void LVRPickingInteractor::labelModeChanged(bool setLabeling)
 {
-
+/*
     //Check if no Labels were created
     if( m_labelColors.empty())
     {
@@ -2200,10 +2200,16 @@ void LVRPickingInteractor::labelModeChanged(bool setLabeling)
         Q_EMIT(labelingStarted(true));
         return;
 
-    }
-    m_pickMode = PickLabel;
+    }*/
+    //m_pickMode = PickLabel;
     LVRInteractorStylePolygonPick::toggleSelectionMode();
-    Q_EMIT(labelingStarted(true));
+    if(setLabeling)
+    {
+        Q_EMIT(labelingStarted(true));
+    } else
+    {
+        Q_EMIT(labelingStarted(false));
+    }
 
 }
 
