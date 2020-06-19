@@ -1636,7 +1636,15 @@ void LVRPickingInteractor::OnKeyDown()
 
     if(key == "Escape" && m_labelingMode)
     {
-	discardChanges();
+	if (isPolygonToolSelected())
+	{
+	    if (selectionPolygonSize() > 0)
+	    {
+		resetSelection();
+		return;
+	    }
+	} 
+        discardChanges();
     }
     if(key == "Return" && m_labelingMode)
     {
@@ -1664,7 +1672,6 @@ void LVRPickingInteractor::OnKeyDown()
     }
     if(key == "l" || key == "l")
     {
-        std::cout << "l pressed" << std::endl;
         Q_EMIT(lassoSelected());
         //labelModeChanged(m_pickMode == PickLabel);
     }

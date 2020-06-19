@@ -425,3 +425,16 @@ void LVRInteractorStylePolygonPick::toggleSelectionMode()
         this->CurrentMode = VTKISRBP_ORIENT;
       }
 }
+
+bool LVRInteractorStylePolygonPick::isPolygonToolSelected()
+{
+    return !lassoToolSelected;
+}
+int LVRInteractorStylePolygonPick::selectionPolygonSize()
+{
+    return this->Internal->points.size();
+}
+void LVRInteractorStylePolygonPick::resetSelection()
+{
+	this->Internal->Clear();
+}

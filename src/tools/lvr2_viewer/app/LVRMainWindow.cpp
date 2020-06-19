@@ -1043,7 +1043,9 @@ void LVRMainWindow::addLabelClass()
     //Add label to combo box 
     selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
     Q_EMIT(labelAdded(childItem));
-    Q_EMIT(labelChanged(id));
+    int comboBoxPos = selectedInstanceComboBox->findData(childItem->data(LABEL_ID_COLUMN, 0).toInt());
+    selectedInstanceComboBox->setCurrentIndex(comboBoxPos);
+    //Q_EMIT(labelChanged(id));
 }
 void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 {
@@ -2711,13 +2713,13 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
                 //Toplevel item nothing else to do
                 return;
             }
-            /*
-            int comboBoxPos = m_ui->selectedLabelComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
+
+	    //update comboxBoxItem
+            int comboBoxPos = selectedInstanceComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
             if (comboBoxPos >= 0)
             {
-                m_ui->selectedLabelComboBox->setItemText(comboBoxPos, label_name);
-
-            }*/
+                selectedInstanceComboBox->setItemText(comboBoxPos, label_name);
+            }
             return;
         }
     }else if(column == LABEL_ID_COLUMN)
@@ -3026,16 +3028,6 @@ void LVRMainWindow::comboBoxIndexChanged(int index)
 
 void LVRMainWindow::lassoButtonToggled(bool checked)
 {
-
-    std::cout << "lasso Toggled" << std::endl;
-    if (checked)
-    {
-        std::cout << "checked" << std::endl;
-    } else
-    {
-        std::cout << "not checked " << std::endl;
-    }
-
     if (checked)
     {
         if(labelTreeWidget->topLevelItemCount() == 0)
@@ -3051,15 +3043,16 @@ void LVRMainWindow::lassoButtonToggled(bool checked)
 
             return;
         }
+	//setLasso Tool
+        m_pickingInteractor->setLassoTool(true);
         //check if Polygon tool was enabled
         if (this->actionSelected_Polygon->isChecked())
         {
             const QSignalBlocker blocker(this->actionSelected_Polygon);
             this->actionSelected_Polygon->setChecked(false);
+	    return;
         }
-        m_pickingInteractor->setLassoTool(true);
         m_pickingInteractor->labelingOn();
-        std::cout << "Not the Problem " << std::endl;
     } else
     {
         m_pickingInteractor->labelingOff();
@@ -3082,13 +3075,15 @@ void LVRMainWindow::polygonButtonToggled(bool checked)
             this->actionSelected_Polygon->setChecked(false);
             return;
         }
+	//setPolygonTool
+        m_pickingInteractor->setLassoTool(false);
         //check if lasso tool was enabled
         if (this->actionSelected_Lasso->isChecked())
         {
             const QSignalBlocker blocker(this->actionSelected_Lasso);
             this->actionSelected_Lasso->setChecked(false);
+	    return;
         }
-        m_pickingInteractor->setLassoTool(false);
         m_pickingInteractor->labelingOn();
     } else
     {
