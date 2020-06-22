@@ -18,10 +18,12 @@ int main(int argc, char** argv)
     std::string hyperlibDir = "./hyperlib";
 
     // Read slam6d data from input dir
-    DirectorySchemaPtr slamSchemaPtr(new ScanProjectSchemaSLAM);
+    DirectorySchemaPtr slamSchemaPtr(new ScanProjectSchemaSLAM(slamDir));
     DirectoryKernelPtr slamDirKernel(new DirectoryKernel(slamDir));
     DirectoryIO slamIO(slamDirKernel, slamSchemaPtr);
     ScanProjectPtr slamProject = slamIO.loadScanProject();
+
+    std::cout << slamProject->positions[0]->scans.size() << std::endl;
 
     // Copy project using slam6d schema
     DirectoryKernelPtr slamCopyKernel(new DirectoryKernel("./slam_copy"));
@@ -29,8 +31,9 @@ int main(int argc, char** argv)
     slamIOCopy.saveScanProject(slamProject);
 
     // Copy project using hyperlib schema
-    DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
-    DirectoryKernelPtr slamCopyKernel2(new DirectoryKernel("./hyperlib_copy"));
+    std::string hyperlibCopyDir = "./hyperlib_copy";
+    DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(hyperlibCopyDir));
+    DirectoryKernelPtr slamCopyKernel2(new DirectoryKernel(hyperlibCopyDir));
     DirectoryIO slamIOCopy2(slamCopyKernel2, hyperlibSchema);
     slamIOCopy2.saveScanProject(slamProject);
 

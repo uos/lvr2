@@ -10,7 +10,7 @@ class ScanProjectSchemaSLAM : public DirectorySchema
 {
 public:
 
-    ScanProjectSchemaSLAM() {};
+    ScanProjectSchemaSLAM(const std::string& rootDir) : DirectorySchema(rootDir) {};
 
     virtual Description scanProject() const;
     virtual Description position(const size_t &scanPosNo) const;

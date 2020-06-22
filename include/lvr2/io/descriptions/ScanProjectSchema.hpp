@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include <boost/optional.hpp>
+#include <boost/filesystem.hpp>
 
 #include <yaml-cpp/yaml.h>
 namespace lvr2
@@ -86,7 +87,10 @@ public:
 class DirectorySchema : public ScanProjectSchema
 {
 public:
-    DirectorySchema() {}
+    DirectorySchema(const std::string& root) : m_rootPath(root) {}
+
+protected:
+    boost::filesystem::path m_rootPath;
 };
 
 using ScanProjectSchemaPtr = std::shared_ptr<ScanProjectSchema>;
