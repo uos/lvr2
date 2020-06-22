@@ -83,7 +83,7 @@ LVRMainWindow::LVRMainWindow()
 
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
-    m_labelDialog = new LVRLabelDialog(treeWidget);
+    //m_labelDialog = new LVRLabelDialog(treeWidget);
     m_incompatibilityBox = new QMessageBox();
     m_aboutDialog = new QDialog(this);
     Ui::AboutDialog aboutDialog;
@@ -193,11 +193,6 @@ LVRMainWindow::LVRMainWindow()
     m_actionSimple_Plane_Classification = this->actionSimple_Plane_Classification;
     m_actionFurniture_Recognition = this->actionFurniture_Recognition;
 
-    //Toolbar item "Labeling"
-    m_actionStart_labeling = this->actionLabeling_Start;
-    m_actionStop_labeling = this->actionLabeling_Stop;
-    m_actionExtract_labeling = this->actionLabeling_Export;
-
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
     m_menuAbout = this->menuAbout;
@@ -277,10 +272,11 @@ LVRMainWindow::~LVRMainWindow()
     {
         delete m_correspondanceDialog;
     }
+    /*
     if(m_labelDialog)
     {
         delete m_labelDialog;
-    }
+    }*/
 
     if (m_pickingInteractor)
     {
@@ -332,6 +328,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(this->actionOpenLabeledPointcloud, SIGNAL(triggered()), this, SLOT(loadLabels()));
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
+    QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
@@ -341,6 +338,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+    QObject::connect(this->actionConfirm_LabelSelection, SIGNAL(triggered()), m_pickingInteractor, SLOT(saveCurrentLabelSelection()));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(triggered()), this, SLOT(showColorDialog()));
     QObject::connect(m_actionRenameModelItem, SIGNAL(triggered()), this, SLOT(renameModelItem()));
@@ -425,25 +423,25 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
-    QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(uint16_t, int)), m_labelDialog, SLOT(updatePointCount(uint16_t, int)));
+    //QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(uint16_t, int)), m_labelDialog, SLOT(updatePointCount(uint16_t, int)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(const uint16_t, const int)), this, SLOT(updatePointCount(const uint16_t, const int)));
     QObject::connect(m_pickingInteractor, SIGNAL(lassoSelected()), this->actionSelected_Lasso, SLOT(toggle()));
     QObject::connect(m_pickingInteractor, SIGNAL(polygonSelected()), this->actionSelected_Polygon, SLOT(toggle()));
-    QObject::connect(m_pickingInteractor, SIGNAL(responseLabels(std::vector<uint16_t>)), m_labelDialog, SLOT(responseLabels(std::vector<uint16_t>)));
+    //QObject::connect(m_pickingInteractor, SIGNAL(responseLabels(std::vector<uint16_t>)), m_labelDialog, SLOT(responseLabels(std::vector<uint16_t>)));
 
     QObject::connect(this, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
-    QObject::connect(m_labelDialog, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
-    QObject::connect(m_labelDialog, SIGNAL(labelLoaded(int, std::vector<int>)), m_pickingInteractor, SLOT(setLabel(int, std::vector<int>)));
-    QObject::connect(m_labelDialog->m_ui->exportLabelButton, SIGNAL(pressed()), m_pickingInteractor, SLOT(requestLabels()));
-    QObject::connect(m_labelDialog, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
+    //QObject::connect(m_labelDialog, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
+    //QObject::connect(m_labelDialog, SIGNAL(labelLoaded(int, std::vector<int>)), m_pickingInteractor, SLOT(setLabel(int, std::vector<int>)));
+    //QObject::connect(m_labelDialog->m_ui->exportLabelButton, SIGNAL(pressed()), m_pickingInteractor, SLOT(requestLabels()));
+    //QObject::connect(m_labelDialog, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
     QObject::connect(this, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
 
     QObject::connect(labelTreeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(visibilityChanged(QTreeWidgetItem*, int)));
-    QObject::connect(m_labelDialog, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
+    //QObject::connect(m_labelDialog, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
     QObject::connect(this, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
 
     QObject::connect(labelTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(cellSelected(QTreeWidgetItem*, int)));
-    QObject::connect(m_labelDialog->m_ui->lassotoolButton, SIGNAL(toggled(bool)), m_pickingInteractor, SLOT(setLassoTool(bool)));
+    //QObject::connect(m_labelDialog->m_ui->lassotoolButton, SIGNAL(toggled(bool)), m_pickingInteractor, SLOT(setLassoTool(bool)));
 
     // Interaction with interactor
     QObject::connect(this->doubleSpinBoxDollySpeed, SIGNAL(valueChanged(double)), m_pickingInteractor, SLOT(setMotionFactor(double)));
@@ -461,7 +459,6 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->actionSelected_Lasso, SIGNAL(toggled(bool)), this, SLOT(lassoButtonToggled(bool)));
     //QObject::connect(this->actionSelected_Polygon, SIGNAL(triggered()), this, SLOT(manualLabeling()));
     QObject::connect(this->actionSelected_Polygon, SIGNAL(toggled(bool)), this, SLOT(polygonButtonToggled(bool)));
-    QObject::connect(m_actionStop_labeling, SIGNAL(triggered()), this, SLOT(manualLabeling()));
 //    QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), this, SLOT(manualLabeling()));
  //   QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), m_labelDialog, SLOT(labelPoints()));
 //    QObject::connect(m_actionExtract_labeling, SIGNAL(triggered()), m_labelInteractor, SLOT(extractLabel()));
@@ -1288,7 +1285,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
 
 			m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
-                        m_labelDialog->setPoints(item->parent()->text(0).toStdString(), citem->getPointBufferBridge()->getPolyData());
+                        //m_labelDialog->setPoints(item->parent()->text(0).toStdString(), citem->getPointBufferBridge()->getPolyData());
 		}
 		itu++;
 	}
@@ -2931,7 +2928,7 @@ void LVRMainWindow::exportLabels()
 {
     std::vector<uint16_t> labeledPoints = m_pickingInteractor->getLabeles();
     vtkSmartPointer<vtkPolyData> points;
-    std::map<uint16_t,std::vector<int>> idMap;
+    std::map<uint16_t, std::vector<int>> idMap;
 
     for (int i = 0; i < labeledPoints.size(); i++)
     {
@@ -2981,7 +2978,7 @@ void LVRMainWindow::exportLabels()
 
     }
 
-    std::vector<size_t> pointsDimension = {3, points->GetNumberOfPoints()};
+    std::vector<size_t> pointsDimension = {3, static_cast<long unsigned int>(points->GetNumberOfPoints())};
     boost::shared_array<double> sharedPoints(pointsData);
 
     //Unlabeled top item
@@ -3090,5 +3087,61 @@ void LVRMainWindow::polygonButtonToggled(bool checked)
         m_pickingInteractor->labelingOff();
     }
 
+}
+
+void LVRMainWindow::readLWF()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                tr("Selecte LWF File"), QDir::homePath(), tr("LASVegasWaveformFiles(*.lwf)"));
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox warning;
+        warning.setText("Could not open File");
+        warning.setStandardButtons(QMessageBox::Ok);
+        warning.setIcon(QMessageBox::Warning);
+        warning.exec();
+        return;
+    }
+    //QByteArray rawArray = file.readAll();
+    QDataStream rawData(&file);
+    rawData.setByteOrder(QDataStream::LittleEndian);
+    rawData.setFloatingPointPrecision(QDataStream::SinglePrecision);
+    std::vector<std::vector<uint16_t>> waveforms;
+    std::vector<std::vector<float>> points;
+
+    while(!rawData.atEnd())
+    {
+
+        //read 3 Points
+	float x, y, z;
+	rawData >> x;
+	rawData >> y;
+	rawData >> z;
+	std::vector<float> point = {x,y,z};
+	points.push_back(point);
+
+	//time currently just ignored
+	float time;
+	rawData >> time;
+
+	//read Sample block size
+	uint32_t sampleBlockCount;
+	rawData >> sampleBlockCount;
+
+	//read the sampleData(waveform)
+	std::vector<uint16_t> waveformData;
+	waveformData.resize(sampleBlockCount);
+	for (int i = 0; i < sampleBlockCount; i++)
+	{
+	    //read waveform data
+	    uint16_t sample;
+	    rawData >> sample;
+	    waveformData[i] = sample;
+	}
+	waveforms.push_back(waveformData);
+    }
+    std::cout << waveforms.size() << std::endl;
 }
 } /* namespace lvr2 */

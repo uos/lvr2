@@ -151,6 +151,7 @@ public Q_SLOTS:
     void changePicker(bool labeling);
     void showLabelTreeContextMenu(const QPoint&);
     void updatePointCount(const uint16_t, const int);
+    void readLWF();
 
     void cellSelected(QTreeWidgetItem* item, int column);
     void addLabelClass();

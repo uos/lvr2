@@ -129,6 +129,7 @@ public Q_SLOTS:
     void newLabel(QTreeWidgetItem*);
     void setLassoTool(bool);
     void labelSelected(uint16_t);
+    void saveCurrentLabelSelection();
 
     void setMotionFactor(double factor);
     void setRotationFactor(double factor);
@@ -226,7 +227,6 @@ private:
     //Labeling
     bool isInside(std::vector<vtkVector2i>* polygon, int& pX, int& pY);
     void calculateSelection(bool select);
-    void saveCurrentLabelSelection();
     void discardChanges();
     void updateActor(int);
 

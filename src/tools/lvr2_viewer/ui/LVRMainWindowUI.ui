@@ -603,7 +603,7 @@
    <addaction name="actionShow_SpectralPointPreview"/>
    <addaction name="actionShow_SpectralHistogram"/>
    <addaction name="separator"/>
-   <addaction name="actionLabeling_Start"/>
+   <addaction name="actionConfirm_LabelSelection"/>
    <addaction name="actionSelected_Lasso"/>
    <addaction name="actionSelected_Polygon"/>
   </widget>
@@ -670,14 +670,6 @@
     <addaction name="actionSimple_Plane_Classification"/>
     <addaction name="actionFurniture_Recognition"/>
    </widget>
-   <widget class="QMenu" name="menuLabel">
-    <property name="title">
-     <string>Labeling</string>
-    </property>
-    <addaction name="actionLabeling_Start"/>
-    <addaction name="actionLabeling_Stop"/>
-    <addaction name="actionLabeling_Export"/>
-   </widget>
    <widget class="QMenu" name="menuRendering">
     <property name="title">
      <string>Rendering</string>
@@ -707,6 +699,8 @@
     <addaction name="separator"/>
     <addaction name="actionOpenLabeledPointcloud"/>
     <addaction name="actionExportLabeledPointcloud"/>
+    <addaction name="separator"/>
+    <addaction name="actionReadWaveform"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuViews"/>
@@ -716,7 +710,6 @@
    <addaction name="menuFiltering"/>
    <addaction name="menuRegistration"/>
    <addaction name="menuClassification"/>
-   <addaction name="menuLabel"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetCamera">
@@ -1351,9 +1344,9 @@
     <string>Simple Plane Classification</string>
    </property>
   </action>
-  <action name="actionLabeling_Start">
+  <action name="actionConfirm_LabelSelection">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="checked">
     <bool>false</bool>
@@ -1363,7 +1356,7 @@
      <normaloff>:/qv_labeling.png</normaloff>:/qv_labeling.png</iconset>
    </property>
    <property name="text">
-    <string>Label Points</string>
+    <string>Confirm Selection</string>
    </property>
   </action>
   <action name="actionSelected_Lasso">
@@ -1577,6 +1570,11 @@
   <action name="actionExportLabeledPointcloud">
    <property name="text">
     <string>Export labeled pointcloud</string>
+   </property>
+  </action>
+  <action name="actionReadWaveform">
+   <property name="text">
+    <string>Open Waveform</string>
    </property>
   </action>
  </widget>

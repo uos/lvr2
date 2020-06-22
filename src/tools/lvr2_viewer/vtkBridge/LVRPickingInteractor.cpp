@@ -1649,10 +1649,10 @@ void LVRPickingInteractor::OnKeyDown()
     if(key == "Return" && m_labelingMode)
     {
 	LVRInteractorStylePolygonPick::OnKeyDown();
-        if (m_pickMode == PickLabel && !lassoToolSelected)
+        /*if (m_pickMode == PickLabel && !lassoToolSelected)
         {
     	    calculateSelection(true);
-        } 
+        } */
 	saveCurrentLabelSelection();
     }
     if(key == "x" && m_correspondenceMode)
@@ -1987,6 +1987,15 @@ void LVRPickingInteractor::newLabel(QTreeWidgetItem* item)
 
 void LVRPickingInteractor::saveCurrentLabelSelection()
 {
+
+    if (m_pickMode != PickLabel)
+    {
+        if (m_pickMode == PickLabel && !lassoToolSelected)
+        {
+    	    calculateSelection(true);
+        }
+	return;
+    }
     int count = 0;
     std::set<uint16_t> modifiedActors;
     for (int i = 0; i < m_selectedPoints.size(); i++)
