@@ -30,9 +30,6 @@ using std::make_unique;
 
 using namespace lvr2;
 
-using PointType = BaseVector<float>;
-using NormalType = Normal<float>;
-
 
 MeshBufferPtr genMesh(){
     MeshBufferPtr dst_mesh = MeshBufferPtr(new MeshBuffer);
@@ -70,8 +67,8 @@ MeshBufferPtr genMesh(){
     return dst_mesh;
 }
 
-void genRays(std::vector<PointType >& origins,
-std::vector<NormalType >& directions,
+void genRays(std::vector<Vector3f>& origins,
+std::vector<Vector3f>& directions,
 float scale = 1.0,
 bool flip_axis = false)
 {
@@ -186,9 +183,9 @@ bool flip_axis = false)
 
         if(flip_axis)
         {
-            float tmp = origins[i].y;
-            origins[i].y = origins[i].z;
-            origins[i].z = tmp;
+            float tmp = origins[i].y();
+            origins[i].y() = origins[i].z();
+            origins[i].z() = tmp;
         }
 
         directions.push_back({1.0,0.0,0.0});
@@ -196,16 +193,16 @@ bool flip_axis = false)
 
 }
 
-void test1(RaycasterBasePtr<PointType, NormalType> rc)
+void test1(RaycasterBasePtr rc)
 {
     std::cout << "Raycast Test 1 started" << std::endl;
 
-    PointType origin = {20.0,40.0,50.0};
-    NormalType ray = {1.0,0.0,0.0};
+    Vector3f origin = {20.0,40.0,50.0};
+    Vector3f ray = {1.0,0.0,0.0};
 
 
-    std::vector<PointType > origins;
-    std::vector<NormalType > rays;
+    std::vector<Vector3f> origins;
+    std::vector<Vector3f> rays;
 
     for(int i=0; i<100; i++)
     {
@@ -216,7 +213,7 @@ void test1(RaycasterBasePtr<PointType, NormalType> rc)
     
     std::cout << "TEST 1: one origin, one ray." << std::endl;
 
-    PointType intersection;
+    Vector3f intersection;
     bool success = rc->castRay(origin, ray, intersection);
     
 
@@ -230,7 +227,7 @@ void test1(RaycasterBasePtr<PointType, NormalType> rc)
 
     std::cout << "TEST 2: one origin, mulitple rays." << std::endl;
 
-    std::vector<PointType > intersections1, intersections2;
+    std::vector<Vector3f> intersections1, intersections2;
     std::vector<uint8_t> hits1, hits2;
 
     rc->castRays(origin, rays, intersections1, hits1);
@@ -261,7 +258,7 @@ void test1(RaycasterBasePtr<PointType, NormalType> rc)
 
     std::cout << "TEST 3: multiple origins, mulitple rays." << std::endl;
 
-    origins[99].y = -444;
+    origins[99].y() = -444;
 
     rc->castRays(origins, rays, intersections2, hits2);
 
@@ -290,14 +287,14 @@ void test1(RaycasterBasePtr<PointType, NormalType> rc)
     }
 }
 
-void test2(RaycasterBasePtr<PointType, NormalType> rc)
+void test2(RaycasterBasePtr rc)
 {
-    std::vector<PointType > origins;
-    std::vector<NormalType > rays;
+    std::vector<Vector3f> origins;
+    std::vector<Vector3f> rays;
 
     genRays(origins, rays, 10.0, true);
 
-    std::vector<PointType > intersections;
+    std::vector<Vector3f> intersections;
     std::vector<uint8_t> hits;
 
     rc->castRays(origins, rays, intersections, hits);
@@ -307,7 +304,7 @@ void test2(RaycasterBasePtr<PointType, NormalType> rc)
         return;
     }
 
-    std::vector<PointType > results;
+    std::vector<Vector3f> results;
 
     
 
@@ -325,9 +322,9 @@ void test2(RaycasterBasePtr<PointType, NormalType> rc)
 
     for(int i=0; i<results.size(); i++)
     {
-        points[i*3+0] = results[i].x;
-        points[i*3+1] = results[i].y;
-        points[i*3+2] = results[i].z;
+        points[i*3+0] = results[i].x();
+        points[i*3+1] = results[i].y();
+        points[i*3+2] = results[i].z();
     }
 
 
@@ -341,9 +338,9 @@ void test2(RaycasterBasePtr<PointType, NormalType> rc)
 
     for(int i=0; i<origins.size(); i++)
     {
-        origin_arr[i*3+0] = origins[i].x;
-        origin_arr[i*3+1] = origins[i].y;
-        origin_arr[i*3+2] = origins[i].z;
+        origin_arr[i*3+0] = origins[i].x();
+        origin_arr[i*3+1] = origins[i].y();
+        origin_arr[i*3+2] = origins[i].z();
     }
 
 
@@ -354,25 +351,25 @@ void test2(RaycasterBasePtr<PointType, NormalType> rc)
     
 }
 
-double test3(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
+double test3(RaycasterBasePtr rc, size_t num_rays=984543)
 {
     
     int u_max = int(3027.8730 * 2);
     int v_max = int(2031.0270 * 2);
 
-    PointType origin = {0.0,0.0,0.0};
-    std::vector<NormalType > rays(num_rays);
+    Vector3f origin = {0.0,0.0,0.0};
+    std::vector<Vector3f > rays(num_rays);
 
     for(int i=0; i<num_rays; i++)
     {
-        NormalType ray_world = {1.0,0.0,0.0};
-        rays[i].x = 1.0;
-        rays[i].y = 0.0;
-        rays[i].z = 0.0;
+        Vector3f ray_world = {1.0,0.0,0.0};
+        rays[i].x() = 1.0;
+        rays[i].y() = 0.0;
+        rays[i].z() = 0.0;
     }
 
     auto start = std::chrono::steady_clock::now();
-    std::vector<PointType > intersections;
+    std::vector<Vector3f > intersections;
     std::vector<uint8_t> hits;
 
     rc->castRays(origin, rays, intersections, hits);
@@ -386,13 +383,13 @@ float floatInRange(float LO, float HI)
     return LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
 }
 
-double realTest(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=984543)
+double realTest(RaycasterBasePtr rc, size_t num_rays=984543)
 {
     
     // MeshBufferPtr sphere = synthetic::genSphere(10, 10);
 
-    PointType origin = {0.0,0.0,0.0};
-    std::vector<NormalType > rays(num_rays);
+    Vector3f origin = {0.0,0.0,0.0};
+    std::vector<Vector3f > rays(num_rays);
 
     for(int i=0; i<num_rays; i++)
     {
@@ -405,13 +402,13 @@ double realTest(RaycasterBasePtr<PointType, NormalType> rc, size_t num_rays=9845
         y /= norm;
         z /= norm;
 
-        rays[i].x = x;
-        rays[i].y = y;
-        rays[i].z = z;
+        rays[i].x() = x;
+        rays[i].y() = y;
+        rays[i].z() = z;
     }
 
     auto start = std::chrono::steady_clock::now();
-    std::vector<PointType > intersections;
+    std::vector<Vector3f > intersections;
     std::vector<uint8_t> hits;
 
     rc->castRays(origin, rays, intersections, hits);
@@ -441,23 +438,23 @@ int main(int argc, char** argv)
         MeshBufferPtr buffer = synthetic::genSphere(50, 50);
 
         // create a raycaster
-        RaycasterBasePtr<PointType, NormalType> raycaster;
+        RaycasterBasePtr raycaster;
 
         // CPU test
         std::cout << "Testing BVHRaycaster" << std::endl;
-        raycaster.reset(new BVHRaycaster<PointType, NormalType>(buffer));
+        raycaster.reset(new BVHRaycaster(buffer));
         std::cout << realTest(raycaster, num_rays) << " ms" << std::endl;
 
         // GPU test
         #if defined LVR2_USE_OPENCL
         std::cout << "Testing CLRaycaster" << std::endl;
-        raycaster.reset(new CLRaycaster<PointType, NormalType>(buffer));
+        raycaster.reset(new CLRaycaster(buffer));
         std::cout << realTest(raycaster, num_rays) << " ms" << std::endl;
         #endif
 
         #if defined LVR2_USE_EMBREE
         std::cout << "Testing EmbreeRaycaster" << std::endl;
-        raycaster.reset(new EmbreeRaycaster<PointType, NormalType>(buffer));
+        raycaster.reset(new EmbreeRaycaster(buffer));
         std::cout << realTest(raycaster, num_rays) << " ms" << std::endl;
         #endif
     } else {
