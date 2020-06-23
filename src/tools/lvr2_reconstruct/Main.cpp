@@ -77,13 +77,13 @@
 
 #include "Options.hpp"
 
-#if defined CUDA_FOUND
+#if defined LVR2_USE_CUDA
     #define GPU_FOUND
 
     #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
 
     typedef lvr2::CudaSurface GpuSurface;
-#elif defined OPENCL_FOUND
+#elif defined LVR2_USE_OPENCL
     #define GPU_FOUND
 
     #include "lvr2/reconstruction/opencl/ClSurface.hpp"

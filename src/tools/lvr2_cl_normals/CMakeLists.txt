@@ -17,15 +17,12 @@ set(LVR2_CL_NORMAL_SRC
 #####################################################################################
 
 set(LVR2_CL_NORMAL_DEPS
-    lvr2
+    lvr2_static
     ${LVR2_LIB_DEPENDENCIES}
 )
-
-
 
 #####################################################################################
 # Add executable
 #####################################################################################
 add_executable(lvr2_cl_normals ${LVR2_CL_NORMAL_SRC})
-
 target_link_libraries(lvr2_cl_normals ${LVR2_CL_NORMAL_DEPS})
