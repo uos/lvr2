@@ -48,6 +48,7 @@ set(LVR2_SOURCES
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/ScanIOUtils.cpp
+    io/WaveformIO.cpp
     io/descriptions/ScanProjectSchemaSLAM.cpp
     io/descriptions/ScanProjectSchemaHyperlib.cpp
     io/descriptions/DirectoryKernel.cpp
