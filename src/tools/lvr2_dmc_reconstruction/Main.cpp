@@ -17,7 +17,9 @@
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/PointsetSurface.hpp"
-
+#include "lvr2/reconstruction/DMCReconstruction.hpp"
+#include "lvr2/reconstruction/FastReconstruction.hpp"
+#include "lvr2/config/lvropenmp.hpp"
 
 using namespace lvr2;
 
@@ -79,6 +81,12 @@ int main(int argc, char** argv)
 
     std::cout << options << std::endl;
 
+
+    // =======================================================================
+    // Set number of threads
+    // =======================================================================
+    OpenMPConfig::setNumThreads(options.getNumThreads());
+
     // try to parse the model
     ModelPtr model = ModelFactory::readModel(options.getInputFileName());
 
@@ -109,9 +117,18 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    
+    HalfEdgeMesh<Vec> mesh;
 
-    // saveMesh();
+    DMCReconstruction<Vec, FastBox<Vec>> dmc(surface, surface->getBoundingBox(), options.getMinVoxelSize());
+
+    dmc.getMesh(mesh);
+
+    // Finalize mesh
+    lvr2::SimpleFinalizer<Vec> finalize;
+    auto meshBuffer = finalize.apply(mesh);
+
+    auto m = ModelPtr(new Model(meshBuffer));
+    ModelFactory::saveModel(m, "triangle_mesh.ply");
 
     return 0;
 }

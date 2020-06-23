@@ -74,6 +74,8 @@ class Options : public BaseOption
 
     int getKi() const;
 
+    int getNumThreads() const;
+
     string getPcm() const;
 
   private:
@@ -88,6 +90,9 @@ class Options : public BaseOption
 
     /// The number of neighbors for normal interpolation
     int m_ki;
+
+    /// The number of threads to use
+    int m_numThreads;
 
     /// The used point cloud manager
     string m_pcm;

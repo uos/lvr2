@@ -47,6 +47,7 @@
 #include "Octree.hpp"
 #include "DualOctree.hpp"
 #include "Location.hh"
+#include "lvr2/reconstruction/FastReconstruction.hpp"
 
 namespace lvr2
 {
@@ -57,7 +58,7 @@ struct my_dummy
     int next = -1;
 };
 
-static int MAX_LEVEL = 5;
+static int MAX_LEVEL = 4;
 
 /**
  * @brief A surface reconstruction object that implements the standard

@@ -97,7 +97,6 @@ DMCReconstruction<BaseVecT, BoxT>::DMCReconstruction(
     cout << timestamp << "Creating Octree..." << endl;
     int n_levels = MAX_LEVEL;
     buildTree(*octree, n_levels);
-
 }
 
 template<typename BaseVecT, typename BoxT>
