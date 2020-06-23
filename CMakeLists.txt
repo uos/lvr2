@@ -143,14 +143,7 @@ find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 message(STATUS "Found Eigen3")
 
-#------------------------------------------------------------------------------
-# Searching for MPI
-#------------------------------------------------------------------------------
-find_package( MPI )
-if(MPI_FOUND)
-  include_directories(SYSTEM ${MPI_INCLUDE_PATH})
-  message(STATUS "Found MPI")
-endif(MPI_FOUND)
+
 
 #------------------------------------------------------------------------------
 # Searching for OpenCl
@@ -234,17 +227,27 @@ endif(NABO_FOUND)
 #------------------------------------------------------------------------------
 ## Searching for PCL
 #------------------------------------------------------------------------------
-
-find_package(PCL)
-if(PCL_FOUND)
-  include_directories(${PCL_INCLUDE_DIRS})
-  link_directories(${PCL_LIBRARY_DIRS})
-  add_definitions(${PCL_DEFINITIONS})
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_PCL)
-else(PCL_FOUND)
-  message( "-- No PCL found." )
-  message( "-- PCL related stuff will be disabled." )
-endif(PCL_FOUND)
+option(WITH_PCL "Compile with PCL support" OFF)
+if(WITH_PCL)
+    find_package(PCL)
+    if(PCL_FOUND)
+        # PCL only results in linker error due to internal mpi dependency
+        find_package(MPI)
+        if(MPI_FOUND)
+            message(STATUS "PCL and MPI found. Compile with PCL support.")
+            include_directories(${PCL_INCLUDE_DIRS})
+            link_directories(${PCL_LIBRARY_DIRS})
+            add_definitions(${PCL_DEFINITIONS})
+            list(APPEND LVR2_DEFINITIONS -DLVR2_USE_PCL)
+        else(MPI_FOUND)
+            message(WARNING "PCL found but no mpi. To use PCL support please install MPI")
+            unset(PCL_FOUND)
+        endif(MPI_FOUND)
+    else(PCL_FOUND)
+        message(STATUS "-- No PCL found." )
+        message(STATUS "-- PCL related stuff will be disabled." )
+    endif(PCL_FOUND)
+endif(WITH_PCL)
 
 #------------------------------------------------------------------------------
 # Searching CGAL
@@ -379,8 +382,6 @@ add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
-find_package(HDF5 REQUIRED C CXX HL)
-include_directories(${HDF5_INCLUDE_DIR})
 message(STATUS "Found HDF5")
 
 # yaml-cpp
@@ -543,31 +544,35 @@ set(LVR2_LIB_DEPENDENCIES
 #####################################################################################
 
 if(UNIX)
-set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} pthread)
+list(APPEND LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} pthread)
 endif(UNIX)
 
 if(PCL_FOUND)
-set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${PCL_LIBRARIES})
+list(APPEND LVR2_LIB_DEPENDENCIES ${PCL_LIBRARIES} ${MPI_CXX_LIBRARIES})
 endif(PCL_FOUND)
 
 if(WITH_FREENECT AND LIBFREENECT_FOUND)
-set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${LIBFREENECT_LIBRARIES})
+list(APPEND LVR2_LIB_DEPENDENCIES ${LIBFREENECT_LIBRARIES})
 endif()
 
 if(draco_FOUND)
-set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${draco_LIBRARIES})
+list(APPEND LVR2_LIB_DEPENDENCIES ${draco_LIBRARIES})
 endif(draco_FOUND)
 
 if(RiVLib_FOUND)
-  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${RiVLib_SCANIFC_LIBRARY})
+list(APPEND LVR2_LIB_DEPENDENCIES ${RiVLib_SCANIFC_LIBRARY})
 endif()
 
 if(OPENCL_FOUND)
-  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${OpenCL_LIBRARIES})
+list(APPEND LVR2_LIB_DEPENDENCIES ${OpenCL_LIBRARIES})
 endif()
 
 if(YAML_CPP_LIBRARIES)
-  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${YAML_CPP_LIBRARIES})
+list(APPEND LVR2_LIB_DEPENDENCIES ${YAML_CPP_LIBRARIES})
+endif()
+
+if(embree_FOUND)
+list(APPEND LVR2_LIB_DEPENDENCIES ${EMBREE_LIBRARY})
 endif()
 
 ###############################################################################
