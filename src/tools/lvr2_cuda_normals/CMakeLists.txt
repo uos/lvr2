@@ -12,12 +12,9 @@ set(LVR2_CUDA_NORMAL_SRC
 #####################################################################################
 
 set(LVR2_CUDA_NORMAL_DEPS
-    ${LVR2_LIB_DEPENDENCIES}
     lvr2_static
-    lvr2las_static
-    lvr2rply_static
-    lvr2slam6d_static
     lvr2cuda_static
+    ${LVR2_LIB_DEPENDENCIES}
 )
 
 #####################################################################################
@@ -27,5 +24,4 @@ set(LVR2_CUDA_NORMAL_DEPS
 ###### ADD YOUR CODE HERE #######
 
 add_executable(lvr2_cuda_normals ${LVR2_CUDA_NORMAL_SRC})
-
-target_link_libraries(lvr2_cuda_normals ${LVR2_CUDA_NORMAL_DEPS} ${CUDA_LIBRARIES})
+target_link_libraries(lvr2_cuda_normals ${LVR2_CUDA_NORMAL_DEPS})
