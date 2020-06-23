@@ -81,7 +81,7 @@ public:
     DMCReconstruction(
         PointsetSurfacePtr<BaseVecT> surface,
         BoundingBox<BaseVecT> bb,
-        bool extrude);
+        float minVoxelSize);
 
     /**
      * @brief Destructor.
@@ -166,9 +166,6 @@ protected:
 
     // Center of the bounding box.
     BaseVecT m_boundingBoxCenter;
-
-    // Status of the extrusion.
-    bool m_extrude;
 
     // Reconstructiontype
     string m_reconstructionType;
