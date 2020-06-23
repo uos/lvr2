@@ -39,7 +39,7 @@
 
 
 #include "lvr2/io/MeshBuffer.hpp"
-#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/geometry/BVH.hpp"
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
 
@@ -50,13 +50,10 @@
 namespace lvr2
 {
 
-
-
 /**
  *  @brief BVHRaycaster: CPU version of BVH Raycasting: WIP
  */
-template<typename PointT, typename NormalT>
-class BVHRaycaster : public RaycasterBase<PointT, NormalT > {
+class BVHRaycaster : public RaycasterBase {
 public:
     /**
      * @brief Constructor: Stores mesh as member
@@ -64,22 +61,22 @@ public:
     BVHRaycaster(const MeshBufferPtr mesh);
 
     bool castRay(
-        const PointT& origin,
-        const NormalT& direction,
-        PointT& intersection
+        const Vector3f& origin,
+        const Vector3f& direction,
+        Vector3f& intersection
     );
 
     void castRays(
-        const PointT& origin,
-        const std::vector<NormalT >& directions,
-        std::vector<PointT >& intersections,
+        const Vector3f& origin,
+        const std::vector<Vector3f >& directions,
+        std::vector<Vector3f >& intersections,
         std::vector<uint8_t>& hits
     );
 
     void castRays(
-        const std::vector<PointT >& origins,
-        const std::vector<NormalT >& directions,
-        std::vector<PointT >& intersections,
+        const std::vector<Vector3f>& origins,
+        const std::vector<Vector3f>& directions,
+        std::vector<Vector3f>& intersections,
         std::vector<uint8_t>& hits
     );
 
@@ -90,9 +87,9 @@ public:
      */
 
     struct Ray {
-        NormalT dir;
-        NormalT invDir;
-        BaseVector<int> rayDirSign;
+        Vector3f dir;
+        Vector3f invDir;
+        Vector3i rayDirSign;
     };
 
 
@@ -103,13 +100,13 @@ public:
     struct TriangleIntersectionResult {
         bool hit;
         unsigned int pBestTriId;
-        PointT pointHit;
+        Vector3f pointHit;
         float hitDist;
     };
     
 
 protected:
-    BVHTree<PointT> m_bvh;
+    BVHTree<BaseVector<float> > m_bvh;
 
 private:
 
@@ -120,9 +117,9 @@ private:
      * @param b Second vector
      * @return The square distance
      */
-    inline float distanceSquare(const PointT& a, const PointT& b) const
+    inline float distanceSquare(const Vector3f& a, const Vector3f& b) const
     {
-        return fabs((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
+        return (a - b).squaredNorm();
     }
 
     /**
@@ -132,7 +129,7 @@ private:
      * @param boxPtr    A pointer to the box data
      * @return          A boolean indicating whether the ray hits the box
      */
-    bool rayIntersectsBox(PointT origin, Ray ray, const float* boxPtr);
+    bool rayIntersectsBox(Vector3f origin, Ray ray, const float* boxPtr);
 
     /**
      * @brief Calculates the closest intersection of a raycast into a scene of triangles, given a bounding volume hierarchy
@@ -149,7 +146,7 @@ private:
      */
     TriangleIntersectionResult intersectTrianglesBVH(
         const unsigned int* clBVHindicesOrTriLists,
-        PointT origin,
+        Vector3f origin,
         Ray ray,
         const float* clBVHlimits,
         const float* clTriangleIntersectionData,
@@ -238,7 +235,5 @@ private:
 };
 
 } // namespace lvr2
-
-#include "lvr2/algorithm/raycasting/BVHRaycaster.tcc"
 
 #endif // LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER

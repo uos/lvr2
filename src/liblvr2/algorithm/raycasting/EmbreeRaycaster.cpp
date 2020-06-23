@@ -1,45 +1,47 @@
+#include "lvr2/algorithm/raycasting/EmbreeRaycaster.hpp"
+
 #include <algorithm>
 #include <iterator>
 
 namespace lvr2 {
 
-template <typename PointT, typename NormalT>
-EmbreeRaycaster<PointT, NormalT>::EmbreeRaycaster(const MeshBufferPtr mesh)
-:RaycasterBase<PointT, NormalT>(mesh)
+void EmbreeErrorFunction(void* userPtr, enum RTCError error, const char* str)
+{
+    printf("error %d: %s\n", error, str);
+}
+
+EmbreeRaycaster::EmbreeRaycaster(const MeshBufferPtr mesh)
+:RaycasterBase(mesh)
 {
     m_device = initializeDevice();
     m_scene = initializeScene(m_device, mesh);
     rtcInitIntersectContext(&m_context);
 }
 
-
-template <typename PointT, typename NormalT>
-EmbreeRaycaster<PointT, NormalT>::~EmbreeRaycaster()
+EmbreeRaycaster::~EmbreeRaycaster()
 {
     rtcReleaseScene(m_scene);
     rtcReleaseDevice(m_device);
 }
 
-template <typename PointT, typename NormalT>
-bool EmbreeRaycaster<PointT, NormalT>::castRay(
-    const PointT& origin,
-    const NormalT& direction,
-    PointT& intersection)
+bool EmbreeRaycaster::castRay(
+    const Vector3f& origin,
+    const Vector3f& direction,
+    Vector3f& intersection)
 {
     RTCRayHit rayhit = lvr2embree(origin, direction);
     rtcIntersect1(m_scene, &m_context, &rayhit);
 
-    intersection.x = rayhit.ray.org_x + rayhit.ray.tfar * rayhit.ray.dir_x;
-    intersection.y = rayhit.ray.org_y + rayhit.ray.tfar * rayhit.ray.dir_y;
-    intersection.z = rayhit.ray.org_z + rayhit.ray.tfar * rayhit.ray.dir_z;
+    intersection.x() = rayhit.ray.org_x + rayhit.ray.tfar * rayhit.ray.dir_x;
+    intersection.y() = rayhit.ray.org_y + rayhit.ray.tfar * rayhit.ray.dir_y;
+    intersection.z() = rayhit.ray.org_z + rayhit.ray.tfar * rayhit.ray.dir_z;
     return (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID);
 }
 
-template <typename PointT, typename NormalT>
-void EmbreeRaycaster<PointT, NormalT>::castRays(
-    const PointT& origin,
-    const std::vector<NormalT>& directions,
-    std::vector<PointT >& intersections,
+void EmbreeRaycaster::castRays(
+    const Vector3f& origin,
+    const std::vector<Vector3f>& directions,
+    std::vector<Vector3f>& intersections,
     std::vector<uint8_t>& hits)
 {
     intersections.resize(directions.size());
@@ -52,14 +54,12 @@ void EmbreeRaycaster<PointT, NormalT>::castRays(
     }
 }
 
-template <typename PointT, typename NormalT>
-void EmbreeRaycaster<PointT, NormalT>::castRays(
-    const std::vector<PointT >& origins,
-    const std::vector<NormalT >& directions,
-    std::vector<PointT >& intersections,
+void EmbreeRaycaster::castRays(
+    const std::vector<Vector3f>& origins,
+    const std::vector<Vector3f>& directions,
+    std::vector<Vector3f>& intersections,
     std::vector<uint8_t>& hits)
 {
-    
     intersections.resize(directions.size());
     hits.resize(directions.size(), false);
 
@@ -71,9 +71,7 @@ void EmbreeRaycaster<PointT, NormalT>::castRays(
 }
 
 // PROTECTED
-
-template <typename PointT, typename NormalT>
-RTCDevice EmbreeRaycaster<PointT, NormalT>::initializeDevice()
+RTCDevice EmbreeRaycaster::initializeDevice()
 {
     RTCDevice device = rtcNewDevice(NULL);
 
@@ -82,12 +80,11 @@ RTCDevice EmbreeRaycaster<PointT, NormalT>::initializeDevice()
         std::cerr << "error " << rtcGetDeviceError(NULL) << ": cannot create device" << std::endl;
     }
 
-    rtcSetDeviceErrorFunction(device, errorFunction, NULL);
+    rtcSetDeviceErrorFunction(device, EmbreeErrorFunction, NULL);
     return device;
 }
 
-template <typename PointT, typename NormalT>
-RTCScene EmbreeRaycaster<PointT, NormalT>::initializeScene(
+RTCScene EmbreeRaycaster::initializeScene(
     RTCDevice device,
     const MeshBufferPtr mesh)
 {
