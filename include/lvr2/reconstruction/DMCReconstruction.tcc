@@ -43,7 +43,7 @@ template<typename BaseVecT, typename BoxT>
 DMCReconstruction<BaseVecT, BoxT>::DMCReconstruction(
         PointsetSurfacePtr<BaseVecT> surface,
         BoundingBox<BaseVecT> bb,
-        bool extrude) : PointsetMeshGenerator<BaseVecT>(surface)
+        float minVoxelSize) : PointsetMeshGenerator<BaseVecT>(surface)
 {
 
     bb_min = bb.getMin();
@@ -59,6 +59,7 @@ DMCReconstruction<BaseVecT, BoxT>::DMCReconstruction(
         bb_size[a] = bb_max[a] - bb_min[a];
     }
 
+    m_voxelSize = minVoxelSize;
     m_boundingBoxCenter = bb.getCentroid();
     m_maxSize = m_voxelSize;
 
@@ -93,10 +94,6 @@ DMCReconstruction<BaseVecT, BoxT>::DMCReconstruction(
     m_leavesExtr = 0;
     m_faces = 0;
 
-    if (!m_extrude)
-    {
-        cout << timestamp << "Octree is not extruded." << endl;
-    }
     cout << timestamp << "Creating Octree..." << endl;
     int n_levels = MAX_LEVEL;
     buildTree(*octree, n_levels);
