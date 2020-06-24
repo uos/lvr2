@@ -377,6 +377,7 @@ private:
     QAction*                            m_actionAddLabelClass;
     QAction*                            m_actionAddNewInstance;
     QAction*                            m_actionRemoveInstance;
+    QAction*                            m_actionShowWaveform;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 

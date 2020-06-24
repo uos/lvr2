@@ -58,9 +58,11 @@ class WaveformIO : public BaseIO
         /**
          * \brief Default constructor.
          **/
-        WaveformIO() {};
-
-
+        WaveformIO() {
+            setlocale (LC_ALL, "C");
+            m_model.reset();
+	}
+	~WaveformIO() {};
         virtual ModelPtr read( std::string filename);
 
         virtual void save( string filename);

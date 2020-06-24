@@ -69,6 +69,8 @@ ModelPtr WaveformIO::read(std::string filename)
     uint32_t sampleCount;
     uint16_t sampleValue;
     int counter = 0;
+    int maxSampleCount = 0;
+    std::vector<std::vector<uint16_t>> waveforms;
     while(in.good())
     {
 	//read x,y,z
@@ -90,28 +92,58 @@ ModelPtr WaveformIO::read(std::string filename)
 	//get sample count of waveform
     	in.read(uint32Buffer, sizeof(uint32_t));
     	sampleCount = *(uint32_t *)uint32Buffer;
+        std::vector<uint16_t> waveform;
+        waveform.resize(sampleCount);
+        if(sampleCount > maxSampleCount)
+        {
+            maxSampleCount = sampleCount;
+        }
 	for (int i = 0; i < sampleCount; i++)
 	{
     	    in.read(uint16Buffer, sizeof(uint16_t));
-	    //TODO store waveform data
+	    waveform[i] = *(uint16_t *)uint16Buffer;
 	}
+	waveforms.push_back(waveform);
 	counter++;
     }
 
-    std::cout << points.size() << "<-------" << sampleCount<< std::endl; 
     floatArr outPoints;
-    outPoints = floatArr( new float[ points.size() * 3 ] );
-    for (int i = 0; i < points.size() -1; i++)
+    outPoints = floatArr( new float[ (points.size() -1) * 3 ] );
+    for (int i = 0; i < points.size() -1 ; i++)
     {
         outPoints[3 * i] = points[i][0];
         outPoints[(3 * i) + 1] = points[i][1];
         outPoints[(3 * i) + 2] = points[i][2];
+
     }
 
-    model->m_pointCloud->setPointArray(outPoints, (points.size() - 1)* 3);
+    //TODO A better way is needed
+    boost::shared_array<uint16_t> waveformData(new uint16_t[maxSampleCount * (points.size() - 1)]);
+    for (int i = 0; i < points.size() -1 ; i++)
+    {
+	for (int j = 0; j < maxSampleCount; j++)
+	{
+	    if (j < waveforms[i].size() && waveforms[i].size() > 0)
+	    {
+        	waveformData[(maxSampleCount * i) + j] = waveforms[i][j];
+	    }
+	    else
+	    {
+        	waveformData[(maxSampleCount * i) + j] = 0;
+	    }
+	}
 
-    this->m_model = model;
-    return model;
+    }
+    Channel<uint16_t>::Ptr waveformChannel(new Channel<uint16_t>(points.size() - 1, maxSampleCount, waveformData));
+    
+
+    PointBufferPtr pc;
+    pc = PointBufferPtr( new PointBuffer );
+    pc->setPointArray(outPoints, (points.size() -1));
+    pc->addChannel<uint16_t>(waveformChannel, "waveform");
+    ModelPtr outModel(new Model(pc));
+    this->m_model = outModel;
+    return outModel;
 }
 
 

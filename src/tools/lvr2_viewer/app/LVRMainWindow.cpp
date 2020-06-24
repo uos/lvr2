@@ -131,6 +131,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionAddLabelClass = new QAction("Add label class", this);
     m_actionAddNewInstance = new QAction("Add new instance", this);
     m_actionRemoveInstance = new QAction("Remove instance", this);
+    m_actionShowWaveform = new QAction("Show Waveform", this);
 
     m_actionShowImage = new QAction("Show Image", this);
     m_actionSetViewToCamera = new QAction("Set view to camera", this);
@@ -143,6 +144,7 @@ LVRMainWindow::LVRMainWindow()
     m_labelTreeParentItemContextMenu->addAction(m_actionAddNewInstance);
     m_labelTreeChildItemContextMenu = new QMenu();
     m_labelTreeChildItemContextMenu->addAction(m_actionRemoveInstance);
+    m_labelTreeChildItemContextMenu->addAction(m_actionShowWaveform);
 
     m_treeParentItemContextMenu = new QMenu;
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
@@ -945,7 +947,49 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
                 //update the Count avoidign the standart "signal" case to avoid race conditions
                 topLevelItem->setText(LABELED_POINT_COLUMN, QString::number(topLevelItem->text(LABELED_POINT_COLUMN).toInt() - item->text(LABELED_POINT_COLUMN).toInt()));
                 topLevelItem->removeChild(item);
-            }
+            } else if(selected == m_actionShowWaveform)
+	    {
+                LVRModelItem* lvrmodel = getModelItem(treeWidget->topLevelItem(0));
+		ModelBridgePtr bridge = lvrmodel->getModelBridge();
+		PointBufferBridgePtr pointBridge = bridge->getPointBridge();
+		PointBufferPtr pointBuffer = pointBridge->getPointBuffer();
+		Channel<uint16_t>::Optional opt = pointBuffer->getChannel<uint16_t>("waveform");
+		if (opt)
+		{
+		    size_t n = opt->numElements();
+		    size_t width = opt->width();
+		    boost::shared_array<uint16_t> waveforms = opt->dataPtr();
+
+		    //get Selected Ids
+		    std::vector<int> labelID;
+                    std::vector<uint16_t> labeledPoints = m_pickingInteractor->getLabeles();
+                    int index = item->data(LABEL_ID_COLUMN, 0).toInt();
+
+		    for (int i = 0; i < labeledPoints.size(); i++)
+		    {
+                        if (index == labeledPoints[i])
+			{
+                            labelID.push_back(i);
+			}
+		    }
+
+		    std::vector<int> combinedWaveform;
+		    combinedWaveform.resize(width);
+		    for (auto id : labelID)
+		    {
+			for (int i = 0; i < width; i++)
+			{
+			    combinedWaveform[i] += waveforms[(id * width) + i];
+			}
+		    }
+		    
+		    for(auto sample : combinedWaveform)
+		    {
+			    std::cout << sample/width << "   ";
+		    }
+		    std::cout << std::endl;
+		}
+	    }
             return;
 
         }
@@ -1127,7 +1171,6 @@ void LVRMainWindow::renameModelItem()
 
 LVRModelItem* LVRMainWindow::loadModelItem(QString name)
 {
-    std::cout << "model loaded" << std::endl;
     // Load model and generate vtk representation
     ModelPtr model = ModelFactory::readModel(name.toStdString());
     ModelBridgePtr bridge(new LVRModelBridge(model));
