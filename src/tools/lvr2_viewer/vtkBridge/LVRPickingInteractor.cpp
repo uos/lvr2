@@ -1802,6 +1802,15 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
       // Forward events
       LVRInteractorStylePolygonPick::OnLeftButtonUp();
+      if(!m_labelEditability[m_selectedLabel])
+      {  QMessageBox warning;
+        warning.setText("The Selectled Label is set to not 'EDitable'. No Changes will be commited");
+        warning.setStandardButtons(QMessageBox::Ok);
+        warning.setIcon(QMessageBox::Warning);
+        warning.exec();
+
+          return;
+      }
 
       if (!m_points)
       {

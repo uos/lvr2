@@ -992,7 +992,6 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
 		    }
 		    floatArr plotData(new float[width]);
 	            LVRPlotter* plotter =new LVRPlotter;
-		    std::cout << "Combined Waveform size " << combinedWaveform.size() << std::endl;
 		    for(int i = 0; i < combinedWaveform.size(); i++)
 		    {
 	                plotData[i] = (combinedWaveform[i] / labelID.size());
