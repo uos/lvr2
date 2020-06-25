@@ -115,6 +115,7 @@ public:
     vtkSmartPointer<vtkPolyData> getPoints();
 
     std::vector<uint16_t>& getLabeles();
+    void setEditability(uint16_t labelId, bool editable);
 public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
@@ -267,6 +268,7 @@ private:
     ShooterMode                     m_shooterMode;
 
     std::map<uint16_t, QColor>	    m_labelColors;
+    std::map<uint16_t, bool>	    m_labelEditability;
 
 
 };

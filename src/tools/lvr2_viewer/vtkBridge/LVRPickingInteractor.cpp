@@ -1856,7 +1856,10 @@ void LVRPickingInteractor::calculateSelection(bool select)
 	displayCoord = coordinate->GetComputedViewportValue(this->CurrentRenderer);
 	if (isInside(&polygonPoints, displayCoord[0], displayCoord[1]))
 	{
-		selectedPolyPoints.push_back(ids->GetValue(i));
+	    if(m_labelEditability[m_pointLabels[ids->GetValue(i)]])
+	    {
+	        selectedPolyPoints.push_back(ids->GetValue(i));
+	    }
 	}
       }
 
@@ -1923,18 +1926,20 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
 void LVRPickingInteractor::newLabel(QTreeWidgetItem* item)
 {
-    m_labelColors[item->data(3,0).toInt()] =  item->data(3,1).value<QColor>();
+    int labelId = item->data(3,0).toInt(); 
+    m_labelColors[labelId] =  item->data(3,1).value<QColor>();
+    m_labelEditability[labelId] = true;
     if(m_labelColors.size() == 1)
     {
             //first Label set as the choosen label
-            m_selectedLabel = item->data(3,0).toInt();
+            m_selectedLabel = labelId;
     }
     if(m_labelActors.find(item->data(3,0).toInt()) != m_labelActors.end())
     {
         //Instance known just change color
         int r,g,b;
-        m_labelColors[item->data(3,0).toInt()].getRgb(&r, &g, &b);
-        m_labelActors[item->data(3,0).toInt()]->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
+        m_labelColors[labelId].getRgb(&r, &g, &b);
+        m_labelActors[labelId]->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
         this->GetInteractor()->GetRenderWindow()->Render();
         this->HighlightProp(NULL);
     }
@@ -2262,4 +2267,11 @@ void LVRPickingInteractor::removeLabel(const int& id)
 
 }
 
+void LVRPickingInteractor::setEditability(uint16_t labelId, bool editable)
+{
+    if (m_labelEditability.find(labelId) != m_labelEditability.end())
+    {
+        m_labelEditability[labelId] = editable;
+    }
+}
 } /* namespace lvr2 */

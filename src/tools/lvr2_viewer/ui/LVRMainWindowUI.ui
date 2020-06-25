@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1305</width>
+    <width>1198</width>
     <height>1006</height>
    </rect>
   </property>
@@ -612,7 +612,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1305</width>
+     <width>1198</width>
      <height>22</height>
     </rect>
    </property>
@@ -1170,6 +1170,11 @@
          <string>Id</string>
         </property>
        </column>
+       <column>
+        <property name="text">
+         <string>Editable</string>
+        </property>
+       </column>
       </widget>
      </item>
      <item row="1" column="1">
@@ -1186,6 +1191,13 @@
        </item>
        <item>
         <widget class="QComboBox" name="selectedInstanceComboBox"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="addLabelClassButton">
+         <property name="text">
+          <string>Add Label Class</string>
+         </property>
+        </widget>
        </item>
        <item>
         <spacer name="horizontalSpacer_5">

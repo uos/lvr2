@@ -351,6 +351,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionUnloadPointCloudData, SIGNAL(triggered()), this, SLOT(unloadPointCloudData()));
 
     QObject::connect(m_actionAddLabelClass, SIGNAL(triggered()), this, SLOT(addLabelClass()));
+    QObject::connect(this->addLabelClassButton, SIGNAL(pressed()), this, SLOT(addLabelClass()));
 
     QObject::connect(selectedInstanceComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(comboBoxIndexChanged(int)));
 
@@ -947,6 +948,13 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
                 //update the Count avoidign the standart "signal" case to avoid race conditions
                 topLevelItem->setText(LABELED_POINT_COLUMN, QString::number(topLevelItem->text(LABELED_POINT_COLUMN).toInt() - item->text(LABELED_POINT_COLUMN).toInt()));
                 topLevelItem->removeChild(item);
+		//remove the ComboBox entry
+		int comboBoxPos = selectedInstanceComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
+                if (comboBoxPos >= 0)
+                { 
+                    selectedInstanceComboBox->removeItem(comboBoxPos);
+                }
+
             } else if(selected == m_actionShowWaveform)
 	    {
                 LVRModelItem* lvrmodel = getModelItem(treeWidget->topLevelItem(0));
@@ -982,12 +990,21 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
 			    combinedWaveform[i] += waveforms[(id * width) + i];
 			}
 		    }
-		    
-		    for(auto sample : combinedWaveform)
+		    floatArr plotData(new float[width]);
+	            LVRPlotter* plotter =new LVRPlotter;
+		    std::cout << "Combined Waveform size " << combinedWaveform.size() << std::endl;
+		    for(int i = 0; i < combinedWaveform.size(); i++)
 		    {
-			    std::cout << sample/width << "   ";
+	                plotData[i] = (combinedWaveform[i] / labelID.size());
 		    }
-		    std::cout << std::endl;
+                    plotter->setPoints(plotData, width);
+                    plotter->setXRange(0, combinedWaveform.size());
+		    QDialog window(this);
+		    QHBoxLayout *HLayout = new QHBoxLayout(&window);
+		    HLayout->addWidget(plotter);
+		    window.setLayout(HLayout);
+		    window.exec();
+
 		}
 	    }
             return;
@@ -1029,6 +1046,7 @@ void LVRMainWindow::addLabelClass()
         item->setText(LABELED_POINT_COLUMN, QString::number(0));
         item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
         item->setData(LABEL_ID_COLUMN, 1, QColor(Qt::red));
+        item->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
         //item->setFlags(item->flags() & ~ Qt::ItemIsSelectable);
 
         //Setting up new child item
@@ -1038,6 +1056,7 @@ void LVRMainWindow::addLabelClass()
         childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
         childItem->setData(LABEL_ID_COLUMN, 1, QColor(Qt::red));
         childItem->setData(LABEL_ID_COLUMN, 0, 0);
+        childItem->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
         item->addChild(childItem);
         labelTreeWidget->addTopLevelItem(item);    
         //Added first Top Level item enable instance button
@@ -1068,6 +1087,7 @@ void LVRMainWindow::addLabelClass()
     item->setText(LABELED_POINT_COLUMN, QString::number(0));
     item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
     item->setData(LABEL_ID_COLUMN, 1, label_color);
+    item->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
     //item->setFlags(item->flags() & ~ Qt::ItemIsSelectable);
 
     //Setting up new child item
@@ -1077,6 +1097,7 @@ void LVRMainWindow::addLabelClass()
     childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
     childItem->setData(LABEL_ID_COLUMN, 1, label_color);
     childItem->setData(LABEL_ID_COLUMN, 0, id);
+    childItem->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
     item->addChild(childItem);
     m_selectedLabelItem = childItem;
     labelTreeWidget->addTopLevelItem(item);    
@@ -2818,29 +2839,32 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
 
 void LVRMainWindow::visibilityChanged(QTreeWidgetItem* changedItem, int column)
 {
-    if(column != LABEL_VISIBLE_COLUMN)
+    if (column == LABEL_VISIBLE_COLUMN || column == LABEL_EDITABLE_COLUMN)
     {
-        return;
-    }
+        //check if Instance or whole label changed
+	if (changedItem->parent())
+	{
+	    if(column == LABEL_VISIBLE_COLUMN)
+	    {
+	    	//parent exists item is an instance
+	    	Q_EMIT(hidePoints(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_VISIBLE_COLUMN)));
+	    } 
+	    else if (column == LABEL_EDITABLE_COLUMN)
+	    {
+		m_pickingInteractor->setEditability(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_EDITABLE_COLUMN));
+	    }
+	} else
+	{
+		//Check if unlabeled item
+		for (int i = 0; i < changedItem->childCount(); i++)
+	    {
+	        QTreeWidgetItem* childItem = changedItem->child(i);
 
-    //check if Instance or whole label changed
-    if (changedItem->parent())
-    {
-        //parent exists item is an instance
-        Q_EMIT(hidePoints(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_VISIBLE_COLUMN)));
-    } else
-    {
-        //Check if unlabeled item
-        for (int i = 0; i < changedItem->childCount(); i++)
-        {
-            QTreeWidgetItem* childItem = changedItem->child(i);
-
-            //sets child elements checkbox on toplevel box value if valuechanged a singal will be emitted and handeled
-            childItem->setCheckState(LABEL_VISIBLE_COLUMN, changedItem->checkState(LABEL_VISIBLE_COLUMN));
+	        //sets child elements checkbox on toplevel box value if valuechanged a singal will be emitted and handeled
+	        childItem->setCheckState(column, changedItem->checkState(column));
+	    }
         }
     }
-
-
 }
 
 void LVRMainWindow::addNewInstance(QTreeWidgetItem * selectedTopLevelItem)
@@ -2872,6 +2896,7 @@ void LVRMainWindow::addNewInstance(QTreeWidgetItem * selectedTopLevelItem)
     childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
     childItem->setData(LABEL_ID_COLUMN, 1, label_color);
     childItem->setData(LABEL_ID_COLUMN, 0, id);
+    childItem->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
     selectedTopLevelItem->addChild(childItem);
 
 
