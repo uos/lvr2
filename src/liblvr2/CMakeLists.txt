@@ -66,7 +66,6 @@ set(LVR2_SOURCES
     algorithm/ChunkHashGrid.cpp
     algorithm/raycasting/RaycasterBase.cpp
     algorithm/raycasting/BVHRaycaster.cpp
-    algorithm/fapm/FeatureProjector.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp
