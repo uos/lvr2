@@ -126,8 +126,13 @@ endif()
 if(OPENCL_FOUND)
 list(APPEND LVR2_SOURCES
     reconstruction/opencl/ClSurface.cpp
-    algorithm/raycasting/CLRaycaster.cpp
 )
+    # message(STATUS "!!!! CL VERSION: ${OpenCL_VERSION_MAJOR}")
+    # check this on not nvidia cabable systems
+    # list(APPEND LVR2_SOURCES
+    #     algorithm/raycasting/CLRaycaster.cpp
+    # )
+    
 endif()
 
 #####################################################################################
