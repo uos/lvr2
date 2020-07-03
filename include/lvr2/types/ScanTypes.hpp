@@ -14,7 +14,7 @@
 
 #include <memory>
 #include <vector>
-
+#include<string>
 namespace lvr2
 {
 
@@ -353,8 +353,30 @@ struct ScanProjectEditMark
     /// True if scan pose has been changed, one bool for each scan position
     std::vector<bool> changed;
 };
-
 using ScanProjectEditMarkPtr = std::shared_ptr<ScanProjectEditMark>;
+/*****************************************************************************
+ * @brief   Struct to represent a LabelClass
+ *****************************************************************************/
+struct LabelInstance
+{
+    std::string instanceName;
+
+    std::vector<int> color;
+
+    std::vector<int> labeledIDs;
+};
+using LabelInstancePtr = std::shared_ptr<LabelInstance>;
+/*****************************************************************************
+ * @brief   Struct to represent a LabelClass
+ *****************************************************************************/
+struct LabelClass
+{
+    std::string className;
+
+    std::vector<LabelInstancePtr> instances;
+};
+using LabelClassPtr = std::shared_ptr<LabelClass>;
+
 
 } // namespace lvr2
 

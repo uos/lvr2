@@ -34,6 +34,7 @@ set(LVR2_SOURCES
     io/Progress.cpp
     io/MeshBuffer.cpp
     io/LineReader.cpp
+    io/LabelBuffer.cpp
 #    io/KinectGrabber.cpp
     io/DatIO.cpp
     io/LasIO.cpp

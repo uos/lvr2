@@ -65,12 +65,17 @@ ModelPtr WaveformIO::read(std::string filename)
     char floatBuffer[sizeof(float)];
     char uint16Buffer[sizeof(uint16_t)];
     char uint32Buffer[sizeof(uint32_t)];
-    float x, y, z, time;
+    float x, y, z, time, amplitude, reflectance, deviation, backgroundRadiation;
     uint32_t sampleCount;
     uint16_t sampleValue;
     int counter = 0;
     int maxSampleCount = 0;
     std::vector<std::vector<uint16_t>> waveforms;
+    std::vector<float> amplitudeVector;
+    std::vector<float> reflectanceVector;
+    std::vector<float> deviationVector;
+    std::vector<float> backgroundRadiationVector;
+
     while(in.good())
     {
 	//read x,y,z
@@ -82,11 +87,45 @@ ModelPtr WaveformIO::read(std::string filename)
     	z = *(float *)floatBuffer;
 
 	std::array<float, 3> tmp = {x,y,z};
+	if((counter % 100) == 0)
+	{
 	points.push_back(tmp);
-        
+	}
 	//get Time
+	//in.read(floatBuffer, sizeof(float));
+    	//time = *(float *)floatBuffer;
+
+	//get amplitude
 	in.read(floatBuffer, sizeof(float));
-    	time = *(float *)floatBuffer;
+    	amplitude = *(float *)floatBuffer;
+	if((counter % 100) == 0)
+	{
+	    amplitudeVector.push_back(amplitude);
+	}
+
+	//get reflectance
+	in.read(floatBuffer, sizeof(float));
+    	reflectance = *(float *)floatBuffer;
+	if((counter % 100) == 0)
+	{
+	    reflectanceVector.push_back(reflectance);
+	}
+
+	//get deviation
+	in.read(floatBuffer, sizeof(float));
+    	deviation = *(float *)floatBuffer;
+	if((counter % 100) == 0)
+	{
+	    deviationVector.push_back(deviation);
+	}
+
+	//get backgroudn radiation
+	in.read(floatBuffer, sizeof(float));
+    	backgroundRadiation = *(float *)floatBuffer;
+	if((counter % 100) == 0)
+	{
+	    backgroundRadiationVector.push_back(backgroundRadiation);
+	}
 
 	//read waveforms
 	//get sample count of waveform
@@ -94,7 +133,7 @@ ModelPtr WaveformIO::read(std::string filename)
     	sampleCount = *(uint32_t *)uint32Buffer;
         std::vector<uint16_t> waveform;
         waveform.resize(sampleCount);
-        if(sampleCount > maxSampleCount)
+        if(sampleCount > maxSampleCount && ((counter % 100) == 0))
         {
             maxSampleCount = sampleCount;
         }
@@ -103,7 +142,9 @@ ModelPtr WaveformIO::read(std::string filename)
     	    in.read(uint16Buffer, sizeof(uint16_t));
 	    waveform[i] = *(uint16_t *)uint16Buffer;
 	}
-	waveforms.push_back(waveform);
+	if((counter % 100) == 0)
+	{	waveforms.push_back(waveform);
+	}
 	counter++;
     }
 
@@ -118,8 +159,9 @@ ModelPtr WaveformIO::read(std::string filename)
     }
 
     //TODO A better way is needed
-    boost::shared_array<uint16_t> waveformData(new uint16_t[maxSampleCount * (points.size() - 1)]);
-    for (int i = 0; i < points.size() -1 ; i++)
+    long totalSize = maxSampleCount * (points.size() -1);
+    boost::shared_array<uint16_t> waveformData(new uint16_t[totalSize]);
+    for (long i = 0; i < points.size() -1 ; i++)
     {
 	for (int j = 0; j < maxSampleCount; j++)
 	{
@@ -134,13 +176,31 @@ ModelPtr WaveformIO::read(std::string filename)
 	}
 
     }
+
+
     Channel<uint16_t>::Ptr waveformChannel(new Channel<uint16_t>(points.size() - 1, maxSampleCount, waveformData));
-    
+    floatArr amplitudeData = floatArr(new float[(points.size() )]);
+    std::memcpy(amplitudeData.get(), amplitudeVector.data(), amplitudeVector.size() * sizeof(float));
+    Channel<float>::Ptr amplitudeChannel(new Channel<float>(amplitudeVector.size(), 1, amplitudeData));
+    floatArr reflectanceData = floatArr(new float[(points.size())]);
+    std::memcpy(reflectanceData.get(), reflectanceVector.data(), reflectanceVector.size() * sizeof(float));
+    Channel<float>::Ptr reflectanceChannel(new Channel<float>(reflectanceVector.size(), 1, reflectanceData));
+    floatArr deviationData = floatArr(new float[(points.size() )]);
+    std::memcpy(deviationData.get(), deviationVector.data(), deviationVector.size() * sizeof(float));
+    Channel<float>::Ptr deviationChannel(new Channel<float>(deviationVector.size(), 1, deviationData));
+    floatArr backgroundRadiationData = floatArr(new float[(points.size())]);
+    std::memcpy(backgroundRadiationData.get(), backgroundRadiationVector.data(), backgroundRadiationVector.size() * sizeof(float));
+    Channel<float>::Ptr backgroundRadiationChannel(new Channel<float>(backgroundRadiationVector.size(), 1, backgroundRadiationData));
+       
 
     PointBufferPtr pc;
     pc = PointBufferPtr( new PointBuffer );
     pc->setPointArray(outPoints, (points.size() -1));
     pc->addChannel<uint16_t>(waveformChannel, "waveform");
+    pc->addChannel<float>(amplitudeChannel, "amplitude");
+    pc->addChannel<float>(reflectanceChannel, "reflectance");
+    pc->addChannel<float>(deviationChannel, "deviation");
+    pc->addChannel<float>(backgroundRadiationChannel, "backgroundRadiation");
     ModelPtr outModel(new Model(pc));
     this->m_model = outModel;
     return outModel;

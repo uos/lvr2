@@ -1192,6 +1192,7 @@ void LVRMainWindow::renameModelItem()
 LVRModelItem* LVRMainWindow::loadModelItem(QString name)
 {
     // Load model and generate vtk representation
+	std::cout << "Read Model " << std::endl;
     ModelPtr model = ModelFactory::readModel(name.toStdString());
     ModelBridgePtr bridge(new LVRModelBridge(model));
     bridge->addActors(m_renderer);
@@ -1310,6 +1311,44 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                     item->setExpanded(false);
                     lastItem = item;
                 }
+		
+		//read Label
+                if(h5_io_ptr->readLabel(model_ptr))
+                {
+		    std::vector<LabelClassPtr> labelClasses = model_ptr->m_label->getLabelClasses();
+		    for (auto labelClass : labelClasses)
+		    {
+            	        QTreeWidgetItem * item = new QTreeWidgetItem(LVRLabelClassType);
+                        item->setText(LABEL_NAME_COLUMN, QString::fromStdString(labelClass->className));
+                        item->setText(LABELED_POINT_COLUMN, QString::number(0));
+                        item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+        		item->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
+            	        labelTreeWidget->addTopLevelItem(item);   
+            		for (auto instance : labelClass->instances)
+			{
+			     int id = 0;
+                             if (labelClass->className != UNKNOWNNAME)
+                             {
+                                  id = m_id++;
+                             } 
+
+                             QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
+                             childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
+                             childItem->setText(LABEL_NAME_COLUMN, QString::fromStdString(instance->instanceName));
+                             QColor label_color(instance->color[0], instance->color[1], instance->color[2]);
+                             childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+                             childItem->setData(LABEL_ID_COLUMN, 1, label_color);
+                             childItem->setData(LABEL_ID_COLUMN, 0, id);
+        		     childItem->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
+                             item->addChild(childItem);
+                             Q_EMIT(labelAdded(childItem));
+                             //m_pickingInteractor->setLabel(id, instance->labeledIDs);
+                             selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
+			}
+		    }
+		    std::cout <<"Points" <<  model_ptr->m_pointCloud->numPoints()<< std::endl;
+                    lastItem = loadModelItem(*it);
+		}
 
             } else {
                 lastItem = loadModelItem(*it);
@@ -3083,6 +3122,55 @@ void LVRMainWindow::exportLabels()
             }
         }
     }
+
+    LVRModelItem* lvrmodel = getModelItem(treeWidget->topLevelItem(0));
+    ModelBridgePtr bridge = lvrmodel->getModelBridge();
+    PointBufferBridgePtr pointBridge = bridge->getPointBridge();
+    PointBufferPtr pointBuffer = pointBridge->getPointBuffer();
+
+    //Waveform
+    boost::filesystem::path waveGroup = (pointGroup / "Waveformdata");
+    Channel<uint16_t>::Optional optInt = pointBuffer->getChannel<uint16_t>("waveform");
+    if (optInt)
+    {
+	    size_t n = optInt->numElements();
+	    size_t width = optInt->width();
+            std::vector<size_t> dimension = {n, width};
+            label_hdf5kernel.saveArray(waveGroup.string(), "Waveform" , dimension, optInt->dataPtr());
+    }
+    Channel<float>::Optional opt = pointBuffer->getChannel<float>("amplitude");
+    if (opt)
+    {
+	    size_t n = opt->numElements();
+	    size_t width = opt->width();
+            std::vector<size_t> dimension = {n, width};
+            label_hdf5kernel.saveArray(waveGroup.string(), "Amplitude" , dimension, opt->dataPtr());
+    }
+    opt = pointBuffer->getChannel<float>("deviation");
+    if (opt)
+    {
+	    size_t n = opt->numElements();
+	    size_t width = opt->width();
+            std::vector<size_t> dimension = {n, width};
+            label_hdf5kernel.saveArray(waveGroup.string(), "deviation" , dimension, opt->dataPtr());
+    }
+    opt = pointBuffer->getChannel<float>("reflectance");
+    if (opt)
+    {
+	    size_t n = opt->numElements();
+	    size_t width = opt->width();
+            std::vector<size_t> dimension = {n, width};
+            label_hdf5kernel.saveArray(waveGroup.string(), "reflectance" , dimension, opt->dataPtr());
+    }
+    opt = pointBuffer->getChannel<float>("backgroundRadiationChannel");
+    if (opt)
+    {
+	    size_t n = opt->numElements();
+	    size_t width = opt->width();
+            std::vector<size_t> dimension = {n, width};
+            label_hdf5kernel.saveArray(waveGroup.string(), "backgroundRadiation" , dimension, opt->dataPtr());
+    }
+
 }
 
 void LVRMainWindow::comboBoxIndexChanged(int index)
