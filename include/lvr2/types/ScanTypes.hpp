@@ -267,6 +267,34 @@ struct HyperspectralCamera
 
 using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
 
+/*****************************************************************************
+ * @brief   Struct to hold a Fullwaveform Data for a scan
+ * 
+ *****************************************************************************/
+
+struct FullWaveform
+{
+    /// Sensor type flag
+    static constexpr char                    sensorType[] = "FullWaveform";
+
+    /// Amplitude
+    std::vector<float>                       amplitude;
+
+    /// Deviation
+    std::vector<float>                       deviation;
+
+    /// Reflectance
+    std::vector<float>                       reflectance;
+
+    /// Background Radiation
+    std::vector<float>                       backgroundRadiation;
+
+    //Waveform
+    cv::Mat                                  waveform;
+};
+
+using FullWaveformPtr = std::shared_ptr<FullWaveform>;
+
 
 /*****************************************************************************
  * @brief   Represents a scan position consisting of a scan and

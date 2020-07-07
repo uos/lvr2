@@ -1638,12 +1638,25 @@ void LVRPickingInteractor::OnKeyDown()
     {
 	if (isPolygonToolSelected())
 	{
+	    if(!m_modified)
+	    {
+                Q_EMIT(polygonSelected());
+	    }
+		
 	    if (selectionPolygonSize() > 0)
 	    {
 		resetSelection();
 		return;
 	    }
 	} 
+	else
+	{
+	    if(!m_modified)
+	    {
+            	Q_EMIT(lassoSelected());
+		return;
+	    }
+	}
         discardChanges();
     }
     if(key == "Return" && m_labelingMode)
@@ -2068,8 +2081,7 @@ void LVRPickingInteractor::discardChanges()
 	    {
 		for (int i = 0; i < m_pointLabels.size(); i++)
 		{
-			m_selectedPoints[i] = (m_pointLabels[i] == m_selectedLabel);
-
+		    m_selectedPoints[i] = (m_pointLabels[i] == m_selectedLabel);
 		}
 	        m_renderer->AddActor(m_labelActors[m_selectedLabel]);
       		this->GetInteractor()->GetRenderWindow()->Render();

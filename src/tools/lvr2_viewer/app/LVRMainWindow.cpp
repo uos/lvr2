@@ -2942,6 +2942,8 @@ void LVRMainWindow::addNewInstance(QTreeWidgetItem * selectedTopLevelItem)
     selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
     Q_EMIT(labelAdded(childItem));
 
+    int comboBoxPos = selectedInstanceComboBox->findData(childItem->data(LABEL_ID_COLUMN, 0).toInt());
+    selectedInstanceComboBox->setCurrentIndex(comboBoxPos);
 }
 
 void LVRMainWindow::loadLabels()
@@ -2986,6 +2988,7 @@ void LVRMainWindow::loadLabels()
             item->setText(0, QString::fromStdString(labelClass));
             item->setText(LABELED_POINT_COLUMN, QString::number(0));
             item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+            item->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
 
             labelTreeWidget->addTopLevelItem(item);   
 
@@ -3017,6 +3020,8 @@ void LVRMainWindow::loadLabels()
                 QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
                 childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
                 childItem->setText(0, QString::fromStdString(instance));
+            	childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+            	childItem->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
                 QColor label_color(rgbData[0], rgbData[1], rgbData[2]);
                 childItem->setData(LABEL_ID_COLUMN, 1, label_color);
                 childItem->setData(LABEL_ID_COLUMN, 0, id);
@@ -3029,6 +3034,7 @@ void LVRMainWindow::loadLabels()
             }
         }
     }
+    this->dockWidgetLabel->show();
 }
 void LVRMainWindow::exportLabels()
 {

@@ -241,11 +241,11 @@ private:
     vtkSmartPointer<vtkActor>         m_polyActor;
     std::vector<bool>	              m_selectedPoints;
     std::map<uint16_t, vtkSmartPointer<vtkActor>> m_labelActors;
-    vtkSmartPointer<vtkActor> m_selectedActor;
-    std::vector<uint16_t>              m_pointLabels;
+    vtkSmartPointer<vtkActor>         m_selectedActor;
+    std::vector<uint16_t>             m_pointLabels;
     vtkSmartPointer<vtkPolyData>      m_points;
     vtkSmartPointer<vtkDataSetMapper> m_selectedMapper;
-    vtkSmartPointer<vtkIdTypeArray> m_selectedIds; 
+    vtkSmartPointer<vtkIdTypeArray>   m_selectedIds; 
 
     vtkSmartPointer<vtkRenderer>    m_renderer;
 
