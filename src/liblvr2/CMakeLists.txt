@@ -45,6 +45,7 @@ set(LVR2_SOURCES
     io/BoctreeIO.cpp
     io/GridIO.cpp
     io/PointBuffer.cpp
+    io/WaveformBuffer.cpp
     io/ModelFactory.cpp
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp

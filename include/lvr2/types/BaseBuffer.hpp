@@ -55,6 +55,7 @@ class BaseBuffer : public MultiChannelMap {
 using base = MultiChannelMap;
 public:
     using base::base;
+    virtual ~BaseBuffer(){};
 
     //////////////////////////////////
     //// Width Channel functions ////
