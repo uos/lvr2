@@ -112,7 +112,19 @@ Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath,
     d.groupName = totalGroupPath.string();
     return d;
 }
+Description ScanProjectSchemaHyperlib::fullWaveform(const size_t &scanPosNo, const size_t &scanNo) const
+{
+    // Get information about scan the associated scan position
+    Description d;// = position(scanPosNo);   
+    return scan(*d.groupName, scanNo);
+}
 
+Description ScanProjectSchemaHyperlib::fullWaveform(const std::string &scanPositionPath, const size_t &scanNo) const
+{
+
+    Description d;
+    return d;
+}
 Description ScanProjectSchemaHyperlib::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
 {
     Description g = position(scanPositionNo);

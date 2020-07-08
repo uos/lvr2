@@ -60,6 +60,8 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
     {
         m_hyperspectralCameraIO->saveHyperspectralCamera(scanPosNo, scanPositionPtr->hyperspectralCamera);
     }
+
+    
 }
 
 template <typename  FeatureBase>

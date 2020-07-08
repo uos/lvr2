@@ -19,6 +19,34 @@ namespace lvr2
 {
 
 /*****************************************************************************
+ * @brief   Struct to hold a Fullwaveform Data for a scan
+ * 
+ *****************************************************************************/
+
+struct FullWaveform
+{
+    /// Sensor type flag
+    static constexpr char                    sensorType[] = "FullWaveform";
+
+    /// Amplitude
+    std::vector<float>                       amplitude;
+
+    /// Deviation
+    std::vector<float>                       deviation;
+
+    /// Reflectance
+    std::vector<float>                       reflectance;
+
+    /// Background Radiation
+    std::vector<float>                       backgroundRadiation;
+
+    //Waveform
+    Eigen::Matrix<uint16_t, Eigen::Dynamic, Eigen::Dynamic>         waveform;
+};
+
+using FullWaveformPtr = std::shared_ptr<FullWaveform>;
+
+/*****************************************************************************
  * @brief Class to represent a scan within a scan project
  ****************************************************************************/
 struct Scan
@@ -43,6 +71,9 @@ struct Scan
 
     /// Point buffer containing the scan points
     PointBufferPtr                  points;
+
+    /// Containing all Waveform related data
+    FullWaveformPtr                 fullWaveform;
 
     /// Registration of this scan in project coordinates
     Transformd                      registration;
@@ -228,7 +259,6 @@ struct HyperspectralCameraModel
 
 using HyperspectralCameraModelPtr = std::shared_ptr<HyperspectralCameraModel>;
 
-
 /*****************************************************************************
  * @brief   Struct to hold a hyperspectral camera
  *          together with it's camera model and panoramas
@@ -266,35 +296,6 @@ struct HyperspectralCamera
 };
 
 using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
-
-/*****************************************************************************
- * @brief   Struct to hold a Fullwaveform Data for a scan
- * 
- *****************************************************************************/
-
-struct FullWaveform
-{
-    /// Sensor type flag
-    static constexpr char                    sensorType[] = "FullWaveform";
-
-    /// Amplitude
-    std::vector<float>                       amplitude;
-
-    /// Deviation
-    std::vector<float>                       deviation;
-
-    /// Reflectance
-    std::vector<float>                       reflectance;
-
-    /// Background Radiation
-    std::vector<float>                       backgroundRadiation;
-
-    //Waveform
-    cv::Mat                                  waveform;
-};
-
-using FullWaveformPtr = std::shared_ptr<FullWaveform>;
-
 
 /*****************************************************************************
  * @brief   Represents a scan position consisting of a scan and

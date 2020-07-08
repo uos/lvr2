@@ -51,6 +51,12 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     // Get meta data from scan and save
     m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
 
+    // Save Waveform data
+    if (scanPtr->fullWaveform)
+    {
+        m_fullWaveformIO->saveFullWaveform(scanPosNo, scanNo, scanPtr->fullWaveform);
+    }
+
 }
 
 template <typename FeatureBase>
@@ -98,6 +104,22 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
     // Load actual data
     ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
  
+    // Get Waveform data
+    Description waveformDescr = m_featureBase->m_description->fullWaveform(scanPosNo, scanNo);
+    if(waveformDescr.dataSetName)
+    {
+        std::string dataSetName;
+        std::tie(groupName, dataSetName) = getNames("", "", waveformDescr);
+
+        if (m_featureBase->m_kernel->exists(groupName))
+        {
+            std::cout << timestamp << "ScanIO: Loading Waveform data... " << std::endl;
+            FullWaveformPtr fwPtr = m_fullWaveformIO->loadFullWaveform(scanPosNo, scanNo);
+            ret->fullWaveform = fwPtr;
+        }
+    }
+
+
     return ret;
 }
 

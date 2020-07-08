@@ -121,7 +121,17 @@ Description ScanProjectSchemaSLAM::scan(const std::string& scanPositionPath, con
 {
     return scan(0, scanNo);
 }
+Description ScanProjectSchemaSLAM::fullWaveform(const size_t &scanPosNo, const size_t &scanNo) const 
+{
+    Description d; 
+    
+    return d;
+}
 
+Description ScanProjectSchemaSLAM::fullWaveform(const std::string& scanPositionPath, const size_t &scanNo) const
+{
+    return scan(0, scanNo);
+}
 Description ScanProjectSchemaSLAM::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
 {
     // Scan camera is not supported
