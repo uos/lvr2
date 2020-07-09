@@ -2,8 +2,8 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+20.7.1 (2020-07-09)
+-------------------
 * removed cl2.hpp, FeatureProjector.cpp from lib
 * added meta information factory with slam6d and yaml support
 * add debian folder from deb-lvr2 repo.
