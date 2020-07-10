@@ -90,7 +90,7 @@ Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath,
 
     // Create dataset path
     std::stringstream sstr;
-    sstr << "scan" << std::setfill('0') << std::setw(8) << scanNo;
+    sstr << std::setfill('0') << std::setw(8) << scanNo;
     d.dataSetName = sstr.str() + std::string(".ply");
 
     // Load meta data for scan
