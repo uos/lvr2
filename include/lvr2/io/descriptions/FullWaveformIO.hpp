@@ -1,37 +1,38 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_FULLWAVEFORMIO_HPP
-#define LVR2_IO_HDF5_FULLWAVEFORMIO_HPP
-
-#include "lvr2/io/descriptions/ArrayIO.hpp"
-#include "lvr2/io/descriptions/MatrixIO.hpp"
+#ifndef LVR2_IO_HDF5_WAVEFORMIO_HPP
+#define LVR2_IO_HDF5_WAVEFORMIO_HPP
+#include "ArrayIO.hpp"
+#include "MatrixIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
-namespace lvr2
-{
-
+#include <sstream>
+#include <yaml-cpp/yaml.h>
+namespace lvr2 {
 template <typename FeatureBase>
 class FullWaveformIO
 {
 public:
-  void saveFullWaveform(const size_t& scanPosNo, const size_t& scanNo, const FullWaveformPtr &buffer);
+  void saveFullWaveform(const size_t& scanPosNo, const size_t& scanNo, const WaveformPtr &buffer);
 
-  FullWaveformPtr loadFullWaveform(const size_t& scanPosNo, const size_t& scanNo);
+  WaveformPtr loadFullWaveform(const size_t& scanPosNo, const size_t& scanNo);
   
 protected:
   FeatureBase *m_featureBase = static_cast<FeatureBase *>(this);
 
   // dependencies
-  ArrayIO<FeatureBase> *m_arrayIO = static_cast<ArrayIO<FeatureBase> *>(m_featureBase);
-  MatrixIO<FeatureBase> *m_matrixIO = static_cast<MatrixIO<FeatureBase> *>(m_featureBase);
-
+//  ArrayIO<FeatureBase> *m_arrayIO = static_cast<ArrayIO<FeatureBase> *>(m_featureBase);
+//  MatrixIO<FeatureBase> *m_matrixIO = static_cast<MatrixIO<FeatureBase> *>(m_featureBase);
+// dependencies
+ ArrayIO<FeatureBase>* m_arrayIO = static_cast<ArrayIO<FeatureBase>*>(m_featureBase);
+ MatrixIO<FeatureBase>* m_matrixIO = static_cast<MatrixIO<FeatureBase>*>(m_featureBase);
   static constexpr const char *ID = "FullWaveformIO";
   static constexpr const char *OBJID = "FullWaveform";
 };
 
 /**
  *
- * @brief FeatureConstruct Specialization for ScanCameraIO
+ * @brief FeatureConstruct Specialization for WaveformIO
  * - Constructs dependencies (ArrayIO, MatrixIO)
  * - Sets type variable
  *
@@ -54,4 +55,4 @@ struct FeatureConstruct<FullWaveformIO, FeatureBase>
 
 #include "FullWaveformIO.tcc"
 
-#endif // LVR2_IO_HDF5_FULLWAVEFORMIO_HPP
+#endif // LVR2_IO_HDF5_WAVEFORMIO_HPP

@@ -33,5 +33,10 @@ int main(int argc, char** argv)
     DirectoryIO slamIOCopy2(slamCopyKernel2, hyperlibSchema);
     slamIOCopy2.saveScanProject(slamProject);
 
+   /* Copy project using hyperlib schema
+    HDF5SchemaPtr hyperlibSchema(new HDF5Schema);
+    HDF5KernelPtr slamCopyKernel2(new HDF5Kernel("./h5_copy"));
+    HDF5IO slamIOCopy2(slamCopyKernel2, hyperlibSchema);
+    slamIOCopy2.saveScanProject(slamProject);*/
     return 0;
 }

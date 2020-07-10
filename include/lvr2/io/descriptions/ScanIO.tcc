@@ -52,9 +52,13 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
 
     // Save Waveform data
-    if (scanPtr->fullWaveform)
+    if (scanPtr->waveform)
     {
-        m_fullWaveformIO->saveFullWaveform(scanPosNo, scanNo, scanPtr->fullWaveform);
+	std::cout << "Waveform found " <<std::endl;
+        m_fullWaveformIO->saveFullWaveform(scanPosNo, scanNo, scanPtr->waveform);
+    } else 
+    {
+	    std::cout << "no Waveform " <<std::endl;
     }
 
 }
@@ -105,7 +109,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
     ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
  
     // Get Waveform data
-    Description waveformDescr = m_featureBase->m_description->fullWaveform(scanPosNo, scanNo);
+    Description waveformDescr = m_featureBase->m_description->waveform(scanPosNo, scanNo);
     if(waveformDescr.dataSetName)
     {
         std::string dataSetName;
@@ -114,8 +118,8 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
         if (m_featureBase->m_kernel->exists(groupName))
         {
             std::cout << timestamp << "ScanIO: Loading Waveform data... " << std::endl;
-            FullWaveformPtr fwPtr = m_fullWaveformIO->loadFullWaveform(scanPosNo, scanNo);
-            ret->fullWaveform = fwPtr;
+            WaveformPtr fwPtr = m_fullWaveformIO->loadFullWaveform(scanPosNo, scanNo);
+            ret->waveform = fwPtr;
         }
     }
 

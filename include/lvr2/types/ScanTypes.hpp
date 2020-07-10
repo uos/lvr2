@@ -23,10 +23,16 @@ namespace lvr2
  * 
  *****************************************************************************/
 
-struct FullWaveform
+struct Waveform
 {
+    Waveform() : maxBucketSize(0), amplitude(), deviation(), reflectance(), backgroundRadiation(),
+    waveformSamples(){};
+    ~Waveform(){};
     /// Sensor type flag
-    static constexpr char                    sensorType[] = "FullWaveform";
+    static constexpr char                    sensorType[] = "Waveform";
+
+    /// Max Bucket Size of Waveform samples
+    int                                      maxBucketSize;
 
     /// Amplitude
     std::vector<float>                       amplitude;
@@ -41,10 +47,9 @@ struct FullWaveform
     std::vector<float>                       backgroundRadiation;
 
     //Waveform
-    Eigen::Matrix<uint16_t, Eigen::Dynamic, Eigen::Dynamic>         waveform;
+    Eigen::Matrix<uint16_t, Eigen::Dynamic, Eigen::Dynamic>         waveformSamples;
 };
-
-using FullWaveformPtr = std::shared_ptr<FullWaveform>;
+using WaveformPtr = std::shared_ptr<Waveform>;
 
 /*****************************************************************************
  * @brief Class to represent a scan within a scan project
@@ -73,7 +78,7 @@ struct Scan
     PointBufferPtr                  points;
 
     /// Containing all Waveform related data
-    FullWaveformPtr                 fullWaveform;
+    WaveformPtr                     waveform;
 
     /// Registration of this scan in project coordinates
     Transformd                      registration;
