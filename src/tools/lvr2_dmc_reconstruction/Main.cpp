@@ -129,7 +129,7 @@ int main(int argc, char** argv)
 
     HalfEdgeMesh<Vec> mesh;
 
-    DMCReconstruction<Vec, FastBox<Vec>> dmc(surface, surface->getBoundingBox(), true, options.getMaxLevel());
+    DMCReconstruction<Vec, FastBox<Vec>> dmc(surface, surface->getBoundingBox(), true, options.getMaxLevel(), options.getMaxError());
 
     dmc.getMesh(mesh);
 

@@ -59,9 +59,6 @@ struct my_dummy
     int next = -1;
 };
 
-static int MAX_LEVEL = 8;
-static double MAX_ERROR = 2.8;
-
 /**
  * @brief A surface reconstruction object that implements the standard
  *        marching cubes algorithm using a octree and a thread pool for
@@ -85,7 +82,8 @@ public:
         PointsetSurfacePtr<BaseVecT> surface,
         BoundingBox<BaseVecT> bb,
         bool dual,
-        int maxLevel);
+        int maxLevel,
+        float maxError);
 
     /**
      * @brief Destructor.
@@ -258,6 +256,9 @@ protected:
 
     // The maximum allowed level for the octree
     int m_maxLevel;
+
+    // The max allowed arror between points and surfaces
+    float m_maxError;
 
     // Counter of the edge points
     uint m_globalIndex;
