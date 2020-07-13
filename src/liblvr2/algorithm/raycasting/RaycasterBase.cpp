@@ -1,3 +1,4 @@
+
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -25,54 +26,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * CudaRaycaster.hpp
- *
- *  @date 04.02.2019
- *  @author Alexander Mock <amock@uos.de>
- */
-
-#pragma once
-
-#include <vector>
+#include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
 
 namespace lvr2
 {
 
-/**
- *  @brief CudaRaycaster: GPU Cuda version of BVH Raycasting
- */
-template <typename BaseVecT>
-class CudaRaycaster : public RaycasterBase<BaseVecT> {
-public:
+RaycasterBase::RaycasterBase(const MeshBufferPtr mesh)
+:m_mesh(mesh)
+{
 
-    /**
-     * @brief Constructor: Stores mesh as member
-     */
-    CudaRaycaster(const MeshBufferPtr mesh);
-
-    bool castRay(
-        const Point<BaseVecT>& origin,
-        const Vector<BaseVecT>& direction,
-        Point<BaseVecT>& intersection
-    );
-
-    void castRays(
-        const Point<BaseVecT>& origin,
-        const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections,
-        std::vector<uint8_t>& hits
-    );
-
-    void castRays(
-        const std::vector<Point<BaseVecT> >& origins,
-        const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections,
-        std::vector<uint8_t>& hits
-    );
-
-};
+}
 
 } // namespace lvr2
-
-#include "lvr2/algorithm/raycasting/CudaRaycaster.tcc"
