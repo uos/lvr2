@@ -119,7 +119,7 @@ int main(int argc, char** argv)
 
     HalfEdgeMesh<Vec> mesh;
 
-    DMCReconstruction<Vec, FastBox<Vec>> dmc(surface, surface->getBoundingBox(), options.getMinVoxelSize());
+    DMCReconstruction<Vec, FastBox<Vec>> dmc(surface, surface->getBoundingBox(), true, options.getMaxLevel());
 
     dmc.getMesh(mesh);
 
@@ -129,6 +129,8 @@ int main(int argc, char** argv)
 
     auto m = ModelPtr(new Model(meshBuffer));
     ModelFactory::saveModel(m, "triangle_mesh.ply");
+
+    cout << timestamp << "Finished reconstruction" << endl;
 
     return 0;
 }
