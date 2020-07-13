@@ -22,6 +22,8 @@ namespace dmc_reconstruction{
                 ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
                 ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
                 ("pcm,p", value<string>(&m_pcm)->default_value("FLANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
+                ("ransac", "Set this flag for RANSAC based normal estimation.")
+                ("scanPoseFile", value<string>()->default_value(""), "ASCII file containing scan positions that can be used to flip normals")
                 ("threads", value<int>(&m_numThreads)->default_value( lvr2::OpenMPConfig::getNumThreads() ), "Number of threads")
                 ;
         setup();
@@ -78,8 +80,18 @@ namespace dmc_reconstruction{
         return m_variables["threads"].as<int>();
     }
 
-    string Options::getPcm() const {
+    string Options::getPCM() const {
         return (m_variables["pcm"].as<string>());
+    }
+
+    bool Options::useRansac() const
+    {
+        return (m_variables.count("ransac"));
+    }
+
+    string Options::getScanPoseFile() const
+    {
+        return (m_variables["scanPoseFile"].as<string>());
     }
 }
 

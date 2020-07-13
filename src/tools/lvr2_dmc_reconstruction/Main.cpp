@@ -19,6 +19,7 @@
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/DMCReconstruction.hpp"
 #include "lvr2/reconstruction/FastReconstruction.hpp"
+
 #include "lvr2/config/lvropenmp.hpp"
 
 using namespace lvr2;
@@ -26,24 +27,54 @@ using namespace lvr2;
 using Vec = BaseVector<float>;
 
 template <typename BaseVecT>
-PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& options,
-                                            PointBufferPtr buffer)
+PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& options)
 {
+    // Create a point loader object
+    ModelPtr model = ModelFactory::readModel(options.getInputFileName());
+
+    // Parse loaded data
+    if (!model)
+    {
+        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+        return nullptr;
+    }
+
+    PointBufferPtr buffer = model->m_pointCloud;
+
     // Create a point cloud manager
-    string pcm_name = options.getPcm();
-    PointsetSurfacePtr<BaseVecT> surface;
+    string pcm_name = options.getPCM();
+    PointsetSurfacePtr<Vec> surface;
 
     // Create point set surface object
-    if (pcm_name == "PCL")
+    if(pcm_name == "PCL")
     {
         cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << endl;
         panic_unimplemented("PCL as point cloud manager");
     }
-    else if (pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" ||
-             pcm_name == "NANOFLANN")
+    else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
     {
+        
+        int plane_fit_method = 0;
+        
+        if(options.useRansac())
+        {
+            plane_fit_method = 1;
+        }
+
+        // plane_fit_method
+        // - 0: PCA
+        // - 1: RANSAC
+        // - 2: Iterative
+
         surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
-            buffer, pcm_name, options.getKn(), options.getKi(), options.getKd(), 1, "");
+            buffer,
+            pcm_name,
+            options.getKn(),
+            options.getKi(),
+            options.getKd(),
+            plane_fit_method,
+            options.getScanPoseFile()
+        );
     }
     else
     {
@@ -87,30 +118,9 @@ int main(int argc, char** argv)
     // =======================================================================
     OpenMPConfig::setNumThreads(options.getNumThreads());
 
-    // try to parse the model
-    ModelPtr model = ModelFactory::readModel(options.getInputFileName());
-
-    // did model parse succeed
-    if (!model)
-    {
-        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-        return EXIT_FAILURE;
-    }
-
-    PointBufferPtr buffer = model->m_pointCloud;
-
-    if (!buffer)
-    {
-        cout << "Failed to create Buffer...exiting..." << endl;
-        PointBuffer* pointBuffer = new PointBuffer(model.get()->m_mesh.get()->getVertices(),
-                                                   model.get()->m_mesh.get()->numVertices());
-        PointBufferPtr pointer(pointBuffer);
-        buffer = pointer;
-    }
-
     // Create a point cloud manager
-    string pcm_name = options.getPcm();
-    auto surface = loadPointCloud<Vec>(options, buffer);
+    string pcm_name = options.getPCM();
+    auto surface = loadPointCloud<Vec>(options);
     if (!surface)
     {
         cout << "Failed to create pointcloud. Exiting." << endl;

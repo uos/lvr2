@@ -79,7 +79,12 @@ class Options : public BaseOption
 
     int getNumThreads() const;
 
-    string getPcm() const;
+    string getPCM() const;
+
+    bool useRansac() const;
+
+    string getScanPoseFile() const;
+
 
   private:
     /// The 
@@ -112,7 +117,7 @@ inline ostream& operator<<(ostream& os, const Options& o)
     cout << "##### InputFile-Name: " << o.getInputFileName() << endl;
     cout << "##### Min VoxelSize: " << o.getMinVoxelSize() << endl;
 
-    cout << "##### PCM: " << o.getPcm() << endl;
+    cout << "##### PCM: " << o.getPCM() << endl;
     cout << "##### KD: " << o.getKd() << endl;
     cout << "##### KI: " << o.getKi() << endl;
     cout << "##### KN: " << o.getKn() << endl;
