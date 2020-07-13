@@ -8,7 +8,9 @@
 
 #include <sstream>
 #include <yaml-cpp/yaml.h>
-namespace lvr2 {
+namespace lvr2 
+{
+
 template <typename FeatureBase>
 class FullWaveformIO
 {
@@ -20,9 +22,6 @@ public:
 protected:
   FeatureBase *m_featureBase = static_cast<FeatureBase *>(this);
 
-  // dependencies
-//  ArrayIO<FeatureBase> *m_arrayIO = static_cast<ArrayIO<FeatureBase> *>(m_featureBase);
-//  MatrixIO<FeatureBase> *m_matrixIO = static_cast<MatrixIO<FeatureBase> *>(m_featureBase);
 // dependencies
  ArrayIO<FeatureBase>* m_arrayIO = static_cast<ArrayIO<FeatureBase>*>(m_featureBase);
  MatrixIO<FeatureBase>* m_matrixIO = static_cast<MatrixIO<FeatureBase>*>(m_featureBase);
@@ -53,6 +52,6 @@ struct FeatureConstruct<FullWaveformIO, FeatureBase>
 
 } // namespace lvr2
 
-#include "FullWaveformIO.tcc"
+#include "WaveformIO.tcc"
 
 #endif // LVR2_IO_HDF5_WAVEFORMIO_HPP

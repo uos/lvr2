@@ -5,7 +5,7 @@
 
 #include "ArrayIO.hpp"
 #include "MatrixIO.hpp"
-#include "FullWaveformIO.hpp"
+#include "WaveformIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 #include <sstream>

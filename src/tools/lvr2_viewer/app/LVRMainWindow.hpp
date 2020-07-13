@@ -153,6 +153,7 @@ public Q_SLOTS:
     void showLabelTreeContextMenu(const QPoint&);
     void updatePointCount(const uint16_t, const int);
     void readLWF();
+    void exportLWF();
 
     void cellSelected(QTreeWidgetItem* item, int column);
     void addLabelClass();

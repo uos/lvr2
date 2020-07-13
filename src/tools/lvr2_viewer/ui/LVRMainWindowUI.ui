@@ -701,6 +701,7 @@
     <addaction name="actionExportLabeledPointcloud"/>
     <addaction name="separator"/>
     <addaction name="actionReadWaveform"/>
+    <addaction name="actionExportWaveform"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuViews"/>
@@ -1587,6 +1588,11 @@
   <action name="actionReadWaveform">
    <property name="text">
     <string>Open Waveform</string>
+   </property>
+  </action>
+  <action name="actionExportWaveform">
+   <property name="text">
+    <string>Export Waveform</string>
    </property>
   </action>
  </widget>

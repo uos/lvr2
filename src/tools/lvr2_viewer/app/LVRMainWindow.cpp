@@ -43,7 +43,8 @@
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
-//#include "lvr2/io/descriptions/HDF5IO.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
+#include "lvr2/io/descriptions/DirectoryIO.hpp"
 
 #include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
@@ -332,6 +333,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->actionOpenLabeledPointcloud, SIGNAL(triggered()), this, SLOT(loadLabels()));
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
     QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
+    QObject::connect(this->actionExportWaveform, SIGNAL(triggered()), this, SLOT(exportLWF()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
@@ -1279,8 +1281,14 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
             // check for h5
             QFileInfo info((*it));
             QString base = info.fileName();
-
-            if (info.suffix() == "h5")
+	    if(info.suffix() == "")
+	    {
+		//read intermediaformat
+	        DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(info.absoluteFilePath().toStdString())); 
+	        DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib); 
+		DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
+		ScanProjectPtr scanProject;
+	    }else if (info.suffix() == "h5")
             {
                 // h5 special loading case
                 // special case h5:
@@ -3305,5 +3313,9 @@ void LVRMainWindow::readLWF()
 	waveforms.push_back(waveformData);
     }
     std::cout << waveforms.size() << std::endl;
+}
+
+void LVRMainWindow::exportLWF()
+{
 }
 } /* namespace lvr2 */

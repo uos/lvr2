@@ -132,7 +132,7 @@ Description ScanProjectSchemaHyperlib::waveform(const std::string &scanPositionP
 
     // Create dataset path
     std::stringstream sstr;
-    sstr << "scan" << std::setfill('0') << std::setw(8) << scanNo;
+    sstr << std::setfill('0') << std::setw(8) << scanNo;
     d.dataSetName = sstr.str() + std::string(".lwf");
 
     // Load meta data for scan

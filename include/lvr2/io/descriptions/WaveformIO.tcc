@@ -15,7 +15,7 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     std::string groupName = "";
    
     std::stringstream sstr;
-    sstr << "scan" << std::setfill('0') << std::setw(8) << scanNo;
+    sstr << std::setfill('0') << std::setw(8) << scanNo;
     std::string waveformName = sstr.str() + ".lwf";
     std::string metaName = sstr.str() + ".yaml";
 
@@ -88,7 +88,7 @@ WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, c
     Description d = m_featureBase->m_description->waveform(scanPosNo, scanNo);
     // Init default values
     std::stringstream sstr;
-    sstr << "scan" << std::setfill('0') << std::setw(8) << scanNo;
+    sstr << std::setfill('0') << std::setw(8) << scanNo;
     std::string waveformName = sstr.str() + ".lwf";
     std::string metaName = sstr.str() + ".yaml";
     std::string groupName = "";
