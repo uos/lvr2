@@ -61,8 +61,6 @@ class Options : public BaseOption
 
     string getInputFileName() const;
 
-    float getMinVoxelSize() const;
-
     int getMaxLevel() const;
 
     float getMaxError() const;
@@ -88,9 +86,6 @@ class Options : public BaseOption
 
 
   private:
-    /// The 
-    float m_minVoxelSize;
-
     /// The maximum allows octree level
     int m_maxLevel;
 

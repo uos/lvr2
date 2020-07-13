@@ -80,20 +80,12 @@ DMCReconstruction<BaseVecT, BoxT>::DMCReconstruction(
     octree = new C_Octree<BaseVecT, BoxT, my_dummy>();
     octree->initialize(m_maxLevel);
 
-    // Create thread pool
-    m_threadPool = new OctreeThreadPool<BaseVecT, BoxT>(boost::thread::hardware_concurrency());
-
-    m_nodes = 0;
-    m_nodesExtr = 0;
     m_leaves = 0;
-    m_leavesExtr = 0;
-    m_faces = 0;
 }
 
 template<typename BaseVecT, typename BoxT>
 DMCReconstruction<BaseVecT, BoxT>::~DMCReconstruction()
 {
-    delete m_threadPool;
     delete m_progressBar;
 }
 
@@ -702,11 +694,8 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     m_pointHandler->clear();
 
     comment = timestamp.getElapsedTime() + "Creating Mesh ";
-    m_globalIndex = 0;
     m_progressBar = new ProgressBar(m_leaves, comment);
-    m_threadPool->startPool();
-    traverseTree(mesh, *octree, m_threadPool);
-    m_threadPool->stopPool();
+    traverseTree(mesh, *octree);
     delete(octree);
     cout << endl;
 }
@@ -765,8 +754,7 @@ DualLeaf<BaseVecT, BoxT>* DMCReconstruction<BaseVecT, BoxT>::getDualLeaf(
 template<typename BaseVecT, typename BoxT>
 void DMCReconstruction<BaseVecT, BoxT>::traverseTree(
         BaseMesh<BaseVecT> &mesh,
-        C_Octree<BaseVecT, BoxT, my_dummy> &octree,
-        OctreeThreadPool<BaseVecT, BoxT>* threadPool)
+        C_Octree<BaseVecT, BoxT, my_dummy> &octree)
 {
     CellHandle ch_end = octree.end();
     int cells = 2;
@@ -871,6 +859,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getSurface(
         std::tie(projectedDistance, euklideanDistance) = this->m_surface->distance(edges[i]);
         distances[i] = projectedDistance;
     }
+
     // mark edges with intersections
     leaf->getIntersections(edges, distances, vertex_positions);
 

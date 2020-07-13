@@ -42,7 +42,6 @@
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/MCTable.hpp"
 #include "lvr2/io/Progress.hpp"
-#include "OctreeThreadPool.hpp"
 #include "DMCVecPointHandle.hpp"
 
 #include "Octree.hpp"
@@ -72,11 +71,11 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param surface            Pointer to the surface
-     * @param resolution         The number of intersections (on the longest side of the volume taken by the data points) used by the reconstruction.
-     * @param isVoxelsize        If set to true, interpret resolution as voxelsize instead of number of intersections.
-     * @param reconstructionType Type of the reconstruction (MC or PMC).
-     * @param extrude            If set to true, missing children for each node will be created.
+     * @param surface       Pointer to the surface
+     * @param bb            BoundingBox of the PointCloud
+     * @param dual          
+     * @param maxLevel      Max allowed octree level
+     * @param maxError      Max allowed error between points and surfaces
      */
     DMCReconstruction(
         PointsetSurfacePtr<BaseVecT> surface,
@@ -139,11 +138,9 @@ protected:
      *
      * @param mesh       The reconstructed mesh.
      * @param node       Actually node.
-     * @param threadPool A thread pool.
      */
     void traverseTree(BaseMesh<BaseVecT> &mesh,
-        C_Octree<BaseVecT, BoxT, my_dummy> &octree,
-        OctreeThreadPool<BaseVecT, BoxT>* threadPool);
+        C_Octree<BaseVecT, BoxT, my_dummy> &octree);
 
     /**
      * @brief Calculates the position of a aspecific point in a dual cell
@@ -260,12 +257,6 @@ protected:
     // The max allowed arror between points and surfaces
     float m_maxError;
 
-    // Counter of the edge points
-    uint m_globalIndex;
-
-    // Maximum voxelsize.
-    float m_maxSize;
-
     // Sizes of Boundig Box
     BaseVecT bb_min;
     BaseVecT bb_max;
@@ -275,41 +266,14 @@ protected:
     // Center of the bounding box.
     BaseVecT m_boundingBoxCenter;
 
-    // Status of the extrusion.
-    bool m_extrude;
-
-    // Reconstructiontype
-    string m_reconstructionType;
-
-    // Count of the octree nodes.
-    uint m_nodes;
-
-    // Count of the octree nodes (extruded).
-    uint m_nodesExtr;
-
     // Count of the octree leaves.
     uint m_leaves;
-
-    // Count of the octree leaves (extruded):
-    uint m_leavesExtr;
-
-    // Count of the faces.
-    uint m_faces;
-
-    // Global mutex.
-    boost::mutex m_globalMutex;
-
-    // Mutex for adding faces to the mesh buffer.
-    boost::mutex m_addMutex;
 
     // Global progress bar.
     ProgressBar *m_progressBar;
 
     // Pointer to the new Octree
     C_Octree<BaseVecT, BoxT, my_dummy> *octree;
-
-    // Pointer to the thread pool.
-    OctreeThreadPool<BaseVecT, BoxT> *m_threadPool;
 
     // PointHandler
     unique_ptr<DMCPointHandle<BaseVecT>> m_pointHandler;
