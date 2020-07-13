@@ -65,6 +65,7 @@ class Options : public BaseOption
 
     int getMaxLevel() const;
 
+    float getMaxError() const;
 
     /*
      * prints information about needed command-line-inputs e.g: input-file (ply)
@@ -90,8 +91,11 @@ class Options : public BaseOption
     /// The 
     float m_minVoxelSize;
 
-    ///
+    /// The maximum allows octree level
     int m_maxLevel;
+
+    /// The max allowed error between points and surfaces in an octree cell
+    float m_maxError;
 
     /// The number of neighbors for distance function evaluation
     int m_kd;

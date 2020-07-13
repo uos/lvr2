@@ -44,10 +44,12 @@ DMCReconstruction<BaseVecT, BoxT>::DMCReconstruction(
         PointsetSurfacePtr<BaseVecT> surface,
         BoundingBox<BaseVecT> bb,
         bool dual,
-        int maxLevel) : PointsetMeshGenerator<BaseVecT>(surface)
+        int maxLevel,
+        float maxError) : PointsetMeshGenerator<BaseVecT>(surface)
 {
     m_dual = dual;
     m_maxLevel = maxLevel;
+    m_maxError = maxError;
 
     bb_min = bb.getMin();
     bb_max = bb.getMax();
@@ -415,7 +417,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
                                         error[a] /= counter[a];
                                         error[a] = sqrt(error[a]);
 
-                                        if(error[a] > MAX_ERROR)
+                                        if(error[a] > m_maxError)
                                         {
                                             splitting_pos.push_back(idx);
                                             pointsFittingWell = false;

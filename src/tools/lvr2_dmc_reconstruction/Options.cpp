@@ -17,6 +17,7 @@ namespace dmc_reconstruction{
                 ("inputFile",value<vector<string>>(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
                 ("mVS", value<float>(&m_minVoxelSize)->default_value(0.1), "Minimal allowed VoxelSize")
                 ("ml", value<int>(&m_maxLevel)->default_value(8), "Maximum allowed octree levels")
+                ("e", value<float>(&m_maxError)->default_value(2.8), "Maximum allowed error between points and surfaces")
                 
                 ("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
                 ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
@@ -45,6 +46,9 @@ namespace dmc_reconstruction{
         return (m_variables["ml"].as<int>());
     }
 
+    float Options::getMaxError() const {
+        return (m_variables["e"].as<float>());
+    }
 
     bool Options::printUsage() const {
         if (m_variables.count("help"))
