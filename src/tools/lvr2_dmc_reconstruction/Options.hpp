@@ -114,7 +114,8 @@ inline ostream& operator<<(ostream& os, const Options& o)
     // o.printTransformation(os);
 
     cout << "##### InputFile-Name: " << o.getInputFileName() << endl;
-    cout << "##### Min VoxelSize: " << o.getMinVoxelSize() << endl;
+    cout << "##### Max Level: " << o.getMaxLevel() << endl;
+    cout << "##### Max Error: " << o.getMaxError() << endl;
 
     cout << "##### PCM: " << o.getPCM() << endl;
     cout << "##### KD: " << o.getKd() << endl;
