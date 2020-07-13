@@ -63,6 +63,9 @@ class Options : public BaseOption
 
     float getMinVoxelSize() const;
 
+    int getMaxLevel() const;
+
+
     /*
      * prints information about needed command-line-inputs e.g: input-file (ply)
      */
@@ -81,6 +84,9 @@ class Options : public BaseOption
   private:
     /// The 
     float m_minVoxelSize;
+
+    ///
+    int m_maxLevel;
 
     /// The number of neighbors for distance function evaluation
     int m_kd;
