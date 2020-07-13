@@ -36,8 +36,7 @@
 
 #include <memory>
 #include "lvr2/io/MeshBuffer.hpp"
-#include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/geometry/Normal.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 namespace lvr2
 {
@@ -45,32 +44,31 @@ namespace lvr2
 /**
  * @brief RaycasterBase interface
  */
-template <typename PointT, typename NormalT>
+
 class RaycasterBase {
 public:
-
     /**
      * @brief Constructor: Stores mesh as member
      */
     RaycasterBase(const MeshBufferPtr mesh);
 
     virtual bool castRay(
-        const PointT& origin,
-        const NormalT& direction,
-        PointT& intersection
+        const Vector3f& origin,
+        const Vector3f& direction,
+        Vector3f& intersection
     ) = 0;
 
     virtual void castRays(
-        const PointT& origin,
-        const std::vector<NormalT >& directions,
-        std::vector<PointT >& intersections,
+        const Vector3f& origin,
+        const std::vector<Vector3f>& directions,
+        std::vector<Vector3f>& intersections,
         std::vector<uint8_t>& hits
     ) = 0;
 
     virtual void castRays(
-        const std::vector<PointT >& origins,
-        const std::vector<NormalT >& directions,
-        std::vector<PointT >& intersections,
+        const std::vector<Vector3f >& origins,
+        const std::vector<Vector3f >& directions,
+        std::vector<Vector3f >& intersections,
         std::vector<uint8_t>& hits
     ) = 0;
 
@@ -78,9 +76,6 @@ private:
     const MeshBufferPtr m_mesh;
 };
 
-template<typename PointT, typename NormalT>
-using RaycasterBasePtr = std::shared_ptr<RaycasterBase<PointT, NormalT> >;
+using RaycasterBasePtr = std::shared_ptr<RaycasterBase>;
 
 } // namespace lvr2
-
-#include "lvr2/algorithm/raycasting/RaycasterBase.tcc"

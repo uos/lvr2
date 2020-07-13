@@ -37,9 +37,7 @@
 
 #include <chrono>
 #include "lvr2/io/MeshBuffer.hpp"
-#include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/geometry/BVH.hpp"
-
+#include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
 
 #define CL_HPP_ENABLE_EXCEPTIONS
@@ -58,9 +56,7 @@
 
 #include "lvr2/util/CLUtil.hpp"
 
-const char *CAST_RAYS_BVH_PROGRAM =
-    #include "opencl/cast_rays_bvh.cl"
-;
+
 
 namespace lvr2
 {
@@ -88,8 +84,8 @@ public:
 /**
  *  @brief CLRaycaster: GPU OpenCL version of BVH Raycasting: WIP
  */
-template <typename PointT, typename NormalT>
-class CLRaycaster : public BVHRaycaster<PointT, NormalT> {
+
+class CLRaycaster : public BVHRaycaster {
 public:
 
     /**
@@ -100,34 +96,34 @@ public:
     /// Overload functions ///
 
     bool castRay(
-        const PointT& origin,
-        const NormalT& direction,
-        PointT& intersection
+        const Vector3f& origin,
+        const Vector3f& direction,
+        Vector3f& intersection
     );
 
     void castRays(
-        const PointT& origin,
-        const std::vector<NormalT >& directions,
-        std::vector<PointT >& intersections,
+        const Vector3f& origin,
+        const std::vector<Vector3f >& directions,
+        std::vector<Vector3f >& intersections,
         std::vector<uint8_t>& hits
     );
 
     CLRaycasterRuntimeStats castRaysWithStats(
-        const PointT& origin,
-        const std::vector<NormalT >& directions,
-        std::vector<PointT >& intersections,
+        const Vector3f& origin,
+        const std::vector<Vector3f >& directions,
+        std::vector<Vector3f >& intersections,
         std::vector<uint8_t>& hits
     );
 
     void castRays(
-        const std::vector<PointT >& origins,
-        const std::vector<NormalT >& directions,
-        std::vector<PointT >& intersections,
+        const std::vector<Vector3f >& origins,
+        const std::vector<Vector3f >& directions,
+        std::vector<Vector3f >& intersections,
         std::vector<uint8_t>& hits
     );
 
-    void testKernel(const PointT& origin,
-        const std::vector<NormalT >& directions);
+    void testKernel(const Vector3f& origin,
+        const std::vector<Vector3f >& directions);
 
 private:
     /**
@@ -216,5 +212,3 @@ private:
 };
 
 } // namespace lvr2
-
-#include "lvr2/algorithm/raycasting/CLRaycaster.tcc"

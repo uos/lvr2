@@ -64,6 +64,8 @@ set(LVR2_SOURCES
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
     algorithm/ChunkHashGrid.cpp
+    algorithm/raycasting/RaycasterBase.cpp
+    algorithm/raycasting/BVHRaycaster.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp
@@ -85,6 +87,11 @@ set(LVR2_SOURCES ${LVR2_SOURCES}
     reconstruction/PCLFiltering.cpp)
 endif(PCL_FOUND)
 
+if(embree_FOUND)
+list(APPEND LVR2_SOURCES 
+    algorithm/raycasting/EmbreeRaycaster.cpp
+)
+endif(embree_FOUND)
 
 if(WITH_FREENECT AND LIBFREENECT_FOUND)
 set(LVR2_SOURCES ${LVR2_SOURCES} 
@@ -117,9 +124,15 @@ endif()
 #####################################################################################
 
 if(OPENCL_FOUND)
-  set(LVR2_SOURCES ${LVR2_SOURCES}
-      reconstruction/opencl/ClSurface.cpp
-  )
+list(APPEND LVR2_SOURCES
+    reconstruction/opencl/ClSurface.cpp
+)
+    # message(STATUS "!!!! CL VERSION: ${OpenCL_VERSION_MAJOR}")
+    # check this on not nvidia cabable systems
+    # list(APPEND LVR2_SOURCES
+    #     algorithm/raycasting/CLRaycaster.cpp
+    # )
+    
 endif()
 
 #####################################################################################

@@ -77,13 +77,13 @@
 
 #include "Options.hpp"
 
-#if defined CUDA_FOUND
+#if defined LVR2_USE_CUDA
     #define GPU_FOUND
 
     #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
 
     typedef lvr2::CudaSurface GpuSurface;
-#elif defined OPENCL_FOUND
+#elif defined LVR2_USE_OPENCL
     #define GPU_FOUND
 
     #include "lvr2/reconstruction/opencl/ClSurface.hpp"
@@ -164,7 +164,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Calculate normals if necessary
     if(!buffer->hasNormals() || options.recalcNormals())
     {
-
         if(options.useGPU())
         {
             #ifdef GPU_FOUND
@@ -172,13 +171,15 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 size_t num_points = buffer->numPoints();
                 floatArr points = buffer->getPointArray();
                 floatArr normals = floatArr(new float[ num_points * 3 ]);
-                std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
+                std::cout << timestamp << "Generating GPU kd-tree" << std::endl;
                 GpuSurface gpu_surface(points, num_points);
+                
 
                 gpu_surface.setKn(options.getKn());
                 gpu_surface.setKi(options.getKi());
                 gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
 
+                std::cout << timestamp << "Estimating Normals GPU" << std::endl;
                 gpu_surface.calculateNormals();
                 gpu_surface.getNormals(normals);
 
