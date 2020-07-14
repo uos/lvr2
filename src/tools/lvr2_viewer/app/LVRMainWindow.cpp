@@ -1283,11 +1283,18 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
             QString base = info.fileName();
 	    if(info.suffix() == "")
 	    {
-		//read intermediaformat
+            //read intermediaformat
 	        DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(info.absoluteFilePath().toStdString())); 
-	        DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib); 
-		DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
-		ScanProjectPtr scanProject;
+            DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib); 
+            DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
+            ScanProjectPtr scanProject = dirIO.loadScanProject();
+            ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
+            LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+            QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+            root->addChild(item);
+            item->setExpanded(false);
+            lastItem = item;
+
 	    }else if (info.suffix() == "h5")
             {
                 // h5 special loading case
