@@ -43,6 +43,7 @@
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
+#include "lvr2/io/descriptions/HDF5IO.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 #include "lvr2/io/descriptions/DirectoryIO.hpp"
 
@@ -1289,13 +1290,20 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
             DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
             ScanProjectPtr scanProject = dirIO.loadScanProject();
             ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
+            bridge->addActors(m_renderer);
+           /* 
+            DirectoryKernelPtr dirKernelPtr2(new DirectoryKernel("/home/mloepmei/whatever")); 
+            DirectorySchemaPtr hyperlibSchemaPtr2(new ScanProjectSchemaHyperlib); 
+            DirectoryIO dirIO2(dirKernelPtr2, hyperlibSchemaPtr2);
+            dirIO2.saveScanProject(bridge->getScanProject());
+*/
+
             LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
             QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
             root->addChild(item);
             item->setExpanded(false);
-            lastItem = item;
-
-	    }else if (info.suffix() == "h5")
+            //lastItem = item;
+            }else if (info.suffix() == "h5")
             {
                 // h5 special loading case
                 // special case h5:
@@ -3324,5 +3332,56 @@ void LVRMainWindow::readLWF()
 
 void LVRMainWindow::exportLWF()
 {
+    QString hdfString("HDF5 (*.hdf5");
+    QString intermediaString("Intermedia");
+    QStringList filters;
+    filters << hdfString << intermediaString;
+    QFileDialog dialog(this, tr("Export ScanProject As..."), "", tr("HDF5 (*.hdf5);; Intermedia (*.intermedia)"));
+    dialog.setNameFilters(filters);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    if (dialog.exec() != QDialog::Accepted)
+    {
+        //No valid inut return
+        return;
+    }
+
+    QTreeWidgetItemIterator it(treeWidget);
+
+    while (*it)
+    {
+        if ((*it)->type() == LVRScanProjectItemType)
+        {
+            LVRScanProjectItem *item = static_cast<LVRScanProjectItem *>(*it);
+            std::cout << item->text(0).toStdString() << std::endl;
+            ScanProjectBridgePtr projectBridge = item->getScanProjectBridge();
+            ScanProjectPtr projec = projectBridge->getScanProject();
+            if(projec)
+            {
+                
+            }else
+            {
+                std::cout << "invalid" << std::endl;
+            }
+            std::cout << projec->positions.size() << std::endl;
+
+            QString fileName = dialog.selectedFiles()[0];
+            if (dialog.selectedNameFilter() == hdfString)
+            {
+                /*HDF5SchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
+                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString()));
+                descriptions::HDF5IO h5IO(hyperlibSchema, hdf5Kernel);
+        */
+
+            }else
+            {
+                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
+                DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(fileName.toStdString()));
+                DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
+                dirIO.saveScanProject(projectBridge->getScanProject());
+            }
+        }
+        it++;
+    }
+
 }
 } /* namespace lvr2 */

@@ -4,6 +4,7 @@
 #include "lvr2/io/yaml/HyperspectralCamera.hpp"
 #include "lvr2/io/yaml/HyperspectralPanoramaChannel.hpp"
 #include "lvr2/io/yaml/Waveform.hpp"
+#include "lvr2/io/yaml/Label.hpp"
 #include "lvr2/io/yaml/MatrixIO.hpp"
 #include "lvr2/io/yaml/Scan.hpp"
 #include "lvr2/io/yaml/ScanCamera.hpp"

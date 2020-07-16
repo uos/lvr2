@@ -50,7 +50,7 @@ public:
     LVRScanProjectItem(ScanProjectBridgePtr bridge, QString name = "");
     LVRScanProjectItem(const LVRScanProjectItem& item);
     virtual ~LVRScanProjectItem();
-    ScanProjectBridgePtr	getModelBridge();
+    ScanProjectBridgePtr	getScanProjectBridge();
     QString         getName();
     void            setName(QString name);
     bool            isEnabled();
@@ -59,7 +59,7 @@ public Q_SLOTS:
     void			setVisibility(bool visible);
 
 protected:
-    ScanProjectBridgePtr  m_modelBridge;
+    ScanProjectBridgePtr  m_scanProjectBridge;
     QString         m_name;
 };
 

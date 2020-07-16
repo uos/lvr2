@@ -83,6 +83,10 @@ public:
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRScanProjectItem;
 
+    ScanProjectPtr getScanProject();
+
+    std::vector<ModelBridgePtr> getModels();
+
 private:
 
     std::vector<ModelBridgePtr> models;

@@ -88,7 +88,6 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
 
     std::string metaName = "meta.yaml";
     std::string groupName = sstr.str();
-    std::cout << "-----------_>"<< groupName << std::endl;
 
     if(d.metaName)
     {

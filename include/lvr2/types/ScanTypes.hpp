@@ -301,7 +301,41 @@ struct HyperspectralCamera
 };
 
 using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
+/*****************************************************************************
+ * @brief   Struct to represent a LabelInstance
+ *****************************************************************************/
+struct LabelInstance
+{
+    static constexpr char           sensorType[] = "LabelInstance";
+    std::string instanceName;
 
+    std::vector<int> color;
+
+    std::vector<int> labeledIDs;
+};
+using LabelInstancePtr = std::shared_ptr<LabelInstance>;
+/*****************************************************************************
+ * @brief   Struct to represent a LabelClass
+ *****************************************************************************/
+struct LabelClass
+{
+    static constexpr char           sensorType[] = "LabelClass";
+    std::string className;
+
+    std::vector<LabelInstancePtr> instances;
+};
+using LabelClassPtr = std::shared_ptr<LabelClass>;
+/*****************************************************************************
+ * @brief   Struct to represent a LabelRoot
+ *****************************************************************************/
+struct LabelRoot
+{
+    static constexpr char           sensorType[] = "LabelRoot";
+    PointBufferPtr points;
+
+    std::vector<LabelClassPtr> labelClasses;
+};
+using LabelRootPtr = std::shared_ptr<LabelRoot>;
 /*****************************************************************************
  * @brief   Represents a scan position consisting of a scan and
  *          images taken at this position
@@ -373,6 +407,9 @@ struct ScanProject
     /// system. It is assumed that all coordinate systems 
     /// loaded with this software are right-handed
     std::string                     coordinateSystem;
+
+    //Contains all data assoicated with Label
+    LabelRootPtr                    labelRoot;
 };
 
 using ScanProjectPtr = std::shared_ptr<ScanProject>;
@@ -388,29 +425,6 @@ struct ScanProjectEditMark
     std::vector<bool> changed;
 };
 using ScanProjectEditMarkPtr = std::shared_ptr<ScanProjectEditMark>;
-/*****************************************************************************
- * @brief   Struct to represent a LabelClass
- *****************************************************************************/
-struct LabelInstance
-{
-    std::string instanceName;
-
-    std::vector<int> color;
-
-    std::vector<int> labeledIDs;
-};
-using LabelInstancePtr = std::shared_ptr<LabelInstance>;
-/*****************************************************************************
- * @brief   Struct to represent a LabelClass
- *****************************************************************************/
-struct LabelClass
-{
-    std::string className;
-
-    std::vector<LabelInstancePtr> instances;
-};
-using LabelClassPtr = std::shared_ptr<LabelClass>;
-
 
 } // namespace lvr2
 

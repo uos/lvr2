@@ -254,7 +254,6 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else if (extension == ".h5")
     {
-	std::cout << "HDF5" << std::endl;
         io = new HDF5IO;
     }
 #ifdef LVR2_USE_PCL

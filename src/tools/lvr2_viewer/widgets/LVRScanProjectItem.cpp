@@ -11,13 +11,19 @@ namespace lvr2
 {
 
 LVRScanProjectItem::LVRScanProjectItem(ScanProjectBridgePtr bridge, QString name) :
-    QTreeWidgetItem(LVRScanProjectItemType), m_modelBridge(bridge), m_name(name)
+    QTreeWidgetItem(LVRScanProjectItemType), m_scanProjectBridge(bridge), m_name(name)
 {
-    for(auto model : m_modelBridge->models)
+    for(auto model : m_scanProjectBridge->models)
     {
-        LVRModelItem* modelItem = new LVRModelItem(model, name);
+        LVRModelItem* modelItem = new LVRModelItem(model, "Scan");
         addChild(modelItem);
     }
+    
+    // Setup item properties
+    setText(0, name);
+    //setCheckState(0, Qt::Checked);
+
+
     /*
     // Setup tree widget icon
     QIcon icon;
@@ -44,7 +50,7 @@ LVRScanProjectItem::LVRScanProjectItem(ScanProjectBridgePtr bridge, QString name
 
 LVRScanProjectItem::LVRScanProjectItem(const LVRScanProjectItem& item)
 {
-    m_modelBridge   = item.m_modelBridge;
+    m_scanProjectBridge   = item.m_scanProjectBridge;
     m_name          = item.m_name;
 }
 
@@ -60,9 +66,9 @@ void LVRScanProjectItem::setName(QString name)
     setText(0, m_name);
 }
 
-ScanProjectBridgePtr LVRScanProjectItem::getModelBridge()
+ScanProjectBridgePtr LVRScanProjectItem::getScanProjectBridge()
 {
-	return m_modelBridge;
+	return m_scanProjectBridge;
 }
 
 bool LVRScanProjectItem::isEnabled()
@@ -72,7 +78,7 @@ bool LVRScanProjectItem::isEnabled()
 
 void LVRScanProjectItem::setVisibility(bool visible)
 {
-    for (auto model : m_modelBridge->models)
+    for (auto model : m_scanProjectBridge->models)
     {
         model->setVisibility(visible);
     }

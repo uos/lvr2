@@ -1,19 +1,12 @@
-//#include "LVRScanProjectItem.hpp"
 #include "LVRScanProjectBridge.hpp"
-//#include "LVRPointBufferBridge.hpp"
-
-//#include "lvr2/geometry/Matrix4.hpp"
-
-//#include <vtkTransform.h>
-//#include <vtkActor.h>
-//#include <vtkProperty.h>
 
 namespace lvr2
 {
 
 
-LVRScanProjectBridge::LVRScanProjectBridge(ScanProjectPtr project)
+LVRScanProjectBridge::LVRScanProjectBridge(ScanProjectPtr project) : m_scanproject(project)
 {
+
     for (auto position : project->positions)
     {
         for(auto scan : position->scans)
@@ -30,6 +23,7 @@ LVRScanProjectBridge::LVRScanProjectBridge(ScanProjectPtr project)
 
 LVRScanProjectBridge::LVRScanProjectBridge(const LVRScanProjectBridge& b)
 {
+    m_scanproject = b.m_scanproject;
     models = b.models;
 }
 
@@ -50,6 +44,16 @@ void LVRScanProjectBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
     {
         if(model->validPointBridge()) renderer->RemoveActor(model->getPointBridge()->getPointCloudActor());
     }
+}
+
+ScanProjectPtr LVRScanProjectBridge::getScanProject()
+{
+    return m_scanproject;
+}
+
+std::vector<ModelBridgePtr> LVRScanProjectBridge::getModels()
+{
+    return models; 
 }
 
 LVRScanProjectBridge::~LVRScanProjectBridge()
