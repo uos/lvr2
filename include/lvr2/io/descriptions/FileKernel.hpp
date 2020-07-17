@@ -78,6 +78,11 @@ public:
         const std::string& group, 
         const std::string& constainer, 
         std::vector<size_t>& dims) const = 0;
+    
+    virtual intArr loadIntArray(
+        const std::string& group, 
+        const std::string& constainer, 
+        std::vector<size_t>& dims) const = 0;
 
     virtual void saveFloatArray(
         const std::string& groupName, 
@@ -96,6 +101,12 @@ public:
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<unsigned char>& data) const = 0;
+
+    virtual void saveIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<int>& data) const = 0;
 
     virtual bool exists(const std::string& group) const = 0;
     virtual bool exists(const std::string& group, const std::string& container) const = 0;

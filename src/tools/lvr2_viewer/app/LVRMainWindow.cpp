@@ -3086,7 +3086,6 @@ void LVRMainWindow::exportLabels()
     int topItemCount = labelTreeWidget->topLevelItemCount();
 
 
-    //TODO This should be for all Pointclouds
     boost::filesystem::path pointcloudName;
     QTreeWidgetItemIterator itu(treeWidget);
     LVRPointCloudItem* citem;
@@ -3349,36 +3348,61 @@ void LVRMainWindow::exportLWF()
 
     while (*it)
     {
+        ScanProjectPtr scanProject;
+        QString fileName = dialog.selectedFiles()[0];
+
         if ((*it)->type() == LVRScanProjectItemType)
         {
             LVRScanProjectItem *item = static_cast<LVRScanProjectItem *>(*it);
-            std::cout << item->text(0).toStdString() << std::endl;
-            ScanProjectBridgePtr projectBridge = item->getScanProjectBridge();
-            ScanProjectPtr projec = projectBridge->getScanProject();
-            if(projec)
-            {
-                
-            }else
-            {
-                std::cout << "invalid" << std::endl;
-            }
-            std::cout << projec->positions.size() << std::endl;
+            scanProject = item->getScanProjectBridge()->getScanProject();
+        }
+        else if((*it)->type() == LVRModelItemType)
+        {
+            LVRModelItem *item = static_cast<LVRModelItem *>(*it);
+            LVRScanProjectBridge transfer(item->getModelBridge());
 
-            QString fileName = dialog.selectedFiles()[0];
-            if (dialog.selectedNameFilter() == hdfString)
+            //check if Labels exists and add them
+            if(labelTreeWidget->topLevelItemCount() > 0)
             {
+
+            }
+
+            scanProject = transfer.getScanProject();
+        }
+        else
+        {
+            it++;
+            continue;
+        }
+        
+        //store Project
+        if (dialog.selectedNameFilter() == hdfString)
+        {
+            //as HDF5
                 /*HDF5SchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
                 HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString()));
                 descriptions::HDF5IO h5IO(hyperlibSchema, hdf5Kernel);
         */
 
-            }else
+        }else
+        {
+            if(scanProject)
             {
-                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
-                DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(fileName.toStdString()));
-                DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
-                dirIO.saveScanProject(projectBridge->getScanProject());
+                std::cout << "---" <<  scanProject->positions.size() << std::endl;
+                std::cout << "---" <<  fileName.toStdString() << std::endl;
             }
+            else
+            {
+                std::cout << "not valid " << std::endl;
+            }
+
+
+            //Intermedia
+            DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
+            DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(fileName.toStdString()));
+            DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
+        
+            dirIO.saveScanProject(scanProject);
         }
         it++;
     }

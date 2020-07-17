@@ -39,6 +39,7 @@ public:
     virtual Description scan(const std::string& scanPositionPath, const size_t& scanNo) const = 0;
     virtual Description waveform(const size_t& scanPosNo, const size_t& scanNo) const = 0;
     virtual Description waveform(const std::string& scanPositionPath, const size_t& scanNo) const = 0;
+    virtual Description labelInstance(const std::string& group, const std::string& className, const std::string &instanceName) const = 0;
 
     virtual Description scanCamera(const size_t& scanPositionNo, const size_t& camNo) const = 0;
     virtual Description scanCamera(const std::string& scanPositionPath, const size_t& camNo) const = 0;

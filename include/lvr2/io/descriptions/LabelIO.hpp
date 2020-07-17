@@ -6,6 +6,7 @@
 #include "lvr2/io/descriptions/ArrayIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
+#include <yaml-cpp/yaml.h>
 namespace lvr2
 {
 

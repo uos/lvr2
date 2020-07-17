@@ -65,6 +65,7 @@ public:
 
     LVRScanProjectBridge(const LVRScanProjectBridge& b);
 
+    LVRScanProjectBridge(ModelBridgePtr project);
     /**
      * @brief       Destructor.
      */

@@ -6,6 +6,7 @@
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/yaml/Scan.hpp"
 #include "lvr2/io/yaml/Waveform.hpp"
+#include "lvr2/io/yaml/Label.hpp"
 #include "lvr2/io/yaml/ScanImage.hpp"
 #include "lvr2/io/yaml/ScanPosition.hpp"
 #include "lvr2/io/yaml/MatrixIO.hpp"
@@ -150,6 +151,36 @@ Description ScanProjectSchemaHyperlib::waveform(const std::string &scanPositionP
         d.metaData = node;
     }
    
+    d.metaName = metaPath.string();
+    d.groupName = totalGroupPath.string();
+    return d;
+}
+Description ScanProjectSchemaHyperlib::labelInstance(const std::string& group, const std::string& className, const std::string &instanceName) const
+{
+    Description d;
+    boost::filesystem::path groupPath(group);
+    boost::filesystem::path pointcloudPath("pointcloud");
+    boost::filesystem::path classPath(className);
+    boost::filesystem::path instancePath(instanceName);
+    boost::filesystem::path totalGroupPath = groupPath / pointcloudPath / classPath;
+
+    // Create dataset path
+    d.dataSetName = instanceName + std::string(".ids");
+
+    // Load meta data for scan
+    boost::filesystem::path metaPath = instanceName + std::string("meta.yaml");
+    d.metaData = boost::none;
+    try
+    {
+        d.metaData = YAML::LoadFile((totalGroupPath / metaPath).string());
+    }
+    catch(YAML::BadFile& e)
+    {
+        // Nothing to do, meta node will contail default values
+        YAML::Node node;
+        node = LabelInstance();
+        d.metaData = node;
+    }
     d.metaName = metaPath.string();
     d.groupName = totalGroupPath.string();
     return d;

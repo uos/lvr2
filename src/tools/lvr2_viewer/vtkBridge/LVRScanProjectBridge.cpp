@@ -1,4 +1,5 @@
 #include "LVRScanProjectBridge.hpp"
+#include "lvr2/registration/TransformUtils.hpp"
 
 namespace lvr2
 {
@@ -27,6 +28,34 @@ LVRScanProjectBridge::LVRScanProjectBridge(const LVRScanProjectBridge& b)
     models = b.models;
 }
 
+LVRScanProjectBridge::LVRScanProjectBridge(ModelBridgePtr modelBridge)
+{
+    //create new ScanProjectPtr with one ScanPosition which has one Scan
+    ScanProjectPtr modelProject(new ScanProject);
+    ScanPositionPtr posPtr(new ScanPosition);
+    ScanPtr scanPtr(new Scan);
+    posPtr->scans.push_back(scanPtr);
+    modelProject->positions.push_back(posPtr);
+    
+    //set Pointcloud
+    scanPtr->points = modelBridge->getPointBridge()->getPointBuffer();
+
+    //set Pose
+    Vector3<double> pos;
+    pos[0] = modelBridge->getPose().x;
+    pos[1] = modelBridge->getPose().y;
+    pos[2] = modelBridge->getPose().z;
+
+    Vector3<double> angle;
+    angle[0] = modelBridge->getPose().r;
+    angle[1] = modelBridge->getPose().t;
+    angle[2] = modelBridge->getPose().p;
+
+    posPtr->registration = poseToMatrix(pos, angle);
+    m_scanproject = modelProject;
+
+    //TODO What about the meshes?
+}
 void LVRScanProjectBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
 {
     for(auto model : models)
