@@ -45,21 +45,26 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
 {
 
     // Check if we have RGB data
-    size_t numColors = loader->numPoints();
+    size_t numPoints = loader->numPoints();
     m_useColors = loader->hasColors();
 
     m_pointCloud  = pcl::PointCloud<pcl::PointXYZRGB>::Ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
 
 
     // Get data from loader object
-    size_t numPoints;
     FloatChannelOptional points = loader->getFloatChannel("points");
     UCharChannelOptional colors = loader->getUCharChannel("colors");
 
-//    if(m_useColors)
-//    {
-//        assert(numColors == numPoints);
-//    }
+    size_t numColors = 0;
+    if(colors)
+    {
+        numColors = (*colors).numElements();
+    }
+
+    if(m_useColors)
+    {
+        assert(numColors == numPoints);
+    }
 
 
     // Parse to PCL point cloud
