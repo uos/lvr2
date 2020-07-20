@@ -54,6 +54,9 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRCvImageItem.cpp
     widgets/LVRBoundingBoxItem.cpp
     widgets/LVRGraphicsView.cpp
+    widgets/LVRLabelTreeWidget.cpp
+    widgets/LVRLabelClassTreeItem.cpp
+    widgets/LVRLabelInstanceTreeItem.cpp
     util/qttf.cpp
 )
 

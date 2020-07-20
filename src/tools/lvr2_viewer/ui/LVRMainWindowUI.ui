@@ -1147,7 +1147,7 @@
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
-      <widget class="QTreeWidget" name="labelTreeWidget">
+      <widget class="LVRLabelTreeWidget" name="labelTreeWidget">
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
        </property>
@@ -1606,6 +1606,11 @@
    <class>lvr2::LVRPlotter</class>
    <extends>QWidget</extends>
    <header>LVRPlotter.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>LVRLabelTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>LVRLabelTreeWidget.hpp</header>
   </customwidget>
  </customwidgets>
  <resources>

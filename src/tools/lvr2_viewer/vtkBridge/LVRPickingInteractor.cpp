@@ -65,6 +65,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkIdFilter.h>
 #include <set>
+#include "../widgets/LVRItemTypes.hpp"
 
 namespace lvr2
 {
@@ -1815,7 +1816,7 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
       // Forward events
       LVRInteractorStylePolygonPick::OnLeftButtonUp();
-      if(!m_labelEditability[m_selectedLabel])
+      if(!(m_labelInstances[m_selectedLabel])->isEditable())
       {  QMessageBox warning;
         warning.setText("The Selectled Label is set to not 'EDitable'. No Changes will be commited");
         warning.setStandardButtons(QMessageBox::Ok);
@@ -1878,7 +1879,7 @@ void LVRPickingInteractor::calculateSelection(bool select)
 	displayCoord = coordinate->GetComputedViewportValue(this->CurrentRenderer);
 	if (isInside(&polygonPoints, displayCoord[0], displayCoord[1]))
 	{
-	    if(m_labelEditability[m_pointLabels[ids->GetValue(i)]])
+	    if(m_labelInstances[m_pointLabels[ids->GetValue(i)]]->isEditable())
 	    {
 	        selectedPolyPoints.push_back(ids->GetValue(i));
 	    }
@@ -1933,11 +1934,8 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
 
       int r, g, b;
-      if(!m_labelColors.empty())
-      {
-        m_labelColors[m_selectedLabel].getRgb(&r, &g, &b);
-        m_selectedActor->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
-      }
+      m_labelInstances[m_selectedLabel]->getColor().getRgb(&r, &g, &b);
+      m_selectedActor->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
       //SelectedActor->GetProperty()->SetPointSize(3);
 
       m_renderer->AddActor(m_selectedActor);
@@ -1948,68 +1946,30 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
 void LVRPickingInteractor::newLabel(QTreeWidgetItem* item)
 {
-    int labelId = item->data(3,0).toInt(); 
-    m_labelColors[labelId] =  item->data(3,1).value<QColor>();
-    m_labelEditability[labelId] = true;
-    if(m_labelColors.size() == 1)
+
+    if (item->type() != LVRLabelInstanceItemType)
+    {
+        return;
+    }
+
+    LVRLabelInstanceTreeItem *instanceItem = static_cast<LVRLabelInstanceTreeItem *>(item);
+    int labelId = instanceItem->getId();
+    m_labelInstances[labelId] = instanceItem;
+    if(m_labelInstances.size() == 1)
     {
             //first Label set as the choosen label
             m_selectedLabel = labelId;
     }
-    if(m_labelActors.find(item->data(3,0).toInt()) != m_labelActors.end())
+    if(m_labelActors.find(labelId) != m_labelActors.end())
     {
         //Instance known just change color
         int r,g,b;
-        m_labelColors[labelId].getRgb(&r, &g, &b);
+        instanceItem->getColor().getRgb(&r, &g, &b);
         m_labelActors[labelId]->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
         this->GetInteractor()->GetRenderWindow()->Render();
         this->HighlightProp(NULL);
     }
-    /*
-    if (item->data(3,0).toInt() == 0)
-    {
-        //Add Actor for all Unlabeled Points
-        auto unlabeledMapper = vtkSmartPointer<vtkDataSetMapper>::New();
-        auto unlabeledActor = vtkSmartPointer<vtkActor>::New();
-        unlabeledActor->SetMapper(unlabeledMapper);
 
-        //Crete copy of points
-        double point[3];
-        auto selectedVtkPoints = vtkSmartPointer<vtkPoints>::New();
-        for (int i = 0; i < m_selectedPoints.size(); i++)
-        {
-            m_points->vtkDataSet::GetPoint(i, point);
-            selectedVtkPoints->InsertNextPoint(point);
-        }
- 
-        auto selectedVtkPoly = vtkSmartPointer<vtkPolyData>::New();
-        selectedVtkPoly->SetPoints(selectedVtkPoints);
-        auto vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-        vertexFilter->SetInputData(selectedVtkPoly);
-        vertexFilter->Update();
-
-        auto polyData = vtkSmartPointer<vtkPolyData>::New();
-        polyData->ShallowCopy(vertexFilter->GetOutput());
-
-
-#if VTK_MAJOR_VERSION <= 5
-        unlabeledMapper->SetInput(polyData);
-#else
-        unlabeledMapper->SetInputData(polyData);
-#endif
-        unlabeledMapper->ScalarVisibilityOff();   
-
-        unlabeledActor->GetProperty()->SetColor(1,0.0,0.0); //(R,G,B)
-
-        if(m_labelActors.find(0) != m_labelActors.end())
-        {
-            this->CurrentRenderer->RemoveActor(m_labelActors[0]);
-            std::cout << "remove actor bedore" << std::endl;
-        }
-        m_labelActors[0] = unlabeledActor;
-
-        m_renderer->AddActor(unlabeledActor);
-    }*/
 }
 
 void LVRPickingInteractor::saveCurrentLabelSelection()
@@ -2210,7 +2170,7 @@ void LVRPickingInteractor::updateActor(int labelId)
     updateMapper->ScalarVisibilityOff();   
 
     int r, g, b;
-    m_labelColors[labelId].getRgb(&r, &g, &b);
+    m_labelInstances[labelId]->getColor().getRgb(&r, &g, &b);
     updatedActor->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
 
     //Get Visiibility and Discard old Actor after that 
@@ -2288,11 +2248,12 @@ void LVRPickingInteractor::removeLabel(const int& id)
 
 }
 
+/*
 void LVRPickingInteractor::setEditability(uint16_t labelId, bool editable)
 {
-    if (m_labelEditability.find(labelId) != m_labelEditability.end())
+    if (m_labelInstances.find(labelId) != m_labelInstances.end())
     {
         m_labelEditability[labelId] = editable;
     }
-}
+}*/
 } /* namespace lvr2 */

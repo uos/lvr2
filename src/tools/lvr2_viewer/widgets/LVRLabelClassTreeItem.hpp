@@ -25,35 +25,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * LVRItemTypes.hpp
- *
- *  @date Feb 17, 2014
- *  @author Thomas Wiemann
- */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#ifndef LVRLABELClassTREEITEM_H_
+#define LVRLABELClassTREEITEM_H_
+
+
+#include <QString>
+#include <QColor>
+#include <QTreeWidgetItem>
+#include "lvr2/types/ScanTypes.hpp"
+
+#define LABEL_NAME_COLUMN 0
+#define LABELED_POINT_COLUMN 1
+#define LABEL_VISIBLE_COLUMN 2
+#define LABEL_ID_COLUMN 3
+#define LABEL_EDITABLE_COLUMN 4
+#define LABEL_ID_GROUP 0
+#define LABEL_COLOR_GROUP 1
+
 
 namespace lvr2
 {
-    enum {
-        LVRModelItemType = 1001,
-        LVRPointCloudItemType,
-        LVRMeshItemType,
-        LVRPoseItemType,
-        LVRPickItemType,
-        LVRRecordedFrameItemType,
-        LVRScanDataItemType,
-        LVRCamDataItemType,
-        LVRCamerasItemType,
-        LVRBoundingBoxItemType,
-        LVRCvImageItemType,
-        LVRLabelClassType,
-        LVRLabelInstanceType,
-        LVRScanProjectItemType,
-        LVRLabelClassItemType,
-        LVRLabelInstanceItemType
-    };
-} // namespace lvr2
 
-#endif /* LVRITEMTYPES_HPP_ */
+class LVRLabelClassTreeItem : public QTreeWidgetItem
+{
+public:
+    LVRLabelClassTreeItem(std::string labelClass, int labeledPointCount, bool visible, bool editable, QColor color);
+    LVRLabelClassTreeItem(const LVRLabelClassTreeItem& item);
+    virtual ~LVRLabelClassTreeItem();
+    QColor getDefaultColor();
+    bool isVisible();
+    bool isEditable();
+    int getNumberOfLabeledPoints();
+    void addChild(QTreeWidgetItem *child);
+    std::string getName();
+    LabelClassPtr getLabelClassPtr();
+private:
+    LabelClassPtr m_labelClassPtr;
+};
+
+} /* namespace lvr2 */
+
+#endif /* LVRLABELCLASSTREEITEM_H_ */

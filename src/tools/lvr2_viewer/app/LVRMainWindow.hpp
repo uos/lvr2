@@ -92,6 +92,7 @@
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
+#include "../widgets/LVRLabelTreeWidget.hpp"
 #include "../widgets/LVRScanDataItem.hpp"
 #include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"

@@ -50,6 +50,7 @@
 #include <boost/shared_array.hpp>
 
 #include <memory>
+#include "../widgets/LVRLabelInstanceTreeItem.hpp"
 #include "LVRInteractorStylePolygonPick.hpp"
 #include <map>
 
@@ -115,7 +116,7 @@ public:
     vtkSmartPointer<vtkPolyData> getPoints();
 
     std::vector<uint16_t>& getLabeles();
-    void setEditability(uint16_t labelId, bool editable);
+    //void setEditability(uint16_t labelId, bool editable);
 public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
@@ -267,8 +268,7 @@ private:
     InteractorMode                  m_interactorMode;
     ShooterMode                     m_shooterMode;
 
-    std::map<uint16_t, QColor>	    m_labelColors;
-    std::map<uint16_t, bool>	    m_labelEditability;
+    std::map<uint16_t, LVRLabelInstanceTreeItem*>	    m_labelInstances;
 
 
 };
