@@ -13,7 +13,7 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     std::string groupName = "";
    
     std::stringstream sstr;
-    sstr << "scan" << std::setfill('0') << std::setw(8) << scanNo;
+    sstr << std::setfill('0') << std::setw(8) << scanNo;
     std::string scanName = sstr.str() + ".ply";
     std::string metaName = sstr.str() + ".yaml";
 
@@ -67,7 +67,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
 
     // Init default values
     std::stringstream sstr;
-    sstr << "scan" << std::setfill('0') << std::setw(8) << scanNo;
+    sstr << std::setfill('0') << std::setw(8) << scanNo;
     std::string scanName = sstr.str() + ".ply";
     std::string metaName = sstr.str() + ".yaml";
     std::string groupName = "";
