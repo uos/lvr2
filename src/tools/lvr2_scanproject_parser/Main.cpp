@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     std::string hyperlibDir = "./hyperlib";
 
     // Read slam6d data from input dir
-    DirectorySchemaPtr slamSchemaPtr(new ScanProjectSchemaSLAM(slamDir));
+    DirectorySchemaPtr slamSchemaPtr(new ScanProjectSchemaSLAM);
     DirectoryKernelPtr slamDirKernel(new DirectoryKernel(slamDir));
     DirectoryIO slamIO(slamDirKernel, slamSchemaPtr);
     ScanProjectPtr slamProject = slamIO.loadScanProject();
@@ -42,6 +42,7 @@ int main(int argc, char** argv)
     HDF5KernelPtr hdf5Kernel(new HDF5Kernel("slam.h5"));
     HDF5IO hdf5io(hdf5Kernel, hdf5Schema);
     hdf5io.saveScanProject(slamProject);
+
 
     return 0;
 }

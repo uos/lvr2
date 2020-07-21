@@ -49,7 +49,10 @@ namespace lvr2
         LVRBoundingBoxItemType,
         LVRCvImageItemType,
         LVRLabelClassType,
-        LVRLabelInstanceType
+        LVRLabelInstanceType,
+        LVRScanProjectItemType,
+        LVRLabelClassItemType,
+        LVRLabelInstanceItemType
     };
 } // namespace lvr2
 

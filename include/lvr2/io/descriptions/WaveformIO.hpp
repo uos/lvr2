@@ -1,0 +1,57 @@
+#pragma once
+
+#ifndef LVR2_IO_HDF5_WAVEFORMIO_HPP
+#define LVR2_IO_HDF5_WAVEFORMIO_HPP
+#include "ArrayIO.hpp"
+#include "MatrixIO.hpp"
+#include "lvr2/types/ScanTypes.hpp"
+
+#include <sstream>
+#include <yaml-cpp/yaml.h>
+namespace lvr2 
+{
+
+template <typename FeatureBase>
+class FullWaveformIO
+{
+public:
+  void saveFullWaveform(const size_t& scanPosNo, const size_t& scanNo, const WaveformPtr &buffer);
+
+  WaveformPtr loadFullWaveform(const size_t& scanPosNo, const size_t& scanNo);
+  
+protected:
+  FeatureBase *m_featureBase = static_cast<FeatureBase *>(this);
+
+// dependencies
+ ArrayIO<FeatureBase>* m_arrayIO = static_cast<ArrayIO<FeatureBase>*>(m_featureBase);
+ MatrixIO<FeatureBase>* m_matrixIO = static_cast<MatrixIO<FeatureBase>*>(m_featureBase);
+  static constexpr const char *ID = "FullWaveformIO";
+  static constexpr const char *OBJID = "FullWaveform";
+};
+
+/**
+ *
+ * @brief FeatureConstruct Specialization for WaveformIO
+ * - Constructs dependencies (ArrayIO, MatrixIO)
+ * - Sets type variable
+ *
+ *
+ */
+template <typename FeatureBase>
+struct FeatureConstruct<FullWaveformIO, FeatureBase>
+{
+
+    // DEPS
+    using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<MatrixIO, FeatureBase>::type;
+    using deps = typename dep1::template Merge<dep2>;
+
+    // ADD THE FEATURE ITSELF
+    using type = typename deps::template add_features<FullWaveformIO>::type;
+};
+
+} // namespace lvr2
+
+#include "WaveformIO.tcc"
+
+#endif // LVR2_IO_HDF5_WAVEFORMIO_HPP

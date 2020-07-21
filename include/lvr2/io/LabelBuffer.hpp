@@ -25,51 +25,41 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
- * IOFactory.h
- *
- *  @date 24.08.2011
- *  @author Thomas Wiemann
- */
+#ifndef LABELBUFFER_HPP
+#define LABELBUFFER_HPP
 
-#ifndef IOFACTORY_H_
-#define IOFACTORY_H_
-
-#include "lvr2/io/Model.hpp"
-#include "lvr2/io/CoordinateTransform.hpp"
-
-#include <string>
-#include <vector>
-#include <array>
-#include <map>
-
-#include <boost/shared_ptr.hpp>
-
+#include "lvr2/types/BaseBuffer.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
 {
 
-/**
- * @brief Factory class extract point cloud and mesh information
- *        from supported file formats. The instantiated MeshLoader
- *        and PointLoader instances are persistent, i.e. they will
- *        not be freed in the destructor of this class to prevent
- *        side effects.
- */
-class ModelFactory
+////
+/// \brief The MeshBuffer Mesh representation for I/O modules.
+///
+class LabelBuffer : public BaseBuffer
 {
-    public:
+    using base = BaseBuffer;
+public:
 
-        static ModelPtr readModel( std::string filename );
+    ///
+    /// \brief MeshBuffer      Contructor. Builds an empty buffer. Fill elements
+    ///                         with add-Methods.
+    ///
+    LabelBuffer();
 
-        static void saveModel( ModelPtr m, std::string file);
+    void addLabelClass(LabelClassPtr labelclass);
+    std::vector<LabelClassPtr> getLabelClasses();
+    void addPoints(floatArr Points);
+    floatArr getPoints();
 
-        static CoordinateTransform<float> m_transform;
+private:
+    std::vector<LabelClassPtr> m_classes;
+    floatArr m_points;
 
 };
 
-typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
+using LabelBufferPtr = std::shared_ptr<LabelBuffer>;
 
-} // namespace lvr2
-
-#endif /* IOFACTORY_H_ */
+}
+#endif //LABELBUFFER_HPP

@@ -26,50 +26,50 @@
  */
 
  /**
- * IOFactory.h
  *
- *  @date 24.08.2011
- *  @author Thomas Wiemann
- */
+ * @file      WaveformIO.hpp
+ * @brief     Read and write pointclouds and Wavform data from .lwf files.
+ * @details     Read and write pointclouds and Wavform data from .lwf files.
+ * 
+ * @author    Thomas Wiemann (twiemann), twiemann@uos.de, Universität Osnabrück
+ * @author    Michel Loepmeier (mloepmei), mloepmei@uos.de, Universität Osnabrück
+ * @version   111001
+ * @date      Created:       2020-06-23
+ * @date      Last modified: 2011-10-01 19:49:24
+ *
+ **/
 
-#ifndef IOFACTORY_H_
-#define IOFACTORY_H_
+#ifndef WAVEFORMIO_H_
+#define WAVEFORMIO_H_
 
-#include "lvr2/io/Model.hpp"
-#include "lvr2/io/CoordinateTransform.hpp"
-
-#include <string>
-#include <vector>
-#include <array>
-#include <map>
-
-#include <boost/shared_ptr.hpp>
-
+#include "lvr2/io/BaseIO.hpp"
 
 namespace lvr2
 {
 
 /**
- * @brief Factory class extract point cloud and mesh information
- *        from supported file formats. The instantiated MeshLoader
- *        and PointLoader instances are persistent, i.e. they will
- *        not be freed in the destructor of this class to prevent
- *        side effects.
+ * @brief A import / export class for point cloud and waveform data.
+ * LWF fies supported.
  */
-class ModelFactory
+class WaveformIO : public BaseIO
 {
     public:
 
-        static ModelPtr readModel( std::string filename );
+        /**
+         * \brief Default constructor.
+         **/
+        WaveformIO() {
+            setlocale (LC_ALL, "C");
+            m_model.reset();
+	}
+	~WaveformIO() {};
+        virtual ModelPtr read( std::string filename);
 
-        static void saveModel( ModelPtr m, std::string file);
-
-        static CoordinateTransform<float> m_transform;
+        virtual void save( string filename);
 
 };
 
-typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
 
 } // namespace lvr2
 
-#endif /* IOFACTORY_H_ */
+#endif /* WAVEFORMIO_H_ */

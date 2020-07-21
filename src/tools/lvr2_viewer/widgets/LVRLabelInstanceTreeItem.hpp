@@ -25,51 +25,45 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
- * IOFactory.h
- *
- *  @date 24.08.2011
- *  @author Thomas Wiemann
- */
+#ifndef LVRLABELInstanceTREEITEM_H_
+#define LVRLABELInstanceTREEITEM_H_
 
-#ifndef IOFACTORY_H_
-#define IOFACTORY_H_
 
-#include "lvr2/io/Model.hpp"
-#include "lvr2/io/CoordinateTransform.hpp"
+#include <QString>
+#include <QColor>
+#include <QTreeWidgetItem>
+#include "lvr2/types/ScanTypes.hpp"
 
-#include <string>
-#include <vector>
-#include <array>
-#include <map>
-
-#include <boost/shared_ptr.hpp>
+#define LABEL_NAME_COLUMN 0
+#define LABELED_POINT_COLUMN 1
+#define LABEL_VISIBLE_COLUMN 2
+#define LABEL_ID_COLUMN 3
+#define LABEL_EDITABLE_COLUMN 4
+#define LABEL_ID_GROUP 0
+#define LABEL_COLOR_GROUP 1
 
 
 namespace lvr2
 {
 
-/**
- * @brief Factory class extract point cloud and mesh information
- *        from supported file formats. The instantiated MeshLoader
- *        and PointLoader instances are persistent, i.e. they will
- *        not be freed in the destructor of this class to prevent
- *        side effects.
- */
-class ModelFactory
+class LVRLabelInstanceTreeItem : public QTreeWidgetItem
 {
-    public:
-
-        static ModelPtr readModel( std::string filename );
-
-        static void saveModel( ModelPtr m, std::string file);
-
-        static CoordinateTransform<float> m_transform;
-
+public:
+    LVRLabelInstanceTreeItem(std::string instanceName ,int id, int labeledPointCount, bool visible, bool editable, QColor color);
+    LVRLabelInstanceTreeItem(const LVRLabelInstanceTreeItem& item);
+    virtual ~LVRLabelInstanceTreeItem();
+    QColor getColor();
+    bool isVisible();
+    bool isEditable();
+    int getNumberOfLabeledPoints();
+    int getId();
+    std::string getName();
+    LabelInstancePtr getInstancePtr();
+private:
+    LabelInstancePtr m_labelInstancePtr;
+    int m_id;
 };
 
-typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
+} /* namespace lvr2 */
 
-} // namespace lvr2
-
-#endif /* IOFACTORY_H_ */
+#endif /* LVRLABELCLASSTREEITEM_H_ */

@@ -25,51 +25,35 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
- * IOFactory.h
- *
- *  @date 24.08.2011
- *  @author Thomas Wiemann
- */
+#include "lvr2/io/LabelBuffer.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
-#ifndef IOFACTORY_H_
-#define IOFACTORY_H_
-
-#include "lvr2/io/Model.hpp"
-#include "lvr2/io/CoordinateTransform.hpp"
-
-#include <string>
-#include <vector>
-#include <array>
-#include <map>
-
-#include <boost/shared_ptr.hpp>
-
+#include <iostream>
 
 namespace lvr2
 {
 
-/**
- * @brief Factory class extract point cloud and mesh information
- *        from supported file formats. The instantiated MeshLoader
- *        and PointLoader instances are persistent, i.e. they will
- *        not be freed in the destructor of this class to prevent
- *        side effects.
- */
-class ModelFactory
+LabelBuffer::LabelBuffer()
+:base()
 {
-    public:
+}
 
-        static ModelPtr readModel( std::string filename );
+void LabelBuffer::addLabelClass(LabelClassPtr labelclass)
+{
+    m_classes.push_back(labelclass);
+}
 
-        static void saveModel( ModelPtr m, std::string file);
+std::vector<LabelClassPtr> LabelBuffer::getLabelClasses()
+{
+    return m_classes;
+}
 
-        static CoordinateTransform<float> m_transform;
-
-};
-
-typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
-
-} // namespace lvr2
-
-#endif /* IOFACTORY_H_ */
+void LabelBuffer::addPoints(floatArr points)
+{
+    m_points = points;
+}
+floatArr LabelBuffer::getPoints()
+{
+    return m_points;
+}
+}

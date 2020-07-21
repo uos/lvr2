@@ -9,7 +9,8 @@
 
 namespace lvr2
 {
-
+namespace descriptions
+{
 class HDF5IO
 {
 public:
@@ -22,7 +23,7 @@ private:
     HDF5KernelPtr   m_kernel;
     HDF5SchemaPtr   m_schema;
 };
-
+} // namepsace descriptions
 } // namespace lvr2
 
 #endif

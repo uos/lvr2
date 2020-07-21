@@ -25,23 +25,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
- * IOFactory.h
+/**
+ * LVRModel.hpp
  *
- *  @date 24.08.2011
+ *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
+#ifndef LVRSCANPROJECTBRIDGE_HPP_
+#define LVRSCANPROJECTBRIDGE_HPP_
 
-#ifndef IOFACTORY_H_
-#define IOFACTORY_H_
 
-#include "lvr2/io/Model.hpp"
-#include "lvr2/io/CoordinateTransform.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
+#include "LVRModelBridge.hpp"
 
-#include <string>
-#include <vector>
-#include <array>
-#include <map>
+#include <vtkSmartPointer.h>
+#include <vtkRenderer.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -49,27 +47,56 @@
 namespace lvr2
 {
 
+
 /**
- * @brief Factory class extract point cloud and mesh information
- *        from supported file formats. The instantiated MeshLoader
- *        and PointLoader instances are persistent, i.e. they will
- *        not be freed in the destructor of this class to prevent
- *        side effects.
+ * @brief   Main class for conversion of LVR ScanProjects instances to vtk actors. This class
+ *          parses the internal ScanProject structures to vtk representations that can be
+ *          added to a vtkRenderer instance.
  */
-class ModelFactory
+class LVRScanProjectBridge
 {
-    public:
+public:
 
-        static ModelPtr readModel( std::string filename );
+    /**
+     * @brief       Constructor. Parses the model information and generates vtk actor
+     *              instances for the given data.
+     */
+    LVRScanProjectBridge(ScanProjectPtr project);
 
-        static void saveModel( ModelPtr m, std::string file);
+    LVRScanProjectBridge(const LVRScanProjectBridge& b);
 
-        static CoordinateTransform<float> m_transform;
+    LVRScanProjectBridge(ModelBridgePtr project);
+    /**
+     * @brief       Destructor.
+     */
+    virtual ~LVRScanProjectBridge();
+
+    /**
+     * @brief       Adds the generated actors to the given renderer
+     */
+    void        addActors(vtkSmartPointer<vtkRenderer> renderer);
+
+    /**
+     * @brief       Removes the generated actors from the given renderer
+     */
+    void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
+
+    // Declare model item classes as friends to have fast access to data chunks
+    friend class LVRScanProjectItem;
+
+    ScanProjectPtr getScanProject();
+
+    std::vector<ModelBridgePtr> getModels();
+
+private:
+
+    std::vector<ModelBridgePtr> models;
+    ScanProjectPtr m_scanproject;
 
 };
 
-typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
+typedef boost::shared_ptr<LVRScanProjectBridge> ScanProjectBridgePtr;
 
-} // namespace lvr2
+} /* namespace lvr2 */
 
-#endif /* IOFACTORY_H_ */
+#endif /* LVRMODEL_HPP_ */

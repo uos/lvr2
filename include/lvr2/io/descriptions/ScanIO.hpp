@@ -5,6 +5,7 @@
 
 #include "ArrayIO.hpp"
 #include "MatrixIO.hpp"
+#include "WaveformIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 #include <sstream>
@@ -31,7 +32,8 @@ class ScanIO
     // dependencies
     ArrayIO<FeatureBase>* m_arrayIO = static_cast<ArrayIO<FeatureBase>*>(m_featureBase);
     MatrixIO<FeatureBase>* m_matrixIO = static_cast<MatrixIO<FeatureBase>*>(m_featureBase);
-
+    FullWaveformIO<FeatureBase>* m_fullWaveformIO =
+        static_cast<FullWaveformIO<FeatureBase>*>(m_featureBase);
     static constexpr const char* ID = "ScanIO";
     static constexpr const char* OBJID = "Scan";
 };
@@ -50,7 +52,8 @@ struct FeatureConstruct<ScanIO, FeatureBase >
     // DEPS
     using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase >::type;
     using dep2 = typename FeatureConstruct<MatrixIO, FeatureBase >::type;
-    using deps = typename dep1::template Merge<dep2>;
+    using dep3 = typename FeatureConstruct<FullWaveformIO, FeatureBase>::type;
+    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
 
     // ADD THE FEATURE ITSELF
     using type = typename deps::template add_features<ScanIO>::type;

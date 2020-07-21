@@ -72,7 +72,9 @@
 
 #include "../widgets/LVRPlotter.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
+#include "../vtkBridge/LVRScanProjectBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
+#include "../widgets/LVRScanProjectItem.hpp"
 #include "../widgets/LVRPointCloudItem.hpp"
 #include "../widgets/LVRMeshItem.hpp"
 #include "../widgets/LVRItemTypes.hpp"
@@ -90,6 +92,7 @@
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
+#include "../widgets/LVRLabelTreeWidget.hpp"
 #include "../widgets/LVRScanDataItem.hpp"
 #include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"
@@ -111,6 +114,7 @@
 #define LABELED_POINT_COLUMN 1
 #define LABEL_VISIBLE_COLUMN 2
 #define LABEL_ID_COLUMN 3
+#define LABEL_EDITABLE_COLUMN 4
 
 
 
@@ -151,9 +155,13 @@ public Q_SLOTS:
     void changePicker(bool labeling);
     void showLabelTreeContextMenu(const QPoint&);
     void updatePointCount(const uint16_t, const int);
+    void readLWF();
+    void exportLWF();
 
     void cellSelected(QTreeWidgetItem* item, int column);
     void addLabelClass();
+    void lassoButtonToggled(bool);
+    void polygonButtonToggled(bool);
 
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
@@ -374,6 +382,7 @@ private:
     QAction*                            m_actionAddLabelClass;
     QAction*                            m_actionAddNewInstance;
     QAction*                            m_actionRemoveInstance;
+    QAction*                            m_actionShowWaveform;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 

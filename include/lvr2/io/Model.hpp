@@ -37,6 +37,7 @@
 
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/io/LabelBuffer.hpp"
 
 #include <boost/shared_ptr.hpp>
 
@@ -53,10 +54,12 @@ class Model
 public:
 
     Model( PointBufferPtr p = PointBufferPtr(),
-           MeshBufferPtr m = MeshBufferPtr() )
+           MeshBufferPtr m = MeshBufferPtr(),
+	   LabelBufferPtr l = LabelBufferPtr())
     {
         m_pointCloud = p;
         m_mesh = m;
+	m_label = l;
     }
 
     Model( MeshBufferPtr m, PointBufferPtr p )
@@ -71,10 +74,18 @@ public:
         m_mesh = m;
     }
 
+    Model(LabelBufferPtr l)
+    {
+        m_pointCloud.reset();
+	m_mesh.reset();
+	m_label = l;
+    }
+
     virtual ~Model() {}
 
     PointBufferPtr         m_pointCloud;
     MeshBufferPtr          m_mesh;
+    LabelBufferPtr         m_label;
 };
 
 using ModelPtr = std::shared_ptr<Model>;

@@ -35,6 +35,7 @@
 #include <QFileInfo>
 #include <QAbstractItemView>
 #include <QtGui>
+#include <numeric>
 
 #include "LVRMainWindow.hpp"
 
@@ -42,10 +43,16 @@
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
+#include "lvr2/io/descriptions/HDF5IO.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
+#include "lvr2/io/descriptions/DirectoryIO.hpp"
 
 #include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/util/Util.hpp"
+
+#include "../widgets/LVRLabelClassTreeItem.hpp"
+#include "../widgets/LVRLabelInstanceTreeItem.hpp"
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
@@ -82,7 +89,7 @@ LVRMainWindow::LVRMainWindow()
 
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
-    m_labelDialog = new LVRLabelDialog(treeWidget);
+    //m_labelDialog = new LVRLabelDialog(treeWidget);
     m_incompatibilityBox = new QMessageBox();
     m_aboutDialog = new QDialog(this);
     Ui::AboutDialog aboutDialog;
@@ -130,6 +137,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionAddLabelClass = new QAction("Add label class", this);
     m_actionAddNewInstance = new QAction("Add new instance", this);
     m_actionRemoveInstance = new QAction("Remove instance", this);
+    m_actionShowWaveform = new QAction("Show Waveform", this);
 
     m_actionShowImage = new QAction("Show Image", this);
     m_actionSetViewToCamera = new QAction("Set view to camera", this);
@@ -142,6 +150,7 @@ LVRMainWindow::LVRMainWindow()
     m_labelTreeParentItemContextMenu->addAction(m_actionAddNewInstance);
     m_labelTreeChildItemContextMenu = new QMenu();
     m_labelTreeChildItemContextMenu->addAction(m_actionRemoveInstance);
+    m_labelTreeChildItemContextMenu->addAction(m_actionShowWaveform);
 
     m_treeParentItemContextMenu = new QMenu;
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
@@ -191,11 +200,6 @@ LVRMainWindow::LVRMainWindow()
     // Toolbar item "Classification"
     m_actionSimple_Plane_Classification = this->actionSimple_Plane_Classification;
     m_actionFurniture_Recognition = this->actionFurniture_Recognition;
-
-    //Toolbar item "Labeling"
-    m_actionStart_labeling = this->actionLabeling_Start;
-    m_actionStop_labeling = this->actionLabeling_Stop;
-    m_actionExtract_labeling = this->actionLabeling_Export;
 
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
@@ -276,10 +280,11 @@ LVRMainWindow::~LVRMainWindow()
     {
         delete m_correspondanceDialog;
     }
+    /*
     if(m_labelDialog)
     {
         delete m_labelDialog;
-    }
+    }*/
 
     if (m_pickingInteractor)
     {
@@ -331,6 +336,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(this->actionOpenLabeledPointcloud, SIGNAL(triggered()), this, SLOT(loadLabels()));
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
+    QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
+    QObject::connect(this->actionExportWaveform, SIGNAL(triggered()), this, SLOT(exportLWF()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
@@ -340,6 +347,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+    QObject::connect(this->actionConfirm_LabelSelection, SIGNAL(triggered()), m_pickingInteractor, SLOT(saveCurrentLabelSelection()));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(triggered()), this, SLOT(showColorDialog()));
     QObject::connect(m_actionRenameModelItem, SIGNAL(triggered()), this, SLOT(renameModelItem()));
@@ -350,6 +358,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionUnloadPointCloudData, SIGNAL(triggered()), this, SLOT(unloadPointCloudData()));
 
     QObject::connect(m_actionAddLabelClass, SIGNAL(triggered()), this, SLOT(addLabelClass()));
+    QObject::connect(this->addLabelClassButton, SIGNAL(pressed()), this, SLOT(addLabelClass()));
 
     QObject::connect(selectedInstanceComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(comboBoxIndexChanged(int)));
 
@@ -424,23 +433,21 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(firstPointPicked(double*)),m_correspondanceDialog, SLOT(firstPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
-    QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(uint16_t, int)), m_labelDialog, SLOT(updatePointCount(uint16_t, int)));
+    //QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(uint16_t, int)), m_labelDialog, SLOT(updatePointCount(uint16_t, int)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(const uint16_t, const int)), this, SLOT(updatePointCount(const uint16_t, const int)));
-    QObject::connect(m_pickingInteractor, SIGNAL(responseLabels(std::vector<uint16_t>)), m_labelDialog, SLOT(responseLabels(std::vector<uint16_t>)));
+    QObject::connect(m_pickingInteractor, SIGNAL(lassoSelected()), this->actionSelected_Lasso, SLOT(toggle()));
+    QObject::connect(m_pickingInteractor, SIGNAL(polygonSelected()), this->actionSelected_Polygon, SLOT(toggle()));
+    //QObject::connect(m_pickingInteractor, SIGNAL(responseLabels(std::vector<uint16_t>)), m_labelDialog, SLOT(responseLabels(std::vector<uint16_t>)));
 
-    QObject::connect(this, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
-    QObject::connect(m_labelDialog, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
-    QObject::connect(m_labelDialog, SIGNAL(labelLoaded(int, std::vector<int>)), m_pickingInteractor, SLOT(setLabel(int, std::vector<int>)));
-    QObject::connect(m_labelDialog->m_ui->exportLabelButton, SIGNAL(pressed()), m_pickingInteractor, SLOT(requestLabels()));
-    QObject::connect(m_labelDialog, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
+    //QObject::connect(this, SIGNAL(labelAdded(QTreeWidgetItem*)), m_pickingInteractor, SLOT(newLabel(QTreeWidgetItem*)));
     QObject::connect(this, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
 
     QObject::connect(labelTreeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(visibilityChanged(QTreeWidgetItem*, int)));
-    QObject::connect(m_labelDialog, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
+    //QObject::connect(m_labelDialog, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
     QObject::connect(this, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
 
     QObject::connect(labelTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(cellSelected(QTreeWidgetItem*, int)));
-    QObject::connect(m_labelDialog->m_ui->lassotoolButton, SIGNAL(toggled(bool)), m_pickingInteractor, SLOT(setLassoTool(bool)));
+    //QObject::connect(m_labelDialog->m_ui->lassotoolButton, SIGNAL(toggled(bool)), m_pickingInteractor, SLOT(setLassoTool(bool)));
 
     // Interaction with interactor
     QObject::connect(this->doubleSpinBoxDollySpeed, SIGNAL(valueChanged(double)), m_pickingInteractor, SLOT(setMotionFactor(double)));
@@ -454,9 +461,10 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->pushButtonFly , SIGNAL(pressed()), m_pickingInteractor, SLOT(modeShooter()));
 
 
-    QObject::connect(this->actionSelected_Lasso, SIGNAL(triggered()), this, SLOT(manualLabeling()));
-    QObject::connect(this->actionSelected_Polygon, SIGNAL(triggered()), this, SLOT(manualLabeling()));
-    QObject::connect(m_actionStop_labeling, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+    //QObject::connect(this->actionSelected_Lasso, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+    QObject::connect(this->actionSelected_Lasso, SIGNAL(toggled(bool)), this, SLOT(lassoButtonToggled(bool)));
+    //QObject::connect(this->actionSelected_Polygon, SIGNAL(triggered()), this, SLOT(manualLabeling()));
+    QObject::connect(this->actionSelected_Polygon, SIGNAL(toggled(bool)), this, SLOT(polygonButtonToggled(bool)));
 //    QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), this, SLOT(manualLabeling()));
  //   QObject::connect(m_labelInteractor, SIGNAL(pointsSelected()), m_labelDialog, SLOT(labelPoints()));
 //    QObject::connect(m_actionExtract_labeling, SIGNAL(triggered()), m_labelInteractor, SLOT(extractLabel()));
@@ -943,7 +951,64 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
                 //update the Count avoidign the standart "signal" case to avoid race conditions
                 topLevelItem->setText(LABELED_POINT_COLUMN, QString::number(topLevelItem->text(LABELED_POINT_COLUMN).toInt() - item->text(LABELED_POINT_COLUMN).toInt()));
                 topLevelItem->removeChild(item);
-            }
+		//remove the ComboBox entry
+		int comboBoxPos = selectedInstanceComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
+                if (comboBoxPos >= 0)
+                { 
+                    selectedInstanceComboBox->removeItem(comboBoxPos);
+                }
+
+            } else if(selected == m_actionShowWaveform)
+	    {
+                LVRModelItem* lvrmodel = getModelItem(treeWidget->topLevelItem(0));
+		ModelBridgePtr bridge = lvrmodel->getModelBridge();
+		PointBufferBridgePtr pointBridge = bridge->getPointBridge();
+		PointBufferPtr pointBuffer = pointBridge->getPointBuffer();
+		Channel<uint16_t>::Optional opt = pointBuffer->getChannel<uint16_t>("waveform");
+		if (opt)
+		{
+		    size_t n = opt->numElements();
+		    size_t width = opt->width();
+		    boost::shared_array<uint16_t> waveforms = opt->dataPtr();
+
+		    //get Selected Ids
+		    std::vector<int> labelID;
+                    std::vector<uint16_t> labeledPoints = m_pickingInteractor->getLabeles();
+                    int index = item->data(LABEL_ID_COLUMN, 0).toInt();
+
+		    for (int i = 0; i < labeledPoints.size(); i++)
+		    {
+                        if (index == labeledPoints[i])
+			{
+                            labelID.push_back(i);
+			}
+		    }
+
+		    std::vector<int> combinedWaveform;
+		    combinedWaveform.resize(width);
+		    for (auto id : labelID)
+		    {
+			for (int i = 0; i < width; i++)
+			{
+			    combinedWaveform[i] += waveforms[(id * width) + i];
+			}
+		    }
+		    floatArr plotData(new float[width]);
+	            LVRPlotter* plotter =new LVRPlotter;
+		    for(int i = 0; i < combinedWaveform.size(); i++)
+		    {
+	                plotData[i] = (combinedWaveform[i] / labelID.size());
+		    }
+                    plotter->setPoints(plotData, width);
+                    plotter->setXRange(0, combinedWaveform.size());
+		    QDialog window(this);
+		    QHBoxLayout *HLayout = new QHBoxLayout(&window);
+		    HLayout->addWidget(plotter);
+		    window.setLayout(HLayout);
+		    window.exec();
+
+		}
+	    }
             return;
 
         }
@@ -967,8 +1032,8 @@ void LVRMainWindow::addLabelClass()
             return;
     }
 
-    QColor label_color = QColorDialog::getColor(Qt::red, this, tr("Choose default Label Color for label Class(willbe used for first isntance)"));
-    if (!label_color.isValid())
+    QColor labelColor = QColorDialog::getColor(Qt::red, this, tr("Choose default Label Color for label Class(willbe used for first isntance)"));
+    if (!labelColor.isValid())
     {
             //Non Valid Color Return 
             return;
@@ -977,51 +1042,51 @@ void LVRMainWindow::addLabelClass()
     if (labelTreeWidget->topLevelItemCount() == 0)
     {
 
-        //Setting up Top Label
-        QTreeWidgetItem * item = new QTreeWidgetItem(LVRLabelClassType);
-        item->setText(0, QString::fromStdString(UNKNOWNNAME));
-        item->setText(LABELED_POINT_COLUMN, QString::number(0));
-        item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-        item->setData(LABEL_ID_COLUMN, 1, QColor(Qt::red));
-        //item->setFlags(item->flags() & ~ Qt::ItemIsSelectable);
+        //Create Unlabeled Class
+        LVRLabelClassTreeItem * classItem = new LVRLabelClassTreeItem(UNKNOWNNAME, 0, true, true, QColor(Qt::red));
+        // and instance
+        LVRLabelInstanceTreeItem * instanceItem = new LVRLabelInstanceTreeItem(UNKNOWNNAME, 0, 0 , true, true, QColor(Qt::red));
 
-        //Setting up new child item
-        QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
-        childItem->setText(LABEL_NAME_COLUMN, QString::fromStdString(UNKNOWNNAME) + QString::number(1));
-        childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
-        childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-        childItem->setData(LABEL_ID_COLUMN, 1, QColor(Qt::red));
-        childItem->setData(LABEL_ID_COLUMN, 0, 0);
-        item->addChild(childItem);
-        labelTreeWidget->addTopLevelItem(item);    
-        //Added first Top Level item enable instance button
-        Q_EMIT(labelAdded(childItem));
-        selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), 0);
+        classItem->addChild(instanceItem);
+        labelTreeWidget->addTopLevelItem(classItem);    
+        //Q_EMIT(labelAdded(instanceItem));
+        m_pickingInteractor->newLabel(instanceItem);
+        selectedInstanceComboBox->addItem(QString::fromStdString(instanceItem->getName()), 0);
+
+        std::vector<int> out;
+        QTreeWidgetItemIterator itu(treeWidget);
+        LVRPointCloudItem* citem;
+        while (*itu)
+        {
+            QTreeWidgetItem* item = *itu;
+
+            if ( item->type() == LVRPointCloudItemType)
+            {
+                citem = static_cast<LVRPointCloudItem*>(*itu);
+                out = std::vector<int>(citem->getPointBufferBridge()->getPolyData()->GetNumberOfPoints());
+            }
+            itu++;
+        }
+        std::iota(out.begin(), out.end(), 0);
+        m_pickingInteractor->setLabel(0, out);
     }
 
     int id = m_id++;
     //Setting up new Toplevel item
-    QTreeWidgetItem * item = new QTreeWidgetItem(LVRLabelClassType);
-    item->setText(0, className);
-    item->setText(LABELED_POINT_COLUMN, QString::number(0));
-    item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-    item->setData(LABEL_ID_COLUMN, 1, label_color);
-    //item->setFlags(item->flags() & ~ Qt::ItemIsSelectable);
-
-    //Setting up new child item
-    QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
-    childItem->setText(LABEL_NAME_COLUMN, className + QString::number(1));
-    childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
-    childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-    childItem->setData(LABEL_ID_COLUMN, 1, label_color);
-    childItem->setData(LABEL_ID_COLUMN, 0, id);
-    item->addChild(childItem);
-    m_selectedLabelItem = childItem;
-    labelTreeWidget->addTopLevelItem(item);    
+    LVRLabelClassTreeItem * classItem = new LVRLabelClassTreeItem(className.toStdString(), 0, true, true, labelColor);
+    LVRLabelInstanceTreeItem * instanceItem = new LVRLabelInstanceTreeItem((className.toStdString() + "0"), id, 0 , true, true, labelColor);
+    classItem->addChild(instanceItem);
+    m_selectedLabelItem = instanceItem;
+    labelTreeWidget->addTopLevelItem(classItem);    
     
     //Add label to combo box 
-    selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
-    Q_EMIT(labelAdded(childItem));
+    selectedInstanceComboBox->addItem(QString::fromStdString(instanceItem->getName()), id);
+   // Q_EMIT(labelAdded(instanceItem));
+    m_pickingInteractor->newLabel(instanceItem);
+    int comboBoxPos = selectedInstanceComboBox->findData(instanceItem->getId());
+    std::cout << instanceItem->getId() << std::endl;
+    selectedInstanceComboBox->setCurrentIndex(comboBoxPos);
+    //Q_EMIT(labelChanged(id));
 }
 void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 {
@@ -1106,8 +1171,8 @@ void LVRMainWindow::renameModelItem()
 
 LVRModelItem* LVRMainWindow::loadModelItem(QString name)
 {
-    std::cout << "model loaded" << std::endl;
     // Load model and generate vtk representation
+	std::cout << "Read Model " << std::endl;
     ModelPtr model = ModelFactory::readModel(name.toStdString());
     ModelBridgePtr bridge(new LVRModelBridge(model));
     bridge->addActors(m_renderer);
@@ -1193,8 +1258,28 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
             // check for h5
             QFileInfo info((*it));
             QString base = info.fileName();
+	    if(info.suffix() == "")
+	    {
+            //read intermediaformat
+	        DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(info.absoluteFilePath().toStdString())); 
+            DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib); 
+            DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
+            ScanProjectPtr scanProject = dirIO.loadScanProject();
+            ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
+            bridge->addActors(m_renderer);
+           /* 
+            DirectoryKernelPtr dirKernelPtr2(new DirectoryKernel("/home/mloepmei/whatever")); 
+            DirectorySchemaPtr hyperlibSchemaPtr2(new ScanProjectSchemaHyperlib); 
+            DirectoryIO dirIO2(dirKernelPtr2, hyperlibSchemaPtr2);
+            dirIO2.saveScanProject(bridge->getScanProject());
+*/
 
-            if (info.suffix() == "h5")
+            LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+            QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+            root->addChild(item);
+            item->setExpanded(false);
+            //lastItem = item;
+            }else if (info.suffix() == "h5")
             {
                 // h5 special loading case
                 // special case h5:
@@ -1226,6 +1311,46 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                     item->setExpanded(false);
                     lastItem = item;
                 }
+		
+		//read Label
+                if(h5_io_ptr->readLabel(model_ptr))
+                {
+                    /*
+                    std::vector<LabelClassPtr> labelClasses = model_ptr->m_label->getLabelClasses();
+                    for (auto labelClass : labelClasses)
+                    {
+                        QTreeWidgetItem * item = new QTreeWidgetItem(LVRLabelClassType);
+                        item->setText(LABEL_NAME_COLUMN, QString::fromStdString(labelClass->className));
+                        item->setText(LABELED_POINT_COLUMN, QString::number(0));
+                            item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+                        item->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
+                        labelTreeWidget->addTopLevelItem(item);   
+                        for (auto instance : labelClass->instances)
+                        {
+                            int id = 0;
+                            if (labelClass->className != UNKNOWNNAME)
+                            {
+                                id = m_id++;
+                            } 
+
+                            QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
+                            childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
+                            childItem->setText(LABEL_NAME_COLUMN, QString::fromStdString(instance->instanceName));
+                            QColor label_color(instance->color[0], instance->color[1], instance->color[2]);
+                            childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+                            childItem->setData(LABEL_ID_COLUMN, 1, label_color);
+                            childItem->setData(LABEL_ID_COLUMN, 0, id);
+                            childItem->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
+                            item->addChild(childItem);
+                            //Q_EMIT(labelAdded(childItem));
+                            m_pickingInteractor->newLabel(instanceItem);
+                            //m_pickingInteractor->setLabel(id, instance->labeledIDs);
+                            selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
+                        }
+                }*/
+		    std::cout <<"Points" <<  model_ptr->m_pointCloud->numPoints()<< std::endl;
+                    lastItem = loadModelItem(*it);
+		}
 
             } else {
                 lastItem = loadModelItem(*it);
@@ -1264,7 +1389,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
 
 			m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
-                        m_labelDialog->setPoints(item->parent()->text(0).toStdString(), citem->getPointBufferBridge()->getPolyData());
+                        //m_labelDialog->setPoints(item->parent()->text(0).toStdString(), citem->getPointBufferBridge()->getPolyData());
 		}
 		itu++;
 	}
@@ -2689,13 +2814,13 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
                 //Toplevel item nothing else to do
                 return;
             }
-            /*
-            int comboBoxPos = m_ui->selectedLabelComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
+
+	    //update comboxBoxItem
+            int comboBoxPos = selectedInstanceComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
             if (comboBoxPos >= 0)
             {
-                m_ui->selectedLabelComboBox->setItemText(comboBoxPos, label_name);
-
-            }*/
+                selectedInstanceComboBox->setItemText(comboBoxPos, label_name);
+            }
             return;
         }
     }else if(column == LABEL_ID_COLUMN)
@@ -2708,7 +2833,8 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
             if(item->parent())
             {
                 //Update Color In picker
-                Q_EMIT(labelAdded(item));
+                //Q_EMIT(labelAdded(item));
+                m_pickingInteractor->newLabel(item);
                 return;
             }
             else
@@ -2725,7 +2851,8 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
                     for (int i = 0; i < item->childCount(); i++)
                     {
                         item->child(i)->setData(LABEL_ID_COLUMN, 1, label_color);
-                        Q_EMIT(labelAdded(item->child(i)));
+                       // Q_EMIT(labelAdded(item->child(i)));
+                        m_pickingInteractor->newLabel(item->child(i));
                     }
                 }
 	
@@ -2736,9 +2863,17 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
     {
         if(item->parent())
         {
+            //Element double Clicked change selected Label
             m_selectedLabelItem = item;
-
-            Q_EMIT(labelChanged(item->data(LABEL_ID_COLUMN, 0).toInt()));
+            int comboCount = selectedInstanceComboBox->count();
+            for (int i = 0; i < comboCount; i++)
+            {
+                int comboBoxid = selectedInstanceComboBox->itemData(i).toInt();
+                if(item->data(LABEL_ID_COLUMN,0).toInt() == comboBoxid)
+                {
+                    selectedInstanceComboBox->setCurrentIndex(i);
+                }
+            }
             
         }
     }
@@ -2746,29 +2881,32 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
 
 void LVRMainWindow::visibilityChanged(QTreeWidgetItem* changedItem, int column)
 {
-    if(column != LABEL_VISIBLE_COLUMN)
+    if (column == LABEL_VISIBLE_COLUMN || column == LABEL_EDITABLE_COLUMN)
     {
-        return;
-    }
+        //check if Instance or whole label changed
+	if (changedItem->parent())
+	{
+	    if(column == LABEL_VISIBLE_COLUMN)
+	    {
+	    	//parent exists item is an instance
+	    	Q_EMIT(hidePoints(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_VISIBLE_COLUMN)));
+	    } 
+	    else if (column == LABEL_EDITABLE_COLUMN)
+	    {
+		//m_pickingInteractor->setEditability(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_EDITABLE_COLUMN));
+	    }
+	} else
+	{
+		//Check if unlabeled item
+		for (int i = 0; i < changedItem->childCount(); i++)
+	    {
+	        QTreeWidgetItem* childItem = changedItem->child(i);
 
-    //check if Instance or whole label changed
-    if (changedItem->parent())
-    {
-        //parent exists item is an instance
-        Q_EMIT(hidePoints(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_VISIBLE_COLUMN)));
-    } else
-    {
-        //Check if unlabeled item
-        for (int i = 0; i < changedItem->childCount(); i++)
-        {
-            QTreeWidgetItem* childItem = changedItem->child(i);
-
-            //sets child elements checkbox on toplevel box value if valuechanged a singal will be emitted and handeled
-            childItem->setCheckState(LABEL_VISIBLE_COLUMN, changedItem->checkState(LABEL_VISIBLE_COLUMN));
+	        //sets child elements checkbox on toplevel box value if valuechanged a singal will be emitted and handeled
+	        childItem->setCheckState(column, changedItem->checkState(column));
+	    }
         }
     }
-
-
 }
 
 void LVRMainWindow::addNewInstance(QTreeWidgetItem * selectedTopLevelItem)
@@ -2777,36 +2915,33 @@ void LVRMainWindow::addNewInstance(QTreeWidgetItem * selectedTopLevelItem)
     QString choosenLabel = selectedTopLevelItem->text(LABEL_NAME_COLUMN);
 
     bool accepted;
-    QString instance_name = QInputDialog::getText(this, tr("Choose Name for new Instance"),
+    QString instanceName = QInputDialog::getText(this, tr("Choose Name for new Instance"),
     tr("Instance name:"), QLineEdit::Normal,
                     QString(choosenLabel + QString::number(selectedTopLevelItem->childCount() + 1)) , &accepted);
-    if (!accepted || instance_name.isEmpty())
+    if (!accepted || instanceName.isEmpty())
     {
             //No valid Input
             return;
     }
 
-    QColor label_color = QColorDialog::getColor(selectedTopLevelItem->data(LABEL_ID_COLUMN, 1).value<QColor>(), this, tr("Choose Label Color for first instance"));
-    if (!label_color.isValid())
+    QColor labelColor = QColorDialog::getColor(selectedTopLevelItem->data(LABEL_ID_COLUMN, 1).value<QColor>(), this, tr("Choose Label Color for first instance"));
+    if (!labelColor.isValid())
     {
             //Non Valid Color Return 
             return;
     }
 
     int id = m_id++;
-    QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
-    childItem->setText(LABEL_NAME_COLUMN, instance_name);
-    childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
-    childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-    childItem->setData(LABEL_ID_COLUMN, 1, label_color);
-    childItem->setData(LABEL_ID_COLUMN, 0, id);
-    selectedTopLevelItem->addChild(childItem);
-
+    LVRLabelInstanceTreeItem * instanceItem = new LVRLabelInstanceTreeItem(instanceName.toStdString(), 0, id, true, true, labelColor);
+    selectedTopLevelItem->addChild(instanceItem);
 
     //Add label to combo box 
-    selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
-    Q_EMIT(labelAdded(childItem));
+    selectedInstanceComboBox->addItem(QString::fromStdString(instanceItem->getName()), id);
+    m_pickingInteractor->newLabel(instanceItem);
+    //Q_EMIT(labelAdded(childItem));
 
+    int comboBoxPos = selectedInstanceComboBox->findData(instanceItem->getId());
+    selectedInstanceComboBox->setCurrentIndex(comboBoxPos);
 }
 
 void LVRMainWindow::loadLabels()
@@ -2829,16 +2964,31 @@ void LVRMainWindow::loadLabels()
         boost::filesystem::path classGroup = (boost::filesystem::path("pointclouds") / boost::filesystem::path(pointcloudName) / boost::filesystem::path("labels"));
         std::vector<std::string> labelClasses;
         kernel.subGroupNames(classGroup.string(), labelClasses);
+
+
+        //get Data points
+        boost::filesystem::path pointGroup = (boost::filesystem::path("pointclouds") / boost::filesystem::path(pointcloudName));
+        boost::shared_array<double> pointData;
+        std::vector<size_t> pointDim;
+        std::cout << pointGroup.string() << std::endl;
+        pointData = kernel.loadArray<double>(pointGroup.string(), "Points", pointDim);
+        for(int i = 0; i < (pointDim[1]); i++)
+        {
+
+            //TODO:somehow create model 
+            //std::cout <<i << ":   "<< pointData[i ] << pointData[i + pointDim[1]] << pointData[i + (pointDim[1] * 2)] << std::endl;
+        }
+
         for (auto labelClass : labelClasses)
         {
             //Get TopLevel Item for tree view
-            QTreeWidgetItem * item = new QTreeWidgetItem();
+            QTreeWidgetItem * item = new QTreeWidgetItem(LVRLabelClassType);
             item->setText(0, QString::fromStdString(labelClass));
             item->setText(LABELED_POINT_COLUMN, QString::number(0));
             item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+            item->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
 
             labelTreeWidget->addTopLevelItem(item);   
-
 
             //pointclouds/$name/labels/$labelname
             boost::filesystem::path instanceGroup = (classGroup / boost::filesystem::path(labelClass));
@@ -2854,7 +3004,6 @@ void LVRMainWindow::loadLabels()
                 if (labelClass != UNKNOWNNAME)
                 {
                     id = m_id++;
-
                 } 
 
                 //Get Color and IDs
@@ -2866,27 +3015,30 @@ void LVRMainWindow::loadLabels()
                 rgbData = kernel.loadArray<int>(finalGroup.string(), "Color", rgbDim);
 
                 //Add Child to top Level
-                QTreeWidgetItem * childItem = new QTreeWidgetItem();
+                QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
                 childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
                 childItem->setText(0, QString::fromStdString(instance));
+            	childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+            	childItem->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
                 QColor label_color(rgbData[0], rgbData[1], rgbData[2]);
                 childItem->setData(LABEL_ID_COLUMN, 1, label_color);
                 childItem->setData(LABEL_ID_COLUMN, 0, id);
                 item->addChild(childItem);
                 Q_EMIT(labelAdded(childItem));
                 std::vector<int> out(idData.get(), idData.get() + idDim[0]);
-                Q_EMIT(labelLoaded(id, out));
+                m_pickingInteractor->setLabel(id, out);
                 selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
 
             }
         }
     }
+    this->dockWidgetLabel->show();
 }
 void LVRMainWindow::exportLabels()
 {
     std::vector<uint16_t> labeledPoints = m_pickingInteractor->getLabeles();
     vtkSmartPointer<vtkPolyData> points;
-    std::map<uint16_t,std::vector<int>> idMap;
+    std::map<uint16_t, std::vector<int>> idMap;
 
     for (int i = 0; i < labeledPoints.size(); i++)
     {
@@ -2908,7 +3060,6 @@ void LVRMainWindow::exportLabels()
     int topItemCount = labelTreeWidget->topLevelItemCount();
 
 
-    //TODO This should be for all Pointclouds
     boost::filesystem::path pointcloudName;
     QTreeWidgetItemIterator itu(treeWidget);
     LVRPointCloudItem* citem;
@@ -2936,7 +3087,7 @@ void LVRMainWindow::exportLabels()
 
     }
 
-    std::vector<size_t> pointsDimension = {3, points->GetNumberOfPoints()};
+    std::vector<size_t> pointsDimension = {3, static_cast<long unsigned int>(points->GetNumberOfPoints())};
     boost::shared_array<double> sharedPoints(pointsData);
 
     //Unlabeled top item
@@ -2974,10 +3125,262 @@ void LVRMainWindow::exportLabels()
             }
         }
     }
+
+    LVRModelItem* lvrmodel = getModelItem(treeWidget->topLevelItem(0));
+    ModelBridgePtr bridge = lvrmodel->getModelBridge();
+    PointBufferBridgePtr pointBridge = bridge->getPointBridge();
+    PointBufferPtr pointBuffer = pointBridge->getPointBuffer();
+
+    //Waveform
+    boost::filesystem::path waveGroup = (pointGroup / "Waveformdata");
+    Channel<uint16_t>::Optional optInt = pointBuffer->getChannel<uint16_t>("waveform");
+    if (optInt)
+    {
+	    size_t n = optInt->numElements();
+	    size_t width = optInt->width();
+            std::vector<size_t> dimension = {n, width};
+            label_hdf5kernel.saveArray(waveGroup.string(), "Waveform" , dimension, optInt->dataPtr());
+    }
+    Channel<float>::Optional opt = pointBuffer->getChannel<float>("amplitude");
+    if (opt)
+    {
+	    size_t n = opt->numElements();
+	    size_t width = opt->width();
+            std::vector<size_t> dimension = {n, width};
+            label_hdf5kernel.saveArray(waveGroup.string(), "Amplitude" , dimension, opt->dataPtr());
+    }
+    opt = pointBuffer->getChannel<float>("deviation");
+    if (opt)
+    {
+	    size_t n = opt->numElements();
+	    size_t width = opt->width();
+            std::vector<size_t> dimension = {n, width};
+            label_hdf5kernel.saveArray(waveGroup.string(), "deviation" , dimension, opt->dataPtr());
+    }
+    opt = pointBuffer->getChannel<float>("reflectance");
+    if (opt)
+    {
+	    size_t n = opt->numElements();
+	    size_t width = opt->width();
+            std::vector<size_t> dimension = {n, width};
+            label_hdf5kernel.saveArray(waveGroup.string(), "reflectance" , dimension, opt->dataPtr());
+    }
+    opt = pointBuffer->getChannel<float>("backgroundRadiationChannel");
+    if (opt)
+    {
+	    size_t n = opt->numElements();
+	    size_t width = opt->width();
+            std::vector<size_t> dimension = {n, width};
+            label_hdf5kernel.saveArray(waveGroup.string(), "backgroundRadiation" , dimension, opt->dataPtr());
+    }
+
 }
 
 void LVRMainWindow::comboBoxIndexChanged(int index)
 {
 	Q_EMIT(labelChanged(selectedInstanceComboBox->itemData(index).toInt()));
+}
+
+void LVRMainWindow::lassoButtonToggled(bool checked)
+{
+    if (checked)
+    {
+        if(labelTreeWidget->topLevelItemCount() == 0)
+        {
+            //NO label was created - show warning
+            const QSignalBlocker blocker(this->actionSelected_Lasso);
+            QMessageBox noLabelDialog;
+            noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
+            noLabelDialog.setStandardButtons(QMessageBox::Ok);
+            noLabelDialog.setIcon(QMessageBox::Warning);
+            int returnValue = noLabelDialog.exec();
+            this->actionSelected_Lasso->setChecked(false);
+
+            return;
+        }
+	//setLasso Tool
+        m_pickingInteractor->setLassoTool(true);
+        //check if Polygon tool was enabled
+        if (this->actionSelected_Polygon->isChecked())
+        {
+            const QSignalBlocker blocker(this->actionSelected_Polygon);
+            this->actionSelected_Polygon->setChecked(false);
+	    return;
+        }
+        m_pickingInteractor->labelingOn();
+    } else
+    {
+        m_pickingInteractor->labelingOff();
+    }
+}
+void LVRMainWindow::polygonButtonToggled(bool checked)
+{
+
+    if (checked)
+    {
+        if(labelTreeWidget->topLevelItemCount() == 0)
+        {
+            //NO label was created - show warning
+            const QSignalBlocker blocker(this->actionSelected_Polygon);
+            QMessageBox noLabelDialog;
+            noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
+            noLabelDialog.setStandardButtons(QMessageBox::Ok);
+            noLabelDialog.setIcon(QMessageBox::Warning);
+            int returnValue = noLabelDialog.exec();
+            this->actionSelected_Polygon->setChecked(false);
+            return;
+        }
+	//setPolygonTool
+        m_pickingInteractor->setLassoTool(false);
+        //check if lasso tool was enabled
+        if (this->actionSelected_Lasso->isChecked())
+        {
+            const QSignalBlocker blocker(this->actionSelected_Lasso);
+            this->actionSelected_Lasso->setChecked(false);
+	    return;
+        }
+        m_pickingInteractor->labelingOn();
+    } else
+    {
+        m_pickingInteractor->labelingOff();
+    }
+
+}
+
+void LVRMainWindow::readLWF()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                tr("Selecte LWF File"), QDir::homePath(), tr("LASVegasWaveformFiles(*.lwf)"));
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox warning;
+        warning.setText("Could not open File");
+        warning.setStandardButtons(QMessageBox::Ok);
+        warning.setIcon(QMessageBox::Warning);
+        warning.exec();
+        return;
+    }
+    //QByteArray rawArray = file.readAll();
+    QDataStream rawData(&file);
+    rawData.setByteOrder(QDataStream::LittleEndian);
+    rawData.setFloatingPointPrecision(QDataStream::SinglePrecision);
+    std::vector<std::vector<uint16_t>> waveforms;
+    std::vector<std::vector<float>> points;
+
+    while(!rawData.atEnd())
+    {
+
+        //read 3 Points
+	float x, y, z;
+	rawData >> x;
+	rawData >> y;
+	rawData >> z;
+	std::vector<float> point = {x,y,z};
+	points.push_back(point);
+
+	//time currently just ignored
+	float time;
+	rawData >> time;
+
+	//read Sample block size
+	uint32_t sampleBlockCount;
+	rawData >> sampleBlockCount;
+
+	//read the sampleData(waveform)
+	std::vector<uint16_t> waveformData;
+	waveformData.resize(sampleBlockCount);
+	for (int i = 0; i < sampleBlockCount; i++)
+	{
+	    //read waveform data
+	    uint16_t sample;
+	    rawData >> sample;
+	    waveformData[i] = sample;
+	}
+	waveforms.push_back(waveformData);
+    }
+    std::cout << waveforms.size() << std::endl;
+}
+
+void LVRMainWindow::exportLWF()
+{
+    QString hdfString("HDF5 (*.hdf5");
+    QString intermediaString("Intermedia");
+    QStringList filters;
+    filters << hdfString << intermediaString;
+    QFileDialog dialog(this, tr("Export ScanProject As..."), "", tr("HDF5 (*.hdf5);; Intermedia (*.intermedia)"));
+    dialog.setNameFilters(filters);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    if (dialog.exec() != QDialog::Accepted)
+    {
+        //No valid inut return
+        return;
+    }
+
+    QTreeWidgetItemIterator it(treeWidget);
+
+    while (*it)
+    {
+        ScanProjectPtr scanProject;
+        QString fileName = dialog.selectedFiles()[0];
+
+        if ((*it)->type() == LVRScanProjectItemType)
+        {
+            LVRScanProjectItem *item = static_cast<LVRScanProjectItem *>(*it);
+            scanProject = item->getScanProjectBridge()->getScanProject();
+        }
+        else if((*it)->type() == LVRModelItemType)
+        {
+            LVRModelItem *item = static_cast<LVRModelItem *>(*it);
+            LVRScanProjectBridge transfer(item->getModelBridge());
+
+            scanProject = transfer.getScanProject();
+
+            //check if Labels exists and add them
+            if(labelTreeWidget->topLevelItemCount() > 0)
+            {
+                scanProject->labelRoot = labelTreeWidget->getLabelRoot(); 
+            }
+
+        }
+        else
+        {
+            it++;
+            continue;
+        }
+        
+        //store Project
+        if (dialog.selectedNameFilter() == hdfString)
+        {
+            //as HDF5
+                /*HDF5SchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
+                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString()));
+                descriptions::HDF5IO h5IO(hyperlibSchema, hdf5Kernel);
+        */
+
+        }else
+        {
+            if(scanProject)
+            {
+                std::cout << "---" <<  scanProject->positions.size() << std::endl;
+                std::cout << "---" <<  fileName.toStdString() << std::endl;
+            }
+            else
+            {
+                std::cout << "not valid " << std::endl;
+            }
+
+
+            //Intermedia
+            DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
+            DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(fileName.toStdString()));
+            DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
+        
+            dirIO.saveScanProject(scanProject);
+        }
+        it++;
+    }
+
 }
 } /* namespace lvr2 */

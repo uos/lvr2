@@ -33,6 +33,13 @@ void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProje
     {
         m_scanPositionIO->saveScanPosition(i, scanProjectPtr->positions[i]);
     }
+    
+    // Save label data
+    if (scanProjectPtr->labelRoot)
+    {
+       m_labelIO->saveLabels(group, scanProjectPtr->labelRoot); 
+    }
+    
 }
 
 template <typename FeatureBase>

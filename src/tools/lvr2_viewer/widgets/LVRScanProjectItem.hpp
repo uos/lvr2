@@ -25,51 +25,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
- * IOFactory.h
+/**
+ * LVRModelItem.h
  *
- *  @date 24.08.2011
+ *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
+#ifndef LVRSCANPROJECTITEM_H_
+#define LVRSCANPROJECTITEM_H_
 
-#ifndef IOFACTORY_H_
-#define IOFACTORY_H_
+#include "../vtkBridge/LVRScanProjectBridge.hpp"
+#include "LVRPoseItem.hpp"
 
-#include "lvr2/io/Model.hpp"
-#include "lvr2/io/CoordinateTransform.hpp"
-
-#include <string>
-#include <vector>
-#include <array>
-#include <map>
-
-#include <boost/shared_ptr.hpp>
-
+#include <QString>
+#include <QColor>
+#include <QTreeWidgetItem>
 
 namespace lvr2
 {
 
-/**
- * @brief Factory class extract point cloud and mesh information
- *        from supported file formats. The instantiated MeshLoader
- *        and PointLoader instances are persistent, i.e. they will
- *        not be freed in the destructor of this class to prevent
- *        side effects.
- */
-class ModelFactory
+class LVRScanProjectItem : public QTreeWidgetItem
 {
-    public:
+public:
+    LVRScanProjectItem(ScanProjectBridgePtr bridge, QString name = "");
+    LVRScanProjectItem(const LVRScanProjectItem& item);
+    virtual ~LVRScanProjectItem();
+    ScanProjectBridgePtr	getScanProjectBridge();
+    QString         getName();
+    void            setName(QString name);
+    bool            isEnabled();
 
-        static ModelPtr readModel( std::string filename );
+public Q_SLOTS:
+    void			setVisibility(bool visible);
 
-        static void saveModel( ModelPtr m, std::string file);
-
-        static CoordinateTransform<float> m_transform;
-
+protected:
+    ScanProjectBridgePtr  m_scanProjectBridge;
+    QString         m_name;
 };
 
-typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
+} /* namespace lvr2 */
 
-} // namespace lvr2
-
-#endif /* IOFACTORY_H_ */
+#endif /* LVRSCANPROJECTITEM_H_ */
