@@ -1389,6 +1389,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
 
 			m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
+            labelTreeWidget->getLabelRoot()->points = citem->getPointBuffer();
                         //m_labelDialog->setPoints(item->parent()->text(0).toStdString(), citem->getPointBufferBridge()->getPolyData());
 		}
 		itu++;
@@ -3341,6 +3342,8 @@ void LVRMainWindow::exportLWF()
             if(labelTreeWidget->topLevelItemCount() > 0)
             {
                 scanProject->labelRoot = labelTreeWidget->getLabelRoot(); 
+                std::cout << "hallo" <<std::endl;
+
             }
 
         }

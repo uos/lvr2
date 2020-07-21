@@ -1981,15 +1981,20 @@ void LVRPickingInteractor::saveCurrentLabelSelection()
         {
     	    calculateSelection(true);
         }
-	return;
+	    return;
     }
+
     int count = 0;
     std::set<uint16_t> modifiedActors;
+    std::vector<int> labeledIDs;
     for (int i = 0; i < m_selectedPoints.size(); i++)
     {
         //Set Current selection as new selection for the selected label 
         if(m_selectedPoints[i])
         {
+            //get All IDs Labeled
+            labeledIDs.push_back(i);
+
             if(m_pointLabels[i] != m_selectedLabel)
             {
                 //Only update if necessary
@@ -2009,6 +2014,8 @@ void LVRPickingInteractor::saveCurrentLabelSelection()
             }
         }
     }
+    //set vector if the LabelInstance
+    m_labelInstances[m_selectedLabel]->getInstancePtr()->labeledIDs = std::move(labeledIDs);
 
     if(m_labelActors.find(m_selectedLabel) != m_labelActors.end())
     {
@@ -2141,15 +2148,20 @@ void LVRPickingInteractor::updateActor(int labelId)
     double point[3];
     auto selectedVtkPoints = vtkSmartPointer<vtkPoints>::New();
     int count = 0;
+    std::vector<int> labelsID;
     for (int i = 0; i < m_pointLabels.size(); i++)
     {
         if (labelId == m_pointLabels[i])
         {
+            labelsID.push_back(i);
             count++;
             m_points->vtkDataSet::GetPoint(i, point);
             selectedVtkPoints->InsertNextPoint(point);
         }
     }
+
+    m_labelInstances[labelId]->getInstancePtr()->labeledIDs = std::move(labelsID);
+
     Q_EMIT(pointsLabeled(labelId, count));
 
     auto updatedVtkPoly = vtkSmartPointer<vtkPolyData>::New();

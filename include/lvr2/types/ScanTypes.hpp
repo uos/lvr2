@@ -309,7 +309,7 @@ struct LabelInstance
     static constexpr char           sensorType[] = "LabelInstance";
     std::string instanceName;
 
-    std::vector<int> color;
+    Vector3d color;
 
     std::vector<int> labeledIDs;
 };

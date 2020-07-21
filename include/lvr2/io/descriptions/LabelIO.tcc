@@ -7,18 +7,23 @@ void LabelIO<Derived>::saveLabels(
     std::string& group,
     LabelRootPtr labelRootPtr)
 {
-    m_featureBase->m_kernel->savePointBuffer(group, "points.ply", labelRootPtr->points);
+    //TODO Maybe add Description conatining the group and datasetname
+    boost::filesystem::path pointCloud("pointCloud");
+    boost::filesystem::path groupPath = (boost::filesystem::path(group) / pointCloud);
+    m_featureBase->m_kernel->savePointBuffer(groupPath.string(), "points.ply", labelRootPtr->points);
          
-    boost::filesystem::path groupPath(group);
     //iterate over classes
     for(auto classPtr : labelRootPtr->labelClasses)
     {
+        std::cout<< "clas" << std::endl;
         boost::filesystem::path classPath(classPtr->className);
         boost::filesystem::path totalPath(groupPath / classPath);
         std::string groupName = totalPath.string();
         for(auto instancePtr : classPtr->instances)
         {
 
+
+            std::cout<< "instance" << std::endl;
             YAML::Node node;
             node = *instancePtr;
             
