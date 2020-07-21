@@ -1,4 +1,5 @@
 #include "lvr2/io/yaml/Scan.hpp"
+#include <boost/optional/optional_io.hpp>
 
 namespace lvr2
 {
@@ -40,6 +41,8 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
         metaName = *d.metaName;
     }
 
+    cout << "SCAN META: " << d.metaData << endl;
+
     if(d.metaData)
     {
         node = *d.metaData;
@@ -69,6 +72,8 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
     ScanPtr ret(new Scan);
 
     Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
+
+        std::cout << d.groupName << " " << d.dataSetName << std::endl; 
 
     // Init default values
     std::stringstream sstr;

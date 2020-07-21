@@ -25,6 +25,7 @@ void HDF5Kernel::savePointBuffer(
     const std::string &container,
     const PointBufferPtr &buffer) const
 {
+    std::cout << "HDF5Kernel::savePointBuffer: " << group << " / " << container << std::endl;
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
 
     for(auto elem : *buffer)

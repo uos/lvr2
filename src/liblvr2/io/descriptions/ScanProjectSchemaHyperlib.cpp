@@ -13,6 +13,9 @@
 #include "lvr2/io/yaml/ScanProject.hpp"
 #include "lvr2/io/yaml/ScanCamera.hpp"
 
+#include <boost/optional/optional_io.hpp>
+
+
 namespace lvr2
 {
 
@@ -27,7 +30,7 @@ Description ScanProjectSchemaHyperlib::scanProject() const
     boost::filesystem::path metaPath(*d.metaName);
     try
     {
-        d.metaData = YAML::LoadFile(metaPath.string());
+        d.metaData = YAML::LoadFile((m_rootPath / metaPath).string());
     }
     catch(const YAML::BadFile& e)
     {
@@ -60,7 +63,7 @@ Description ScanProjectSchemaHyperlib::position(const size_t &scanPosNo) const
     
     try
     {
-        d.metaData = YAML::LoadFile( (positionPath / metaPath).string());
+        d.metaData = YAML::LoadFile( (m_rootPath / positionPath / metaPath).string());
     }
     catch(YAML::BadFile& e)
     {
@@ -82,7 +85,6 @@ Description ScanProjectSchemaHyperlib::scan(const size_t &scanPosNo, const size_
 
 Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath, const size_t &scanNo) const
 {
-
     Description d;
     boost::filesystem::path groupPath(scanPositionPath);
     boost::filesystem::path scansPath("scans");
@@ -100,7 +102,7 @@ Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath,
     d.metaData = boost::none;
     try
     {
-        d.metaData = YAML::LoadFile((totalGroupPath / metaPath).string());
+        d.metaData = YAML::LoadFile((m_rootPath / totalGroupPath / metaPath).string());
     }
     catch(YAML::BadFile& e)
     {
@@ -109,6 +111,9 @@ Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath,
         node = Scan();
         d.metaData = node;
     }
+
+    std::cout << "scan: " << scanPositionPath << " " << scanNo << std::endl;
+    std::cout << d.metaData << std::endl; 
    
     d.metaName = metaPath.string();
     d.groupName = totalGroupPath.string();
@@ -213,7 +218,7 @@ Description ScanProjectSchemaHyperlib::scanCamera(const std::string &scanPositio
     d.metaData = boost::none;
     try
     {
-         d.metaData = YAML::LoadFile( (groupPath / camPath / metaPath).string());
+         d.metaData = YAML::LoadFile( (m_rootPath / groupPath / camPath / metaPath).string());
     }
     catch(const YAML::BadFile& e)
     {
@@ -260,7 +265,7 @@ Description ScanProjectSchemaHyperlib::scanImage(
 
     try
     {
-        d.metaData = YAML::LoadFile((siPath / dPath / metaPath).string());
+        d.metaData = YAML::LoadFile((m_rootPath / siPath / dPath / metaPath).string());
     }
     catch(YAML::BadFile& e)
     {

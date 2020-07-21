@@ -1,5 +1,5 @@
-#ifndef SCANPROJECTPARSER_HYPERLIB_HPP_
-#define SCANPROJECTPARSER_HYPERLIB_HPP_
+#ifndef SCANPROJETSCHEMA_HYPERLIB_HPP_
+#define SCANPROJETSCHEMA_HYPERLIB_HPP_
 
 #include <string>
 
@@ -14,7 +14,7 @@ namespace lvr2
 class ScanProjectSchemaHyperlib : public DirectorySchema
 {
 public:
-    ScanProjectSchemaHyperlib() {};
+    ScanProjectSchemaHyperlib(std::string& rootDir) : DirectorySchema(rootDir) {};
 
     ~ScanProjectSchemaHyperlib() = default;
 

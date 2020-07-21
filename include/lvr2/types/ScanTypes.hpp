@@ -412,6 +412,7 @@ struct ScanProject
     LabelRootPtr                    labelRoot;
 };
 
+
 using ScanProjectPtr = std::shared_ptr<ScanProject>;
 
 /*****************************************************************************
