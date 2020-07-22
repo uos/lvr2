@@ -37,10 +37,8 @@ public:
     virtual Description scanProject() const = 0;
     virtual Description position(const size_t& scanPosNo) const = 0;
     virtual Description scan(const size_t& scanPosNo, const size_t& scanNo) const = 0;
-    virtual Description scan(const std::string& scanPositionPath, const size_t& scanNo) const = 0;
-    virtual Description waveform(const size_t& scanPosNo, const size_t& scanNo) const = 0;
-    virtual Description waveform(const std::string& scanPositionPath, const size_t& scanNo) const = 0;
-    virtual Description labelInstance(const std::string& group, const std::string& className, const std::string &instanceName) const = 0;
+
+
 
     virtual Description scanCamera(const size_t& scanPositionNo, const size_t& camNo) const = 0;
     virtual Description scanCamera(const std::string& scanPositionPath, const size_t& camNo) const = 0;
@@ -57,7 +55,28 @@ public:
         /// TODO: IMPLEMENT ME!!!
         return Description();
     }
+    virtual Description labelInstance(const std::string& group, const std::string& className, const std::string &instanceName) const
+    {
+        Description d;
+        d.groupName = "";
+        d.dataSetName = "";
+        d.metaData = boost::none; 
+    }
 
+    virtual Description waveform(const size_t& scanPosNo, const size_t& scanNo) const 
+    {
+        Description d;
+        d.groupName = "";
+        d.dataSetName = "waveform";
+        d.metaData = boost::none; 
+    }
+    virtual Description waveform(const std::string& scanPositionPath, const size_t& scanNo) const
+    {
+        Description d;
+        d.groupName = scanPositionPath;
+        d.dataSetName = "waveform";
+        d.metaData = boost::none; 
+    }
     virtual Description hyperSpectralTimestamps(const std::string& group) const
     {
         Description d;

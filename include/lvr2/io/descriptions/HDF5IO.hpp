@@ -1,10 +1,10 @@
-#ifndef HDF5_IO_HPP
-#define HDF5_IO_HPP
+#ifndef HDF5_DESCRIPTION_IO_HPP
+#define HDF5_DESCRIPTION_IO_HPP
 
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchema.hpp"
 #include "lvr2/io/descriptions/FeatureBase.hpp"
-#include "lvr2/io/descriptions/ScanProjectIO.hpp"
+#include "lvr2/io/descriptions/LabelScanProjectIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2

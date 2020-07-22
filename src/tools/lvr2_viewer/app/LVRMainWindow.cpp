@@ -45,6 +45,7 @@
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 #include "lvr2/io/descriptions/HDF5IO.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/descriptions/DirectoryIO.hpp"
 
 #include "lvr2/registration/TransformUtils.hpp"
@@ -1262,7 +1263,8 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 	    {
             //read intermediaformat
 	        DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(info.absoluteFilePath().toStdString())); 
-            DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib); 
+            std::string tmp = info.absolutePath().toStdString();
+            DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib(tmp)); 
             DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
             ScanProjectPtr scanProject = dirIO.loadScanProject();
             ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
@@ -3341,7 +3343,7 @@ void LVRMainWindow::exportLWF()
             //check if Labels exists and add them
             if(labelTreeWidget->topLevelItemCount() > 0)
             {
-                scanProject->labelRoot = labelTreeWidget->getLabelRoot(); 
+                //scanProject->labelRoot = labelTreeWidget->getLabelRoot(); 
                 std::cout << "hallo" <<std::endl;
 
             }
@@ -3357,10 +3359,10 @@ void LVRMainWindow::exportLWF()
         if (dialog.selectedNameFilter() == hdfString)
         {
             //as HDF5
-                /*HDF5SchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
-                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString()));
-                descriptions::HDF5IO h5IO(hyperlibSchema, hdf5Kernel);
-        */
+            HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2);
+            HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString()));
+            descriptions::HDF5IO h5IO(hdf5Kernel, hdf5Schema);
+            h5IO.saveScanProject(scanProject);
 
         }else
         {
@@ -3376,7 +3378,8 @@ void LVRMainWindow::exportLWF()
 
 
             //Intermedia
-            DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
+            std::string tmp = fileName.toStdString();
+            DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
             DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(fileName.toStdString()));
             DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
         

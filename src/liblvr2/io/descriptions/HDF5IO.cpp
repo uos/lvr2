@@ -14,20 +14,22 @@ HDF5IO::HDF5IO(HDF5KernelPtr kernel, HDF5SchemaPtr schema)
 void HDF5IO::saveScanProject(ScanProjectPtr project)
 {
     using BaseScanProjectIO = lvr2::FeatureBase<>;
-    using MyScanProjectIO = BaseScanProjectIO::AddFeatures<lvr2::ScanProjectIO>;
+    using MyScanProjectIO = BaseScanProjectIO::AddFeatures<lvr2::LabelScanProjectIO>;
 
+    LabeledScanProjectEditMarkPtr labelProject;
+    labelProject->editMarkProject->project = project;
     MyScanProjectIO io(m_kernel, m_schema);
-    io.saveScanProject(project);
+    io.saveLabelScanProject(labelProject);
 }
 
 ScanProjectPtr HDF5IO::loadScanProject()
 {
     using BaseScanProjectIO = lvr2::FeatureBase<>;
-    using MyScanProjectIO = BaseScanProjectIO::AddFeatures<lvr2::ScanProjectIO>;
+    using MyScanProjectIO = BaseScanProjectIO::AddFeatures<lvr2::LabelScanProjectIO>;
 
     MyScanProjectIO io(m_kernel, m_schema);
-    ScanProjectPtr ptr = io.loadScanProject();
-    return ptr;
+    LabeledScanProjectEditMarkPtr ptr = io.loadLabelScanProject();
+    return ptr->editMarkProject->project;
 }
 } // namespace descriptions
 } // namespace lvr2

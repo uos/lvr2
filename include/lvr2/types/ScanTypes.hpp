@@ -408,8 +408,7 @@ struct ScanProject
     /// loaded with this software are right-handed
     std::string                     coordinateSystem;
 
-    //Contains all data assoicated with Label
-    LabelRootPtr                    labelRoot;
+
 };
 
 
@@ -426,6 +425,18 @@ struct ScanProjectEditMark
     std::vector<bool> changed;
 };
 using ScanProjectEditMarkPtr = std::shared_ptr<ScanProjectEditMark>;
+
+/*****************************************************************************
+ * @brief   Struct to Represt a scan with Labels
+ *****************************************************************************/
+struct LabeledScanProjectEditMark
+{
+    ScanProjectEditMarkPtr editMarkProject;
+    
+    //Contains all data assoicated with Label
+    LabelRootPtr                    labelRoot;
+};
+using LabeledScanProjectEditMarkPtr = std::shared_ptr<LabeledScanProjectEditMark>;
 
 } // namespace lvr2
 
