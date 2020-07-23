@@ -97,6 +97,7 @@
 #include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"
 #include "../widgets/LVRPointInfo.hpp"
+#include "../widgets/LVRLabelClassTreeItem.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRLabelInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -145,7 +146,7 @@ public Q_SLOTS:
 
 
     void comboBoxIndexChanged(int index);
-    void addNewInstance(QTreeWidgetItem *);
+    void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();

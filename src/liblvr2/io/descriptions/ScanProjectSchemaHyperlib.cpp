@@ -160,36 +160,7 @@ Description ScanProjectSchemaHyperlib::waveform(const std::string &scanPositionP
     d.groupName = totalGroupPath.string();
     return d;
 }
-Description ScanProjectSchemaHyperlib::labelInstance(const std::string& group, const std::string& className, const std::string &instanceName) const
-{
-    Description d;
-    boost::filesystem::path groupPath(group);
-    boost::filesystem::path pointcloudPath("pointcloud");
-    boost::filesystem::path classPath(className);
-    boost::filesystem::path instancePath(instanceName);
-    boost::filesystem::path totalGroupPath = groupPath / pointcloudPath / classPath;
 
-    // Create dataset path
-    d.dataSetName = instanceName + std::string(".ids");
-
-    // Load meta data for scan
-    boost::filesystem::path metaPath = instanceName + std::string("meta.yaml");
-    d.metaData = boost::none;
-    try
-    {
-        d.metaData = YAML::LoadFile((totalGroupPath / metaPath).string());
-    }
-    catch(YAML::BadFile& e)
-    {
-        // Nothing to do, meta node will contail default values
-        YAML::Node node;
-        node = LabelInstance();
-        d.metaData = node;
-    }
-    d.metaName = metaPath.string();
-    d.groupName = totalGroupPath.string();
-    return d;
-}
 Description ScanProjectSchemaHyperlib::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
 {
     Description g = position(scanPositionNo);

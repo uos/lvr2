@@ -1,9 +1,10 @@
 #include <sstream> 
 #include <iomanip>
 
-#include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
+#include "lvr2/io/descriptions/LabelScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/yaml/MatrixIO.hpp"
+#include "lvr2/io/yaml/Label.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 #include <boost/filesystem.hpp>
@@ -11,7 +12,7 @@
 namespace lvr2
 {
 
-Description ScanProjectSchemaHDF5V2::scanProject() const
+Description LabelScanProjectSchemaHDF5V2::scanProject() const
 {
     Description d;
     d.groupName = "";           // All data is saved in the root dir
@@ -19,7 +20,7 @@ Description ScanProjectSchemaHDF5V2::scanProject() const
     d.metaData = boost::none;       // No metadata for project 
     return d;
 }
-Description ScanProjectSchemaHDF5V2::position(const size_t &scanPosNo) const
+Description LabelScanProjectSchemaHDF5V2::position(const size_t &scanPosNo) const
 {
     Description d; 
 
@@ -38,7 +39,7 @@ Description ScanProjectSchemaHDF5V2::position(const size_t &scanPosNo) const
     return d;
 }
 
-Description ScanProjectSchemaHDF5V2::scan(const size_t &scanPosNo, const size_t &scanNo) const 
+Description LabelScanProjectSchemaHDF5V2::scan(const size_t &scanPosNo, const size_t &scanNo) const 
 {
     // Group name
     std::stringstream group_stream;
@@ -47,7 +48,7 @@ Description ScanProjectSchemaHDF5V2::scan(const size_t &scanPosNo, const size_t 
     return scan(group_stream.str(), scanNo);
 }
 
-Description ScanProjectSchemaHDF5V2::scan(const std::string& scanPositionPath, const size_t &scanNo) const
+Description LabelScanProjectSchemaHDF5V2::scan(const std::string& scanPositionPath, const size_t &scanNo) const
 {
     Description d; 
     std::cout << "DEBUG: " << scanPositionPath << std::endl;
@@ -60,12 +61,12 @@ Description ScanProjectSchemaHDF5V2::scan(const std::string& scanPositionPath, c
     return d;
 }
 
-Description ScanProjectSchemaHDF5V2::waveform(const size_t& scanPosNo, const size_t& scanNo) const
+Description LabelScanProjectSchemaHDF5V2::waveform(const size_t& scanPosNo, const size_t& scanNo) const
 {
 
 }
  
-Description ScanProjectSchemaHDF5V2::waveform(const std::string& scanPositionPath, const size_t& scanNo) const
+Description LabelScanProjectSchemaHDF5V2::waveform(const std::string& scanPositionPath, const size_t& scanNo) const
 {
     Description d; 
     std::cout << "DEBUG: " << scanPositionPath << std::endl;
@@ -77,7 +78,7 @@ Description ScanProjectSchemaHDF5V2::waveform(const std::string& scanPositionPat
 
     return d;
 }
-Description ScanProjectSchemaHDF5V2::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
+Description LabelScanProjectSchemaHDF5V2::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
 {
     // Scan camera is not supported
     Description d;
@@ -88,7 +89,7 @@ Description ScanProjectSchemaHDF5V2::scanCamera(const size_t &scanPositionNo, co
     return d;
 }
 
-Description ScanProjectSchemaHDF5V2::scanCamera(const std::string &scanPositionPath, const size_t &camNo) const
+Description LabelScanProjectSchemaHDF5V2::scanCamera(const std::string &scanPositionPath, const size_t &camNo) const
 {
     // Scan camera is not supported
     Description d;
@@ -99,7 +100,7 @@ Description ScanProjectSchemaHDF5V2::scanCamera(const std::string &scanPositionP
     return d;
 }
 
-Description ScanProjectSchemaHDF5V2::scanImage(
+Description LabelScanProjectSchemaHDF5V2::scanImage(
     const size_t &scanPosNo, const size_t &scanNo,
     const size_t &scanCameraNo, const size_t &scanImageNo) const
 {
@@ -112,7 +113,7 @@ Description ScanProjectSchemaHDF5V2::scanImage(
     return d;
 }
 
-Description ScanProjectSchemaHDF5V2::scanImage(
+Description LabelScanProjectSchemaHDF5V2::scanImage(
     const std::string &scanImagePath, const size_t &scanImageNo) const
 {
     // Scan images are not supported
@@ -124,4 +125,34 @@ Description ScanProjectSchemaHDF5V2::scanImage(
     return d; 
 }
 
+Description LabelScanProjectSchemaHDF5V2::labelInstance(const std::string& group, const std::string& className, const std::string &instanceName) const
+{
+    Description d;
+    boost::filesystem::path groupPath(group);
+    boost::filesystem::path pointcloudPath("pointcloud");
+    boost::filesystem::path classPath(className);
+    boost::filesystem::path instancePath(instanceName);
+    boost::filesystem::path totalGroupPath = groupPath / pointcloudPath / classPath;
+
+    // Create dataset path
+    d.dataSetName = instanceName + std::string(".ids");
+
+    // Load meta data for scan
+    boost::filesystem::path metaPath = instanceName + std::string("meta.yaml");
+    d.metaData = boost::none;
+    try
+    {
+        d.metaData = YAML::LoadFile((totalGroupPath / metaPath).string());
+    }
+    catch(YAML::BadFile& e)
+    {
+        // Nothing to do, meta node will contail default values
+        YAML::Node node;
+        node = LabelInstance();
+        d.metaData = node;
+    }
+    d.metaName = metaPath.string();
+    d.groupName = totalGroupPath.string();
+    return d;
+}
 } // namespace lvr2

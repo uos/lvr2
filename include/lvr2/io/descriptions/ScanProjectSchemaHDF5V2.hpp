@@ -22,6 +22,9 @@ public:
     virtual Description position(const size_t &scanPosNo) const;
     virtual Description scan(const size_t &scanPosNo, const size_t &scanNo) const;
     virtual Description scan(const std::string &scanPositionPath, const size_t &scanNo) const;
+ 
+    virtual Description waveform(const size_t& scanPosNo, const size_t& scanNo) const;
+    virtual Description waveform(const std::string& scanPositionPath, const size_t& scanNo) const;
 
     virtual Description scanCamera(const size_t &scanPositionNo, const size_t &camNo) const;
     virtual Description scanCamera(const std::string &scanPositionPath, const size_t &camNo) const;
@@ -33,8 +36,6 @@ public:
     virtual Description scanImage(
         const std::string &scanImagePath, const size_t &scanImageNo) const;
 
-private:
-    boost::filesystem::path m_rootPath;
 };
 
 } // namespace lvr2

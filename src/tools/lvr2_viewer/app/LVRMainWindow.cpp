@@ -43,16 +43,15 @@
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
-#include "lvr2/io/descriptions/HDF5IO.hpp"
+#include "lvr2/io/descriptions/LabelHDF5IO.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
+#include "lvr2/io/descriptions/LabelScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/descriptions/DirectoryIO.hpp"
 
 #include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/util/Util.hpp"
 
-#include "../widgets/LVRLabelClassTreeItem.hpp"
 #include "../widgets/LVRLabelInstanceTreeItem.hpp"
 
 #include <vtkActor.h>
@@ -933,12 +932,13 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
     {
 
         QTreeWidgetItem* item = items.first();
-        if (item->type() == LVRLabelClassType)
+        if (item->type() == LVRLabelClassItemType)
         {
+            LVRLabelClassTreeItem *classItem = static_cast<LVRLabelClassTreeItem *>(item);
             auto selected = m_labelTreeParentItemContextMenu->exec(globalPos);
             if(selected == m_actionAddNewInstance)
             {
-                addNewInstance(item);
+                addNewInstance(classItem);
             }
             return;
         }
@@ -2912,7 +2912,7 @@ void LVRMainWindow::visibilityChanged(QTreeWidgetItem* changedItem, int column)
     }
 }
 
-void LVRMainWindow::addNewInstance(QTreeWidgetItem * selectedTopLevelItem)
+void LVRMainWindow::addNewInstance(LVRLabelClassTreeItem * selectedTopLevelItem)
 {
     
     QString choosenLabel = selectedTopLevelItem->text(LABEL_NAME_COLUMN);
@@ -2935,7 +2935,7 @@ void LVRMainWindow::addNewInstance(QTreeWidgetItem * selectedTopLevelItem)
     }
 
     int id = m_id++;
-    LVRLabelInstanceTreeItem * instanceItem = new LVRLabelInstanceTreeItem(instanceName.toStdString(), 0, id, true, true, labelColor);
+    LVRLabelInstanceTreeItem * instanceItem = new LVRLabelInstanceTreeItem(instanceName.toStdString(), id, 0, true, true, labelColor);
     selectedTopLevelItem->addChild(instanceItem);
 
     //Add label to combo box 
@@ -2957,7 +2957,13 @@ void LVRMainWindow::loadLabels()
     {
         return;
     }
+    LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
+    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString() + ".h5"));
+    LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
+    LabeledScanProjectEditMarkPtr labelScanProject = h5IO.loadScanProject();
 
+
+    /*
     HDF5Kernel kernel(fileName.toStdString());
     std::vector<std::string> pointCloudNames;
     kernel.subGroupNames("pointclouds", pointCloudNames);
@@ -3035,7 +3041,7 @@ void LVRMainWindow::loadLabels()
             }
         }
     }
-    this->dockWidgetLabel->show();
+    this->dockWidgetLabel->show();*/
 }
 void LVRMainWindow::exportLabels()
 {
@@ -3359,23 +3365,19 @@ void LVRMainWindow::exportLWF()
         if (dialog.selectedNameFilter() == hdfString)
         {
             //as HDF5
-            HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2);
-            HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString()));
-            descriptions::HDF5IO h5IO(hdf5Kernel, hdf5Schema);
-            h5IO.saveScanProject(scanProject);
+            LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
+            HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString() + ".h5"));
+            LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
+            LabeledScanProjectEditMarkPtr labelScanProject = LabeledScanProjectEditMarkPtr(new LabeledScanProjectEditMark);
+            ScanProjectEditMarkPtr editScanProject = ScanProjectEditMarkPtr(new ScanProjectEditMark);
+
+            editScanProject->project = scanProject;
+            labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
+            std::cout << fileName.toStdString() << std::endl;
+            h5IO.saveLabelScanProject(labelScanProject);
 
         }else
         {
-            if(scanProject)
-            {
-                std::cout << "---" <<  scanProject->positions.size() << std::endl;
-                std::cout << "---" <<  fileName.toStdString() << std::endl;
-            }
-            else
-            {
-                std::cout << "not valid " << std::endl;
-            }
-
 
             //Intermedia
             std::string tmp = fileName.toStdString();

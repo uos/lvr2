@@ -105,6 +105,13 @@ public:
     HDF5Schema() {}
 };
 
+/// Marker interface for HDF5 schemas
+class LabelHDF5Schema : public HDF5Schema
+{
+public:
+    LabelHDF5Schema() {}
+};
+
 /// Marker interface for directory schemas
 class DirectorySchema : public ScanProjectSchema
 {
@@ -118,6 +125,7 @@ protected:
 using ScanProjectSchemaPtr = std::shared_ptr<ScanProjectSchema>;
 using DirectorySchemaPtr = std::shared_ptr<DirectorySchema>;
 using HDF5SchemaPtr = std::shared_ptr<HDF5Schema>;
+using LabelHDF5SchemaPtr = std::shared_ptr<LabelHDF5Schema>;
 
 } // namespace lvr2
 
