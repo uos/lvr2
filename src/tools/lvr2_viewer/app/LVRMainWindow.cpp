@@ -3372,7 +3372,15 @@ void LVRMainWindow::exportLWF()
             ScanProjectEditMarkPtr editScanProject = ScanProjectEditMarkPtr(new ScanProjectEditMark);
 
             editScanProject->project = scanProject;
+            if (editScanProject->project)
+            {
+                std::cout << "Project found" << std::endl;
+            } else
+            {
+                std::cout << "no Project found" << std::endl;
+            }
             labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
+            labelScanProject->editMarkProject = editScanProject;
             std::cout << fileName.toStdString() << std::endl;
             h5IO.saveLabelScanProject(labelScanProject);
 

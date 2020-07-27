@@ -9,8 +9,10 @@ void LabelScanProjectIO<FeatureBase>::saveLabelScanProject(const LabeledScanProj
     // Default names
     std::string group = "";
 
+    std::cout << "Label Scan Project" << std::endl;
     if (labelScanProjectPtr->editMarkProject && labelScanProjectPtr->editMarkProject->project)
     {
+        std::cout << "Label Scan Project -> Scan Project" << std::endl;
         m_scanProjectIO->saveScanProject(labelScanProjectPtr->editMarkProject->project);
     }
 

@@ -26,35 +26,43 @@
  */
 
 /**
- * LVRItemTypes.hpp
+ * LVRModelItem.h
  *
- *  @date Feb 17, 2014
+ *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#ifndef LVRLABELEDSCANPROJECTEDITMARKITEM_H_
+#define LVRLABELEDSCANPROJECTEDITMARKITEM_H_
+
+#include "../vtkBridge/LVRLabeledScanProjectEditMarkBridge.hpp"
+#include "LVRPoseItem.hpp"
+
+#include <QString>
+#include <QColor>
+#include <QTreeWidgetItem>
 
 namespace lvr2
 {
-    enum {
-        LVRModelItemType = 1001,
-        LVRPointCloudItemType,
-        LVRMeshItemType,
-        LVRPoseItemType,
-        LVRPickItemType,
-        LVRRecordedFrameItemType,
-        LVRScanDataItemType,
-        LVRCamDataItemType,
-        LVRCamerasItemType,
-        LVRBoundingBoxItemType,
-        LVRCvImageItemType,
-        LVRLabelClassType,
-        LVRLabelInstanceType,
-        LVRScanProjectItemType,
-        LVRLabelClassItemType,
-        LVRLabelInstanceItemType,
-        LVRLabeledScanProjectEditMarkItemType
-    };
-} // namespace lvr2
 
-#endif /* LVRITEMTYPES_HPP_ */
+class LVRLabeledScanProjectEditMarkItem : public QTreeWidgetItem
+{
+public:
+    LVRLabeledScanProjectEditMarkItem(LabeledScanProjectEditMarkBridgePtr bridge, QString name = "");
+    LVRLabeledScanProjectEditMarkItem(const LVRLabeledScanProjectEditMarkItem& item);
+    virtual ~LVRLabeledScanProjectEditMarkItem();
+    LabeledScanProjectEditMarkBridgePtr	getLabeledScanProjectEditMarkBridge();
+    QString         getName();
+    void            setName(QString name);
+    bool            isEnabled();
+
+public Q_SLOTS:
+    void			setVisibility(bool visible);
+
+protected:
+    LabeledScanProjectEditMarkBridgePtr  m_labelScanProjectEditMarkBridge;
+    QString         m_name;
+};
+
+} /* namespace lvr2 */
+
+#endif /* LVRLABELSCANPROJECTEDEDITMARKITEM_H_ */

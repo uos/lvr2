@@ -25,6 +25,7 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRVtkArrow.cpp
     vtkBridge/LVRChunkedMeshCuller.cpp
     vtkBridge/LVRChunkedMeshBridge.cpp
+    vtkBridge/LVRLabeledScanProjectEditMarkBridge.cpp
     widgets/LVRScanProjectItem.cpp
     widgets/LVRModelItem.cpp
     widgets/LVRPointCloudItem.cpp
@@ -57,6 +58,8 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRLabelTreeWidget.cpp
     widgets/LVRLabelClassTreeItem.cpp
     widgets/LVRLabelInstanceTreeItem.cpp
+    widgets/LVRModelTreeWidget.cpp
+    widgets/LVRLabeledScanProjectEditMarkItem.cpp
     util/qttf.cpp
 )
 

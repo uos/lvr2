@@ -61,7 +61,7 @@
    <widget class="QWidget" name="dockWidgetSceneContents">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QTreeWidget" name="treeWidget">
+      <widget class="LVRModelTreeWidget" name="treeWidget">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -604,6 +604,7 @@
    <addaction name="actionShow_SpectralHistogram"/>
    <addaction name="separator"/>
    <addaction name="actionConfirm_LabelSelection"/>
+   <addaction name="actionSelected_DeselectLasso"/>
    <addaction name="actionSelected_Lasso"/>
    <addaction name="actionSelected_Polygon"/>
   </widget>
@@ -1384,7 +1385,22 @@
      <normaloff>:/qv_lassoTool.png</normaloff>:/qv_lassoTool.png</iconset>
    </property>
    <property name="text">
-    <string>Lasso Tool</string>
+    <string>Lasso Tool - Select</string>
+   </property>
+  </action>
+    <action name="actionSelected_DeselectLasso">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_lassoTool.png</normaloff>:/qv_lassoTool.png</iconset>
+   </property>
+   <property name="text">
+    <string>Lasso Tool - Deselect</string>
    </property>
   </action>
   <action name="actionSelected_Polygon">
@@ -1611,6 +1627,11 @@
    <class>LVRLabelTreeWidget</class>
    <extends>QTreeWidget</extends>
    <header>LVRLabelTreeWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>LVRModelTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>LVRModelTreeWidget.hpp</header>
   </customwidget>
  </customwidgets>
  <resources>
