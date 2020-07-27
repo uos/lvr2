@@ -26,7 +26,9 @@ LabeledScanProjectEditMarkPtr LabelScanProjectIO<FeatureBase>::loadLabelScanProj
 {
     LabeledScanProjectEditMarkPtr ret(new LabeledScanProjectEditMark);
 
-    ret->editMarkProject->project = m_scanProjectIO->loadScanProject();
+    ScanProjectEditMarkPtr editMarkPtr(new ScanProjectEditMark);
+    editMarkPtr->project = m_scanProjectIO->loadScanProject();
+    ret->editMarkProject = editMarkPtr;
     std::string pointCloud("pointcloud");
     if (m_featureBase->m_kernel->exists(pointCloud))
     {

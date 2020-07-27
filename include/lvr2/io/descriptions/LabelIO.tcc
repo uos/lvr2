@@ -75,6 +75,11 @@ template <typename Derived>
 LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
 {
     LabelRootPtr ret(new LabelRoot);
+
+
+    //read Pointbuffer 
+    ret->points = m_featureBase->m_kernel->loadPointBuffer(group, "points.ply");
+
     std::vector<std::string> labelClasses;
     m_featureBase->m_kernel->subGroupNames(group, labelClasses);
     boost::filesystem::path groupPath(group);
