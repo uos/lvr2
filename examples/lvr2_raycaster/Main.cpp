@@ -442,41 +442,58 @@ int main(int argc, char** argv)
     MeshBufferPtr buffer = synthetic::genSphere(50, 50);
 
     auto faces = buffer->getFaceIndices();
-    std::cout << faces[100] << std::endl;
 
-    using MyIntType = AllInt;
+    // using MyIntType = AllInt;
+    using MyIntType = Intersection<
+        intelem::Point, 
+        intelem::Distance,
+        intelem::Face
+    >;
 
     BVHRaycaster<MyIntType> rc(buffer);
     EmbreeRaycaster<MyIntType> rc2(buffer);
-    
 
     Vector3f ray_origin = {0.0,0.0,0.0};
     Vector3f ray_dir = {1.0,0.0,0.0};
+    
 
-    int num_tests = 10000;
+    int num_tests = 1000000;
+
+    std::vector<Vector3f> ray_origins(num_tests, ray_origin);
+    std::vector<Vector3f> ray_dirs(num_tests, ray_dir);
 
     std::vector<MyIntType> intsect_vec;
+    std::vector<uint8_t> hit_vec;
     size_t hits2 = 0;
 
     start = std::chrono::steady_clock::now();
-    for(int i=0; i<num_tests; i++)
-    {
-        MyIntType intsect1, intsect2;
-        if(rc.castRay(ray_origin, ray_dir, intsect1))
-        {
-            intsect_vec.push_back(intsect1);
-            hits2++;
 
-            // std::cout << "BVH hit" << std::endl;
-            // std::cout << intsect1 << std::endl;
-        }
+    rc2.castRays(ray_origins, ray_dirs, intsect_vec, hit_vec);
 
-        // if(rc2.castRay(ray_origin, ray_dir, intsect2))
-        // {
-        //     std::cout << "Embree hit" << std::endl;
-        //     std::cout << intsect2 << std::endl;
-        // }
-    }
+    std::cout << intsect_vec[0] << std::endl;
+
+    // rc.castRays(ray_origins, ray_dirs, intsect_vec, hit_vec);
+
+    // for(int i=0; i<num_tests; i++)
+    // {
+    //     MyIntType intsect1, intsect2;
+    //     // if(rc.castRay(ray_origin, ray_dir, intsect1))
+    //     // {
+    //     //     intsect_vec.push_back(intsect1);
+    //     //     hits2++;
+
+    //     //     // std::cout << "BVH hit" << std::endl;
+    //     //     // std::cout << intsect1 << std::endl;
+    //     // }
+
+    //     if(rc2.castRay(ray_origin, ray_dir, intsect2))
+    //     {
+    //         intsect_vec.push_back(intsect2);
+    //         hits2++;
+    //         // std::cout << "Embree hit" << std::endl;
+    //         // std::cout << intsect2 << std::endl;
+    //     }
+    // }
 
     end = std::chrono::steady_clock::now();
     milli = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();

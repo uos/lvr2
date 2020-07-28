@@ -38,7 +38,6 @@ bool BVHRaycaster<IntT>::castRay(
             m_BVHlimits, 
             m_TriangleIntersectionData, 
             m_TriIdxList);
-
     
     // FINISHING
     // translate to IntT
@@ -69,7 +68,6 @@ bool BVHRaycaster<IntT>::castRay(
         {
             intersection.normal = -intersection.normal;
         }
-
     }
 
     if constexpr(IntT::template has<intelem::Face>())
@@ -79,7 +77,6 @@ bool BVHRaycaster<IntT>::castRay(
 
     if constexpr(IntT::template has<intelem::Barycentrics>())
     {
-        // TODO calculate barycentrics
         unsigned int v1id = m_faces[result.pBestTriId * 3 + 0];
         unsigned int v2id = m_faces[result.pBestTriId * 3 + 1];
         unsigned int v3id = m_faces[result.pBestTriId * 3 + 2];
@@ -102,6 +99,7 @@ bool BVHRaycaster<IntT>::castRay(
     return result.hit;
 }
 
+// PRIVATE
 template<typename IntT>
 typename BVHRaycaster<IntT>::TriangleIntersectionResult 
 BVHRaycaster<IntT>::intersectTrianglesBVH(
