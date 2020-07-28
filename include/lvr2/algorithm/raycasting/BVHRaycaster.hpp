@@ -69,46 +69,6 @@ public:
         const Vector3f& direction,
         IntT& intersection);
 
-    // /**
-    //  * Cast Ray. one origin. multiple directions (vector form)
-    //  */
-    // void castRays(
-    //     const Vector3f& origin,
-    //     const std::vector<Vector3f>& directions,
-    //     std::vector<IntT>& intersections,
-    //     std::vector<uint8_t>& hits
-    // );
-
-    // /**
-    //  * Cast Ray. one origin. multiple directions (matrix form)
-    //  */
-    // void castRays(
-    //     const Vector3f& origin,
-    //     const std::vector<std::vector<Vector3f> >& directions,
-    //     std::vector< std::vector<IntT> >& intersections,
-    //     std::vector< std::vector<uint8_t> >& hits
-    // );
-
-    // /**
-    //  * Cast Ray. pair of origin and direction
-    //  */
-    // void castRays(
-    //     const std::vector<Vector3f>& origins,
-    //     const std::vector<Vector3f>& directions,
-    //     std::vector<IntT>& intersections,
-    //     std::vector<uint8_t>& hits
-    // );
-
-    // /**
-    //  * Cast Ray. multiple origins. each origins can have multiple directions.
-    //  */
-    // void castRays(
-    //     const std::vector<Vector3f>& origins,
-    //     const std::vector<std::vector<Vector3f> >& directions,
-    //     std::vector<std::vector<IntT> >& intersections,
-    //     std::vector<std::vector<uint8_t> >& hits
-    // );
-
     /**
      * @struct Ray
      * @brief Data type to store information about a ray
