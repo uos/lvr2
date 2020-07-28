@@ -19,7 +19,7 @@
 #include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
 
 #if defined LVR2_USE_OPENCL
-// #include "lvr2/algorithm/raycasting/CLRaycaster.hpp"
+#include "lvr2/algorithm/raycasting/CLRaycaster.hpp"
 #endif
 #if defined LVR2_USE_EMBREE
 #include "lvr2/algorithm/raycasting/EmbreeRaycaster.hpp"
@@ -445,33 +445,48 @@ int main(int argc, char** argv)
 
     // using MyIntType = AllInt;
     using MyIntType = Intersection<
-        intelem::Point, 
-        intelem::Distance,
-        intelem::Face
+        intelem::Point
+        // intelem::Distance,
+        // intelem::Face
     >;
 
-    BVHRaycaster<MyIntType> rc(buffer);
-    EmbreeRaycaster<MyIntType> rc2(buffer);
+    // BVHRaycaster<MyIntType> rc(buffer);
+    // EmbreeRaycaster<MyIntType> rc2(buffer);
+    // CLRaycaster<MyIntType> rc3(buffer);
+
+    // RaycasterBasePtr<MyIntType> rc(new CLRaycaster<MyIntType>(buffer));
+
+    CLRaycaster<MyIntType> rc(buffer);
 
     Vector3f ray_origin = {0.0,0.0,0.0};
     Vector3f ray_dir = {1.0,0.0,0.0};
     
-
     int num_tests = 1000000;
 
     std::vector<Vector3f> ray_origins(num_tests, ray_origin);
     std::vector<Vector3f> ray_dirs(num_tests, ray_dir);
 
+    std::vector<std::vector<Vector3f> > ray_dir_mat = {
+        {ray_dir, ray_dir},
+        {ray_dir, ray_dir}
+    };
+
     std::vector<MyIntType> intsect_vec;
     std::vector<uint8_t> hit_vec;
-    size_t hits2 = 0;
 
+    std::vector<std::vector<MyIntType> > intsect_mat;
+    std::vector<std::vector<uint8_t> > hit_mat;
+    
     start = std::chrono::steady_clock::now();
 
-    rc2.castRays(ray_origins, ray_dirs, intsect_vec, hit_vec);
+    // rc2.castRays(ray_origins, ray_dirs, intsect_vec, hit_vec);
 
-    std::cout << intsect_vec[0] << std::endl;
+    rc.castRays(ray_origins, ray_dirs, intsect_vec, hit_vec);
+    std::cout << intsect_vec.back() << std::endl;
 
+    rc.castRays(ray_origin, ray_dir_mat, intsect_mat, hit_mat);
+    std::cout << intsect_mat.back().back() << std::endl;
+    
     // rc.castRays(ray_origins, ray_dirs, intsect_vec, hit_vec);
 
     // for(int i=0; i<num_tests; i++)
@@ -497,7 +512,7 @@ int main(int argc, char** argv)
 
     end = std::chrono::steady_clock::now();
     milli = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "Raycast: " << hits2 << " hits in " << milli << " ms" << std::endl; 
+    std::cout << "Raycast: " << num_tests << " rays in " << milli << " ms" << std::endl; 
 
 
 

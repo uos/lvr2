@@ -53,7 +53,6 @@ bool BVHRaycaster<IntT>::castRay(
 
     if constexpr(IntT::template has<intelem::Normal>())
     {
-        // TODO calculate normal
         unsigned int v1id = m_faces[result.pBestTriId * 3 + 0];
         unsigned int v2id = m_faces[result.pBestTriId * 3 + 1];
         unsigned int v3id = m_faces[result.pBestTriId * 3 + 2];

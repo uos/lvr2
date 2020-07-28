@@ -123,7 +123,6 @@ std::ostream& operator<<(std::ostream& os, const lvr2::Intersection<T...>& inter
         os << "-- mesh: " << intersection.mesh_id << "\n";
     }
 
-
     return os;
 }
 
