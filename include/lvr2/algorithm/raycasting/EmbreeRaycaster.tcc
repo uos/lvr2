@@ -71,6 +71,8 @@ bool EmbreeRaycaster<IntT>::castRay(
     return (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID);
 }
 
+// PRIVATE
+
 template<typename IntT>
 RTCDevice EmbreeRaycaster<IntT>::initializeDevice()
 {

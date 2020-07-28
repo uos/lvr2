@@ -20,91 +20,22 @@ public:
     EmbreeRaycaster(const MeshBufferPtr mesh);
     ~EmbreeRaycaster();
 
+    /**
+     * Cast Ray. one origin. one direction
+     */
     bool castRay(
         const Vector3f& origin,
         const Vector3f& direction,
         IntT& intersection);
-
-    // template<typename T>
-    // bool castRay(
-    //     const Vector3f& origin,
-    //     const Vector3f& direction,
-    //     T& intersection
-    // ){
-    //     RTCRayHit rayhit = lvr2embree(origin, direction);
-    //     rtcIntersect1(m_scene, &m_context, &rayhit);
-        
-    //     if constexpr(intersection.template has<intelem::Point>())
-    //     {
-    //         intersection.point.x() = rayhit.ray.org_x + rayhit.ray.tfar * rayhit.ray.dir_x;
-    //         intersection.point.y() = rayhit.ray.org_y + rayhit.ray.tfar * rayhit.ray.dir_y;
-    //         intersection.point.z() = rayhit.ray.org_z + rayhit.ray.tfar * rayhit.ray.dir_z;
-    //     }
-
-    //     if constexpr(intersection.template has<intelem::Distance>())
-    //     {
-    //         intersection.dist = rayhit.ray.tfar;
-    //     }
-
-    //     if constexpr(intersection.template has<intelem::Normal>())
-    //     {
-    //         intersection.normal.x() = rayhit.hit.Ng_x;
-    //         intersection.normal.y() = rayhit.hit.Ng_y;
-    //         intersection.normal.z() = rayhit.hit.Ng_z;
-    //     }
-
-    //     if constexpr(intersection.template has<intelem::Face>())
-    //     {
-    //         intersection.face_id = rayhit.hit.primID;
-    //     }
-
-    //     if constexpr(intersection.template has<intelem::Barycentrics>())
-    //     {
-    //         intersection.b_uv.x() = rayhit.hit.u;
-    //         intersection.b_uv.y() = rayhit.hit.v;
-    //     }
-
-    //     if constexpr(intersection.template has<intelem::Mesh>())
-    //     {
-    //         intersection.mesh_id = rayhit.hit.geomID;
-    //     }
-
-    //     return (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID);
-    // }
-
-    // bool castRay(
-    //     const Vector3f& origin,
-    //     const Vector3f& direction,
-    //     unsigned char* intersection,
-    //     const unsigned int& flags
-    // );
-
-    // bool castRay(
-    //     const Vector3f& origin,
-    //     const Vector3f& direction,
-    //     Vector3f& intersection
-    // );
-
-    // void castRays(
-    //     const Vector3f& origin,
-    //     const std::vector<Vector3f>& directions,
-    //     std::vector<Vector3f>& intersections,
-    //     std::vector<uint8_t>& hits
-    // );
-
-    // void castRays(
-    //     const std::vector<Vector3f>& origins,
-    //     const std::vector<Vector3f>& directions,
-    //     std::vector<Vector3f>& intersections,
-    //     std::vector<uint8_t>& hits
-    // );
 
 protected:
 
     RTCDevice initializeDevice();
     RTCScene initializeScene(RTCDevice device, const MeshBufferPtr mesh);
 
-    inline RTCRayHit lvr2embree(const Vector3f& origin, const Vector3f& direction) const
+    inline RTCRayHit lvr2embree(
+        const Vector3f& origin, 
+        const Vector3f& direction) const
     {
         RTCRayHit rayhit;
         rayhit.ray.org_x = origin.x();
@@ -125,7 +56,6 @@ protected:
     RTCDevice m_device;
     RTCScene m_scene;
     RTCIntersectContext m_context;
-
 };
 
 } // namespace lvr2

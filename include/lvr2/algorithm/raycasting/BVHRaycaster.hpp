@@ -37,7 +37,6 @@
 #ifndef LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER
 #define LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER
 
-
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/geometry/BVH.hpp"
@@ -62,49 +61,53 @@ public:
      */
     BVHRaycaster(const MeshBufferPtr mesh);
 
+    /**
+     * Cast Ray. one origin. one direction
+     */
     bool castRay(
         const Vector3f& origin,
         const Vector3f& direction,
         IntT& intersection);
 
-    // template<typename T>
-    // inline bool castRay(
-    //     const Vector3f& origin,
-    //     const Vector3f& direction,
-    //     T& intersection,
-    //     const unsigned int& flags
-    // )
-    // {
-    //     return castRay(origin, direction, reinterpret_cast<unsigned char*>(&intersection), flags);
-    // }
-
-    // bool castRay(
-    //     const Vector3f& origin,
-    //     const Vector3f& direction,
-    //     unsigned char* intersection,
-    //     const unsigned int& flags
-    // );
-
-    // bool castRay(
-    //     const Vector3f& origin,
-    //     const Vector3f& direction,
-    //     Vector3f& intersection
-    // );
-
+    // /**
+    //  * Cast Ray. one origin. multiple directions (vector form)
+    //  */
     // void castRays(
     //     const Vector3f& origin,
-    //     const std::vector<Vector3f >& directions,
-    //     std::vector<Vector3f >& intersections,
+    //     const std::vector<Vector3f>& directions,
+    //     std::vector<IntT>& intersections,
     //     std::vector<uint8_t>& hits
     // );
 
+    // /**
+    //  * Cast Ray. one origin. multiple directions (matrix form)
+    //  */
+    // void castRays(
+    //     const Vector3f& origin,
+    //     const std::vector<std::vector<Vector3f> >& directions,
+    //     std::vector< std::vector<IntT> >& intersections,
+    //     std::vector< std::vector<uint8_t> >& hits
+    // );
+
+    // /**
+    //  * Cast Ray. pair of origin and direction
+    //  */
     // void castRays(
     //     const std::vector<Vector3f>& origins,
     //     const std::vector<Vector3f>& directions,
-    //     std::vector<Vector3f>& intersections,
+    //     std::vector<IntT>& intersections,
     //     std::vector<uint8_t>& hits
     // );
 
+    // /**
+    //  * Cast Ray. multiple origins. each origins can have multiple directions.
+    //  */
+    // void castRays(
+    //     const std::vector<Vector3f>& origins,
+    //     const std::vector<std::vector<Vector3f> >& directions,
+    //     std::vector<std::vector<IntT> >& intersections,
+    //     std::vector<std::vector<uint8_t> >& hits
+    // );
 
     /**
      * @struct Ray
@@ -128,7 +131,6 @@ public:
         float hitDist;
     };
     
-
 protected:
     BVHTree<BaseVector<float> > m_bvh;
 

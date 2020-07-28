@@ -57,25 +57,53 @@ public:
      */
     RaycasterBase(const MeshBufferPtr mesh);
 
+    // PURE VIRTUAL
     virtual bool castRay(
         const Vector3f& origin,
         const Vector3f& direction,
         IntT& intersection
     ) = 0;
+    
+    // VIRTUAL WITH DEFAULTS
+    /**
+     * Cast Ray. one origin. multiple directions (vector form)
+     */
+    virtual void castRays(
+        const Vector3f& origin,
+        const std::vector<Vector3f>& directions,
+        std::vector<IntT>& intersections,
+        std::vector<uint8_t>& hits
+    );
 
-    // virtual void castRays(
-    //     const Vector3f& origin,
-    //     const std::vector<Vector3f>& directions,
-    //     std::vector<IntT>& intersections,
-    //     std::vector<uint8_t>& hits
-    // ) = 0;
+    /**
+     * Cast Ray. one origin. multiple directions (matrix form)
+     */
+    virtual void castRays(
+        const Vector3f& origin,
+        const std::vector<std::vector<Vector3f> >& directions,
+        std::vector< std::vector<IntT> >& intersections,
+        std::vector< std::vector<uint8_t> >& hits
+    );
 
-    // virtual void castRays(
-    //     const std::vector<Vector3f >& origins,
-    //     const std::vector<Vector3f >& directions,
-    //     std::vector<IntT >& intersections,
-    //     std::vector<uint8_t>& hits
-    // ) = 0;
+    /**
+     * Cast Ray. pair of origin and direction
+     */
+    virtual void castRays(
+        const std::vector<Vector3f>& origins,
+        const std::vector<Vector3f>& directions,
+        std::vector<IntT>& intersections,
+        std::vector<uint8_t>& hits
+    );
+
+    /**
+     * Cast Ray. multiple origins. each origins can have multiple directions.
+     */
+    virtual void castRays(
+        const std::vector<Vector3f>& origins,
+        const std::vector<std::vector<Vector3f> >& directions,
+        std::vector<std::vector<IntT> >& intersections,
+        std::vector<std::vector<uint8_t> >& hits
+    );
 
 private:
     const MeshBufferPtr m_mesh;
