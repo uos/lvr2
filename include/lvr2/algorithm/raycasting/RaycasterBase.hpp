@@ -33,10 +33,14 @@
  */
 
 #pragma once
+#ifndef LVR_RAYCASTER_BASE_HPP
+#define LVR_RAYCASTER_BASE_HPP
 
 #include <memory>
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
+
+#include "Intersection.hpp"
 
 namespace lvr2
 {
@@ -45,6 +49,7 @@ namespace lvr2
  * @brief RaycasterBase interface
  */
 
+template<typename IntT>
 class RaycasterBase {
 public:
     /**
@@ -55,27 +60,32 @@ public:
     virtual bool castRay(
         const Vector3f& origin,
         const Vector3f& direction,
-        Vector3f& intersection
+        IntT& intersection
     ) = 0;
 
-    virtual void castRays(
-        const Vector3f& origin,
-        const std::vector<Vector3f>& directions,
-        std::vector<Vector3f>& intersections,
-        std::vector<uint8_t>& hits
-    ) = 0;
+    // virtual void castRays(
+    //     const Vector3f& origin,
+    //     const std::vector<Vector3f>& directions,
+    //     std::vector<IntT>& intersections,
+    //     std::vector<uint8_t>& hits
+    // ) = 0;
 
-    virtual void castRays(
-        const std::vector<Vector3f >& origins,
-        const std::vector<Vector3f >& directions,
-        std::vector<Vector3f >& intersections,
-        std::vector<uint8_t>& hits
-    ) = 0;
+    // virtual void castRays(
+    //     const std::vector<Vector3f >& origins,
+    //     const std::vector<Vector3f >& directions,
+    //     std::vector<IntT >& intersections,
+    //     std::vector<uint8_t>& hits
+    // ) = 0;
 
 private:
     const MeshBufferPtr m_mesh;
 };
 
-using RaycasterBasePtr = std::shared_ptr<RaycasterBase>;
+template<typename IntT>
+using RaycasterBasePtr = std::shared_ptr<RaycasterBase<IntT> >;
 
 } // namespace lvr2
+
+#include "RaycasterBase.tcc"
+
+#endif // LVR_RAYCASTER_BASE_HPP

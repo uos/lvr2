@@ -32,8 +32,83 @@ namespace lvr2
 BVHRaycaster::BVHRaycaster(const MeshBufferPtr mesh)
 :RaycasterBase(mesh)
 ,m_bvh(mesh)
+,m_BVHindicesOrTriLists(m_bvh.getIndexesOrTrilists().data())
+,m_BVHlimits(m_bvh.getLimits().data())
+,m_TriangleIntersectionData(m_bvh.getTrianglesIntersectionData().data())
+,m_TriIdxList(m_bvh.getTriIndexList().data())
 {
     
+}
+
+bool BVHRaycaster::castRay(
+    const Vector3f& origin,
+    const Vector3f& direction,
+    unsigned char* intersection,
+    const unsigned int& flags)
+{
+    // Cast one ray from one origin
+
+    // const float *origin_f = reinterpret_cast<const float*>(&origin.coeffRef(0));
+    // const float *direction_f = reinterpret_cast<const float*>(&direction.coeffRef(0));
+
+
+    Ray ray;
+    ray.dir = direction;
+    // wtf /0 ???? 
+    ray.invDir = {1.0f / ray.dir.x(), 1.0f / ray.dir.y(), 1.0f / ray.dir.z() };
+    ray.rayDirSign.x() = ray.invDir.x() < 0;
+    ray.rayDirSign.y() = ray.invDir.y() < 0;
+    ray.rayDirSign.z() = ray.invDir.z() < 0;
+
+    TriangleIntersectionResult result 
+        = intersectTrianglesBVH(
+            m_BVHindicesOrTriLists,
+            origin, 
+            ray, 
+            m_BVHlimits, 
+            m_TriangleIntersectionData, 
+            m_TriIdxList);
+
+    // set output
+    unsigned char* it = intersection;
+    if(flags & INTERSECT::POINT)
+    {
+        *reinterpret_cast<float*>(it) = result.pointHit.x();
+        it += sizeof(float);
+        *reinterpret_cast<float*>(it) = result.pointHit.y();
+        it += sizeof(float);
+        *reinterpret_cast<float*>(it) = result.pointHit.z();
+        it += sizeof(float);
+    }
+
+    if(flags & INTERSECT::DISTANCE)
+    {
+        *reinterpret_cast<float*>(it) = result.hitDist;
+        it += sizeof(float);
+    }
+
+    if(flags & INTERSECT::NORMAL)
+    {
+        throw std::runtime_error("not implemented");
+    }
+
+    if(flags & INTERSECT::FACE)
+    {
+        *reinterpret_cast<unsigned int*>(it) = result.pBestTriId;
+        it += sizeof(unsigned int);
+    }
+
+    if(flags & INTERSECT::BARYCENTRICS)
+    {
+        throw std::runtime_error("not implemented");
+    }
+
+    if(flags & INTERSECT::MESH)
+    {
+        throw std::runtime_error("not implemented");
+    }
+
+    return result.hit;
 }
 
 bool BVHRaycaster::castRay(

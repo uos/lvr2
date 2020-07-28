@@ -53,6 +53,83 @@ CLRaycaster::CLRaycaster(const MeshBufferPtr mesh)
 
 /// PUBLIC FUNTIONS
 /// Overload functions ///
+
+bool CLRaycaster::castRay(
+    const Vector3f& origin,
+    const Vector3f& direction,
+    unsigned char* intersection,
+    const unsigned int& flags
+) 
+{
+    // Cast one ray from one origin
+    bool success = false;
+
+    // yeah
+    const float* origin_f = reinterpret_cast<const float*>(&origin.coeffRef(0));
+    const float* direction_f = reinterpret_cast<const float*>(&direction.coeffRef(0));
+
+    // std::vector<float> intersections(3);
+    std::vector<uint8_t> hits(1);
+    size_t intsize = IntersectSize(flags);
+    
+    // std::cout << "size of one intersection: " << intsize << std::endl;
+    // return false;
+
+    try {
+        initOpenCLBuffer(1, 1, intsize);
+
+        // return false;
+        copyRayDataToGPU(origin_f, 3, direction_f, 3);
+        
+        m_kernel_one_one2.setArg(0, m_rayOriginBuffer);
+        m_kernel_one_one2.setArg(1, m_rayBuffer);
+        m_kernel_one_one2.setArg(2, m_bvhIndicesOrTriListsBuffer);
+        m_kernel_one_one2.setArg(3, m_bvhLimitsnBuffer);
+        m_kernel_one_one2.setArg(4, m_bvhTriangleIntersectionDataBuffer);
+        m_kernel_one_one2.setArg(5, m_bvhTriIdxListBuffer);
+        m_kernel_one_one2.setArg(6, m_resultBuffer);
+        m_kernel_one_one2.setArg(7, m_resultHitsBuffer);
+
+        cl::Event evt;
+        m_queue.enqueueNDRangeKernel(
+            m_kernel_one_one2,
+            cl::NullRange,
+            cl::NDRange(1),
+            cl::NullRange,
+            nullptr,
+            &evt
+        );
+        m_queue.finish();
+        
+        m_queue.enqueueReadBuffer(
+            m_resultBuffer,
+            CL_TRUE,
+            0,
+            intsize,
+            intersection
+        );
+        
+        m_queue.enqueueReadBuffer(
+            m_resultHitsBuffer,
+            CL_TRUE,
+            0,
+            sizeof(uint8_t),
+            hits.data()
+        );
+        m_queue.finish();
+    }
+    catch (cl::Error err)
+    {
+        std::cerr << err.what() << ": " << CLUtil::getErrorString(err.err()) << std::endl;
+        std::cout << "(" << CLUtil::getErrorDescription(err.err()) << ")" << std::endl;
+        return false;
+    }
+
+    success = hits[0];
+
+    return success;
+}
+
 bool CLRaycaster::castRay(
     const Vector3f& origin,
     const Vector3f& direction,
@@ -362,6 +439,7 @@ void CLRaycaster::testKernel(
 
     try { 
         initOpenCLRayBuffer(3, directions.size()*3);
+
         copyRayDataToGPU(origin_f, 3, direction_f, directions.size()*3);
 
         const unsigned int N = directions.size();
@@ -451,6 +529,7 @@ void CLRaycaster::initOpenCL()
     {
         // panic if no compatible device was found
         std::cerr << "No device with compatible OpenCL version found (minimum 2.0)" << std::endl;
+        throw std::runtime_error("No device with compatible OpenCL version found (minimum 2.0)");
     }
 
     cl_context_properties properties[] =
@@ -474,6 +553,7 @@ void CLRaycaster::initOpenCL()
     catch(cl::Error& err)
     {
         std::cerr << "Error building: " << m_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(m_device).c_str() << std::endl;
+        throw err;
     }
 
     m_queue = cl::CommandQueue(m_context, m_device, 0);
@@ -531,7 +611,9 @@ void CLRaycaster::initOpenCLTreeBuffer()
 
 }
 
-void CLRaycaster::initOpenCLRayBuffer(int num_origins, int num_rays)
+void CLRaycaster::initOpenCLRayBuffer(
+    int num_origins,
+    int num_rays)
 {
     // input buffer
     m_rayOriginBuffer = cl::Buffer(
@@ -556,8 +638,48 @@ void CLRaycaster::initOpenCLRayBuffer(int num_origins, int num_rays)
     m_resultHitsBuffer = cl::Buffer(
         m_context,
         CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY,
-        sizeof(uint8_t) * num_rays/3
+        sizeof(uint8_t) * num_rays / 3
     );
+}
+
+void CLRaycaster::initOpenCLBuffer(
+    size_t num_origins,
+    size_t num_dirs,
+    size_t intsect_size)
+{
+    // input buffer
+    m_rayOriginBuffer = cl::Buffer(
+        m_context,
+        CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
+        sizeof(float) * num_origins * 3
+    );
+
+    // std::cout << "origin buffer bytes: " << sizeof(float) * num_origins * 3 << std::endl;
+
+    m_rayBuffer = cl::Buffer(
+        m_context,
+        CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY,
+        sizeof(float) * num_dirs * 3
+    );
+
+    // std::cout << "dir buffer bytes: " << sizeof(float) * num_dirs * 3 << std::endl;
+
+    // output buffer
+    m_resultBuffer = cl::Buffer(
+        m_context,
+        CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY,
+        intsect_size * num_dirs
+    );
+
+    // std::cout << "result buffer bytes: " << intsect_size * num_dirs << std::endl;
+
+    m_resultHitsBuffer = cl::Buffer(
+        m_context,
+        CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY,
+        sizeof(uint8_t) * num_dirs
+    );
+
+    // std::cout << "hit buffer bytes: " << sizeof(uint8_t) * num_dirs << std::endl;
 
 }
 
@@ -610,7 +732,10 @@ void CLRaycaster::createKernel()
 
     // test kernel
 
-    m_kernel_test = cl::Kernel(m_program, "test");
+    // m_kernel_test = cl::Kernel(m_program, "test");
+    
+    
+    m_kernel_one_one2 = cl::Kernel(m_program, "cast_rays_one_one_char");
 }
 
 void CLRaycaster::copyRayDataToGPU(

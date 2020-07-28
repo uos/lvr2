@@ -30,7 +30,7 @@ R"(
 
 #define EPSILON 0.0000001
 #define PI 3.14159265
-#define BVH_STACK_SIZE 64
+#define BVH_STACK_SIZE 32
 
 /**
  * @struct Ray
@@ -457,11 +457,104 @@ __kernel void cast_rays_one_one(
     );
 
     // if a triangle was hit, store the calculated hit point in the result at the current id
+    
     if (resultBVH.hit)
     {
         result[0] = resultBVH.pointHit.x;
         result[1] = resultBVH.pointHit.y;
         result[2] = resultBVH.pointHit.z;
+        result_hits[0] = 1;
+    }
+}
+
+__kernel void cast_rays_one_one_char(
+    __global float* ray_origin,
+    __global float* rays,
+    __global uint* clBVHindicesOrTriLists,
+    __global float2* clBVHlimits,
+    __global float4* clTriangleIntersectionData,
+    __global uint* clTriIdxList,
+    __global uchar* result,
+    __global uchar* result_hits
+)
+{
+    // get direction and origin of the ray for the current pose
+    float3 ray_d = (float3)(rays[0], rays[1], rays[2]);
+    float3 ray_o = (float3)(ray_origin[0], ray_origin[1], ray_origin[2]);
+
+    // initialize result memory with zeros
+    // result[0] = 0;
+    // result[1] = 0;
+    // result[2] = 0;
+    result_hits[0] = 0;
+
+    // precompute ray values to speed up intersection calculation
+    Ray ray;
+    ray.dir = ray_d;
+    ray.invDir = (float3)(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
+    ray.rayDirSign.x = ray.invDir.x < 0;
+    ray.rayDirSign.y = ray.invDir.y < 0;
+    ray.rayDirSign.z = ray.invDir.z < 0;
+
+
+    // intersect all triangles stored in the BVH
+    TriangleIntersectionResult resultBVH = intersectTrianglesBVH(
+        clBVHindicesOrTriLists,
+        ray_o,
+        ray,
+        clBVHlimits,
+        clTriangleIntersectionData,
+        clTriIdxList
+    );
+
+    // uchar* it = &result[0];
+
+
+    uint IFLAGS = 1 + 2 + 8;
+
+    uint c = 0;
+
+    if(IFLAGS & 1) // INTERSECT::POINT
+    {
+        result[c] = convert_uchar4(resultBVH.pointHit.x);
+        result[c + 4] = convert_uchar4(resultBVH.pointHit.y);
+        result[c + 8] = convert_uchar4(resultBVH.pointHit.z);
+        c += 12;
+    }
+
+
+    if(IFLAGS & 2) // INTERSECT::DISTANCE
+    {
+        printf("dist: %f\n", resultBVH.hitDist);
+        result[c] = convert_uchar4(resultBVH.hitDist);
+        c += 4;
+    }
+
+    if(IFLAGS & 4) // INTERSECT::NORMAL
+    {
+        // not implemented
+    }
+
+    if(IFLAGS & 8) // INTERSECT::FACE
+    {
+        printf("face_id: %u\n", resultBVH.pBestTriId);
+        result[c] = convert_uchar4(resultBVH.pBestTriId);
+        c += 4;
+    }
+
+    if(IFLAGS & 16) // INTERSECT::BARYCENTRICS
+    {
+        // not implemented
+    }
+
+    if(IFLAGS & 32)
+    {
+        // not implemented
+    }
+
+    // if a triangle was hit, store the calculated hit point in the result at the current id
+    if (resultBVH.hit)
+    {
         result_hits[0] = 1;
     }
 }
