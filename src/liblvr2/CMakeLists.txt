@@ -64,9 +64,9 @@ set(LVR2_SOURCES
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
     algorithm/ChunkHashGrid.cpp
-    algorithm/raycasting/RaycasterBase.cpp
-    algorithm/raycasting/BVHRaycaster.cpp
-    algorithm/fapm/PixelProjector.cpp
+    # algorithm/raycasting/RaycasterBase.cpp
+    # algorithm/raycasting/BVHRaycaster.cpp
+    # algorithm/fapm/PixelProjector.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp
@@ -127,7 +127,7 @@ endif()
 if(OPENCL_FOUND)
 list(APPEND LVR2_SOURCES
     reconstruction/opencl/ClSurface.cpp
-    algorithm/raycasting/CLRaycaster.cpp
+    # algorithm/raycasting/CLRaycaster.cpp
 )
 endif()
 

@@ -55,7 +55,7 @@
 // #endif
 
 #include "lvr2/util/CLUtil.hpp"
-
+#include "Intersection.hpp"
 
 
 namespace lvr2
@@ -94,6 +94,24 @@ public:
     CLRaycaster(const MeshBufferPtr mesh);
 
     /// Overload functions ///
+
+    template<typename T>
+    inline bool castRay(
+        const Vector3f& origin,
+        const Vector3f& direction,
+        T& intersection,
+        const unsigned int& flags
+    )
+    {
+        return castRay(origin, direction, reinterpret_cast<unsigned char*>(&intersection), flags);
+    }
+
+    bool castRay(
+        const Vector3f& origin,
+        const Vector3f& direction,
+        unsigned char* intersection,
+        const unsigned int& flags
+    );
 
     bool castRay(
         const Vector3f& origin,
@@ -144,7 +162,16 @@ private:
     /**
      * @brief TODO
      */
-    void initOpenCLRayBuffer(int num_origins, int num_rays);
+    void initOpenCLRayBuffer(
+        int num_origins,
+        int num_rays);
+
+    void initOpenCLBuffer(
+        size_t num_origins,
+        size_t num_dirs,
+        size_t intsect_size
+    );
+
 
     /**
      * @brief TODO
@@ -192,6 +219,7 @@ private:
     cl::Kernel m_kernel_one_multi;
     cl::Kernel m_kernel_multi_multi;
     cl::Kernel m_kernel_test;
+    cl::Kernel m_kernel_one_one2;
 
 
     /// BUFFER ///
