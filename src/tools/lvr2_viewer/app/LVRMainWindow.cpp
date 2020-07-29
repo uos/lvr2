@@ -2958,9 +2958,32 @@ void LVRMainWindow::loadLabels()
         return;
     }
     LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
-    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString() + ".h5"));
+    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString()));
     LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
     LabeledScanProjectEditMarkPtr labelScanProject = h5IO.loadScanProject();
+    std::cout << fileName.toStdString()<< "--------------_" << std::endl;
+
+
+
+    LabelHDF5SchemaPtr copyhdf5Schema(new LabelScanProjectSchemaHDF5V2);
+    HDF5KernelPtr copyhdf5Kernel(new HDF5Kernel("copy" + fileName.toStdString()));
+    LabelHDF5IO copyh5IO(copyhdf5Kernel, copyhdf5Schema);
+    copyh5IO.saveLabelScanProject(labelScanProject);
+
+    LabeledScanProjectEditMarkBridgePtr labelScanProjectBridge(new LVRLabeledScanProjectEditMarkBridge(labelScanProject));
+    
+    if(labelScanProjectBridge->getScanProjectBridgePtr())
+    {
+        std::cout << "scan project Bridge" << std::endl;
+        if(labelScanProjectBridge->getScanProjectBridgePtr()->getScanProject())
+        {
+            std::cout <<labelScanProjectBridge->getScanProjectBridgePtr()->getScanProject()->positions.size()<< std::endl;
+             std::cout << "scan project" << std::endl;
+        }
+    }
+    LVRLabeledScanProjectEditMarkItem* item = new LVRLabeledScanProjectEditMarkItem(labelScanProjectBridge, "Root");
+    this->treeWidget->addLabeledScanProjectEditMark(labelScanProject);
+    item->setExpanded(true);
 
 
     /*
@@ -3372,13 +3395,6 @@ void LVRMainWindow::exportLWF()
             ScanProjectEditMarkPtr editScanProject = ScanProjectEditMarkPtr(new ScanProjectEditMark);
 
             editScanProject->project = scanProject;
-            if (editScanProject->project)
-            {
-                std::cout << "Project found" << std::endl;
-            } else
-            {
-                std::cout << "no Project found" << std::endl;
-            }
             labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
             labelScanProject->editMarkProject = editScanProject;
             std::cout << fileName.toStdString() << std::endl;

@@ -483,7 +483,55 @@ bool HDF5Kernel::exists(const std::string &group) const
 
 bool HDF5Kernel::exists(const std::string &group, const std::string &container) const
 {
-    HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
+    //HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
+
+    std::vector<std::string> ret;
+
+    std::string remainder = group;
+    size_t delimiter_pos = 0;
+
+    while ((delimiter_pos = remainder.find('/', delimiter_pos)) != std::string::npos)
+    {
+        if (delimiter_pos > 0)
+        {
+            ret.push_back(remainder.substr(0, delimiter_pos));
+        }
+
+        remainder = remainder.substr(delimiter_pos + 1);
+
+        delimiter_pos = 0;
+    }
+
+    if (remainder.size() > 0)
+    {
+        ret.push_back(remainder);
+    }
+
+    HighFive::Group g;
+    g = m_hdf5File->getGroup("/");
+    for( std::string substring : ret)
+    {
+        std::cout << substring << std::endl;
+        if(substring == "00000001")
+        {
+            auto bla = g.listObjectNames();
+            for(auto foo : bla)
+            {
+                std::cout << "----" << std::endl;
+                std::cout << foo << std::endl;
+            } 
+            g = g.getGroup(substring);
+            substring = "bjaksjdkasjdkas";
+        }
+        if(g.exist(substring))
+        {   
+            g = g.getGroup(substring);
+        }else
+        {
+            return false;
+        }
+    } 
+    //HighFive::Group g = m_hdf5File->getGroup(group);
     return hdf5util::exist(g, container);
 }
 

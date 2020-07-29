@@ -63,19 +63,21 @@ Description LabelScanProjectSchemaHDF5V2::scan(const std::string& scanPositionPa
 
 Description LabelScanProjectSchemaHDF5V2::waveform(const size_t& scanPosNo, const size_t& scanNo) const
 {
-
+    Description d;
+    d.groupName = boost::none;
+    d.dataSetName = boost::none;
+    d.metaData = boost::none;
+    d.metaName = boost::none;
+    return d;
 }
  
 Description LabelScanProjectSchemaHDF5V2::waveform(const std::string& scanPositionPath, const size_t& scanNo) const
 {
-    Description d; 
-    std::cout << "DEBUG: " << scanPositionPath << std::endl;
-    d.groupName = scanPositionPath;
-
-    // Scan name is always points in the 
-    // respective HDF5 group
-    d.dataSetName = "points";
-
+     Description d;
+    d.groupName = boost::none;
+    d.dataSetName = boost::none;
+    d.metaData = boost::none;
+    d.metaName = boost::none;
     return d;
 }
 Description LabelScanProjectSchemaHDF5V2::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const

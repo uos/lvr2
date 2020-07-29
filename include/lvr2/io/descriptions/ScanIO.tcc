@@ -122,7 +122,6 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
 
         if (m_featureBase->m_kernel->exists(groupName))
         {
-            std::cout << timestamp << "ScanIO: Loading Waveform data... " << std::endl;
             WaveformPtr fwPtr = m_fullWaveformIO->loadFullWaveform(scanPosNo, scanNo);
             ret->waveform = fwPtr;
         }

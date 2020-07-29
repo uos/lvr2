@@ -72,9 +72,11 @@
 
 #include "../widgets/LVRPlotter.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
+#include "../vtkBridge/LVRLabeledScanProjectEditMarkBridge.hpp"
 #include "../vtkBridge/LVRScanProjectBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
 #include "../widgets/LVRScanProjectItem.hpp"
+#include "../widgets/LVRLabeledScanProjectEditMarkItem.hpp"
 #include "../widgets/LVRPointCloudItem.hpp"
 #include "../widgets/LVRMeshItem.hpp"
 #include "../widgets/LVRItemTypes.hpp"

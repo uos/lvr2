@@ -36,8 +36,8 @@
 
 
 #include "lvr2/types/MatrixTypes.hpp"
-#include "LVRModelBridge.hpp"
 #include "LVRScanProjectBridge.hpp"
+#include "LVRLabelBridge.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
@@ -67,6 +67,7 @@ public:
     LVRLabeledScanProjectEditMarkBridge(const LVRLabeledScanProjectEditMarkBridge& b);
 
     LVRLabeledScanProjectEditMarkBridge(ModelBridgePtr project);
+    LVRLabeledScanProjectEditMarkBridge(ScanProjectBridgePtr project);
     /**
      * @brief       Destructor.
      */
@@ -82,6 +83,15 @@ public:
      */
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
+    ScanProjectBridgePtr getScanProjectBridgePtr()
+    { 
+        return m_scanProjectBridgePtr;
+    }
+
+    LabelBridgePtr getLabelBridgePtr()
+    {
+        return m_labelBridgePtr;
+    }
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRLabelScanProjectEditMarkItem;
 
@@ -91,6 +101,7 @@ public:
 private:
 
     ScanProjectBridgePtr m_scanProjectBridgePtr;
+    LabelBridgePtr m_labelBridgePtr;
     LabeledScanProjectEditMarkPtr m_labeledScanProjectEditMark;
 
 };

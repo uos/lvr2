@@ -19,13 +19,14 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRScanProjectBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp
     vtkBridge/LVRMeshBufferBridge.cpp
+    vtkBridge/LVRLabeledScanProjectEditMarkBridge.cpp
+    vtkBridge/LVRLabelBridge.cpp
     vtkBridge/LVRPickingInteractor.cpp
     vtkBridge/LVRInteractorStylePolygonPick.cpp
     vtkBridge/LVRLabelInteractor.cpp
     vtkBridge/LVRVtkArrow.cpp
     vtkBridge/LVRChunkedMeshCuller.cpp
     vtkBridge/LVRChunkedMeshBridge.cpp
-    vtkBridge/LVRLabeledScanProjectEditMarkBridge.cpp
     widgets/LVRScanProjectItem.cpp
     widgets/LVRModelItem.cpp
     widgets/LVRPointCloudItem.cpp

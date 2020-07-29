@@ -8,10 +8,13 @@ namespace lvr2
 LVRScanProjectBridge::LVRScanProjectBridge(ScanProjectPtr project) : m_scanproject(project)
 {
 
+    std::cout << "creating scanproject Bridge" << std::endl;
     for (auto position : project->positions)
     {
+    std::cout << "creating scanproject Bridge pos" << std::endl;
         for(auto scan : position->scans)
         {
+    std::cout << "creating scanproject Bridge scan" << std::endl;
             ModelPtr model(new Model);
             model->m_pointCloud = scan->points;
             ModelBridgePtr modelBridge(new LVRModelBridge(model));

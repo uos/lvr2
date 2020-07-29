@@ -3,6 +3,7 @@
 #include <QTreeWidget>
 #include "LVRModelItem.hpp"
 #include "LVRLabeledScanProjectEditMarkItem.hpp"
+#include "LVRScanProjectItem.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 class LVRModelTreeWidget : public QTreeWidget
@@ -12,8 +13,8 @@ public:
     //using QTreeWidget::QTreeWidget;
     void addTopLevelItem(QTreeWidgetItem *item);
 
-    void addModelItem(lvr2::LVRModelItem *item);
-    void addLabelScanProjectEditMarkItem(lvr2::LVRLabeledScanProjectEditMarkItem *item);
+    void addScanProject(lvr2::ScanProjectPtr scanProject);
+    void addLabeledScanProjectEditMark(lvr2::LabeledScanProjectEditMarkPtr labeledScanProject);
 
     //std::vector<> get**ModelItems();
 };

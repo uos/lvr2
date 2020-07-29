@@ -124,9 +124,11 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
         std::string dataSetName;
         std::tie(groupName, dataSetName) = getNames("", "", scanDescr);
 
+        std::cout << "here" << std::endl;
         // Check if it exists. If not, exit.
         if(m_featureBase->m_kernel->exists(groupName, dataSetName))
         {
+            std::cout << "not here" << std::endl;
             std::cout << timestamp << "ScanPositionIO: Loading scan " 
                       << groupName << "/" << dataSetName << std::endl;
             ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo);
