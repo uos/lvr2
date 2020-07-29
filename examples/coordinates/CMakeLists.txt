@@ -6,10 +6,10 @@
 #####################################################################################
 # Add executable
 #####################################################################################
-add_executable(lvr2_example_coordinates
+add_executable(lvr2_examples_coordinates
     Main.cpp
 )
 
-target_link_libraries(lvr2_example_coordinates
+target_link_libraries(lvr2_examples_coordinates
     lvr2_static
 )
