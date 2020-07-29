@@ -520,7 +520,6 @@ bool HDF5Kernel::exists(const std::string &group, const std::string &container) 
                 std::cout << "----" << std::endl;
                 std::cout << foo << std::endl;
             } 
-            g = g.getGroup(substring);
             substring = "bjaksjdkasjdkas";
         }
         if(g.exist(substring))
