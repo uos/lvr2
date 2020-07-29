@@ -57,16 +57,32 @@ public:
      */
     RaycasterBase(const MeshBufferPtr mesh);
 
-    // PURE VIRTUAL
+    // PURE VIRTUALS
+    /**
+     * @brief Cast a single ray onto the mesh
+     * 
+     * @param[in] origin Ray origin 
+     * @param[in] direction Ray direction
+     * @param[out] intersection User defined intersection output 
+     * @return true  Intersection found
+     * @return false  Not intersection found
+     */
     virtual bool castRay(
         const Vector3f& origin,
         const Vector3f& direction,
         IntT& intersection
     ) = 0;
     
-    // VIRTUAL WITH DEFAULTS
+    // VIRTUALS WITH DEFAULTS. overridable
+    
     /**
-     * Cast Ray. one origin. multiple directions (vector form)
+     * @brief Cast a ray from single origin 
+     *        with multiple directions onto the mesh
+     * 
+     * @param[in] origin Origin of the ray
+     * @param[in] directions Directions of the ray
+     * @param[out] intersections User defined intersections output
+     * @param[out] hits Intersection found or not
      */
     virtual void castRays(
         const Vector3f& origin,
@@ -76,7 +92,13 @@ public:
     );
 
     /**
-     * Cast Ray. one origin. multiple directions (matrix form)
+     * @brief Cast a ray from a single origin 
+     *        with multiple directions (in matrix form) onto the mesh
+     * 
+     * @param[in] origin Origin of the ray
+     * @param[in] directions Directions of the ray
+     * @param[out] intersections User defined intersections output
+     * @param[out] hits Intersection found or not
      */
     virtual void castRays(
         const Vector3f& origin,
@@ -86,7 +108,13 @@ public:
     );
 
     /**
-     * Cast Ray. pair of origin and direction
+     * @brief Cast from multiple ray origin/direction 
+     *        pairs onto the mesh
+     * 
+     * @param[in] origin Origin of the ray
+     * @param[in] directions Directions of the ray
+     * @param[out] intersections User defined intersections output
+     * @param[out] hits Intersection found or not
      */
     virtual void castRays(
         const std::vector<Vector3f>& origins,
@@ -96,7 +124,13 @@ public:
     );
 
     /**
-     * Cast Ray. multiple origins. each origins can have multiple directions.
+     * @brief Cast rays with multiples origins. 
+     *        Each origin has multiples directions.
+     * 
+     * @param[in] origins Origins of the rays
+     * @param[in] directions Directions for each origin
+     * @param[out] intersections Resulting intersections output
+     * @param[out] hits Intersection found or not
      */
     virtual void castRays(
         const std::vector<Vector3f>& origins,
