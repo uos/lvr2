@@ -23,7 +23,7 @@ set(LVR2_EXAMPLE_CHANNELS_DEPENDENCIES
 
 add_executable(lvr2_examples_channels
     Main.cpp
-    ${LVR2_IOPATCH_SOURCES}
+    ${LVR2_EXAMPLE_CHANNELS_SRCS}
 )
 
 target_link_libraries(lvr2_examples_channels ${LVR2_EXAMPLE_CHANNELS_DEPENDENCIES})
