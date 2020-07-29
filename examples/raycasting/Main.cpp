@@ -76,9 +76,8 @@ void multiRay1()
     // by Intersection Container
     // predefined types are also available: PointInt, FaceInt, AllInt
     using MyIntType = Intersection<
-        intelem::Point,
-        intelem::Distance,
-        intelem::Face
+        intelem::Face,
+        intelem::Normal
     >;
 
     // construct raycaster
