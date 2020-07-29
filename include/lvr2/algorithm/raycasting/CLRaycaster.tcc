@@ -8,10 +8,11 @@ constexpr char CAST_RAYS_BVH_PROGRAM[] =
 ;
 
 template<typename IntT>
-CLRaycaster<IntT>::CLRaycaster(const MeshBufferPtr mesh)
-:BVHRaycaster<IntT>(mesh)
+CLRaycaster<IntT>::CLRaycaster(const MeshBufferPtr mesh, 
+    unsigned int stack_size)
+:BVHRaycaster<IntT>(mesh, stack_size)
 ,m_warp_size(32)
-{ 
+{
     try {
         initOpenCL();
         getDeviceInformation();

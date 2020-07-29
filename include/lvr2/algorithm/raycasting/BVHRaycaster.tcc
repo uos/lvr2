@@ -2,7 +2,7 @@
 namespace lvr2 {
 
 template<typename IntT>
-BVHRaycaster<IntT>::BVHRaycaster(const MeshBufferPtr mesh)
+BVHRaycaster<IntT>::BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_size)
 :RaycasterBase<IntT>(mesh)
 ,m_bvh(mesh)
 ,m_faces(mesh->getFaceIndices())
@@ -11,6 +11,7 @@ BVHRaycaster<IntT>::BVHRaycaster(const MeshBufferPtr mesh)
 ,m_BVHlimits(m_bvh.getLimits().data())
 ,m_TriangleIntersectionData(m_bvh.getTrianglesIntersectionData().data())
 ,m_TriIdxList(m_bvh.getTriIndexList().data())
+,m_stack_size(stack_size)
 {
     
 }
@@ -117,7 +118,7 @@ BVHRaycaster<IntT>::intersectTrianglesBVH(
     unsigned int pBestTriId = 0;
     float bestTriDist = std::numeric_limits<float>::max();
 
-    unsigned int stack[BVH_STACK_SIZE];
+    unsigned int stack[m_stack_size];
 
     int stackId = 0;
     stack[stackId++] = 0;
@@ -143,7 +144,7 @@ BVHRaycaster<IntT>::intersectTrianglesBVH(
                 stack[stackId++] = clBVHindicesOrTriLists[4 * boxId + 2];
 
                 // return if stack size is exceeded
-                if ( stackId > BVH_STACK_SIZE)
+                if ( stackId > m_stack_size)
                 {
                     printf("BVH stack size exceeded!\n");
                     result.hit = 0;

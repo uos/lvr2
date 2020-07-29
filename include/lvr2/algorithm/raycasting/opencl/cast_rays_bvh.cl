@@ -31,10 +31,7 @@ R"(
 #define EPSILON 0.0000001
 #define PI 3.14159265
 
-// Paramters
-// 1. bvh stack size: %u
-// 2. type intersection
-
+// TODO make this more dynamic
 #define BVH_STACK_SIZE 32
 
 /**
@@ -290,8 +287,7 @@ __kernel void cast_rays_multi_multi(
     __global float2* clBVHlimits,
     __global float4* clTriangleIntersectionData,
     __global uint* clTriIdxList,
-    __global TriangleIntersectionResult* result
-)
+    __global TriangleIntersectionResult* result)
 {
     const unsigned int id = get_global_id(0);
 
@@ -346,7 +342,6 @@ __kernel void cast_rays_one_multi(
 )
 {
     const unsigned int id = get_global_id(0);
-
     // get direction and origin of the ray for the current pose
     
     float3 ray_o = (float3)(ray_origin[0], ray_origin[1], ray_origin[2]);
@@ -401,7 +396,6 @@ __kernel void cast_rays_one_one(
 
     // initialize result memory with zeros
     
-
     // precompute ray values to speed up intersection calculation
     Ray ray;
     ray.dir = ray_d;
@@ -409,8 +403,6 @@ __kernel void cast_rays_one_one(
     ray.rayDirSign.x = ray.invDir.x < 0;
     ray.rayDirSign.y = ray.invDir.y < 0;
     ray.rayDirSign.z = ray.invDir.z < 0;
-
-    
 
     // intersect all triangles stored in the BVH
     result[0] = intersectTrianglesBVH(
@@ -421,8 +413,6 @@ __kernel void cast_rays_one_one(
         clTriangleIntersectionData,
         clTriIdxList
     );
-
-    // printf("bla dist: %f\n", result[0].hitDist);
 }
 
 

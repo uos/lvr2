@@ -76,7 +76,8 @@ public:
     /**
      * @brief Constructor: Generate BVH tree on mesh, loads CL kernels
      */
-    CLRaycaster(const MeshBufferPtr mesh);
+    CLRaycaster(const MeshBufferPtr mesh,
+                unsigned int stack_size = 32);
 
     /// Overload functions ///
     bool castRay(

@@ -45,7 +45,6 @@
 
 #define EPSILON 0.0000001
 #define PI 3.14159265
-#define BVH_STACK_SIZE 64
 
 namespace lvr2
 {
@@ -59,7 +58,7 @@ public:
     /**
      * @brief Constructor: Stores mesh as member
      */
-    BVHRaycaster(const MeshBufferPtr mesh);
+    BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_size = 64);
 
     /**
      * Cast Ray. one origin. one direction
@@ -125,8 +124,7 @@ protected:
     const float* m_BVHlimits;
     const float* m_TriangleIntersectionData;
     const unsigned int* m_TriIdxList;
-
-
+    const unsigned int m_stack_size;
 
 private:
 
