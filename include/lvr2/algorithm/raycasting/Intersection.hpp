@@ -15,38 +15,98 @@ namespace lvr2 {
 
 namespace intelem {
 
+/**
+ * @brief Intersection point (x,y,z)
+ * 
+ */
 struct Point {
     Vector3f point;
 };
 
+/**
+ * @brief Intersection distance(float)
+ * 
+ */
 struct Distance {
     float dist;
 };
 
+/**
+ * @brief Raycaster should compute the normal of the intersected face
+ *          flipped towards the ray.
+ * 
+ */
 struct Normal {
     Vector3f normal;
 };
 
+/**
+ * @brief Intersection face as uint id
+ * 
+ */
 struct Face {
     unsigned int face_id;
 };
 
+/**
+ * @brief Barycentric coordinates of the intersection point.
+ * 
+ * @code
+ * float u = b_uv.x();
+ * float v = b_uv.y();
+ * float w = 1.0 - u - v;
+ * 
+ * // v1 - v3: vertices of face
+ * // p: intersection point
+ * Vector3f p = u * v1 + v * v2 + w * v3
+ * @endcode
+ *  
+ */
 struct Barycentrics {
     Vector2f b_uv;
 };
 
+/**
+ * @brief Receive the intersected Mesh. TODO
+ * 
+ */
 struct Mesh {
     unsigned int mesh_id;
 };
 
 } // namespace intelem
 
+/**
+ * @brief CRTP Container for User defined intersection elements.
+ * 
+ * Define your own intersection type that is passed to the Raycaster
+ * you like. Allowed elements are in lvr2::intelem
+ * 
+ * @code
+ * // define you intersection type
+ * using MyIntType = Intersection<intelem::Point, intelem::Face>;
+ * // creating the raycaster
+ * RaycasterBasePtr<MyIntType> rc(new BVHRaycaster(meshbuffer));
+ * // cast a ray
+ * MyIntType intersection_result;
+ * bool hit = rc->castRay(ray_origin, ray_direction, intersection_result);
+ * // print:
+ * if(hit)
+ * {
+ *      std::cout << intersection_result << std::endl;
+ * }
+ * @endcode
+ * 
+ * @tparam Tp List of intelem::* types  
+ */
 template<typename ...Tp>
 struct Intersection : public Tp... 
 {
+public:
     static constexpr std::size_t N = sizeof...(Tp);
     using elems = std::tuple<Tp...>;
 
+private:
     template <typename T, typename Tuple>
     struct has_type;
 
@@ -56,6 +116,7 @@ struct Intersection : public Tp...
     template <typename T, typename U, typename... Ts>
     struct has_type<T, std::tuple<U, Ts...>> : has_type<T, std::tuple<Ts...>> {};
 
+
     template <typename T, typename... Ts>
     struct has_type<T, std::tuple<T, Ts...>> : std::true_type {};    
 
@@ -64,6 +125,14 @@ struct Intersection : public Tp...
         static constexpr bool value = has_type<F, elems>::type::value;
     };
 
+public:
+    /**
+     * @brief Check if Intersection container has a specific intelem (lvr2::intelem).
+     * 
+     * @tparam F lvr2::intelem type
+     * @return true 
+     * @return false 
+     */
     template<typename F>
     static constexpr bool has() {
         return has_elem<F>::value;
@@ -82,7 +151,6 @@ using AllInt = Intersection<
     intelem::Face,
     intelem::Barycentrics,
     intelem::Mesh>;
-// using 
 
 } // namespace lvr2
 
