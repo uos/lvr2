@@ -30,13 +30,15 @@ R"(
 
 #define EPSILON 0.0000001
 #define PI 3.14159265
-#define BVH_STACK_SIZE 64
+
+// TODO make this more dynamic
+#define BVH_STACK_SIZE 32
 
 /**
  * @struct Ray
  * @brief Data type to store information about a ray
  */
-typedef struct {
+typedef struct tagRay {
     float3 dir;
     float3 invDir;
     int3 rayDirSign;
@@ -46,8 +48,8 @@ typedef struct {
  * @struct TriangleIntersectionResult
  * @brief A struct to return the calculation results of a triangle intersection
  */
-typedef struct {
-    bool hit;
+typedef struct tagTriangleIntersectionResult {
+    uchar hit;
     uint pBestTriId;
     float3 pointHit;
     float hitDist;
@@ -150,7 +152,7 @@ TriangleIntersectionResult intersectTrianglesBVH(
 )
 {
     TriangleIntersectionResult result;
-    result.hit = false;
+    result.hit = convert_uchar(false);
     uint pBestTriId = 0;
     float bestTriDist = MAXFLOAT;
 
@@ -181,7 +183,7 @@ TriangleIntersectionResult intersectTrianglesBVH(
                 if ( stackId > BVH_STACK_SIZE)
                 {
                     // printf("BVH stack size exceeded!\n");
-                    result.hit = 0;
+                    result.hit = convert_uchar(false);
                     return result;
                 }
             }
@@ -245,7 +247,7 @@ TriangleIntersectionResult intersectTrianglesBVH(
                     {
                         bestTriDist = hitZ;
                         pBestTriId = idx;
-                        result.hit = true;
+                        result.hit = convert_uchar(true);
                         hitpoint = hit;
                     }
                 }
@@ -285,21 +287,13 @@ __kernel void cast_rays_multi_multi(
     __global float2* clBVHlimits,
     __global float4* clTriangleIntersectionData,
     __global uint* clTriIdxList,
-    __global float* result,
-    __global uchar* result_hits
-)
+    __global TriangleIntersectionResult* result)
 {
     const unsigned int id = get_global_id(0);
 
     // get direction and origin of the ray for the current pose
     float3 ray_d = (float3)(rays[id*3], rays[id*3+1], rays[id*3+2]);
     float3 ray_o = (float3)(ray_origin[id*3], ray_origin[id*3+1], ray_origin[id*3+2]);
-
-    // initialize result memory with zeros
-    result[id*3] = 0;
-    result[id*3+1] = 0;
-    result[id*3+2] = 0;
-    result_hits[id] = 0;
 
     // precompute ray values to speed up intersection calculation
     Ray ray;
@@ -309,9 +303,8 @@ __kernel void cast_rays_multi_multi(
     ray.rayDirSign.y = ray.invDir.y < 0;
     ray.rayDirSign.z = ray.invDir.z < 0;
 
-
     // intersect all triangles stored in the BVH
-    TriangleIntersectionResult resultBVH = intersectTrianglesBVH(
+    result[id] = intersectTrianglesBVH(
         clBVHindicesOrTriLists,
         ray_o,
         ray,
@@ -319,15 +312,6 @@ __kernel void cast_rays_multi_multi(
         clTriangleIntersectionData,
         clTriIdxList
     );
-
-    // if a triangle was hit, store the calculated hit point in the result at the current id
-    if (resultBVH.hit)
-    {
-        result[id*3] = resultBVH.pointHit.x;
-        result[id*3 + 1] = resultBVH.pointHit.y;
-        result[id*3 + 2] = resultBVH.pointHit.z;
-        result_hits[id] = 1;
-    }
 }
 
 /**
@@ -354,22 +338,14 @@ __kernel void cast_rays_one_multi(
     __global float2* clBVHlimits,
     __global float4* clTriangleIntersectionData,
     __global uint* clTriIdxList,
-    __global float* result,
-    __global uchar* result_hits
+    __global TriangleIntersectionResult* result
 )
 {
     const unsigned int id = get_global_id(0);
-
     // get direction and origin of the ray for the current pose
     
     float3 ray_o = (float3)(ray_origin[0], ray_origin[1], ray_origin[2]);
     float3 ray_d = (float3)(rays[id*3], rays[id*3+1], rays[id*3+2]);
-
-    // initialize result memory with zeros
-    result[id*3] = 0;
-    result[id*3+1] = 0;
-    result[id*3+2] = 0;
-    result_hits[id] = 0;
 
     // precompute ray values to speed up intersection calculation
     Ray ray;
@@ -379,9 +355,8 @@ __kernel void cast_rays_one_multi(
     ray.rayDirSign.y = ray.invDir.y < 0;
     ray.rayDirSign.z = ray.invDir.z < 0;
 
-
     // intersect all triangles stored in the BVH
-    TriangleIntersectionResult resultBVH = intersectTrianglesBVH(
+    result[id] = intersectTrianglesBVH(
         clBVHindicesOrTriLists,
         ray_o,
         ray,
@@ -389,17 +364,6 @@ __kernel void cast_rays_one_multi(
         clTriangleIntersectionData,
         clTriIdxList
     );
-
-    // if a triangle was hit, store the calculated hit point in the result at the current id
-    if (resultBVH.hit)
-    {
-        result[id*3] = resultBVH.pointHit.x;
-        result[id*3 + 1] = resultBVH.pointHit.y;
-        result[id*3 + 2] = resultBVH.pointHit.z;
-        result_hits[id] = 1;
-    }
-
-    
 }
 
 /**
@@ -423,8 +387,7 @@ __kernel void cast_rays_one_one(
     __global float2* clBVHlimits,
     __global float4* clTriangleIntersectionData,
     __global uint* clTriIdxList,
-    __global float* result,
-    __global uchar* result_hits
+    __global TriangleIntersectionResult* result
 )
 {
     // get direction and origin of the ray for the current pose
@@ -432,11 +395,7 @@ __kernel void cast_rays_one_one(
     float3 ray_o = (float3)(ray_origin[0], ray_origin[1], ray_origin[2]);
 
     // initialize result memory with zeros
-    result[0] = 0;
-    result[1] = 0;
-    result[2] = 0;
-    result_hits[0] = 0;
-
+    
     // precompute ray values to speed up intersection calculation
     Ray ray;
     ray.dir = ray_d;
@@ -445,9 +404,8 @@ __kernel void cast_rays_one_one(
     ray.rayDirSign.y = ray.invDir.y < 0;
     ray.rayDirSign.z = ray.invDir.z < 0;
 
-
     // intersect all triangles stored in the BVH
-    TriangleIntersectionResult resultBVH = intersectTrianglesBVH(
+    result[0] = intersectTrianglesBVH(
         clBVHindicesOrTriLists,
         ray_o,
         ray,
@@ -455,45 +413,6 @@ __kernel void cast_rays_one_one(
         clTriangleIntersectionData,
         clTriIdxList
     );
-
-    // if a triangle was hit, store the calculated hit point in the result at the current id
-    if (resultBVH.hit)
-    {
-        result[0] = resultBVH.pointHit.x;
-        result[1] = resultBVH.pointHit.y;
-        result[2] = resultBVH.pointHit.z;
-        result_hits[0] = 1;
-    }
-}
-
-__kernel void test(
-    __global float* ray_origin,
-    __global float* rays,
-    const unsigned int num_rays
-)
-{
-    const unsigned int loc_id = get_local_id(0);
-    const unsigned int loc_size = get_local_size(0);
-    const unsigned int glob_id = get_global_id(0);
-    const unsigned int glob_size = get_global_size(0);
-    const unsigned int group_id = get_group_id(0);
-    const unsigned int group_size = get_num_groups(0);
-
-    const unsigned int offset = glob_size;
-
-    for(unsigned int tid=glob_id; tid<num_rays; tid+=offset)
-    {
-        // printf("tid: %u\n",tid);
-        float a = ray_origin[0] + ray_origin[tid*3+0];
-        float b = ray_origin[1] + ray_origin[tid*3+1];
-        float c = ray_origin[2] + ray_origin[tid*3+2];
-        float d = a + b + c;
-    }
-
-    // printf("tid: %u\n",glob_id  );
-
-    
-
 }
 
 

@@ -37,15 +37,14 @@
 #ifndef LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER
 #define LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER
 
-
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/geometry/BVH.hpp"
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
+#include "Intersection.hpp"
 
 #define EPSILON 0.0000001
 #define PI 3.14159265
-#define BVH_STACK_SIZE 128
 
 namespace lvr2
 {
@@ -53,33 +52,27 @@ namespace lvr2
 /**
  *  @brief BVHRaycaster: CPU version of BVH Raycasting: WIP
  */
-class BVHRaycaster : public RaycasterBase {
+template<typename IntT>
+class BVHRaycaster : public RaycasterBase<IntT> {
 public:
     /**
      * @brief Constructor: Stores mesh as member
      */
-    BVHRaycaster(const MeshBufferPtr mesh);
+    BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_size = 64);
 
+    /**
+     * @brief Cast a single ray onto the mesh
+     * 
+     * @param[in] origin Ray origin 
+     * @param[in] direction Ray direction
+     * @param[out] intersection User defined intersection output 
+     * @return true  Intersection found
+     * @return false  Not intersection found
+     */
     bool castRay(
         const Vector3f& origin,
         const Vector3f& direction,
-        Vector3f& intersection
-    );
-
-    void castRays(
-        const Vector3f& origin,
-        const std::vector<Vector3f >& directions,
-        std::vector<Vector3f >& intersections,
-        std::vector<uint8_t>& hits
-    );
-
-    void castRays(
-        const std::vector<Vector3f>& origins,
-        const std::vector<Vector3f>& directions,
-        std::vector<Vector3f>& intersections,
-        std::vector<uint8_t>& hits
-    );
-
+        IntT& intersection);
 
     /**
      * @struct Ray
@@ -92,7 +85,6 @@ public:
         Vector3i rayDirSign;
     };
 
-
     /**
      * @struct TriangleIntersectionResult
      * @brief A struct to return the calculation results of a triangle intersection
@@ -104,12 +96,43 @@ public:
         float hitDist;
     };
     
-
 protected:
+
+    inline Vector3f barycentric(
+        const Vector3f& p, 
+        const Vector3f& a, 
+        const Vector3f& b,
+        const Vector3f& c) const
+    {
+        Vector3f v0 = b - a;
+        Vector3f v1 = c - a;
+        Vector3f v2 = p - a;
+        float d00 = v0.dot(v0);
+        float d01 = v0.dot(v1);
+        float d11 = v1.dot(v1);
+        float d20 = v2.dot(v0);
+        float d21 = v2.dot(v1);
+        float denom = d00 * d11 - d01 * d01;
+        
+        float u = (d11 * d20 - d01 * d21) / denom;
+        float v = (d00 * d21 - d01 * d20) / denom;
+        float w = 1.0 - v - u;
+        
+        return Vector3f(u, v, w);
+    }
+
     BVHTree<BaseVector<float> > m_bvh;
 
-private:
+    indexArray m_faces;
+    floatArr m_vertices;
 
+    const unsigned int* m_BVHindicesOrTriLists;
+    const float* m_BVHlimits;
+    const float* m_TriangleIntersectionData;
+    const unsigned int* m_TriIdxList;
+    const unsigned int m_stack_size;
+
+private:
 
     /**
      * @brief Calculates the squared distance of two vectors
@@ -121,6 +144,7 @@ private:
     {
         return (a - b).squaredNorm();
     }
+
 
     /**
      * @brief Calculates whether a ray intersects a box
@@ -153,87 +177,10 @@ private:
         const unsigned int* clTriIdxList
     );
 
-    /**
-     * @brief Casts one ray from one origin into a scene of triangles, given a bounding volume hierarchy
-     *
-     * @param rays_origin                   Origins of the rays
-     * @param rays                          Forward directions of each pose
-     * @param clBVHindicesOrTriLists        Compressed BVH Node data, that stores for each node, whether it is a leaf node
-     *                                      and triangle indices lists for leaf nodes and the indices of their child nodes
-     *                                      for inner nodes
-     * @param clBVHlimits                   3d upper and lower limits for each bounding box in the BVH
-     * @param clTriangleIntersectionData    Precomputed intersection data for each triangle
-     * @param clTriIdxList                  List of triangle indices
-     * @param result                        Result point positions
-     * @param result_hits                   Result hits, where for each ray is stored whether it has hit a triangle
-     */
-    void cast_rays_one_one(
-        const float* ray_origin,
-        const float* rays,
-        const unsigned int* clBVHindicesOrTriLists,
-        const float* clBVHlimits,
-        const float* clTriangleIntersectionData,
-        const unsigned int* clTriIdxList,
-        float* result,
-        uint8_t* result_hits
-    );
-
-    /**
-     * @brief Casts multiple rays from one origin into a scene of triangles, given a bounding volume hierarchy
-     *
-     * @param rays_origin                   Origins of the rays
-     * @param rays                          Forward directions of each pose
-     * @param clBVHindicesOrTriLists        Compressed BVH Node data, that stores for each node, whether it is a leaf node
-     *                                      and triangle indices lists for leaf nodes and the indices of their child nodes
-     *                                      for inner nodes
-     * @param clBVHlimits                   3d upper and lower limits for each bounding box in the BVH
-     * @param clTriangleIntersectionData    Precomputed intersection data for each triangle
-     * @param clTriIdxList                  List of triangle indices
-     * @param result                        Result point positions
-     * @param result_hits                   Result hits, where for each ray is stored whether it has hit a triangle
-     */
-
-    void cast_rays_one_multi(
-        const float* ray_origin,
-        const float* rays,
-        size_t num_rays,
-        const unsigned int* clBVHindicesOrTriLists,
-        const float* clBVHlimits,
-        const float* clTriangleIntersectionData,
-        const unsigned int* clTriIdxList,
-        float* result,
-        uint8_t* result_hits
-    );
-
-    /**
-     * @brief Casts multiple rays from multiple origins into a scene of triangles, given a bounding volume hierarchy
-     *
-     * @param rays_origin                   Origins of the rays
-     * @param rays                          Forward directions of each pose
-     * @param clBVHindicesOrTriLists        Compressed BVH Node data, that stores for each node, whether it is a leaf node
-     *                                      and triangle indices lists for leaf nodes and the indices of their child nodes
-     *                                      for inner nodes
-     * @param clBVHlimits                   3d upper and lower limits for each bounding box in the BVH
-     * @param clTriangleIntersectionData    Precomputed intersection data for each triangle
-     * @param clTriIdxList                  List of triangle indices
-     * @param result                        Result point positions
-     * @param result_hits                   Result hits, where for each ray is stored whether it has hit a triangle
-     */
-    void cast_rays_multi_multi(
-        const float* ray_origin,
-        const float* rays,
-        size_t num_rays,
-        const unsigned int* clBVHindicesOrTriLists,
-        const float* clBVHlimits,
-        const float* clTriangleIntersectionData,
-        const unsigned int* clTriIdxList,
-        float* result,
-        uint8_t* result_hits
-    );
-
-
 };
 
 } // namespace lvr2
+
+#include "BVHRaycaster.tcc"
 
 #endif // LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER

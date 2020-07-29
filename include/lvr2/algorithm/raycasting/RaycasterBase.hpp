@@ -33,10 +33,14 @@
  */
 
 #pragma once
+#ifndef LVR_RAYCASTER_BASE_HPP
+#define LVR_RAYCASTER_BASE_HPP
 
 #include <memory>
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
+
+#include "Intersection.hpp"
 
 namespace lvr2
 {
@@ -45,6 +49,7 @@ namespace lvr2
  * @brief RaycasterBase interface
  */
 
+template<typename IntT>
 class RaycasterBase {
 public:
     /**
@@ -52,30 +57,97 @@ public:
      */
     RaycasterBase(const MeshBufferPtr mesh);
 
+    // PURE VIRTUALS
+    /**
+     * @brief Cast a single ray onto the mesh
+     * 
+     * @param[in] origin Ray origin 
+     * @param[in] direction Ray direction
+     * @param[out] intersection User defined intersection output 
+     * @return true  Intersection found
+     * @return false  Not intersection found
+     */
     virtual bool castRay(
         const Vector3f& origin,
         const Vector3f& direction,
-        Vector3f& intersection
+        IntT& intersection
     ) = 0;
-
+    
+    // VIRTUALS WITH DEFAULTS. overridable
+    
+    /**
+     * @brief Cast a ray from single origin 
+     *        with multiple directions onto the mesh
+     * 
+     * @param[in] origin Origin of the ray
+     * @param[in] directions Directions of the ray
+     * @param[out] intersections User defined intersections output
+     * @param[out] hits Intersection found or not
+     */
     virtual void castRays(
         const Vector3f& origin,
         const std::vector<Vector3f>& directions,
-        std::vector<Vector3f>& intersections,
+        std::vector<IntT>& intersections,
         std::vector<uint8_t>& hits
-    ) = 0;
+    );
 
+    /**
+     * @brief Cast a ray from a single origin 
+     *        with multiple directions (in matrix form) onto the mesh
+     * 
+     * @param[in] origin Origin of the ray
+     * @param[in] directions Directions of the ray
+     * @param[out] intersections User defined intersections output
+     * @param[out] hits Intersection found or not
+     */
     virtual void castRays(
-        const std::vector<Vector3f >& origins,
-        const std::vector<Vector3f >& directions,
-        std::vector<Vector3f >& intersections,
+        const Vector3f& origin,
+        const std::vector<std::vector<Vector3f> >& directions,
+        std::vector< std::vector<IntT> >& intersections,
+        std::vector< std::vector<uint8_t> >& hits
+    );
+
+    /**
+     * @brief Cast from multiple ray origin/direction 
+     *        pairs onto the mesh
+     * 
+     * @param[in] origin Origin of the ray
+     * @param[in] directions Directions of the ray
+     * @param[out] intersections User defined intersections output
+     * @param[out] hits Intersection found or not
+     */
+    virtual void castRays(
+        const std::vector<Vector3f>& origins,
+        const std::vector<Vector3f>& directions,
+        std::vector<IntT>& intersections,
         std::vector<uint8_t>& hits
-    ) = 0;
+    );
+
+    /**
+     * @brief Cast rays with multiples origins. 
+     *        Each origin has multiples directions.
+     * 
+     * @param[in] origins Origins of the rays
+     * @param[in] directions Directions for each origin
+     * @param[out] intersections Resulting intersections output
+     * @param[out] hits Intersection found or not
+     */
+    virtual void castRays(
+        const std::vector<Vector3f>& origins,
+        const std::vector<std::vector<Vector3f> >& directions,
+        std::vector<std::vector<IntT> >& intersections,
+        std::vector<std::vector<uint8_t> >& hits
+    );
 
 private:
     const MeshBufferPtr m_mesh;
 };
 
-using RaycasterBasePtr = std::shared_ptr<RaycasterBase>;
+template<typename IntT>
+using RaycasterBasePtr = std::shared_ptr<RaycasterBase<IntT> >;
 
 } // namespace lvr2
+
+#include "RaycasterBase.tcc"
+
+#endif // LVR_RAYCASTER_BASE_HPP
