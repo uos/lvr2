@@ -82,23 +82,19 @@ Description LabelScanProjectSchemaHDF5V2::waveform(const std::string& scanPositi
 }
 Description LabelScanProjectSchemaHDF5V2::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
 {
-    // Scan camera is not supported
-    Description d;
-    d.groupName = boost::none;
-    d.dataSetName = boost::none;
-    d.metaData = boost::none;
-    d.metaName = boost::none;
-    return d;
+    // Group name
+    std::stringstream group_stream;
+    group_stream << "/raw/" << std::setfill('0') << std::setw(8) << scanPositionNo << "/cam_" << std::setfill('0') << std::setw(2) << camNo;
+  
+    return scanCamera(group_stream.str(), camNo);
 }
 
 Description LabelScanProjectSchemaHDF5V2::scanCamera(const std::string &scanPositionPath, const size_t &camNo) const
 {
     // Scan camera is not supported
     Description d;
-    d.groupName = boost::none;
-    d.dataSetName = boost::none;
-    d.metaData = boost::none;
-    d.metaName = boost::none;
+    d.groupName = scanPositionPath;
+    d.dataSetName = "camera";
     return d;
 }
 

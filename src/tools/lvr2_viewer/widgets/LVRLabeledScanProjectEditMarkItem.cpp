@@ -32,7 +32,7 @@ LVRLabeledScanProjectEditMarkItem::LVRLabeledScanProjectEditMarkItem(LabeledScan
 
 LVRLabeledScanProjectEditMarkItem::LVRLabeledScanProjectEditMarkItem(const LVRLabeledScanProjectEditMarkItem& item)
 {
-    //m_scanProjectBridge   = item.m_scanProjectBridge;
+    m_labelScanProjectEditMarkBridge  = item.m_labelScanProjectEditMarkBridge;
     m_name          = item.m_name;
 }
 

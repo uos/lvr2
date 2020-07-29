@@ -2962,15 +2962,26 @@ void LVRMainWindow::loadLabels()
     LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
     LabeledScanProjectEditMarkPtr labelScanProject = h5IO.loadScanProject();
     std::cout << fileName.toStdString()<< "--------------_" << std::endl;
+    if(labelScanProject->editMarkProject)
+    {
+        std::cout << "able scan project" << std::endl;
+        if(labelScanProject->editMarkProject->project)
+        {
+             std::cout << "scan project" << std::endl;
+        }
+    }
+    std::cout << "--------------_" << std::endl;
 
 
-
+    /*
     LabelHDF5SchemaPtr copyhdf5Schema(new LabelScanProjectSchemaHDF5V2);
-    HDF5KernelPtr copyhdf5Kernel(new HDF5Kernel("copy" + fileName.toStdString()));
+    HDF5KernelPtr copyhdf5Kernel(new HDF5Kernel( "/home/michel/savecopy.h5"));
     LabelHDF5IO copyh5IO(copyhdf5Kernel, copyhdf5Schema);
     copyh5IO.saveLabelScanProject(labelScanProject);
 
+    */
     LabeledScanProjectEditMarkBridgePtr labelScanProjectBridge(new LVRLabeledScanProjectEditMarkBridge(labelScanProject));
+    labelScanProjectBridge->addActors(m_renderer);
     
     if(labelScanProjectBridge->getScanProjectBridgePtr())
     {
