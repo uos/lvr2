@@ -61,7 +61,13 @@ public:
     BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_size = 64);
 
     /**
-     * Cast Ray. one origin. one direction
+     * @brief Cast a single ray onto the mesh
+     * 
+     * @param[in] origin Ray origin 
+     * @param[in] direction Ray direction
+     * @param[out] intersection User defined intersection output 
+     * @return true  Intersection found
+     * @return false  Not intersection found
      */
     bool castRay(
         const Vector3f& origin,

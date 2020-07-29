@@ -28,12 +28,11 @@
 /*
  * CLRaycaster.hpp
  *
- *  @date 25.01.2019
+ *  @date 25.01.2020
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  *  @author Alexander Mock <amock@uos.de>
  */
 
-#pragma once
 #ifndef LVR2_ALGORITHM_RAYCASTING_CLRAYCASTER
 #define LVR2_ALGORITHM_RAYCASTING_CLRAYCASTER
 
@@ -66,9 +65,8 @@ namespace lvr2
 {
 
 /**
- *  @brief CLRaycaster: GPU OpenCL version of BVH Raycasting: WIP
+ *  @brief CLRaycaster: GPU OpenCL version of BVH Raycasting
  */
-
 template<typename IntT>
 class CLRaycaster : public BVHRaycaster<IntT> {
 public:
@@ -80,6 +78,15 @@ public:
                 unsigned int stack_size = 32);
 
     /// Overload functions ///
+    /**
+     * @brief Cast a single ray onto the mesh. Hint: Better not use it on GPU.
+     * 
+     * @param[in] origin Ray origin 
+     * @param[in] direction Ray direction
+     * @param[out] intersection User defined intersection output 
+     * @return true  Intersection found
+     * @return false  Not intersection found
+     */
     bool castRay(
         const Vector3f& origin,
         const Vector3f& direction,
@@ -88,7 +95,13 @@ public:
     using BVHRaycaster<IntT>::castRays;
 
     /**
-     * Cast Ray. one origin. multiple directions (vector form)
+     * @brief Cast a ray from single origin 
+     *        with multiple directions onto the mesh
+     * 
+     * @param[in] origin Origin of the ray
+     * @param[in] directions Directions of the ray
+     * @param[out] intersections User defined intersections output
+     * @param[out] hits Intersection found or not
      */
     void castRays(
         const Vector3f& origin,
@@ -96,35 +109,20 @@ public:
         std::vector<IntT>& intersections,
         std::vector<uint8_t>& hits) override;
 
-    // cannot cast to vector of vectors to flat float pointer
-    // /**
-    //  * Cast Ray. one origin. multiple directions (matrix form)
-    //  */
-    // void castRays(
-    //     const Vector3f& origin,
-    //     const std::vector<std::vector<Vector3f> >& directions,
-    //     std::vector< std::vector<IntT> >& intersections,
-    //     std::vector< std::vector<uint8_t> >& hits
-    // ) override;
-
     /**
-     * Cast Ray. pair of origin and direction
+     * @brief Cast from multiple ray origin/direction 
+     *        pairs onto the mesh
+     * 
+     * @param[in] origin Origin of the ray
+     * @param[in] directions Directions of the ray
+     * @param[out] intersections User defined intersections output
+     * @param[out] hits Intersection found or not
      */
     void castRays(
         const std::vector<Vector3f>& origins,
         const std::vector<Vector3f>& directions,
         std::vector<IntT>& intersections,
         std::vector<uint8_t>& hits) override;
-
-    // /**
-    //  * Cast Ray. multiple origins. each origins can have multiple directions.
-    //  */
-    // virtual void castRays(
-    //     const std::vector<Vector3f>& origins,
-    //     const std::vector<std::vector<Vector3f> >& directions,
-    //     std::vector<std::vector<IntT> >& intersections,
-    //     std::vector<std::vector<uint8_t> >& hits
-    // );
 
     struct ClTriangleIntersectionResult {
         cl_uchar hit = 0;
