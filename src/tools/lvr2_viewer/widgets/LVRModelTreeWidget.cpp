@@ -22,7 +22,7 @@ void LVRModelTreeWidget::addTopLevelItem(QTreeWidgetItem *item)
     //}
 }
 
-void LVRModelTreeWidget::addScanProject(lvr2::ScanProjectPtr scanProject)
+void LVRModelTreeWidget::addScanProject(lvr2::ScanProjectPtr scanProject, std::string name)
 {
     lvr2::ScanProjectBridgePtr scanBridgePtr;
     scanBridgePtr = lvr2::ScanProjectBridgePtr(new lvr2::LVRScanProjectBridge(scanProject));
@@ -30,11 +30,11 @@ void LVRModelTreeWidget::addScanProject(lvr2::ScanProjectPtr scanProject)
     QTreeWidget::addTopLevelItem(item);
 }
 
-void LVRModelTreeWidget::addLabeledScanProjectEditMark(lvr2::LabeledScanProjectEditMarkPtr labeledScanProject)
+void LVRModelTreeWidget::addLabeledScanProjectEditMark(lvr2::LabeledScanProjectEditMarkPtr labeledScanProject, std::string name)
 {
     lvr2::LabeledScanProjectEditMarkBridgePtr labelScanBridgePtr;
     labelScanBridgePtr = lvr2::LabeledScanProjectEditMarkBridgePtr(new lvr2::LVRLabeledScanProjectEditMarkBridge(labeledScanProject));
-    lvr2::LVRLabeledScanProjectEditMarkItem *item = new lvr2::LVRLabeledScanProjectEditMarkItem(labelScanBridgePtr, "Root");
+    lvr2::LVRLabeledScanProjectEditMarkItem *item = new lvr2::LVRLabeledScanProjectEditMarkItem(labelScanBridgePtr, QString::fromStdString(name));
     QTreeWidget::addTopLevelItem(item);
 
 }

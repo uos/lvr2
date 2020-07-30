@@ -70,7 +70,6 @@ HighFive::Group getGroup(std::shared_ptr<HighFive::File> hdf5_file,
         {
             if (cur_grp.exist(groupNames[i]))
             {
-                std::cout << groupNames[i] << std::endl;
                 cur_grp = cur_grp.getGroup(groupNames[i]);
             }
             else if (create)

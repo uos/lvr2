@@ -17,6 +17,7 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRBoundingBoxBridge.cpp
     vtkBridge/LVRModelBridge.cpp
     vtkBridge/LVRScanProjectBridge.cpp
+    vtkBridge/LVRScanPositionBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp
     vtkBridge/LVRMeshBufferBridge.cpp
     vtkBridge/LVRLabeledScanProjectEditMarkBridge.cpp
@@ -28,11 +29,13 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRChunkedMeshCuller.cpp
     vtkBridge/LVRChunkedMeshBridge.cpp
     widgets/LVRScanProjectItem.cpp
+    widgets/LVRScanPositionItem.cpp
     widgets/LVRModelItem.cpp
     widgets/LVRPointCloudItem.cpp
     widgets/LVRMeshItem.cpp
     widgets/LVRPoseItem.cpp
     widgets/LVRPickItem.cpp
+    widgets/LVRLabelItem.cpp
     widgets/LVRTextureMeshItem.cpp
     widgets/LVRRecordedFrameItem.cpp
     widgets/LVRRenameDialog.cpp

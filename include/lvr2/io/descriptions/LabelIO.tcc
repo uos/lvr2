@@ -10,7 +10,7 @@ void LabelIO<Derived>::saveLabels(
     //TODO Maybe add Description conatining the group and datasetname
     boost::filesystem::path pointCloud("pointCloud");
     boost::filesystem::path groupPath = (boost::filesystem::path(group) / pointCloud);
-    m_featureBase->m_kernel->savePointBuffer(groupPath.string(), "points.ply", labelRootPtr->points);
+    m_featureBase->m_kernel->savePointBuffer(groupPath.string(), "points", labelRootPtr->points);
          
     //iterate over classes
     for(auto classPtr : labelRootPtr->labelClasses)
@@ -78,13 +78,20 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
 
 
     //read Pointbuffer 
-    ret->points = m_featureBase->m_kernel->loadPointBuffer(group, "points.ply");
+    ret->points = m_featureBase->m_kernel->loadPointBuffer(group, "points");
+    std::cout << "group" << group << std::endl;
 
     std::vector<std::string> labelClasses;
     m_featureBase->m_kernel->subGroupNames(group, labelClasses);
     boost::filesystem::path groupPath(group);
     for (auto classGroup : labelClasses)
     {
+        if(classGroup == "points")
+        {
+            //TODO make it less hacky
+            continue;
+        }
+        std::cout << classGroup << std::endl;
         boost::filesystem::path classPath(groupPath / boost::filesystem::path(classGroup));
         LabelClassPtr classPtr(new LabelClass);
         classPtr->className = classGroup;
@@ -93,6 +100,7 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
         m_featureBase->m_kernel->subGroupNames(classPath.string(), labelInstances);
         for(auto instanceGroup : labelInstances)
         {
+            std::cout << instanceGroup << std::endl;
             LabelInstancePtr instancePtr(new LabelInstance);
             instancePtr->instanceName = instanceGroup;
             //Get Color and IDs

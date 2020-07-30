@@ -18,6 +18,8 @@ LVRLabeledScanProjectEditMarkBridge::LVRLabeledScanProjectEditMarkBridge(Labeled
         LabelBridgePtr labelBridge = LabelBridgePtr(new LVRLabelBridge(project->labelRoot));
         m_labelBridgePtr = labelBridge;
     }
+    else {
+    }
 }
 
 LVRLabeledScanProjectEditMarkBridge::LVRLabeledScanProjectEditMarkBridge(const LVRLabeledScanProjectEditMarkBridge& b)

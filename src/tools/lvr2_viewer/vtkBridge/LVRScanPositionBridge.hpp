@@ -31,12 +31,12 @@
  *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRSCANPROJECTBRIDGE_HPP_
-#define LVRSCANPROJECTBRIDGE_HPP_
+#ifndef LVRSCANPOSITIONBRIDGE_HPP_
+#define LVRSCANPOSITIONBRIDGE_HPP_
 
 
 #include "lvr2/types/MatrixTypes.hpp"
-#include "LVRScanPositionBridge.hpp"
+#include "LVRModelBridge.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
@@ -53,7 +53,7 @@ namespace lvr2
  *          parses the internal ScanProject structures to vtk representations that can be
  *          added to a vtkRenderer instance.
  */
-class LVRScanProjectBridge
+class LVRScanPositionBridge
 {
 public:
 
@@ -61,14 +61,15 @@ public:
      * @brief       Constructor. Parses the model information and generates vtk actor
      *              instances for the given data.
      */
-    LVRScanProjectBridge(ScanProjectPtr project);
+    LVRScanPositionBridge(ScanPositionPtr project);
 
-    LVRScanProjectBridge(const LVRScanProjectBridge& b);
-    LVRScanProjectBridge(ModelBridgePtr project);
+    LVRScanPositionBridge(const LVRScanPositionBridge& b);
+
+    LVRScanPositionBridge(ModelBridgePtr project);
     /**
      * @brief       Destructor.
      */
-    virtual ~LVRScanProjectBridge();
+    virtual ~LVRScanPositionBridge();
 
     /**
      * @brief       Adds the generated actors to the given renderer
@@ -83,19 +84,22 @@ public:
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRScanProjectItem;
 
-    ScanProjectPtr getScanProject();
+    ScanPositionPtr getScanPosition();
+    Pose getPose();
 
-    std::vector<ScanPositionBridgePtr> getScanPositions();
+    std::vector<ModelBridgePtr> getModels();
+    void setVisibility(bool visible);
 
 private:
 
-    std::vector<ScanPositionBridgePtr> m_scanPositions;
-    ScanProjectPtr m_scanproject;
+    std::vector<ModelBridgePtr> models;
+    ScanPositionPtr m_scanposition;
+    Pose m_pose;
 
 };
 
-typedef boost::shared_ptr<LVRScanProjectBridge> ScanProjectBridgePtr;
+typedef boost::shared_ptr<LVRScanPositionBridge> ScanPositionBridgePtr;
 
 } /* namespace lvr2 */
 
-#endif /* LVRMODEL_HPP_ */
+#endif /* LVRScanPosition_HPP_ */

@@ -13,8 +13,8 @@ public:
     //using QTreeWidget::QTreeWidget;
     void addTopLevelItem(QTreeWidgetItem *item);
 
-    void addScanProject(lvr2::ScanProjectPtr scanProject);
-    void addLabeledScanProjectEditMark(lvr2::LabeledScanProjectEditMarkPtr labeledScanProject);
+    void addScanProject(lvr2::ScanProjectPtr scanProject, std::string ="");
+    void addLabeledScanProjectEditMark(lvr2::LabeledScanProjectEditMarkPtr labeledScanProject, std::string ="");
 
     //std::vector<> get**ModelItems();
 };

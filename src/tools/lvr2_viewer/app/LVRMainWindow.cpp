@@ -334,10 +334,10 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
     QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
-    QObject::connect(this->actionOpenLabeledPointcloud, SIGNAL(triggered()), this, SLOT(loadLabels()));
+    QObject::connect(this->actionOpenScanProject, SIGNAL(triggered()), this, SLOT(openScanProject()));
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
     QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
-    QObject::connect(this->actionExportWaveform, SIGNAL(triggered()), this, SLOT(exportLWF()));
+    QObject::connect(this->actionExportScanProject, SIGNAL(triggered()), this, SLOT(exportScanProject()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
@@ -2947,7 +2947,7 @@ void LVRMainWindow::addNewInstance(LVRLabelClassTreeItem * selectedTopLevelItem)
     selectedInstanceComboBox->setCurrentIndex(comboBoxPos);
 }
 
-void LVRMainWindow::loadLabels()
+void LVRMainWindow::openScanProject()
 {
 
     //TODO: What should be done if elements exists?
@@ -2961,16 +2961,6 @@ void LVRMainWindow::loadLabels()
     HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString()));
     LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
     LabeledScanProjectEditMarkPtr labelScanProject = h5IO.loadScanProject();
-    std::cout << fileName.toStdString()<< "--------------_" << std::endl;
-    if(labelScanProject->editMarkProject)
-    {
-        std::cout << "able scan project" << std::endl;
-        if(labelScanProject->editMarkProject->project)
-        {
-             std::cout << "scan project" << std::endl;
-        }
-    }
-    std::cout << "--------------_" << std::endl;
 
 
     /*
@@ -2983,99 +2973,12 @@ void LVRMainWindow::loadLabels()
     LabeledScanProjectEditMarkBridgePtr labelScanProjectBridge(new LVRLabeledScanProjectEditMarkBridge(labelScanProject));
     labelScanProjectBridge->addActors(m_renderer);
     
-    if(labelScanProjectBridge->getScanProjectBridgePtr())
-    {
-        std::cout << "scan project Bridge" << std::endl;
-        if(labelScanProjectBridge->getScanProjectBridgePtr()->getScanProject())
-        {
-            std::cout <<labelScanProjectBridge->getScanProjectBridgePtr()->getScanProject()->positions.size()<< std::endl;
-             std::cout << "scan project" << std::endl;
-        }
-    }
-    LVRLabeledScanProjectEditMarkItem* item = new LVRLabeledScanProjectEditMarkItem(labelScanProjectBridge, "Root");
-    this->treeWidget->addLabeledScanProjectEditMark(labelScanProject);
-    item->setExpanded(true);
+    QFileInfo info(fileName);
+    this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, info.fileName().toStdString());
+    updateView();
 
 
-    /*
-    HDF5Kernel kernel(fileName.toStdString());
-    std::vector<std::string> pointCloudNames;
-    kernel.subGroupNames("pointclouds", pointCloudNames);
-    for (auto pointcloudName : pointCloudNames)
-    {
-        //pointclouds
-        boost::filesystem::path classGroup = (boost::filesystem::path("pointclouds") / boost::filesystem::path(pointcloudName) / boost::filesystem::path("labels"));
-        std::vector<std::string> labelClasses;
-        kernel.subGroupNames(classGroup.string(), labelClasses);
-
-
-        //get Data points
-        boost::filesystem::path pointGroup = (boost::filesystem::path("pointclouds") / boost::filesystem::path(pointcloudName));
-        boost::shared_array<double> pointData;
-        std::vector<size_t> pointDim;
-        std::cout << pointGroup.string() << std::endl;
-        pointData = kernel.loadArray<double>(pointGroup.string(), "Points", pointDim);
-        for(int i = 0; i < (pointDim[1]); i++)
-        {
-
-            //TODO:somehow create model 
-            //std::cout <<i << ":   "<< pointData[i ] << pointData[i + pointDim[1]] << pointData[i + (pointDim[1] * 2)] << std::endl;
-        }
-
-        for (auto labelClass : labelClasses)
-        {
-            //Get TopLevel Item for tree view
-            QTreeWidgetItem * item = new QTreeWidgetItem(LVRLabelClassType);
-            item->setText(0, QString::fromStdString(labelClass));
-            item->setText(LABELED_POINT_COLUMN, QString::number(0));
-            item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-            item->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
-
-            labelTreeWidget->addTopLevelItem(item);   
-
-            //pointclouds/$name/labels/$labelname
-            boost::filesystem::path instanceGroup = (classGroup / boost::filesystem::path(labelClass));
-            std::vector<std::string> labelInstances;
-            kernel.subGroupNames(instanceGroup.string(), labelInstances);
-            for (auto instance : labelInstances)
-            {
-
-                int id = 0;
-                boost::filesystem::path finalGroup = instanceGroup;
-                //pointclouds/$name/labels/$labelname/instance
-                finalGroup = (instanceGroup / boost::filesystem::path(instance));
-                if (labelClass != UNKNOWNNAME)
-                {
-                    id = m_id++;
-                } 
-
-                //Get Color and IDs
-                boost::shared_array<int> rgbData;
-                std::vector<size_t> rgbDim;
-                boost::shared_array<int> idData;
-                std::vector<size_t> idDim;
-                idData = kernel.loadArray<int>(finalGroup.string(), "IDs", idDim);
-                rgbData = kernel.loadArray<int>(finalGroup.string(), "Color", rgbDim);
-
-                //Add Child to top Level
-                QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
-                childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
-                childItem->setText(0, QString::fromStdString(instance));
-            	childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-            	childItem->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
-                QColor label_color(rgbData[0], rgbData[1], rgbData[2]);
-                childItem->setData(LABEL_ID_COLUMN, 1, label_color);
-                childItem->setData(LABEL_ID_COLUMN, 0, id);
-                item->addChild(childItem);
-                Q_EMIT(labelAdded(childItem));
-                std::vector<int> out(idData.get(), idData.get() + idDim[0]);
-                m_pickingInteractor->setLabel(id, out);
-                selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
-
-            }
-        }
-    }
-    this->dockWidgetLabel->show();*/
+   
 }
 void LVRMainWindow::exportLabels()
 {
@@ -3346,7 +3249,7 @@ void LVRMainWindow::readLWF()
     std::cout << waveforms.size() << std::endl;
 }
 
-void LVRMainWindow::exportLWF()
+void LVRMainWindow::exportScanProject()
 {
     QString hdfString("HDF5 (*.hdf5");
     QString intermediaString("Intermedia");

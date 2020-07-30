@@ -3,7 +3,7 @@
 #include "LVRTextureMeshItem.hpp"
 #include "LVRItemTypes.hpp"
 #include "LVRModelItem.hpp"
-//#include "LVRLabelItem.hpp"
+#include "LVRLabelItem.hpp"
 #include "LVRScanProjectItem.hpp"
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -25,8 +25,9 @@ LVRLabeledScanProjectEditMarkItem::LVRLabeledScanProjectEditMarkItem(LabeledScan
     }
     if(bridge->getLabelBridgePtr())
     {
-        //LVRLabelItem* item = new LVRLabelItem(bridge->getLabelBridge());
- //       addChild(item);
+        std::cout << "Add Label Item" << std::endl;
+        LVRLabelItem* item = new LVRLabelItem(bridge->getLabelBridgePtr(), "Labels");
+        addChild(item);
     }
 }
 

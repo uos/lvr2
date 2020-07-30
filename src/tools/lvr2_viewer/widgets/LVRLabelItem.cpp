@@ -26,76 +26,75 @@
  */
 
 /**
- * LVRModel.hpp
+ * LVRLabelItem.cpp
  *
  *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRSCANPROJECTBRIDGE_HPP_
-#define LVRSCANPROJECTBRIDGE_HPP_
-
-
-#include "lvr2/types/MatrixTypes.hpp"
-#include "LVRScanPositionBridge.hpp"
+#include "LVRLabelItem.hpp"
+#include "LVRPointCloudItem.hpp"
+#include "LVRItemTypes.hpp"
+#include "LVRTextureMeshItem.hpp"
 
 #include <vtkSmartPointer.h>
-#include <vtkRenderer.h>
-
-#include <boost/shared_ptr.hpp>
-
+#include <vtkActor.h>
+#include <vtkPolyDataMapper.h>
 
 namespace lvr2
 {
 
-
-/**
- * @brief   Main class for conversion of LVR ScanProjects instances to vtk actors. This class
- *          parses the internal ScanProject structures to vtk representations that can be
- *          added to a vtkRenderer instance.
- */
-class LVRScanProjectBridge
+LVRLabelItem::LVRLabelItem(LabelBridgePtr bridge, QString name) :
+    QTreeWidgetItem(LVRLabelItemType), m_labelBridge(bridge), m_name(name)
 {
-public:
 
-    /**
-     * @brief       Constructor. Parses the model information and generates vtk actor
-     *              instances for the given data.
-     */
-    LVRScanProjectBridge(ScanProjectPtr project);
+    // Setup item properties
+    setText(0, m_name);
+    setCheckState(0, Qt::Checked);
 
-    LVRScanProjectBridge(const LVRScanProjectBridge& b);
-    LVRScanProjectBridge(ModelBridgePtr project);
-    /**
-     * @brief       Destructor.
-     */
-    virtual ~LVRScanProjectBridge();
+    // Insert sub items
+    if(bridge->getPointBridge()->getNumPoints())
+    {
+        LVRPointCloudItem* pointItem = new LVRPointCloudItem(bridge->getPointBridge(), this);
+        addChild(pointItem);
+        pointItem->setExpanded(true);
+    }
+}
 
-    /**
-     * @brief       Adds the generated actors to the given renderer
-     */
-    void        addActors(vtkSmartPointer<vtkRenderer> renderer);
+LVRLabelItem::LVRLabelItem(const LVRLabelItem& item)
+{
+    m_labelBridge   = item.m_labelBridge;
+    m_name          = item.m_name;
+}
 
-    /**
-     * @brief       Removes the generated actors from the given renderer
-     */
-    void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
+QString LVRLabelItem::getName()
+{
+    return m_name;
+}
 
-    // Declare model item classes as friends to have fast access to data chunks
-    friend class LVRScanProjectItem;
+void LVRLabelItem::setName(QString name)
+{
+    m_name = name;
+    setText(0, m_name);
+}
 
-    ScanProjectPtr getScanProject();
+LabelBridgePtr LVRLabelItem::getLabelBridge()
+{
+	return m_labelBridge;
+}
 
-    std::vector<ScanPositionBridgePtr> getScanPositions();
+bool LVRLabelItem::isEnabled()
+{
+    return this->checkState(0);
+}
 
-private:
+void LVRLabelItem::setVisibility(bool visible)
+{
+	m_labelBridge->setVisibility(visible);
+}
 
-    std::vector<ScanPositionBridgePtr> m_scanPositions;
-    ScanProjectPtr m_scanproject;
-
-};
-
-typedef boost::shared_ptr<LVRScanProjectBridge> ScanProjectBridgePtr;
+LVRLabelItem::~LVRLabelItem()
+{
+    // TODO Auto-generated destructor stub
+}
 
 } /* namespace lvr2 */
-
-#endif /* LVRMODEL_HPP_ */

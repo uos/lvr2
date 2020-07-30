@@ -511,17 +511,6 @@ bool HDF5Kernel::exists(const std::string &group, const std::string &container) 
     g = m_hdf5File->getGroup("/");
     for( std::string substring : ret)
     {
-        std::cout << substring << std::endl;
-        if(substring == "00000001")
-        {
-            auto bla = g.listObjectNames();
-            for(auto foo : bla)
-            {
-                std::cout << "----" << std::endl;
-                std::cout << foo << std::endl;
-            } 
-            substring = "bjaksjdkasjdkas";
-        }
         if(g.exist(substring))
         {   
             g = g.getGroup(substring);

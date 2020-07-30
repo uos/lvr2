@@ -8,27 +8,19 @@ namespace lvr2
 LVRScanProjectBridge::LVRScanProjectBridge(ScanProjectPtr project) : m_scanproject(project)
 {
 
-    std::cout << "creating scanproject Bridge" << std::endl;
     for (auto position : project->positions)
     {
-    std::cout << "creating scanproject Bridge pos" << std::endl;
-        for(auto scan : position->scans)
-        {
-    std::cout << "creating scanproject Bridge scan" << std::endl;
-            ModelPtr model(new Model);
-            model->m_pointCloud = scan->points;
-            ModelBridgePtr modelBridge(new LVRModelBridge(model));
-            //modelBridge->setTransform(poseEsimation);
-               //TODO set pose?
-            models.push_back(modelBridge);
-        }        
+
+        ScanPositionBridgePtr posBridgePtr;
+        posBridgePtr = ScanPositionBridgePtr(new LVRScanPositionBridge(position));
+        m_scanPositions.push_back(posBridgePtr);
     }
 }
 
 LVRScanProjectBridge::LVRScanProjectBridge(const LVRScanProjectBridge& b)
 {
     m_scanproject = b.m_scanproject;
-    models = b.models;
+    m_scanPositions = m_scanPositions;
 }
 
 LVRScanProjectBridge::LVRScanProjectBridge(ModelBridgePtr modelBridge)
@@ -61,20 +53,17 @@ LVRScanProjectBridge::LVRScanProjectBridge(ModelBridgePtr modelBridge)
 }
 void LVRScanProjectBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
 {
-    for(auto model : models)
+    for(auto position : m_scanPositions)
     {
-        if(model->validPointBridge())
-        {
-            renderer->AddActor(model->getPointBridge()->getPointCloudActor());
-        }
+        position->addActors(renderer);
     }
 }
 
 void LVRScanProjectBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
 {
-    for(auto model : models)
+    for(auto position : m_scanPositions)
     {
-        if(model->validPointBridge()) renderer->RemoveActor(model->getPointBridge()->getPointCloudActor());
+        position->removeActors(renderer);
     }
 }
 
@@ -83,9 +72,9 @@ ScanProjectPtr LVRScanProjectBridge::getScanProject()
     return m_scanproject;
 }
 
-std::vector<ModelBridgePtr> LVRScanProjectBridge::getModels()
+std::vector<ScanPositionBridgePtr> LVRScanProjectBridge::getScanPositions()
 {
-    return models; 
+    return m_scanPositions; 
 }
 
 LVRScanProjectBridge::~LVRScanProjectBridge()

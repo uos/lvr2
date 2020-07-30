@@ -26,76 +26,43 @@
  */
 
 /**
- * LVRModel.hpp
+ * LVRModelItem.h
  *
  *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRSCANPROJECTBRIDGE_HPP_
-#define LVRSCANPROJECTBRIDGE_HPP_
+#ifndef LVRSCANPOSITIONITEM_H_
+#define LVRSCANPOSITIONITEM_H_
 
+#include "../vtkBridge/LVRScanPositionBridge.hpp"
+#include "LVRPoseItem.hpp"
 
-#include "lvr2/types/MatrixTypes.hpp"
-#include "LVRScanPositionBridge.hpp"
-
-#include <vtkSmartPointer.h>
-#include <vtkRenderer.h>
-
-#include <boost/shared_ptr.hpp>
-
+#include <QString>
+#include <QColor>
+#include <QTreeWidgetItem>
 
 namespace lvr2
 {
 
-
-/**
- * @brief   Main class for conversion of LVR ScanProjects instances to vtk actors. This class
- *          parses the internal ScanProject structures to vtk representations that can be
- *          added to a vtkRenderer instance.
- */
-class LVRScanProjectBridge
+class LVRScanPositionItem : public QTreeWidgetItem
 {
 public:
+    LVRScanPositionItem(ScanPositionBridgePtr bridge, QString name = "");
+    LVRScanPositionItem(const LVRScanPositionItem& item);
+    virtual ~LVRScanPositionItem();
+    ScanPositionBridgePtr	getScanPositionBridge();
+    QString         getName();
+    void            setName(QString name);
+    bool            isEnabled();
 
-    /**
-     * @brief       Constructor. Parses the model information and generates vtk actor
-     *              instances for the given data.
-     */
-    LVRScanProjectBridge(ScanProjectPtr project);
+public Q_SLOTS:
+    void			setVisibility(bool visible);
 
-    LVRScanProjectBridge(const LVRScanProjectBridge& b);
-    LVRScanProjectBridge(ModelBridgePtr project);
-    /**
-     * @brief       Destructor.
-     */
-    virtual ~LVRScanProjectBridge();
-
-    /**
-     * @brief       Adds the generated actors to the given renderer
-     */
-    void        addActors(vtkSmartPointer<vtkRenderer> renderer);
-
-    /**
-     * @brief       Removes the generated actors from the given renderer
-     */
-    void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
-
-    // Declare model item classes as friends to have fast access to data chunks
-    friend class LVRScanProjectItem;
-
-    ScanProjectPtr getScanProject();
-
-    std::vector<ScanPositionBridgePtr> getScanPositions();
-
-private:
-
-    std::vector<ScanPositionBridgePtr> m_scanPositions;
-    ScanProjectPtr m_scanproject;
-
+protected:
+    ScanPositionBridgePtr  m_scanPositionBridge;
+    QString         m_name;
 };
-
-typedef boost::shared_ptr<LVRScanProjectBridge> ScanProjectBridgePtr;
 
 } /* namespace lvr2 */
 
-#endif /* LVRMODEL_HPP_ */
+#endif /* LVRSCANPROJECTITEM_H_ */

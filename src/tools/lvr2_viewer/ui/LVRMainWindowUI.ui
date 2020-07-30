@@ -604,7 +604,6 @@
    <addaction name="actionShow_SpectralHistogram"/>
    <addaction name="separator"/>
    <addaction name="actionConfirm_LabelSelection"/>
-   <addaction name="actionSelected_DeselectLasso"/>
    <addaction name="actionSelected_Lasso"/>
    <addaction name="actionSelected_Polygon"/>
   </widget>
@@ -698,11 +697,10 @@
     <addaction name="actionExport"/>
     <addaction name="actionQuit"/>
     <addaction name="separator"/>
-    <addaction name="actionOpenLabeledPointcloud"/>
-    <addaction name="actionExportLabeledPointcloud"/>
+    <addaction name="actionOpenScanProject"/>
+    <addaction name="actionExportScanProject"/>
     <addaction name="separator"/>
     <addaction name="actionReadWaveform"/>
-    <addaction name="actionExportWaveform"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuViews"/>
@@ -1202,6 +1200,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="addLabelInstanceButton">
+         <property name="text">
+          <string>Add new Instance</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_5">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -1385,22 +1390,7 @@
      <normaloff>:/qv_lassoTool.png</normaloff>:/qv_lassoTool.png</iconset>
    </property>
    <property name="text">
-    <string>Lasso Tool - Select</string>
-   </property>
-  </action>
-    <action name="actionSelected_DeselectLasso">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../res/viewer.qrc">
-     <normaloff>:/qv_lassoTool.png</normaloff>:/qv_lassoTool.png</iconset>
-   </property>
-   <property name="text">
-    <string>Lasso Tool - Deselect</string>
+    <string>Lasso Tool</string>
    </property>
   </action>
   <action name="actionSelected_Polygon">
@@ -1591,9 +1581,9 @@
     <string>Open chunked mesh</string>
    </property>
   </action>
-  <action name="actionOpenLabeledPointcloud">
+  <action name="actionOpenScanProject">
    <property name="text">
-    <string>Open Labeled Pointcloud</string>
+    <string>Open Scan Project</string>
    </property>
   </action>
   <action name="actionExportLabeledPointcloud">
@@ -1606,9 +1596,9 @@
     <string>Open Waveform</string>
    </property>
   </action>
-  <action name="actionExportWaveform">
+  <action name="actionExportScanProject">
    <property name="text">
-    <string>Export Waveform</string>
+    <string>Export Scan Project</string>
    </property>
   </action>
  </widget>

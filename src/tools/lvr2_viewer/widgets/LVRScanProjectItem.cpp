@@ -2,10 +2,11 @@
 #include "LVRPointCloudItem.hpp"
 #include "LVRTextureMeshItem.hpp"
 #include "LVRItemTypes.hpp"
-#include "LVRModelItem.hpp"
+#include "LVRScanPositionItem.hpp"
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 #include <vtkPolyDataMapper.h>
+#include <sstream>
 
 namespace lvr2
 {
@@ -13,39 +14,19 @@ namespace lvr2
 LVRScanProjectItem::LVRScanProjectItem(ScanProjectBridgePtr bridge, QString name) :
     QTreeWidgetItem(LVRScanProjectItemType), m_scanProjectBridge(bridge), m_name(name)
 {
-    for(auto model : m_scanProjectBridge->models)
+    for(int i = 0; i < bridge->getScanProject()->positions.size(); i++)
     {
-        LVRModelItem* modelItem = new LVRModelItem(model, "Scan");
-        addChild(modelItem);
+        std::stringstream pos;
+        pos << "" << std::setfill('0') << std::setw(8) << i;
+        std::string posName = pos.str();
+        LVRScanPositionItem* scanPosItem = new LVRScanPositionItem(bridge->getScanPositions()[i], QString::fromStdString(posName));
+        addChild(scanPosItem);
+
     }
     
     // Setup item properties
     setText(0, name);
-    //setCheckState(0, Qt::Checked);
 
-
-    /*
-    // Setup tree widget icon
-    QIcon icon;
-    icon.addFile(QString::fromUtf8(":/qv_model_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
-    setIcon(0, icon);
-
-    // Setup item properties
-    setText(0, m_name);
-    setCheckState(0, Qt::Checked);
-
-    // Insert sub items
-    if(bridge->m_pointBridge->getNumPoints())
-    {
-        LVRPointCloudItem* pointItem = new LVRPointCloudItem(bridge->m_pointBridge, this);
-        addChild(pointItem);
-        pointItem->setExpanded(true);
-    }
-
-    // Setup Pose
-    //m_poseItem = new LVRPoseItem(bridge, this);
-    //addChild(m_poseItem);
-*/
 }
 
 LVRScanProjectItem::LVRScanProjectItem(const LVRScanProjectItem& item)
@@ -78,9 +59,9 @@ bool LVRScanProjectItem::isEnabled()
 
 void LVRScanProjectItem::setVisibility(bool visible)
 {
-    for (auto model : m_scanProjectBridge->models)
+    for (auto position : m_scanProjectBridge->getScanPositions())
     {
-        model->setVisibility(visible);
+        position->setVisibility(visible);
     }
 }
 

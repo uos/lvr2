@@ -18,6 +18,7 @@ void LabelScanProjectIO<FeatureBase>::saveLabelScanProject(const LabeledScanProj
 
     if (labelScanProjectPtr->labelRoot)
     {
+        std::cout << "Label Scan Project -> Label Root" << std::endl;
        m_labelIO->saveLabels(group, labelScanProjectPtr->labelRoot); 
     }
 
@@ -31,10 +32,11 @@ LabeledScanProjectEditMarkPtr LabelScanProjectIO<FeatureBase>::loadLabelScanProj
     ScanProjectEditMarkPtr editMarkPtr(new ScanProjectEditMark);
     editMarkPtr->project = m_scanProjectIO->loadScanProject();
     ret->editMarkProject = editMarkPtr;
-    std::string pointCloud("pointcloud");
+    std::string pointCloud("pointCloud");
     if (m_featureBase->m_kernel->exists(pointCloud))
     {
-        ret->labelRoot = m_labelIO->loadLabels("");;
+        std::cout << "Label Scan Project -> Label Root" << std::endl;
+        ret->labelRoot = m_labelIO->loadLabels(pointCloud);;
     }
     return ret;
 }

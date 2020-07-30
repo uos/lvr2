@@ -42,6 +42,7 @@ namespace lvr2
         LVRMeshItemType,
         LVRPoseItemType,
         LVRPickItemType,
+        LVRLabelItemType,
         LVRRecordedFrameItemType,
         LVRScanDataItemType,
         LVRCamDataItemType,
@@ -51,6 +52,7 @@ namespace lvr2
         LVRLabelClassType,
         LVRLabelInstanceType,
         LVRScanProjectItemType,
+        LVRScanPositionItemType,
         LVRLabelClassItemType,
         LVRLabelInstanceItemType,
         LVRLabeledScanProjectEditMarkItemType
