@@ -52,7 +52,7 @@ LVRLabelItem::LVRLabelItem(LabelBridgePtr bridge, QString name) :
     setCheckState(0, Qt::Checked);
 
     // Insert sub items
-    if(bridge->getPointBridge()->getNumPoints())
+    if(bridge->getPointBridge() && bridge->getPointBridge()->getNumPoints())
     {
         LVRPointCloudItem* pointItem = new LVRPointCloudItem(bridge->getPointBridge(), this);
         addChild(pointItem);

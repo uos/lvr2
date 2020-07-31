@@ -8,7 +8,10 @@ namespace lvr2
 LVRLabelBridge::LVRLabelBridge(LabelRootPtr project) :
     m_labelRoot(project)
 {
-    m_pointBridge = PointBufferBridgePtr(new LVRPointBufferBridge(project->points));
+    if(project->points)
+    {
+        m_pointBridge = PointBufferBridgePtr(new LVRPointBufferBridge(project->points));
+    }
 }
 
 LVRLabelBridge::LVRLabelBridge(const LVRLabelBridge& b)
@@ -19,6 +22,9 @@ LVRLabelBridge::LVRLabelBridge(const LVRLabelBridge& b)
 
 bool LVRLabelBridge::validPointBridge()
 {
+    if(!m_pointBridge)
+        return false;
+
     return (m_pointBridge->getNumPoints() > 0) ? true : false;
 }
 

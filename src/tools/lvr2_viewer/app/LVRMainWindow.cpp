@@ -2975,6 +2975,10 @@ void LVRMainWindow::openScanProject()
     
     QFileInfo info(fileName);
     this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, info.fileName().toStdString());
+    if(labelScanProject->labelRoot)
+    {
+        this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot);
+    }
     updateView();
 
 

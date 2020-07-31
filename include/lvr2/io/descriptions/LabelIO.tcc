@@ -77,9 +77,13 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
     LabelRootPtr ret(new LabelRoot);
 
 
+    std::string scanName("points");
     //read Pointbuffer 
-    ret->points = m_featureBase->m_kernel->loadPointBuffer(group, "points");
-    std::cout << "group" << group << std::endl;
+    PointBufferPtr pbp = m_featureBase->m_kernel->loadPointBuffer(group, scanName);
+    std::cout << group << " " << scanName << " <--------" << std::endl;
+ //   ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
+
+    //ret->points = m_featureBase->m_kernel->loadPointBuffer(group, "points");
 
     std::vector<std::string> labelClasses;
     m_featureBase->m_kernel->subGroupNames(group, labelClasses);
@@ -124,6 +128,7 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
         }
         ret->labelClasses.push_back(classPtr);
     }
+    return ret;
 }
 
 } // namespace lvr2

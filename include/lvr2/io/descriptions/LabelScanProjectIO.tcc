@@ -30,14 +30,14 @@ LabeledScanProjectEditMarkPtr LabelScanProjectIO<FeatureBase>::loadLabelScanProj
     LabeledScanProjectEditMarkPtr ret(new LabeledScanProjectEditMark);
 
     ScanProjectEditMarkPtr editMarkPtr(new ScanProjectEditMark);
-    editMarkPtr->project = m_scanProjectIO->loadScanProject();
     ret->editMarkProject = editMarkPtr;
-    std::string pointCloud("pointCloud");
+    std::string pointCloud("/pointCloud");
     if (m_featureBase->m_kernel->exists(pointCloud))
     {
         std::cout << "Label Scan Project -> Label Root" << std::endl;
         ret->labelRoot = m_labelIO->loadLabels(pointCloud);;
     }
+    editMarkPtr->project = m_scanProjectIO->loadScanProject();
     return ret;
 }
 template <typename FeatureBase>

@@ -112,6 +112,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
 
     // Load actual data
     ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
+    std::cout << groupName << " " << scanName << " <--------" << std::endl;
  
     // Get Waveform data
     Description waveformDescr = m_featureBase->m_description->waveform(scanPosNo, scanNo);

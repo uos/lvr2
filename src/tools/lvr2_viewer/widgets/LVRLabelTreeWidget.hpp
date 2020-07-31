@@ -9,6 +9,7 @@ public:
     LVRLabelTreeWidget(QWidget *parent = nullptr);
     //using QTreeWidget::QTreeWidget;
     void addTopLevelItem(QTreeWidgetItem *item);
+    void setLabelRoot(lvr2::LabelRootPtr labelRoot);
 
     lvr2::LabelRootPtr getLabelRoot();
 private:
