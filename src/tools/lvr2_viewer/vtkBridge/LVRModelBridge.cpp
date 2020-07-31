@@ -194,7 +194,11 @@ void LVRModelBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
 
 void LVRModelBridge::setVisibility(bool visible)
 {
-    if(validPointBridge()) m_pointBridge->setVisibility(visible);
+    std::cout << "set Model vis" << std::endl;
+    if(validPointBridge()){
+    std::cout << "set Model vis 2" << std::endl;
+        m_pointBridge->setVisibility(visible);
+    }
     if(validMeshBridge()) m_meshBridge->setVisibility(visible);
 }
 

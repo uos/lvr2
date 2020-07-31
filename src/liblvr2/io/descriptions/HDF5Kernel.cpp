@@ -245,6 +245,7 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
 
     for(auto name : g.listObjectNames() )
     {
+        //TODO: FIX ME - Varaint Type Error
         std::unique_ptr<HighFive::DataSet> dataset;
 
         try {

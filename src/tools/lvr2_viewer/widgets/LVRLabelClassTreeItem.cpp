@@ -22,8 +22,11 @@ LVRLabelClassTreeItem::LVRLabelClassTreeItem(std::string className, int labeledP
     if (editable)
     {
         setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
+    } else
+    {
+        setCheckState(LABEL_EDITABLE_COLUMN, Qt::Unchecked);
     }
-        
+
     setData(LABEL_ID_COLUMN, LABEL_COLOR_GROUP, color);
     m_labelClassPtr = LabelClassPtr(new LabelClass);
     m_labelClassPtr->className = className;
@@ -45,6 +48,10 @@ LVRLabelClassTreeItem::LVRLabelClassTreeItem(const LVRLabelClassTreeItem& item)
     m_labelClassPtr   = item.m_labelClassPtr;
 }
 
+void LVRLabelClassTreeItem::setColor(QColor color)
+{
+    setData(LABEL_ID_COLUMN, LABEL_COLOR_GROUP, color);
+}
 QColor LVRLabelClassTreeItem::getDefaultColor()
 {
     return data(LABEL_ID_COLUMN, 1).value<QColor>();

@@ -57,6 +57,7 @@ public:
 
 public Q_SLOTS:
     void			setVisibility(bool visible);
+    void			setModelVisibility(int column, bool globalValue);
 
 protected:
     ScanPositionBridgePtr  m_scanPositionBridge;

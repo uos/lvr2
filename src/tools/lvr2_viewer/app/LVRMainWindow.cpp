@@ -1894,6 +1894,26 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
+    else if (treeWidgetItem->type() == LVRLabeledScanProjectEditMarkItemType)
+    {
+        LVRLabeledScanProjectEditMarkItem *item = static_cast<LVRLabeledScanProjectEditMarkItem *>(treeWidgetItem);
+        item->setVisibility(m_actionShow_Points->isChecked());
+
+        refreshView();
+    }
+    else if (treeWidgetItem->type() == LVRScanPositionItemType)
+    {
+        LVRScanPositionItem *item = static_cast<LVRScanPositionItem *>(treeWidgetItem);
+        item->setVisibility(m_actionShow_Points->isChecked());
+        refreshView();
+    }
+      else if (treeWidgetItem->type() == LVRLabelItemType)
+    {
+        LVRLabelItem *item = static_cast<LVRLabelItem *>(treeWidgetItem);
+        item->setVisibility(m_actionShow_Points->isChecked());
+        refreshView();
+    }
+
     else if (treeWidgetItem->parent() && treeWidgetItem->parent()->type() == LVRScanDataItemType)
     {
         setModelVisibility(treeWidgetItem->parent(), column);
@@ -2971,13 +2991,15 @@ void LVRMainWindow::openScanProject()
 
     */
     LabeledScanProjectEditMarkBridgePtr labelScanProjectBridge(new LVRLabeledScanProjectEditMarkBridge(labelScanProject));
-    labelScanProjectBridge->addActors(m_renderer);
+    //labelScanProjectBridge->addActors(m_renderer);
     
     QFileInfo info(fileName);
     this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, info.fileName().toStdString());
     if(labelScanProject->labelRoot)
     {
-        this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot);
+        this->dockWidgetLabel->show();
+        m_pickingInteractor->setPoints(labelScanProjectBridge->getLabelBridgePtr()->getPointBridge()->getPolyIDData());
+        this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot, m_pickingInteractor,selectedInstanceComboBox);
     }
     updateView();
 
@@ -3128,6 +3150,7 @@ void LVRMainWindow::exportLabels()
 
 void LVRMainWindow::comboBoxIndexChanged(int index)
 {
+    labelTreeWidget->itemSelected(selectedInstanceComboBox->itemData(index).toInt());
 	Q_EMIT(labelChanged(selectedInstanceComboBox->itemData(index).toInt()));
 }
 

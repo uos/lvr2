@@ -28,6 +28,13 @@ LVRLabelInstanceTreeItem::LVRLabelInstanceTreeItem(std::string className,int id,
     setData(LABEL_ID_COLUMN, LABEL_ID_GROUP, id);
     m_labelInstancePtr = LabelInstancePtr(new LabelInstance);
     m_labelInstancePtr->instanceName = className;
+    int r, g, b;
+    color.getRgb(&r, &g, &b);
+    m_labelInstancePtr->color[0] = r;
+    m_labelInstancePtr->color[1] = g;
+    m_labelInstancePtr->color[2] = b;
+
+
 
 }
 

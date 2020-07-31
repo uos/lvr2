@@ -30,6 +30,7 @@ LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString n
 
     // Setup item properties
     setText(0, name);
+    setCheckState(0, Qt::Checked);
 
 }
 
@@ -63,12 +64,20 @@ bool LVRScanPositionItem::isEnabled()
 
 void LVRScanPositionItem::setVisibility(bool visible)
 {
+    std::cout << "Im here " <<std::endl;
     for (auto model : m_scanPositionBridge->getModels())
     {
         model->setVisibility(visible);
     }
 }
-
+void LVRScanPositionItem::setModelVisibility(int column, bool globalValue)
+{
+    std::cout << "Im here " <<std::endl;
+    if(checkState(column) == globalValue || globalValue == true)
+    {
+        setVisibility(checkState(column));
+    }
+}
 LVRScanPositionItem::~LVRScanPositionItem()
 {
     // TODO Auto-generated destructor stub

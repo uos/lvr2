@@ -52,6 +52,7 @@ public:
     LVRLabelClassTreeItem(std::string labelClass, int labeledPointCount, bool visible, bool editable, QColor color);
     LVRLabelClassTreeItem(const LVRLabelClassTreeItem& item);
     virtual ~LVRLabelClassTreeItem();
+    void setColor(QColor);
     QColor getDefaultColor();
     bool isVisible();
     bool isEditable();

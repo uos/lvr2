@@ -79,11 +79,12 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
 
     std::string scanName("points");
     //read Pointbuffer 
-    PointBufferPtr pbp = m_featureBase->m_kernel->loadPointBuffer(group, scanName);
-    std::cout << group << " " << scanName << " <--------" << std::endl;
- //   ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
+    boost::shared_array<float> pointData;
+    std::vector<size_t> pointDim;
+    pointData = m_featureBase->m_kernel->loadFloatArray(group, "points", pointDim);
+    PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
+    ret->points = pb;
 
-    //ret->points = m_featureBase->m_kernel->loadPointBuffer(group, "points");
 
     std::vector<std::string> labelClasses;
     m_featureBase->m_kernel->subGroupNames(group, labelClasses);
