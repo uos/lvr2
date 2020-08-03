@@ -111,17 +111,17 @@ void LVRLabelInteractorStyle::calculateSelection(bool select)
       std::vector<int> selectedPolyPoints;
       selectedPolyPoints.resize(ids->GetNumberOfTuples());
 
-      for (vtkIdType i = 0; i < ids->GetNumberOfTuples(); i++)
-      {
-	auto selectedPoint = m_points->GetPoint(ids->GetValue(i));
-	coordinate->SetValue(selectedPoint[0], selectedPoint[1], selectedPoint[2]); 
-	int* displayCoord;
-	displayCoord = coordinate->GetComputedViewportValue(this->CurrentRenderer);
-	if (isInside(polygonPoints, displayCoord[0], displayCoord[1]))
-	{
-		selectedPolyPoints.push_back(ids->GetValue(i));
-	}
-      }
+	  for (vtkIdType i = 0; i < ids->GetNumberOfTuples(); i++)
+	  {
+		  auto selectedPoint = m_points->GetPoint(ids->GetValue(i));
+		  coordinate->SetValue(selectedPoint[0], selectedPoint[1], selectedPoint[2]);
+		  int *displayCoord;
+		  displayCoord = coordinate->GetComputedViewportValue(this->CurrentRenderer);
+		  if (isInside(polygonPoints, displayCoord[0], displayCoord[1]))
+		  {
+			  selectedPolyPoints.push_back(ids->GetValue(i));
+		  }
+	  }
 
 #if VTK_MAJOR_VERSION <= 5
       SelectedMapper->SetInput(selected);
@@ -143,20 +143,18 @@ void LVRLabelInteractorStyle::calculateSelection(bool select)
       auto bar = vtkSmartPointer<vtkPolyData>::New();
       double point[3];
 
+	  for (int i = 0; i < m_SelectedPoints.size(); i++)
+	  {
+		  if (m_SelectedPoints[i])
+		  {
+			  m_points->vtkDataSet::GetPoint(i, point);
+			  foo->InsertNextPoint(point);
+		  }
+	  }
+	  bar->SetPoints(foo);
 
-      for(int i = 0; i < m_SelectedPoints.size(); i++)
-      {
-	      if(m_SelectedPoints[i])
-	      {
-      		m_points->vtkDataSet::GetPoint(i,point);
-      		foo->InsertNextPoint(point);
-	      }
-      }
-      	bar->SetPoints(foo);
-
-
-      vertexFilter->SetInputData(bar);
-      vertexFilter->Update();
+	  vertexFilter->SetInputData(bar);
+	  vertexFilter->Update();
 
       auto polyData = vtkSmartPointer<vtkPolyData>::New();
       polyData->ShallowCopy(vertexFilter->GetOutput());
@@ -198,87 +196,80 @@ void LVRLabelInteractorStyle::extractLabel()
 }
 void LVRLabelInteractorStyle::OnKeyUp()
 {
-    vtkRenderWindowInteractor *rwi = this->Interactor;
-    std::string key = rwi->GetKeySym();
-    if (key == "Left")
-    {
-	if (!m_points)
+	vtkRenderWindowInteractor *rwi = this->Interactor;
+	std::string key = rwi->GetKeySym();
+	if (key == "Left")
 	{
-		return;
-	}
+		if (!m_points)
+		{
+			return;
+		}
 
-   	bool accepted;
-   	QString label = QInputDialog::getItem(0, "Select Label", "Choose Label For SelectedPoints. You can press n to add a new Label:",m_labelList , 0, true, &accepted);
-	bool updateActors = false;
-	if (accepted)
-	{
-		uint8_t labelIndex =  m_labelList.indexOf(label);
-      		for(vtkIdType i = 0; i < m_selectedIds->GetNumberOfTuples(); i++)
-      		{
-			auto id = m_selectedIds->GetValue(i);
-			//Check if actors need to updated
-			if(labelIndex != 0 && m_pointLabels[id] != 0 && m_pointLabels[id] != labelIndex)
+		bool accepted;
+		QString label = QInputDialog::getItem(0, "Select Label", "Choose Label For SelectedPoints. You can press n to add a new Label:", m_labelList, 0, true, &accepted);
+		bool updateActors = false;
+		if (accepted)
+		{
+			uint8_t labelIndex = m_labelList.indexOf(label);
+			for (vtkIdType i = 0; i < m_selectedIds->GetNumberOfTuples(); i++)
 			{
-				updateActors = true;
-			} else if(labelIndex == 0 && (m_pointLabels[id] != 0))
-			{
+				auto id = m_selectedIds->GetValue(i);
+				//Check if actors need to updated
+				if (labelIndex != 0 && m_pointLabels[id] != 0 && m_pointLabels[id] != labelIndex)
+				{
+					updateActors = true;
+				}
+				else if (labelIndex == 0 && (m_pointLabels[id] != 0))
+				{
 
-				updateActors = true;
+					updateActors = true;
+				}
+				m_pointLabels[id] = labelIndex;
 			}
-			m_pointLabels[id] = labelIndex;
+			if (updateActors)
+			{
+			}
+			foo2[labelIndex - 1] = m_SelectedPoints;
+
+			m_SelectedPoints = std::vector<bool>(m_points->GetNumberOfPoints(), false);
+			auto newActor = vtkSmartPointer<vtkActor>::New();
+			newActor = SelectedActor;
+			newActor->GetProperty()->SetColor(colors[labelIndex - 1][0] / 255.0, colors[labelIndex - 1][1] / 255.0, colors[labelIndex - 1][2] / 255.0); //(R,G,B)
+			this->CurrentRenderer->RemoveActor(m_labelActors[labelIndex - 1]);
+			m_labelActors[labelIndex - 1] = newActor;
+			this->CurrentRenderer->RemoveActor(SelectedActor);
+			SelectedActor = vtkSmartPointer<vtkActor>::New();
+			this->CurrentRenderer->AddActor(newActor);
+			this->GetInteractor()->GetRenderWindow()->Render();
+			this->HighlightProp(NULL);
 		}
-		if (updateActors)
-		{
-		}
-		foo2[labelIndex - 1] = m_SelectedPoints;
-		
-
-		m_SelectedPoints = std::vector<bool>(m_points->GetNumberOfPoints(), false);
-      		auto newActor = vtkSmartPointer<vtkActor>::New();
-		newActor = SelectedActor;
-      		newActor->GetProperty()->SetColor(colors[labelIndex - 1][0] /255.0,colors[labelIndex - 1][1] / 255.0,colors[labelIndex - 1][2] / 255.0); //(R,G,B)
-		this->CurrentRenderer->RemoveActor(m_labelActors[labelIndex - 1]);
-		m_labelActors[labelIndex - 1] = newActor;
-		this->CurrentRenderer->RemoveActor(SelectedActor);
-      		SelectedActor = vtkSmartPointer<vtkActor>::New();
-	        this->CurrentRenderer->AddActor(newActor);
-      		this->GetInteractor()->GetRenderWindow()->Render();
-      		this->HighlightProp(NULL);
-
-      	}
-
-		
-    }
-    if (key == "m")
-    {
-   	bool accepted;
-   	QString label = QInputDialog::getItem(0, "Modify Selected Points", "Choose Label which should be modified:",m_labelList , 0, true, &accepted);
-	if (accepted)
-	{
-	    m_SelectedPoints = foo2[m_labelList.indexOf(label) - 1];
-
 	}
-
-
-    }
-    if (key == "n")
-    {
-	bool accepted;
-
-	QString text = QInputDialog::getText(0, "Insert New Label", "New Label:", QLineEdit::Normal, "", &accepted);
-	if (accepted)
+	if (key == "m")
 	{
-		if(m_labelList.indexOf(text) != -1)
+		bool accepted;
+		QString label = QInputDialog::getItem(0, "Modify Selected Points", "Choose Label which should be modified:", m_labelList, 0, true, &accepted);
+		if (accepted)
 		{
+			m_SelectedPoints = foo2[m_labelList.indexOf(label) - 1];
+		}
+	}
+	if (key == "n")
+	{
+		bool accepted;
+
+		QString text = QInputDialog::getText(0, "Insert New Label", "New Label:", QLineEdit::Normal, "", &accepted);
+		if (accepted)
+		{
+			if (m_labelList.indexOf(text) != -1)
+			{
 				return;
+			}
+			foo2.push_back(std::vector<bool>(m_points->GetNumberOfPoints(), 0));
+			m_labelList << text;
+			m_labelActors.push_back(vtkSmartPointer<vtkActor>::New());
+			//TODO CHANGE ACTOR.
+			auto mapper = vtkSmartPointer<vtkDataSetMapper>::New();
+			m_labelActors.back()->SetMapper(mapper);
 		}
-		foo2.push_back(std::vector<bool>(m_points->GetNumberOfPoints(), 0));
-		m_labelList << text;
-	        m_labelActors.push_back(vtkSmartPointer<vtkActor>::New());
-		//TODO CHANGE ACTOR.
-      		auto mapper = vtkSmartPointer<vtkDataSetMapper>::New();
-      		m_labelActors.back()->SetMapper(mapper);
-
 	}
-    }
 }

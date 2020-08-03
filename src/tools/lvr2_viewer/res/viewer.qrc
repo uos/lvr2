@@ -45,5 +45,6 @@
 	<file>qv_shooter.png</file>
         <file>qv_flight.png</file>
 	<file>qv_edm.png</file>
+	<file>qv_labeltool.png</file>
     </qresource>
 </RCC>

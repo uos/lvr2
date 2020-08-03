@@ -613,7 +613,7 @@
      <x>0</x>
      <y>0</y>
      <width>1198</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuViews">
@@ -1372,7 +1372,7 @@
    </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
-     <normaloff>:/qv_labeling.png</normaloff>:/qv_labeling.png</iconset>
+     <normaloff>:/qv_labeltool.png</normaloff>:/qv_labeltool.png</iconset>
    </property>
    <property name="text">
     <string>Confirm Selection</string>
