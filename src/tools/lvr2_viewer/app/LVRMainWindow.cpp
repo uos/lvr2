@@ -3300,7 +3300,9 @@ void LVRMainWindow::exportScanProject()
         if (topItem->type() == LVRLabeledScanProjectEditMarkItemType)
         {
             LVRLabeledScanProjectEditMarkItem *item = static_cast<LVRLabeledScanProjectEditMarkItem *>(topItem);
-            labeledScanProject = item->getLabeledScanProjectEditMarkBridge()->getLabeledScanProjectEditMark();
+            LVRLabeledScanProjectEditMarkBridge transfer(item->getLabeledScanProjectEditMarkBridge()->getScanProjectBridgePtr()->getScanPositions()[0]->getModels()[0]);
+            labeledScanProject = transfer.getLabeledScanProjectEditMark();
+            //labeledScanProject = item->getLabeledScanProjectEditMarkBridge()->getLabeledScanProjectEditMark();
         }
         else if(topItem->type() == LVRModelItemType)
         {
@@ -3339,7 +3341,7 @@ void LVRMainWindow::exportScanProject()
             DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(fileName.toStdString()));
             DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
         
-            //dirIO.saveScanProject(scanProject);
+            dirIO.saveScanProject(labeledScanProject->editMarkProject->project);
         }
     }
 

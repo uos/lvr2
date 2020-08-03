@@ -186,6 +186,8 @@ void HDF5Kernel::saveMetaYAML(
 
     if(hg.isValid() && node["sensor_type"] )
     {
+        std::cout << "Valid Group" << std::endl;
+        std::cout << "-----------------------------" << std::endl;
         std::string sensor_type = node["sensor_type"].as<std::string>();
         if(sensor_type == "ScanPosition")
         {
@@ -194,6 +196,8 @@ void HDF5Kernel::saveMetaYAML(
         }
         else if(sensor_type == "Scan")
         {
+            std::cout << "THis is propbalby the propblem" << std::endl;
+             std::cout << "-----------------------------" << std::endl;
             m_metaDescription->saveScan(hg, node);
         }
         else if(sensor_type == "ScanCamera")

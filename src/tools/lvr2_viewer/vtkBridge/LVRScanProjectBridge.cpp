@@ -49,6 +49,10 @@ LVRScanProjectBridge::LVRScanProjectBridge(ModelBridgePtr modelBridge)
     posPtr->registration = poseToMatrix(pos, angle);
     m_scanproject = modelProject;
 
+    ScanPositionBridgePtr posBridgePtr;
+    posBridgePtr = ScanPositionBridgePtr(new LVRScanPositionBridge(posPtr));
+    m_scanPositions.push_back(posBridgePtr);
+
     //TODO What about the meshes?
 }
 void LVRScanProjectBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)

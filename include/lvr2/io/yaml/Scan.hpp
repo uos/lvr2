@@ -25,7 +25,7 @@ struct convert<lvr2::Scan>
      */
     static Node encode(const lvr2::Scan& scan) {
         Node node;
-        
+        std::cout << "[ScanYaml endoced(decode])] "<<std::endl;
         node["sensor_type"] = lvr2::Scan::sensorType;
 
         node["start_time"]  = scan.startTime;
@@ -58,6 +58,7 @@ struct convert<lvr2::Scan>
         {
             return false;
         }
+
 
         scan.startTime = node["start_time"].as<double>();
         scan.endTime = node["end_time"].as<double>();
