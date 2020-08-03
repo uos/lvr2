@@ -1239,6 +1239,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="labelSegmentation">
+         <property name="text">
+          <string>Segmentation:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QToolButton" name="toolButton">
          <property name="minimumSize">
           <size>
@@ -1281,6 +1288,13 @@
            <width>30</width>
            <height>30</height>
           </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelSelection">
+         <property name="text">
+          <string>Selection:</string>
          </property>
         </widget>
        </item>
@@ -1373,6 +1387,13 @@
            <width>30</width>
            <height>30</height>
           </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelToggleCam">
+         <property name="text">
+          <string/>
          </property>
         </widget>
        </item>
