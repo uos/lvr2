@@ -11,8 +11,6 @@ void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProje
     // Default names
     std::string group = "";
     std::string metaName = "meta.yaml";
-        std::cout << "ScanProjectIO" <<  std::endl;
-
 
     // Default scan project yaml
     YAML::Node node;
@@ -29,11 +27,11 @@ void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProje
         node = *d.metaName;
     }
     m_featureBase->m_kernel->saveMetaYAML(group, metaName, node);
-    
+    std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
     // Iterate over all positions and save
     for (size_t i = 0; i < scanProjectPtr->positions.size(); i++)
     {
-        std::cout << "Pos" << i << std::endl;
+        std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
         m_scanPositionIO->saveScanPosition(i, scanProjectPtr->positions[i]);
     }
 }

@@ -51,6 +51,7 @@ Description LabelScanProjectSchemaHDF5V2::scan(const size_t &scanPosNo, const si
 Description LabelScanProjectSchemaHDF5V2::scan(const std::string& scanPositionPath, const size_t &scanNo) const
 {
     Description d; 
+     std::cout << "[SCHEMA SCAN] SCAN"<< std::endl;
     std::cout << "DEBUG: " << scanPositionPath << std::endl;
     d.groupName = scanPositionPath;
 

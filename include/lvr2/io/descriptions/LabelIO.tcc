@@ -11,8 +11,7 @@ void LabelIO<Derived>::saveLabels(
     boost::filesystem::path pointCloud("pointCloud");
     boost::filesystem::path groupPath = (boost::filesystem::path(group) / pointCloud);
     m_featureBase->m_kernel->savePointBuffer(groupPath.string(), "points", labelRootPtr->points);
-         
-    //iterate over classes
+
     for(auto classPtr : labelRootPtr->labelClasses)
     {
         boost::filesystem::path classPath(classPtr->className);

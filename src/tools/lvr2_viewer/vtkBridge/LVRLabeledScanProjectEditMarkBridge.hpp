@@ -95,7 +95,7 @@ public:
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRLabelScanProjectEditMarkItem;
 
-    LabeledScanProjectEditMarkPtr getLabelScanProjectEditMark();
+    LabeledScanProjectEditMarkPtr getLabeledScanProjectEditMark();
 
 
 private:

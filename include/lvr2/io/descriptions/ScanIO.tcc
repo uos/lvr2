@@ -52,16 +52,17 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     m_featureBase->m_kernel->savePointBuffer(groupName, scanName, scanPtr->points);
     
     // Get meta data from scan and save
+    std::cout << "[SCAN IO] YAML save" << std::endl;
     m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
 
     // Save Waveform data
     if (scanPtr->waveform)
     {
-	std::cout << "Waveform found " <<std::endl;
+	    std::cout << "[ScanIO]Waveform found " <<std::endl;
         m_fullWaveformIO->saveFullWaveform(scanPosNo, scanNo, scanPtr->waveform);
     } else 
     {
-	    std::cout << "no Waveform " <<std::endl;
+	    std::cout << "[ScanIO]no Waveform " <<std::endl;
     }
 
 }

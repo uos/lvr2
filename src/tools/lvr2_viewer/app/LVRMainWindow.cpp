@@ -3291,37 +3291,32 @@ void LVRMainWindow::exportScanProject()
         return;
     }
 
-    QTreeWidgetItemIterator it(treeWidget);
-
-    while (*it)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); i++)
     {
-        ScanProjectPtr scanProject;
+        QTreeWidgetItem* topItem = treeWidget->topLevelItem(i);
+        LabeledScanProjectEditMarkPtr labeledScanProject;
         QString fileName = dialog.selectedFiles()[0];
 
-        if ((*it)->type() == LVRScanProjectItemType)
+        if (topItem->type() == LVRLabeledScanProjectEditMarkItemType)
         {
-            LVRScanProjectItem *item = static_cast<LVRScanProjectItem *>(*it);
-            scanProject = item->getScanProjectBridge()->getScanProject();
+            LVRLabeledScanProjectEditMarkItem *item = static_cast<LVRLabeledScanProjectEditMarkItem *>(topItem);
+            labeledScanProject = item->getLabeledScanProjectEditMarkBridge()->getLabeledScanProjectEditMark();
         }
-        else if((*it)->type() == LVRModelItemType)
+        else if(topItem->type() == LVRModelItemType)
         {
-            LVRModelItem *item = static_cast<LVRModelItem *>(*it);
-            LVRScanProjectBridge transfer(item->getModelBridge());
-
-            scanProject = transfer.getScanProject();
+            LVRModelItem *item = static_cast<LVRModelItem *>(topItem);
+            LVRLabeledScanProjectEditMarkBridge transfer(item->getModelBridge());
+            labeledScanProject = transfer.getLabeledScanProjectEditMark();
 
             //check if Labels exists and add them
             if(labelTreeWidget->topLevelItemCount() > 0)
             {
-                //scanProject->labelRoot = labelTreeWidget->getLabelRoot(); 
-                std::cout << "hallo" <<std::endl;
-
+                labeledScanProject->labelRoot = labelTreeWidget->getLabelRoot(); 
             }
 
         }
         else
         {
-            it++;
             continue;
         }
         
@@ -3332,14 +3327,8 @@ void LVRMainWindow::exportScanProject()
             LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
             HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString() + ".h5"));
             LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
-            LabeledScanProjectEditMarkPtr labelScanProject = LabeledScanProjectEditMarkPtr(new LabeledScanProjectEditMark);
-            ScanProjectEditMarkPtr editScanProject = ScanProjectEditMarkPtr(new ScanProjectEditMark);
 
-            editScanProject->project = scanProject;
-            labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
-            labelScanProject->editMarkProject = editScanProject;
-            std::cout << fileName.toStdString() << std::endl;
-            h5IO.saveLabelScanProject(labelScanProject);
+            h5IO.saveLabelScanProject(labeledScanProject);
 
         }else
         {
@@ -3350,9 +3339,8 @@ void LVRMainWindow::exportScanProject()
             DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(fileName.toStdString()));
             DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
         
-            dirIO.saveScanProject(scanProject);
+            //dirIO.saveScanProject(scanProject);
         }
-        it++;
     }
 
 }

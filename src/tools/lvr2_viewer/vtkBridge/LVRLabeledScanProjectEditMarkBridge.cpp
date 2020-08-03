@@ -79,7 +79,7 @@ void LVRLabeledScanProjectEditMarkBridge::removeActors(vtkSmartPointer<vtkRender
     }
 }
 
-LabeledScanProjectEditMarkPtr LVRLabeledScanProjectEditMarkBridge::getLabelScanProjectEditMark()
+LabeledScanProjectEditMarkPtr LVRLabeledScanProjectEditMarkBridge::getLabeledScanProjectEditMark()
 {
     return m_labeledScanProjectEditMark;
 }
