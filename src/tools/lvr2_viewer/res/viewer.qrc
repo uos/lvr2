@@ -46,5 +46,14 @@
         <file>qv_flight.png</file>
 	<file>qv_edm.png</file>
 	<file>qv_labeltool.png</file>
+	<file>qv_instance.png</file>
+	<file>qv_addclass.png</file>
+	<file>qv_segmentin.png</file>
+	<file>qv_segmentout.png</file>
+	<file>qv_selectlasso.png</file>
+	<file>qv_selectpoly.png</file>
+	<file>qv_selectack.png</file>
+	<file>qv_selectcancel.png</file>
+	<file>qv_toggleselect.png</file>
     </qresource>
 </RCC>
