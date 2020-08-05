@@ -5,7 +5,7 @@
 namespace lvr2
 {
 
-LVRLabelInstanceTreeItem::LVRLabelInstanceTreeItem(std::string className,int id, int labeledPointCount, bool visible, bool editable, QColor color) :
+LVRLabelInstanceTreeItem::LVRLabelInstanceTreeItem(std::string className, int id, int labeledPointCount, bool visible, bool editable, QColor color) :
     QTreeWidgetItem(LVRLabelInstanceItemType),
     m_id(id)
 {
@@ -34,7 +34,21 @@ LVRLabelInstanceTreeItem::LVRLabelInstanceTreeItem(std::string className,int id,
     m_labelInstancePtr->color[1] = g;
     m_labelInstancePtr->color[2] = b;
 
+}
 
+LVRLabelInstanceTreeItem::LVRLabelInstanceTreeItem(LabelInstancePtr instancePtr, int id) :
+    QTreeWidgetItem(LVRLabelInstanceItemType),
+    m_labelInstancePtr(instancePtr),
+    m_id(id)
+{
+    // Setup item properties
+    setText(LABEL_NAME_COLUMN, QString::fromStdString(instancePtr->instanceName));
+    setText(LABELED_POINT_COLUMN, QString::number(0));
+    setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
+    setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
+    QColor color(instancePtr->color[0], instancePtr->color[1], instancePtr->color[2]);
+    setData(LABEL_ID_COLUMN, LABEL_COLOR_GROUP, color);
+    setData(LABEL_ID_COLUMN, LABEL_ID_GROUP, id);
 
 }
 
@@ -66,6 +80,7 @@ int LVRLabelInstanceTreeItem::getNumberOfLabeledPoints()
 {
     return text(LABELED_POINT_COLUMN).toInt();
 }
+
 int LVRLabelInstanceTreeItem::getId()
 {
     return data(LABEL_ID_COLUMN, LABEL_ID_GROUP).toInt();

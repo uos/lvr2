@@ -49,7 +49,8 @@ namespace lvr2
 class LVRLabelInstanceTreeItem : public QTreeWidgetItem
 {
 public:
-    LVRLabelInstanceTreeItem(std::string instanceName ,int id, int labeledPointCount, bool visible, bool editable, QColor color);
+    LVRLabelInstanceTreeItem(std::string instanceName, int id, int labeledPointCount, bool visible, bool editable, QColor color);
+    LVRLabelInstanceTreeItem(LabelInstancePtr instancePtr, int);
     LVRLabelInstanceTreeItem(const LVRLabelInstanceTreeItem& item);
     virtual ~LVRLabelInstanceTreeItem();
     QColor getColor();

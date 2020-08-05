@@ -50,6 +50,7 @@ class LVRLabelClassTreeItem : public QTreeWidgetItem
 {
 public:
     LVRLabelClassTreeItem(std::string labelClass, int labeledPointCount, bool visible, bool editable, QColor color);
+    LVRLabelClassTreeItem(LabelClassPtr classptr);
     LVRLabelClassTreeItem(const LVRLabelClassTreeItem& item);
     virtual ~LVRLabelClassTreeItem();
     void setColor(QColor);

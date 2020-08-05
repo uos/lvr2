@@ -3,6 +3,7 @@
 #include "LVRItemTypes.hpp"
 #include "LVRLabelClassTreeItem.hpp"
 #include "LVRLabelInstanceTreeItem.hpp"
+#include <QInputDialog>
 
 LVRLabelTreeWidget::LVRLabelTreeWidget(QWidget *parent)
 {
@@ -73,14 +74,32 @@ void LVRLabelTreeWidget::itemSelected(int selectedId)
 
 void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPickingInteractor* interactor, QComboBox *comboBox)
 {
-    int currid = 0;
+    m_root = labelRoot;
+    QStringList instanceNames;
+    for(lvr2::LabelClassPtr classPtr: labelRoot->labelClasses)
+    {
+        for (lvr2::LabelInstancePtr instancePtr: classPtr->instances)
+        {
+            instanceNames << QString::fromStdString(instancePtr->instanceName);
+        }
+    }
+    QInputDialog dialog;
+    dialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
+    dialog.setComboBoxItems(instanceNames);
+    dialog.setWindowTitle("Choose the instance Name for Points without label");
+    if (!dialog.exec())
+    {
+        return;
+    }
+    std::cout << dialog.textValue().toStdString() << std::endl;
+
     for(lvr2::LabelClassPtr classPtr: labelRoot->labelClasses)
     {
 
         bool first = true;
 
         QColor tmp;
-        lvr2::LVRLabelClassTreeItem* classItem = new lvr2::LVRLabelClassTreeItem(classPtr->className, 0, true, true, tmp);
+        lvr2::LVRLabelClassTreeItem* classItem = new lvr2::LVRLabelClassTreeItem(classPtr);
         QTreeWidget::addTopLevelItem(classItem);
         for (lvr2::LabelInstancePtr instancePtr: classPtr->instances)
         {
@@ -90,8 +109,12 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
             {
                 classItem->setColor(color);
             }
-            int id = currid++;
-            lvr2::LVRLabelInstanceTreeItem * instanceItem = new lvr2::LVRLabelInstanceTreeItem(instancePtr->instanceName, id,0 , true, true,color);
+            int id = 0;
+            if(dialog.textValue().toStdString() != instancePtr->instanceName)
+            {
+                id = getNextId();
+            }
+            lvr2::LVRLabelInstanceTreeItem * instanceItem = new lvr2::LVRLabelInstanceTreeItem(instancePtr, id);
 
             classItem->addChild(instanceItem);
 
@@ -104,6 +127,10 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
         }
     }
 
+}
+int LVRLabelTreeWidget::getNextId()
+{
+    return m_id++;
 }
 
 lvr2::LabelRootPtr LVRLabelTreeWidget::getLabelRoot()

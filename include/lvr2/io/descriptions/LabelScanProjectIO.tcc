@@ -19,6 +19,9 @@ void LabelScanProjectIO<FeatureBase>::saveLabelScanProject(const LabeledScanProj
     {
         std::cout << "[LabelScanProjectIO] Save Labeles" << std::endl;
         m_labelIO->saveLabels(group, labelScanProjectPtr->labelRoot); 
+    } else
+    {
+     std::cout << "[LabelScanProjectIO] No Labeles" << std::endl;
     }
 }
 

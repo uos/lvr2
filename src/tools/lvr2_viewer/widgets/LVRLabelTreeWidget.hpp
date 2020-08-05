@@ -13,9 +13,11 @@ public:
     void addTopLevelItem(QTreeWidgetItem *item);
     void itemSelected(int);
     void setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPickingInteractor*, QComboBox*);
+    int getNextId();
 
     lvr2::LabelRootPtr getLabelRoot();
 private:
+    int m_id = 1;
     lvr2::LabelRootPtr m_root;
     lvr2::LVRLabelInstanceTreeItem * m_selectedItem = nullptr;
 };

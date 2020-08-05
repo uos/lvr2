@@ -53,7 +53,7 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     
     // Get meta data from scan and save
     std::cout << "[SCAN IO] YAML save" << std::endl;
-    m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
+    //m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
 
     // Save Waveform data
     if (scanPtr->waveform)

@@ -25,7 +25,6 @@ LVRLabeledScanProjectEditMarkItem::LVRLabeledScanProjectEditMarkItem(LabeledScan
     }
     if(bridge->getLabelBridgePtr())
     {
-        std::cout << "Add Label Item" << std::endl;
         LVRLabelItem* item = new LVRLabelItem(bridge->getLabelBridgePtr(), "Labels");
         addChild(item);
     }

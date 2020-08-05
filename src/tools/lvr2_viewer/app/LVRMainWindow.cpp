@@ -1072,7 +1072,7 @@ void LVRMainWindow::addLabelClass()
         m_pickingInteractor->setLabel(0, out);
     }
 
-    int id = m_id++;
+    int id = labelTreeWidget->getNextId();
     //Setting up new Toplevel item
     LVRLabelClassTreeItem * classItem = new LVRLabelClassTreeItem(className.toStdString(), 0, true, true, labelColor);
     LVRLabelInstanceTreeItem * instanceItem = new LVRLabelInstanceTreeItem((className.toStdString() + "0"), id, 0 , true, true, labelColor);
@@ -2954,7 +2954,7 @@ void LVRMainWindow::addNewInstance(LVRLabelClassTreeItem * selectedTopLevelItem)
             return;
     }
 
-    int id = m_id++;
+    int id = labelTreeWidget->getNextId();
     LVRLabelInstanceTreeItem * instanceItem = new LVRLabelInstanceTreeItem(instanceName.toStdString(), id, 0, true, true, labelColor);
     selectedTopLevelItem->addChild(instanceItem);
 
@@ -3300,9 +3300,10 @@ void LVRMainWindow::exportScanProject()
         if (topItem->type() == LVRLabeledScanProjectEditMarkItemType)
         {
             LVRLabeledScanProjectEditMarkItem *item = static_cast<LVRLabeledScanProjectEditMarkItem *>(topItem);
+            /*
             LVRLabeledScanProjectEditMarkBridge transfer(item->getLabeledScanProjectEditMarkBridge()->getScanProjectBridgePtr()->getScanPositions()[0]->getModels()[0]);
-            labeledScanProject = transfer.getLabeledScanProjectEditMark();
-            //labeledScanProject = item->getLabeledScanProjectEditMarkBridge()->getLabeledScanProjectEditMark();
+            labeledScanProject = transfer.getLabeledScanProjectEditMark();*/
+            labeledScanProject = item->getLabeledScanProjectEditMarkBridge()->getLabeledScanProjectEditMark();
         }
         else if(topItem->type() == LVRModelItemType)
         {

@@ -53,7 +53,7 @@ void LabelIO<Derived>::saveLabels(
 */
             //save IDS
             int* sharedArrayData = new int[instancePtr->labeledIDs.size()];
-            std::memcpy(sharedArrayData, instancePtr->labeledIDs.data(), instancePtr->labeledIDs.size());
+            std::memcpy(sharedArrayData, instancePtr->labeledIDs.data(), instancePtr->labeledIDs.size()*sizeof(int));
             std::vector<size_t>dim = {instancePtr->labeledIDs.size()};
             boost::shared_array<int>labeledIDs (sharedArrayData);
             m_arrayIO->saveIntArray(groupName, "IDs", dim, labeledIDs);

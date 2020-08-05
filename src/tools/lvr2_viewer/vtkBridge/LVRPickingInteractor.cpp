@@ -1954,6 +1954,7 @@ void LVRPickingInteractor::newLabel(QTreeWidgetItem* item)
 
     LVRLabelInstanceTreeItem *instanceItem = static_cast<LVRLabelInstanceTreeItem *>(item);
     int labelId = instanceItem->getId();
+
     m_labelInstances[labelId] = instanceItem;
     if(m_labelInstances.size() == 1)
     {

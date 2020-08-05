@@ -38,7 +38,7 @@ void HDF5MetaDescriptionV2::saveScan(
         phi[0] = config["phi"][0].as<double>();
         phi[1] = config["phi"][1].as<double>();
     }
-    //hdf5util::addArray<double>(g, "phi", dim, phi);
+    hdf5util::addArray<double>(g, "phi", dim, phi);
 
     // Theta min/max
     doubleArr theta(new double[2]);
@@ -49,7 +49,7 @@ void HDF5MetaDescriptionV2::saveScan(
         theta[0] = config["theta"][0].as<double>();
         theta[1] = config["theta"][1].as<double>();
     }
-    //hdf5util::addArray<double>(g, "theta", dim, theta);
+    hdf5util::addArray<double>(g, "theta", dim, theta);
 
     // Horizontal and vertical resolution
     doubleArr resolution(new double[2]);
@@ -63,7 +63,7 @@ void HDF5MetaDescriptionV2::saveScan(
     {
         resolution[1] = config["v_res"].as<double>();
     }
-    //hdf5util::addArray<double>(g, "resolution", dim, resolution);
+    hdf5util::addArray<double>(g, "resolution", dim, resolution);
 
     // Pose estimation and registration
     Transformd p_transform;
@@ -71,14 +71,14 @@ void HDF5MetaDescriptionV2::saveScan(
     {
         p_transform = n["pose_estimate"].as<Transformd>();
     }
-    //hdf5util::addMatrix<double>(g, "poseEstimation", p_transform);
+    hdf5util::addMatrix<double>(g, "poseEstimation", p_transform);
 
     Transformd r_transform;
     if(n["registration"])
     {
         r_transform = n["registration"].as<Transformd>();
     }
-    //hdf5util::addMatrix<double>(g, "registration", r_transform);
+    hdf5util::addMatrix<double>(g, "registration", r_transform);
 
     // Timestamps
     doubleArr timestamps(new double[2]);
@@ -92,7 +92,7 @@ void HDF5MetaDescriptionV2::saveScan(
     {
         timestamps[1] = n["end_time"].as<double>();
     }
-    //hdf5util::addArray<double>(g, "timestamps", dim, timestamps);
+    hdf5util::addArray<double>(g, "timestamps", dim, timestamps);
 
 }
 
