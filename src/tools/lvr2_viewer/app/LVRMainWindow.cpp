@@ -2982,7 +2982,6 @@ void LVRMainWindow::openScanProject()
     LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
     LabeledScanProjectEditMarkPtr labelScanProject = h5IO.loadScanProject();
 
-
     /*
     LabelHDF5SchemaPtr copyhdf5Schema(new LabelScanProjectSchemaHDF5V2);
     HDF5KernelPtr copyhdf5Kernel(new HDF5Kernel( "/home/michel/savecopy.h5"));
@@ -2991,14 +2990,15 @@ void LVRMainWindow::openScanProject()
 
     */
     LabeledScanProjectEditMarkBridgePtr labelScanProjectBridge(new LVRLabeledScanProjectEditMarkBridge(labelScanProject));
-    //labelScanProjectBridge->addActors(m_renderer);
-    
+   
     QFileInfo info(fileName);
     this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, info.fileName().toStdString());
+
     if(labelScanProject->labelRoot)
     {
         this->dockWidgetLabel->show();
         m_pickingInteractor->setPoints(labelScanProjectBridge->getLabelBridgePtr()->getPointBridge()->getPolyIDData());
+    //labelScanProjectBridge->addActors(m_renderer);
         this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot, m_pickingInteractor,selectedInstanceComboBox);
     }
     updateView();

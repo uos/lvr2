@@ -95,7 +95,6 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
             //TODO make it less hacky
             continue;
         }
-        std::cout << classGroup << std::endl;
         boost::filesystem::path classPath(groupPath / boost::filesystem::path(classGroup));
         LabelClassPtr classPtr(new LabelClass);
         classPtr->className = classGroup;
@@ -104,7 +103,6 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
         m_featureBase->m_kernel->subGroupNames(classPath.string(), labelInstances);
         for(auto instanceGroup : labelInstances)
         {
-            std::cout << instanceGroup << std::endl;
             LabelInstancePtr instancePtr(new LabelInstance);
             instancePtr->instanceName = instanceGroup;
             //Get Color and IDs

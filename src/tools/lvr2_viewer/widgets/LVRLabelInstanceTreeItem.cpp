@@ -38,7 +38,6 @@ LVRLabelInstanceTreeItem::LVRLabelInstanceTreeItem(std::string className, int id
 
 LVRLabelInstanceTreeItem::LVRLabelInstanceTreeItem(LabelInstancePtr instancePtr, int id) :
     QTreeWidgetItem(LVRLabelInstanceItemType),
-    m_labelInstancePtr(instancePtr),
     m_id(id)
 {
     // Setup item properties
@@ -49,6 +48,7 @@ LVRLabelInstanceTreeItem::LVRLabelInstanceTreeItem(LabelInstancePtr instancePtr,
     QColor color(instancePtr->color[0], instancePtr->color[1], instancePtr->color[2]);
     setData(LABEL_ID_COLUMN, LABEL_COLOR_GROUP, color);
     setData(LABEL_ID_COLUMN, LABEL_ID_GROUP, id);
+    m_labelInstancePtr = instancePtr;
 
 }
 

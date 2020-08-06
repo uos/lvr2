@@ -35,14 +35,14 @@ LVRLabelClassTreeItem::LVRLabelClassTreeItem(std::string className, int labeledP
 }
 
 LVRLabelClassTreeItem::LVRLabelClassTreeItem(LabelClassPtr classPtr) :
-    QTreeWidgetItem(LVRLabelClassItemType),
-    m_labelClassPtr(classPtr)
+    QTreeWidgetItem(LVRLabelClassItemType)
 {
     // Setup item properties
     setText(LABEL_NAME_COLUMN, QString::fromStdString(classPtr->className));
     setText(LABELED_POINT_COLUMN, QString::number(0));
     setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
     setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
+    m_labelClassPtr = classPtr;
 
 }
 
@@ -56,6 +56,18 @@ void LVRLabelClassTreeItem::addChild(QTreeWidgetItem *child)
             setData(LABEL_ID_COLUMN, LABEL_COLOR_GROUP, instanceItem->getColor());
         }
         m_labelClassPtr->instances.push_back(instanceItem->getInstancePtr());
+        QTreeWidgetItem::addChild(child);
+    }
+}
+void LVRLabelClassTreeItem::addChildnoChanges(QTreeWidgetItem *child)
+{
+    if(child->type() == LVRLabelInstanceItemType)
+    {
+        LVRLabelInstanceTreeItem *instanceItem = static_cast<LVRLabelInstanceTreeItem *>(child);
+        if(this->childCount() == 0)
+        {
+            setData(LABEL_ID_COLUMN, LABEL_COLOR_GROUP, instanceItem->getColor());
+        }
         QTreeWidgetItem::addChild(child);
     }
 }

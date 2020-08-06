@@ -187,12 +187,14 @@ void HDF5Kernel::saveMetaYAML(
     if(hg.isValid() && node["sensor_type"] )
     {
         std::string sensor_type = node["sensor_type"].as<std::string>();
+        cout << "---> Sensor Type" << sensor_type << endl;
         if(sensor_type == "ScanPosition")
         {
             m_metaDescription->saveScanPosition(hg, node);
         }
         else if(sensor_type == "Scan")
         {
+            cout << "save Scan " << endl;
             m_metaDescription->saveScan(hg, node);
         }
         else if(sensor_type == "ScanCamera")
@@ -218,6 +220,16 @@ void HDF5Kernel::saveMetaYAML(
                       << sensor_type << "' is not defined." << std::endl;
         }
         m_hdf5File->flush();
+    }
+    else{
+        if(!hg.isValid())
+        {
+            cout << group << "is not valid!!!!!!!!! " << endl;
+        }
+        if(!node["sensor_type"])
+        {
+            cout << "no sensor type-----------" << endl;
+        }
     }
 }
 

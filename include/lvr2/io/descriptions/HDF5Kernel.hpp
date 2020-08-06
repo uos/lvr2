@@ -22,7 +22,9 @@ public:
 
     HDF5Kernel() = delete;
     HDF5Kernel(const std::string& hdf5file);
-    ~HDF5Kernel() { delete m_metaDescription;}
+    ~HDF5Kernel() {
+        std::cout << "Kernel destroyed" << std::endl;
+         delete m_metaDescription;}
 
     virtual void saveMeshBuffer(
         const std::string& group, 

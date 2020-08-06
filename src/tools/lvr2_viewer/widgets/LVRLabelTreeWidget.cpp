@@ -91,20 +91,17 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
     {
         return;
     }
-    std::cout << dialog.textValue().toStdString() << std::endl;
+
 
     for(lvr2::LabelClassPtr classPtr: labelRoot->labelClasses)
     {
-
         bool first = true;
 
         QColor tmp;
         lvr2::LVRLabelClassTreeItem* classItem = new lvr2::LVRLabelClassTreeItem(classPtr);
-        QTreeWidget::addTopLevelItem(classItem);
         for (lvr2::LabelInstancePtr instancePtr: classPtr->instances)
         {
-            lvr2::Vector3i loadedColor = instancePtr->color;
-            QColor color(loadedColor[0],loadedColor[1],loadedColor[2]);
+            QColor color(instancePtr->color[0],instancePtr->color[1],instancePtr->color[2]);
             if(first)
             {
                 classItem->setColor(color);
@@ -116,7 +113,7 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
             }
             lvr2::LVRLabelInstanceTreeItem * instanceItem = new lvr2::LVRLabelInstanceTreeItem(instancePtr, id);
 
-            classItem->addChild(instanceItem);
+            classItem->addChildnoChanges(instanceItem);
 
             comboBox->addItem(QString::fromStdString(instanceItem->getName()), id);
             interactor->newLabel(instanceItem);
@@ -125,6 +122,7 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
             
             interactor->setLabel(id, instancePtr->labeledIDs);
         }
+        QTreeWidget::addTopLevelItem(classItem);
     }
 
 }

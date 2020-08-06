@@ -39,7 +39,6 @@ void ScanIO<Derived>::save(HighFive::Group& group, uint scanNr, const ScanPtr& s
 template <typename Derived>
 void ScanIO<Derived>::save(HighFive::Group& group, const ScanPtr& scanPtr)
 {
-    std::cout << "[Scan IO <------------------] save scan " << std::endl;
     std::string id(ScanIO<Derived>::ID);
     std::string obj(ScanIO<Derived>::OBJID);
     hdf5util::setAttribute(group, "IO", id);

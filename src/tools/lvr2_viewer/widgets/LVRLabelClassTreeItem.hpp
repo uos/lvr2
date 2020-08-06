@@ -59,6 +59,7 @@ public:
     bool isEditable();
     int getNumberOfLabeledPoints();
     void addChild(QTreeWidgetItem *child);
+    void addChildnoChanges(QTreeWidgetItem *child);
     std::string getName();
     LabelClassPtr getLabelClassPtr();
 private:
