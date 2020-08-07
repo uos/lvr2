@@ -25,9 +25,7 @@ void HDF5Kernel::savePointBuffer(
     const std::string &container,
     const PointBufferPtr &buffer) const
 {
-    std::cout << "HDF5Kernel::savePointBuffer: " << group << " / " << container << std::endl;
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
-
     for(auto elem : *buffer)
     {
         this->template save(g, elem.first, elem.second);
@@ -220,16 +218,6 @@ void HDF5Kernel::saveMetaYAML(
                       << sensor_type << "' is not defined." << std::endl;
         }
         m_hdf5File->flush();
-    }
-    else{
-        if(!hg.isValid())
-        {
-            cout << group << "is not valid!!!!!!!!! " << endl;
-        }
-        if(!node["sensor_type"])
-        {
-            cout << "no sensor type-----------" << endl;
-        }
     }
 }
 

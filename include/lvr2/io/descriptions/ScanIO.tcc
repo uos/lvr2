@@ -41,8 +41,6 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
         metaName = *d.metaName;
     }
 
-    cout << "SCAN META: " << d.metaData << endl;
-
     if(d.metaData)
     {
         node = *d.metaData;
@@ -52,7 +50,6 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     m_featureBase->m_kernel->savePointBuffer(groupName, scanName, scanPtr->points);
     
     // Get meta data from scan and save
-    std::cout << "[SCAN IO] YAML save" << std::endl;
     m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
 
     // Save Waveform data
@@ -73,8 +70,6 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
     ScanPtr ret(new Scan);
 
     Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
-
-        std::cout << d.groupName << " " << d.dataSetName << std::endl; 
 
     // Init default values
     std::stringstream sstr;
@@ -112,8 +107,13 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
     }
 
     // Load actual data
-    ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
- 
+    //ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
+    boost::shared_array<float> pointData;
+    std::vector<size_t> pointDim;
+    pointData = m_featureBase->m_kernel->loadFloatArray(groupName, scanName, pointDim);
+    PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
+    ret->points = pb;
+
     // Get Waveform data
     Description waveformDescr = m_featureBase->m_description->waveform(scanPosNo, scanNo);
     if(waveformDescr.dataSetName)

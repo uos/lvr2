@@ -64,7 +64,6 @@ bool LVRScanPositionItem::isEnabled()
 
 void LVRScanPositionItem::setVisibility(bool visible)
 {
-    std::cout << "Im here " <<std::endl;
     for (auto model : m_scanPositionBridge->getModels())
     {
         model->setVisibility(visible);
@@ -72,7 +71,6 @@ void LVRScanPositionItem::setVisibility(bool visible)
 }
 void LVRScanPositionItem::setModelVisibility(int column, bool globalValue)
 {
-    std::cout << "Im here " <<std::endl;
     if(checkState(column) == globalValue || globalValue == true)
     {
         setVisibility(checkState(column));

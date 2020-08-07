@@ -89,7 +89,13 @@ bool LVRLabelItem::isEnabled()
 
 void LVRLabelItem::setVisibility(bool visible)
 {
-	m_labelBridge->setVisibility(visible);
+    if(checkState(0) && visible)
+    {
+	    m_labelBridge->setVisibility(true);
+    } else if(!checkState(0))
+    {
+	    m_labelBridge->setVisibility(false);
+    }
 }
 
 LVRLabelItem::~LVRLabelItem()

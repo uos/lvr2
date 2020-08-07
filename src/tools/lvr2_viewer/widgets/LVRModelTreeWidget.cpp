@@ -32,7 +32,6 @@ void LVRModelTreeWidget::addScanProject(lvr2::ScanProjectPtr scanProject, std::s
 
 void LVRModelTreeWidget::addLabeledScanProjectEditMark(lvr2::LabeledScanProjectEditMarkPtr labeledScanProject, std::string name)
 {
-    lvr2::LabeledScanProjectEditMarkBridgePtr labelScanBridgePtr;
     labelScanBridgePtr = lvr2::LabeledScanProjectEditMarkBridgePtr(new lvr2::LVRLabeledScanProjectEditMarkBridge(labeledScanProject));
     lvr2::LVRLabeledScanProjectEditMarkItem *item = new lvr2::LVRLabeledScanProjectEditMarkItem(labelScanBridgePtr, QString::fromStdString(name));
     QTreeWidget::addTopLevelItem(item);

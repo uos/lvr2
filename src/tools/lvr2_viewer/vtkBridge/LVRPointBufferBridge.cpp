@@ -536,7 +536,6 @@ void LVRPointBufferBridge::setColorsVisibility(bool visible)
 
 void LVRPointBufferBridge::setVisibility(bool visible)
 {
-    std::cout << "PointbufferBridge vis" << std::endl;
     m_pointCloudActor->SetVisibility(visible);
 }
 

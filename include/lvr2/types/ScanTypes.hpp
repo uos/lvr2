@@ -68,7 +68,7 @@ struct Scan
         positionNumber(0),
         numPoints(0),
         scanRoot(boost::filesystem::path("./"))
-    {std::cout<<"Scan ----------- constructor" <<std::endl;}
+    {}
 
     ~Scan() {};
 

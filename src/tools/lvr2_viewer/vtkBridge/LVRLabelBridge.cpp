@@ -34,8 +34,6 @@ void LVRLabelBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
     {
     	renderer->AddActor(m_pointBridge->getPointCloudActor());
     }
-
-
 }
 
 void LVRLabelBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
@@ -44,7 +42,10 @@ void LVRLabelBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
 }
 void LVRLabelBridge::setVisibility(bool visible)
 {
-    if(validPointBridge()) m_pointBridge->setVisibility(visible);
+    if(validPointBridge())
+    {
+        m_pointBridge->getPointCloudActor()->SetVisibility(visible);
+    }
 }
 LabelRootPtr LVRLabelBridge::getLabelRoot()
 {

@@ -16,7 +16,10 @@ public:
     void addScanProject(lvr2::ScanProjectPtr scanProject, std::string ="");
     void addLabeledScanProjectEditMark(lvr2::LabeledScanProjectEditMarkPtr labeledScanProject, std::string ="");
 
-    //std::vector<> get**ModelItems();
+    lvr2::LabeledScanProjectEditMarkBridgePtr getBridgePtr(){
+        return labelScanBridgePtr;
+    };
+    lvr2::LabeledScanProjectEditMarkBridgePtr labelScanBridgePtr;
 };
 
 #endif //LVRMODELTREEWIDGET_HPP

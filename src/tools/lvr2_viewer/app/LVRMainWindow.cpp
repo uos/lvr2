@@ -44,8 +44,10 @@
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 #include "lvr2/io/descriptions/LabelHDF5IO.hpp"
+#include "lvr2/io/descriptions/HDF5IO.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 #include "lvr2/io/descriptions/LabelScanProjectSchemaHDF5V2.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/descriptions/DirectoryIO.hpp"
 
 #include "lvr2/registration/TransformUtils.hpp"
@@ -1904,7 +1906,7 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
     else if (treeWidgetItem->type() == LVRScanPositionItemType)
     {
         LVRScanPositionItem *item = static_cast<LVRScanPositionItem *>(treeWidgetItem);
-        item->setVisibility(m_actionShow_Points->isChecked());
+        item->setModelVisibility(0,m_actionShow_Points->isChecked());
         refreshView();
     }
       else if (treeWidgetItem->type() == LVRLabelItemType)
@@ -2981,15 +2983,7 @@ void LVRMainWindow::openScanProject()
     HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString()));
     LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
     LabeledScanProjectEditMarkPtr labelScanProject = h5IO.loadScanProject();
-
-    /*
-    LabelHDF5SchemaPtr copyhdf5Schema(new LabelScanProjectSchemaHDF5V2);
-    HDF5KernelPtr copyhdf5Kernel(new HDF5Kernel( "/home/michel/savecopy.h5"));
-    LabelHDF5IO copyh5IO(copyhdf5Kernel, copyhdf5Schema);
-    copyh5IO.saveLabelScanProject(labelScanProject);
-
-    */
-    LabeledScanProjectEditMarkBridgePtr labelScanProjectBridge(new LVRLabeledScanProjectEditMarkBridge(labelScanProject));
+    //LabeledScanProjectEditMarkBridgePtr labelScanProjectBridge(new LVRLabeledScanProjectEditMarkBridge(labelScanProject));
    
     QFileInfo info(fileName);
     this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, info.fileName().toStdString());
@@ -2997,8 +2991,8 @@ void LVRMainWindow::openScanProject()
     if(labelScanProject->labelRoot)
     {
         this->dockWidgetLabel->show();
-        m_pickingInteractor->setPoints(labelScanProjectBridge->getLabelBridgePtr()->getPointBridge()->getPolyIDData());
-    //labelScanProjectBridge->addActors(m_renderer);
+        m_pickingInteractor->setPoints(this->treeWidget->getBridgePtr()->getLabelBridgePtr()->getPointBridge()->getPolyIDData());
+        this->treeWidget->getBridgePtr()->addActors(m_renderer);
         this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot, m_pickingInteractor,selectedInstanceComboBox);
     }
     updateView();

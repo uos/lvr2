@@ -62,7 +62,6 @@ void LVRLabeledScanProjectEditMarkBridge::addActors(vtkSmartPointer<vtkRenderer>
     }
     if (m_scanProjectBridgePtr)
     {
-        std::cout << "add Actor labled edit mark " << std::endl;
         m_scanProjectBridgePtr->addActors(renderer);
     }
 }
