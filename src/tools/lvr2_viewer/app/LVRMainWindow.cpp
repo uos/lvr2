@@ -1271,91 +1271,14 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
             ScanProjectPtr scanProject = dirIO.loadScanProject();
             ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
             bridge->addActors(m_renderer);
-           /* 
-            DirectoryKernelPtr dirKernelPtr2(new DirectoryKernel("/home/mloepmei/whatever")); 
-            DirectorySchemaPtr hyperlibSchemaPtr2(new ScanProjectSchemaHyperlib); 
-            DirectoryIO dirIO2(dirKernelPtr2, hyperlibSchemaPtr2);
-            dirIO2.saveScanProject(bridge->getScanProject());
-*/
-
             LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
             QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
             root->addChild(item);
             item->setExpanded(false);
             //lastItem = item;
-            }else if (info.suffix() == "h5")
+        }else if (info.suffix() == "h5")
             {
-                // h5 special loading case
-                // special case h5:
-                // scan data is stored as 
-                QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
-                root->setText(0, base);
-
-                QIcon icon;
-                icon.addFile(QString::fromUtf8(":/qv_scandata_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
-                root->setIcon(0, icon);
-
-                std::shared_ptr<ScanDataManager> sdm(new ScanDataManager(info.absoluteFilePath().toStdString()));
-
-                lastItem = addScans(sdm, root);
-
-                root->setExpanded(true);
-
-                // load mesh only
-                ModelPtr model_ptr(new Model());
-                std::shared_ptr<HDF5IO> h5_io_ptr(new HDF5IO(info.absoluteFilePath().toStdString()));
-                if(h5_io_ptr->readMesh(model_ptr))
-                {
-                    ModelBridgePtr bridge(new LVRModelBridge(model_ptr));
-                    bridge->addActors(m_renderer);
-
-                    // Add item for this model to tree widget
-                    LVRModelItem* item = new LVRModelItem(bridge, "mesh");
-                    root->addChild(item);
-                    item->setExpanded(false);
-                    lastItem = item;
-                }
-		
-		//read Label
-                if(h5_io_ptr->readLabel(model_ptr))
-                {
-                    /*
-                    std::vector<LabelClassPtr> labelClasses = model_ptr->m_label->getLabelClasses();
-                    for (auto labelClass : labelClasses)
-                    {
-                        QTreeWidgetItem * item = new QTreeWidgetItem(LVRLabelClassType);
-                        item->setText(LABEL_NAME_COLUMN, QString::fromStdString(labelClass->className));
-                        item->setText(LABELED_POINT_COLUMN, QString::number(0));
-                            item->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-                        item->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
-                        labelTreeWidget->addTopLevelItem(item);   
-                        for (auto instance : labelClass->instances)
-                        {
-                            int id = 0;
-                            if (labelClass->className != UNKNOWNNAME)
-                            {
-                                id = m_id++;
-                            } 
-
-                            QTreeWidgetItem * childItem = new QTreeWidgetItem(LVRLabelInstanceType);
-                            childItem->setText(LABELED_POINT_COLUMN, QString::number(0));
-                            childItem->setText(LABEL_NAME_COLUMN, QString::fromStdString(instance->instanceName));
-                            QColor label_color(instance->color[0], instance->color[1], instance->color[2]);
-                            childItem->setCheckState(LABEL_VISIBLE_COLUMN, Qt::Checked);
-                            childItem->setData(LABEL_ID_COLUMN, 1, label_color);
-                            childItem->setData(LABEL_ID_COLUMN, 0, id);
-                            childItem->setCheckState(LABEL_EDITABLE_COLUMN, Qt::Checked);
-                            item->addChild(childItem);
-                            //Q_EMIT(labelAdded(childItem));
-                            m_pickingInteractor->newLabel(instanceItem);
-                            //m_pickingInteractor->setLabel(id, instance->labeledIDs);
-                            selectedInstanceComboBox->addItem(childItem->text(LABEL_NAME_COLUMN), id);
-                        }
-                }*/
-		    std::cout <<"Points" <<  model_ptr->m_pointCloud->numPoints()<< std::endl;
-                    lastItem = loadModelItem(*it);
-		}
-
+                openHDF5(info.absoluteFilePath().toStdString());
             } else {
                 lastItem = loadModelItem(*it);
             }
@@ -2971,22 +2894,23 @@ void LVRMainWindow::addNewInstance(LVRLabelClassTreeItem * selectedTopLevelItem)
 
 void LVRMainWindow::openScanProject()
 {
-
-    //TODO: What should be done if elements exists?
     QString fileName = QFileDialog::getOpenFileName(this,
                 tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
     if(!QFile::exists(fileName))
     {
         return;
     }
+    openHDF5(fileName.toStdString());
+}
+ 
+void LVRMainWindow::openHDF5(std::string fileName)
+{
     LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
-    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString()));
+    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName));
     LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
     LabeledScanProjectEditMarkPtr labelScanProject = h5IO.loadScanProject();
-    //LabeledScanProjectEditMarkBridgePtr labelScanProjectBridge(new LVRLabeledScanProjectEditMarkBridge(labelScanProject));
    
-    QFileInfo info(fileName);
-    this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, info.fileName().toStdString());
+    this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, fileName);
 
     if(labelScanProject->labelRoot)
     {

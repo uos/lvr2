@@ -1976,14 +1976,19 @@ void LVRPickingInteractor::newLabel(QTreeWidgetItem* item)
 void LVRPickingInteractor::saveCurrentLabelSelection()
 {
 
+
     if (m_pickMode != PickLabel)
     {
-        if (m_pickMode == PickLabel && !lassoToolSelected)
+        if (!lassoToolSelected)
         {
-    	    calculateSelection(true);
+            calculateSelection(true);
         }
 	    return;
     }
+    /*if (!lassoToolSelected)
+    {
+        calculateSelection(true);
+    }*/
 
     int count = 0;
     std::set<uint16_t> modifiedActors;

@@ -263,6 +263,7 @@ protected Q_SLOTS:
     void highlightBoundingBoxes();
 
     void visibilityChanged(QTreeWidgetItem*, int);
+    void openHDF5(std::string fileName);
     void openScanProject();
 
 Q_SIGNALS:
