@@ -1024,6 +1024,27 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
 
 void LVRMainWindow::addLabelClass()
 {
+    if(!m_pickingInteractor->getPoints())
+    {
+        QStringList pointcloudNames;
+        std::vector<LVRPointCloudItem*> pointcloudItems;
+    	QTreeWidgetItemIterator itu(treeWidget);
+	    LVRPointCloudItem* citem;
+	
+	    while (*itu)
+	    {
+        	QTreeWidgetItem* item = *itu;
+
+		    if ( item->type() == LVRPointCloudItemType)
+		    {
+                pointcloudNames << item->parent()->text(0);
+			    //citem = static_cast<LVRPointCloudItem*>(*itu);
+			    //points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
+            }
+		    itu++;
+		}
+	}
+
     //Ask For the Label name 
     bool accepted;
     QString className = QInputDialog::getText(this, tr("Choose name for new Label class"),
@@ -1317,7 +1338,6 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 
 			m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
             labelTreeWidget->getLabelRoot()->points = citem->getPointBuffer();
-                        //m_labelDialog->setPoints(item->parent()->text(0).toStdString(), citem->getPointBufferBridge()->getPolyData());
 		}
 		itu++;
 	}
@@ -2916,9 +2936,12 @@ void LVRMainWindow::openHDF5(std::string fileName)
     {
         this->dockWidgetLabel->show();
         m_pickingInteractor->setPoints(this->treeWidget->getBridgePtr()->getLabelBridgePtr()->getPointBridge()->getPolyIDData());
-        this->treeWidget->getBridgePtr()->addActors(m_renderer);
         this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot, m_pickingInteractor,selectedInstanceComboBox);
+    } else
+    {
+        labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
     }
+    this->treeWidget->getBridgePtr()->addActors(m_renderer);
     updateView();
 
 

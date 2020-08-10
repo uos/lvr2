@@ -179,13 +179,11 @@ void HDF5Kernel::saveMetaYAML(
     const std::string &metaName,
     const YAML::Node &node) const
 {
-    cout << "SaveMetaYAML: " << group << " / " << metaName << std::endl;
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
 
     if(hg.isValid() && node["sensor_type"] )
     {
         std::string sensor_type = node["sensor_type"].as<std::string>();
-        cout << "---> Sensor Type" << sensor_type << endl;
         if(sensor_type == "ScanPosition")
         {
             m_metaDescription->saveScanPosition(hg, node);

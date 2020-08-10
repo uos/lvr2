@@ -1869,8 +1869,7 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
       std::vector<vtkVector2i> polygonPoints = this->GetPolygonPoints();
       std::vector<int> selectedPolyPoints;
-      selectedPolyPoints.resize(ids->GetNumberOfTuples());
-
+      selectedPolyPoints.reserve(ids->GetNumberOfTuples());
       for (vtkIdType i = 0; i < ids->GetNumberOfTuples(); i++)
       {
 	auto selectedPoint = m_points->GetPoint(ids->GetValue(i));
@@ -1981,14 +1980,14 @@ void LVRPickingInteractor::saveCurrentLabelSelection()
     {
         if (!lassoToolSelected)
         {
-            calculateSelection(true);
+            //calculateSelection(true);
         }
 	    return;
     }
-    /*if (!lassoToolSelected)
+    if (!lassoToolSelected)
     {
         calculateSelection(true);
-    }*/
+    }
 
     int count = 0;
     std::set<uint16_t> modifiedActors;
