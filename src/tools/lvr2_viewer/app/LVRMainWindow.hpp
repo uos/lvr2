@@ -149,6 +149,7 @@ public Q_SLOTS:
             //                std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors);
 
 
+    void openIntermediaProject();
     void comboBoxIndexChanged(int index);
     void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();

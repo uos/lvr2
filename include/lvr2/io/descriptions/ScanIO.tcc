@@ -107,10 +107,12 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
     }
 
     // Load actual data
-    //ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
+  //  ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
     boost::shared_array<float> pointData;
     std::vector<size_t> pointDim;
+    std::cout <<"load PointBuffer" << groupName << " " << scanName << " "<< pointDim[0] <<std::endl;
     pointData = m_featureBase->m_kernel->loadFloatArray(groupName, scanName, pointDim);
+    std::cout <<"load PointBuffer" << groupName << " " << scanName << std::endl;
     PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
     ret->points = pb;
 

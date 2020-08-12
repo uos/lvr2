@@ -699,6 +699,7 @@
     <addaction name="separator"/>
     <addaction name="actionOpenScanProject"/>
     <addaction name="actionExportScanProject"/>
+    <addaction name="actionOpen_Intermedia_Project"/>
     <addaction name="separator"/>
     <addaction name="actionReadWaveform"/>
    </widget>
@@ -1599,6 +1600,11 @@
   <action name="actionExportScanProject">
    <property name="text">
     <string>Export Scan Project</string>
+   </property>
+  </action>
+  <action name="actionOpen_Intermedia_Project">
+   <property name="text">
+    <string>Open Intermedia Project</string>
    </property>
   </action>
  </widget>

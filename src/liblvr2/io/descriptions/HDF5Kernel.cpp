@@ -233,6 +233,13 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
     PointBufferPtr ret;
 
+    boost::shared_array<float> pointData;
+    std::vector<size_t> pointDim;
+    pointData = loadFloatArray(group, container, pointDim);
+    PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
+    ret = pb;
+
+
     // check if flags are correct
     // if(!isPointCloud(group) )
     // {
@@ -240,6 +247,7 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
     //     return ret;
     // }
 
+    /*
     for(auto name : g.listObjectNames() )
     {
         //TODO: FIX ME - Varaint Type Error
@@ -275,7 +283,7 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
 
     }
 
-    return ret;
+    return ret;*/
 }
 
 boost::optional<cv::Mat> HDF5Kernel::loadImage(

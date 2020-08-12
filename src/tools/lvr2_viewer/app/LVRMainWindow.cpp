@@ -340,6 +340,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
     QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
     QObject::connect(this->actionExportScanProject, SIGNAL(triggered()), this, SLOT(exportScanProject()));
+    QObject::connect(this->actionOpen_Intermedia_Project, SIGNAL(triggered()), this, SLOT(openIntermediaProject()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
@@ -1026,10 +1027,12 @@ void LVRMainWindow::addLabelClass()
 {
     if(!m_pickingInteractor->getPoints())
     {
+        //Set Points for pickinginteractor if needed
         QStringList pointcloudNames;
         std::vector<LVRPointCloudItem*> pointcloudItems;
     	QTreeWidgetItemIterator itu(treeWidget);
 	    LVRPointCloudItem* citem;
+        std::map<QString, LVRPointCloudItem*> pointclouds;
 	
 	    while (*itu)
 	    {
@@ -1037,12 +1040,21 @@ void LVRMainWindow::addLabelClass()
 
 		    if ( item->type() == LVRPointCloudItemType)
 		    {
+			    citem = static_cast<LVRPointCloudItem*>(*itu);
+                pointclouds[item->parent()->text(0)] = citem ;
                 pointcloudNames << item->parent()->text(0);
-			    //citem = static_cast<LVRPointCloudItem*>(*itu);
-			    //points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
             }
 		    itu++;
 		}
+        QInputDialog pcDialog;
+        pcDialog.setComboBoxItems(pointcloudNames);
+        if(pcDialog.exec() != QDialog::Accepted)
+        {
+            return;
+        }
+
+		m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
+        labelTreeWidget->getLabelRoot()->points = citem->getPointBuffer();
 	}
 
     //Ask For the Label name 
@@ -1336,8 +1348,8 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 			citem = static_cast<LVRPointCloudItem*>(*itu);
 			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
 
-			m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
-            labelTreeWidget->getLabelRoot()->points = citem->getPointBuffer();
+			//m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
+            //labelTreeWidget->getLabelRoot()->points = citem->getPointBuffer();
 		}
 		itu++;
 	}
@@ -2911,7 +2923,22 @@ void LVRMainWindow::addNewInstance(LVRLabelClassTreeItem * selectedTopLevelItem)
     int comboBoxPos = selectedInstanceComboBox->findData(instanceItem->getId());
     selectedInstanceComboBox->setCurrentIndex(comboBoxPos);
 }
+void LVRMainWindow::openIntermediaProject()
+{
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Choose IntermediaProject"),"",QFileDialog::ShowDirsOnly| QFileDialog::DontResolveSymlinks);
+    DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(dir.toStdString())); 
+    std::string tmp  = dir.toStdString();
+    DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib(tmp)); 
+    DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
+    ScanProjectPtr scanProject = dirIO.loadScanProject();
+    ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
+    bridge->addActors(m_renderer);
+    LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+    QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+    root->addChild(item);
+    item->setExpanded(false);
 
+}
 void LVRMainWindow::openScanProject()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
