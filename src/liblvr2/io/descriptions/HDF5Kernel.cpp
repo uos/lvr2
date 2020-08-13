@@ -238,6 +238,7 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
     pointData = loadFloatArray(group, container, pointDim);
     PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
     ret = pb;
+    return ret;
 
 
     // check if flags are correct
