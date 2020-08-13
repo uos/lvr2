@@ -92,7 +92,7 @@ void LVRLabelItem::setVisibility(bool visible)
     if(checkState(0) && visible)
     {
 	    m_labelBridge->setVisibility(true);
-    } else if(!checkState(0))
+    } else if(!checkState(0) || !visible)
     {
 	    m_labelBridge->setVisibility(false);
     }

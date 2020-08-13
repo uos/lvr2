@@ -50,7 +50,6 @@ HDF5IO::HDF5IO(const std::string filename, const std::string part_name, int open
     m_part_name(part_name),
     m_mesh_path(meshes_group+"/"+part_name)
 {
-    std::cout << timestamp << " Try to open file \"" << filename << "\"..." << std::endl;
     if(!open(filename, open_flag))
     {
         std::cerr << timestamp << " Could not open file \"" << filename << "\"!" << std::endl;
@@ -160,7 +159,6 @@ ModelPtr HDF5IO::read(std::string filename)
 
 bool HDF5IO::readPointCloud(ModelPtr model_ptr)
 {
-    std::cout << "pointcloud read" << std::endl;
     std::vector<ScanPtr> scans = getRawScans(true);
     if(scans.size() == 0)
     {

@@ -99,6 +99,7 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
 
         QColor tmp;
         lvr2::LVRLabelClassTreeItem* classItem = new lvr2::LVRLabelClassTreeItem(classPtr);
+        QTreeWidget::addTopLevelItem(classItem);
         for (lvr2::LabelInstancePtr instancePtr: classPtr->instances)
         {
             QColor color(instancePtr->color[0],instancePtr->color[1],instancePtr->color[2]);
@@ -122,7 +123,6 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
             
             interactor->setLabel(id, instancePtr->labeledIDs);
         }
-        QTreeWidget::addTopLevelItem(classItem);
     }
 
 }

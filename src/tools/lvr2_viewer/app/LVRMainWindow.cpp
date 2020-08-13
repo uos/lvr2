@@ -1981,6 +1981,11 @@ void LVRMainWindow::togglePoints(bool checkboxState)
                 LVRScanDataItem* sd_item = static_cast<LVRScanDataItem*>(item->parent());
                 sd_item->setVisibility(true, checkboxState);
             }
+            if (item->parent()->type() == LVRLabelItemType)
+            {
+                LVRLabelItem* label_item = static_cast<LVRLabelItem*>(item->parent());
+                if(label_item->isEnabled()) label_item->setVisibility(checkboxState);
+            }
         }
         ++it;
     }
@@ -2931,12 +2936,15 @@ void LVRMainWindow::openIntermediaProject()
     DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib(tmp)); 
     DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
     ScanProjectPtr scanProject = dirIO.loadScanProject();
-    ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
-    bridge->addActors(m_renderer);
-    LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
-    QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
-    root->addChild(item);
-    item->setExpanded(false);
+    this->treeWidget->addScanProject(scanProject, dir.toStdString());
+    this->treeWidget->getBridgePtr()->addActors(m_renderer);
+    updateView();
+  //  ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
+   // bridge->addActors(m_renderer);
+    //LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+    //QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+    //root->addChild(item);
+    //item->setExpanded(false);
 
 }
 void LVRMainWindow::openScanProject()
@@ -3265,9 +3273,11 @@ void LVRMainWindow::exportScanProject()
         LabeledScanProjectEditMarkPtr labeledScanProject;
         QString fileName = dialog.selectedFiles()[0];
 
+        std::cout << "save a project" << std::endl;
         if (topItem->type() == LVRLabeledScanProjectEditMarkItemType)
         {
             LVRLabeledScanProjectEditMarkItem *item = static_cast<LVRLabeledScanProjectEditMarkItem *>(topItem);
+            std::cout << "save a labeled project" << std::endl;
             /*
             LVRLabeledScanProjectEditMarkBridge transfer(item->getLabeledScanProjectEditMarkBridge()->getScanProjectBridgePtr()->getScanPositions()[0]->getModels()[0]);
             labeledScanProject = transfer.getLabeledScanProjectEditMark();*/
