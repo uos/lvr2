@@ -283,7 +283,7 @@ YAML::Node HDF5MetaDescriptionV2::scanPosition(const HighFive::Group &g) const
     {
         node["pose_estimate"] = *poseEstimate;
     }
-
+    
     boost::optional<Transformd> registration = 
         hdf5util::getMatrix<Transformd>(g, "registration");
     if(poseEstimate)

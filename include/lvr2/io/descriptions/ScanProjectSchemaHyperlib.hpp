@@ -36,7 +36,7 @@ public:
         const std::string &scanImagePath, const size_t &scanImageNo) const;
 
 private:
-    boost::filesystem::path m_rootPath;
+    //boost::filesystem::path m_rootPath;
 };
 
 } // namespace lvr2

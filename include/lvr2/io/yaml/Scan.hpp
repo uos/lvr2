@@ -64,7 +64,7 @@ struct convert<lvr2::Scan>
         scan.endTime = node["end_time"].as<double>();
         scan.poseEstimation = node["pose_estimate"].as<lvr2::Transformd>();
         scan.registration = node["registration"].as<lvr2::Transformd>();
-        
+
         const Node& config = node["config"];
 
         

@@ -2939,12 +2939,6 @@ void LVRMainWindow::openIntermediaProject()
     this->treeWidget->addScanProject(scanProject, dir.toStdString());
     this->treeWidget->getBridgePtr()->addActors(m_renderer);
     updateView();
-  //  ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
-   // bridge->addActors(m_renderer);
-    //LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
-    //QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
-    //root->addChild(item);
-    //item->setExpanded(false);
 
 }
 void LVRMainWindow::openScanProject()

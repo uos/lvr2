@@ -105,6 +105,8 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
         std::cout << timestamp << "ScanIO::load(): Warning: No meta data found for "
                   << groupName << "/" << scanName << "." << std::endl;
     }
+    std::cout << ret->poseEstimation << std::endl;
+    std::cout << ret->registration << std::endl;
 
     // Load actual data
     ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
