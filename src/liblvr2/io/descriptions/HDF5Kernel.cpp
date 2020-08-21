@@ -451,6 +451,14 @@ intArr HDF5Kernel::loadIntArray(
     return this->template loadArray<int>(group, container, dims);
 }
 
+uint16Arr HDF5Kernel::loadUInt16Array(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<uint16_t>(group, container, dims);
+}
+
 void HDF5Kernel::saveFloatArray(
     const std::string &groupName,
     const std::string &datasetName,
@@ -473,6 +481,13 @@ void HDF5Kernel::saveIntArray(
     const boost::shared_array<int> &data) const
 {
     this->template saveArray<int>(groupName, datasetName, dimensions, data);
+}
+void HDF5Kernel::saveUInt16Array(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<uint16_t> &data) const
+{
+    this->template saveArray<uint16_t>(groupName, datasetName, dimensions, data);
 }
 
 void HDF5Kernel::saveUCharArray(

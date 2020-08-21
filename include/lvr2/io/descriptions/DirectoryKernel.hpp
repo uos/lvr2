@@ -75,6 +75,11 @@ public:
         const std::string& group, 
         const std::string& container, 
         std::vector<size_t> &dims) const;
+    
+    virtual uint16Arr loadUInt16Array(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
 
     virtual void saveFloatArray(
         const std::string& groupName, 
@@ -97,6 +102,11 @@ public:
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<int>& data) const;
 
+    virtual void saveUInt16Array(
+        const std::string& groupName, const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<uint16_t>& data) const;
+
     virtual bool exists(const std::string& group) const;
     virtual bool exists(const std::string& group, const std::string& container) const;
 
@@ -107,6 +117,9 @@ protected:
     template <typename T>
     boost::shared_array<T> loadArray(const std::string &group, const std::string &constainer, std::vector<size_t> &dims) const
     {
+
+        std::ifstream in(group+container, );
+        /**
         if (dims.size() > 0)
         {
             size_t length = dims[0];
@@ -128,7 +141,7 @@ protected:
                 in >> data[i];
             }
             return boost::shared_array<T>(data);
-        }
+        }*/
         return boost::shared_array<T>(nullptr);
     }
 

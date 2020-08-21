@@ -133,6 +133,7 @@ typedef boost::shared_array<unsigned int> uintArr;
 typedef boost::shared_array<float> floatArr;
 typedef boost::shared_array<double> doubleArr;
 typedef boost::shared_array<int> intArr;
+typedef boost::shared_array<uint16_t> uint16Arr;
 
 typedef boost::shared_array<unsigned char> ucharArr;
 

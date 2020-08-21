@@ -25,7 +25,7 @@ namespace lvr2
 
 struct Waveform
 {
-    Waveform() : maxBucketSize(0), amplitude(), deviation(), reflectance(), backgroundRadiation(),
+    Waveform() : maxBucketSize(0),// amplitude(), deviation(), reflectance(), backgroundRadiation(),
     waveformSamples(){};
     ~Waveform(){};
     /// Sensor type flag
@@ -33,7 +33,7 @@ struct Waveform
 
     /// Max Bucket Size of Waveform samples
     int                                      maxBucketSize;
-
+/*
     /// Amplitude
     std::vector<float>                       amplitude;
 
@@ -44,10 +44,12 @@ struct Waveform
     std::vector<float>                       reflectance;
 
     /// Background Radiation
-    std::vector<float>                       backgroundRadiation;
+    std::vector<float>                       backgroundRadiation;*/
 
     //Waveform
-    Eigen::Matrix<uint16_t, Eigen::Dynamic, Eigen::Dynamic>         waveformSamples;
+    std::vector<uint16_t>                    waveformSamples;
+    std::vector<int>                         waveformIndices;
+    //Eigen::Matrix<uint16_t, Eigen::Dynamic, Eigen::Dynamic>         waveformSamples;
 };
 using WaveformPtr = std::shared_ptr<Waveform>;
 

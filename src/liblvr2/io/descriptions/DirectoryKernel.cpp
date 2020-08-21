@@ -195,9 +195,15 @@ doubleArr DirectoryKernel::loadDoubleArray(const std::string& group, const std::
 {
     return loadArray<double>(group, container, dims);   
 }
+
 intArr DirectoryKernel::loadIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
     return loadArray<int>(group, container, dims);   
+}
+
+uint16Arr DirectoryKernel::loadUInt16Array(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<uint16_t>(group, container, dims);   
 }
 
 void DirectoryKernel::saveFloatArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<float>& data) const
@@ -217,6 +223,10 @@ void DirectoryKernel::saveUCharArray(const std::string& groupName, const std::st
 void DirectoryKernel::saveIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<int>& data) const
 {
     saveArray<int>(groupName, datasetName, dimensions, data);
+}
+void DirectoryKernel::saveUInt16Array(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<uint16_t>& data) const
+{
+    saveArray<uint16_t>(groupName, datasetName, dimensions, data);
 }
 
 } // namespace lvr2

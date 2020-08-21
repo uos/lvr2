@@ -84,6 +84,11 @@ public:
         const std::string& constainer, 
         std::vector<size_t>& dims) const = 0;
 
+    virtual uint16Arr loadUInt16Array(
+        const std::string& group, 
+        const std::string& constainer, 
+        std::vector<size_t>& dims) const = 0;
+
     virtual void saveFloatArray(
         const std::string& groupName, 
         const std::string& datasetName, 
