@@ -162,7 +162,7 @@ void ClSOR::calcStatistics()
     // does this need casts
     std::cout  << "sum " << sum << "sq_sum " << sq_sum << std::endl;
     m_mean_ = sum/m_distances.width;
-    m_std_dev_ = (sq_sum - sum * sum / this->m_distances.width) / this->m_distances.width;
+    m_std_dev_ = (sq_sum - sum * sum / this->m_distances.width) / (this->m_distances.width - 1);
     m_std_dev_ = std::sqrt(m_std_dev_);
     std::cout  << "Mean " << m_mean_ << "dev " << m_std_dev_ << std::endl;
 }
