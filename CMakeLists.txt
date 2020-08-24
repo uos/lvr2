@@ -621,6 +621,7 @@ endif()
 
 if(OPENCL_FOUND)
     add_subdirectory(src/tools/lvr2_cl_normals)
+    add_subdirectory(src/tools/lvr2_cl_sor)
 endif()
 
 if(BUILD_EXAMPLES)
