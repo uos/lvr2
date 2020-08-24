@@ -122,8 +122,9 @@ endif()
 #####################################################################################
 
 if(OPENCL_FOUND)
-list(APPEND LVR2_SOURCES
-    reconstruction/opencl/ClSurface.cpp)
+    list(APPEND LVR2_SOURCES
+        reconstruction/opencl/ClSurface.cpp
+        reconstruction/opencl/ClStatisticalOutlierFilter.cpp)
 endif()
 
 #####################################################################################
