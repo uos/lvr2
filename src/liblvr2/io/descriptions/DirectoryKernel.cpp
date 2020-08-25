@@ -90,7 +90,7 @@ PointBufferPtr DirectoryKernel::loadPointBuffer(
     if (model)
     {
         std::cout << model->m_pointCloud << std::endl;
-        std::cout << model->m_pointCloud->numPoints() << std::endl;
+        std::cout << "Model Count " <<  model->m_pointCloud->numPoints() << std::endl;
         return model->m_pointCloud;
     }
 }

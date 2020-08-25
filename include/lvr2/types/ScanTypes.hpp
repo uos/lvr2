@@ -422,6 +422,8 @@ using ScanProjectPtr = std::shared_ptr<ScanProject>;
  *****************************************************************************/
 struct ScanProjectEditMark
 {
+    ScanProjectEditMark(){}
+    ScanProjectEditMark(ScanProjectPtr _project):project(project){}
     ScanProjectPtr project;
     /// True if scan pose has been changed, one bool for each scan position
     std::vector<bool> changed;
@@ -433,6 +435,11 @@ using ScanProjectEditMarkPtr = std::shared_ptr<ScanProjectEditMark>;
  *****************************************************************************/
 struct LabeledScanProjectEditMark
 {
+    LabeledScanProjectEditMark(){}
+    LabeledScanProjectEditMark(ScanProjectPtr _project)
+    {
+        editMarkProject = ScanProjectEditMarkPtr(new ScanProjectEditMark(_project));
+    }
     ScanProjectEditMarkPtr editMarkProject;
     
     //Contains all data assoicated with Label

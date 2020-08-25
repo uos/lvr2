@@ -152,6 +152,7 @@ LVRMainWindow::LVRMainWindow()
     m_labelTreeParentItemContextMenu->addAction(m_actionAddNewInstance);
     m_labelTreeChildItemContextMenu = new QMenu();
     m_labelTreeChildItemContextMenu->addAction(m_actionRemoveInstance);
+    m_labelTreeChildItemContextMenu->addAction(m_actionAddNewInstance);
     m_labelTreeChildItemContextMenu->addAction(m_actionShowWaveform);
 
     m_treeParentItemContextMenu = new QMenu;
@@ -937,6 +938,7 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
         QTreeWidgetItem* item = items.first();
         if (item->type() == LVRLabelClassItemType)
         {
+            std::cout << "parent Item" <<std::endl;
             LVRLabelClassTreeItem *classItem = static_cast<LVRLabelClassTreeItem *>(item);
             auto selected = m_labelTreeParentItemContextMenu->exec(globalPos);
             if(selected == m_actionAddNewInstance)
@@ -945,8 +947,9 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
             }
             return;
         }
-        if(item->type() == LVRLabelInstanceType)
+        if(item->type() == LVRLabelInstanceItemType)
         {
+            std::cout << "instance Item" <<std::endl;
             auto selected = m_labelTreeChildItemContextMenu->exec(globalPos);
             if(selected == m_actionRemoveInstance)
             {
@@ -962,59 +965,69 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
                     selectedInstanceComboBox->removeItem(comboBoxPos);
                 }
 
+            } else if(selected == m_actionAddNewInstance)
+            {
+            
+                QTreeWidgetItem* parentItem = item->parent();
+                LVRLabelClassTreeItem *classItem = static_cast<LVRLabelClassTreeItem *>(parentItem);
+                addNewInstance(classItem);
             } else if(selected == m_actionShowWaveform)
-	    {
-                LVRModelItem* lvrmodel = getModelItem(treeWidget->topLevelItem(0));
-		ModelBridgePtr bridge = lvrmodel->getModelBridge();
-		PointBufferBridgePtr pointBridge = bridge->getPointBridge();
-		PointBufferPtr pointBuffer = pointBridge->getPointBuffer();
-		Channel<uint16_t>::Optional opt = pointBuffer->getChannel<uint16_t>("waveform");
-		if (opt)
-		{
-		    size_t n = opt->numElements();
-		    size_t width = opt->width();
-		    boost::shared_array<uint16_t> waveforms = opt->dataPtr();
+            {
+                LVRLabelInstanceTreeItem *instanceItem = static_cast<LVRLabelInstanceTreeItem *>(item);
+                Channel<uint16_t>::Optional opt = labelTreeWidget->getLabelRoot()->points->getChannel<uint16_t>("waveform");
+                LabelInstancePtr instancePtr = instanceItem->getInstancePtr();
+                if (opt)
+                {
+                    size_t n = opt->numElements();
+                    size_t width = opt->width();
+                    boost::shared_array<uint16_t> waveforms = opt->dataPtr();
 
-		    //get Selected Ids
-		    std::vector<int> labelID;
+                    //get Selected Ids
+                    std::vector<int> labelID;
                     std::vector<uint16_t> labeledPoints = m_pickingInteractor->getLabeles();
                     int index = item->data(LABEL_ID_COLUMN, 0).toInt();
 
-		    for (int i = 0; i < labeledPoints.size(); i++)
-		    {
+                    for (int i = 0; i < labeledPoints.size(); i++)
+                    {
                         if (index == labeledPoints[i])
-			{
+                        {
                             labelID.push_back(i);
-			}
-		    }
+                        }
+                    }
 
-		    std::vector<int> combinedWaveform;
-		    combinedWaveform.resize(width);
-		    for (auto id : labelID)
-		    {
-			for (int i = 0; i < width; i++)
-			{
-			    combinedWaveform[i] += waveforms[(id * width) + i];
-			}
-		    }
-		    floatArr plotData(new float[width]);
-	            LVRPlotter* plotter =new LVRPlotter;
-		    for(int i = 0; i < combinedWaveform.size(); i++)
-		    {
-	                plotData[i] = (combinedWaveform[i] / labelID.size());
-		    }
+                    std::vector<int> combinedWaveform;
+                    combinedWaveform.resize(width);
+                    for (auto id : labelID)
+                    {
+                        for (int i = 0; i < width; i++)
+                        {
+                            combinedWaveform[i] += waveforms[(id * width) + i];
+                        }
+                    }
+                    floatArr plotData(new float[width]);
+                    LVRPlotter* plotter =new LVRPlotter;
+                    for(int i = 0; i < combinedWaveform.size(); i++)
+                    {
+                        plotData[i] = (combinedWaveform[i] / labelID.size());
+                    }
                     plotter->setPoints(plotData, width);
                     plotter->setXRange(0, combinedWaveform.size());
-		    QDialog window(this);
-		    QHBoxLayout *HLayout = new QHBoxLayout(&window);
-		    HLayout->addWidget(plotter);
-		    window.setLayout(HLayout);
-		    window.exec();
+                    QDialog window(this);
+                    QHBoxLayout *HLayout = new QHBoxLayout(&window);
+                    HLayout->addWidget(plotter);
+                    window.setLayout(HLayout);
+                    window.exec();
 
-		}
-	    }
+                } else
+                {
+                    QMessageBox noWaveformDialog;
+                    noWaveformDialog.setText("No Waveform found.");
+                    noWaveformDialog.setStandardButtons(QMessageBox::Ok);
+                    noWaveformDialog.setIcon(QMessageBox::Warning);
+                    int returnValue = noWaveformDialog.exec();
+                }
+            }
             return;
-
         }
     }
 
@@ -2936,9 +2949,15 @@ void LVRMainWindow::openIntermediaProject()
     DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib(tmp)); 
     DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
     ScanProjectPtr scanProject = dirIO.loadScanProject();
-    this->treeWidget->addScanProject(scanProject, dir.toStdString());
+    LabeledScanProjectEditMarkPtr labelScanProject= LabeledScanProjectEditMarkPtr(new LabeledScanProjectEditMark());
+    ScanProjectEditMarkPtr editMark = ScanProjectEditMarkPtr(new ScanProjectEditMark());
+    editMark->project = scanProject;
+    labelScanProject->editMarkProject = editMark;
+    this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, dir.toStdString());
+    //this->treeWidget->addScanProject(scanProject, dir.toStdString());
     this->treeWidget->getBridgePtr()->addActors(m_renderer);
     updateView();
+    labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
 
 }
 void LVRMainWindow::openScanProject()

@@ -7,6 +7,7 @@
 
 LVRLabelTreeWidget::LVRLabelTreeWidget(QWidget *parent)
 {
+    
     m_root = lvr2::LabelRootPtr(new lvr2::LabelRoot()); 
 }
 

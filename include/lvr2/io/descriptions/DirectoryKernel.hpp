@@ -4,6 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <regex>
+#include <iostream>
 
 #include "lvr2/io/descriptions/FileKernel.hpp"
 #include "lvr2/io/descriptions/MetaFormatFactory.hpp"
@@ -115,34 +116,43 @@ public:
 
 protected:
     template <typename T>
-    boost::shared_array<T> loadArray(const std::string &group, const std::string &constainer, std::vector<size_t> &dims) const
+    boost::shared_array<T> loadArray(const std::string &group, const std::string &container, std::vector<size_t> &dims) const
     {
+        boost::filesystem::path rootPath(m_fileResourceName);
+        boost::filesystem::path groupPath(group);
+        boost::filesystem::path containerPath(container);
+        boost::filesystem::path finalPath(rootPath / groupPath / containerPath);   
 
-        std::ifstream in(group+container, );
-        /**
-        if (dims.size() > 0)
+        std::ifstream in(finalPath.string(), std::ios::in | std::ios::binary);
+        if (!in.good())
         {
-            size_t length = dims[0];
-            for (size_t i = 1; i < dims.size(); i++)
+            return boost::shared_array<T>(nullptr);
+        }
+
+        //read Dimensions size
+        size_t dimSize;
+        size_t totalArraySize = 0;
+        in.read(reinterpret_cast<char *>(&dimSize), sizeof(dimSize));
+
+
+        for(int i = 0; i < dimSize; i++)
+        {
+            size_t tmp;
+            in.read(reinterpret_cast<char *>(&tmp), sizeof(tmp));
+            if(totalArraySize == 0)
             {
-                if (dims[i] != 0)
-                {
-                    length *= dims[i];
-                }
-                else
-                {
-                    std::cout << timestamp << "Warning: DirectoryKernel::LoadArray(): Found zero dim: " << i << std::endl;
-                }
+                totalArraySize = tmp;
+            } else{
+                totalArraySize *= tmp;
             }
-            T *data = new T[length];
-            std::ifstream in;
-            for (size_t i = 0; i < length; i++)
-            {
-                in >> data[i];
-            }
-            return boost::shared_array<T>(data);
-        }*/
-        return boost::shared_array<T>(nullptr);
+            dims.push_back(tmp);
+        }
+                std::cout << "DImSize " << dims[0] << "  " <<dims[1] << std::endl;
+         T* rawData = new T[totalArraySize];
+
+        in.read(reinterpret_cast<char *>(rawData), totalArraySize * sizeof(T));
+        boost::shared_array<T> ret(rawData);   
+        return ret;
     }
 
     template <typename T>

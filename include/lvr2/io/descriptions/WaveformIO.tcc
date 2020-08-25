@@ -12,13 +12,15 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     const size_t& scanNo,
     const WaveformPtr& fwPtr)
 {
-    std::string groupName = "";
-   
+    Description d = m_featureBase->m_description->waveform(scanPosNo, scanNo);
+    // Init default values
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanNo;
     std::string waveformName = sstr.str() + ".lwf";
     std::string metaName = sstr.str() + ".yaml";
-
+    std::string groupName = "";
+    
+    std::cout << "Saving Waveform to " << scanPosNo << " " << scanNo << std::endl;
     // Default meta yaml
     YAML::Node node;
     node = *fwPtr;
@@ -26,10 +28,6 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     // Get group and dataset names according to 
     // data fomat description and override defaults if 
     // when possible
- 
-    Description d = m_featureBase->m_description->waveform(scanPosNo, scanNo);
-   
-
     if(d.groupName)
     {
         groupName = *d.groupName;
@@ -49,10 +47,15 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     {
         node = *d.metaData;
     }
-std::cout << "Saving Waveform to " << groupName << std::endl;
+    
     m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
+    
     // saving Waveform samples
-    //m_matrixIO->saveMatrix(groupName, waveformName, fwPtr->waveformSamples);
+    std::vector<size_t> waveformDim = {fwPtr->waveformSamples.size() / fwPtr->maxBucketSize, fwPtr->maxBucketSize};
+    uint16Arr waveformData = uint16Arr(new uint16_t[fwPtr->waveformSamples.size()]);
+    std::memcpy(waveformData.get(), fwPtr->waveformSamples.data(), fwPtr->waveformSamples.size() * sizeof(uint16_t));
+    m_featureBase->m_kernel->saveUInt16Array(groupName, waveformName, waveformDim, waveformData);
+    std::cout << "Waveform saved" << std::endl; 
 
 }
 
@@ -97,15 +100,12 @@ WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, c
     }
 
     // Load actual data
-    //ret->waveformSamples = m_matrixIO->template loadMatrix<uint16_t>(groupName, waveformName);
-
     boost::shared_array<uint16_t> waveformData;
     std::vector<size_t> waveformDim;
-    std::cout << "loading " << groupName << " / " << waveformName <<  std::endl;
     waveformData = m_featureBase->m_kernel->loadUInt16Array(groupName, waveformName, waveformDim);
-    //std::cout << "Waveform MAtrix " << waveformDim[0] << " "  << std::endl;
-    //ret->waveformSamples = m_featureBase->m_kernel->loadArray<uint16_t>
-    //TODO: THE REST
+    std::cout << " Dims ..>" << waveformDim[0] << " " <<  waveformDim[1] << std::endl;
+    ret->waveformSamples = std::vector<uint16_t>(waveformData.get(), waveformData.get() + (waveformDim[0] * waveformDim[1]));
+    ret->maxBucketSize = waveformDim[1];
     return ret;
 
   

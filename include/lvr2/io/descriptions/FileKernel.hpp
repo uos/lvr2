@@ -113,6 +113,12 @@ public:
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<int>& data) const = 0;
 
+    virtual void saveUInt16Array(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<uint16_t>& data) const = 0;
+
     virtual bool exists(const std::string& group) const = 0;
     virtual bool exists(const std::string& group, const std::string& container) const = 0;
 

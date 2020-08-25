@@ -15,7 +15,7 @@ void LabelScanProjectIO<FeatureBase>::saveLabelScanProject(const LabeledScanProj
         m_scanProjectIO->saveScanProject(labelScanProjectPtr->editMarkProject->project);
     }
 
-    if (labelScanProjectPtr->labelRoot)
+    if (labelScanProjectPtr->labelRoot && labelScanProjectPtr->labelRoot->points)
     {
         std::cout << "[LabelScanProjectIO] Save Labeles" << std::endl;
         m_labelIO->saveLabels(group, labelScanProjectPtr->labelRoot); 
