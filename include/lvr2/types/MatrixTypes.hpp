@@ -120,7 +120,7 @@ using Vector3f = Eigen::Vector3f;
 /// Eigen 3D vector, double precision
 using Vector3d = Eigen::Vector3d;
 
-/// Eigen 3D vector, double precision
+/// Eigen 3D vector, integer
 using Vector3i = Eigen::Vector3i;
 
 /// Eigen 4D vector
@@ -138,10 +138,10 @@ template<typename T>
 using Vector2 = Eigen::Matrix<T, 2, 1>;
 
 /// Eigen 2D vector, single precision
-using Vector2f = Eigen::Vector4f;
+using Vector2f = Eigen::Vector2f;
 
 /// Eigen 2D vector, double precision
-using Vector2d = Eigen::Vector4d;
+using Vector2d = Eigen::Vector2d;
 
 /// Eigen 4x4 matrix, single precision
 using Matrix4f = Eigen::Matrix4f;

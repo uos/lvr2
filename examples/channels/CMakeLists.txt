@@ -21,9 +21,9 @@ set(LVR2_EXAMPLE_CHANNELS_DEPENDENCIES
 # Add executable
 #####################################################################################
 
-add_executable(lvr2_example_channel_usage
-    ChannelUsage.cpp
-    ${LVR2_IOPATCH_SOURCES}
+add_executable(lvr2_examples_channels
+    Main.cpp
+    ${LVR2_EXAMPLE_CHANNELS_SRCS}
 )
 
-target_link_libraries(lvr2_example_channel_usage ${LVR2_EXAMPLE_CHANNELS_DEPENDENCIES})
+target_link_libraries(lvr2_examples_channels ${LVR2_EXAMPLE_CHANNELS_DEPENDENCIES})

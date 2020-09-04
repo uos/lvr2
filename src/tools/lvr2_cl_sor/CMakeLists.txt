@@ -2,8 +2,12 @@
 # Set source files
 #####################################################################################
 
-set(RECONSTRUCT_SOURCES
-    Options.cpp
+# find_package(OPENCL REQUIRED)
+# include_directories(OpenCL_INCLUDE_DIRS)
+# message(STATUS "Loaded OpenCL version ${OpenCL_VERSION_STRING}")
+# message(STATUS "OpenCL Libraries: ${OpenCL_LIBRARIES}")
+
+set(LVR2_CL_NORMAL_SRC
     Main.cpp
 )
 
@@ -11,28 +15,13 @@ set(RECONSTRUCT_SOURCES
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR2_RECONSTRUCT_DEPENDENCIES
+set(LVR2_CL_NORMAL_DEPS
     lvr2_static
-    lvr2las_static
-    lvr2rply_static
-    lvr2slam6d_static
     ${LVR2_LIB_DEPENDENCIES}
 )
-
-if(CUDA_FOUND)
-  list(APPEND LVR2_RECONSTRUCT_DEPENDENCIES lvr2cuda_static)
-endif(CUDA_FOUND)
-
-if( ${NABO_FOUND} )
-  list(APPEND LVR2_RECONSTRUCT_DEPENDENCIES ${NABO_LIBRARY})
-endif( ${NABO_FOUND} )
 
 #####################################################################################
 # Add executable
 #####################################################################################
-
-add_executable(lvr2_reconstruct ${RECONSTRUCT_SOURCES})
-target_link_libraries(lvr2_reconstruct ${LVR2_RECONSTRUCT_DEPENDENCIES})
-
-install(TARGETS lvr2_reconstruct
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+add_executable(lvr2_cl_sor ${LVR2_CL_NORMAL_SRC})
+target_link_libraries(lvr2_cl_sor ${LVR2_CL_NORMAL_DEPS})

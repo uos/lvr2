@@ -25,88 +25,64 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /*
- * OctreeThreadPool.hpp
+/*
+ * DMCVecPointHandle.tcc
  *
- *  Created on: 18.01.2019
- *      Author: Benedikt Schumacher
+ *  @date 22.01.2019
+ *  @author Benedikt Schumacher
  */
-
-#ifndef _LVR2_RECONSTRUCTION_OCTREETHREADPOOL_H_
-#define _LVR2_RECONSTRUCTION_OCTREETHREADPOOL_H_
-
-#include <boost/thread.hpp>
-#include <queue>
-
-using std::vector;
-using std::numeric_limits;
 
 namespace lvr2
 {
 
-/**
- * @brief A class that implements the thread pool pattern.
- */
-template<typename BaseVecT, typename BoxT>
-class OctreeThreadPool
+template<typename BaseVecT>
+DMCVecPointHandle<BaseVecT>::DMCVecPointHandle(vector<coord<float>*> points)
 {
-public:
+    containedPoints.push_back(points);
+}
 
-    /**
-     * @brief Constructor.
-     *
-     * @param number Count of threads.
-     */
-    OctreeThreadPool(int number);
+template<typename BaseVecT>
+vector<coord<float>*> DMCVecPointHandle<BaseVecT>::getContainedPoints(int index)
+{
+    // temporarily error handling
+    if((index - 7) > (containedPoints.size() - 1))
+    {
+        return vector<coord<float>*>();
+        std::cout << "no points for current cell" << std::endl;
+    }
+    return containedPoints[index - 7];
+}
 
-    /**
-     * @brief Starts the tread pool.
-     */
-    void startPool();
+template<typename BaseVecT>
+void DMCVecPointHandle<BaseVecT>::split(int index,
+    vector<coord<float>*> splittedPoints[8],
+    bool dual)
+{
+    if(!dual || index == 7)
+    {
+        containedPoints[index - 7].clear();
+        vector<coord<float>* >().swap(containedPoints[index - 7]);
+    }
+    for(unsigned char i = 0; i < 8; i++)
+    {
+        containedPoints.push_back(splittedPoints[i]);
+    }
+}
 
-    /**
-     * @brief Stops the thread pool.
-     */
-    void stopPool();
-
-    /**
-     * @brief Inserts a task in the queue.
-     *
-     * @param task A single task
-     */
-    void insertTask(boost::function<void()> task);
-
-protected:
-
-    /**
-     * @brief Assigns a task from the queue to a single thread.
-     */
-    void work();
-
-    // Count of threads.
-    int m_poolSize;
-
-    // Queue with task.
-    queue<boost::function<void()>> m_queue;
-
-    // Group with threads.
-    boost::thread_group m_threads;
-
-    // Count of threads without a task.
-    int m_availableThreads;
-
-    // Mutex to control the threads.
-    boost::mutex m_poolMutex;
-
-    // Condition-variable to control the threads.
-    boost::condition_variable m_conditionVariable;
-
-    // Status of the activity of the thread pool.
-    bool m_isRunning;
-};
+template<typename BaseVecT>
+void DMCVecPointHandle<BaseVecT>::clear()
+{
+    for(int i = 0;i < containedPoints.size(); i++)
+    {
+        containedPoints[i].clear();
+        for(int j = 0; j < containedPoints[i].size(); j++)
+        {
+            delete(containedPoints[i][j]);
+        }
+        vector<coord<float>* >().swap(containedPoints[i]);
+    }
+    containedPoints.clear();
+    vector<vector<coord<float>* > >().swap(containedPoints);
+}
 
 } // namespace lvr2
-
-#include <lvr2/reconstruction/OctreeThreadPool.tcc>
-
-#endif /* _LVR2_RECONSTRUCTION_OCTREETHREADPOOL_H_ */

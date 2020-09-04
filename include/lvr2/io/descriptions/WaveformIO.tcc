@@ -51,7 +51,7 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
     
     // saving Waveform samples
-    std::vector<size_t> waveformDim = {fwPtr->waveformSamples.size() / fwPtr->maxBucketSize, fwPtr->maxBucketSize};
+    std::vector<size_t> waveformDim = {fwPtr->waveformSamples.size() / fwPtr->maxBucketSize, static_cast<size_t>(fwPtr->maxBucketSize)};
     uint16Arr waveformData = uint16Arr(new uint16_t[fwPtr->waveformSamples.size()]);
     std::memcpy(waveformData.get(), fwPtr->waveformSamples.data(), fwPtr->waveformSamples.size() * sizeof(uint16_t));
     m_featureBase->m_kernel->saveUInt16Array(groupName, waveformName, waveformDim, waveformData);

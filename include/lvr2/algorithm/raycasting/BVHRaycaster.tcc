@@ -1,213 +1,115 @@
-/**
- * Copyright (c) 2018, University Osnabrück
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the University Osnabrück nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
-namespace lvr2 
-{
+namespace lvr2 {
 
-template <typename PointT, typename NormalT>
-BVHRaycaster<PointT, NormalT>::BVHRaycaster(const MeshBufferPtr mesh)
-:RaycasterBase<PointT, NormalT>(mesh)
+template<typename IntT>
+BVHRaycaster<IntT>::BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_size)
+:RaycasterBase<IntT>(mesh)
 ,m_bvh(mesh)
+,m_faces(mesh->getFaceIndices())
+,m_vertices(mesh->getVertices())
+,m_BVHindicesOrTriLists(m_bvh.getIndexesOrTrilists().data())
+,m_BVHlimits(m_bvh.getLimits().data())
+,m_TriangleIntersectionData(m_bvh.getTrianglesIntersectionData().data())
+,m_TriIdxList(m_bvh.getTriIndexList().data())
+,m_stack_size(stack_size)
 {
     
 }
 
-template <typename PointT, typename NormalT>
-bool BVHRaycaster<PointT, NormalT>::castRay(
-    const PointT& origin,
-    const NormalT& direction,
-    PointT& intersection
-)
+template<typename IntT>
+bool BVHRaycaster<IntT>::castRay(
+    const Vector3f& origin,
+    const Vector3f& direction,
+    IntT& intersection)
 {
-    // Cast one ray from one origin
-    std::vector<uint8_t> tmp(1);
+    Ray ray;
+    ray.dir = direction;
+    // wtf /0 ???? 
+    ray.invDir = {1.0f / ray.dir.x(), 1.0f / ray.dir.y(), 1.0f / ray.dir.z() };
 
-    const float *origin_f = reinterpret_cast<const float*>(&origin.x);
-    const float *direction_f = reinterpret_cast<const float*>(&direction.x);
-    const unsigned int* clBVHindicesOrTriLists = m_bvh.getIndexesOrTrilists().data();
-    const float* clBVHlimits = m_bvh.getLimits().data();
-    const float* clTriangleIntersectionData = m_bvh.getTrianglesIntersectionData().data();
-    const unsigned int* clTriIdxList = m_bvh.getTriIndexList().data();
-    float* result = reinterpret_cast<float*>(&intersection.x);
-    uint8_t* result_hits = tmp.data();
+    ray.rayDirSign.x() = ray.invDir.x() < 0;
+    ray.rayDirSign.y() = ray.invDir.y() < 0;
+    ray.rayDirSign.z() = ray.invDir.z() < 0;
 
-    cast_rays_one_one(origin_f, 
-        direction_f, 
-        clBVHindicesOrTriLists,
-        clBVHlimits,
-        clTriangleIntersectionData,
-        clTriIdxList,
-        result,
-        result_hits);
+    TriangleIntersectionResult result 
+        = intersectTrianglesBVH(
+            m_BVHindicesOrTriLists,
+            origin, 
+            ray, 
+            m_BVHlimits, 
+            m_TriangleIntersectionData, 
+            m_TriIdxList);
+    
+    // FINISHING
+    // translate to IntT
+    if constexpr(IntT::template has<intelem::Point>())
+    {
+        intersection.point = result.pointHit;
+    }
 
-    bool success = tmp[0];
+    if constexpr(IntT::template has<intelem::Distance>())
+    {
+        intersection.dist = result.hitDist;
+    }
 
-    return success;
+    if constexpr(IntT::template has<intelem::Normal>())
+    {
+        unsigned int v1id = m_faces[result.pBestTriId * 3 + 0];
+        unsigned int v2id = m_faces[result.pBestTriId * 3 + 1];
+        unsigned int v3id = m_faces[result.pBestTriId * 3 + 2];
+
+        Vector3f v1(m_vertices[v1id * 3 + 0], m_vertices[v1id * 3 + 1], m_vertices[v1id * 3 + 2]);
+        Vector3f v2(m_vertices[v2id * 3 + 0], m_vertices[v2id * 3 + 1], m_vertices[v2id * 3 + 2]);
+        Vector3f v3(m_vertices[v3id * 3 + 0], m_vertices[v3id * 3 + 1], m_vertices[v3id * 3 + 2]);
+
+        intersection.normal = (v3 - v1).cross((v2 - v1));
+        intersection.normal.normalize();
+        if(direction.dot(intersection.normal) > 0.0)
+        {
+            intersection.normal = -intersection.normal;
+        }
+    }
+
+    if constexpr(IntT::template has<intelem::Face>())
+    {
+        intersection.face_id = result.pBestTriId;
+    }
+
+    if constexpr(IntT::template has<intelem::Barycentrics>())
+    {
+        unsigned int v1id = m_faces[result.pBestTriId * 3 + 0];
+        unsigned int v2id = m_faces[result.pBestTriId * 3 + 1];
+        unsigned int v3id = m_faces[result.pBestTriId * 3 + 2];
+        
+        Vector3f v1(m_vertices[v1id * 3 + 0], m_vertices[v1id * 3 + 1], m_vertices[v1id * 3 + 2]);
+        Vector3f v2(m_vertices[v2id * 3 + 0], m_vertices[v2id * 3 + 1], m_vertices[v2id * 3 + 2]);
+        Vector3f v3(m_vertices[v3id * 3 + 0], m_vertices[v3id * 3 + 1], m_vertices[v3id * 3 + 2]);
+    
+        Vector3f bary = barycentric(result.pointHit, v1, v2, v3);
+        intersection.b_uv.x() = bary.x();
+        intersection.b_uv.y() = bary.y();
+    }
+
+    if constexpr(IntT::template has<intelem::Mesh>())
+    {
+        // TODO
+        intersection.mesh_id = 0;
+    }
+
+    return result.hit;
 }
 
-template <typename PointT, typename NormalT>
-void BVHRaycaster<PointT, NormalT>::castRays(
-    const PointT& origin,
-    const std::vector<NormalT >& directions,
-    std::vector<PointT >& intersections,
-    std::vector<uint8_t>& hits
-)
-{
-    intersections.resize(directions.size());
-    hits.resize(directions.size());
-
-
-    const float *origin_f = reinterpret_cast<const float*>(&origin.x);
-    const float *direction_f = reinterpret_cast<const float*>(directions.data());
-    const unsigned int* clBVHindicesOrTriLists = m_bvh.getIndexesOrTrilists().data();
-    const float* clBVHlimits = m_bvh.getLimits().data();
-    const float* clTriangleIntersectionData = m_bvh.getTrianglesIntersectionData().data();
-    const unsigned int* clTriIdxList = m_bvh.getTriIndexList().data();
-    float* result = reinterpret_cast<float*>(intersections.data());
-    uint8_t* result_hits = hits.data();
-
-    size_t num_rays = directions.size();
-
-    cast_rays_one_multi(origin_f, 
-        direction_f, 
-        num_rays,
-        clBVHindicesOrTriLists,
-        clBVHlimits,
-        clTriangleIntersectionData,
-        clTriIdxList,
-        result,
-        result_hits);
-
-    // Cast multiple rays from one origin
-}
-
-template <typename PointT, typename NormalT>
-void BVHRaycaster<PointT, NormalT>::castRays(
-    const std::vector<PointT >& origins,
-    const std::vector<NormalT >& directions,
-    std::vector<PointT >& intersections,
-    std::vector<uint8_t>& hits
-)
-{
-    intersections.resize(directions.size());
-    hits.resize(directions.size());
-
-    const float *origin_f = reinterpret_cast<const float*>(origins.data());
-    const float *direction_f = reinterpret_cast<const float*>(directions.data());
-    const unsigned int* clBVHindicesOrTriLists = m_bvh.getIndexesOrTrilists().data();
-    const float* clBVHlimits = m_bvh.getLimits().data();
-    const float* clTriangleIntersectionData = m_bvh.getTrianglesIntersectionData().data();
-    const unsigned int* clTriIdxList = m_bvh.getTriIndexList().data();
-    float* result = reinterpret_cast<float*>(intersections.data());
-    uint8_t* result_hits = hits.data();
-
-    size_t num_rays = directions.size();
-
-    cast_rays_multi_multi(origin_f, 
-        direction_f, 
-        num_rays,
-        clBVHindicesOrTriLists,
-        clBVHlimits,
-        clTriangleIntersectionData,
-        clTriIdxList,
-        result,
-        result_hits);
-
-}
-
-
-// PRIVATE FUNCTIONS
-template <typename PointT, typename NormalT>
-bool BVHRaycaster<PointT, NormalT>::rayIntersectsBox(
-    PointT origin,
-    Ray ray,
-    const float* boxPtr)
-{
-    const float* limitsX2 = boxPtr;
-    const float* limitsY2 = boxPtr+2;
-    const float* limitsZ2 = boxPtr+4;
-
-    float tmin, tmax, tymin, tymax, tzmin, tzmax;
-
-    tmin =  (limitsX2[    ray.rayDirSign.x] - origin.x) * ray.invDir.x;
-    tmax =  (limitsX2[1 - ray.rayDirSign.x] - origin.x) * ray.invDir.x;
-    tymin = (limitsY2[    ray.rayDirSign.y] - origin.y) * ray.invDir.y;
-    tymax = (limitsY2[1 - ray.rayDirSign.y] - origin.y) * ray.invDir.y;
-
-    // std::cout << "Statisics: " << std::endl;
-    // std::cout << tmin << std::endl;
-    // std::cout << tmax << std::endl;
-    // std::cout << tymin << std::endl;
-    // std::cout << tymax << std::endl;
-    // std::cout << std::endl;
-
-    if ((tmin > tymax) || (tymin > tmax))
-    {
-        return false;
-    }
-    if (tymin >tmin)
-    {
-        tmin = tymin;
-    }
-    if (tymax < tmax)
-    {
-        tmax = tymax;
-    }
-
-    tzmin = (limitsZ2[    ray.rayDirSign.z] - origin.z) * ray.invDir.z;
-    tzmax = (limitsZ2[1 - ray.rayDirSign.z] - origin.z) * ray.invDir.z;
-
-    if ((tmin > tzmax) || (tzmin > tmax))
-    {
-        return false;
-    }
-    if (tzmin > tmin)
-    {
-        tmin = tzmin;
-    }
-    if (tzmax < tmax)
-    {
-        tmax = tzmax;
-    }
-
-    return true;
-}
-
-template <typename PointT, typename NormalT>
-typename BVHRaycaster<PointT, NormalT>::TriangleIntersectionResult BVHRaycaster<PointT, NormalT>::intersectTrianglesBVH(
+// PRIVATE
+template<typename IntT>
+typename BVHRaycaster<IntT>::TriangleIntersectionResult 
+BVHRaycaster<IntT>::intersectTrianglesBVH(
     const unsigned int* clBVHindicesOrTriLists,
-    PointT origin,
+    Vector3f origin,
     Ray ray,
     const float* clBVHlimits,
     const float* clTriangleIntersectionData,
-    const unsigned int* clTriIdxList
-)
+    const unsigned int* clTriIdxList)
 {
-
     int tid_scale = 4;
     int bvh_limits_scale = 2;
 
@@ -216,11 +118,11 @@ typename BVHRaycaster<PointT, NormalT>::TriangleIntersectionResult BVHRaycaster<
     unsigned int pBestTriId = 0;
     float bestTriDist = std::numeric_limits<float>::max();
 
-    unsigned int stack[BVH_STACK_SIZE];
+    unsigned int stack[m_stack_size];
 
     int stackId = 0;
     stack[stackId++] = 0;
-    PointT hitpoint;
+    Vector3f hitpoint;
 
     // while stack is not empty
     while (stackId)
@@ -242,7 +144,7 @@ typename BVHRaycaster<PointT, NormalT>::TriangleIntersectionResult BVHRaycaster<
                 stack[stackId++] = clBVHindicesOrTriLists[4 * boxId + 2];
 
                 // return if stack size is exceeded
-                if ( stackId > BVH_STACK_SIZE)
+                if ( stackId > m_stack_size)
                 {
                     printf("BVH stack size exceeded!\n");
                     result.hit = 0;
@@ -277,7 +179,7 @@ typename BVHRaycaster<PointT, NormalT>::TriangleIntersectionResult BVHRaycaster<
                 {
                     continue; // epsilon
                 }
-                PointT hit = ray.dir * s;
+                Vector3f hit = ray.dir * s;
                 hit += origin;
 
                 // ray triangle intersection
@@ -326,167 +228,53 @@ typename BVHRaycaster<PointT, NormalT>::TriangleIntersectionResult BVHRaycaster<
     return result;
 }
 
-template <typename PointT, typename NormalT>
-void BVHRaycaster<PointT, NormalT>::cast_rays_one_one(
-        const float* ray_origin,
-        const float* rays,
-        const unsigned int* clBVHindicesOrTriLists,
-        const float* clBVHlimits,
-        const float* clTriangleIntersectionData,
-        const unsigned int* clTriIdxList,
-        float* result,
-        uint8_t* result_hits
-    )
+template<typename IntT>
+bool BVHRaycaster<IntT>::rayIntersectsBox(
+    Vector3f origin,
+    Ray ray,
+    const float* boxPtr)
 {
-     // get direction and origin of the ray for the current pose
-    NormalT ray_d = {rays[0], rays[1], rays[2]};
-    PointT ray_o = {ray_origin[0], ray_origin[1], ray_origin[2]};
+    const float* limitsX2 = boxPtr;
+    const float* limitsY2 = boxPtr+2;
+    const float* limitsZ2 = boxPtr+4;
 
-    // initialize result memory with zeros
-    result[0] = 0;
-    result[1] = 0;
-    result[2] = 0;
-    result_hits[0] = 0;
+    float tmin, tmax, tymin, tymax, tzmin, tzmax;
 
-    // precompute ray values to speed up intersection calculation
-    Ray ray;
-    ray.dir = ray_d;
-    ray.invDir = NormalT(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
-    ray.rayDirSign.x = ray.invDir.x < 0;
-    ray.rayDirSign.y = ray.invDir.y < 0;
-    ray.rayDirSign.z = ray.invDir.z < 0;
+    tmin =  (limitsX2[    ray.rayDirSign.x()] - origin.x()) * ray.invDir.x();
+    tmax =  (limitsX2[1 - ray.rayDirSign.x()] - origin.x()) * ray.invDir.x();
+    tymin = (limitsY2[    ray.rayDirSign.y()] - origin.y()) * ray.invDir.y();
+    tymax = (limitsY2[1 - ray.rayDirSign.y()] - origin.y()) * ray.invDir.y();
 
-    // intersect all triangles stored in the BVH
-    TriangleIntersectionResult resultBVH = intersectTrianglesBVH(
-        clBVHindicesOrTriLists,
-        ray_o,
-        ray,
-        clBVHlimits,
-        clTriangleIntersectionData,
-        clTriIdxList
-    );
-
-    // if a triangle was hit, store the calculated hit point in the result at the current id
-    if (resultBVH.hit)
+    if ((tmin > tymax) || (tymin > tmax))
     {
-        result[0] = resultBVH.pointHit.x;
-        result[1] = resultBVH.pointHit.y;
-        result[2] = resultBVH.pointHit.z;
-        result_hits[0] = 1;
+        return false;
+    }
+    if (tymin >tmin)
+    {
+        tmin = tymin;
+    }
+    if (tymax < tmax)
+    {
+        tmax = tymax;
     }
 
-}
+    tzmin = (limitsZ2[    ray.rayDirSign.z()] - origin.z()) * ray.invDir.z();
+    tzmax = (limitsZ2[1 - ray.rayDirSign.z()] - origin.z()) * ray.invDir.z();
 
-template <typename PointT, typename NormalT>
-void BVHRaycaster<PointT, NormalT>::cast_rays_one_multi(
-        const float* ray_origin,
-        const float* rays,
-        size_t num_rays,
-        const unsigned int* clBVHindicesOrTriLists,
-        const float* clBVHlimits,
-        const float* clTriangleIntersectionData,
-        const unsigned int* clTriIdxList,
-        float* result,
-        uint8_t* result_hits
-    )
-{
-     // get direction and origin of the ray for the current pose
-    PointT ray_o(ray_origin[0], ray_origin[1], ray_origin[2]);
-
-    #pragma omp parallel for
-    for(size_t i=0; i< num_rays; i++)
+    if ((tmin > tzmax) || (tzmin > tmax))
     {
-        NormalT ray_d(rays[i*3], rays[i*3+1], rays[i*3+2]);
-        // initialize result memory with zeros
-        result[i*3] = 0;
-        result[i*3+1] = 0;
-        result[i*3+2] = 0;
-        result_hits[i] = 0;
-
-        // precompute ray values to speed up intersection calculation
-        Ray ray;
-        ray.dir = ray_d;
-        ray.invDir = NormalT(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
-        ray.rayDirSign.x = ray.invDir.x < 0;
-        ray.rayDirSign.y = ray.invDir.y < 0;
-        ray.rayDirSign.z = ray.invDir.z < 0;
-
-        // intersect all triangles stored in the BVH
-        TriangleIntersectionResult resultBVH = intersectTrianglesBVH(
-            clBVHindicesOrTriLists,
-            ray_o,
-            ray,
-            clBVHlimits,
-            clTriangleIntersectionData,
-            clTriIdxList
-        );
-
-        // if a triangle was hit, store the calculated hit point in the result at the current id
-        if (resultBVH.hit)
-        {
-            result[i*3] = resultBVH.pointHit.x;
-            result[i*3+1] = resultBVH.pointHit.y;
-            result[i*3+2] = resultBVH.pointHit.z;
-            result_hits[i] = 1;
-        }
+        return false;
     }
-}
-
-
-template <typename PointT, typename NormalT>
-void BVHRaycaster<PointT, NormalT>::cast_rays_multi_multi(
-        const float* ray_origin,
-        const float* rays,
-        size_t num_rays,
-        const unsigned int* clBVHindicesOrTriLists,
-        const float* clBVHlimits,
-        const float* clTriangleIntersectionData,
-        const unsigned int* clTriIdxList,
-        float* result,
-        uint8_t* result_hits
-    )
-{
-     // get direction and origin of the ray for the current pose
-    #pragma omp parallel for
-    for(size_t i=0; i< num_rays; i++)
+    if (tzmin > tmin)
     {
-        NormalT ray_d(rays[i*3], rays[i*3+1], rays[i*3+2]);
-        PointT ray_o(ray_origin[i*3], ray_origin[i*3+1], ray_origin[i*3+2]);
-
-        // initialize result memory with zeros
-        result[i*3] = 0;
-        result[i*3+1] = 0;
-        result[i*3+2] = 0;
-        result_hits[i] = 0;
-
-        // precompute ray values to speed up intersection calculation
-        Ray ray;
-        ray.dir = ray_d;
-        ray.invDir = NormalT(1.0 / ray_d.x, 1.0 / ray_d.y, 1.0 / ray_d.z);
-        ray.rayDirSign.x = ray.invDir.x < 0;
-        ray.rayDirSign.y = ray.invDir.y < 0;
-        ray.rayDirSign.z = ray.invDir.z < 0;
-
-        // intersect all triangles stored in the BVH
-        TriangleIntersectionResult resultBVH = intersectTrianglesBVH(
-            clBVHindicesOrTriLists,
-            ray_o,
-            ray,
-            clBVHlimits,
-            clTriangleIntersectionData,
-            clTriIdxList
-        );
-
-        // if a triangle was hit, store the calculated hit point in the result at the current id
-        if (resultBVH.hit)
-        {
-            result[i*3] = resultBVH.pointHit.x;
-            result[i*3+1] = resultBVH.pointHit.y;
-            result[i*3+2] = resultBVH.pointHit.z;
-            result_hits[i] = 1;
-        }
+        tmin = tzmin;
+    }
+    if (tzmax < tmax)
+    {
+        tmax = tzmax;
     }
 
+    return true;
 }
 
 } // namespace lvr2

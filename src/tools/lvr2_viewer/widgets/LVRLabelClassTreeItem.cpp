@@ -46,6 +46,25 @@ LVRLabelClassTreeItem::LVRLabelClassTreeItem(LabelClassPtr classPtr) :
 
 }
 
+void LVRLabelClassTreeItem::removeChild(QTreeWidgetItem* child)
+{
+    if(child->type() == LVRLabelInstanceItemType)
+    {
+        LVRLabelInstanceTreeItem *instanceItem = static_cast<LVRLabelInstanceTreeItem *>(child);
+        for(int i = 0; i < m_labelClassPtr->instances.size(); i++)
+        {
+            if(m_labelClassPtr->instances[i]->instanceName == instanceItem->getInstancePtr()->instanceName) 
+            {
+                m_labelClassPtr->instances.erase(m_labelClassPtr->instances.begin() + i);
+
+            }
+
+        }
+    }
+    QTreeWidgetItem::removeChild(child);
+
+}
+
 void LVRLabelClassTreeItem::addChild(QTreeWidgetItem *child)
 {
     if(child->type() == LVRLabelInstanceItemType)

@@ -25,48 +25,69 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace lvr2 
+/*
+ * DMCVecPointHandle.hpp
+ *
+ *  @date 22.01.2019
+ *  @author Benedikt Schumacher
+ */
+
+#ifndef DMCVecPointHandle_H_
+#define DMCVecPointHandle_H_
+
+#include <vector>
+#include "lvr2/reconstruction/DMCPointHandle.hpp"
+using std::vector;
+
+namespace lvr2
 {
 
-template <typename BaseVecT>
-CudaRaycaster<BaseVecT>::CudaRaycaster(const MeshBufferPtr mesh)
-:RaycasterBase<BaseVecT>(mesh)
+template<typename BaseVecT>
+class DMCVecPointHandle : public DMCPointHandle<BaseVecT>
 {
-    
-}
+public:
 
-template <typename BaseVecT>
-bool CudaRaycaster<BaseVecT>::castRay(
-    const Point<BaseVecT>& origin,
-    const Vector<BaseVecT>& direction,
-    Point<BaseVecT>& intersection
-)
-{
+    /**
+     * @brief Constructor.
+     *
+     * @param points vector of all points
+     */
+    DMCVecPointHandle(vector<coord<float>*> points);
 
-    return false;
-}
+    /**
+     * @brief Destructor.
+     */
+    virtual ~DMCVecPointHandle() { };
 
-template <typename BaseVecT>
-void CudaRaycaster<BaseVecT>::castRays(
-    const Point<BaseVecT>& origin,
-    const std::vector<Vector<BaseVecT> >& directions,
-    std::vector<Point<BaseVecT> >& intersections,
-    std::vector<uint8_t>& hits
-)
-{
-    
+    /**
+     * @brief Get the Contained Points object at given index
+     *
+     * @param index Index of the octree cell
+     * @return vector<coord<float>*> Vector of all points in the specififc cell
+     */
+    virtual vector<coord<float>*> getContainedPoints(int index);
 
-}
+    /**
+     * @brief Splits the points of a specific cell into 8 subcelld
+     *
+     * @param index Index of splitted cell
+     * @param splittedPoints Vector of the subcells points
+     */
+    virtual void split(int index,
+        vector<coord<float>*> splittedPoints[8],
+        bool dual);
 
-template <typename BaseVecT>
-void CudaRaycaster<BaseVecT>::castRays(
-    const std::vector<Point<BaseVecT> >& origins,
-    const std::vector<Vector<BaseVecT> >& directions,
-    std::vector<Point<BaseVecT> >& intersections,
-    std::vector<uint8_t>& hits
-)
-{
-    
-}
+    virtual void clear();
+
+private:
+
+    // Vector of vectors containing the cell specific points
+    vector< vector<coord<float>*> > containedPoints;
+
+};
 
 } // namespace lvr2
+
+#include "DMCVecPointHandle.tcc"
+
+#endif /* DMCVecPointHandle_H_ */

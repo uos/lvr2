@@ -28,7 +28,6 @@ set(LVR2_ASCII_VIEWER_DEPS
 
 add_executable(lvr2_ascii_viewer ${LVR2_ASCII_VIEWER_SRC})
 target_link_libraries(lvr2_ascii_viewer 
-    ${EMBREE_LIBRARY}
     ${LVR2_ASCII_VIEWER_DEPS}
     ncursesw
 )

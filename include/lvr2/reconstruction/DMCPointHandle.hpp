@@ -26,53 +26,40 @@
  */
 
 /*
- * CudaRaycaster.hpp
+ * DMCPointHandle.hpp
  *
- *  @date 04.02.2019
- *  @author Alexander Mock <amock@uos.de>
+ *  @date 22.01.2019
+ *  @author Benedikt Schumacher
  */
 
-#pragma once
+#ifndef DMCPointHandle_H_
+#define DMCPointHandle_H_
 
 #include <vector>
+using std::vector;
 
 namespace lvr2
 {
 
-/**
- *  @brief CudaRaycaster: GPU Cuda version of BVH Raycasting
- */
-template <typename BaseVecT>
-class CudaRaycaster : public RaycasterBase<BaseVecT> {
+template<typename BaseVecT>
+class DMCPointHandle
+{
 public:
 
-    /**
-     * @brief Constructor: Stores mesh as member
-     */
-    CudaRaycaster(const MeshBufferPtr mesh);
+    // =======================================================================
+    // Pure virtual methods (need to be implemented)
+    // =======================================================================
 
-    bool castRay(
-        const Point<BaseVecT>& origin,
-        const Vector<BaseVecT>& direction,
-        Point<BaseVecT>& intersection
-    );
+    virtual vector<coord<float>*> getContainedPoints(int index) = 0;
 
-    void castRays(
-        const Point<BaseVecT>& origin,
-        const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections,
-        std::vector<uint8_t>& hits
-    );
+    virtual void split(int index,
+        vector<coord<float>*> splittedPoints[8],
+        bool dual) = 0;
 
-    void castRays(
-        const std::vector<Point<BaseVecT> >& origins,
-        const std::vector<Vector<BaseVecT> >& directions,
-        std::vector<Point<BaseVecT> >& intersections,
-        std::vector<uint8_t>& hits
-    );
+    virtual void clear();
 
 };
 
 } // namespace lvr2
 
-#include "lvr2/algorithm/raycasting/CudaRaycaster.tcc"
+#endif /* DMCPointHandle_H_ */

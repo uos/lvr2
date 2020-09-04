@@ -949,17 +949,17 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
         }
         if(item->type() == LVRLabelInstanceItemType)
         {
-            std::cout << "instance Item" <<std::endl;
             auto selected = m_labelTreeChildItemContextMenu->exec(globalPos);
             if(selected == m_actionRemoveInstance)
             {
                 m_pickingInteractor->removeLabel(item->data(LABEL_ID_COLUMN, 0).toInt());
-                auto topLevelItem = item->parent();
+                QTreeWidgetItem* parentItem = item->parent();
+                LVRLabelClassTreeItem* topLevelItem = static_cast<LVRLabelClassTreeItem* >(parentItem);
                 //update the Count avoidign the standart "signal" case to avoid race conditions
                 topLevelItem->setText(LABELED_POINT_COLUMN, QString::number(topLevelItem->text(LABELED_POINT_COLUMN).toInt() - item->text(LABELED_POINT_COLUMN).toInt()));
                 topLevelItem->removeChild(item);
-		//remove the ComboBox entry
-		int comboBoxPos = selectedInstanceComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
+                //remove the ComboBox entry
+                int comboBoxPos = selectedInstanceComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
                 if (comboBoxPos >= 0)
                 { 
                     selectedInstanceComboBox->removeItem(comboBoxPos);

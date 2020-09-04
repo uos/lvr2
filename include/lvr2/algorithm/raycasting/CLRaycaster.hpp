@@ -28,18 +28,17 @@
 /*
  * CLRaycaster.hpp
  *
- *  @date 25.01.2019
+ *  @date 25.01.2020
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  *  @author Alexander Mock <amock@uos.de>
  */
 
-#pragma once
+#ifndef LVR2_ALGORITHM_RAYCASTING_CLRAYCASTER
+#define LVR2_ALGORITHM_RAYCASTING_CLRAYCASTER
 
 #include <chrono>
 #include "lvr2/io/MeshBuffer.hpp"
-#include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/geometry/BVH.hpp"
-
+#include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
 
 #define CL_HPP_ENABLE_EXCEPTIONS
@@ -57,77 +56,85 @@
 // #endif
 
 #include "lvr2/util/CLUtil.hpp"
+#include "Intersection.hpp"
 
-const char *CAST_RAYS_BVH_PROGRAM =
-    #include "opencl/cast_rays_bvh.cl"
-;
+
 
 namespace lvr2
 {
 
-struct CLRaycasterRuntimeStats {
-    int copy_data_to_device;
-    int copy_data_to_host;
-    int kernel_execution;
-    int kernel_building;
-public:
-
-    int copy() const {
-        return copy_data_to_host + copy_data_to_device;
-    }
-
-    int kernel() const {
-        return kernel_execution + kernel_building;
-    }
-
-    int total() const {
-        return kernel() + copy();
-    }
-};
-
 /**
- *  @brief CLRaycaster: GPU OpenCL version of BVH Raycasting: WIP
+ *  @brief CLRaycaster: GPU OpenCL version of BVH Raycasting
  */
-template <typename PointT, typename NormalT>
-class CLRaycaster : public BVHRaycaster<PointT, NormalT> {
+template<typename IntT>
+class CLRaycaster : public BVHRaycaster<IntT> {
 public:
 
     /**
      * @brief Constructor: Generate BVH tree on mesh, loads CL kernels
      */
-    CLRaycaster(const MeshBufferPtr mesh);
+    CLRaycaster(const MeshBufferPtr mesh,
+                unsigned int stack_size = 32);
 
     /// Overload functions ///
-
+    /**
+     * @brief Cast a single ray onto the mesh. Hint: Better not use it on GPU.
+     * 
+     * @param[in] origin Ray origin 
+     * @param[in] direction Ray direction
+     * @param[out] intersection User defined intersection output 
+     * @return true  Intersection found
+     * @return false  Not intersection found
+     */
     bool castRay(
-        const PointT& origin,
-        const NormalT& direction,
-        PointT& intersection
-    );
+        const Vector3f& origin,
+        const Vector3f& direction,
+        IntT& intersection);
 
+    using BVHRaycaster<IntT>::castRays;
+
+    /**
+     * @brief Cast a ray from single origin 
+     *        with multiple directions onto the mesh
+     * 
+     * @param[in] origin Origin of the ray
+     * @param[in] directions Directions of the ray
+     * @param[out] intersections User defined intersections output
+     * @param[out] hits Intersection found or not
+     */
     void castRays(
-        const PointT& origin,
-        const std::vector<NormalT >& directions,
-        std::vector<PointT >& intersections,
-        std::vector<uint8_t>& hits
-    );
+        const Vector3f& origin,
+        const std::vector<Vector3f>& directions,
+        std::vector<IntT>& intersections,
+        std::vector<uint8_t>& hits) override;
 
-    CLRaycasterRuntimeStats castRaysWithStats(
-        const PointT& origin,
-        const std::vector<NormalT >& directions,
-        std::vector<PointT >& intersections,
-        std::vector<uint8_t>& hits
-    );
-
+    /**
+     * @brief Cast from multiple ray origin/direction 
+     *        pairs onto the mesh
+     * 
+     * @param[in] origin Origin of the ray
+     * @param[in] directions Directions of the ray
+     * @param[out] intersections User defined intersections output
+     * @param[out] hits Intersection found or not
+     */
     void castRays(
-        const std::vector<PointT >& origins,
-        const std::vector<NormalT >& directions,
-        std::vector<PointT >& intersections,
-        std::vector<uint8_t>& hits
-    );
+        const std::vector<Vector3f>& origins,
+        const std::vector<Vector3f>& directions,
+        std::vector<IntT>& intersections,
+        std::vector<uint8_t>& hits) override;
 
-    void testKernel(const PointT& origin,
-        const std::vector<NormalT >& directions);
+    struct ClTriangleIntersectionResult {
+        cl_uchar hit = 0;
+        cl_uint pBestTriId;
+        cl_float3 pointHit;
+        cl_float hitDist;
+    };
+
+protected:
+    using BVHRaycaster<IntT>::barycentric;
+    using BVHRaycaster<IntT>::m_bvh;
+    using BVHRaycaster<IntT>::m_vertices;
+    using BVHRaycaster<IntT>::m_faces;
 
 private:
     /**
@@ -148,7 +155,14 @@ private:
     /**
      * @brief TODO
      */
-    void initOpenCLRayBuffer(int num_origins, int num_rays);
+    // void initOpenCLRayBuffer(
+    //     int num_origins,
+    //     int num_rays);
+
+    void initOpenCLBuffer(
+        size_t num_origins,
+        size_t num_dirs
+    );
 
     /**
      * @brief TODO
@@ -160,21 +174,21 @@ private:
      */
     void createKernel();
 
-    /**
-     * @brief TODO
-     */
-    void copyRayDataToGPU(
-        const vector<float>& origins,
-        const vector<float>& rays
-    );
+    // /**
+    //  * @brief TODO
+    //  */
+    // void copyRayDataToGPU(
+    //     const vector<float>& origins,
+    //     const vector<float>& rays
+    // );
 
-    /**
-     * @brief TODO
-     */
-    void copyRayDataToGPU(
-        const float* origin_buffer, size_t origin_buffer_size,
-        const float* ray_buffer, size_t ray_buffer_size
-    );
+    // /**
+    //  * @brief TODO
+    //  */
+    // void copyRayDataToGPU(
+    //     const float* origin_buffer, size_t origin_buffer_size,
+    //     const float* ray_buffer, size_t ray_buffer_size
+    // );
 
     // Member vars
 
@@ -185,7 +199,6 @@ private:
     size_t m_warp_size;
     cl_ulong m_device_global_memory;
     
-
     // OpenCL variables
     cl::Platform m_platform;
     cl::Device m_device;
@@ -195,8 +208,6 @@ private:
     cl::Kernel m_kernel_one_one;
     cl::Kernel m_kernel_one_multi;
     cl::Kernel m_kernel_multi_multi;
-    cl::Kernel m_kernel_test;
-
 
     /// BUFFER ///
     // buffer bvh tree
@@ -211,10 +222,12 @@ private:
 
     // buffer results
     cl::Buffer m_resultBuffer;
-    cl::Buffer m_resultHitsBuffer;
+    // cl::Buffer m_resultHitsBuffer;
 
 };
 
 } // namespace lvr2
 
-#include "lvr2/algorithm/raycasting/CLRaycaster.tcc"
+#include "CLRaycaster.tcc"
+
+#endif // LVR2_ALGORITHM_RAYCASTING_CLRAYCASTER

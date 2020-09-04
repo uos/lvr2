@@ -91,6 +91,11 @@ set(LVR2_SOURCES ${LVR2_SOURCES}
     reconstruction/PCLFiltering.cpp)
 endif(PCL_FOUND)
 
+if(embree_FOUND)
+list(APPEND LVR2_SOURCES 
+    algorithm/raycasting/EmbreeRaycaster.cpp
+)
+endif(embree_FOUND)
 
 if(WITH_FREENECT AND LIBFREENECT_FOUND)
 set(LVR2_SOURCES ${LVR2_SOURCES} 
@@ -123,9 +128,9 @@ endif()
 #####################################################################################
 
 if(OPENCL_FOUND)
-  set(LVR2_SOURCES ${LVR2_SOURCES}
-      reconstruction/opencl/ClSurface.cpp
-  )
+    list(APPEND LVR2_SOURCES
+        reconstruction/opencl/ClSurface.cpp
+        reconstruction/opencl/ClStatisticalOutlierFilter.cpp)
 endif()
 
 #####################################################################################
