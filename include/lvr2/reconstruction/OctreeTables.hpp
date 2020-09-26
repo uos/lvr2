@@ -164,6 +164,21 @@ const static int octreeCornerNeighborTable[64][3] = {
   { 1,  1,  1}
 };
 
+const static int edgeDistanceTable[12][2] = {
+  {0, 1},
+  {0, 2},
+  {0, 4},
+  {1, 3},
+  {1, 3},
+  {2, 3},
+  {2, 6},
+  {3, 7},
+  {4, 5},
+  {4, 6},
+  {5, 7},
+  {6, 7}
+};
+
 } // namespace lvr2
 
 #endif /* OctreeTables_HPP_ */

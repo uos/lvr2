@@ -42,11 +42,12 @@
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/MCTable.hpp"
 #include "lvr2/io/Progress.hpp"
-#include "OctreeThreadPool.hpp"
+#include "DMCVecPointHandle.hpp"
 
 #include "Octree.hpp"
 #include "DualOctree.hpp"
 #include "Location.hh"
+#include "lvr2/reconstruction/FastReconstruction.hpp"
 
 namespace lvr2
 {
@@ -56,8 +57,6 @@ struct my_dummy
     Location location;
     int next = -1;
 };
-
-static int MAX_LEVEL = 5;
 
 /**
  * @brief A surface reconstruction object that implements the standard
@@ -72,16 +71,18 @@ public:
     /**
      * @brief Constructor.
      *
-     * @param surface            Pointer to the surface
-     * @param resolution         The number of intersections (on the longest side of the volume taken by the data points) used by the reconstruction.
-     * @param isVoxelsize        If set to true, interpret resolution as voxelsize instead of number of intersections.
-     * @param reconstructionType Type of the reconstruction (MC or PMC).
-     * @param extrude            If set to true, missing children for each node will be created.
+     * @param surface       Pointer to the surface
+     * @param bb            BoundingBox of the PointCloud
+     * @param dual          
+     * @param maxLevel      Max allowed octree level
+     * @param maxError      Max allowed error between points and surfaces
      */
     DMCReconstruction(
         PointsetSurfacePtr<BaseVecT> surface,
         BoundingBox<BaseVecT> bb,
-        bool extrude);
+        bool dual,
+        int maxLevel,
+        float maxError);
 
     /**
      * @brief Destructor.
@@ -105,6 +106,20 @@ public:
 protected:
 
     /**
+     * @brief Builds a dual cell at given position
+     *
+     * @param cell   Cell of the regual octree
+     * @param cells  number of cells at the cells octree level
+     * @param octree Reference to the octree
+     * @param pos    Position of the specific dual cell
+     */
+    DualLeaf<BaseVecT, BoxT>* getDualLeaf(
+        CellHandle &cell,
+        int cells,
+        C_Octree<BaseVecT, BoxT, my_dummy> &octree,
+        char pos);
+
+    /**
      * @brief Builds a tree level respectively creates the child nodes of a root node.
      *
      * @param parentPoints Points inside the parent node.
@@ -115,48 +130,132 @@ protected:
      */
     void buildTree(
         C_Octree<BaseVecT, BoxT, my_dummy> &parent,
-        int levels);
+        int levels,
+        bool dual);
 
     /**
      * @brief Traverses the octree and insert for each leaf the getSurface-function into the thread pool.
      *
      * @param mesh       The reconstructed mesh.
      * @param node       Actually node.
-     * @param threadPool A thread pool.
      */
     void traverseTree(BaseMesh<BaseVecT> &mesh,
-            C_Octree<BaseVecT, BoxT, my_dummy> &octree,
-            OctreeThreadPool<BaseVecT, BoxT>* threadPool);
+        C_Octree<BaseVecT, BoxT, my_dummy> &octree);
 
+    /**
+     * @brief Calculates the position of a aspecific point in a dual cell
+     *
+     * @param octree The current octree instace
+     * @param ch The current cellHandle of the octree
+     * @param cells Number of possible cells at current level
+     * @param max_bb_width Width of the bounding box
+     * @param pos Position of the dual cell relative to the given cell
+     * @param onEdge Indicator whether the wished position lies on an edge
+     * @param feature Vector that should be filles with the correct position
+     */
     void detectVertexForDualCell(
-            C_Octree<BaseVecT, BoxT, my_dummy> &octree,
-            CellHandle ch,
-            int cells,
-            float max_bb_width,
-            uint pos,
-            BaseVecT &feature);
+        C_Octree<BaseVecT, BoxT, my_dummy> &octree,
+        CellHandle ch,
+        int cells,
+        float max_bb_width,
+        uint pos,
+        int onEdge,
+        BaseVecT &feature);
+
+    /**
+     * @brief Calculates a rotation matrix for a triangle that rotates it into xy
+     *
+     * @param matrix Array the matrix should be written in
+     * @param v1 First point of the triangle
+     * @param v2 Second point of the triangle
+     * @param v3 Third point of the triangle
+     */
+    void getRotationMatrix(
+        float matrix[9],
+        BaseVecT v1,
+        BaseVecT v2,
+        BaseVecT v3);
+
+    /**
+     * @brief Calculates the distance between a point and a triangle
+     *
+     * @param p Vertex to calculate distance for
+     * @param v1 First point of the triangle
+     * @param v2 Second point of the triangle
+     * @param v3 Third point of the triangle
+     */
+    float getDistance(BaseVecT p,
+        BaseVecT v1,
+        BaseVecT v2,
+        BaseVecT v3);
+
+    /**
+     * @brief Calculates the distance between a point and a line
+     *
+     * @param p Vertex to calculate distance for
+     * @param v1 First point of the line
+     * @param v2 Second point of the line
+     */
+    float getDistance(BaseVecT p,
+        BaseVecT v1,
+        BaseVecT v2);
+
+    /**
+     * @brief Calculates the distance between to points
+     *
+     * @param p Vertex to calculate distance for
+     * @param v1 Point
+     */
+    float getDistance(BaseVecT v1,
+        BaseVecT v2);
+
+    /**
+     * @brief Calculates whether the given vertex lies left, right or on the given line
+     *
+     * @param p Vertex to check position for
+     * @param v1 First point of the line
+     * @param v2 Second point of the line
+     */
+    float edgeEquation(BaseVecT p,
+        BaseVecT v1,
+        BaseVecT v2);
+
+    /**
+     * @brief Performs a matrix multiplication
+     *
+     * @param matrix Pointer to the matrix
+     * @param vector Pointer to th vector
+     */
+    void matrixDotVector(float* matrix,
+        BaseVecT* vector);
 
     /**
      * @brief Performs a local reconstruction according to the standard Marching Cubes table from Paul Bourke.
      *
      * @param mesh The reconstructed mesh
      * @param leaf A octree leaf.
+     * @param cells
      */
-    //void getSurface(BaseMesh<BaseVecT, BoxT> &mesh,
-    //    OctreeLeaf<BaseVecT, BoxT> *leaf);
-
     void getSurface(BaseMesh<BaseVecT> &mesh,
         DualLeaf<BaseVecT, BoxT> *leaf,
-        int cells);
+        int cells,
+        short level);
 
-    // The voxelsize used for reconstruction
-    float m_voxelSize;
+    /**
+     * @brief Saves the octree as wireframe. WORKS ONLY SINGLE THREADED!
+     *
+     * @param parent The octree
+     */
+    void drawOctree(C_Octree<BaseVecT, BoxT, my_dummy> &parent);
 
-    // Counter of the edge points
-    uint m_globalIndex;
+    // Indicator whether the point fitting shoulb be done on dual cells
+    bool m_dual;
 
-    // Maximum voxelsize.
-    float m_maxSize;
+    // The maximum allowed level for the octree
+    int m_maxLevel;
+
+    // The max allowed arror between points and surfaces
+    float m_maxError;
 
     // Sizes of Boundig Box
     BaseVecT bb_min;
@@ -167,32 +266,8 @@ protected:
     // Center of the bounding box.
     BaseVecT m_boundingBoxCenter;
 
-    // Status of the extrusion.
-    bool m_extrude;
-
-    // Reconstructiontype
-    string m_reconstructionType;
-
-    // Count of the octree nodes.
-    uint m_nodes;
-
-    // Count of the octree nodes (extruded).
-    uint m_nodesExtr;
-
     // Count of the octree leaves.
     uint m_leaves;
-
-    // Count of the octree leaves (extruded):
-    uint m_leavesExtr;
-
-    // Count of the faces.
-    uint m_faces;
-
-    // Global mutex.
-    boost::mutex m_globalMutex;
-
-    // Mutex for adding faces to the mesh buffer.
-    boost::mutex m_addMutex;
 
     // Global progress bar.
     ProgressBar *m_progressBar;
@@ -200,8 +275,11 @@ protected:
     // Pointer to the new Octree
     C_Octree<BaseVecT, BoxT, my_dummy> *octree;
 
-    // Pointer to the thread pool.
-    OctreeThreadPool<BaseVecT, BoxT> *m_threadPool;
+    // PointHandler
+    unique_ptr<DMCPointHandle<BaseVecT>> m_pointHandler;
+
+    // just for visualization
+    std::vector< BaseVecT > dualVertices;
 };
 } // namespace lvr2
 

@@ -45,6 +45,9 @@ public:
         inline int  depth      ( CellHandle _ch ) const;
         inline bool is_inner_boundary( CellHandle _ch ) const;
 
+        int getChildIndex( BaseVecT center, coord<float> *point );
+        int getChildIndex( BaseVecT center, BaseVecT point );
+
         //! Split the cell, i.e. create eight children
         void split( CellHandle _ch, const bool bGarbageCollectionOnTheFly=false );
 
@@ -101,9 +104,8 @@ public:
         inline CellHandle child          ( CellHandle _ch, int _idx ) const;
         inline CellHandle face_neighbor  ( CellHandle _ch, int _idx ) const;
         inline CellHandle edge_neighbor  ( CellHandle _ch, int _idx ) const;
-        inline std::vector<CellHandle> all_corner_neighbors( CellHandle _ch, int _idx ) const;
+        inline std::pair<std::vector<CellHandle>, std::vector<uint> > all_corner_neighbors( CellHandle _ch, int _idx ) const;
         inline CellHandle corner_neighbor( CellHandle _ch, int _idx ) const;
-        inline std::vector<Location*> calc_neighbor_locations(Location locinfo, int _idx) const;
 
         //! Moving the picked cell, i.e. picking one of the neighbouring cells (if possible)
         void MovePickedCell(int _key, double* _mvm);
@@ -724,19 +726,13 @@ CellHandle C_Octree< BaseVecT, BoxT, T_CellData >::edge_neighbor( CellHandle _ch
 
 //-----------------------------------------------------------------------------
 
-/* corner funktion schreiben, mit der direkt alle 8 nachbarn ermittelt werden koennen
-/  über den loccode und die binarycellsize lassen sich alle corners berechnen
-/  abfragen ob locinfo = 0 ist bevor man damit rechnet (unsigned) und ob man groesser ist, als erlaubt
-/  traverse methode verwenden, nicht traverse to level, weil die kleinstmögliche zelle gefunden wrden soll
-/  idealer weise alle 8 zellen in einem array zurueckgeben
-/  zudem am besten jede location, die abgearbeitet worden ist, markieren (hash)
-*/
-
 template <typename BaseVecT, typename BoxT, typename T_CellData>
-std::vector<CellHandle> C_Octree< BaseVecT, BoxT, T_CellData >::all_corner_neighbors(CellHandle _ch, int _idx) const
+std::pair<std::vector<CellHandle>, std::vector<uint> > C_Octree< BaseVecT, BoxT, T_CellData >::all_corner_neighbors(CellHandle _ch, int _idx) const
 {
     std::vector<CellHandle> cellHandles;
+    std::vector<uint> markers;
     std::vector<Location*> locations;
+
     // get lower left back corner of given cell
     Location locinfo = location( _ch );
     LocCode loc_x = locinfo.loc_x();
@@ -745,90 +741,56 @@ std::vector<CellHandle> C_Octree< BaseVecT, BoxT, T_CellData >::all_corner_neigh
     LocCode binary_cell_size = 1 << locinfo.level();
     int extent = ( 1 << m_rootLevel );
 
+    // shift loc_x, loc_y, loc_z to corresponding corner position
+    LocCode loc_X = loc_x + binary_cell_size * octreeVertexTable[_idx][0];
+    LocCode loc_Y = loc_y + binary_cell_size * octreeVertexTable[_idx][1];
+    LocCode loc_Z = loc_z + binary_cell_size * octreeVertexTable[_idx][2];
+
     // calculate the corner positions
     for(unsigned char i = 0; i < 8; i++)
     {
-        int new_loc_x = loc_x;
-        int new_loc_y = loc_y;
-        int new_loc_z = loc_z;
-        if ( loc_x > 0)
+        // marker is binary code for detailed overhang position
+        // z-axis-overhang y-axis-overhang x-axis-overhang
+        uint marker = 0;
+
+        int new_loc_x = loc_X;
+        int new_loc_y = loc_Y;
+        int new_loc_z = loc_Z;
+
+        new_loc_x = loc_X + octreeCornerNeighborTable[i][0];
+        if ( new_loc_x >= extent || new_loc_x < 0 )
         {
-            new_loc_x = loc_x + (octreeCornerNeighborTable[8 * _idx + i][0] * binary_cell_size);
-            if ( new_loc_x >= extent )
-            {
-                new_loc_x = loc_x;
-            }
+            new_loc_x = loc_x;
+            marker = 1;
         }
-        if ( loc_y > 0)
+
+        new_loc_y = loc_Y + octreeCornerNeighborTable[i][1];
+        if ( new_loc_y >= extent || new_loc_y < 0 )
         {
-            new_loc_y = loc_y + (octreeCornerNeighborTable[8 * _idx + i][1] * binary_cell_size);
-            if ( new_loc_y >= extent )
-            {
-                new_loc_y = loc_y;
-            }
+            new_loc_y = loc_y;
+            marker |= 1 << 1;
         }
-        if ( loc_z > 0)
+
+        new_loc_z = loc_Z + octreeCornerNeighborTable[i][2];
+        if ( new_loc_z >= extent || new_loc_z < 0 )
         {
-            new_loc_z = loc_z + (octreeCornerNeighborTable[8 * _idx + i][2] * binary_cell_size);
-            if ( new_loc_z >= extent )
-            {
-                new_loc_z = loc_z;
-            }
+            new_loc_z = loc_z;
+            marker |= 1 << 2;
         }
-        locations.push_back(new Location(new_loc_x, new_loc_y, new_loc_z, locinfo.level(), locinfo.parent()));
+
+        locations.push_back(new Location(new_loc_x, new_loc_y, new_loc_z, locinfo.level() + 1, locinfo.parent()));
+        markers.push_back(marker);
     }
 
     for(Location * location : locations)
     {
         cellHandles.push_back(traverse(root(), location->loc_x(), location->loc_y(), location->loc_z()));
+        delete location;
     }
     locations.clear();
+    std::vector<Location*>().swap(locations);
 
-    return cellHandles;
-}
-
-template <typename BaseVecT, typename BoxT, typename T_CellData>
-std::vector<Location*> C_Octree< BaseVecT, BoxT, T_CellData >::calc_neighbor_locations(Location locinfo, int _idx) const
-{
-    std::vector<Location*> locations;
-    // get lower left back corner of given cell
-    LocCode loc_x = locinfo.loc_x();
-    LocCode loc_y = locinfo.loc_y();
-    LocCode loc_z = locinfo.loc_z();
-    LocCode binary_cell_size = 1 << locinfo.level();
-    int extent = ( 1 << m_rootLevel );
-
-    for(unsigned char i = 0; i < 8; i++)
-    {
-        uint new_loc_x, new_loc_y, new_loc_z;
-        if ( loc_x > 0)
-        {
-            new_loc_x = loc_x + (octreeCornerNeighborTable[_idx + i][0] * binary_cell_size);
-            if ( new_loc_x >= extent )
-            {
-                new_loc_x = loc_x;
-            }
-        }
-        if ( loc_y > 0)
-        {
-            new_loc_y = loc_y + (octreeCornerNeighborTable[_idx + i][1] * binary_cell_size);
-            if ( new_loc_y >= extent )
-            {
-                new_loc_y = loc_y;
-            }
-        }
-        if ( loc_z > 0)
-        {
-            new_loc_z = loc_z + (octreeCornerNeighborTable[_idx + i][2] * binary_cell_size);
-            if ( new_loc_z >= extent )
-            {
-                new_loc_z = loc_z;
-            }
-        }
-        locations.push_back(new Location(new_loc_x, new_loc_y, new_loc_z, locinfo.level(), locinfo.parent()));
-    }
-
-    return locations;
+    return make_pair(cellHandles, markers);
 }
 
 //-----------------------------------------------------------------------------
@@ -1218,10 +1180,30 @@ void C_Octree< BaseVecT, BoxT, T_CellData >::MovePickedCell(int _direction, doub
 
 //-----------------------------------------------------------------------------
 
+/*!
+    \param center The center of a cell in real world coordinates
+    \param point Point for to check it's position relative to the cell center
+
+    INDICES:
+    // 000 left down behind
+    // 001 right down behind
+    // 010 left top behind
+    // 011 right top behind
+    // 100 left down front
+    // 101 right down front
+    // 110 left top front
+    // 111 right top front
+*/
 template <typename BaseVecT, typename BoxT, typename T_CellData>
-int getChildIndex( BaseVecT center, coord<float> *point )
+int C_Octree< BaseVecT, BoxT, T_CellData >::getChildIndex( BaseVecT center, coord<float> *point )
 {
-    return (((*point)[0]) > center[0] ) | ((((*point)[1]) > center[1] ) << 1) | ((((*point)[2]) < center[2] ) << 2);
+    return (((*point)[0]) > center[0] ) | ((((*point)[1]) > center[1] ) << 1) | ((((*point)[2]) > center[2] ) << 2);
+}
+
+template <typename BaseVecT, typename BoxT, typename T_CellData>
+int C_Octree< BaseVecT, BoxT, T_CellData >::getChildIndex( BaseVecT center, BaseVecT point )
+{
+    return ((point[0]) > center[0] ) | (((point[1]) > center[1] ) << 1) | (((point[2]) > center[2] ) << 2);
 }
 
 //-----------------------------------------------------------------------------

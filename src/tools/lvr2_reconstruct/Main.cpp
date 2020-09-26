@@ -250,15 +250,15 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
         auto reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
         return make_pair(grid, std::move(reconstruction));
     }
-    else if(decompositionType == "DMC")
-    {
-        auto reconstruction = make_unique<DMCReconstruction<Vec, FastBox<Vec>>>(
-            surface,
-            surface->getBoundingBox(),
-            options.extrude()
-        );
-        return make_pair(nullptr, std::move(reconstruction));
-    }
+    // else if(decompositionType == "DMC")
+    // {
+    //     auto reconstruction = make_unique<DMCReconstruction<Vec, FastBox<Vec>>>(
+    //         surface,
+    //         surface->getBoundingBox(),
+    //         options.extrude()
+    //     );
+    //     return make_pair(nullptr, std::move(reconstruction));
+    // }
     else if(decompositionType == "MT")
     {
         auto grid = std::make_shared<PointsetGrid<Vec, TetraederBox<Vec>>>(
