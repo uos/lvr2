@@ -6,16 +6,10 @@
 #####################################################################################
 # Add executable
 #####################################################################################
-include_directories(.)
-
-add_executable(lvr2_example_io_features
+add_executable(lvr2_examples_coordinates
     Main.cpp
 )
 
-target_link_libraries(lvr2_example_io_features
+target_link_libraries(lvr2_examples_coordinates
     lvr2_static
-)
-
-set_target_properties(lvr2_example_io_features PROPERTIES
-    CXX_STANDARD 17
 )

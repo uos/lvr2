@@ -1,4 +1,3 @@
-
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -26,15 +25,41 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
+/*
+ * DMCPointHandle.hpp
+ *
+ *  @date 22.01.2019
+ *  @author Benedikt Schumacher
+ */
+
+#ifndef DMCPointHandle_H_
+#define DMCPointHandle_H_
+
+#include <vector>
+using std::vector;
 
 namespace lvr2
 {
 
-RaycasterBase::RaycasterBase(const MeshBufferPtr mesh)
-:m_mesh(mesh)
+template<typename BaseVecT>
+class DMCPointHandle
 {
+public:
 
-}
+    // =======================================================================
+    // Pure virtual methods (need to be implemented)
+    // =======================================================================
+
+    virtual vector<coord<float>*> getContainedPoints(int index) = 0;
+
+    virtual void split(int index,
+        vector<coord<float>*> splittedPoints[8],
+        bool dual) = 0;
+
+    virtual void clear();
+
+};
 
 } // namespace lvr2
+
+#endif /* DMCPointHandle_H_ */
