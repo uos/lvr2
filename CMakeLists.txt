@@ -247,6 +247,12 @@ if(WITH_PCL)
     endif(PCL_FOUND)
 endif(WITH_PCL)
 
+find_package(MPI)
+if(MPI_FOUND)
+    message(STATUS "Found MPI")
+    include_directories(${MPI_CXX_INCLUDE_PATH})
+endif(MPI_FOUND)
+
 #------------------------------------------------------------------------------
 # Searching CGAL
 #------------------------------------------------------------------------------
@@ -533,6 +539,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${TIFF_LIBRARY}
     ${YAML_CPP_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
+    ${MPI_CXX_LIBRARIES}
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     m
     )
@@ -588,6 +595,7 @@ add_subdirectory(src/tools/lvr2_reconstruct)
 add_subdirectory(src/tools/lvr2_dmc_reconstruction)
 add_subdirectory(src/tools/lvr2_gs_reconstruction)
 add_subdirectory(src/tools/lvr2_largescale_reconstruct)
+add_subdirectory(src/tools/lvr2_largescale_reconstruct_mpi)
 add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
 add_subdirectory(src/tools/lvr2_kaboom)

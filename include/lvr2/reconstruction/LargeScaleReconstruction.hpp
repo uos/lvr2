@@ -178,6 +178,24 @@ namespace lvr2
 
         /**
          *
+         * this methods splits the given PointClouds via kd-Tree and calculates all required values for a later
+         * reconstruction within a MPI network
+         * @param project ScanProject containing Scans
+         * @return
+         */
+        int trueMpiAndReconstructMaster(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager);
+
+        /**
+         *
+         * this methods splits the given PointClouds via kd-Tree and calculates all required values for a later
+         * reconstruction within a MPI network
+         * @param project ScanProject containing Scans
+         * @return
+         */
+        int trueMpiAndReconstructSlave();
+
+        /**
+         *
          * reconstruct a given area (+ neighboring chunks from a chunkmanager) with a given voxelsize
          *
          * @param newChunksBB area to be reconstructed
