@@ -42,6 +42,7 @@
 #include <vtkActor.h>
 #include <vtkProperty.h>
 #include <vtkPointData.h>
+#include <vtkFloatArray.h>
 #include <vtkIdFilter.h>
 #include <vtkDataSetSurfaceFilter.h>
 
@@ -365,14 +366,11 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         // Setup a poly data object
         vtkSmartPointer<vtkPolyData>    vtk_polyData = vtkSmartPointer<vtkPolyData>::New();
         vtkSmartPointer<vtkPoints>      vtk_points = vtkSmartPointer<vtkPoints>::New();
-        vtkSmartPointer<vtkCellArray>   vtk_cells = vtkSmartPointer<vtkCellArray>::New();
-        m_vtk_normals = vtkSmartPointer<vtkDoubleArray>::New();
-        m_vtk_normals->SetNumberOfComponents(3);
-        m_vtk_normals->SetName("Normals");
-
-        vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
-        scalars->SetNumberOfComponents(3);
-        scalars->SetName("Colors");
+//        vtkSmartPointer<vtkCellArray>   vtk_cells = vtkSmartPointer<vtkCellArray>::New();
+        
+        //vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
+        //scalars->SetNumberOfComponents(3);
+        //scalars->SetName("Colors");
 
         double point[3];
         double normal[3];
@@ -386,73 +384,96 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
         ucharArr spec = pc->getUCharArray("spectral_channels", n_s_p, n_s_channels);
         floatArr normals = pc->getNormalArray();
 
-        if (spec || colors)
+
+        std::cout << lvr2::timestamp << " " << n << " Points" << std::endl;
+        vtkSmartPointer<vtkFloatArray> pts_data = vtkSmartPointer<vtkFloatArray>::New();
+        pts_data->SetNumberOfComponents(3);
+        pts_data->SetVoidArray(points.get(), n * 3, 1);
+        vtk_points->SetData(pts_data);
+        std::cout << lvr2::timestamp << "Mapped" << std::endl;
+
+        vtkSmartPointer<vtkCellArray> vtk_cells = vtkSmartPointer<vtkCellArray>::New();
+        vtkSmartPointer<vtkIdTypeArray> cells = vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkIdType* cell_buf = new vtkIdType[n * 2];
+        for(size_t i = 0; i < n; i++)
         {
-            scalars->SetNumberOfTuples(n_s_p ? n_s_p : n);
+            size_t i2 = 2 * i;
+            cell_buf[i2 + 0] = static_cast<vtkIdType>(1);
+            cell_buf[i2 + 1] = i;
+//            (*tri_data).InsertValue(i2 + 0 , static_cast<vtkIdType>(3));
+//            (*tri_data).InsertValue(i2 + 1 , static_cast<vtkIdType>(indices[index + 0]));
+//            (*tri_data).InsertValue(i2 + 2 , static_cast<vtkIdType>(indices[index + 1]));
+//            (*tri_data).InsertValue(i2 + 3 , static_cast<vtkIdType>(indices[index + 2]));
         }
 
-        vtk_points->SetNumberOfPoints(n_s_p ? n_s_p : n);
+        cells->SetVoidArray(cell_buf, n * 2, 0, vtkIdTypeArray::VTK_DATA_ARRAY_DELETE);
+        //tri_data->SetVoidArray(tri_buf, n_i * 4, 1);
+        vtk_cells->SetCells(n, cells);
+
+       vtkSmartPointer<vtkUnsignedCharArray> scalars = vtkSmartPointer<vtkUnsignedCharArray>::New();
+        scalars->SetNumberOfComponents(3);
+        scalars->SetName("Colors");
+
+//        what was it good for? (Nanana)        
+//        if (spec || colors)
+//        {
+//            scalars->SetNumberOfTuples(n_s_p ? n_s_p : n);
+//        }
+
+        if(spec)
+        {
+            // TODO IS this correct?!
+            // This only works correctly if every  point has a spectral value 
+            //if (n >= n_s_p) // only take points with spectral information
+            //{
+            //    break;
+            //}
+
+            if(n_s_p == n)
+            {
+                // need to copy spectral values to buffer
+                unsigned char* spec_buf = new unsigned char[n * 3];
+                for(size_t i = 0; i < n; ++i)
+                {
+                    size_t specIndex = n_s_channels * i;
+                    size_t i2 = 3 * i;
+                    spec_buf[i2 + 0] = spec[specIndex + m_spectralChannels.r];
+                    spec_buf[i2 + 1] = spec[specIndex + m_spectralChannels.g];
+                    spec_buf[i2 + 2] = spec[specIndex + m_spectralChannels.b];
+                }
+                // map buffer and let vtk delete it
+                scalars->SetVoidArray(spec_buf, n * 3, vtkIdTypeArray::VTK_DATA_ARRAY_DELETE);
+            }
+        }
+        else if(colors)
+        {
+            // simply map colors buffer and prevent vtk from deleting it
+            scalars->SetVoidArray(colors.get(), n * w_color, 1);
+        }
+
+        m_vtk_normals = vtkSmartPointer<vtkDoubleArray>::New();
+        m_vtk_normals->SetNumberOfComponents(3);
+        m_vtk_normals->SetName("Normals");
 
         if(normals)
         {
-            std::cout << "vtk: adding normals" << std::endl;
-            m_vtk_normals->SetNumberOfTuples(n);
+            // We need to copy normals becaus of they are not binary compatible
+            // lvr=float -> vtk=double
+            // maybe there will be an api in newer vtk versions..
+            // is there an vtk double type?
+            double* normal_buf = new double[n * 3];
+            for(size_t i = 0; i < n; ++i)
+            {
+                size_t index = 3 * i;
+                normal_buf[index + 0] = normals[index + 0];
+                normal_buf[index + 1] = normals[index + 1];
+                normal_buf[index + 2] = normals[index + 2];
+            }
+            // map buffer and let vtk delete it
+            m_vtk_normals->SetVoidArray(normal_buf, n * 3, vtkIdTypeArray::VTK_DATA_ARRAY_DELETE);
+
         }
 
-        for(vtkIdType i = 0; i < n; i++)
-        {
-            size_t index = 3 * i;
-            point[0] = points[index    ];
-            point[1] = points[index + 1];
-            point[2] = points[index + 2];
-
-            if(normals)
-            {
-                normal[0] = normals[index    ];
-                normal[1] = normals[index + 1];
-                normal[2] = normals[index + 2];
-
-                m_vtk_normals->SetTuple(i, normal);
-            }
-
-
-            // show spectral colors if we have spectral data
-            if(spec)
-            {
-                if (i >= n_s_p) // only take points with spectral information
-                {
-                    break;
-                }
-                size_t specIndex = n_s_channels * i;
-                unsigned char speccolor[3];
-                speccolor[0] = spec[specIndex + m_spectralChannels.r];
-                speccolor[1] = spec[specIndex + m_spectralChannels.g];
-                speccolor[2] = spec[specIndex + m_spectralChannels.b];
-
-#if VTK_MAJOR_VERSION < 7
-                scalars->SetTupleValue(i, speccolor);
-#else
-                scalars->SetTypedTuple(i, speccolor); // no idea how the new method is called
-#endif
-            }
-            else if(colors)
-            {
-                size_t colorIndex = w_color * i;
-                unsigned char color[3];
-                color[0] = colors[colorIndex];
-                color[1] = colors[colorIndex + 1];
-                color[2] = colors[colorIndex + 2];
-
-#if VTK_MAJOR_VERSION < 7
-                scalars->SetTupleValue(i, color);
-#else
-                scalars->SetTypedTuple(i, color); // no idea how the new method is called
-#endif
-            }
-
-            vtk_points->SetPoint(i, point);
-            vtk_cells->InsertNextCell(1, &i);
-        }
 
         m_vtk_polyData->SetPoints(vtk_points);
         m_vtk_polyData->SetVerts(vtk_cells);
@@ -470,12 +491,12 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 #endif
 	pointFilter->Update();
 
-	vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter = 
-		vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
-	surfaceFilter->SetInputConnection(pointFilter->GetOutputPort());
-	surfaceFilter->Update();
-
-	m_id_polyData = surfaceFilter->GetOutput();
+//	vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter = 
+//		vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+//	surfaceFilter->SetInputConnection(pointFilter->GetOutputPort());
+//	surfaceFilter->Update();
+//
+//	m_id_polyData = surfaceFilter->GetOutput();
 
 //m_vtk_polyData->GetPointData()->AddArray(ids);
 
