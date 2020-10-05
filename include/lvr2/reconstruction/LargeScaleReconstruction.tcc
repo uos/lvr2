@@ -64,6 +64,18 @@
     typedef lvr2::ClSurface GpuSurface;
 #endif
 
+#if SIZE_MAX == UCHAR_MAX
+#define MPI_SIZE_T MPI_UNSIGNED_CHAR
+#elif SIZE_MAX == USHRT_MAX
+#define MPI_SIZE_T MPI_UNSIGNED_SHORT
+#elif SIZE_MAX == UINT_MAX
+#define MPI_SIZE_T MPI_UNSIGNED
+#elif SIZE_MAX == ULONG_MAX
+#define MPI_SIZE_T MPI_UNSIGNED_LONG
+#elif SIZE_MAX == ULLONG_MAX
+#define MPI_SIZE_T MPI_UNSIGNED_LONG_LONG
+#endif
+
 namespace lvr2
 {
     using LSRWriter = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
@@ -883,14 +895,19 @@ namespace lvr2
 
             for (int i = 0; i < partitionBoxes->size(); i++)
             {
-//                string name_id;
-//                name_id =
-//                        std::to_string(
-//                                (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize)) +
-//                        "_" +std::to_string(
-//                                (int)floor(partitionBoxes->at(i).getCentroid().y / m_chunkSize)) +
-//                        "_" + std::to_string((int)floor(partitionBoxes->at(i).getCentroid().z / m_chunkSize));
+/*                string name_id;
+                name_id =
+                        std::to_string(
+                                (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize)) +
+                        "_" +std::to_string(
+                                (int)floor(partitionBoxes->at(i).getCentroid().y / m_chunkSize)) +
+                        "_" + std::to_string((int)floor(partitionBoxes->at(i).getCentroid().z / m_chunkSize));*/
+                // Wait for Slave to ask for job
+                int dest;
+                MPI_Status status;
 
+                MPI_Recv(nullptr, 0, MPI_BYTE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+                dest = status.MPI_SOURCE;
 
                 size_t numPoints;
 
@@ -909,37 +926,44 @@ namespace lvr2
                     continue;
                 }
 
-                BaseVecT gridbb_min(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
-                                    partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
-                                    partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3);
-                BaseVecT gridbb_max(partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
-                                    partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
-                                    partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3);
-                BoundingBox<BaseVecT> gridbb(gridbb_min, gridbb_max);
+                float x_min = partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
+                      y_min = partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
+                      z_min = partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3,
+                      x_max = partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
+                      y_max = partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
+                      z_max = partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3;
 
-                cout << "\n" <<  lvr2::timestamp <<"grid: " << i << "/" << partitionBoxes->size() - 1 << endl;
+                MPI_Send(&numPoints, 1, MPI_SIZE_T, dest, 0, MPI_COMM_WORLD);
+                MPI_Send(points.get(), numPoints, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
+                MPI_Send(&x_min, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
+                MPI_Send(&y_min, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
+                MPI_Send(&z_min, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
+                MPI_Send(&x_max, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
+                MPI_Send(&y_max, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
+                MPI_Send(&z_max, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
+                bool calcNorm = !bg.hasNormals();
+                MPI_Send(&calcNorm, 1, MPI_CXX_BOOL, dest, 0, MPI_COMM_WORLD);
 
-                lvr2::PointBufferPtr p_loader(new lvr2::PointBuffer);
-                p_loader->setPointArray(points, numPoints);
 
-                if (bg.hasNormals())
-                {
-                    size_t numNormals;
-                    lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x -m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMin().y -m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMin().z -m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMax().x +m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMax().y +m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMax().z +m_voxelSizes[h] *3,
-                                                        numNormals);
 
-                    p_loader->setNormalArray(normals, numNormals);
-                    cout << "got " << numNormals << " normals" << endl;
-                }
+                  if (!calcNorm)
+                  {
+                      size_t numNormals;
+                      lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x -m_voxelSizes[h] *3,
+                                                          partitionBoxes->at(i).getMin().y -m_voxelSizes[h] *3,
+                                                          partitionBoxes->at(i).getMin().z -m_voxelSizes[h] *3,
+                                                          partitionBoxes->at(i).getMax().x +m_voxelSizes[h] *3,
+                                                          partitionBoxes->at(i).getMax().y +m_voxelSizes[h] *3,
+                                                          partitionBoxes->at(i).getMax().z +m_voxelSizes[h] *3,
+                                                          numNormals);
 
-                lvr2::PointBufferPtr p_loader_reduced;
+                      MPI_Send(&numNormals, 1, MPI_SIZE_T, dest, 0, MPI_COMM_WORLD);
+                      MPI_Send(normals.get(), numPoints, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
+                  }
+
+//                lvr2::PointBufferPtr p_loader_reduced;
                 //if(numPoints > (m_chunkSize*500000)) // reduction TODO add options
-                if(false)
+                /*if(false)
                 {
                     OctreeReduction oct(p_loader, m_voxelSizes[h], 20);
                     p_loader_reduced = oct.getReducedPoints();
@@ -947,29 +971,23 @@ namespace lvr2
                 else
                 {
                     p_loader_reduced = p_loader;
-                }
+                }*/
 
-                lvr2::PointsetSurfacePtr<Vec> surface;
-                surface = make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader_reduced,
-                                                                         "FLANN",
-                                                                         m_kn,
-                                                                         m_ki,
-                                                                         m_kd,
-                                                                         m_useRansac);
-                //calculate important stuff for reconstruction
-                if (!bg.hasNormals())
-                {
-                    surface->calculateSurfaceNormals();
-                }
+                // TODO: Get ps_grid from Slave
 
 
+                int len;
+                char* ret;
+                MPI_Recv(&len, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(ret, len, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
-                        m_voxelSizes[h], surface, gridbb, true, m_extrude);
+                std::ofstream file("temp.dat");
+                file.write(ret, len);
+                file.close();
 
-                ps_grid->setBB(gridbb);
-                ps_grid->calcIndices();
-                ps_grid->calcDistanceValues();
+                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>("temp.dat");
+
+                std::remove("temp.dat");
 
 
 
@@ -992,20 +1010,20 @@ namespace lvr2
                 timeSum += timeEnd - timeStart;
 
                 // save the mesh of the chunk
-//                if(m_debugChunks && h == 0)
-//                {
-//                    auto reconstruction =
-//                            make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
-//                    lvr2::HalfEdgeMesh<Vec> mesh;
-//                    reconstruction->getMesh(mesh);
-//                    if(mesh.numVertices() > 0 && mesh.numFaces() > 0)
-//                    {
-//                        lvr2::SimpleFinalizer<Vec> finalize;
-//                        auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
-//                        auto m = ModelPtr(new Model(meshBuffer));
-//                        ModelFactory::saveModel(m, name_id + ".ply");
-//                    }
-//                }
+/*                if(m_debugChunks && h == 0)
+                {
+                    auto reconstruction =
+                            make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
+                    lvr2::HalfEdgeMesh<Vec> mesh;
+                    reconstruction->getMesh(mesh);
+                    if(mesh.numVertices() > 0 && mesh.numFaces() > 0)
+                    {
+                        lvr2::SimpleFinalizer<Vec> finalize;
+                        auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
+                        auto m = ModelPtr(new Model(meshBuffer));
+                        ModelFactory::saveModel(m, name_id + ".ply");
+                    }
+                }*/
 
             }
             std::cout << lvr2::timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
@@ -1124,6 +1142,98 @@ namespace lvr2
 
         while(con)
         {
+
+            float x_min, y_min, z_min, x_max, y_max, z_max;
+            floatArr points;
+            size_t numPoints;
+            bool calcNorm;
+
+            MPI_Recv(&numPoints, 1, MPI_SIZE_T, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(points.get(), numPoints, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&x_min, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&y_min, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&z_min, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&x_max, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&y_max, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&z_max, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&calcNorm, 1, MPI_CXX_BOOL, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            BaseVecT gridbb_min(x_min,
+                                y_min,
+                                z_min);
+            BaseVecT gridbb_max(x_max,
+                                y_max,
+                                z_max);
+            BoundingBox<BaseVecT> gridbb(gridbb_min, gridbb_max);
+
+
+            lvr2::PointBufferPtr p_loader(new lvr2::PointBuffer);
+            p_loader->setPointArray(points, numPoints);
+
+              if (!calcNorm)
+              {
+
+                  size_t numNormals;
+                  floatArr normals;
+                  MPI_Recv(&numNormals, 1, MPI_SIZE_T, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                  MPI_Recv(normals.get(), numPoints, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+                  p_loader->setNormalArray(normals, numNormals);
+//                  cout << "got " << numNormals << " normals" << endl;
+              }
+
+//                lvr2::PointBufferPtr p_loader_reduced;
+            //if(numPoints > (m_chunkSize*500000)) // reduction TODO add options
+            /*if(false)
+            {
+                OctreeReduction oct(p_loader, m_voxelSizes[h], 20);
+                p_loader_reduced = oct.getReducedPoints();
+            }
+            else
+            {
+                p_loader_reduced = p_loader;
+            }*/
+
+            lvr2::PointsetSurfacePtr<Vec> surface;
+            surface = make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader,
+                                                                     "FLANN",
+                                                                     m_kn,
+                                                                     m_ki,
+                                                                     m_kd,
+                                                                     m_useRansac);
+            //calculate important stuff for reconstruction
+            if (calcNorm)
+            {
+                surface->calculateSurfaceNormals();
+            }
+
+
+
+            auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
+                    m_voxelSizes[0], surface, gridbb, true, m_extrude); // TODO: change m_voxelSize
+
+            ps_grid->setBB(gridbb);
+            ps_grid->calcIndices();
+            ps_grid->calcDistanceValues();
+
+            time_t now = time(0);
+            tm *time = localtime(&now);
+            stringstream largeScale;
+            largeScale << 1900 + time->tm_year << "_" << 1+ time->tm_mon << "_" << time->tm_mday << "_" <<  time->tm_hour << "h_" << 1 + time->tm_min << "m_" << 1 + time->tm_sec << "s.dat";
+
+            ps_grid->serialize(largeScale.str());
+
+            ifstream fl(largeScale.str());
+            fl.seekg(0, ios::end);
+            int len = fl.tellg();
+            char* ret = new char[len];
+            fl.seekg(0, ios::beg);
+            fl.read(ret, len);
+            fl.close();
+
+            MPI_Send(&len, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            MPI_Send(ret, len, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
+
 
 
             // is something to do?

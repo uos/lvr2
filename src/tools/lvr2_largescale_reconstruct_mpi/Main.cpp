@@ -197,7 +197,7 @@ int main(int argc, char** argv)
         // reconstruction with diffrent methods
 //        if (options.getPartMethod() == 1)
 //        {
-            int x = lsr.trueMpiAndReconstructMaster(project, bb, cm);
+            lsr.trueMpiAndReconstructMaster(project, bb, cm);
 //        } else
 //        {
 //            int x = lsr.mpiAndReconstruct(project);
@@ -222,6 +222,7 @@ int main(int argc, char** argv)
         // Wait for completing initialization
         bool b;
         MPI_Recv(&b, 1, MPI_CXX_BOOL, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        OpenMPConfig::setNumThreads(options.getNumThreads());
         if(b)
         {
             LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(),
