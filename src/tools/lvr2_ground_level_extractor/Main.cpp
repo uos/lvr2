@@ -35,6 +35,8 @@
 #include <ctime>  
 
 #include <boost/optional.hpp>
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
 #include "lvr2/config/lvropenmp.hpp"
 
@@ -106,6 +108,11 @@ using namespace lvr2;
 
 using Vec = BaseVector<float>;
 using PsSurface = lvr2::PointsetSurface<Vec>;
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef CGAL::Delaunay_triangulation_2<K>  Triangulation;
+typedef Triangulation::Edge_iterator  Edge_iterator;
+typedef Triangulation::Point          Point;
 
 int globalTexIndex = 0;
 
@@ -556,13 +563,65 @@ float weight(float distance)
     return 1/distance;                
 }
 
+//TODO: muss auflösung berücksichtigen, sollte sich diese ändern
+//TODO: Garantiert dass, dass wir den kleinsten Punkt finden?
+float findGround(float x, float y, float lowestZ, float highestZ, PointsetSurfacePtr<Vec>& surface,FloatChannel& points)
+{
+    float bestZ = highestZ;
+    float currentZ = lowestZ;
+    bool found = false;
+    do
+    {
+        vector<size_t> neighbors;  
+        vector<float> distances;        
+        //Suche nach dem nächsten Bodenpunkt
+        size_t numNeighbors = surface->searchTree()->radiusSearch(Vec(x,y,currentZ), 1000, 1, neighbors, distances);
+        for (size_t j = 0; j < numNeighbors; j++)
+        {
+            size_t pointIdx = neighbors[j];
+            auto cp = points[pointIdx];
+
+            // Wir suchen in einem Schlauch einen Bereich ab, der in etwas dem Abstand zum nächsten Punkt entspricht und nehmen daher
+            // unseren Z wert auf dem wir unsere Bodenpunkte suchen
+            if(cp[2] <= bestZ)
+            {
+                if(sqrt(pow(x - cp[0],2)) <= 0.5 && sqrt(pow(y - cp[1],2)) <= 0.5)
+                {
+                    bestZ = cp[2];
+                    found = true;                   
+                }
+            }
+        }   
+        if(found)
+        {
+            return bestZ;
+        }
+        currentZ += 0.5;
+
+    } while (currentZ <= highestZ);
+
+    return std::numeric_limits<float>::max();
+    
+}
+
+
+
+void delaunayTriangulation(lvr2::HalfEdgeMesh<Vec>& mesh, FloatChannel& points)
+{
+    Triangulation T;
+    for(ssize_t i = 0; i < points.numElements(); i++){
+        auto p = points[i];
+        T.insert(Point(p[0],p[1]));
+    }
+    
+}
 
 
 /**
  * Berechne Gitterpunkte aus umliegenden gemessenen Punkten.
  * Gewichte Punkte abhängig von ihrem Abstand zum Gitterpunkt. 
  */
-//TODO: actually nächsten Bodenpunkte finden so wie bei Texeln
+//TODO: actually nächsten Bodenpunkte finden so wie bei Texeln & ausgeben wie groß der durschnittsradius ist
 //Reziproke Distanz f(d) = 1/d --> Je näher, desto maßgeblicher, linear
 //Gaußsche Klogenkurve f(d) = e(-ad²) --> extremer Fokus auf nahe Punkte
 void movingAverage(lvr2::HalfEdgeMesh<Vec>& mesh, FloatChannel& points, PointsetSurfacePtr<Vec>& surface,
@@ -578,7 +637,8 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
     ssize_t x_min = (ssize_t)min.x - 1;
     ssize_t y_max = (ssize_t)max.y + 1;
     ssize_t y_min = (ssize_t)min.y - 1;
-    ssize_t z_min = (ssize_t)min.z -1;
+    ssize_t z_min = (ssize_t)min.z - 1;
+    ssize_t z_max = (ssize_t)max.z + 1;
     ssize_t x_dim = abs(x_max) + abs(x_min);
     ssize_t y_dim = abs(y_max) + abs(y_min);
 
@@ -610,7 +670,6 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
 
     ProgressBar progress_vert((x_dim/step_size_x)*(y_dim/step_size_y), timestamp.getElapsedTime() + "Calculating z values "); 
 
-    //Z-Werte viel höher als Original bei mehr als einem Nachbar
     for (ssize_t x = x_min; x < x_max; x++)
     {        
         for (ssize_t y = y_min; y < y_max; y++)
@@ -625,7 +684,9 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
             indices.clear();
             distances.clear();              
             radius = minRadius;
-            Vec point(u_x,u_y,z_min);
+            float u_z = findGround(u_x,u_y,z_min,z_max,surface,points);
+            //std::cout << u_z << std::endl;
+            Vec point(u_x,u_y,u_z);
 
             while (found == 0)
             {
@@ -680,7 +741,7 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
             indices.clear();
             distances.clear();   
             radius = minRadius;    
-            point = Vec(u_x+0.5,u_y,z_min);
+            point = Vec(u_x+0.5,u_y,findGround(u_x+0.5,u_y,z_min,z_max,surface,points));
 
             while (found == 0)
             {
@@ -735,7 +796,7 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
             distances.clear();   
             radius = minRadius;           
            
-            point = Vec(u_x-0.5,u_y,z_min);
+            point = Vec(u_x-0.5,u_y,findGround(u_x-0.5,u_y,z_min,z_max,surface,points));
             while (found == 0)
             {
                 number_neighbors = surface->searchTree()->radiusSearch(point, maxNeighbors, radius, indices, distances);
@@ -789,7 +850,7 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
             indices.clear();
             distances.clear();
             radius = minRadius;            
-            point = Vec(u_x+0.25,u_y-h,z_min);
+            point = Vec(u_x+0.25,u_y-h,findGround(u_x+0.25,u_y-h,z_min,z_max,surface,points));
             while (found == 0)
             {
                 number_neighbors = surface->searchTree()->radiusSearch(point, maxNeighbors, radius, indices, distances);
@@ -843,7 +904,7 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
             indices.clear();
             distances.clear();   
             radius = minRadius;       
-            point = Vec(u_x-0.25,u_y-h,z_min);
+            point = Vec(u_x-0.25,u_y-h,findGround(u_x-0.25,u_y-h,z_min,z_max,surface,points));
 
             while (found == 0)
             {
@@ -897,7 +958,7 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
             indices.clear();
             distances.clear(); 
             radius = minRadius;           
-            point = Vec(u_x+0.25,u_y+h,z_min);
+            point = Vec(u_x+0.25,u_y+h,findGround(u_x+0.25,u_y+h,z_min,z_max,surface,points));
             while (found == 0)
             {
                 number_neighbors = surface->searchTree()->radiusSearch(point, maxNeighbors, radius, indices, distances);
@@ -949,7 +1010,7 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
             indices.clear();
             distances.clear(); 
             radius = minRadius;      
-            point = Vec(u_x-0.25,u_y+h,z_min);
+            point = Vec(u_x-0.25,u_y+h,findGround(u_x-0.25,u_y+h,z_min,z_max,surface,points));
             while (found == 0)
             {
                 number_neighbors = surface->searchTree()->radiusSearch(point, maxNeighbors, radius, indices, distances);
@@ -1058,6 +1119,7 @@ int main(int argc, char* argv[])
     
     movingAverage(mesh,arr,surface,minRadius,maxRadius,minNeighbors,maxNeighbors,radiusSteps);
 
+    //CGAL::Delaunay_triangulation_2();
     //load the boundingbox to specify the size of the mesh
     //creating a cluster map made up of one cluster is necessary to use the finalizer    
     auto faceNormals = calcFaceNormals(mesh);
