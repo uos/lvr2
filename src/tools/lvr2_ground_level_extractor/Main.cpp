@@ -35,8 +35,11 @@
 #include <ctime>  
 
 #include <boost/optional.hpp>
-#include <CGAL/Delaunay_triangulation_2.h>
+
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Projection_traits_xy_3.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+
 
 #include "lvr2/config/lvropenmp.hpp"
 
@@ -109,10 +112,6 @@ using namespace lvr2;
 using Vec = BaseVector<float>;
 using PsSurface = lvr2::PointsetSurface<Vec>;
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef CGAL::Delaunay_triangulation_2<K>  Triangulation;
-typedef Triangulation::Edge_iterator  Edge_iterator;
-typedef Triangulation::Point          Point;
 
 int globalTexIndex = 0;
 
@@ -126,7 +125,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(string &data)
     ModelPtr base_model = ModelFactory::readModel(data);
     PointBufferPtr base_buffer = base_model->m_pointCloud;
     PointsetSurfacePtr<Vec> surface;
-    //TODO: what is the difference between FLANN and the other modes and is FLANN the best to use
     surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(base_buffer,"FLANN");
     surface->calculateSurfaceNormals();
     return surface;
@@ -223,7 +221,6 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<BaseVecT>& surface
         {
             for (ssize_t x = fmin_x; x < fmax_x; x++)
             {
-                //TODO: Texel im ZENTRUM messen
                 //Idee: Hälfte von TexelSize auf u_x und u_y aufaddieren
                 //Zurückrechnen der Werte und setzen auf Zentrum
                 float u_x = x * texelSize + texelSize/2;
@@ -294,8 +291,6 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<BaseVecT>& surface
                         //search from maximum height
                         Vec point_dist = point; 
                         point_dist[2] = z_max;
-                        //TODO: make the neighborhood adjustable
-                        //TODO: is texelsize a good radius to use?
                        
                         size_t best_point = -1;
                         float highest_z = z_min;
@@ -403,7 +398,6 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<BaseVecT>& surface
     return texture;
 }
 
-//TODO: Find out how to read a tiff correctly
 Texture readGeoTIFF(std::string filename, int mesh_x_dim, int mesh_y_dim)
 {
     //Lies das GeoTIFF
@@ -455,7 +449,6 @@ Texture readGeoTIFF(std::string filename, int mesh_x_dim, int mesh_y_dim)
     return texture; 
 }
 
-//TODO:Materialiser --> weise Texturdaten so zu, dass das face einfach als Farbe die nächste Textur hat
 //1. Idee: Jedes Face kriegt die Farbe von dem nächsten Texel
 //jedes Face ist ein Cluster --> einfach Farbe setzen
 
@@ -564,7 +557,7 @@ float weight(float distance)
 }
 
 //TODO: muss auflösung berücksichtigen, sollte sich diese ändern
-//TODO: Garantiert dass, dass wir den kleinsten Punkt finden?
+//TODO: remove this after real ground finder
 float findGround(float x, float y, float lowestZ, float highestZ, PointsetSurfacePtr<Vec>& surface,FloatChannel& points)
 {
     float bestZ = highestZ;
@@ -605,23 +598,10 @@ float findGround(float x, float y, float lowestZ, float highestZ, PointsetSurfac
 }
 
 
-
-void delaunayTriangulation(lvr2::HalfEdgeMesh<Vec>& mesh, FloatChannel& points)
-{
-    Triangulation T;
-    for(ssize_t i = 0; i < points.numElements(); i++){
-        auto p = points[i];
-        T.insert(Point(p[0],p[1]));
-    }
-    
-}
-
-
 /**
  * Berechne Gitterpunkte aus umliegenden gemessenen Punkten.
  * Gewichte Punkte abhängig von ihrem Abstand zum Gitterpunkt. 
  */
-//TODO: actually nächsten Bodenpunkte finden so wie bei Texeln & ausgeben wie groß der durschnittsradius ist
 //Reziproke Distanz f(d) = 1/d --> Je näher, desto maßgeblicher, linear
 //Gaußsche Klogenkurve f(d) = e(-ad²) --> extremer Fokus auf nahe Punkte
 void movingAverage(lvr2::HalfEdgeMesh<Vec>& mesh, FloatChannel& points, PointsetSurfacePtr<Vec>& surface,
@@ -1101,7 +1081,6 @@ int main(int argc, char* argv[])
 {
     lvr2::HalfEdgeMesh<Vec> mesh;
     
-    //TODO: read infos with Options file
     float minRadius= atof(argv[1]);
     float maxRadius= atof(argv[2]);
     int radiusSteps = atoi(argv[3]); 
@@ -1116,7 +1095,9 @@ int main(int argc, char* argv[])
     
     //get the pointcloud coordinates from the FloatChannel
     FloatChannel arr =  *(base_buffer->getFloatChannel("points"));   
-    
+    ///TODO: calculate surface area a la SPWT
+    ///set new calculated surface as pointcloud
+    return 0;
     movingAverage(mesh,arr,surface,minRadius,maxRadius,minNeighbors,maxNeighbors,radiusSteps);
 
     //CGAL::Delaunay_triangulation_2();
