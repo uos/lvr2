@@ -32,7 +32,6 @@
 #include "lvr2/io/hdf5/ArrayIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
 #include "lvr2/io/hdf5/MeshIO.hpp"
-#include "lvr2/reconstruction/BigGrid.hpp"
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
@@ -844,7 +843,6 @@ namespace lvr2
         BoundingBox<BaseVecT> bb = bg.getBB();
 
         std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes;
-        vector<BoundingBox<BaseVecT>> partitionBoxesNew;
         BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
 
 
@@ -883,26 +881,36 @@ namespace lvr2
         BoundingBox<BaseVecT> cbb(bb_min, bb_max);
 
 
-        uint partitionBoxesSkipped = 0;
+        #pragma omp parallel sections num_threads(2)
+        {
+            #pragma omp section
+            {
+                mpiScheduler(partitionBoxes, bg, cbb, chunkManager);
 
+            }
+            #pragma omp section
+            {
+                mpiCollector(partitionBoxes, cbb, chunkManager);
+            }
+        }
+
+        return 1;
+
+    }
+
+    template<typename BaseVecT>
+    void LargeScaleReconstruction<BaseVecT>::mpiScheduler(std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes, BigGrid<BaseVecT>& bg, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager)
+    {
+        uint partitionBoxesSkipped = 0;
         for(int h = 0; h < m_voxelSizes.size(); h++)
         {
             // vector to save the new chunk names - which chunks have to be reconstructed
-            vector<BaseVector<int>> newChunks = vector<BaseVector<int>>();
 
-            string layerName = "tsdf_values_" + std::to_string(m_voxelSizes[h]);
-            //create chunks
+            // send chunks
 
             for (int i = 0; i < partitionBoxes->size(); i++)
             {
-/*                string name_id;
-                name_id =
-                        std::to_string(
-                                (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize)) +
-                        "_" +std::to_string(
-                                (int)floor(partitionBoxes->at(i).getCentroid().y / m_chunkSize)) +
-                        "_" + std::to_string((int)floor(partitionBoxes->at(i).getCentroid().z / m_chunkSize));*/
-                // Wait for Slave to ask for job
+                // Wait for Client to ask for job
                 int dest;
                 MPI_Status status;
 
@@ -926,13 +934,17 @@ namespace lvr2
                     continue;
                 }
 
+                // Get Bounding Box
                 float x_min = partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
-                      y_min = partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
-                      z_min = partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3,
-                      x_max = partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
-                      y_max = partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
-                      z_max = partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3;
+                        y_min = partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
+                        z_min = partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3,
+                        x_max = partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
+                        y_max = partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
+                        z_max = partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3;
 
+                std::cout << lvr2::timestamp << "Sending Chunk: " << i << std::endl;
+                // Send all Data to client, tag = 0
+                // TODO: Non-blocking
                 MPI_Send(&numPoints, 1, MPI_SIZE_T, dest, 0, MPI_COMM_WORLD);
                 MPI_Send(points.get(), numPoints, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
                 MPI_Send(&x_min, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
@@ -941,45 +953,54 @@ namespace lvr2
                 MPI_Send(&x_max, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
                 MPI_Send(&y_max, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
                 MPI_Send(&z_max, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
+                MPI_Send(&h, 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
                 bool calcNorm = !bg.hasNormals();
                 MPI_Send(&calcNorm, 1, MPI_CXX_BOOL, dest, 0, MPI_COMM_WORLD);
 
 
-
-                  if (!calcNorm)
-                  {
-                      size_t numNormals;
-                      lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x -m_voxelSizes[h] *3,
-                                                          partitionBoxes->at(i).getMin().y -m_voxelSizes[h] *3,
-                                                          partitionBoxes->at(i).getMin().z -m_voxelSizes[h] *3,
-                                                          partitionBoxes->at(i).getMax().x +m_voxelSizes[h] *3,
-                                                          partitionBoxes->at(i).getMax().y +m_voxelSizes[h] *3,
-                                                          partitionBoxes->at(i).getMax().z +m_voxelSizes[h] *3,
-                                                          numNormals);
-
-                      MPI_Send(&numNormals, 1, MPI_SIZE_T, dest, 0, MPI_COMM_WORLD);
-                      MPI_Send(normals.get(), numPoints, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
-                  }
-
-//                lvr2::PointBufferPtr p_loader_reduced;
-                //if(numPoints > (m_chunkSize*500000)) // reduction TODO add options
-                /*if(false)
+                // Send normals if they are available
+                if (!calcNorm)
                 {
-                    OctreeReduction oct(p_loader, m_voxelSizes[h], 20);
-                    p_loader_reduced = oct.getReducedPoints();
+                    size_t numNormals;
+                    lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x -m_voxelSizes[h] *3,
+                                                        partitionBoxes->at(i).getMin().y -m_voxelSizes[h] *3,
+                                                        partitionBoxes->at(i).getMin().z -m_voxelSizes[h] *3,
+                                                        partitionBoxes->at(i).getMax().x +m_voxelSizes[h] *3,
+                                                        partitionBoxes->at(i).getMax().y +m_voxelSizes[h] *3,
+                                                        partitionBoxes->at(i).getMax().z +m_voxelSizes[h] *3,
+                                                        numNormals);
+
+                    MPI_Send(&numNormals, 1, MPI_SIZE_T, dest, 0, MPI_COMM_WORLD);
+                    MPI_Send(normals.get(), numPoints, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
                 }
-                else
-                {
-                    p_loader_reduced = p_loader;
-                }*/
+                // Wait for new client
+            }
+            std::cout << lvr2::timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
+        }
+    }
 
-                // TODO: Get ps_grid from Slave
+    template<typename BaseVecT>
+    void LargeScaleReconstruction<BaseVecT>::mpiCollector(std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager)
+    {
+        vector<BoundingBox<BaseVecT>> partitionBoxesNew;
+        unsigned long timeSum = 0;
+        for(int h = 0; h < m_voxelSizes.size(); h++)
+        {
+            // vector to save the new chunk names - which chunks have to be reconstructed
+            vector<BaseVector<int>> newChunks = vector<BaseVector<int>>();
 
+            string layerName = "tsdf_values_" + std::to_string(m_voxelSizes[h]);
+            // receive chunks
 
-                int len;
-                char* ret;
-                MPI_Recv(&len, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                MPI_Recv(ret, len, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (int i = 0; i < partitionBoxes->size(); i++)
+            {
+                // Receive chunk from client, tag = 1
+                int len, dest;
+                char *ret;
+                MPI_Status status;
+                MPI_Recv(&len, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
+                dest = status.MPI_SOURCE;
+                MPI_Recv(ret, len, MPI_CHAR, dest, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
                 std::ofstream file("temp.dat");
                 file.write(ret, len);
@@ -989,13 +1010,10 @@ namespace lvr2
 
                 std::remove("temp.dat");
 
-
-
-
                 unsigned long timeStart = lvr2::timestamp.getCurrentTimeInMs();
-                int x = (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize);
-                int y = (int)floor(partitionBoxes->at(i).getCentroid().y / m_chunkSize);
-                int z = (int)floor(partitionBoxes->at(i).getCentroid().z / m_chunkSize);
+                int x = (int) floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize);
+                int y = (int) floor(partitionBoxes->at(i).getCentroid().y / m_chunkSize);
+                int z = (int) floor(partitionBoxes->at(i).getCentroid().z / m_chunkSize);
 
 
                 addTSDFChunkManager(x, y, z, ps_grid, chunkManager, layerName);
@@ -1008,25 +1026,7 @@ namespace lvr2
                 unsigned long timeEnd = lvr2::timestamp.getCurrentTimeInMs();
 
                 timeSum += timeEnd - timeStart;
-
-                // save the mesh of the chunk
-/*                if(m_debugChunks && h == 0)
-                {
-                    auto reconstruction =
-                            make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
-                    lvr2::HalfEdgeMesh<Vec> mesh;
-                    reconstruction->getMesh(mesh);
-                    if(mesh.numVertices() > 0 && mesh.numFaces() > 0)
-                    {
-                        lvr2::SimpleFinalizer<Vec> finalize;
-                        auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
-                        auto m = ModelPtr(new Model(meshBuffer));
-                        ModelFactory::saveModel(m, name_id + ".ply");
-                    }
-                }*/
-
             }
-            std::cout << lvr2::timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
 
             cout << "ChunkManagerIO Time: " <<(double) (timeSum / 1000.0) << " s" << endl;
             cout << lvr2::timestamp << "finished" << endl;
@@ -1127,15 +1127,16 @@ namespace lvr2
             }
             std::cout << lvr2::timestamp << "added/changed " << newChunks.size() << " chunks in layer " << layerName << std::endl;
         }
-
-        return 1;
-
     }
 
     template<typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::trueMpiAndReconstructSlave()
     {
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         // is something to do?
+        // send request to scheduler, tag = 0
+        std::cout << lvr2::timestamp << "Requesting chunk[" << rank << "]: " << std::endl;
         bool con;
         MPI_Send(nullptr, 0, MPI_BYTE, 0, 0, MPI_COMM_WORLD);
         MPI_Recv(&con, 1, MPI_CXX_BOOL, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -1143,10 +1144,12 @@ namespace lvr2
         while(con)
         {
 
+            // receive data from scheduler, tag = 0
             float x_min, y_min, z_min, x_max, y_max, z_max;
             floatArr points;
             size_t numPoints;
             bool calcNorm;
+            int h;
 
             MPI_Recv(&numPoints, 1, MPI_SIZE_T, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(points.get(), numPoints, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -1156,6 +1159,7 @@ namespace lvr2
             MPI_Recv(&x_max, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(&y_max, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(&z_max, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&h, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(&calcNorm, 1, MPI_CXX_BOOL, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             BaseVecT gridbb_min(x_min,
@@ -1172,7 +1176,7 @@ namespace lvr2
 
               if (!calcNorm)
               {
-
+                  // receive normals if they are available from scheduler, tag = 0
                   size_t numNormals;
                   floatArr normals;
                   MPI_Recv(&numNormals, 1, MPI_SIZE_T, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -1210,12 +1214,13 @@ namespace lvr2
 
 
             auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
-                    m_voxelSizes[0], surface, gridbb, true, m_extrude); // TODO: change m_voxelSize
+                    m_voxelSizes[h], surface, gridbb, true, m_extrude); // TODO: change m_voxelSize
 
             ps_grid->setBB(gridbb);
             ps_grid->calcIndices();
             ps_grid->calcDistanceValues();
 
+            // TODO: edit serialization
             time_t now = time(0);
             tm *time = localtime(&now);
             stringstream largeScale;
@@ -1231,11 +1236,13 @@ namespace lvr2
             fl.read(ret, len);
             fl.close();
 
-            MPI_Send(&len, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-            MPI_Send(ret, len, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
+            // Send results back to collector, tag = 1
+            // TODO: non-blocking
+            MPI_Send(&len, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
+            MPI_Send(ret, len, MPI_CHAR, 0, 1, MPI_COMM_WORLD);
 
 
-
+            std::cout << lvr2::timestamp << "Requesting chunk[" << rank << "]: " << std::endl;
             // is something to do?
             bool con;
             MPI_Send(nullptr, 0, MPI_BYTE, 0, 0, MPI_COMM_WORLD);
@@ -1243,4 +1250,5 @@ namespace lvr2
         }
         return 1;
     }
+
 }

@@ -68,12 +68,22 @@ using BaseHDF5IO = lvr2::Hdf5IO<>;
 // Extend IO with features (dependencies are automatically fetched)
 using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
 
+void sendClients(int size, bool start)
+{
+    for(int i = 1; i < size; i++)
+    {
+        MPI_Send(&start,1, MPI_CXX_BOOL, i, 0, MPI_COMM_WORLD);
+    }
+}
+
 int main(int argc, char** argv)
 {
     // Initialize MPI Environment
     MPI_Init(&argc, &argv);
     int mpi_rank;
+    int mpi_size;
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
     // =======================================================================
     // Parse and print command line parameters
@@ -90,11 +100,15 @@ int main(int argc, char** argv)
         if (options.printUsage())
         {
             bool a = false;
-            MPI_Bcast(&a, 1, MPI_CXX_BOOL, mpi_rank, MPI_COMM_WORLD);
+            sendClients(mpi_size, false);
             return EXIT_SUCCESS;
         }
-        bool a = true;
-        MPI_Bcast(&a, 1, MPI_CXX_BOOL, mpi_rank, MPI_COMM_WORLD);
+        if(mpi_size == 1)
+        {
+            std::cout << "At least 1 Client required" << std::endl;
+            return EXIT_SUCCESS;
+        }
+        sendClients(mpi_size, true);
 
         std::cout << options << std::endl;
 
@@ -197,6 +211,7 @@ int main(int argc, char** argv)
         // reconstruction with diffrent methods
 //        if (options.getPartMethod() == 1)
 //        {
+            cout << "Starting Master." << endl;
             lsr.trueMpiAndReconstructMaster(project, bb, cm);
 //        } else
 //        {
@@ -236,6 +251,8 @@ int main(int argc, char** argv)
                                               options.getMinPlaneSize(), options.getSmallRegionThreshold(),
                                               options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(),
                                               options.getDebugChunks(), options.useGPU());
+
+            cout << "Starting Client[" << mpi_rank << "]." << endl;
             lsr.trueMpiAndReconstructSlave();
         }
         return 0;

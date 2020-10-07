@@ -55,6 +55,8 @@ public:
         bool extrude = true
     );
 
+    PointsetGrid(string file);
+
     virtual ~PointsetGrid() {}
 
     void calcDistanceValues();

@@ -33,6 +33,7 @@
 #include "lvr2/reconstruction/FastBox.hpp"
 #include "lvr2/algorithm/ChunkManager.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
+#include "lvr2/reconstruction/BigGrid.hpp"
 
 
 namespace lvr2
@@ -178,7 +179,7 @@ namespace lvr2
 
         /**
          *
-         * this methods splits the given PointClouds via kd-Tree and calculates all required values for a later
+         * this method splits the given PointClouds in to Chunks and calculates all required values for a later
          * reconstruction within a MPI network
          * @param project ScanProject containing Scans
          * @return
@@ -208,6 +209,7 @@ namespace lvr2
 
 
 
+
     private:
 
         /**
@@ -222,6 +224,17 @@ namespace lvr2
                 shared_ptr<lvr2::PointsetGrid<BaseVector<float>, lvr2::FastBox<BaseVector<float>>>> ps_grid,
                 shared_ptr<ChunkHashGrid> cm,
                 std::string layerName);
+
+        /**
+         * This Method Schedules the work for the MPI Clients
+         */
+        void mpiScheduler(std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes, BigGrid<BaseVecT>& bg, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager);
+
+        /**
+         * This Method Collects results of MPI Clients and saves the completed reconstruction
+         */
+        void mpiCollector(std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager);
+
 
         //flag to trigger .ply output of big Mesh
         bool m_bigMesh = true;

@@ -65,6 +65,12 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
     }
 }
 
+template<typename BaseVecT, typename BoxT>
+PointsetGrid<BaseVecT, BoxT>::PointsetGrid(string file) : HashGrid<BaseVecT, BoxT>(file)
+{
+
+}
+
 
 template<typename BaseVecT, typename BoxT>
 void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
