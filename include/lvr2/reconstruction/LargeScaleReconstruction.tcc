@@ -823,7 +823,7 @@ namespace lvr2
     template<typename BaseVecT>
     int LargeScaleReconstruction<BaseVecT>::trueMpiAndReconstructMaster(ScanProjectEditMarkPtr project,
     BoundingBox<BaseVecT>& newChunksBB,
-            std::shared_ptr<ChunkHashGrid> chunkManager)
+            std::shared_ptr<ChunkHashGrid> chunkManager, int size)
     {
         unsigned long timeSum = 0;
         m_chunkSize = chunkManager->getChunkSize();
@@ -832,7 +832,11 @@ namespace lvr2
         {
             cout << "Inconsistency between number of given scans and diff-vector (scans to consider)! exit..." << endl;
             bool a = false;
-            MPI_Bcast(&a, 1, MPI_CXX_BOOL, 0, MPI_COMM_WORLD);
+            for(int i = 1; i < size; i++)
+            {
+                MPI_Recv(nullptr, 0, MPI_BYTE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Send(&a, 1, MPI_CXX_BOOL, i, 0, MPI_COMM_WORLD);
+            }
             return 0;
         }
 
@@ -910,12 +914,15 @@ namespace lvr2
 
             for (int i = 0; i < partitionBoxes->size(); i++)
             {
+                std::cout << lvr2::timestamp << "Chunk " << i+1 << "/" << partitionBoxes->size() << std::endl;
                 // Wait for Client to ask for job
                 int dest;
                 MPI_Status status;
-
-                MPI_Recv(nullptr, 0, MPI_BYTE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+                bool a = true;
+                MPI_Recv(nullptr, 0, MPI_BYTE, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
                 dest = status.MPI_SOURCE;
+                std::cout << lvr2::timestamp << "Send chunk to client " << dest << std::endl;
+                MPI_Send(&a, 1, MPI_CXX_BOOL, dest, 2, MPI_COMM_WORLD);
 
                 size_t numPoints;
 
@@ -942,24 +949,28 @@ namespace lvr2
                         y_max = partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
                         z_max = partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3;
 
-                std::cout << lvr2::timestamp << "Sending Chunk: " << i << std::endl;
                 // Send all Data to client, tag = 0
                 // TODO: Non-blocking
-                MPI_Send(&numPoints, 1, MPI_SIZE_T, dest, 0, MPI_COMM_WORLD);
-                MPI_Send(points.get(), numPoints, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
-                MPI_Send(&x_min, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
-                MPI_Send(&y_min, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
-                MPI_Send(&z_min, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
-                MPI_Send(&x_max, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
-                MPI_Send(&y_max, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
-                MPI_Send(&z_max, 1, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
-                MPI_Send(&h, 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
-                bool calcNorm = !bg.hasNormals();
-                MPI_Send(&calcNorm, 1, MPI_CXX_BOOL, dest, 0, MPI_COMM_WORLD);
+                std::cout << lvr2::timestamp << "Num Points: " << numPoints << std::endl;
+                MPI_Send(&numPoints, 1, MPI_SIZE_T, dest, 3, MPI_COMM_WORLD);
+                MPI_Send(points.get(), numPoints, MPI_FLOAT, dest, 4, MPI_COMM_WORLD);
+                std::cout << lvr2::timestamp << "BoundingBoxMin: [" << x_min << "," << y_min << "," << z_min << "]" << std::endl;
+                MPI_Send(&x_min, 1, MPI_FLOAT, dest, 5, MPI_COMM_WORLD);
+                MPI_Send(&y_min, 1, MPI_FLOAT, dest, 6, MPI_COMM_WORLD);
+                MPI_Send(&z_min, 1, MPI_FLOAT, dest, 7, MPI_COMM_WORLD);
+                std::cout << lvr2::timestamp << "BoundingBoxMin: [" << x_max << "," << y_max << "," << z_max << "]" << std::endl;
+                MPI_Send(&x_max, 1, MPI_FLOAT, dest, 8, MPI_COMM_WORLD);
+                MPI_Send(&y_max, 1, MPI_FLOAT, dest, 9, MPI_COMM_WORLD);
+                MPI_Send(&z_max, 1, MPI_FLOAT, dest, 10, MPI_COMM_WORLD);
+                std::cout << lvr2::timestamp << "h: " << h << std::endl;
+                MPI_Send(&h, 1, MPI_INT, dest, 11, MPI_COMM_WORLD);
+                bool hasNorm = bg.hasNormals();
+                std::cout << lvr2::timestamp << "Normals available: " << hasNorm << std::endl;
+                MPI_Send(&hasNorm, 1, MPI_CXX_BOOL, dest, 12, MPI_COMM_WORLD);
 
 
                 // Send normals if they are available
-                if (!calcNorm)
+                if (hasNorm)
                 {
                     size_t numNormals;
                     lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x -m_voxelSizes[h] *3,
@@ -969,13 +980,24 @@ namespace lvr2
                                                         partitionBoxes->at(i).getMax().y +m_voxelSizes[h] *3,
                                                         partitionBoxes->at(i).getMax().z +m_voxelSizes[h] *3,
                                                         numNormals);
-
-                    MPI_Send(&numNormals, 1, MPI_SIZE_T, dest, 0, MPI_COMM_WORLD);
-                    MPI_Send(normals.get(), numPoints, MPI_FLOAT, dest, 0, MPI_COMM_WORLD);
+                    std::cout << lvr2::timestamp << "NumNormals: " << numNormals << std::endl;
+                    MPI_Send(&numNormals, 1, MPI_SIZE_T, dest, 13, MPI_COMM_WORLD);
+                    MPI_Send(normals.get(), numPoints, MPI_FLOAT, dest, 14, MPI_COMM_WORLD);
                 }
+                std::cout << std::endl;
                 // Wait for new client
             }
             std::cout << lvr2::timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
+        }
+        int size;
+        bool a = false;
+        MPI_Comm_size(MPI_COMM_WORLD, &size);
+        MPI_Status status;
+        for(int i = 1; i < size; i++)
+        {
+            MPI_Recv(nullptr, 0, MPI_BYTE, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
+            int dest = status.MPI_SOURCE;
+            MPI_Send(&a, 1, MPI_CXX_BOOL, dest, 2, MPI_COMM_WORLD);
         }
     }
 
@@ -994,13 +1016,15 @@ namespace lvr2
 
             for (int i = 0; i < partitionBoxes->size(); i++)
             {
-                // Receive chunk from client, tag = 1
+                // Receive chunk from client
                 int len, dest;
-                char *ret;
                 MPI_Status status;
-                MPI_Recv(&len, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
+                std::cout << lvr2::timestamp << "Waiting for chunk " << i << "/" << partitionBoxes->size() << std::endl;
+                MPI_Recv(&len, 1, MPI_INT, MPI_ANY_SOURCE, 15, MPI_COMM_WORLD, &status);
                 dest = status.MPI_SOURCE;
-                MPI_Recv(ret, len, MPI_CHAR, dest, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                std::cout << lvr2::timestamp << "Got chunk from Client " << dest << std::endl << std::endl;
+                char ret[len];
+                MPI_Recv(ret, len, MPI_CHAR, dest, 16, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
                 std::ofstream file("temp.dat");
                 file.write(ret, len);
@@ -1136,31 +1160,32 @@ namespace lvr2
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         // is something to do?
         // send request to scheduler, tag = 0
-        std::cout << lvr2::timestamp << "Requesting chunk[" << rank << "]: " << std::endl;
         bool con;
-        MPI_Send(nullptr, 0, MPI_BYTE, 0, 0, MPI_COMM_WORLD);
-        MPI_Recv(&con, 1, MPI_CXX_BOOL, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Send(nullptr, 0, MPI_BYTE, 0, 1, MPI_COMM_WORLD);
+        MPI_Recv(&con, 1, MPI_CXX_BOOL, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         while(con)
         {
 
             // receive data from scheduler, tag = 0
             float x_min, y_min, z_min, x_max, y_max, z_max;
-            floatArr points;
+
             size_t numPoints;
-            bool calcNorm;
+            bool hasNorm;
             int h;
 
-            MPI_Recv(&numPoints, 1, MPI_SIZE_T, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(points.get(), numPoints, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(&x_min, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(&y_min, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(&z_min, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(&x_max, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(&y_max, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(&z_max, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(&h, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(&calcNorm, 1, MPI_CXX_BOOL, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&numPoints, 1, MPI_SIZE_T, 0, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            float fpoints[numPoints];
+            MPI_Recv(fpoints, numPoints, MPI_FLOAT, 0, 4, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            floatArr points(fpoints);
+            MPI_Recv(&x_min, 1, MPI_FLOAT, 0, 5, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&y_min, 1, MPI_FLOAT, 0, 6, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&z_min, 1, MPI_FLOAT, 0, 7, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&x_max, 1, MPI_FLOAT, 0, 8, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&y_max, 1, MPI_FLOAT, 0, 9, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&z_max, 1, MPI_FLOAT, 0, 10, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&h, 1, MPI_INT, 0, 11, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&hasNorm, 1, MPI_CXX_BOOL, 0, 12, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             BaseVecT gridbb_min(x_min,
                                 y_min,
@@ -1174,13 +1199,14 @@ namespace lvr2
             lvr2::PointBufferPtr p_loader(new lvr2::PointBuffer);
             p_loader->setPointArray(points, numPoints);
 
-              if (!calcNorm)
+              if (hasNorm)
               {
                   // receive normals if they are available from scheduler, tag = 0
                   size_t numNormals;
-                  floatArr normals;
-                  MPI_Recv(&numNormals, 1, MPI_SIZE_T, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                  MPI_Recv(normals.get(), numPoints, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                  MPI_Recv(&numNormals, 1, MPI_SIZE_T, 0, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                  float fnormals[numNormals];
+                  MPI_Recv(&fnormals, numPoints, MPI_FLOAT, 0, 14, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                  floatArr normals(fnormals);
 
                   p_loader->setNormalArray(normals, numNormals);
 //                  cout << "got " << numNormals << " normals" << endl;
@@ -1206,7 +1232,7 @@ namespace lvr2
                                                                      m_kd,
                                                                      m_useRansac);
             //calculate important stuff for reconstruction
-            if (calcNorm)
+            if (!hasNorm)
             {
                 surface->calculateSurfaceNormals();
             }
@@ -1214,7 +1240,7 @@ namespace lvr2
 
 
             auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
-                    m_voxelSizes[h], surface, gridbb, true, m_extrude); // TODO: change m_voxelSize
+                    m_voxelSizes[h], surface, gridbb, true, m_extrude);
 
             ps_grid->setBB(gridbb);
             ps_grid->calcIndices();
@@ -1238,15 +1264,15 @@ namespace lvr2
 
             // Send results back to collector, tag = 1
             // TODO: non-blocking
-            MPI_Send(&len, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
-            MPI_Send(ret, len, MPI_CHAR, 0, 1, MPI_COMM_WORLD);
+            MPI_Send(&len, 1, MPI_INT, 0, 15, MPI_COMM_WORLD);
+            MPI_Send(ret, len, MPI_CHAR, 0, 16, MPI_COMM_WORLD);
 
 
             std::cout << lvr2::timestamp << "Requesting chunk[" << rank << "]: " << std::endl;
             // is something to do?
             bool con;
-            MPI_Send(nullptr, 0, MPI_BYTE, 0, 0, MPI_COMM_WORLD);
-            MPI_Recv(&con, 1, MPI_CXX_BOOL, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Send(nullptr, 0, MPI_BYTE, 0, 1, MPI_COMM_WORLD);
+            MPI_Recv(&con, 1, MPI_CXX_BOOL, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
         return 1;
     }

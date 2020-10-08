@@ -211,8 +211,8 @@ int main(int argc, char** argv)
         // reconstruction with diffrent methods
 //        if (options.getPartMethod() == 1)
 //        {
-            cout << "Starting Master." << endl;
-            lsr.trueMpiAndReconstructMaster(project, bb, cm);
+//            cout << "Starting Master." << endl;
+            lsr.trueMpiAndReconstructMaster(project, bb, cm, mpi_size);
 //        } else
 //        {
 //            int x = lsr.mpiAndReconstruct(project);
@@ -252,7 +252,7 @@ int main(int argc, char** argv)
                                               options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(),
                                               options.getDebugChunks(), options.useGPU());
 
-            cout << "Starting Client[" << mpi_rank << "]." << endl;
+//            cout << "Starting Client[" << mpi_rank << "]." << endl;
             lsr.trueMpiAndReconstructSlave();
         }
         return 0;
