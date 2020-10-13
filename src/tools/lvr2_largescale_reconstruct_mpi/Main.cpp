@@ -101,11 +101,13 @@ int main(int argc, char** argv)
         {
             bool a = false;
             sendClients(mpi_size, false);
+            MPI_Finalize();
             return EXIT_SUCCESS;
         }
         if(mpi_size == 1)
         {
             std::cout << "At least 1 Client required" << std::endl;
+            MPI_Finalize();
             return EXIT_SUCCESS;
         }
         sendClients(mpi_size, true);
@@ -229,8 +231,6 @@ int main(int argc, char** argv)
         }
 
         cout << "Program end." << endl;
-
-        return 0;
     }
     else
     {
@@ -252,9 +252,10 @@ int main(int argc, char** argv)
                                               options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(),
                                               options.getDebugChunks(), options.useGPU());
 
-//            cout << "Starting Client[" << mpi_rank << "]." << endl;
+            cout << "Starting Client[" << mpi_rank << "]." << endl;
             lsr.trueMpiAndReconstructSlave();
         }
-        return 0;
     }
+    MPI_Finalize();
+    return 0;
 }

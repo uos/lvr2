@@ -935,11 +935,11 @@ namespace lvr2
                                             numPoints);
 
                 // remove chunks with less than 50 points
-                if (numPoints <= 50)
+                /*if (numPoints <= 50)
                 {
                     partitionBoxesSkipped++;
                     continue;
-                }
+                }*/
 
                 // Get Bounding Box
                 float x_min = partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
@@ -964,13 +964,13 @@ namespace lvr2
                 MPI_Send(&z_max, 1, MPI_FLOAT, dest, 10, MPI_COMM_WORLD);
                 std::cout << lvr2::timestamp << "h: " << h << std::endl;
                 MPI_Send(&h, 1, MPI_INT, dest, 11, MPI_COMM_WORLD);
-                bool hasNorm = bg.hasNormals();
-                std::cout << lvr2::timestamp << "Normals available: " << hasNorm << std::endl;
-                MPI_Send(&hasNorm, 1, MPI_CXX_BOOL, dest, 12, MPI_COMM_WORLD);
+                bool calcNorm = !bg.hasNormals();
+                std::cout << lvr2::timestamp << "Normals available: " << !calcNorm << std::endl;
+                MPI_Send(&calcNorm, 1, MPI_CXX_BOOL, dest, 12, MPI_COMM_WORLD);
 
 
                 // Send normals if they are available
-                if (hasNorm)
+                if (!calcNorm)
                 {
                     size_t numNormals;
                     lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x -m_voxelSizes[h] *3,
@@ -1161,6 +1161,7 @@ namespace lvr2
         // is something to do?
         // send request to scheduler, tag = 0
         bool con;
+        std::cout << lvr2::timestamp << "[" << rank << "] Waiting for work." << std::endl;
         MPI_Send(nullptr, 0, MPI_BYTE, 0, 1, MPI_COMM_WORLD);
         MPI_Recv(&con, 1, MPI_CXX_BOOL, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
@@ -1171,8 +1172,10 @@ namespace lvr2
             float x_min, y_min, z_min, x_max, y_max, z_max;
 
             size_t numPoints;
-            bool hasNorm;
+            bool calcNorm;
             int h;
+
+
 
             MPI_Recv(&numPoints, 1, MPI_SIZE_T, 0, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             float fpoints[numPoints];
@@ -1185,7 +1188,7 @@ namespace lvr2
             MPI_Recv(&y_max, 1, MPI_FLOAT, 0, 9, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(&z_max, 1, MPI_FLOAT, 0, 10, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(&h, 1, MPI_INT, 0, 11, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            MPI_Recv(&hasNorm, 1, MPI_CXX_BOOL, 0, 12, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&calcNorm, 1, MPI_CXX_BOOL, 0, 12, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             BaseVecT gridbb_min(x_min,
                                 y_min,
@@ -1199,7 +1202,7 @@ namespace lvr2
             lvr2::PointBufferPtr p_loader(new lvr2::PointBuffer);
             p_loader->setPointArray(points, numPoints);
 
-              if (hasNorm)
+              if (!calcNorm)
               {
                   // receive normals if they are available from scheduler, tag = 0
                   size_t numNormals;
@@ -1223,7 +1226,7 @@ namespace lvr2
             {
                 p_loader_reduced = p_loader;
             }*/
-
+            std::cout << lvr2::timestamp << "[" << rank << "] Everything received. " << p_loader->getPointArray().get()[0] << std::endl;
             lvr2::PointsetSurfacePtr<Vec> surface;
             surface = make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader,
                                                                      "FLANN",
@@ -1231,8 +1234,9 @@ namespace lvr2
                                                                      m_ki,
                                                                      m_kd,
                                                                      m_useRansac);
+            std::cout << lvr2::timestamp << "[" << rank << "] Surface created. " << std::endl;
             //calculate important stuff for reconstruction
-            if (!hasNorm)
+            if (calcNorm)
             {
                 surface->calculateSurfaceNormals();
             }
