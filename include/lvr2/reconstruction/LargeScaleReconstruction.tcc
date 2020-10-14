@@ -953,7 +953,8 @@ namespace lvr2
                 // TODO: Non-blocking
                 std::cout << lvr2::timestamp << "Num Points: " << numPoints << std::endl;
                 MPI_Send(&numPoints, 1, MPI_SIZE_T, dest, 3, MPI_COMM_WORLD);
-                MPI_Send(points.get(), numPoints, MPI_FLOAT, dest, 4, MPI_COMM_WORLD);
+                std::cout << lvr2::timestamp << "Points: " << points.get()[0] << std::endl;
+                MPI_Send(points.get(), numPoints*3, MPI_FLOAT, dest, 4, MPI_COMM_WORLD);
                 std::cout << lvr2::timestamp << "BoundingBoxMin: [" << x_min << "," << y_min << "," << z_min << "]" << std::endl;
                 MPI_Send(&x_min, 1, MPI_FLOAT, dest, 5, MPI_COMM_WORLD);
                 MPI_Send(&y_min, 1, MPI_FLOAT, dest, 6, MPI_COMM_WORLD);
@@ -982,7 +983,7 @@ namespace lvr2
                                                         numNormals);
                     std::cout << lvr2::timestamp << "NumNormals: " << numNormals << std::endl;
                     MPI_Send(&numNormals, 1, MPI_SIZE_T, dest, 13, MPI_COMM_WORLD);
-                    MPI_Send(normals.get(), numPoints, MPI_FLOAT, dest, 14, MPI_COMM_WORLD);
+                    MPI_Send(normals.get(), numNormals*3, MPI_FLOAT, dest, 14, MPI_COMM_WORLD);
                 }
                 std::cout << std::endl;
                 // Wait for new client
@@ -1178,8 +1179,8 @@ namespace lvr2
 
 
             MPI_Recv(&numPoints, 1, MPI_SIZE_T, 0, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            float fpoints[numPoints];
-            MPI_Recv(fpoints, numPoints, MPI_FLOAT, 0, 4, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            float fpoints[numPoints*3];
+            MPI_Recv(fpoints, numPoints*3, MPI_FLOAT, 0, 4, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             floatArr points(fpoints);
             MPI_Recv(&x_min, 1, MPI_FLOAT, 0, 5, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(&y_min, 1, MPI_FLOAT, 0, 6, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -1207,8 +1208,8 @@ namespace lvr2
                   // receive normals if they are available from scheduler, tag = 0
                   size_t numNormals;
                   MPI_Recv(&numNormals, 1, MPI_SIZE_T, 0, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                  float fnormals[numNormals];
-                  MPI_Recv(&fnormals, numPoints, MPI_FLOAT, 0, 14, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                  float fnormals[numNormals*3];
+                  MPI_Recv(&fnormals, numNormals, MPI_FLOAT, 0, 14, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                   floatArr normals(fnormals);
 
                   p_loader->setNormalArray(normals, numNormals);
@@ -1242,13 +1243,17 @@ namespace lvr2
             }
 
 
-
+            std::cout << lvr2::timestamp << "[" << rank << "] Normals calculated. " << std::endl;
             auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
                     m_voxelSizes[h], surface, gridbb, true, m_extrude);
 
+            std::cout << lvr2::timestamp << "[" << rank << "] ps_grid created. " << std::endl;
             ps_grid->setBB(gridbb);
+            std::cout << lvr2::timestamp << "[" << rank << "] BB set. " << std::endl;
             ps_grid->calcIndices();
+            std::cout << lvr2::timestamp << "[" << rank << "] Indices calculated. " << std::endl;
             ps_grid->calcDistanceValues();
+            std::cout << lvr2::timestamp << "[" << rank << "] Distances calculated " << std::endl;
 
             // TODO: edit serialization
             time_t now = time(0);
