@@ -44,9 +44,12 @@ PointsetSurface<BaseVecT>::PointsetSurface(PointBufferPtr pointBuffer)
     auto numPoints = m_pointBuffer->numPoints();
     floatArr pts = m_pointBuffer->getPointArray();
 
-    for(size_t i = 0; i < numPoints; i++)
+    if (pts)
     {
-        this->m_boundingBox.expand(BaseVecT(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]));
+        for (size_t i = 0; i < numPoints; i++)
+        {
+            this->m_boundingBox.expand(BaseVecT(pts[i * 3 + 0], pts[i * 3 + 1], pts[i * 3 + 2]));
+        }
     }
 }
 
