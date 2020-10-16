@@ -49,11 +49,21 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     }
     
     m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
-    
+    std::cout << "Saved Meta" << std::endl;
+    std::cout << "maxBucketSize" << fwPtr->maxBucketSize << std::endl;
+    std::cout << "row" << fwPtr->lowPower.size() << std::endl;
+
     // saving Waveform samples
-    std::vector<size_t> waveformDim = {fwPtr->waveformSamples.size() / fwPtr->maxBucketSize, static_cast<size_t>(fwPtr->maxBucketSize)};
-    uint16Arr waveformData = uint16Arr(new uint16_t[fwPtr->waveformSamples.size()]);
-    std::memcpy(waveformData.get(), fwPtr->waveformSamples.data(), fwPtr->waveformSamples.size() * sizeof(uint16_t));
+    uint16Arr waveformData = uint16Arr(new uint16_t[fwPtr->lowPower.size() * (fwPtr->maxBucketSize + 1)]());
+    for(int i = 0; i < fwPtr->lowPower.size(); i++)
+    {
+        waveformData[(fwPtr->maxBucketSize + 1) * i] = (fwPtr->lowPower[i] ? 1 : 0);
+        //uint16_t* startOfBlock = fwPtr->waveformSample.data()
+        int sizeOfBlock = fwPtr->waveformIndices[i + 1] - fwPtr->waveformIndices[i];
+        std::memcpy(waveformData.get() + (i * (fwPtr->maxBucketSize)) + 1, fwPtr->waveformSamples.data() + fwPtr->waveformIndices[i], sizeOfBlock * sizeof(uint16_t));
+    }
+
+    std::vector<size_t> waveformDim = {fwPtr->lowPower.size(), static_cast<size_t>(fwPtr->maxBucketSize)};
     m_featureBase->m_kernel->saveUInt16Array(groupName, waveformName, waveformDim, waveformData);
     std::cout << "Waveform saved" << std::endl; 
 
@@ -103,9 +113,47 @@ WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, c
     boost::shared_array<uint16_t> waveformData;
     std::vector<size_t> waveformDim;
     waveformData = m_featureBase->m_kernel->loadUInt16Array(groupName, waveformName, waveformDim);
-    std::cout << " Dims ..>" << waveformDim[0] << " " <<  waveformDim[1] << std::endl;
-    ret->waveformSamples = std::vector<uint16_t>(waveformData.get(), waveformData.get() + (waveformDim[0] * waveformDim[1]));
-    ret->maxBucketSize = waveformDim[1];
+    ret->waveformSamples.reserve(waveformDim[0] * waveformDim[1] - 1);
+    ret->lowPower.reserve(waveformDim[0]);
+    ret->waveformIndices.reserve(waveformDim[0]);
+    //Store first entry
+    ret->waveformIndices.push_back(0);
+
+    //Remove entries containing 0 from the data and calculate the iterators
+
+    for (int i = 0; i < waveformDim[0]; i++)
+    {
+        //First entry is the channel
+        ret->lowPower.push_back(waveformData[i * waveformDim[1]]);
+
+        //Start with 1 since the first entry was channelinfo
+        for(int j = 1; j < waveformDim[1]; j++)
+        {
+            if(waveformData[(i * waveformDim[1]) + j] == 0 || j == (waveformDim[1] - 1))
+            {
+                if(waveformData[(i * waveformDim[1]) + j] != 0 )
+                {
+                    ret->waveformSamples.push_back(waveformData[(i * waveformDim[1]) + j]);
+                    ret->waveformIndices.push_back(ret->waveformIndices.back() + j);
+                }
+                else
+                {
+                    //ret->waveformSamples.insert(ret->waveformSamples.end(), waveformData[(i * waveformDim[1]) + 1], waveformData[(i * waveformDim[1]) + 1 + j - 1]);
+                    ret->waveformIndices.push_back(ret->waveformIndices.back() + j - 1);
+                }
+                break;
+            }
+            ret->waveformSamples.push_back(waveformData[(i * waveformDim[1]) + j]);
+        }
+    }
+
+    for(int j= 0; j< waveformDim[1] * 3;j++)
+    {
+        std::cout << ret->waveformSamples[j] << std::endl;
+    }
+    //ret->waveformSamples->shrink_to_fit();
+    //ret->waveformSamples = std::vector<uint16_t>(waveformData.get(), waveformData.get() + (waveformDim[0] * waveformDim[1]));
+    ret->maxBucketSize = waveformDim[1] - 1;
     return ret;
 
   

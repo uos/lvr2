@@ -3092,6 +3092,7 @@ void LVRMainWindow::exportLabels()
     PointBufferBridgePtr pointBridge = bridge->getPointBridge();
     PointBufferPtr pointBuffer = pointBridge->getPointBuffer();
 
+    /*
     //Waveform
     boost::filesystem::path waveGroup = (pointGroup / "Waveformdata");
     Channel<uint16_t>::Optional optInt = pointBuffer->getChannel<uint16_t>("waveform");
@@ -3134,6 +3135,7 @@ void LVRMainWindow::exportLabels()
             std::vector<size_t> dimension = {n, width};
             label_hdf5kernel.saveArray(waveGroup.string(), "backgroundRadiation" , dimension, opt->dataPtr());
     }
+    */
 
 }
 
