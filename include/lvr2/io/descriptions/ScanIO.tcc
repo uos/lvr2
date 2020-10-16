@@ -130,10 +130,10 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
             std::cout << "Loading Waveform" << std::endl;
             WaveformPtr fwPtr = m_fullWaveformIO->loadFullWaveform(scanPosNo, scanNo);
             ret->waveform = fwPtr;
-            boost::shared_array<uint16_t> waveformData(new uint16_t[fwPtr->waveformSamples.size()]);
-            std::memcpy(waveformData.get(), fwPtr->waveformSamples.data(), fwPtr->waveformSamples.size() * sizeof(uint16_t));
-            Channel<uint16_t>::Ptr waveformChannel(new Channel<uint16_t>(fwPtr->waveformSamples.size() / fwPtr->maxBucketSize, static_cast<size_t>(fwPtr->maxBucketSize), waveformData));
-            ret->points->addChannel<uint16_t>(waveformChannel, "waveform");
+            //boost::shared_array<uint16_t> waveformData(new uint16_t[fwPtr->waveformSamples.size()]);
+            //std::memcpy(waveformData.get(), fwPtr->waveformSamples.data(), fwPtr->waveformSamples.size() * sizeof(uint16_t));
+            //Channel<uint16_t>::Ptr waveformChannel(new Channel<uint16_t>(fwPtr->waveformSamples.size() / fwPtr->maxBucketSize, static_cast<size_t>(fwPtr->maxBucketSize), waveformData));
+            //ret->points->addChannel<uint16_t>(waveformChannel, "waveform");
         } else{
             std::cout << "No Waveform found" << groupName << std::endl;
         }
