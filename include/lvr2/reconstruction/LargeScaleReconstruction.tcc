@@ -894,7 +894,7 @@ namespace lvr2
             }
             #pragma omp section
             {
-                mpiCollector(partitionBoxes, cbb, chunkManager);
+//                mpiCollector(partitionBoxes, cbb, chunkManager);
             }
         }
 
@@ -996,8 +996,10 @@ namespace lvr2
         MPI_Status status;
         for(int i = 1; i < size; i++)
         {
+
             MPI_Recv(nullptr, 0, MPI_BYTE, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
             int dest = status.MPI_SOURCE;
+            std::cout << lvr2::timestamp << "Sending abort code to client " << dest << std::endl;
             MPI_Send(&a, 1, MPI_CXX_BOOL, dest, 2, MPI_COMM_WORLD);
         }
     }
@@ -1179,9 +1181,8 @@ namespace lvr2
 
 
             MPI_Recv(&numPoints, 1, MPI_SIZE_T, 0, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            float fpoints[numPoints*3];
-            MPI_Recv(fpoints, numPoints*3, MPI_FLOAT, 0, 4, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            floatArr points(fpoints);
+            floatArr points(new float[numPoints*3]);
+            MPI_Recv(points.get(), numPoints*3, MPI_FLOAT, 0, 4, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(&x_min, 1, MPI_FLOAT, 0, 5, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(&y_min, 1, MPI_FLOAT, 0, 6, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             MPI_Recv(&z_min, 1, MPI_FLOAT, 0, 7, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -1208,12 +1209,10 @@ namespace lvr2
                   // receive normals if they are available from scheduler, tag = 0
                   size_t numNormals;
                   MPI_Recv(&numNormals, 1, MPI_SIZE_T, 0, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                  float fnormals[numNormals*3];
-                  MPI_Recv(&fnormals, numNormals, MPI_FLOAT, 0, 14, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                  floatArr normals(fnormals);
+                  floatArr normals(new float[numNormals]);
+                  MPI_Recv(normals.get(), numNormals, MPI_FLOAT, 0, 14, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
                   p_loader->setNormalArray(normals, numNormals);
-//                  cout << "got " << numNormals << " normals" << endl;
               }
 
 //                lvr2::PointBufferPtr p_loader_reduced;
@@ -1227,7 +1226,7 @@ namespace lvr2
             {
                 p_loader_reduced = p_loader;
             }*/
-            std::cout << lvr2::timestamp << "[" << rank << "] Everything received. " << p_loader->getPointArray().get()[0] << std::endl;
+//            std::cout << lvr2::timestamp << "[" << rank << "] Everything received. " << std::endl;
             lvr2::PointsetSurfacePtr<Vec> surface;
             surface = make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader,
                                                                      "FLANN",
@@ -1235,7 +1234,7 @@ namespace lvr2
                                                                      m_ki,
                                                                      m_kd,
                                                                      m_useRansac);
-            std::cout << lvr2::timestamp << "[" << rank << "] Surface created. " << std::endl;
+//            std::cout << lvr2::timestamp << "[" << rank << "] Surface created. " << std::endl;
             //calculate important stuff for reconstruction
             if (calcNorm)
             {
@@ -1243,17 +1242,17 @@ namespace lvr2
             }
 
 
-            std::cout << lvr2::timestamp << "[" << rank << "] Normals calculated. " << std::endl;
+//            std::cout << lvr2::timestamp << "[" << rank << "] Normals calculated. " << std::endl;
             auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
                     m_voxelSizes[h], surface, gridbb, true, m_extrude);
 
-            std::cout << lvr2::timestamp << "[" << rank << "] ps_grid created. " << std::endl;
+//            std::cout << lvr2::timestamp << "[" << rank << "] ps_grid created. " << std::endl;
             ps_grid->setBB(gridbb);
-            std::cout << lvr2::timestamp << "[" << rank << "] BB set. " << std::endl;
+//            std::cout << lvr2::timestamp << "[" << rank << "] BB set. " << std::endl;
             ps_grid->calcIndices();
-            std::cout << lvr2::timestamp << "[" << rank << "] Indices calculated. " << std::endl;
+//            std::cout << lvr2::timestamp << "[" << rank << "] Indices calculated. " << std::endl;
             ps_grid->calcDistanceValues();
-            std::cout << lvr2::timestamp << "[" << rank << "] Distances calculated " << std::endl;
+//            std::cout << lvr2::timestamp << "[" << rank << "] Distances calculated " << std::endl;
 
             // TODO: edit serialization
             time_t now = time(0);
@@ -1273,16 +1272,17 @@ namespace lvr2
 
             // Send results back to collector, tag = 1
             // TODO: non-blocking
-            MPI_Send(&len, 1, MPI_INT, 0, 15, MPI_COMM_WORLD);
-            MPI_Send(ret, len, MPI_CHAR, 0, 16, MPI_COMM_WORLD);
+//            MPI_Send(&len, 1, MPI_INT, 0, 15, MPI_COMM_WORLD);
+//            MPI_Send(ret, len, MPI_CHAR, 0, 16, MPI_COMM_WORLD);
 
 
             std::cout << lvr2::timestamp << "Requesting chunk[" << rank << "]: " << std::endl;
             // is something to do?
-            bool con;
+//            bool con;
             MPI_Send(nullptr, 0, MPI_BYTE, 0, 1, MPI_COMM_WORLD);
             MPI_Recv(&con, 1, MPI_CXX_BOOL, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
+        std::cout << lvr2::timestamp << "[" << rank << "] finished. " << std::endl;
         return 1;
     }
 
