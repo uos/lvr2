@@ -259,9 +259,7 @@ private:
     int                             m_startCameraMovePosition[2];
     int 			    m_selectedLabel;
 
-
     double                          m_viewUp[3];
-
     float                           m_motionFactor;
     float                           m_rotationFactor;
 

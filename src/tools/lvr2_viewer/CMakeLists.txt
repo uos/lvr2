@@ -51,6 +51,7 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRFilteringRemoveOutliersDialog.cpp
     widgets/LVRFilteringMLSProjectionDialog.cpp
     widgets/LVRBackgroundDialog.cpp
+    widgets/LVRPointcloudSelectionDialog.cpp
     widgets/LVRPointInfo.cpp
     widgets/LVRPlotter.cpp
     widgets/LVRHistogram.cpp
@@ -95,6 +96,7 @@ set(LVR2_VIEWER_MOCS
     widgets/LVRLabelDialog.hpp
     widgets/LVRCorrespondanceDialog.hpp
     widgets/LVRBackgroundDialog.hpp
+    widgets/LVRPointcloudSelectionDialog.hpp
     widgets/LVRPointInfo.hpp
     widgets/LVRPlotter.hpp
     widgets/LVRHistogram.hpp

@@ -95,6 +95,7 @@
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
+#include "../widgets/LVRPointcloudSelectionDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
 #include "../widgets/LVRLabelTreeWidget.hpp"
 #include "../widgets/LVRScanDataItem.hpp"

@@ -64,6 +64,7 @@
 #include <vtkCamera.h>
 #include <vtkDefaultPass.h>
 #include <vtkCubeSource.h>
+#include <vtkAppendPolyData.h>
 
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
 #include "../vtkBridge/LVRChunkedMeshCuller.hpp"
@@ -1044,21 +1045,23 @@ void LVRMainWindow::addLabelClass()
         QStringList pointcloudNames;
         std::vector<LVRPointCloudItem*> pointcloudItems;
     	QTreeWidgetItemIterator itu(treeWidget);
-	    LVRPointCloudItem* citem;
+        LVRPointCloudItem* citem;
         std::map<QString, LVRPointCloudItem*> pointclouds;
 	
-	    while (*itu)
-	    {
-        	QTreeWidgetItem* item = *itu;
+        while (*itu)
+        {
+            QTreeWidgetItem* item = *itu;
 
-		    if ( item->type() == LVRPointCloudItemType)
-		    {
-			    citem = static_cast<LVRPointCloudItem*>(*itu);
+            if ( item->type() == LVRPointCloudItemType)
+            {
+                citem = static_cast<LVRPointCloudItem*>(*itu);
                 pointclouds[item->parent()->text(0)] = citem ;
                 pointcloudNames << item->parent()->text(0);
             }
-		    itu++;
-		}
+            itu++;
+        }
+        LVRPointcloudSelectionDialog pc2Dialog(pointcloudNames);
+        pc2Dialog.exec();
         QInputDialog pcDialog;
         pcDialog.setComboBoxItems(pointcloudNames);
         if(pcDialog.exec() != QDialog::Accepted)
@@ -1066,9 +1069,18 @@ void LVRMainWindow::addLabelClass()
             return;
         }
 
-		m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
+        vtkSmartPointer<vtkAppendPolyData> appendFilter = 
+            vtkSmartPointer<vtkAppendPolyData>::New();
+        for(const auto& pcName : pc2Dialog.getChecked())
+        {
+            citem = pointClouds[pcName];
+            appendFilter->AddInputData(citem->getPointBufferBridge()->getPolyIDData());
+        }
+
+        //
+        m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
         labelTreeWidget->getLabelRoot()->points = citem->getPointBuffer();
-	}
+    }
 
     //Ask For the Label name 
     bool accepted;
