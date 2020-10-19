@@ -1272,9 +1272,9 @@ namespace lvr2
             fl.close();
 
             // TODO: non-blocking
-            MPI_Isend(&len, 1, MPI_INT, 0, 15 + con * 2, MPI_COMM_WORLD);
+            MPI_Send(&len, 1, MPI_INT, 0, 15 + con * 2, MPI_COMM_WORLD);
 
-            MPI_Isend(ret, len, MPI_CHAR, 0, 16 + con * 2, MPI_COMM_WORLD);
+            MPI_Send(ret, len, MPI_CHAR, 0, 16 + con * 2, MPI_COMM_WORLD);
 
 
             std::remove(largeScale.str().c_str());
