@@ -2,7 +2,7 @@
 
 LVRPointcloudSelectionDialog::LVRPointcloudSelectionDialog(QStringList strList,QWidget *parent): QDialog(parent)
 {
-    setWindowTitle("Choose Pointclouds which shall be labeled");
+    setWindowTitle("Choose Pointclouds");
 
     widget = new QListWidget;
 
@@ -12,11 +12,11 @@ LVRPointcloudSelectionDialog::LVRPointcloudSelectionDialog(QStringList strList,Q
     for(int i = 0; i < widget->count(); ++i){
         item = widget->item(i);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(Qt::Unchecked);
+        item->setCheckState(Qt::Checked);
     }
-    viewBox = new QGroupBox(tr("Required components"));
+    viewBox = new QGroupBox(tr("To be labeled poointclouds"));
     buttonBox = new QDialogButtonBox;
-    saveButton = buttonBox->addButton(QDialogButtonBox::Save);
+    acceptButton = buttonBox->addButton(QDialogButtonBox::Ok);
     closeButton = buttonBox->addButton(QDialogButtonBox::Close);
 QVBoxLayout* viewLayout = new QVBoxLayout;
 viewLayout->addWidget(widget);
@@ -31,7 +31,7 @@ viewLayout->addWidget(widget);
 
     setLayout(mainLayout);
     QObject::connect(widget, SIGNAL(itemChanged(QListWidgetItem*)),this, SLOT(highlightChecked(QListWidgetItem*)));
-    QObject::connect(saveButton, SIGNAL(clicked()), this, SLOT(save()));
+    QObject::connect(acceptButton, SIGNAL(clicked()), this, SLOT(accept()));
     QObject::connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 }
 
@@ -58,23 +58,3 @@ void LVRPointcloudSelectionDialog::highlightChecked(QListWidgetItem *item){
         item->setBackgroundColor(QColor("#ffffff"));
 }
 
-void LVRPointcloudSelectionDialog::save(){
-
-        QFile file("required_components.txt");
-            if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-                        return;
-
-                QTextStream out(&file);
-                    out << "Choose Pointclouds to label:" << "\n";
-
-                        QListWidgetItem* item = 0;
-                            for(int i = 0; i < widget->count(); ++i){
-                                        item = widget->item(i);
-                                                if(item->checkState() == Qt::Checked)
-                                                                out << item->text() << "\n";
-                                                    }
-
-                                QMessageBox::information(this, tr("Checkable list in Qt"),
-                                                                           tr("Required components were saved."),
-                                                                                                              QMessageBox::Ok);
-}

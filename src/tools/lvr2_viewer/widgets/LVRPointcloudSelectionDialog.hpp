@@ -21,12 +21,11 @@ public:
     QStringList getChecked();
 public Q_SLOTS:
     void highlightChecked(QListWidgetItem* item);
-    void save();
 private:
     QListWidget* widget;
     QDialogButtonBox* buttonBox;
     QGroupBox* viewBox;
-    QPushButton* saveButton;
+    QPushButton* acceptButton;
     QPushButton* closeButton;
 
 };

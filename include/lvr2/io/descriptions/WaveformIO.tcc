@@ -20,7 +20,6 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     std::string metaName = sstr.str() + ".yaml";
     std::string groupName = "";
     
-    std::cout << "Saving Waveform to " << scanPosNo << " " << scanNo << std::endl;
     // Default meta yaml
     YAML::Node node;
     node = *fwPtr;
@@ -49,9 +48,6 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     }
     
     m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
-    std::cout << "Saved Meta" << std::endl;
-    std::cout << "maxBucketSize" << fwPtr->maxBucketSize << std::endl;
-    std::cout << "row" << fwPtr->lowPower.size() << std::endl;
 
     // saving Waveform samples
     uint16Arr waveformData = uint16Arr(new uint16_t[fwPtr->lowPower.size() * (fwPtr->maxBucketSize + 1)]());
@@ -65,7 +61,6 @@ void FullWaveformIO<Derived>::saveFullWaveform(
 
     std::vector<size_t> waveformDim = {fwPtr->lowPower.size(), static_cast<size_t>(fwPtr->maxBucketSize)};
     m_featureBase->m_kernel->saveUInt16Array(groupName, waveformName, waveformDim, waveformData);
-    std::cout << "Waveform saved" << std::endl; 
 
 }
 
@@ -147,10 +142,6 @@ WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, c
         }
     }
 
-    for(int j= 0; j< waveformDim[1] * 3;j++)
-    {
-        std::cout << ret->waveformSamples[j] << std::endl;
-    }
     //ret->waveformSamples->shrink_to_fit();
     //ret->waveformSamples = std::vector<uint16_t>(waveformData.get(), waveformData.get() + (waveformDim[0] * waveformDim[1]));
     ret->maxBucketSize = waveformDim[1] - 1;

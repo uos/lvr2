@@ -336,7 +336,7 @@ struct LabelRoot
     static constexpr char           sensorType[] = "LabelRoot";
     PointBufferPtr points;
 
-    //std::vector<std::pair<uint32_t,uint32_t>,
+    std::vector<std::pair<std::pair<uint32_t,uint32_t>,uint32_t>> pointOffsets;
 
     std::vector<LabelClassPtr> labelClasses;
 };

@@ -975,8 +975,18 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
             } else if(selected == m_actionShowWaveform)
             {
                 LVRLabelInstanceTreeItem *instanceItem = static_cast<LVRLabelInstanceTreeItem *>(item);
-                Channel<uint16_t>::Optional opt = labelTreeWidget->getLabelRoot()->points->getChannel<uint16_t>("waveform");
                 LabelInstancePtr instancePtr = instanceItem->getInstancePtr();
+
+                //getting all IDS this are the Ids from the combined waveform 
+                const auto& totalIds = instancePtr->labeledIDs;
+                
+                std::map<uint32_t, WaveformPtr> correspondence;
+                for (const auto& entry:labelTreeWidget->getLabelRoot()->pointOffsets)
+                {
+                    //TODO build correnspondence map
+                }
+                /*
+                Channel<uint16_t>::Optional opt = labelTreeWidget->getLabelRoot()->points->getChannel<uint16_t>("waveform");
                 if (opt)
                 {
                     size_t n = opt->numElements();
@@ -1026,7 +1036,7 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
                     noWaveformDialog.setStandardButtons(QMessageBox::Ok);
                     noWaveformDialog.setIcon(QMessageBox::Warning);
                     int returnValue = noWaveformDialog.exec();
-                }
+                }*/
             }
             return;
         }
@@ -1048,6 +1058,7 @@ void LVRMainWindow::addLabelClass()
         LVRPointCloudItem* citem;
         std::map<QString, LVRPointCloudItem*> pointclouds;
 	
+        std::vector<std::pair<std::pair<uint32_t,uint32_t>, uint32_t>> offsets;
         while (*itu)
         {
             QTreeWidgetItem* item = *itu;
@@ -1055,41 +1066,59 @@ void LVRMainWindow::addLabelClass()
             if ( item->type() == LVRPointCloudItemType)
             {
                 citem = static_cast<LVRPointCloudItem*>(*itu);
-                pointclouds[item->parent()->text(0)] = citem ;
-                pointcloudNames << item->parent()->text(0);
+                QString key = item->parent()->parent()->text(0) + "\\" + item->parent()->text(0);
+                pointclouds[key] = citem ;
+                pointcloudNames << key; 
             }
             itu++;
         }
-        LVRPointcloudSelectionDialog pc2Dialog(pointcloudNames);
-        pc2Dialog.exec();
-        QInputDialog pcDialog;
-        pcDialog.setComboBoxItems(pointcloudNames);
-        if(pcDialog.exec() != QDialog::Accepted)
+        LVRPointcloudSelectionDialog pcDialog(pointcloudNames);
+        if (pointcloudNames.size() > 1)
         {
-            return;
+            if(pcDialog.exec() != QDialog::Accepted)
+            {
+                return;
+            }
         }
 
-        vtkSmartPointer<vtkAppendPolyData> appendFilter = 
-            vtkSmartPointer<vtkAppendPolyData>::New();
-        for(const auto& pcName : pc2Dialog.getChecked())
+        size_t pcSize = 0;
+        for(const auto& pcName : pcDialog.getChecked())
         {
-            citem = pointClouds[pcName];
-            appendFilter->AddInputData(citem->getPointBufferBridge()->getPolyIDData());
+            auto parts = pcName.split(QString("\\"));
+            std::pair<uint32_t, uint32_t> key;
+            std::pair<std::pair<uint32_t, uint32_t>, uint32_t> entry;
+            key = std::make_pair(parts[0].toUInt(),parts[1].toUInt());
+
+            citem = pointclouds[pcName];
+            entry = std::make_pair(key, pcSize);
+            pcSize += citem->getPointBuffer()->numPoints();
+            labelTreeWidget->getLabelRoot()->pointOffsets.push_back(entry); 
         }
 
-        //
-        m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
-        labelTreeWidget->getLabelRoot()->points = citem->getPointBuffer();
+        floatArr combinedPointcloud = floatArr(new float[pcSize * 3]);
+        size_t iterator = 0;
+        for(const auto& pcName : pcDialog.getChecked())
+        {
+            citem = pointclouds[pcName];
+            std::memcpy(combinedPointcloud.get() + iterator, citem->getPointBuffer()->getPointArray().get(), citem->getPointBuffer()->numPoints() * 3 * sizeof(float));
+            iterator += (citem->getPointBuffer()->numPoints() * 3);
+        }
+
+        PointBufferPtr pb = PointBufferPtr(new PointBuffer(combinedPointcloud, pcSize));
+        PointBufferBridgePtr temp = PointBufferBridgePtr(new LVRPointBufferBridge(pb));
+        m_pickingInteractor->setPoints(temp->getPolyIDData());
+        labelTreeWidget->getLabelRoot()->points = temp->getPointBuffer();
+
     }
 
     //Ask For the Label name 
     bool accepted;
     QString className = QInputDialog::getText(this, tr("Choose name for new Label class"),
-        tr("Class name:"), QLineEdit::Normal,
-        tr("Labelname") , &accepted);
+    tr("Class name:"), QLineEdit::Normal,
+    tr("Labelname") , &accepted);
     if (!accepted || className.isEmpty())
     {
-            //No valid Input
+        //No valid Input
             return;
     }
 
