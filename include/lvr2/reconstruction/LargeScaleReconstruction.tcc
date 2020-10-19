@@ -894,7 +894,7 @@ namespace lvr2
             }
             #pragma omp section
             {
-//                mpiCollector(partitionBoxes, cbb, chunkManager);
+                mpiCollector(partitionBoxes, cbb, chunkManager);
             }
         }
 
@@ -918,11 +918,10 @@ namespace lvr2
                 // Wait for Client to ask for job
                 int dest;
                 MPI_Status status;
-                bool a = true;
                 MPI_Recv(nullptr, 0, MPI_BYTE, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
                 dest = status.MPI_SOURCE;
                 std::cout << lvr2::timestamp << "Send chunk to client " << dest << std::endl;
-                MPI_Send(&a, 1, MPI_CXX_BOOL, dest, 2, MPI_COMM_WORLD);
+                MPI_Send(&i, 1, MPI_INT, dest, 2, MPI_COMM_WORLD);
 
                 size_t numPoints;
 
@@ -991,7 +990,7 @@ namespace lvr2
             std::cout << lvr2::timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
         }
         int size;
-        bool a = false;
+        int a = -1;
         MPI_Comm_size(MPI_COMM_WORLD, &size);
         MPI_Status status;
         for(int i = 1; i < size; i++)
@@ -1000,7 +999,7 @@ namespace lvr2
             MPI_Recv(nullptr, 0, MPI_BYTE, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
             int dest = status.MPI_SOURCE;
             std::cout << lvr2::timestamp << "Sending abort code to client " << dest << std::endl;
-            MPI_Send(&a, 1, MPI_CXX_BOOL, dest, 2, MPI_COMM_WORLD);
+            MPI_Send(&a, 1, MPI_INT, dest, 2, MPI_COMM_WORLD);
         }
     }
 
@@ -1022,20 +1021,24 @@ namespace lvr2
                 // Receive chunk from client
                 int len, dest;
                 MPI_Status status;
-                std::cout << lvr2::timestamp << "Waiting for chunk " << i << "/" << partitionBoxes->size() << std::endl;
-                MPI_Recv(&len, 1, MPI_INT, MPI_ANY_SOURCE, 15, MPI_COMM_WORLD, &status);
+                std::cout << lvr2::timestamp << "[Collector] Waiting for chunk " << i+1 << "/" << partitionBoxes->size() << std::endl;
+                MPI_Recv(&len, 1, MPI_INT, MPI_ANY_SOURCE, 15 + i * 2, MPI_COMM_WORLD, &status);
                 dest = status.MPI_SOURCE;
-                std::cout << lvr2::timestamp << "Got chunk from Client " << dest << std::endl << std::endl;
+                std::cout << lvr2::timestamp << "[Collector] Got chunk from Client " << dest << std::endl << std::endl;
                 char ret[len];
-                MPI_Recv(ret, len, MPI_CHAR, dest, 16, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(ret, len, MPI_CHAR, dest, 16 + i * 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-                std::ofstream file("temp.dat");
+                time_t now = time(0);
+                tm *time = localtime(&now);
+                stringstream largeScale;
+                largeScale << 1900 + time->tm_year << "_" << 1+ time->tm_mon << "_" << time->tm_mday << "_" <<  time->tm_hour << "h_" << 1 + time->tm_min << "m_" << 1 + time->tm_sec << "s.dat";
+                std::ofstream file(largeScale.str().c_str());
                 file.write(ret, len);
                 file.close();
 
-                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>("temp.dat");
+                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(largeScale.str().c_str());
 
-                std::remove("temp.dat");
+//                std::remove("temp.dat");
 
                 unsigned long timeStart = lvr2::timestamp.getCurrentTimeInMs();
                 int x = (int) floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize);
@@ -1163,12 +1166,12 @@ namespace lvr2
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         // is something to do?
         // send request to scheduler, tag = 0
-        bool con;
+        int con;
         std::cout << lvr2::timestamp << "[" << rank << "] Waiting for work." << std::endl;
         MPI_Send(nullptr, 0, MPI_BYTE, 0, 1, MPI_COMM_WORLD);
-        MPI_Recv(&con, 1, MPI_CXX_BOOL, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&con, 1, MPI_INT, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        while(con)
+        while(con != -1)
         {
 
             // receive data from scheduler, tag = 0
@@ -1240,8 +1243,6 @@ namespace lvr2
             {
                 surface->calculateSurfaceNormals();
             }
-
-
 //            std::cout << lvr2::timestamp << "[" << rank << "] Normals calculated. " << std::endl;
             auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
                     m_voxelSizes[h], surface, gridbb, true, m_extrude);
@@ -1258,7 +1259,7 @@ namespace lvr2
             time_t now = time(0);
             tm *time = localtime(&now);
             stringstream largeScale;
-            largeScale << 1900 + time->tm_year << "_" << 1+ time->tm_mon << "_" << time->tm_mday << "_" <<  time->tm_hour << "h_" << 1 + time->tm_min << "m_" << 1 + time->tm_sec << "s.dat";
+            largeScale << 1900 + time->tm_year << "_" << 1+ time->tm_mon << "_" << time->tm_mday << "_" <<  time->tm_hour << "h_" << 1 + time->tm_min << "m_" << 1 + time->tm_sec << "s_" << rank <<".dat";
 
             ps_grid->serialize(largeScale.str());
 
@@ -1270,17 +1271,19 @@ namespace lvr2
             fl.read(ret, len);
             fl.close();
 
-            // Send results back to collector, tag = 1
             // TODO: non-blocking
-//            MPI_Send(&len, 1, MPI_INT, 0, 15, MPI_COMM_WORLD);
-//            MPI_Send(ret, len, MPI_CHAR, 0, 16, MPI_COMM_WORLD);
+            MPI_Isend(&len, 1, MPI_INT, 0, 15 + con * 2, MPI_COMM_WORLD);
 
+            MPI_Isend(ret, len, MPI_CHAR, 0, 16 + con * 2, MPI_COMM_WORLD);
+
+
+            std::remove(largeScale.str().c_str());
 
             std::cout << lvr2::timestamp << "Requesting chunk[" << rank << "]: " << std::endl;
             // is something to do?
 //            bool con;
             MPI_Send(nullptr, 0, MPI_BYTE, 0, 1, MPI_COMM_WORLD);
-            MPI_Recv(&con, 1, MPI_CXX_BOOL, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&con, 1, MPI_INT, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
         std::cout << lvr2::timestamp << "[" << rank << "] finished. " << std::endl;
         return 1;

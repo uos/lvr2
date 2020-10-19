@@ -256,6 +256,7 @@ int main(int argc, char** argv)
             lsr.trueMpiAndReconstructSlave();
         }
     }
+    cout << "Process with rank [" << mpi_rank << "] finished." << endl;
     MPI_Finalize();
     return 0;
 }
