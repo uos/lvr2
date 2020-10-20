@@ -513,6 +513,9 @@
               <height>0</height>
              </size>
             </property>
+            <property name="toolTipDuration">
+             <number>-1</number>
+            </property>
             <property name="layoutDirection">
              <enum>Qt::RightToLeft</enum>
             </property>
@@ -521,9 +524,6 @@
             </property>
             <property name="tristate">
              <bool>false</bool>
-            </property>
-            <property name="toolTipDuration" stdset="0">
-             <number>-1</number>
             </property>
            </widget>
           </item>
@@ -602,6 +602,10 @@
    <addaction name="actionShow_SpectralColorGradient"/>
    <addaction name="actionShow_SpectralPointPreview"/>
    <addaction name="actionShow_SpectralHistogram"/>
+   <addaction name="separator"/>
+   <addaction name="actionLabeling_Start"/>
+   <addaction name="actionSelected_Lasso"/>
+   <addaction name="actionSelected_Polygon"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -609,7 +613,7 @@
      <x>0</x>
      <y>0</y>
      <width>1305</width>
-     <height>28</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuViews">
@@ -666,6 +670,14 @@
     <addaction name="actionSimple_Plane_Classification"/>
     <addaction name="actionFurniture_Recognition"/>
    </widget>
+   <widget class="QMenu" name="menuLabel">
+    <property name="title">
+     <string>Labeling</string>
+    </property>
+    <addaction name="actionLabeling_Start"/>
+    <addaction name="actionLabeling_Stop"/>
+    <addaction name="actionLabeling_Export"/>
+   </widget>
    <widget class="QMenu" name="menuRendering">
     <property name="title">
      <string>Rendering</string>
@@ -692,6 +704,9 @@
     <addaction name="actionOpenChunkedMesh"/>
     <addaction name="actionExport"/>
     <addaction name="actionQuit"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpenLabeledPointcloud"/>
+    <addaction name="actionExportLabeledPointcloud"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuViews"/>
@@ -701,6 +716,7 @@
    <addaction name="menuFiltering"/>
    <addaction name="menuRegistration"/>
    <addaction name="menuClassification"/>
+   <addaction name="menuLabel"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetCamera">
@@ -1124,6 +1140,78 @@
     </widget>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="dockWidgetLabel">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
+   </property>
+   <property name="windowTitle">
+    <string>Labels</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="1">
+      <widget class="QTreeWidget" name="labelTreeWidget">
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
+       <column>
+        <property name="text">
+         <string>Label</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Points</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Visble</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Id</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_10">
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="selectedLabelLabel">
+         <property name="text">
+          <string>SelectedLabel:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="selectedInstanceComboBox"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
@@ -1263,6 +1351,61 @@
     <string>Simple Plane Classification</string>
    </property>
   </action>
+  <action name="actionLabeling_Start">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_labeling.png</normaloff>:/qv_labeling.png</iconset>
+   </property>
+   <property name="text">
+    <string>Label Points</string>
+   </property>
+  </action>
+  <action name="actionSelected_Lasso">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_lassoTool.png</normaloff>:/qv_lassoTool.png</iconset>
+   </property>
+   <property name="text">
+    <string>Lasso Tool</string>
+   </property>
+  </action>
+  <action name="actionSelected_Polygon">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_polygonTool.png</normaloff>:/qv_polygonTool.png</iconset>
+   </property>
+   <property name="text">
+    <string>Polygon Tool</string>
+   </property>
+  </action>
+  <action name="actionLabeling_Stop">
+   <property name="text">
+    <string>Stop Labeling</string>
+   </property>
+  </action>
+  <action name="actionLabeling_Export">
+   <property name="text">
+    <string>Export Labeling</string>
+   </property>
+  </action>
   <action name="actionFurniture_Recognition">
    <property name="text">
     <string>Furniture Recognition</string>
@@ -1354,6 +1497,15 @@
     <string>Show SpectralHistogram</string>
    </property>
   </action>
+  <action name="actionLabel_SpectralHistogram">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_histogram.png</normaloff>:/qv_histogram.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show SpectralHistogram</string>
+   </property>
+  </action>
   <action name="actionShow_Normals">
    <property name="checkable">
     <bool>true</bool>
@@ -1415,6 +1567,16 @@
   <action name="actionOpenChunkedMesh">
    <property name="text">
     <string>Open chunked mesh</string>
+   </property>
+  </action>
+  <action name="actionOpenLabeledPointcloud">
+   <property name="text">
+    <string>Open Labeled Pointcloud</string>
+   </property>
+  </action>
+  <action name="actionExportLabeledPointcloud">
+   <property name="text">
+    <string>Export labeled pointcloud</string>
    </property>
   </action>
  </widget>
