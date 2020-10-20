@@ -93,6 +93,7 @@ int main(int argc, char** argv)
 
     if(mpi_rank == 0)
     {
+
         options.printLogo();
 
         // Exit if options had to generate a usage message
