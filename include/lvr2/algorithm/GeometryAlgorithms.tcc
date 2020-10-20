@@ -225,6 +225,11 @@ DenseVertexMap<float> calcAverageVertexAngles(
             vertexAngles.insert(vH, M_PI);
             invalid.insert(vH);
         }
+        catch (VertexLoopException exception)
+        {
+            vertexAngles.insert(vH, M_PI);
+            invalid.insert(vH);
+        }
     }
     if (!invalid.empty())
     {
