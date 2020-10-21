@@ -99,6 +99,10 @@ void LVRModelBridge::setPose(const Pose& pose)
 
 }
 
+void LVRModelBridge::setWaveform(WaveformPtr waveform)
+{
+    m_waveform = waveform;
+}
 void LVRModelBridge::setTransform(const Transformd &transform)
 {
     vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();

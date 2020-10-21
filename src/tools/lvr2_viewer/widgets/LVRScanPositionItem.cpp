@@ -22,6 +22,10 @@ LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString n
         std::vector<ModelBridgePtr> models;
         models = bridge->getModels();
         LVRModelItem* modelItem = new LVRModelItem(models[i], QString::fromStdString(posName));
+        if(bridge->getScanPosition()->scans[i]->waveform)
+        {
+            modelItem->getModelBridge()->setWaveform(bridge->getScanPosition()->scans[i]->waveform);
+        }
         addChild(modelItem);
     }
     

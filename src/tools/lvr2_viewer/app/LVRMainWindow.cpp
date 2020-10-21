@@ -979,11 +979,27 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
 
                 //getting all IDS this are the Ids from the combined waveform 
                 const auto& totalIds = instancePtr->labeledIDs;
-                
-                std::map<uint32_t, WaveformPtr> correspondence;
-                for (const auto& entry:labelTreeWidget->getLabelRoot()->pointOffsets)
+                std::vector<long> combinedWaveform;
+                std::vector<int> countWaveform;
+                for(const auto& id : totalIds)
                 {
-                    //TODO build correnspondence map
+                    auto tmp = m_waveformOffset.equal_range(id);
+                    auto waveform = std::prev(tmp.first, 1)->second;
+                    uint32_t pcId = id - std::prev(tmp.first, 1)->first;
+
+                    for (int i = 0; i < waveform->waveformIndices[pcId + 1] - waveform->waveformIndices[pcId]; i++)
+                    {
+                        if(combinedWaveform.size() <= i)
+                        {
+                            combinedWaveform.push_back(waveform->waveformSamples[pcId + i]);
+                            countWaveform.push_back(1);;
+                        }
+                        else
+                        {
+                            combinedWaveform[i] += waveform->waveformSamples[pcId + i];
+                            countWaveform[i]++;
+                        }
+                    }
                 }
                 /*
                 Channel<uint16_t>::Optional opt = labelTreeWidget->getLabelRoot()->points->getChannel<uint16_t>("waveform");
@@ -1015,13 +1031,14 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
                             combinedWaveform[i] += waveforms[(id * width) + i];
                         }
                     }
-                    floatArr plotData(new float[width]);
+                    */
+                    floatArr plotData(new float[combinedWaveform.size()]);
                     LVRPlotter* plotter =new LVRPlotter;
                     for(int i = 0; i < combinedWaveform.size(); i++)
                     {
-                        plotData[i] = (combinedWaveform[i] / labelID.size());
+                        plotData[i] = (combinedWaveform[i] / countWaveform[i]);
                     }
-                    plotter->setPoints(plotData, width);
+                    plotter->setPoints(plotData, combinedWaveform.size());
                     plotter->setXRange(0, combinedWaveform.size());
                     QDialog window(this);
                     QHBoxLayout *HLayout = new QHBoxLayout(&window);
@@ -1029,7 +1046,7 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
                     window.setLayout(HLayout);
                     window.exec();
 
-                } else
+                /*} else
                 {
                     QMessageBox noWaveformDialog;
                     noWaveformDialog.setText("No Waveform found.");
@@ -1058,7 +1075,13 @@ void LVRMainWindow::addLabelClass()
         LVRPointCloudItem* citem;
         std::map<QString, LVRPointCloudItem*> pointclouds;
 	
-        std::vector<std::pair<std::pair<uint32_t,uint32_t>, uint32_t>> offsets;
+        //check if a Scan Project is loaded
+        if(!checkForScanProject())
+        {
+            return;
+        }
+        
+
         while (*itu)
         {
             QTreeWidgetItem* item = *itu;
@@ -1090,7 +1113,16 @@ void LVRMainWindow::addLabelClass()
             key = std::make_pair(parts[0].toUInt(),parts[1].toUInt());
 
             citem = pointclouds[pcName];
-            entry = std::make_pair(key, pcSize);
+            if(citem->parent() && citem->parent()->type() == LVRModelItemType)
+            {
+                LVRModelItem* pitem = static_cast<LVRModelItem*>(citem->parent());
+                if(pitem->getModelBridge()->getWaveform())
+                {
+                    m_waveformOffset[pcSize] = pitem->getModelBridge()->getWaveform();
+                }
+
+            }
+            //entry = std::make_pair(key, pcSize);
             pcSize += citem->getPointBuffer()->numPoints();
             labelTreeWidget->getLabelRoot()->pointOffsets.push_back(entry); 
         }
@@ -3038,6 +3070,7 @@ void LVRMainWindow::openHDF5(std::string fileName)
 }
 void LVRMainWindow::exportLabels()
 {
+    std::cout << "Unused" << std::endl;
     std::vector<uint16_t> labeledPoints = m_pickingInteractor->getLabeles();
     vtkSmartPointer<vtkPolyData> points;
     std::map<uint16_t, std::vector<int>> idMap;
@@ -3254,11 +3287,18 @@ void LVRMainWindow::polygonButtonToggled(bool checked)
 
 void LVRMainWindow::readLWF()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-                tr("Selecte LWF File"), QDir::homePath(), tr("LASVegasWaveformFiles(*.lwf)"));
 
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly))
+    
+    LVRLabeledScanProjectEditMarkItem* projectItem;
+    if (!(projectItem = checkForScanProject()))
+    {
+        return;
+    }
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+                tr("Select LWF File"), QDir::homePath(), tr("LASVegasWaveformFiles(*.lwf)"));
+    std::ifstream waveformFile(fileName.toStdString(), std::ios::in | std::ios::binary);
+    if (!waveformFile)
     {
         QMessageBox warning;
         warning.setText("Could not open File");
@@ -3267,8 +3307,51 @@ void LVRMainWindow::readLWF()
         warning.exec();
         return;
     }
-    //QByteArray rawArray = file.readAll();
-    QDataStream rawData(&file);
+    uint64_t dimSize, lines, colums;
+    waveformFile.read((char *) &dimSize, sizeof(unsigned long long));
+    if (dimSize != 2)
+    {
+        return;
+        //TODO show Warning
+    }
+    waveformFile.read((char *) &lines, sizeof(unsigned long long));
+    waveformFile.read((char *) &colums, sizeof(unsigned long long));
+
+    WaveformPtr waveform = WaveformPtr(new Waveform);
+    /*
+    uint16_t data;
+    waveformFile.read((char *) &data, sizeof(uint16_t));
+
+    for (int i = 0; i < lines; i++)
+    {
+        //First entry is the channel
+        waveform->lowPower.push_back(waveformData[i * waveformDim[1]]);
+
+        //Start with 1 since the first entry was channelinfo
+        for(int j = 1; j < waveformDim[1]; j++)
+        {
+            if(waveformData[(i * waveformDim[1]) + j] == 0 || j == (waveformDim[1] - 1))
+            {
+                if(waveformData[(i * waveformDim[1]) + j] != 0 )
+                {
+                    ret->waveformSamples.push_back(waveformData[(i * waveformDim[1]) + j]);
+                    ret->waveformIndices.push_back(ret->waveformIndices.back() + j);
+                }
+                else
+                {
+                    //ret->waveformSamples.insert(ret->waveformSamples.end(), waveformData[(i * waveformDim[1]) + 1], waveformData[(i * waveformDim[1]) + 1 + j - 1]);
+                    ret->waveformIndices.push_back(ret->waveformIndices.back() + j - 1);
+                }
+                break;
+            }
+            ret->waveformSamples.push_back(waveformData[(i * waveformDim[1]) + j]);
+        }
+    }
+
+    //ret->waveformSamples->shrink_to_fit();
+    //ret->waveformSamples = std::vector<uint16_t>(waveformData.get(), waveformData.get() + (waveformDim[0] * waveformDim[1]));
+    ret->maxBucketSize = waveformDim[1] - 1;
+ 
     rawData.setByteOrder(QDataStream::LittleEndian);
     rawData.setFloatingPointPrecision(QDataStream::SinglePrecision);
     std::vector<std::vector<uint16_t>> waveforms;
@@ -3306,6 +3389,33 @@ void LVRMainWindow::readLWF()
 	waveforms.push_back(waveformData);
     }
     std::cout << waveforms.size() << std::endl;
+    */
+}
+LVRLabeledScanProjectEditMarkItem* LVRMainWindow::checkForScanProject()
+{
+    for(int i = 0; i < treeWidget->topLevelItemCount(); i++)
+    {
+        auto topitem = treeWidget->topLevelItem(i);
+
+        if(topitem->type() != LVRLabeledScanProjectEditMarkItemType)
+        {
+            if(topitem->type() == LVRModelItemType)
+            {
+                QMessageBox::StandardButton info =  QMessageBox::question(this, "Tranform Pointcloud?", "The found Pointcloud is not park of a ScanProject. The requested operation requires a ScanProject. Shall the Pointcloud be transfromed into a ScanProject?",QMessageBox::Yes|QMessageBox::No);
+                if (info != QMessageBox::Yes) 
+                {
+                    return nullptr;
+                }
+                auto mitem = static_cast<LVRModelItem*>(topitem);
+                LabeledScanProjectEditMarkBridgePtr transfer = LabeledScanProjectEditMarkBridgePtr(new LVRLabeledScanProjectEditMarkBridge(mitem->getModelBridge()));
+                LVRLabeledScanProjectEditMarkItem* item = new LVRLabeledScanProjectEditMarkItem(transfer, "LabelScanProject");
+                treeWidget->addTopLevelItem(item);
+                delete treeWidget->takeTopLevelItem(i);
+                return item;
+            }
+        }
+    }
+    return nullptr;
 }
 
 void LVRMainWindow::exportScanProject()
@@ -3329,11 +3439,9 @@ void LVRMainWindow::exportScanProject()
         LabeledScanProjectEditMarkPtr labeledScanProject;
         QString fileName = dialog.selectedFiles()[0];
 
-        std::cout << "save a project" << std::endl;
         if (topItem->type() == LVRLabeledScanProjectEditMarkItemType)
         {
             LVRLabeledScanProjectEditMarkItem *item = static_cast<LVRLabeledScanProjectEditMarkItem *>(topItem);
-            std::cout << "save a labeled project" << std::endl;
             /*
             LVRLabeledScanProjectEditMarkBridge transfer(item->getLabeledScanProjectEditMarkBridge()->getScanProjectBridgePtr()->getScanPositions()[0]->getModels()[0]);
             labeledScanProject = transfer.getLabeledScanProjectEditMark();*/

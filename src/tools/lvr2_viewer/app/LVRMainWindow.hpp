@@ -279,6 +279,7 @@ private:
     void setupQVTK();
     void connectSignalsAndSlots();
     LVRModelItem* loadModelItem(QString name);
+    LVRLabeledScanProjectEditMarkItem* checkForScanProject();
     bool childNameExists(QTreeWidgetItem* item, const QString& name);
     QString increaseFilename(QString filename);
 
@@ -286,6 +287,7 @@ private:
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     LVRLabelDialog*                   		m_labelDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
+    std::map<uint32_t, WaveformPtr>             m_waveformOffset;
     LVRPlotter*                                 m_PointPreviewPlotter;
     int                                         m_previewPoint;
     PointBufferPtr                              m_previewPointBuffer;

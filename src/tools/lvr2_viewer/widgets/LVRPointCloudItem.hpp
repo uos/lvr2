@@ -52,11 +52,11 @@ public:
     void    setColor(QColor &c);
     void    setSelectionColor(QColor &c);
     void    resetColor();
-    int		getPointSize();
+    int	    getPointSize();
     void    setPointSize(int &pointSize);
-    float	getOpacity();
+    float   getOpacity();
     void    setOpacity(float &opacity);
-    bool	getVisibility();
+    bool    getVisibility();
     void    setVisibility(bool &visiblity);
     size_t  getNumPoints();
     void    update();
