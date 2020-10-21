@@ -9,10 +9,11 @@
 #ifndef H5EXCEPTION_HPP
 #define H5EXCEPTION_HPP
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 
-#include "bits/H5Utils.hpp"
+#include <H5Ipublic.h>
 
 namespace HighFive {
 
@@ -62,7 +63,7 @@ class Exception : public std::exception {
 
   protected:
     std::string _errmsg;
-    details::Mem::shared_ptr<Exception> _next;
+    std::shared_ptr<Exception> _next;
     hid_t _err_major, _err_minor;
 
     friend struct HDF5ErrMapper;
@@ -130,6 +131,14 @@ class GroupException : public Exception {
 class PropertyException : public Exception {
   public:
     PropertyException(const std::string& err_msg) : Exception(err_msg) {}
+};
+
+///
+/// \brief Exception specific to HighFive Reference interface
+///
+class ReferenceException : public Exception {
+  public:
+    ReferenceException(const std::string& err_msg) : Exception(err_msg) {}
 };
 }
 
