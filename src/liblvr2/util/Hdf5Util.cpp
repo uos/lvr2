@@ -60,11 +60,11 @@ HighFive::Group getGroup(std::shared_ptr<HighFive::File> hdf5_file,
                                 bool create)
 {
     std::vector<std::string> groupNames = hdf5util::splitGroupNames(groupName);
-    HighFive::Group cur_grp;
+
 
     try
     {
-        cur_grp = hdf5_file->getGroup("/");
+        HighFive::Group cur_grp = hdf5_file->getGroup("/");
 
         for (size_t i = 0; i < groupNames.size(); i++)
         {
@@ -84,15 +84,17 @@ HighFive::Group getGroup(std::shared_ptr<HighFive::File> hdf5_file,
                                          "' doesn't exist and create flag is false");
             }
         }
+        return cur_grp;
     }
     catch (HighFive::Exception& e)
     {
         std::cout << "Error in getGroup (with group name '" << groupName << "': " << std::endl;
         std::cout << e.what() << std::endl;
         throw e;
+
     }
 
-    return cur_grp;
+
 }
 
 HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create)
@@ -136,11 +138,11 @@ HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool 
 bool exist(std::shared_ptr<HighFive::File> hdf5_file, const std::string& groupName)
 {
     std::vector<std::string> groupNames = hdf5util::splitGroupNames(groupName);
-    HighFive::Group cur_grp;
+
 
     try
     {
-        cur_grp = hdf5_file->getGroup("/");
+        HighFive::Group cur_grp = cur_grp = hdf5_file->getGroup("/");
 
         for (size_t i = 0; i < groupNames.size(); i++)
         {
