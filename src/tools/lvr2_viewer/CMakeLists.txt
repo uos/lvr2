@@ -96,13 +96,16 @@ if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
     # newer vtk versions
     set(LVR2_VIEWER_UIS
         ui/LVRMainWindowQVTKOGLUI.ui)
+elseif(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "9")
+    # newer vtk versions
+    set(LVR2_VIEWER_UIS
+        ui/LVRMainWindowQVTKOGLUI9.ui)
 else()
     # LEGACY
     set(LVR2_VIEWER_UIS
         ui/LVRMainWindowUI.ui
     )
 endif()
-
 list(APPEND LVR2_VIEWER_UIS
    ui/LVRRenameDialogUI.ui
    ui/LVRAnimationDialogUI.ui
@@ -184,12 +187,13 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 # Add main executable
 #####################################################################################
-
 add_executable(lvr2_viewer
   ${LVR2_VIEWER_SOURCES}
   ${LVR2_VIEWER_RES}
   ${LVR2_VIEWER_MOCS}
   ${LVR2_VIEWER_UI_HDRS})
+
+
 target_link_libraries(lvr2_viewer ${LVR2_VIEWER_DEPENDENCIES})
 
 if(CUDA_FOUND)

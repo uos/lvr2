@@ -60,8 +60,11 @@
 #endif
 
 #include <QtGui>
+
 #ifdef LVR2_USE_VTK8
     #include "ui_LVRMainWindowQVTKOGLUI.h"
+#elif defined LVR2_USE_VTK9
+    #include "ui_LVRMainWindowQVTKOGLUI9.h"
 #else
     #include "ui_LVRMainWindowUI.h"
 #endif

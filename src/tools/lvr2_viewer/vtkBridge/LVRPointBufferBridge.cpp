@@ -45,9 +45,9 @@
 #include <vtkFloatArray.h>
 #include <vtkIdFilter.h>
 #include <vtkDataSetSurfaceFilter.h>
-
+#include <vtkUnsignedCharArray.h>
 #include "lvr2/util/Util.hpp"
-
+#include <vtkIdTypeArray.h>
 namespace lvr2
 {
 

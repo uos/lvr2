@@ -20,7 +20,7 @@
 #include <vtkCellArray.h>
 #include <vtkMatrix4x4.h>
 #include <vtkTransform.h>
-
+#include <vtkUnsignedCharArray.h>
 #include "lvr2/types/MatrixTypes.hpp"
 
 namespace lvr2

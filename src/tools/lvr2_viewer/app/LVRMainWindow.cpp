@@ -506,7 +506,7 @@ void LVRMainWindow::showBackgroundDialog()
 
 void LVRMainWindow::setupQVTK()
 {
-#ifndef LVR2_USE_VTK8
+#if (!defined LVR2_USE_VTK8) && (!defined LVR2_USE_VTK9)
     // z buffer fix
     QSurfaceFormat surfaceFormat = qvtkWidget->windowHandle()->format();
     surfaceFormat.setStencilBufferSize(8);
