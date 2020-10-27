@@ -3318,78 +3318,82 @@ void LVRMainWindow::readLWF()
     waveformFile.read((char *) &colums, sizeof(unsigned long long));
 
     WaveformPtr waveform = WaveformPtr(new Waveform);
-    /*
-    uint16_t data;
-    waveformFile.read((char *) &data, sizeof(uint16_t));
+    waveform->waveformIndices.push_back(0);
+    uint16_t data[colums];
 
     for (int i = 0; i < lines; i++)
     {
+        waveformFile.read((char *) &data, sizeof(uint16_t) * colums);
         //First entry is the channel
-        waveform->lowPower.push_back(waveformData[i * waveformDim[1]]);
+        waveform->lowPower.push_back(data[0]);
 
         //Start with 1 since the first entry was channelinfo
-        for(int j = 1; j < waveformDim[1]; j++)
+        for(int j = 1; j < colums; j++)
         {
-            if(waveformData[(i * waveformDim[1]) + j] == 0 || j == (waveformDim[1] - 1))
+            if(data[j] == 0 || j == colums - 1)
             {
-                if(waveformData[(i * waveformDim[1]) + j] != 0 )
+                if(data[j] != 0 )
                 {
-                    ret->waveformSamples.push_back(waveformData[(i * waveformDim[1]) + j]);
-                    ret->waveformIndices.push_back(ret->waveformIndices.back() + j);
+                    waveform->waveformSamples.push_back(data[j]);
+                    waveform->waveformIndices.push_back(waveform->waveformIndices.back() + j);
                 }
                 else
                 {
-                    //ret->waveformSamples.insert(ret->waveformSamples.end(), waveformData[(i * waveformDim[1]) + 1], waveformData[(i * waveformDim[1]) + 1 + j - 1]);
-                    ret->waveformIndices.push_back(ret->waveformIndices.back() + j - 1);
+                    waveform->waveformIndices.push_back(waveform->waveformIndices.back() + j - 1);
                 }
                 break;
             }
-            ret->waveformSamples.push_back(waveformData[(i * waveformDim[1]) + j]);
+            waveform->waveformSamples.push_back(data[j]);
         }
     }
+    waveform->maxBucketSize = colums - 1;
 
-    //ret->waveformSamples->shrink_to_fit();
-    //ret->waveformSamples = std::vector<uint16_t>(waveformData.get(), waveformData.get() + (waveformDim[0] * waveformDim[1]));
-    ret->maxBucketSize = waveformDim[1] - 1;
- 
-    rawData.setByteOrder(QDataStream::LittleEndian);
-    rawData.setFloatingPointPrecision(QDataStream::SinglePrecision);
-    std::vector<std::vector<uint16_t>> waveforms;
-    std::vector<std::vector<float>> points;
-
-    while(!rawData.atEnd())
+    //find correpsonding item
+    std::map<QString, ModelBridgePtr> possibleScans;
+    QStringList scanNames;
+    QTreeWidgetItemIterator itu(treeWidget);
+    while (*itu)
     {
+        QTreeWidgetItem* item = *itu;
 
-        //read 3 Points
-	float x, y, z;
-	rawData >> x;
-	rawData >> y;
-	rawData >> z;
-	std::vector<float> point = {x,y,z};
-	points.push_back(point);
-
-	//time currently just ignored
-	float time;
-	rawData >> time;
-
-	//read Sample block size
-	uint32_t sampleBlockCount;
-	rawData >> sampleBlockCount;
-
-	//read the sampleData(waveform)
-	std::vector<uint16_t> waveformData;
-	waveformData.resize(sampleBlockCount);
-	for (int i = 0; i < sampleBlockCount; i++)
-	{
-	    //read waveform data
-	    uint16_t sample;
-	    rawData >> sample;
-	    waveformData[i] = sample;
-	}
-	waveforms.push_back(waveformData);
+        if ( item->type() == LVRPointCloudItemType)
+        {
+            auto citem = static_cast<LVRPointCloudItem*>(*itu);
+            if (citem->getNumPoints() == waveform->lowPower.size())
+            {
+                QString key = item->parent()->parent()->text(0) + "\\" + item->parent()->text(0);
+                auto scanItem = static_cast<LVRModelItem*>(item->parent());
+                possibleScans[key] = scanItem->getModelBridge();
+                scanNames << key; 
+            }
+        }
+        itu++;
     }
-    std::cout << waveforms.size() << std::endl;
-    */
+    if(scanNames.size() == 0)
+    {
+        QMessageBox noPCDialog;
+        noPCDialog.setText("No pointcloud of the same size was found. Abort");
+        noPCDialog.setStandardButtons(QMessageBox::Ok);
+        noPCDialog.setIcon(QMessageBox::Warning);
+        int returnValue = noPCDialog.exec();
+        return;
+    }
+    if(scanNames.size() == 1)
+    {
+        possibleScans[scanNames[0]]->setWaveform(waveform);
+        return;
+    }
+    bool ok;
+
+    QString choosenItem = QInputDialog::getItem(this, tr("Choose corresponding pointcloud"),
+
+                                                     tr("Choose corresponding pointcloud:"), scanNames, 0, false, &ok);
+    if(!ok)
+    {
+        return;
+    }
+    possibleScans[choosenItem]->setWaveform(waveform);
+
 }
 LVRLabeledScanProjectEditMarkItem* LVRMainWindow::checkForScanProject()
 {
@@ -3413,6 +3417,10 @@ LVRLabeledScanProjectEditMarkItem* LVRMainWindow::checkForScanProject()
                 delete treeWidget->takeTopLevelItem(i);
                 return item;
             }
+        }
+        if(topitem->type() == LVRLabeledScanProjectEditMarkItemType)
+        {
+            return static_cast<LVRLabeledScanProjectEditMarkItem*>(topitem);
         }
     }
     return nullptr;
