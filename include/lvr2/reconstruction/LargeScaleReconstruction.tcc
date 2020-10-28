@@ -833,6 +833,9 @@ namespace lvr2
             std::shared_ptr<ChunkHashGrid> chunkManager, int size)
     {
         unsigned long timeStart = lvr2::timestamp.getCurrentTimeInMs();
+        unsigned long timeInit;
+        unsigned long timeCalc;
+        unsigned long timeReconstruct;
 
         m_chunkSize = chunkManager->getChunkSize();
 
@@ -892,13 +895,15 @@ namespace lvr2
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
         BoundingBox<BaseVecT> cbb(bb_min, bb_max);
 
+        timeInit = lvr2::timestamp.getCurrentTimeInMs();
+
 
 //        #pragma omp parallel sections
 //        {
 //            #pragma omp section
 //            {
                 uint* partitionBoxesSkipped = mpiScheduler(partitionBoxes, bg, cbb, chunkManager);
-//
+                timeCalc = lvr2::timestamp.getCurrentTimeInMs();
 //            }
 //            #pragma omp section
 //            {
@@ -913,6 +918,10 @@ namespace lvr2
         unsigned long timeSum = timeEnd - timeStart;
 
         cout << "Finished complete reconstruction in " << (double) (timeSum/1000.0) << "s" << endl;
+        cout << "Initialization: " << (double) ((timeInit-timeStart)/1000.0) << "s" << endl;
+        cout << "Calculation: " << (double) ((timeCalc-timeInit)/1000.0) << "s" << endl;
+        cout << "Combine chunks: " << (double) ((timeEnd-timeCalc)/1000.0) << "s" << endl;
+
 
         return 1;
 
@@ -1276,7 +1285,7 @@ namespace lvr2
             ps_grid->calcDistanceValues();
 
             stringstream largeScale;
-            largeScale << chunk << "_" << rank;
+            largeScale << "/tmp/" << chunk << "_" << rank;
 
             ps_grid->serialize(largeScale.str());
 
@@ -1298,7 +1307,7 @@ namespace lvr2
         for(auto chunk : chunks)
         {
             stringstream largeScale;
-            largeScale << chunk << "_" << rank;
+            largeScale << "/tmp/" << chunk << "_" << rank;
 
             ifstream fl(largeScale.str());
             fl.seekg(0, ios::end);

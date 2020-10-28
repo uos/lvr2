@@ -93,7 +93,9 @@ int main(int argc, char** argv)
 
     if(mpi_rank == 0)
     {
-
+        unsigned long time_start = lvr2::timestamp.getCurrentTimeInMs();
+        unsigned long time_import;
+        unsigned long time_reconstruct;
         options.printLogo();
 
         // Exit if options had to generate a usage message
@@ -215,7 +217,9 @@ int main(int argc, char** argv)
 //        if (options.getPartMethod() == 1)
 //        {
 //            cout << "Starting Master." << endl;
+            time_import = lvr2::timestamp.getCurrentTimeInMs();
             lsr.trueMpiAndReconstructMaster(project, bb, cm, mpi_size);
+            time_reconstruct = lvr2::timestamp.getCurrentTimeInMs();
 //        } else
 //        {
 //            int x = lsr.mpiAndReconstruct(project);
@@ -230,7 +234,7 @@ int main(int argc, char** argv)
                 lsr.getPartialReconstruct(bb, cm, options.getVoxelSizes()[i]);
             }
         }
-
+        cout << "Time for import: " << (double) ((time_import - time_start)/1000.0) << endl;
         cout << "Program end." << endl;
     }
     else
