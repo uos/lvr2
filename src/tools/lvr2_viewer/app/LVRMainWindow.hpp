@@ -143,6 +143,7 @@ public:
     virtual ~LVRMainWindow();
     std::mutex display_mutex;
 
+    void deleteLabelInstance(QTreeWidgetItem* item);
 public Q_SLOTS:
     void updateDisplayLists(actorMap lowRes, actorMap highRes);
             
@@ -390,6 +391,7 @@ private:
     
     //Label
     QAction*                            m_actionAddLabelClass;
+    QAction*                            m_actionDeleteLabelClass;
     QAction*                            m_actionAddNewInstance;
     QAction*                            m_actionRemoveInstance;
     QAction*                            m_actionShowWaveform;

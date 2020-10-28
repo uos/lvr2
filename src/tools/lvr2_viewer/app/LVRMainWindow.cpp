@@ -138,6 +138,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionUnloadPointCloudData = new QAction("unload PointCloud", this);
 
     m_actionAddLabelClass = new QAction("Add label class", this);
+    m_actionDeleteLabelClass = new QAction("Delete LabelClass", this);
     m_actionAddNewInstance = new QAction("Add new instance", this);
     m_actionRemoveInstance = new QAction("Remove instance", this);
     m_actionShowWaveform = new QAction("Show Waveform", this);
@@ -151,6 +152,7 @@ LVRMainWindow::LVRMainWindow()
     m_labelTreeParentItemContextMenu = new QMenu();
     m_labelTreeParentItemContextMenu->addAction(m_actionAddLabelClass);
     m_labelTreeParentItemContextMenu->addAction(m_actionAddNewInstance);
+    m_labelTreeParentItemContextMenu->addAction(m_actionDeleteLabelClass);
     m_labelTreeChildItemContextMenu = new QMenu();
     m_labelTreeChildItemContextMenu->addAction(m_actionRemoveInstance);
     m_labelTreeChildItemContextMenu->addAction(m_actionAddNewInstance);
@@ -929,6 +931,21 @@ void LVRMainWindow::alignPointClouds()
     updateView();
 }
 
+void LVRMainWindow::deleteLabelInstance(QTreeWidgetItem* item)
+{
+    m_pickingInteractor->removeLabel(item->data(LABEL_ID_COLUMN, 0).toInt());
+    QTreeWidgetItem* parentItem = item->parent();
+    LVRLabelClassTreeItem* topLevelItem = static_cast<LVRLabelClassTreeItem* >(parentItem);
+    //update the Count avoidign the standart "signal" case to avoid race conditions
+    topLevelItem->setText(LABELED_POINT_COLUMN, QString::number(topLevelItem->text(LABELED_POINT_COLUMN).toInt() - item->text(LABELED_POINT_COLUMN).toInt()));
+    topLevelItem->removeChild(item);
+    //remove the ComboBox entry
+    int comboBoxPos = selectedInstanceComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
+    if (comboBoxPos >= 0)
+    { 
+        selectedInstanceComboBox->removeItem(comboBoxPos);
+    }
+}
 void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
 {
     QList<QTreeWidgetItem*> items = labelTreeWidget->selectedItems();
@@ -939,12 +956,19 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
         QTreeWidgetItem* item = items.first();
         if (item->type() == LVRLabelClassItemType)
         {
-            std::cout << "parent Item" <<std::endl;
             LVRLabelClassTreeItem *classItem = static_cast<LVRLabelClassTreeItem *>(item);
             auto selected = m_labelTreeParentItemContextMenu->exec(globalPos);
             if(selected == m_actionAddNewInstance)
             {
                 addNewInstance(classItem);
+            } else if(selected == m_actionDeleteLabelClass)
+            {
+                int count = item->childCount();
+                for(int i = 0; i < count; i++)
+                {
+                    deleteLabelInstance(item->child(0));
+                }
+                labelTreeWidget->takeTopLevelItem(labelTreeWidget->indexOfTopLevelItem(item));
             }
             return;
         }
