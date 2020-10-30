@@ -483,7 +483,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 		vtkSmartPointer<vtkIdFilter>::New();
 
 	pointFilter->SetInputData(m_vtk_polyData);
-#if VTK890
+#if VTK890 || defined LVR2_USE_VTK9
 	pointFilter->SetCellIdsArrayName("OriginalIds");
 	pointFilter->SetPointIdsArrayName("OriginalIds");
 #else
