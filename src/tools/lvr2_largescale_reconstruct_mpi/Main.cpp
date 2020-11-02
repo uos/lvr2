@@ -40,6 +40,7 @@
 #include "lvr2/io/hdf5/ScanProjectIO.hpp"
 #include "lvr2/io/ScanIOUtils.hpp"
 #include <mpi.h>
+#include <filesystem>
 
 using std::cout;
 using std::endl;
@@ -245,6 +246,9 @@ int main(int argc, char** argv)
         OpenMPConfig::setNumThreads(options.getNumThreads());
         if(b)
         {
+            stringstream dir;
+            dir << "/tmp/mpi_" << mpi_rank;
+            std::filesystem::create_directory(dir.str());
             LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(),
                                               options.getNodeSize(), options.getPartMethod(), options.getKi(),
                                               options.getKd(), options.getKn(),
@@ -259,6 +263,7 @@ int main(int argc, char** argv)
 
             cout << "Starting Client[" << mpi_rank << "]." << endl;
             lsr.trueMpiAndReconstructSlave();
+            std::remove(dir.str().c_str());
         }
     }
     cout << "Process with rank [" << mpi_rank << "] finished." << endl;

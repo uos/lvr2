@@ -1285,7 +1285,7 @@ namespace lvr2
             ps_grid->calcDistanceValues();
 
             stringstream largeScale;
-            largeScale << "/tmp/" << chunk << "_" << rank;
+            largeScale << "/tmp/mpi_" << rank << "/" << chunk;
 
             ps_grid->serialize(largeScale.str());
 
@@ -1307,7 +1307,7 @@ namespace lvr2
         for(auto chunk : chunks)
         {
             stringstream largeScale;
-            largeScale << "/tmp/" << chunk << "_" << rank;
+            largeScale << "/tmp/mpi_" << rank << "/" << chunk;
 
             ifstream fl(largeScale.str());
             fl.seekg(0, ios::end);
