@@ -5,6 +5,7 @@
 
 #include "lvr2/io/descriptions/ArrayIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "WaveformIO.hpp"
 
 #include <yaml-cpp/yaml.h>
 namespace lvr2
@@ -24,6 +25,8 @@ protected:
 
   // dependencies
   ArrayIO<FeatureBase> *m_arrayIO = static_cast<ArrayIO<FeatureBase> *>(m_featureBase);
+  FullWaveformIO<FeatureBase>* m_fullWaveformIO =
+        static_cast<FullWaveformIO<FeatureBase>*>(m_featureBase);
   static constexpr const char* ID = "LabelIO";
   static constexpr const char* OBJID = "Label";
 
@@ -32,7 +35,9 @@ template<typename FeatureBase>
 struct FeatureConstruct<LabelIO, FeatureBase> {
     
     // DEPS
-    using deps = typename FeatureConstruct<ArrayIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase >::type;
+    using dep2 = typename FeatureConstruct<FullWaveformIO, FeatureBase>::type;
+    using deps = typename dep1::template Merge<dep2>;
  
 
     // add actual feature

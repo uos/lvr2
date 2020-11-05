@@ -16,9 +16,11 @@ class FullWaveformIO
 {
 public:
   void saveFullWaveform(const size_t& scanPosNo, const size_t& scanNo, const WaveformPtr &buffer);
+  void saveLabelWaveform(const std::string& group, const WaveformPtr &buffer);
 
-  WaveformPtr loadFullWaveform(const size_t& scanPosNo, const size_t& scanNo);
+  WaveformPtr loadLabelWaveform(const std::string& groupName);
   
+  WaveformPtr loadFullWaveform(const size_t& scanPosNo, const size_t& scanNo);
 protected:
   FeatureBase *m_featureBase = static_cast<FeatureBase *>(this);
 
