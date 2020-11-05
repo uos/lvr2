@@ -104,12 +104,19 @@ int main( int argc, char ** argv )
           vertices[pos + 2]));
     }
 
+    size_t invalid_face_cnt = 0;
     for(size_t i = 0; i < numFaces; i++) {
       size_t pos = 3 * i;
       VertexHandle v1(indices[pos]);
       VertexHandle v2(indices[pos + 1]);
       VertexHandle v3(indices[pos + 2]);
-      hem.addFace(v1, v2, v3);
+      try{
+        hem.addFace(v1, v2, v3);
+      }
+      catch(lvr2::PanicException)
+      {
+        invalid_face_cnt++;
+      }
     }
 
     HDF5MeshToolIO hdf5;

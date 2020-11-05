@@ -30,9 +30,7 @@
  */
 
 #include "lvr2/util/Panic.hpp"
-
-using std::move;
-using std::swap;
+#include <unordered_set>
 
 namespace lvr2
 {
@@ -121,11 +119,10 @@ MeapPair<KeyT, ValueT> Meap<KeyT, ValueT>::popMin()
     }
 
     // Swap the minimal element with the last element in the vector
-    swap(m_heap[0], m_heap.back());
-    swap(m_indices[m_heap[0].key()], m_indices[m_heap.back().key()]);
+    std::swap(m_indices[m_heap[0].key()], m_indices[m_heap.back().key()]);
 
     // Move (minimum) element out of the vector
-    const auto out = move(m_heap.back());
+    const auto out = std::move(m_heap.back());
     m_heap.pop_back();
     m_indices.erase(out.key());
 
@@ -171,11 +168,11 @@ boost::optional<ValueT> Meap<KeyT, ValueT>::erase(KeyT key)
 
     // Swap the element to remove with the last element in the vector
     auto swapKey = m_heap.back().key();
-    swap(m_heap[index], m_heap.back());
-    swap(m_indices[key], m_indices[swapKey]);
+    std::swap(m_heap[index], m_heap.back());
+    std::swap(m_indices[key], m_indices[swapKey]);
 
     // Move element out of the vector
-    const auto out = move(m_heap.back()).value();
+    const auto out = std::move(m_heap.back()).value();
     m_heap.pop_back();
     m_indices.erase(key);
 
@@ -234,8 +231,8 @@ void Meap<KeyT, ValueT>::bubbleUp(size_t idx)
     // Bubble new element up until the order is correct
     while (idx != 0 && m_heap[idx].value() < m_heap[father(idx)].value())
     {
-        swap(m_heap[idx], m_heap[father(idx)]);
-        swap(m_indices[m_heap[idx].key()], m_indices[m_heap[father(idx)].key()]);
+	std::swap(m_heap[idx], m_heap[father(idx)]);
+	std::swap(m_indices[m_heap[idx].key()], m_indices[m_heap[father(idx)].key()]);
         idx = father(idx);
     }
 }
@@ -274,8 +271,8 @@ void Meap<KeyT, ValueT>::bubbleDown(size_t idx)
     while (hasSmallerChildren(idx))
     {
         const auto smallerChild = smallerChildOf(idx);
-        swap(m_heap[smallerChild], m_heap[idx]);
-        swap(m_indices[m_heap[smallerChild].key()], m_indices[m_heap[idx].key()]);
+	std::swap(m_heap[smallerChild], m_heap[idx]);
+	std::swap(m_indices[m_heap[smallerChild].key()], m_indices[m_heap[idx].key()]);
         idx = smallerChild;
     }
 }
@@ -286,7 +283,7 @@ void Meap<KeyT, ValueT>::debugOutput() const
     size_t levelWidth = 1;
     size_t levelCount = 0;
     size_t totalCount = 0;
-    unordered_set<KeyT> keys;
+    std::unordered_set<KeyT> keys;
 
     cout << "HEAP:" << endl;
     for (auto& e: m_heap)
