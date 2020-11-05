@@ -63,6 +63,73 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     m_featureBase->m_kernel->saveUInt16Array(groupName, waveformName, waveformDim, waveformData);
 
 }
+template <typename Derived>
+void FullWaveformIO<Derived>::saveLabelWaveform(
+    const std::string& groupName,
+    const WaveformPtr& fwPtr)
+{
+    std::cout << fwPtr->maxBucketSize << std::endl;
+    std::cout << fwPtr->waveformIndices.size() << std::endl;
+    // saving Waveform samples
+    uint16Arr waveformData = uint16Arr(new uint16_t[fwPtr->lowPower.size() * (fwPtr->maxBucketSize + 1)]());
+    for(int i = 0; i < fwPtr->lowPower.size(); i++)
+    {
+        waveformData[(fwPtr->maxBucketSize + 1) * i] = (fwPtr->lowPower[i] ? 1 : 0);
+        int sizeOfBlock = fwPtr->waveformIndices[i + 1] - fwPtr->waveformIndices[i];
+        std::memcpy(waveformData.get() + (i * (fwPtr->maxBucketSize)) + 1, fwPtr->waveformSamples.data() + fwPtr->waveformIndices[i], sizeOfBlock * sizeof(uint16_t));
+    }
+
+    std::vector<size_t> waveformDim = {fwPtr->lowPower.size(), static_cast<size_t>(fwPtr->maxBucketSize)};
+    m_featureBase->m_kernel->saveUInt16Array(groupName, "waveform", waveformDim, waveformData);
+
+}
+template <typename Derived>
+WaveformPtr FullWaveformIO<Derived>::loadLabelWaveform(const std::string& groupName)
+{
+    WaveformPtr ret(new Waveform);
+    std::string waveformName = "waveform";
+
+    // Load actual data
+    boost::shared_array<uint16_t> waveformData;
+    std::vector<size_t> waveformDim;
+    waveformData = m_featureBase->m_kernel->loadUInt16Array(groupName, waveformName, waveformDim);
+    ret->waveformSamples.reserve(waveformDim[0] * waveformDim[1] - 1);
+    ret->lowPower.reserve(waveformDim[0]);
+    ret->waveformIndices.reserve(waveformDim[0]);
+
+    //Store first entry
+    ret->waveformIndices.push_back(0);
+
+    //Remove entries containing 0 from the data and calculate the iterators
+
+    for (int i = 0; i < waveformDim[0]; i++)
+    {
+        //First entry is the channel
+        ret->lowPower.push_back(waveformData[i * waveformDim[1]]);
+
+        //Start with 1 since the first entry was channelinfo
+        for(int j = 1; j < waveformDim[1]; j++)
+        {
+            if(waveformData[(i * waveformDim[1]) + j] == 0 || j == (waveformDim[1] - 1))
+            {
+                if(waveformData[(i * waveformDim[1]) + j] != 0 )
+                {
+                    ret->waveformSamples.push_back(waveformData[(i * waveformDim[1]) + j]);
+                    ret->waveformIndices.push_back(ret->waveformIndices.back() + j);
+                }
+                else
+                {
+                    ret->waveformIndices.push_back(ret->waveformIndices.back() + j - 1);
+                }
+                break;
+            }
+            ret->waveformSamples.push_back(waveformData[(i * waveformDim[1]) + j]);
+        }
+    }
+
+    ret->maxBucketSize = waveformDim[1] - 1;
+    return ret;
+}
 
 template <typename Derived>
 WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, const size_t& scanNo)

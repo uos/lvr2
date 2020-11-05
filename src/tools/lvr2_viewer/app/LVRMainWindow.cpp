@@ -1129,6 +1129,7 @@ void LVRMainWindow::addLabelClass()
         }
 
         size_t pcSize = 0;
+        std::vector<WaveformPtr> partWaveforms;
         for(const auto& pcName : pcDialog.getChecked())
         {
             auto parts = pcName.split(QString("\\"));
@@ -1143,6 +1144,7 @@ void LVRMainWindow::addLabelClass()
                 if(pitem->getModelBridge()->getWaveform())
                 {
                     m_waveformOffset[pcSize] = pitem->getModelBridge()->getWaveform();
+                    partWaveforms.push_back(pitem->getModelBridge()->getWaveform());
                 }
 
             }
@@ -1165,6 +1167,26 @@ void LVRMainWindow::addLabelClass()
         m_pickingInteractor->setPoints(temp->getPolyIDData());
         labelTreeWidget->getLabelRoot()->points = temp->getPointBuffer();
 
+
+        //add Waveform
+        if (m_waveformOffset.size() > 0)
+        {
+            WaveformPtr waveform = WaveformPtr(new Waveform);
+            std::vector<int> indices= {0};
+            int maxBucket = 0;
+            for(const auto partWaveform : partWaveforms)
+            {
+                maxBucket = std::max(maxBucket,partWaveform->maxBucketSize);
+                int offset = indices.back();
+                waveform->waveformSamples.insert(waveform->waveformSamples.end(), partWaveform->waveformSamples.begin(), partWaveform->waveformSamples.end());
+                waveform->lowPower.insert(waveform->lowPower.end(), partWaveform->lowPower.begin(), partWaveform->lowPower.end());
+                std::transform(partWaveform->waveformIndices.begin() + 1, partWaveform->waveformIndices.end(), std::back_inserter(indices), [&](int i){return i + offset;});
+            }
+            waveform->waveformIndices = std::move(indices);
+            waveform->maxBucketSize = maxBucket;
+            labelTreeWidget->getLabelRoot()->waveform = waveform;
+        }
+        
     }
 
     //Ask For the Label name 
@@ -3041,6 +3063,11 @@ void LVRMainWindow::addNewInstance(LVRLabelClassTreeItem * selectedTopLevelItem)
 void LVRMainWindow::openIntermediaProject()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Choose IntermediaProject"),"",QFileDialog::ShowDirsOnly| QFileDialog::DontResolveSymlinks);
+    if (dir == "")
+    {
+        //Selection Was Canceled
+        return;
+    }
     DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(dir.toStdString())); 
     std::string tmp  = dir.toStdString();
     DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib(tmp)); 

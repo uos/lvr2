@@ -127,7 +127,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
 
         if (m_featureBase->m_kernel->exists(groupName))
         {
-            std::cout << "Loading Waveform" << std::endl;
+            std::cout << "[LabelIO]Loading Waveform" << std::endl;
             WaveformPtr fwPtr = m_fullWaveformIO->loadFullWaveform(scanPosNo, scanNo);
             ret->waveform = fwPtr;
             //boost::shared_array<uint16_t> waveformData(new uint16_t[fwPtr->waveformSamples.size()]);
@@ -135,7 +135,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
             //Channel<uint16_t>::Ptr waveformChannel(new Channel<uint16_t>(fwPtr->waveformSamples.size() / fwPtr->maxBucketSize, static_cast<size_t>(fwPtr->maxBucketSize), waveformData));
             //ret->points->addChannel<uint16_t>(waveformChannel, "waveform");
         } else{
-            std::cout << "No Waveform found" << groupName << std::endl;
+            std::cout << "[LabelIO]No Waveform found" << groupName << std::endl;
         }
     }
 

@@ -4,12 +4,12 @@ namespace lvr2
 
 template <typename Derived>
 void LabelIO<Derived>::saveLabels(
-    std::string& group,
+    std::string& groupName,
     LabelRootPtr labelRootPtr)
 {
     //TODO Maybe add Description conatining the group and datasetname
     boost::filesystem::path pointCloud("pointCloud");
-    boost::filesystem::path groupPath = (boost::filesystem::path(group) / pointCloud);
+    boost::filesystem::path groupPath = (boost::filesystem::path(groupName) / pointCloud);
     m_featureBase->m_kernel->savePointBuffer(groupPath.string(), "points", labelRootPtr->points);
 
     for(auto classPtr : labelRootPtr->labelClasses)
@@ -66,8 +66,20 @@ void LabelIO<Derived>::saveLabels(
             sharedColorData[2] = instancePtr->color[2];
             boost::shared_array<int>colors (sharedColorData);
             m_arrayIO->saveIntArray(groupName, "Color", dim, colors);
+
+            
         }
     }
+    //save Waveform
+    if(labelRootPtr->waveform)
+    {
+        std::cout << "[LabelIO]Saving Waveform" << std::endl;
+        m_fullWaveformIO->saveLabelWaveform(groupPath.string(),labelRootPtr->waveform);      
+    }else
+    {
+        std::cout << "[LabelIO]No Waveform" << std::endl;
+    }
+
 }
 
 template <typename Derived>
@@ -90,7 +102,7 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
     boost::filesystem::path groupPath(group);
     for (auto classGroup : labelClasses)
     {
-        if(classGroup == "points")
+        if(classGroup == "points" || classGroup == "waveform")
         {
             //TODO make it less hacky
             continue;
@@ -126,7 +138,17 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
         }
         ret->labelClasses.push_back(classPtr);
     }
+
+    //read Waveform
+    boost::filesystem::path waveformPath(groupPath / boost::filesystem::path("waveform"));
+    if (m_featureBase->m_kernel->exists(waveformPath.string()))
+    {
+            std::cout << "[LabelIO] Read Waveform" << std::endl;
+            WaveformPtr fwPtr = m_fullWaveformIO->loadLabelWaveform(groupPath.string());
+            ret->waveform = fwPtr;
+    }
     return ret;
+
 }
 
 } // namespace lvr2
