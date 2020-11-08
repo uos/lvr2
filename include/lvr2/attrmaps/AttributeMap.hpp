@@ -35,11 +35,9 @@
 #define LVR2_ATTRMAPS_ATTRIBUTEMAP_H_
 
 #include <boost/optional.hpp>
-
-
-
 #include <memory>
-#include "lvr2/util/BaseHandle.hpp"
+
+#include "lvr2/geometry/Handles.hpp"
 
 namespace lvr2
 {
