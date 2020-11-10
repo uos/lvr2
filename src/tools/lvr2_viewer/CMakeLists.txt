@@ -16,19 +16,26 @@ set(LVR2_VIEWER_SOURCES
     app/Options.cpp
     vtkBridge/LVRBoundingBoxBridge.cpp
     vtkBridge/LVRModelBridge.cpp
+    vtkBridge/LVRScanProjectBridge.cpp
+    vtkBridge/LVRScanPositionBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp
     vtkBridge/LVRMeshBufferBridge.cpp
+    vtkBridge/LVRLabeledScanProjectEditMarkBridge.cpp
+    vtkBridge/LVRLabelBridge.cpp
     vtkBridge/LVRPickingInteractor.cpp
     vtkBridge/LVRInteractorStylePolygonPick.cpp
     vtkBridge/LVRLabelInteractor.cpp
     vtkBridge/LVRVtkArrow.cpp
     vtkBridge/LVRChunkedMeshCuller.cpp
     vtkBridge/LVRChunkedMeshBridge.cpp
+    widgets/LVRScanProjectItem.cpp
+    widgets/LVRScanPositionItem.cpp
     widgets/LVRModelItem.cpp
     widgets/LVRPointCloudItem.cpp
     widgets/LVRMeshItem.cpp
     widgets/LVRPoseItem.cpp
     widgets/LVRPickItem.cpp
+    widgets/LVRLabelItem.cpp
     widgets/LVRTextureMeshItem.cpp
     widgets/LVRRecordedFrameItem.cpp
     widgets/LVRRenameDialog.cpp
@@ -44,6 +51,7 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRFilteringRemoveOutliersDialog.cpp
     widgets/LVRFilteringMLSProjectionDialog.cpp
     widgets/LVRBackgroundDialog.cpp
+    widgets/LVRPointcloudSelectionDialog.cpp
     widgets/LVRPointInfo.cpp
     widgets/LVRPlotter.cpp
     widgets/LVRHistogram.cpp
@@ -52,6 +60,11 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRCvImageItem.cpp
     widgets/LVRBoundingBoxItem.cpp
     widgets/LVRGraphicsView.cpp
+    widgets/LVRLabelTreeWidget.cpp
+    widgets/LVRLabelClassTreeItem.cpp
+    widgets/LVRLabelInstanceTreeItem.cpp
+    widgets/LVRModelTreeWidget.cpp
+    widgets/LVRLabeledScanProjectEditMarkItem.cpp
     util/qttf.cpp
 )
 
@@ -83,6 +96,7 @@ set(LVR2_VIEWER_MOCS
     widgets/LVRLabelDialog.hpp
     widgets/LVRCorrespondanceDialog.hpp
     widgets/LVRBackgroundDialog.hpp
+    widgets/LVRPointcloudSelectionDialog.hpp
     widgets/LVRPointInfo.hpp
     widgets/LVRPlotter.hpp
     widgets/LVRHistogram.hpp

@@ -178,6 +178,7 @@ bool LVRPointCloudItem::getVisibility()
 
 void LVRPointCloudItem::setVisibility(bool &visibility)
 {
+    std::cout << "hide Points " << std::endl;
 	m_pointBridge->setVisibility(visibility);
 	m_visible = visibility;
 }

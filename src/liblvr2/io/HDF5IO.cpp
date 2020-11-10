@@ -32,6 +32,7 @@
 #include <chrono>
 #include <ctime>
 #include <algorithm>
+#include "lvr2/io/LabelBuffer.hpp"
 
 namespace lvr2
 {
@@ -49,7 +50,6 @@ HDF5IO::HDF5IO(const std::string filename, const std::string part_name, int open
     m_part_name(part_name),
     m_mesh_path(meshes_group+"/"+part_name)
 {
-    std::cout << timestamp << " Try to open file \"" << filename << "\"..." << std::endl;
     if(!open(filename, open_flag))
     {
         std::cerr << timestamp << " Could not open file \"" << filename << "\"!" << std::endl;
@@ -69,10 +69,10 @@ HDF5IO::HDF5IO(std::string filename, int open_flag) :
 
 HDF5IO::~HDF5IO()
 {
-    if(m_hdf5_file)
-    {
-        delete m_hdf5_file;
-    }
+    // if(m_hdf5_file)
+    // {
+    //     delete m_hdf5_file;
+    // }
 }
 
 void HDF5IO::setCompress(bool compress)
@@ -139,7 +139,21 @@ ModelPtr HDF5IO::read(std::string filename)
     } else {
         std::cout << timestamp << " PointCloud could not be loaded." << std::endl;
     }
-    
+
+    // read Labels
+    if(readLabel(model_ptr))
+    {
+        std::cout << timestamp << "Labels successfully loaded." << std::endl;
+    } else {
+        std::cout << timestamp << "Lables could not be loaded" << std::endl;
+    }
+     // read Waveform
+    if(readWaveform(model_ptr))
+    {
+        std::cout << timestamp << "Waveform successfully loaded." << std::endl;
+    } else {
+        std::cout << timestamp << "Waveform could not be loaded" << std::endl;
+    }   
     return model_ptr;
 }
 
@@ -229,6 +243,140 @@ bool HDF5IO::readMesh(ModelPtr model_ptr)
     return true;
 }
 
+bool HDF5IO::readLabel(ModelPtr model_ptr)
+{
+    boost::filesystem::path pointcloudRoot= "/pointclouds";
+    if (!exist(pointcloudRoot.string()))
+    {
+        return false;
+    }
+    model_ptr->m_label.reset(new LabelBuffer());
+
+    HighFive::Group pointcloudRootGroup = getGroup(pointcloudRoot.string());
+    size_t num_objects = pointcloudRootGroup.getNumberObjects();
+    for (size_t i = 0; i < num_objects; i++)
+    {
+    	boost::filesystem::path pointcloudPath = boost::filesystem::path(pointcloudRoot / boost::filesystem::path(pointcloudRootGroup.getObjectName(i)));
+	//read Points
+        std::vector<size_t> pointDims;
+	floatArr pointArray = getArray<float>(pointcloudPath.string(), "Points", pointDims);
+	//model_ptr->m_label->addPoints(pointArray);
+	std::cout <<" Dims " <<  pointDims[0] << "x" << pointDims[1]<< std::endl;
+	floatArr outPoints;
+        outPoints = floatArr( new float[ pointDims[0] * pointDims[1] ] );
+        for (int i = 0; i < pointDims[1] ; i++ )
+        {
+             outPoints[3 * i] = pointArray[i];
+             outPoints[(3 * i) + 1] = pointArray[i + pointDims[1]];
+             outPoints[(3 * i) + 2] = pointArray[i + (pointDims[1] * 2)];
+        }
+        PointBufferPtr pc;
+        pc = PointBufferPtr( new PointBuffer );
+    	pc->setPointArray(pointArray, (pointDims[1] -1));
+    	//m_model->m_pointCloud = PointBufferPtr( new PointBuffer);
+//	m_model-
+//	m_model->m_pointCloud.reset();
+	//m_model->m_pointCloud = pc;
+    	//model_ptr->m_pointCloud.reset(new PointBuffer(pointArray, pointDims[1] -1 ));
+    	model_ptr->m_pointCloud.reset(new PointBuffer(outPoints, pointDims[1]));
+
+    	pointcloudPath /= boost::filesystem::path("labels");
+    	if (!exist(pointcloudPath.string()))
+	{
+		return false;
+	}
+
+
+    	HighFive::Group pointcloudGroup = getGroup(pointcloudPath.string());
+        size_t num_pointclouds = pointcloudGroup.getNumberObjects();
+	for (size_t j = 0; j < num_pointclouds; j++)
+	{
+	    boost::filesystem::path labelClassPath = boost::filesystem::path(pointcloudPath / boost::filesystem::path(pointcloudGroup.getObjectName(j)));
+
+	    //Set Label Class
+	    LabelClassPtr label_class = std::make_shared<LabelClass>();
+	    label_class->className = pointcloudGroup.getObjectName(j);
+
+	    model_ptr->m_label->addLabelClass(label_class);
+
+    	    HighFive::Group labelClassGroup = getGroup(labelClassPath.string());
+            size_t num_labelClasses = labelClassGroup.getNumberObjects();
+	    for (size_t k = 0; k < num_labelClasses; k++)
+	    {
+
+        	std::vector<size_t> colorDims;
+        	std::vector<size_t> idsDims;
+        	
+	        boost::filesystem::path labelInstancePath = boost::filesystem::path(labelClassPath / boost::filesystem::path(labelClassGroup.getObjectName(k)));
+		boost::shared_array<int> labelIDArray = getArray<int>(labelInstancePath.string(), "IDs", idsDims);
+		boost::shared_array<int> colorArray = getArray<int>(labelInstancePath.string(), "Color", colorDims);
+
+		auto instance = make_shared<LabelInstance>();
+		instance->instanceName = labelClassGroup.getObjectName(k);
+
+		instance->color.resize(colorDims[0]);
+		instance->labeledIDs.resize(idsDims[0]);
+
+		//DO it better
+		for(int l = 0; l < colorDims[0]; l++)
+		{
+			instance->color[l] = colorArray[l];
+		}
+		//DO it better
+		for(int l = 0; l < idsDims[0]; l++)
+		{
+			instance->labeledIDs[l] = labelIDArray[l];
+		}
+		label_class->instances.push_back(instance);
+	    }
+	}
+    }
+    return true;
+}
+
+bool HDF5IO::readWaveform(ModelPtr model_ptr)
+{
+    const std::string mesh_resource_path = "meshes/" + m_part_name;
+    const std::string vertices("vertices");
+    const std::string indices("indices");
+
+    if(!exist(mesh_resource_path)){
+        return false;
+    } else {
+        auto mesh = getGroup(mesh_resource_path);
+        
+        if(!mesh.exist(vertices) || !mesh.exist(indices)){
+            std::cout << timestamp << " The mesh has to contain \"" << vertices
+                << "\" and \"" << indices << "\"" << std::endl;
+            std::cout << timestamp << " Return empty model pointer!" << std::endl;
+            return false;
+        }
+
+        std::vector<size_t> vertexDims;
+        std::vector<size_t> faceDims;
+
+        // read mesh buffer
+        floatArr vbuffer = getArray<float>(mesh_resource_path, vertices, vertexDims);
+        indexArray ibuffer = getArray<unsigned int>(mesh_resource_path, indices, faceDims);
+
+        if(vertexDims[0] == 0)
+        {
+            return false;
+        }
+        if(!model_ptr->m_mesh)
+        {
+            model_ptr->m_mesh.reset(new MeshBuffer());
+        }
+
+        model_ptr->m_mesh->setVertices(vbuffer, vertexDims[0]);
+
+        model_ptr->m_mesh->setFaceIndices(ibuffer, faceDims[0]);
+    }
+    return true;
+}
+
+
+
 bool HDF5IO::open(std::string filename, int open_flag)
 {
     // If file alredy exists, don't rewrite base structurec++11 init vector
@@ -294,6 +442,12 @@ void HDF5IO::save(ModelPtr model, std::string filename)
     } else {
         std::cout << timestamp << " Mesh could not saved to " << filename << std::endl;
     }
+    if(saveLabel(model))
+    {
+        std::cout << timestamp << " Label succesfully saved to " << filename << std::endl;
+    } else {
+        std::cout << timestamp << " Label could not saved to " << filename << std::endl;
+    }
 }
 
 bool HDF5IO::saveMesh(ModelPtr model_ptr)
@@ -356,7 +510,15 @@ bool HDF5IO::saveMesh(ModelPtr model_ptr)
     return true;
 
 }
-
+bool HDF5IO::saveLabel(ModelPtr model_ptr)
+{
+    if(!model_ptr->m_mesh)
+    {
+        std::cout << timestamp << " Model does not contain a mesh" << std::endl;
+        return false;
+    }
+    
+}
 Texture HDF5IO::getImage(std::string groupName, std::string datasetName)
 {
 

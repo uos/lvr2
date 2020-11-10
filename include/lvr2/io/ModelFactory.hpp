@@ -40,6 +40,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 #include <map>
 
 #include <boost/shared_ptr.hpp>

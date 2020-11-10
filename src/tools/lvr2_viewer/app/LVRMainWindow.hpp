@@ -75,7 +75,13 @@
 
 #include "../widgets/LVRPlotter.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
+#include "../vtkBridge/LVRLabeledScanProjectEditMarkBridge.hpp"
+#include "../vtkBridge/LVRScanProjectBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
+#include "../widgets/LVRScanProjectItem.hpp"
+#include "../widgets/LVRScanPositionItem.hpp"
+#include "../widgets/LVRLabelItem.hpp"
+#include "../widgets/LVRLabeledScanProjectEditMarkItem.hpp"
 #include "../widgets/LVRPointCloudItem.hpp"
 #include "../widgets/LVRMeshItem.hpp"
 #include "../widgets/LVRItemTypes.hpp"
@@ -92,11 +98,14 @@
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
+#include "../widgets/LVRPointcloudSelectionDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
+#include "../widgets/LVRLabelTreeWidget.hpp"
 #include "../widgets/LVRScanDataItem.hpp"
 #include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"
 #include "../widgets/LVRPointInfo.hpp"
+#include "../widgets/LVRLabelClassTreeItem.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRLabelInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -114,6 +123,7 @@
 #define LABELED_POINT_COLUMN 1
 #define LABEL_VISIBLE_COLUMN 2
 #define LABEL_ID_COLUMN 3
+#define LABEL_EDITABLE_COLUMN 4
 
 
 
@@ -136,6 +146,7 @@ public:
     virtual ~LVRMainWindow();
     std::mutex display_mutex;
 
+    void deleteLabelInstance(QTreeWidgetItem* item);
 public Q_SLOTS:
     void updateDisplayLists(actorMap lowRes, actorMap highRes);
             
@@ -143,8 +154,9 @@ public Q_SLOTS:
             //                std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors);
 
 
+    void openIntermediaProject();
     void comboBoxIndexChanged(int index);
-    void addNewInstance(QTreeWidgetItem *);
+    void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();
@@ -154,9 +166,13 @@ public Q_SLOTS:
     void changePicker(bool labeling);
     void showLabelTreeContextMenu(const QPoint&);
     void updatePointCount(const uint16_t, const int);
+    void readLWF();
+    void exportScanProject();
 
     void cellSelected(QTreeWidgetItem* item, int column);
     void addLabelClass();
+    void lassoButtonToggled(bool);
+    void polygonButtonToggled(bool);
 
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
@@ -253,7 +269,8 @@ protected Q_SLOTS:
     void highlightBoundingBoxes();
 
     void visibilityChanged(QTreeWidgetItem*, int);
-    void loadLabels();
+    void openHDF5(std::string fileName);
+    void openScanProject();
 
 Q_SIGNALS:
     void labelChanged(uint16_t);
@@ -266,6 +283,7 @@ private:
     void setupQVTK();
     void connectSignalsAndSlots();
     LVRModelItem* loadModelItem(QString name);
+    LVRLabeledScanProjectEditMarkItem* checkForScanProject();
     bool childNameExists(QTreeWidgetItem* item, const QString& name);
     QString increaseFilename(QString filename);
 
@@ -273,6 +291,7 @@ private:
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     LVRLabelDialog*                   		m_labelDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
+    std::map<uint32_t, WaveformPtr>             m_waveformOffset;
     LVRPlotter*                                 m_PointPreviewPlotter;
     int                                         m_previewPoint;
     PointBufferPtr                              m_previewPointBuffer;
@@ -375,8 +394,10 @@ private:
     
     //Label
     QAction*                            m_actionAddLabelClass;
+    QAction*                            m_actionDeleteLabelClass;
     QAction*                            m_actionAddNewInstance;
     QAction*                            m_actionRemoveInstance;
+    QAction*                            m_actionShowWaveform;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1305</width>
+    <width>1198</width>
     <height>1006</height>
    </rect>
   </property>
@@ -61,7 +61,7 @@
    <widget class="QWidget" name="dockWidgetSceneContents">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QTreeWidget" name="treeWidget">
+      <widget class="LVRModelTreeWidget" name="treeWidget">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -603,7 +603,7 @@
    <addaction name="actionShow_SpectralPointPreview"/>
    <addaction name="actionShow_SpectralHistogram"/>
    <addaction name="separator"/>
-   <addaction name="actionLabeling_Start"/>
+   <addaction name="actionConfirm_LabelSelection"/>
    <addaction name="actionSelected_Lasso"/>
    <addaction name="actionSelected_Polygon"/>
   </widget>
@@ -612,7 +612,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1305</width>
+     <width>1198</width>
      <height>22</height>
     </rect>
    </property>
@@ -670,14 +670,6 @@
     <addaction name="actionSimple_Plane_Classification"/>
     <addaction name="actionFurniture_Recognition"/>
    </widget>
-   <widget class="QMenu" name="menuLabel">
-    <property name="title">
-     <string>Labeling</string>
-    </property>
-    <addaction name="actionLabeling_Start"/>
-    <addaction name="actionLabeling_Stop"/>
-    <addaction name="actionLabeling_Export"/>
-   </widget>
    <widget class="QMenu" name="menuRendering">
     <property name="title">
      <string>Rendering</string>
@@ -705,8 +697,11 @@
     <addaction name="actionExport"/>
     <addaction name="actionQuit"/>
     <addaction name="separator"/>
-    <addaction name="actionOpenLabeledPointcloud"/>
-    <addaction name="actionExportLabeledPointcloud"/>
+    <addaction name="actionOpenScanProject"/>
+    <addaction name="actionExportScanProject"/>
+    <addaction name="actionOpen_Intermedia_Project"/>
+    <addaction name="separator"/>
+    <addaction name="actionReadWaveform"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuViews"/>
@@ -716,7 +711,6 @@
    <addaction name="menuFiltering"/>
    <addaction name="menuRegistration"/>
    <addaction name="menuClassification"/>
-   <addaction name="menuLabel"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetCamera">
@@ -1153,7 +1147,7 @@
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
-      <widget class="QTreeWidget" name="labelTreeWidget">
+      <widget class="LVRLabelTreeWidget" name="labelTreeWidget">
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
        </property>
@@ -1177,6 +1171,11 @@
          <string>Id</string>
         </property>
        </column>
+       <column>
+        <property name="text">
+         <string>Editable</string>
+        </property>
+       </column>
       </widget>
      </item>
      <item row="1" column="1">
@@ -1193,6 +1192,20 @@
        </item>
        <item>
         <widget class="QComboBox" name="selectedInstanceComboBox"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="addLabelClassButton">
+         <property name="text">
+          <string>Add Label Class</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="addLabelInstanceButton">
+         <property name="text">
+          <string>Add new Instance</string>
+         </property>
+        </widget>
        </item>
        <item>
         <spacer name="horizontalSpacer_5">
@@ -1351,9 +1364,9 @@
     <string>Simple Plane Classification</string>
    </property>
   </action>
-  <action name="actionLabeling_Start">
+  <action name="actionConfirm_LabelSelection">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="checked">
     <bool>false</bool>
@@ -1363,7 +1376,7 @@
      <normaloff>:/qv_labeling.png</normaloff>:/qv_labeling.png</iconset>
    </property>
    <property name="text">
-    <string>Label Points</string>
+    <string>Confirm Selection</string>
    </property>
   </action>
   <action name="actionSelected_Lasso">
@@ -1569,14 +1582,29 @@
     <string>Open chunked mesh</string>
    </property>
   </action>
-  <action name="actionOpenLabeledPointcloud">
+  <action name="actionOpenScanProject">
    <property name="text">
-    <string>Open Labeled Pointcloud</string>
+    <string>Open Scan Project</string>
    </property>
   </action>
   <action name="actionExportLabeledPointcloud">
    <property name="text">
     <string>Export labeled pointcloud</string>
+   </property>
+  </action>
+  <action name="actionReadWaveform">
+   <property name="text">
+    <string>Open Waveform</string>
+   </property>
+  </action>
+  <action name="actionExportScanProject">
+   <property name="text">
+    <string>Export Scan Project</string>
+   </property>
+  </action>
+  <action name="actionOpen_Intermedia_Project">
+   <property name="text">
+    <string>Open Intermedia Project</string>
    </property>
   </action>
  </widget>
@@ -1590,6 +1618,16 @@
    <class>lvr2::LVRPlotter</class>
    <extends>QWidget</extends>
    <header>LVRPlotter.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>LVRLabelTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>LVRLabelTreeWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>LVRModelTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>LVRModelTreeWidget.hpp</header>
   </customwidget>
  </customwidgets>
  <resources>

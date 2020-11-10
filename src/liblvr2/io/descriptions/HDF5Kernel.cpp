@@ -26,7 +26,6 @@ void HDF5Kernel::savePointBuffer(
     const PointBufferPtr &buffer) const
 {
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
-
     for(auto elem : *buffer)
     {
         this->template save(g, elem.first, elem.second);
@@ -180,7 +179,6 @@ void HDF5Kernel::saveMetaYAML(
     const std::string &metaName,
     const YAML::Node &node) const
 {
-    cout << "SaveMetaYAML: " << group << " / " << metaName << std::endl;
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
 
     if(hg.isValid() && node["sensor_type"] )
@@ -188,11 +186,11 @@ void HDF5Kernel::saveMetaYAML(
         std::string sensor_type = node["sensor_type"].as<std::string>();
         if(sensor_type == "ScanPosition")
         {
-
             m_metaDescription->saveScanPosition(hg, node);
         }
         else if(sensor_type == "Scan")
         {
+            cout << "save Scan " << endl;
             m_metaDescription->saveScan(hg, node);
         }
         else if(sensor_type == "ScanCamera")
@@ -235,6 +233,14 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
     PointBufferPtr ret;
 
+    boost::shared_array<float> pointData;
+    std::vector<size_t> pointDim;
+    pointData = loadFloatArray(group, container, pointDim);
+    PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
+    ret = pb;
+    return ret;
+
+
     // check if flags are correct
     // if(!isPointCloud(group) )
     // {
@@ -242,8 +248,10 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
     //     return ret;
     // }
 
+    /*
     for(auto name : g.listObjectNames() )
     {
+        //TODO: FIX ME - Varaint Type Error
         std::unique_ptr<HighFive::DataSet> dataset;
 
         try {
@@ -276,7 +284,7 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
 
     }
 
-    return ret;
+    return ret;*/
 }
 
 boost::optional<cv::Mat> HDF5Kernel::loadImage(
@@ -435,6 +443,22 @@ doubleArr HDF5Kernel::loadDoubleArray(
     return this->template loadArray<double>(group, container, dims);
 }
 
+intArr HDF5Kernel::loadIntArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<int>(group, container, dims);
+}
+
+uint16Arr HDF5Kernel::loadUInt16Array(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<uint16_t>(group, container, dims);
+}
+
 void HDF5Kernel::saveFloatArray(
     const std::string &groupName,
     const std::string &datasetName,
@@ -450,6 +474,20 @@ void HDF5Kernel::saveDoubleArray(
     const boost::shared_array<double> &data) const
 {
     this->template saveArray<double>(groupName, datasetName, dimensions, data);
+}
+void HDF5Kernel::saveIntArray(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<int> &data) const
+{
+    this->template saveArray<int>(groupName, datasetName, dimensions, data);
+}
+void HDF5Kernel::saveUInt16Array(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<uint16_t> &data) const
+{
+    this->template saveArray<uint16_t>(groupName, datasetName, dimensions, data);
 }
 
 void HDF5Kernel::saveUCharArray(
@@ -467,7 +505,43 @@ bool HDF5Kernel::exists(const std::string &group) const
 
 bool HDF5Kernel::exists(const std::string &group, const std::string &container) const
 {
-    HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
+    //HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
+
+    std::vector<std::string> ret;
+
+    std::string remainder = group;
+    size_t delimiter_pos = 0;
+
+    while ((delimiter_pos = remainder.find('/', delimiter_pos)) != std::string::npos)
+    {
+        if (delimiter_pos > 0)
+        {
+            ret.push_back(remainder.substr(0, delimiter_pos));
+        }
+
+        remainder = remainder.substr(delimiter_pos + 1);
+
+        delimiter_pos = 0;
+    }
+
+    if (remainder.size() > 0)
+    {
+        ret.push_back(remainder);
+    }
+
+    HighFive::Group g;
+    g = m_hdf5File->getGroup("/");
+    for( std::string substring : ret)
+    {
+        if(g.exist(substring))
+        {   
+            g = g.getGroup(substring);
+        }else
+        {
+            return false;
+        }
+    } 
+    //HighFive::Group g = m_hdf5File->getGroup(group);
     return hdf5util::exist(g, container);
 }
 
