@@ -46,6 +46,7 @@ set(LVR2_SOURCES
     io/GridIO.cpp
     io/PointBuffer.cpp
     io/WaveformBuffer.cpp
+    io/Polygon.cpp
     io/ModelFactory.cpp
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
