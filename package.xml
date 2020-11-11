@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>lvr2</name>
-  <version>20.7.1</version>
+  <version>20.11.1</version>
   <description>
 The Las Vegas Surface Reconstruction Toolkit is an Open Source toolkit to reconstruct triangle meshes from unordered point clouds. It supports the generation of textured models either using colored point clouds or point clouds plus images and according calibration matrices. The LVR toolkit provides an Open Source C++ API for meshing and texture generation as well as an I/O interface to store the generated meshes in different exchange formats including Stanford PLY, Wavefront OBJ and Collada. In contrast to other meshing software, it focuses on reconstruction of large scale environments on city scale from high resolution point clouds.
   </description>

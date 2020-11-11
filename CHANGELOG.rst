@@ -2,8 +2,8 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+20.11.1 (2020-11-11)
+--------------------
 * fix for vtk8 issue
 * add missing include and clean up using std
 * use double for precision and refactor cl sor tool
