@@ -47,13 +47,19 @@
 namespace lvr2
 {
 
+struct Chunk
+{
+    std::vector<int> data;
+    Vector3i pos;
+    int age;
+};
+
 class FastsenseIO
 {
   public:
     std::vector<float> chunks;
-
     //todo: implement zis, steffen!
-    bool readMap(std::string file);
+    std::vector<float>& readMap(std::string file_name);
 
 };
 

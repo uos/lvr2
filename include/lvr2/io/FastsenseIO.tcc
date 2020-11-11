@@ -28,8 +28,17 @@
 
 namespace lvr2 
 {
-    bool FastsenseIO::readMap(std::string file)
+    std::vector<float>& FastsenseIO::readMap(std::string file_name)
     {
-        return false;
+        //todo: read stuff into the chunks vector, datatypes need to be adjusted.
+        HighFive::File file(file_name, HighFive::File::ReadOnly);
+
+        auto group = file.getGroup("/map");
+        auto dataset = group.getDataSet("/map");
+
+        //do something with the data
+        
+        //return chunks
+        return chunks;
     }
 }
