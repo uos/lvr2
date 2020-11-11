@@ -40,7 +40,7 @@
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
-
+#include <eigen3/Eigen/Dense>
 
 #include <string>
 
@@ -50,7 +50,7 @@ namespace lvr2
 struct Chunk
 {
     std::vector<int> data;
-    Vector3i pos;
+    Eigen::Vector3i pos;
     int age;
 };
 
