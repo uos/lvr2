@@ -17,6 +17,7 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRBoundingBoxBridge.cpp
     vtkBridge/LVRModelBridge.cpp
     vtkBridge/LVRScanProjectBridge.cpp
+    vtkBridge/LVRPolygonBridge.cpp
     vtkBridge/LVRScanPositionBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp
     vtkBridge/LVRMeshBufferBridge.cpp
