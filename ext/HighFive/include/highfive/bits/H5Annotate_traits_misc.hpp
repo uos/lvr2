@@ -9,18 +9,14 @@
 #ifndef H5ANNOTATE_TRAITS_MISC_HPP
 #define H5ANNOTATE_TRAITS_MISC_HPP
 
-#include "H5Annotate_traits.hpp"
-#include "H5Iterables_misc.hpp"
-
 #include <string>
 #include <vector>
 
-#include "../H5Attribute.hpp"
-#include "../H5DataSpace.hpp"
-#include "../H5DataType.hpp"
-#include "../H5Exception.hpp"
-
 #include <H5Apublic.h>
+#include <H5Ppublic.h>
+
+#include "H5Attribute_misc.hpp"
+#include "H5Iterables_misc.hpp"
 
 namespace HighFive {
 
@@ -34,8 +30,7 @@ AnnotateTraits<Derivate>::createAttribute(const std::string& attribute_name,
              static_cast<Derivate*>(this)->getId(), attribute_name.c_str(),
              dtype._hid, space._hid, H5P_DEFAULT, H5P_DEFAULT)) < 0) {
         HDF5ErrMapper::ToException<AttributeException>(
-            std::string("Unable to create the attribute \"") + attribute_name +
-            "\":");
+            std::string("Unable to create the attribute \"") + attribute_name + "\":");
     }
     return attribute;
 }
@@ -45,7 +40,7 @@ template <typename Type>
 inline Attribute
 AnnotateTraits<Derivate>::createAttribute(const std::string& attribute_name,
                                           const DataSpace& space) {
-    return createAttribute(attribute_name, space, AtomicType<Type>());
+    return createAttribute(attribute_name, space, create_and_check_datatype<Type>());
 }
 
 template <typename Derivate>
@@ -54,10 +49,20 @@ inline Attribute
 AnnotateTraits<Derivate>::createAttribute(const std::string& attribute_name,
                                           const T& data) {
     Attribute att = createAttribute(
-        attribute_name, DataSpace::From(data),
-        AtomicType<typename details::type_of_array<T>::type>());
+        attribute_name, 
+        DataSpace::From(data),
+        create_and_check_datatype<typename details::type_of_array<T>::type>());
     att.write(data);
     return att;
+}
+
+template<typename Derivate>
+inline void
+AnnotateTraits<Derivate>::deleteAttribute(const std::string& attribute_name) {
+    if (H5Adelete(static_cast<const Derivate*>(this)->getId(), attribute_name.c_str()) < 0) {
+        HDF5ErrMapper::ToException<AttributeException>(
+                std::string("Unable to delete attribute \"") + attribute_name + "\":");
+    }
 }
 
 template <typename Derivate>
@@ -80,7 +85,7 @@ inline size_t AnnotateTraits<Derivate>::getNumberAttributes() const {
         HDF5ErrMapper::ToException<AttributeException>(std::string(
             "Unable to count attributes in existing group or file"));
     }
-    return res;
+    return static_cast<size_t>(res);
 }
 
 template <typename Derivate>
@@ -115,6 +120,7 @@ AnnotateTraits<Derivate>::hasAttribute(const std::string& attr_name) const {
     }
     return res;
 }
-}
+
+}  // namespace HighFive
 
 #endif // H5ANNOTATE_TRAITS_MISC_HPP

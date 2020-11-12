@@ -22,25 +22,22 @@
 #include <H5Dpublic.h>
 #include <H5Ppublic.h>
 
-#include "../H5DataSet.hpp"
-#include "../H5DataSpace.hpp"
-#include "../H5DataType.hpp"
-
-#include "H5Slice_traits_misc.hpp"
 #include "H5Utils.hpp"
 
 namespace HighFive {
 
-inline DataSet::DataSet() {}
+inline std::string DataSet::getPath() const {
+    return details::get_name([&](char *buffer, hsize_t length) {
+        return H5Iget_name(_hid, buffer, length);
+    });
+}
 
-inline size_t DataSet::getStorageSize() const {
+inline uint64_t DataSet::getStorageSize() const {
     return H5Dget_storage_size(_hid);
 }
 
 inline DataType DataSet::getDataType() const {
-    DataType res;
-    res._hid = H5Dget_type(_hid);
-    return res;
+    return DataType(H5Dget_type(_hid));
 }
 
 inline DataSpace DataSet::getSpace() const {
@@ -52,10 +49,12 @@ inline DataSpace DataSet::getSpace() const {
     return space;
 }
 
-inline DataSpace DataSet::getMemSpace() const { return getSpace(); }
+inline DataSpace DataSet::getMemSpace() const {
+    return getSpace();
+}
 
-inline size_t DataSet::getOffset() const {
-    haddr_t addr = H5Dget_offset(_hid);
+inline uint64_t DataSet::getOffset() const {
+    uint64_t addr = H5Dget_offset(_hid);
     if (addr == HADDR_UNDEF) {
         HDF5ErrMapper::ToException<DataSetException>(
             "Cannot get offset of DataSet.");
