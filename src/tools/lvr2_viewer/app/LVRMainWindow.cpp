@@ -50,6 +50,8 @@
 #include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/descriptions/DirectoryIO.hpp"
 
+#include "lvr2/io/Polygon.hpp"
+
 #include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/util/Util.hpp"
@@ -68,7 +70,7 @@
 
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
 #include "../vtkBridge/LVRChunkedMeshCuller.hpp"
-
+#include "../vtkBridge/LVRPolygonBridge.hpp"
 
 #include <QString>
 
@@ -354,6 +356,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->actionOpenScanProject, SIGNAL(triggered()), this, SLOT(openScanProject()));
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
     QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
+    QObject::connect(this->actionOpen_SoilAssist, SIGNAL(triggered()), this, SLOT(openSoilAssist()));
+
     QObject::connect(this->actionExportScanProject, SIGNAL(triggered()), this, SLOT(exportScanProject()));
     QObject::connect(this->actionOpen_Intermedia_Project, SIGNAL(triggered()), this, SLOT(openIntermediaProject()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
@@ -3449,10 +3453,28 @@ void LVRMainWindow::polygonButtonToggled(bool checked)
 
 }
 
+void LVRMainWindow::openSoilAssist()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+            tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
+    if(!QFile::exists(fileName))
+    {
+        return;
+    }
+    PolygonPtr poly(new Polygon);
+    poly->load(fileName.toStdString());
+    PolygonBridgePtr polybrdige(new LVRPolygonBridge(poly));
+    m_renderer->AddActor(polybrdige->getPolygonActor());
+
+    highlightBoundingBoxes();
+    restoreSliders();
+    assertToggles();
+    updateView();
+}
+
 void LVRMainWindow::readLWF()
 {
 
-    
     LVRLabeledScanProjectEditMarkItem* projectItem;
     if (!(projectItem = checkForScanProject()))
     {

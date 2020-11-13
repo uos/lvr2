@@ -167,6 +167,7 @@ public Q_SLOTS:
     void showLabelTreeContextMenu(const QPoint&);
     void updatePointCount(const uint16_t, const int);
     void readLWF();
+    void openSoilAssist();
     void exportScanProject();
 
     void cellSelected(QTreeWidgetItem* item, int column);

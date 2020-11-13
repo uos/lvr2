@@ -613,7 +613,7 @@
      <x>0</x>
      <y>0</y>
      <width>1198</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuViews">
@@ -702,6 +702,7 @@
     <addaction name="actionOpen_Intermedia_Project"/>
     <addaction name="separator"/>
     <addaction name="actionReadWaveform"/>
+    <addaction name="actionOpen_SoilAssist"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuViews"/>
@@ -1605,6 +1606,11 @@
   <action name="actionOpen_Intermedia_Project">
    <property name="text">
     <string>Open Intermedia Project</string>
+   </property>
+  </action>
+  <action name="actionOpen_SoilAssist">
+   <property name="text">
+    <string>Open SoilAssist</string>
    </property>
   </action>
  </widget>
