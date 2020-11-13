@@ -119,9 +119,15 @@ void LVRPolygonBridge::computePolygonActor(PolygonPtr poly)
 
 
         std::cout << lvr2::timestamp << " " << n << " Points" << std::endl;
+
+        float x0 = points[0];
+        float y0 = points[1];
+        float z0 = points[2];
+
         for(int i = 0 ; i < n ; i++)
         {
-            vtk_points->InsertNextPoint( points[i*3], points[i*3+1], points[i*3+2]);
+            vtk_points->InsertNextPoint( points[i*3]-x0, points[i*3+1]-y0, points[i*3+2]-z0);
+            std::cout << std::fixed << "P " << points[i*3] << "|" << points[i*3+1]<< "|" << points[i*3+2] << std::endl;
         }
           //Why does this not work?
 //        vtkSmartPointer<vtkFloatArray> pts_data = vtkSmartPointer<vtkFloatArray>::New();
