@@ -48,7 +48,8 @@ struct Waveform
 
     //Waveform
     std::vector<uint16_t>                    waveformSamples;
-    std::vector<int>                         waveformIndices;
+    std::vector<long>                        waveformIndices;
+    std::vector<uint8_t>                     echoType;
     std::vector<bool>                        lowPower;
     //Eigen::Matrix<uint16_t, Eigen::Dynamic, Eigen::Dynamic>         waveformSamples;
 };

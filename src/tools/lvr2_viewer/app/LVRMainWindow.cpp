@@ -1236,14 +1236,15 @@ void LVRMainWindow::addLabelClass()
         if (m_waveformOffset.size() > 0)
         {
             WaveformPtr waveform = WaveformPtr(new Waveform);
-            std::vector<int> indices= {0};
+            std::vector<long> indices= {0};
             int maxBucket = 0;
             for(const auto partWaveform : partWaveforms)
             {
                 maxBucket = std::max(maxBucket,partWaveform->maxBucketSize);
-                int offset = indices.back();
+                long offset = indices.back();
                 waveform->waveformSamples.insert(waveform->waveformSamples.end(), partWaveform->waveformSamples.begin(), partWaveform->waveformSamples.end());
                 waveform->lowPower.insert(waveform->lowPower.end(), partWaveform->lowPower.begin(), partWaveform->lowPower.end());
+                waveform->echoType.insert(waveform->echoType.end(), partWaveform->echoType.begin(), partWaveform->echoType.end());
                 std::transform(partWaveform->waveformIndices.begin() + 1, partWaveform->waveformIndices.end(), std::back_inserter(indices), [&](int i){return i + offset;});
             }
             waveform->waveformIndices = std::move(indices);
