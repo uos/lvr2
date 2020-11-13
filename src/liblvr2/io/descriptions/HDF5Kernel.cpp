@@ -529,8 +529,7 @@ bool HDF5Kernel::exists(const std::string &group, const std::string &container) 
         ret.push_back(remainder);
     }
 
-    HighFive::Group g;
-    g = m_hdf5File->getGroup("/");
+    HighFive::Group g = m_hdf5File->getGroup("/");
     for( std::string substring : ret)
     {
         if(g.exist(substring))
