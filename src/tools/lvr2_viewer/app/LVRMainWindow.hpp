@@ -62,12 +62,14 @@
 #include <QtGui>
 
 #ifdef LVR2_USE_VTK8
-    #include "ui_LVRMainWindowQVTKOGLUI.h"
+    #include "QVTKOpenGLWidget.h"
 #elif defined LVR2_USE_VTK9
-    #include "ui_LVRMainWindowQVTKOGLUI9.h"
+    #include "QVTKOpenGLNativeWidget.h"
 #else
-    #include "ui_LVRMainWindowUI.h"
+    #include "QVTKWidget.h"
 #endif
+
+#include "ui_LVRMainWindowUI.h"
 #include "ui_LVRAboutDialogUI.h"
 #include "ui_LVRTooltipDialogUI.h"
 
@@ -403,6 +405,14 @@ private:
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
+
+#ifdef LVR2_USE_VTK8
+    QVTKOpenGLWidget* qvtkWidget;
+#elif defined LVR2_USE_VTK9
+    QVTKOpenGLNativeWidget* qvtkWidget;
+#else
+    QVTKWidget* qvtkWidget;
+#endif
 
 
     // EDM Rendering

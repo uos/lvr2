@@ -546,6 +546,17 @@ void LVRMainWindow::showBackgroundDialog()
 
 void LVRMainWindow::setupQVTK()
 {
+
+#ifdef LVR2_USE_VTK8
+    qvtkWidget = new QVTKOpenGLWidget();
+#elif defined LVR2_USE_VTK9
+    qvtkWidget = new QVTKOpenGLNativeWidget();
+#else
+    qvtkWidget = new QVTKWidget();
+#endif
+verticalLayout->replaceWidget(qvtkWidgetPlaceholder,qvtkWidget);
+// qvtkWidgetPlaceholder = qvtkWidget;
+
 #if (!defined LVR2_USE_VTK8) && (!defined LVR2_USE_VTK9)
     // z buffer fix
     QSurfaceFormat surfaceFormat = qvtkWidget->windowHandle()->format();

@@ -22,7 +22,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
+     <widget class="QWidget" name="qvtkWidgetPlaceholder" native="ture"/>
     </item>
    </layout>
   </widget>
@@ -1615,11 +1615,11 @@
   </action>
  </widget>
  <customwidgets>
-  <customwidget>
+  <!-- <customwidget>
    <class>QVTKWidget</class>
    <extends>QWidget</extends>
    <header>QVTKWidget.h</header>
-  </customwidget>
+  </customwidget> -->
   <customwidget>
    <class>lvr2::LVRPlotter</class>
    <extends>QWidget</extends>

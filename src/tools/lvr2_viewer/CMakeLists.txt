@@ -107,20 +107,12 @@ set(LVR2_VIEWER_MOCS
 # Set uis
 #####################################################################################
 
-if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
-    # newer vtk versions
-    set(LVR2_VIEWER_UIS
-        ui/LVRMainWindowQVTKOGLUI.ui)
-elseif(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "9")
-    # newer vtk versions
-    set(LVR2_VIEWER_UIS
-        ui/LVRMainWindowQVTKOGLUI9.ui)
-else()
+
     # LEGACY
     set(LVR2_VIEWER_UIS
         ui/LVRMainWindowUI.ui
     )
-endif()
+
 list(APPEND LVR2_VIEWER_UIS
    ui/LVRRenameDialogUI.ui
    ui/LVRAnimationDialogUI.ui
