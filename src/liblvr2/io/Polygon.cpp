@@ -27,7 +27,7 @@
 
 #include "lvr2/io/Polygon.hpp"
 #include "lvr2/io/Timestamp.hpp"
-
+#include <highfive/H5Easy.hpp>
 #include <iostream>
 
 namespace lvr2
@@ -56,6 +56,21 @@ void Polygon::setPointArray(floatArr points, size_t n)
     this->addFloatChannel(pts, "points");
 }
 
+
+void Polygon::load(std::string file)
+{
+    HighFive::File hdf5_file(file, HighFive::File::ReadOnly);
+    std::vector<std::vector<float> > data = H5Easy::load<std::vector<std::vector<float> > >(hdf5_file,"/field/outer_boundary/coordinates");
+    std::cout << "data size: " << data.size() << std::endl;
+    floatArr arr(new float[data.size()*3]);
+    for(size_t i = 0 ; i < data.size() ; i++)
+    {
+        arr[i*3] = data[i][0];
+        arr[i*3+1] = data[i][1];
+        arr[i*3+2] = data[i][2];
+    }
+    this->addFloatChannel(arr, "points", data.size(), 3);
+}
 
 floatArr Polygon::getPointArray()
 {

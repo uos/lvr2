@@ -71,6 +71,9 @@ public:
     void setPointArray(floatArr points, size_t n);
 
 
+    /// Todo: remove once normal HDF IO implemented
+    void load(std::string file);
+
     /// Returns the internal point array
     floatArr getPointArray();
 
