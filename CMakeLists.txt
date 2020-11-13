@@ -377,9 +377,6 @@ include_directories( ${LASLIB_INCLUDE_DIR} )
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
 # HighFive
-set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
-set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
-add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
