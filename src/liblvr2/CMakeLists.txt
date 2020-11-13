@@ -45,6 +45,8 @@ set(LVR2_SOURCES
     io/BoctreeIO.cpp
     io/GridIO.cpp
     io/Polygon.cpp
+    io/SoilAssistField.cpp
+    io/SoilAssistSubField.cpp
     io/PointBuffer.cpp
     io/WaveformBuffer.cpp
     io/Polygon.cpp

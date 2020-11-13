@@ -63,6 +63,7 @@ public:
      */
     Polygon(floatArr points, size_t n);
 
+    Polygon(std::vector<std::vector<float> >& points);
     /***
      * @brief Adds points to the buffer. If the buffer already
      *        contains point cloud data, the interal buffer will

@@ -26,7 +26,7 @@
  */
 
 /**
- * LVRPolygonBridge.hpp
+ * LVRSoilAssistBridge.hpp
  *
  *  @date Feb 6, 2014
  *  @author Thomas Wiemann
@@ -36,12 +36,12 @@
 
 #include "lvr2/display/ColorMap.hpp"
 #include "lvr2/io/Polygon.hpp"
-
+#include "lvr2/io/SoilAssistField.hpp"
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 #include <vtkDoubleArray.h>
-
+#include <vector>
 #include <boost/shared_ptr.hpp>
 
 namespace lvr2
@@ -49,14 +49,14 @@ namespace lvr2
 
 struct Pose;
 
-class LVRPolygonBridge
+class LVRSoilAssistBridge
 {
 public:
-    LVRPolygonBridge(PolygonPtr polygon);
-    LVRPolygonBridge(const LVRPolygonBridge& b);
-    virtual ~LVRPolygonBridge();
+    LVRSoilAssistBridge(SoilAssistFieldPtr field);
+    LVRSoilAssistBridge(const LVRSoilAssistBridge& b);
+    virtual ~LVRSoilAssistBridge();
 
-    vtkSmartPointer<vtkActor>   getPolygonActor();
+    std::vector<vtkSmartPointer<vtkActor>>   getPolygonActors();
     size_t                      getNumPoints();
 
     void setBaseColor(float r, float g, float b);
@@ -69,16 +69,17 @@ public:
 
 protected:
 
-    void computePolygonActor(PolygonPtr poly);
-    
-    vtkSmartPointer<vtkPolyData> m_vtk_polyData;
-    vtkSmartPointer<vtkActor>       m_PolygonActor;
-    size_t                          m_numPoints;
+    void computePolygonActor(SoilAssistFieldPtr poly);
+    vtkSmartPointer<vtkActor> makeArrow(float * start, float * end);
+    vtkSmartPointer<vtkActor> computePolygonActor(PolygonPtr poly, bool polygon=true);
+    std::vector<vtkSmartPointer<vtkActor> >       m_actors;
     PolygonPtr                      m_polygon;
+    float               m_offset[3];
+    bool                m_offset_set;
 
 };
 
-typedef boost::shared_ptr<LVRPolygonBridge> PolygonBridgePtr;
+typedef boost::shared_ptr<LVRSoilAssistBridge> SoilAssistBridgePtr;
 
 } /* namespace lvr2 */
 
