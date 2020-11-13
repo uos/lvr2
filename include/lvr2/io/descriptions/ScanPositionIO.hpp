@@ -83,8 +83,8 @@ struct FeatureConstruct< ScanPositionIO, FeatureBase>
     using dep3 = typename FeatureConstruct<ScanIO, FeatureBase>::type;
     using dep4 = typename FeatureConstruct<ScanCameraIO, FeatureBase>::type;
     using dep5 = typename FeatureConstruct<HyperspectralCameraIO, FeatureBase>::type;
-    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>::template Merge<
-        dep4>::template Merge<dep5>;
+    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>::template
+     Merge<dep4>::template Merge<dep5>;
 
     // add the feature itself
     using type = typename deps::template add_features<ScanPositionIO>::type;

@@ -90,7 +90,7 @@ PointBufferPtr DirectoryKernel::loadPointBuffer(
     if (model)
     {
         std::cout << model->m_pointCloud << std::endl;
-        std::cout << model->m_pointCloud->numPoints() << std::endl;
+        std::cout << "Model Count " <<  model->m_pointCloud->numPoints() << std::endl;
         return model->m_pointCloud;
     }
 }
@@ -196,6 +196,16 @@ doubleArr DirectoryKernel::loadDoubleArray(const std::string& group, const std::
     return loadArray<double>(group, container, dims);   
 }
 
+intArr DirectoryKernel::loadIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<int>(group, container, dims);   
+}
+
+uint16Arr DirectoryKernel::loadUInt16Array(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<uint16_t>(group, container, dims);   
+}
+
 void DirectoryKernel::saveFloatArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<float>& data) const
 {
     saveArray<float>(groupName, datasetName, dimensions, data);
@@ -209,6 +219,14 @@ void DirectoryKernel::saveDoubleArray(const std::string& groupName, const std::s
 void DirectoryKernel::saveUCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned char>& data) const
 {
     saveArray<unsigned char>(groupName, datasetName, dimensions, data);
+}
+void DirectoryKernel::saveIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<int>& data) const
+{
+    saveArray<int>(groupName, datasetName, dimensions, data);
+}
+void DirectoryKernel::saveUInt16Array(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<uint16_t>& data) const
+{
+    saveArray<uint16_t>(groupName, datasetName, dimensions, data);
 }
 
 } // namespace lvr2
