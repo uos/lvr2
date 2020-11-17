@@ -220,10 +220,10 @@ endif()
 # Searching for NABO
 #------------------------------------------------------------------------------
 find_package(Nabo)
-if(NABO_FOUND)
-  include_directories(${NABO_INCLUDE_DIRS})
+if(Nabo_FOUND)
+  include_directories(${Nabo_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_NABO)
-endif(NABO_FOUND)
+endif(Nabo_FOUND)
 
 #------------------------------------------------------------------------------
 ## Searching for PCL
