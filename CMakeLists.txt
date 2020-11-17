@@ -383,10 +383,9 @@ include_directories(${HDF5_INCLUDE_DIRS})
 message(STATUS "Found HDF5")
 
 # yaml-cpp
-find_package(yaml-cpp)
+find_package(yaml-cpp REQUIRED)
 # no found variable
 include_directories(${YAML_CPP_INCLUDE_DIR})
-#link_directories(${YAML_CPP_LIBRARIES})
 
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
