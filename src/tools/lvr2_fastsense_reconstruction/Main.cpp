@@ -1,31 +1,30 @@
-/*
+/**
  * Main.cpp
  *
  * Created on: 11.11.2020
- *      Author: Patrick Hoffmann (pahoffmann@uos.de)
+ * Author: Steffen Hinderink, Marc Eisoldt, Juri Vana, (Patrick Hoffmann)
  * 
- * Class used to reconstruct the GlobalMap from the FastsenseSLAM to inspect the qualit of the SLAM approach
- * 
+ * Function used to reconstruct a mesh from the GlobalMap of the FastSenseSLAM to inspect the quality of the SLAM approach
  */
 
-#include "lvr2/io/FastsenseIO.hpp"
-
-#include <signal.h>
-
-using namespace lvr2;
-
+#include <iostream>
+#include <highfive/H5File.hpp>
 
 int main(int argc, char** argv)
 {
-    FastsenseIO fastsense;
+    /*
+    1. Einlesen
+    2. In geerbte Klasse von HashGrid einfügen
+    3. Mit HashGrid FastReconstruction aufrufen
+    4. Mesh mit vorhandenen IO rausschreiben
+    */
 
-    //todo: use options class for this, adapt return type to solution
-    auto& map = fastsense.readMap("map.hdf5");
+    // 1
+    HighFive::File f("/home/fastsense/Develop/map.h5", HighFive::File::ReadOnly);
+    //HighFive::Group g = f.getGroup("/map");
+    //HighFive::DataSet d = g.getDataSet("-1_0_0"); 
 
-    //todo use the map data to create something that can be used by the marching cubes interface
-    //create hashmap from data
-    //bouding box important.
-    //todo: force marc to do this as always
+    std::cout << "Letzter Test für heute :D" << std::endl;
 
     return 0;
 }
