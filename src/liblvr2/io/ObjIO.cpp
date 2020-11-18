@@ -348,7 +348,7 @@ void ObjIO::save( string filename )
     size_t lenFaces = m_model->m_mesh->numFaces();
     size_t lenTextureCoordinates = lenVertices;
     size_t lenFaceMaterialIndices = lenFaces;
-    size_t lenColors = lenVertices;
+    size_t lenColors = 0; //lenVertices; why would this be lenVertices
     floatArr vertices              = m_model->m_mesh->getVertices();
     floatArr normals               = m_model->m_mesh->getVertexNormals();
     floatArr textureCoordinates    = m_model->m_mesh->getTextureCoordinates();

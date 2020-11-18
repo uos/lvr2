@@ -54,6 +54,11 @@ public:
     GeoTIFFIO(std::string filename);
 
     /**
+     * @param dataset
+     */
+    GeoTIFFIO(GDALDataset * dataset);
+
+    /**
      * @brief Writing given band into open GeoTIFF file
      * @param mat cv::Mat containing the band data
      * @param band number of band to be written
@@ -75,6 +80,17 @@ public:
      * @return number of bands of dataset
      */
     int getNumBands();
+
+    /**
+     * @param band_index index of the band of interest
+     * @return min and max value of chosen band
+     */ 
+    void getMaxMinOfBand(float* values, int band_index);
+
+    /**
+     * @param geoTransform contains values for geotransforming the TIFFS data
+     */
+    void getGeoTransform(double * geoTransform);
 
     /**
      * @param band_index index of the band to be read
