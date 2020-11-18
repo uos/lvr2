@@ -10,6 +10,13 @@
 #include <iostream>
 #include <highfive/H5File.hpp>
 
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/BoundingBox.hpp"
+#include "lvr2/reconstruction/HashGrid.hpp"
+#include "lvr2/reconstruction/FastBox.hpp"
+#include "lvr2/reconstruction/FastReconstruction.hpp"
+#include "lvr2/geometry/HalfEdgeMesh.hpp"
+
 /**
  * log(CHUNK_SIZE).
  * The side length is a power of 2 so that divisions by the side length can be accomplished by shifting.
@@ -27,10 +34,58 @@ int main(int argc, char** argv)
     3. Mit HashGrid FastReconstruction aufrufen
     4. Mesh mit vorhandenen IO rausschreiben
     */
-
+    
     // Read
     HighFive::File f("/home/fastsense/Develop/map.h5", HighFive::File::ReadOnly); // TODO: Path and name as command line input
     HighFive::Group g = f.getGroup("/map");
+    
+    lvr2::BaseVector<int> min(0, 0, 0); 
+    lvr2::BaseVector<int> max(0, 0, 0);
+
+    for (auto tag : g.listObjectNames())
+    {
+        std::vector<int> chunk_pos;
+        std::string delimiter = "_";
+        size_t pos = 0;
+        std::string token;
+
+        while ((pos = tag.find(delimiter)) != std::string::npos)
+        {
+            token = tag.substr(0, pos);
+            chunk_pos.push_back(std::stoi(token));
+            tag.erase(0, pos + delimiter.length());
+        }
+
+        chunk_pos.push_back(std::stoi(tag));
+
+        int index = 0;
+
+        for (const auto& coord : chunk_pos)
+        {   
+            if (coord < min[index])
+            {
+                min[index] = coord;
+            }
+
+            if (coord > max[index])
+            {
+                max[index] = coord;
+            }
+
+            ++index;
+        }
+
+    }
+
+    min *= CHUNK_SIZE;
+    max = max * CHUNK_SIZE + lvr2::BaseVector<int>(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
+
+    std::cout << min << std::endl;
+    std::cout << max << std::endl;
+
+    lvr2::BoundingBox<lvr2::BaseVector<int>> bb(min, max);
+    auto grid = std::make_shared<lvr2::HashGrid<lvr2::BaseVector<int>, lvr2::FastBox<lvr2::BaseVector<int>>>>(CHUNK_SIZE, bb);
+
     for (auto tag : g.listObjectNames())
     {
         // Get the chunk data
@@ -65,12 +120,16 @@ int main(int argc, char** argv)
                     int z = CHUNK_SIZE * chunk_pos[2] + k;
                     if (weight > 0)
                     {
-                        // TODO: Write into grid: grid[x, y, z] = tsdf_value;
+                        grid->addLatticePoint(x, y, z, tsdf_value);
                     }
                 }
             }
         }
     }
+
+    lvr2::FastReconstruction<lvr2::BaseVector<int>, lvr2::FastBox<lvr2::BaseVector<int>>> reconstruction(grid);
+    lvr2::HalfEdgeMesh<lvr2::BaseVector<int>> mesh;
+    reconstruction.getMesh(mesh);
 
     std::cout << "The end ^_^" << std::endl;
 
