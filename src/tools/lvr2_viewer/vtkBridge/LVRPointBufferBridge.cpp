@@ -491,12 +491,12 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 #endif
 	pointFilter->Update();
 
-//	vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter = 
-//		vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
-//	surfaceFilter->SetInputConnection(pointFilter->GetOutputPort());
-//	surfaceFilter->Update();
-//
-//	m_id_polyData = surfaceFilter->GetOutput();
+	vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter =
+		vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+	surfaceFilter->SetInputConnection(pointFilter->GetOutputPort());
+	surfaceFilter->Update();
+
+	m_id_polyData = surfaceFilter->GetOutput();
 
 //m_vtk_polyData->GetPointData()->AddArray(ids);
 
