@@ -727,7 +727,6 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
         std::cerr << "Wrong Number Of Bands ! Only 1 or 3 Bands are allowed!" << std::endl;
     }
     
-    texture.save();
     std::cout << std::endl;
     return texture; 
 }
@@ -2072,7 +2071,7 @@ int main(int argc, char* argv[])
     //extractMesh<VecD,double>(mesh,usedArr,usedSurface,resolution,minNeighbors,minRadius,maxNeighbors,maxRadius,radiusSteps,affineMatrix);
 
     bool targetDest = false;
-    bool refPoints = false;
+    bool refPoints = true;
     bool gTiff = true;
     string newTiffName = "out.tif";
 
