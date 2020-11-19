@@ -31,29 +31,51 @@ constexpr int CHUNK_SHIFT = 6;
 /// Side length of the cube-shaped chunks (2^CHUNK_SHIFT).
 constexpr int CHUNK_SIZE = 1 << CHUNK_SHIFT;
 
+/// Scale for the boudingbox vectors
 constexpr int SCALE = 100;
 
+/// HDF5 class structure for saving meshes
 using HDF5MeshToolIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
                                     lvr2::hdf5features::ChannelIO,
                                     lvr2::hdf5features::VariantChannelIO,
                                     lvr2::hdf5features::MeshIO>;
 
-int main(int argc, char** argv)
+/**
+ * @brief Tells the user how to call this program
+ * 
+ * @param prog_name Name of this program
+ */
+void print_usage(const std::string& prog_name)
 {
-    /*
-    1. Einlesen -- fertig :D
-    2. In geerbte Klasse von HashGrid einfügen
-    3. Mit HashGrid FastReconstruction aufrufen
-    4. Mesh mit vorhandenen IO rausschreiben
-    */
+    std::cout << prog_name << " <path-to_hdf5-map-file> <save-directory> <mesh-name>" << std::endl;
+}
+
+int main(int argc, char** argv)
+{   
+    if (argc != 4)
+    {
+        print_usage(argv[0]);
+        return 0;
+    }
+
+    // Initialize file variables
+    std::string src_name(argv[1]);
+    std::string dst_dir_name(argv[2]);
+    std::string mesh_name_h5(std::string(argv[3]) + std::string(".h5"));
+    std::string mesh_name_ply(std::string(argv[3]) + std::string(".ply"));
+
+    std::cout << "Open map file: " << src_name << std::endl;
     
     // Read
-    HighFive::File f("/home/fastsense/Develop/map.h5", HighFive::File::ReadOnly); // TODO: Path and name as command line input
+    HighFive::File f(src_name, HighFive::File::ReadOnly); // TODO: Path and name as command line input
     HighFive::Group g = f.getGroup("/map");
-    
+
     lvr2::BaseVector<int> min(0, 0, 0); 
     lvr2::BaseVector<int> max(0, 0, 0);
 
+    std::cout << "Determine map boundingbox..." << std::endl;
+
+    // Determine the boundingbox of the complete map
     for (auto tag : g.listObjectNames())
     {
         std::vector<int> chunk_pos;
@@ -92,12 +114,13 @@ int main(int argc, char** argv)
     min *= CHUNK_SIZE;
     max = max * CHUNK_SIZE + lvr2::BaseVector<int>(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
 
-    std::cout << min << std::endl;
-    std::cout << max << std::endl;
+    std::cout << "Create and fill reconstruction grid..." << std::endl;
 
+    // Create the Grid for the reconstruction algorithm
     lvr2::BoundingBox<lvr2::BaseVector<int>> bb(min * SCALE, max * SCALE);
     auto grid = std::make_shared<lvr2::HashGrid<lvr2::BaseVector<int>, lvr2::FastBox<lvr2::BaseVector<int>>>>(CHUNK_SIZE, bb);
 
+    // Fill the grid with the valid TSDF values of the map
     for (auto tag : g.listObjectNames())
     {
         // Get the chunk data
@@ -117,7 +140,6 @@ int main(int argc, char** argv)
         }
         chunk_pos.push_back(std::stoi(tag));
         
-        // Fill the grid with valid tsdf values
         for (int i = 0; i < CHUNK_SIZE; i++)
         {
             for (int j = 0; j < CHUNK_SIZE; j++)
@@ -129,8 +151,11 @@ int main(int argc, char** argv)
                     int x = CHUNK_SIZE * chunk_pos[0] + i;
                     int y = CHUNK_SIZE * chunk_pos[1] + j;
                     int z = CHUNK_SIZE * chunk_pos[2] + k;
+                    
+                    // Only touched cells are considered
                     if (weight > 0)
                     {
+                        // Insert TSDF value
                         grid->addLatticePoint(x, y, z, tsdf_value);
                 
                     }
@@ -139,24 +164,34 @@ int main(int argc, char** argv)
         }
     }
 
+    std::cout << "Reconstruct mesh with a marching cubes algorithm..." << std::endl;
+
+    // Reconstruct the mesh with a marching cubes algorithm
     lvr2::FastReconstruction<lvr2::BaseVector<int>, lvr2::FastBox<lvr2::BaseVector<int>>> reconstruction(grid);
     lvr2::HalfEdgeMesh<lvr2::BaseVector<int>> mesh;
     reconstruction.getMesh(mesh);
 
+    std::cout << "Finished reconstruction!" << std::endl;
+
+    // Convert halfedgemesh to an IO format
     lvr2::SimpleFinalizer<lvr2::BaseVector<int>> finalizer;
     auto buffer = finalizer.apply(mesh);
     
+    std::cout << "Write mesh into HDF5 file..." << std::endl;
+
+    // Write mesh into HDF5 file
     HDF5MeshToolIO hdf5;
-    hdf5.open("mesh.h5");
+    hdf5.open(dst_dir_name + "/" + mesh_name_h5);
     hdf5.save("tsdf_mesh", buffer);
 
+    std::cout << "Write mesh into PLY file..." << std::endl;
+
+    // Write mesh into PLY file
     auto model_ptr = std::make_shared<lvr2::Model>(buffer);
     lvr2::PLYIO ply_io;
+    ply_io.save(model_ptr, dst_dir_name + "/" + mesh_name_ply);
 
-    ply_io.save(model_ptr, "mesh.ply");
-
-
-    std::cout << "The end ^_^" << std::endl;
+    std::cout << "mesh saved!" << std::endl;
 
     return 0;
 }
