@@ -62,8 +62,11 @@
 namespace lvr2
 {
 
-LVRSoilAssistBridge::LVRSoilAssistBridge(SoilAssistFieldPtr field) : m_offset_set(false)
+LVRSoilAssistBridge::LVRSoilAssistBridge(SoilAssistFieldPtr field) : m_offset_set(true)
 {
+    m_offset[0] = 0;
+    m_offset[1] = 0;
+    m_offset[2] = 0;
     if(field)
     {
         computePolygonActor(field);
@@ -177,7 +180,10 @@ vtkSmartPointer<vtkActor> LVRSoilAssistBridge::makeArrow(float * start, float * 
     vtkSmartPointer<vtkNamedColors> colors =
             vtkSmartPointer<vtkNamedColors>::New();
 
-    actor->GetProperty()->SetColor(colors->GetColor3d("Cyan").GetData());
+    //actor->GetProperty()->SetColor(colors->GetColor3d("Cyan").GetData());
+    actor->GetProperty()->SetColor(1.0, 0.0, 1.0);
+
+
     return actor;
 
 
@@ -282,18 +288,26 @@ vtkSmartPointer<vtkActor> LVRSoilAssistBridge::computePolygonActor(PolygonPtr po
 
 void LVRSoilAssistBridge::computePolygonActor(SoilAssistFieldPtr field)
 {
-
-    m_actors.push_back(computePolygonActor(field->getBoundary()));
+    auto tmp_actor = computePolygonActor(field->getBoundary());
+    tmp_actor->GetProperty()->SetColor(0.0, 0.0, 1.0);
+    m_actors.push_back(tmp_actor);
     for(auto && subfield : field->getSubFields())
     {
-        m_actors.push_back(computePolygonActor(subfield->getBoundary()));
+
+        auto tmp_actor = computePolygonActor(subfield->getBoundary());
+        tmp_actor->GetProperty()->SetColor(0.0, 0.0, 1.0);
+        m_actors.push_back(tmp_actor);
         for(auto && headland : subfield->getHeadlands())
         {
-            m_actors.push_back(computePolygonActor(headland));
+            auto tmp_actor =computePolygonActor(headland);
+            tmp_actor->GetProperty()->SetColor(0.0, 0.83, 1.0);
+            m_actors.push_back(tmp_actor);
         }
         for(auto && line : subfield->getReferenceLines())
         {
-            m_actors.push_back(computePolygonActor(line,false));
+            auto tmp_actor = computePolygonActor(line,false);
+            tmp_actor->GetProperty()->SetColor(1.0, 0.0, 1.0);
+            m_actors.push_back(tmp_actor);
         }
         for(auto & p : subfield->getAccessPoints())
         {
