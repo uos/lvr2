@@ -444,7 +444,7 @@ Eigen::MatrixXd computeAffineGeoRefMatrix(VecD srcPoints[4], VecD destPoints[4])
     affineValues = src.colPivHouseholderQr().solve(dest);
     
     Eigen::MatrixXd affineMatrix(4,4);
-    // Das geht bestimmt viel schöner, aber ist jetzt so
+   
     auto ar = affineValues.array();
     affineMatrix << 
     ar[0], ar[1], ar[2], 0,
@@ -464,66 +464,6 @@ Eigen::MatrixXd computeAffineGeoRefMatrix(VecD srcPoints[4], VecD destPoints[4])
     
 
     return affineMatrix;
-    /*Eigen::MatrixXd Q;
-    Eigen::HouseholderQR<Eigen::MatrixXd> qr(affineMatrix);
-    Q = qr.householderQ();
-    
-    Eigen::MatrixXd sol = Q;
-    std::cout << "The solution is:\n" << sol << std::endl;
-    std::cout << ar[3] << std::endl;
-    return sol;*/
-    //return vector<double> (affineMatrix.data(),affineMatrix.data()+ affineMatrix.rows() * affineMatrix.cols());
-    
-    ///Für Punkte ORGSpatialReference
-    //GPS001 -1.445081 11.642192 -1.354529
-    //GPS002 -82.324432 41.830395 5.222107
-    //GPS003 -4.787183 82.624680 -0.580364
-
-    //GPS0001 32563657.761,6019213.520,26.518
-    //GPS0002 32563623.915,6019134.116,34.384
-    //GPS0003 32563586.623,6019213.195,26.113
-
-    //Testing affine transform
-    /*cv::Point3f srcTri[3];
-    srcTri[0] = cv::Point3f( -1.445081, 11.642192, -1.354529);
-    srcTri[1] = cv::Point3f( -82.324432, 41.830395, 5.222107);
-    srcTri[2] = cv::Point3f( -4.787183, 82.624680, -0.580364);
-    cv::Point3f dstTri[3];
-    dstTri[0] = cv::Point3f( 32563657.761,6019213.520,26.518 );
-    dstTri[1] = cv::Point3f( 32563623.915,6019134.116,34.384 );
-    dstTri[2] = cv::Point3f( 32563586.623,6019213.195,26.113);
-    cv::Mat warp_mat = cv::getAffineTransform( srcTri, dstTri );
-
-    Eigen::MatrixXf A(6,4);
-    Eigen::VectorXf b(6);
-    /*A << -1.445081, 11.642192, -1.354529, 1,
-         -82.324432, 41.830395, 5.222107, 1,
-         -4.787183, 82.624680, -0.580364, 1,
-         47.635303, 105.202621, 0.513081, 1;
-    b << 32563657.761,6019213.520,26.518, 1,
-         32563623.915,6019134.116,34.384, 1,
-         32563586.623,6019213.195,26.113, 1,
-         32563566.373,6019266.616,25.408, 1;
-         //RICHTIGE GLEICHUNG FÜR 3D AUFSTELLEN BZW MATRIX
-    A << -1.445081, 11.642192, -1.354529, 1, 0, 0,
-         11.642192, -1.445081,  0, 1,
-
-         -82.324432, -41.830395, 1, 0,
-         41.830395,-82.324432,  0, 1,
-
-         -4.787183, -82.624680, 1, 0,
-          82.624680, -4.787183, 0, 1
-          ;
-    b << 32563657.761,6019213.520,32563623.915,6019134.116,32563586.623,6019213.195;
-
-    cout << "Here is the matrix A:\n" << A << endl;
-    cout << "Here is the vector b:\n" << b << endl;
-    Eigen::VectorXf x(4);
-    x = A.colPivHouseholderQr().solve(b);
-    cout << "The solution is:\n" << x << endl;
-
-
-    return 0;*/
 }
 
 void warpGeoTIFF(GDALDatasetH& src,GDALDatasetH& dt,const std::string& geogCS, const std::string& newTiffName )
@@ -647,7 +587,7 @@ void transformPoints(string src,string dt, BaseVecT srcPoints[4], BaseVecT destP
         p.setY(srcPoints[i].y);
         p.setZ(srcPoints[i].z);
         p.transformTo(&target);
-        //td::cout << p.getX() << " " << p.getY() << " " << p.getZ() << std::endl;  
+        //std::cout << p.getX() << " " << p.getY() << " " << p.getZ() << std::endl;  
         
         destPoints[i] = BaseVecT(p.getX(),p.getY(),p.getZ());
     }
@@ -980,8 +920,10 @@ Data findLowestZ(float x, float y, float lowestZ, float highestZ, float searchAr
         vector<size_t> neighbors;  
         vector<Data> distances;        
         // look for the closest point whith a z-value lower then our currently best point
-        //FIXME: Wieso ist hier ein 1.5x ??
-        size_t numNeighbors = surface->searchTree()->radiusSearch(BaseVecT(x,y,currentZ), 1000, 1.5 * searchArea, neighbors, distances);
+        // we increse the radius so we have the whole area the node is affected by covered
+        // and later check if the nodes found are inside the square
+        //TODO: check the math behind this --> muss glaube nur größer sqrt(2) sein, also passt 1.5 sogar
+        size_t numNeighbors = surface->searchTree()->radiusSearch(BaseVecT(x,y,currentZ), 100, 1.5 * searchArea, neighbors, distances);
         for (size_t j = 0; j < numNeighbors; j++)
         {
             size_t pointIdx = neighbors[j];
@@ -1000,8 +942,7 @@ Data findLowestZ(float x, float y, float lowestZ, float highestZ, float searchAr
         {
             return bestZ;
         }
-        //FIXME: Wieso ist das fest 0.5??
-        currentZ += 0.5;
+        currentZ += searchArea;
 
     } while (currentZ <= highestZ);
 
@@ -1918,7 +1859,7 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
     auto min = bb.getMin();
 
     int found = 0;
-    
+    //TODO: Change this to round in all functions
     ssize_t x_max = (ssize_t)max.x + 1;
     ssize_t x_min = (ssize_t)min.x - 1;
     ssize_t y_max = (ssize_t)max.y + 1;
@@ -1927,13 +1868,6 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
     ssize_t z_max = (ssize_t)max.z + 1;
     ssize_t x_dim = abs(x_max) + abs(x_min);
     ssize_t y_dim = abs(y_max) + abs(y_min);
-
-    bool trust_center_l = false;
-    bool trust_center_r = false;
-    bool trust_bottom_l = false;
-    bool trust_bottom_r = false;
-    bool trust_top_l = false;
-    bool trust_top_r = false;
 
     size_t number_neighbors = 0;
 
@@ -1972,7 +1906,6 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
 
             BaseVecT point;
             
-            // Center
             found = 0;
             final_z = 0;  
             added_distance = 0;
@@ -2139,7 +2072,7 @@ int main(int argc, char* argv[])
     //extractMesh<VecD,double>(mesh,usedArr,usedSurface,resolution,minNeighbors,minRadius,maxNeighbors,maxRadius,radiusSteps,affineMatrix);
 
     bool targetDest = false;
-    bool refPoints = true;
+    bool refPoints = false;
     bool gTiff = true;
     string newTiffName = "out.tif";
 
@@ -2180,13 +2113,13 @@ int main(int argc, char* argv[])
             {
                 GDALDatasetH src = GDALOpen(geoTIFFfile.c_str(),GA_ReadOnly);
                 GDALDatasetH dt;
+                //creates a new GeoTIFF file with the transformed info of the old one
                 warpGeoTIFF(src,dt,typ2,newTiffName);
-                //Extract filename
             }
         }
     
     }
-    //TODO: Calculate, when Transformed Reff Points are given
+    
     // =======================================================================
     // Compute Affine Transform Matrix from Transformed Reff Points
     // =======================================================================
@@ -2205,7 +2138,6 @@ int main(int argc, char* argv[])
             }
             else
             {
-                
                 io = new GeoTIFFIO(geoTIFFfile);
             }
         }      
@@ -2240,13 +2172,11 @@ int main(int argc, char* argv[])
     std::cout << "works" << std::endl;*/
     
     
-    //TODO: can this actualy be used as is? --> implement same shape as in the other versions to better compare
     // =======================================================================
     // Extract the Surface Area from the Pointcloud if enabled
     // =======================================================================
     if(activate_ground != 0)
     {
-        //TODO: make Parameters changeable
         auto [grid, np] = extractGround<VecD, double>(arr,surface,0.125,21,2,115,2.5,15);
         PointBufferPtr p;
         p = PointBufferPtr( new PointBuffer );
