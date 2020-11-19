@@ -17,6 +17,11 @@
 #include "lvr2/reconstruction/FastReconstruction.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 
+#include "lvr2/algorithm/FinalizeAlgorithms.hpp"
+#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
+
+#include "lvr2/io/PLYIO.hpp"
+
 /**
  * log(CHUNK_SIZE).
  * The side length is a power of 2 so that divisions by the side length can be accomplished by shifting.
@@ -25,6 +30,13 @@ constexpr int CHUNK_SHIFT = 6;
 
 /// Side length of the cube-shaped chunks (2^CHUNK_SHIFT).
 constexpr int CHUNK_SIZE = 1 << CHUNK_SHIFT;
+
+constexpr int SCALE = 100;
+
+using HDF5MeshToolIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
+                                    lvr2::hdf5features::ChannelIO,
+                                    lvr2::hdf5features::VariantChannelIO,
+                                    lvr2::hdf5features::MeshIO>;
 
 int main(int argc, char** argv)
 {
@@ -83,7 +95,7 @@ int main(int argc, char** argv)
     std::cout << min << std::endl;
     std::cout << max << std::endl;
 
-    lvr2::BoundingBox<lvr2::BaseVector<int>> bb(min, max);
+    lvr2::BoundingBox<lvr2::BaseVector<int>> bb(min * SCALE, max * SCALE);
     auto grid = std::make_shared<lvr2::HashGrid<lvr2::BaseVector<int>, lvr2::FastBox<lvr2::BaseVector<int>>>>(CHUNK_SIZE, bb);
 
     for (auto tag : g.listObjectNames())
@@ -92,7 +104,6 @@ int main(int argc, char** argv)
         HighFive::DataSet d = g.getDataSet(tag);
         std::vector<int> chunk_data;
         d.read(chunk_data);
-
         // Get the chunk position
         std::vector<int> chunk_pos;
         std::string delimiter = "_";
@@ -121,6 +132,7 @@ int main(int argc, char** argv)
                     if (weight > 0)
                     {
                         grid->addLatticePoint(x, y, z, tsdf_value);
+                
                     }
                 }
             }
@@ -130,6 +142,19 @@ int main(int argc, char** argv)
     lvr2::FastReconstruction<lvr2::BaseVector<int>, lvr2::FastBox<lvr2::BaseVector<int>>> reconstruction(grid);
     lvr2::HalfEdgeMesh<lvr2::BaseVector<int>> mesh;
     reconstruction.getMesh(mesh);
+
+    lvr2::SimpleFinalizer<lvr2::BaseVector<int>> finalizer;
+    auto buffer = finalizer.apply(mesh);
+    
+    HDF5MeshToolIO hdf5;
+    hdf5.open("mesh.h5");
+    hdf5.save("tsdf_mesh", buffer);
+
+    auto model_ptr = std::make_shared<lvr2::Model>(buffer);
+    lvr2::PLYIO ply_io;
+
+    ply_io.save(model_ptr, "mesh.ply");
+
 
     std::cout << "The end ^_^" << std::endl;
 
