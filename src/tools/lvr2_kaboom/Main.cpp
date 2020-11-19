@@ -121,9 +121,13 @@ int main(int argc, char** argv) {
         {
             PointBufferPtr result = parser.randomSubSample(options.getTargetSize());
         }
-        else
+        else if(options.getVoxelSize())
         {
             PointBufferPtr result = parser.octreeSubSample(options.getVoxelSize(), options.getMinPointsPerVoxel());
+        }
+        else
+        {
+            PointBufferPtr result = parser.transform();
         }
 
     }

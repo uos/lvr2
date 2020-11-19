@@ -220,10 +220,10 @@ endif()
 # Searching for NABO
 #------------------------------------------------------------------------------
 find_package(Nabo)
-if(NABO_FOUND)
-  include_directories(${NABO_INCLUDE_DIRS})
+if(Nabo_FOUND)
+  include_directories(${Nabo_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_NABO)
-endif(NABO_FOUND)
+endif(Nabo_FOUND)
 
 #------------------------------------------------------------------------------
 ## Searching for PCL
@@ -377,9 +377,6 @@ include_directories( ${LASLIB_INCLUDE_DIR} )
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
 # HighFive
-set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
-set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
-add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})

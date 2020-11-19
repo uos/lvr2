@@ -43,7 +43,7 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-boost::optional<Normal<typename BaseVecT::CoordType>> getFaceNormal(array<BaseVecT, 3> vertices)
+boost::optional<Normal<typename BaseVecT::CoordType>> getFaceNormal(std::array<BaseVecT, 3> vertices)
 {
     auto v1 = vertices[0];
     auto v2 = vertices[1];
