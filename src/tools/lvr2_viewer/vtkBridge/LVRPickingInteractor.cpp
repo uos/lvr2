@@ -1344,12 +1344,12 @@ void LVRPickingInteractor::labelingOn()
 }
 void LVRPickingInteractor::labelingOff()
 {
-        vtkRenderWindowInteractor *rwi = this->Interactor;
-	m_labelingMode = false;
-        m_pickMode = None;
-	m_textActor->VisibilityOff();
-        labelModeChanged(false);
-        rwi->Render();
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    m_labelingMode = false;
+    m_pickMode = None;
+    m_textActor->VisibilityOff();
+    labelModeChanged(false);
+    rwi->Render();
 }
 void LVRPickingInteractor::handlePicking()
 {
@@ -1635,41 +1635,41 @@ void LVRPickingInteractor::OnKeyDown()
     vtkRenderWindowInteractor *rwi = this->Interactor;
     std::string key = rwi->GetKeySym();
 
-    if(key == "Escape" && m_labelingMode)
+    if (key == "Escape" && m_labelingMode)
     {
-	if (isPolygonToolSelected())
-	{
-	    if(!m_modified)
-	    {
+        if (isPolygonToolSelected())
+        {
+            if (!m_modified)
+            {
                 Q_EMIT(polygonSelected());
-	    }
-		
-	    if (selectionPolygonSize() > 0)
-	    {
-		resetSelection();
-		return;
-	    }
-	} 
-	else
-	{
-	    if(!m_modified)
-	    {
-            	Q_EMIT(lassoSelected());
-		return;
-	    }
-	}
+            }
+
+            if (selectionPolygonSize() > 0)
+            {
+                resetSelection();
+                return;
+            }
+        }
+        else
+        {
+            if (!m_modified)
+            {
+                Q_EMIT(lassoSelected());
+                return;
+            }
+        }
         discardChanges();
     }
-    if(key == "Return" && m_labelingMode)
+    if (key == "Return" && m_labelingMode)
     {
-	LVRInteractorStylePolygonPick::OnKeyDown();
+        LVRInteractorStylePolygonPick::OnKeyDown();
         /*if (m_pickMode == PickLabel && !lassoToolSelected)
         {
     	    calculateSelection(true);
         } */
-	saveCurrentLabelSelection();
+        saveCurrentLabelSelection();
     }
-    if(key == "x" && m_correspondenceMode)
+    if (key == "x" && m_correspondenceMode)
     {
         m_textActor->SetInput("Pick first correspondence point...");
         m_textActor->VisibilityOn();
@@ -1677,19 +1677,19 @@ void LVRPickingInteractor::OnKeyDown()
         m_pickMode = PickFirst;
     }
 
-    if(key == "y" && m_correspondenceMode)
+    if (key == "y" && m_correspondenceMode)
     {
         m_textActor->SetInput("Pick second correspondence point...");
         m_textActor->VisibilityOn();
         rwi->Render();
         m_pickMode = PickSecond;
     }
-    if(key == "l" || key == "l")
+    if (key == "l" || key == "l")
     {
         Q_EMIT(lassoSelected());
         //labelModeChanged(m_pickMode == PickLabel);
     }
-    if(key == "o" || key == "O")
+    if (key == "o" || key == "O")
     {
         Q_EMIT(polygonSelected());
         //labelModeChanged(m_pickMode == PickLabel);

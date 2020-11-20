@@ -236,37 +236,37 @@ private:
     PickMode            m_pickMode;
 
     /// Text actor to display info if in picking mode
-    vtkSmartPointer<vtkTextActor>     m_textActor;
-    vtkSmartPointer<vtkActor>         m_sphereActor;
-    vtkSmartPointer<vtkActor>         m_cubeActor;
-    vtkSmartPointer<vtkActor>         m_polyActor;
-    std::vector<bool>	              m_selectedPoints;
+    vtkSmartPointer<vtkTextActor>       m_textActor;
+    vtkSmartPointer<vtkActor>           m_sphereActor;
+    vtkSmartPointer<vtkActor>           m_cubeActor;
+    vtkSmartPointer<vtkActor>           m_polyActor;
+    std::vector<bool>	                m_selectedPoints;
     std::map<uint16_t, vtkSmartPointer<vtkActor>> m_labelActors;
-    vtkSmartPointer<vtkActor>         m_selectedActor;
-    std::vector<uint16_t>             m_pointLabels;
-    vtkSmartPointer<vtkPolyData>      m_points;
-    vtkSmartPointer<vtkDataSetMapper> m_selectedMapper;
-    vtkSmartPointer<vtkIdTypeArray>   m_selectedIds; 
+    vtkSmartPointer<vtkActor>           m_selectedActor;
+    std::vector<uint16_t>               m_pointLabels;
+    vtkSmartPointer<vtkPolyData>        m_points;
+    vtkSmartPointer<vtkDataSetMapper>   m_selectedMapper;
+    vtkSmartPointer<vtkIdTypeArray>     m_selectedIds; 
 
-    vtkSmartPointer<vtkRenderer>    m_renderer;
+    vtkSmartPointer<vtkRenderer>        m_renderer;
 
-    bool                            m_correspondenceMode;
-    bool 			    m_labelingMode;
-    bool 			    m_modified;
+    bool                                m_correspondenceMode;
+    bool 			                    m_labelingMode;
+    bool 			                    m_modified;
 
-    unsigned int                    m_numberOfClicks;
-    int                             m_previousPosition[2];
-    int                             m_startCameraMovePosition[2];
-    int 			    m_selectedLabel;
+    unsigned int                        m_numberOfClicks;
+    int                                 m_previousPosition[2];
+    int                                 m_startCameraMovePosition[2];
+    int 			                    m_selectedLabel;
 
-    double                          m_viewUp[3];
-    float                           m_motionFactor;
-    float                           m_rotationFactor;
+    double                              m_viewUp[3];
+    float                               m_motionFactor;
+    float                               m_rotationFactor;
 
-    InteractorMode                  m_interactorMode;
-    ShooterMode                     m_shooterMode;
+    InteractorMode                      m_interactorMode;
+    ShooterMode                         m_shooterMode;
 
-    std::map<uint16_t, LVRLabelInstanceTreeItem*>	    m_labelInstances;
+    std::map<uint16_t, LVRLabelInstanceTreeItem*> m_labelInstances;
 
 
 };
