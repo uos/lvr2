@@ -241,7 +241,11 @@ vtkSmartPointer<vtkActor> LVRSoilAssistBridge::computePolygonActor(PolygonPtr po
         //
         vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
         //todo: linestring
-        lines->InsertNextCell(n+1);
+
+        size_t line_cnt = polygon ? n+1 : n;
+
+        lines->InsertNextCell(line_cnt);
+
         for(size_t i = 0; i < n ; i++)
         {
             lines->InsertCellPoint(i);
