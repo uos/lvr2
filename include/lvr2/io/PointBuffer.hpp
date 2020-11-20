@@ -53,6 +53,7 @@ class PointBuffer : public BaseBuffer
     using base = BaseBuffer;
 public:    
     PointBuffer();
+    virtual ~PointBuffer(){};
 
     /***
      * @brief Constructs a point buffer with point the given number

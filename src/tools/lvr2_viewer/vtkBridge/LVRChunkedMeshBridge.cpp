@@ -12,6 +12,8 @@
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkIdTypeArray.h>
 
 
 #include "LVRBoundingBoxBridge.hpp"

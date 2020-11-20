@@ -26,6 +26,7 @@ struct convert<lvr2::ScanImage>
         node["width"] = scanImage.image.cols;
         node["height"] = scanImage.image.rows;
         node["image_file"] = scanImage.imageFile.string();
+        node["timestamp"] = scanImage.timestamp;
 
         return node;
     }
@@ -54,6 +55,16 @@ struct convert<lvr2::ScanImage>
         else
         {
             scanImage.extrinsicsEstimate = lvr2::Extrinsicsd::Identity();
+        }
+
+        if(node["timestamp"])
+        {
+            scanImage.timestamp = node["timestamp"].as<double>();
+        } 
+        else 
+        {
+            // TODO: how to handle no timestamp?
+            scanImage.timestamp = -1.0;
         }
 
         // Makes no sense to read with and height here...

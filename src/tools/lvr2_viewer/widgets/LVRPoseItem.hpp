@@ -45,6 +45,7 @@ class LVRPoseItem: public QTreeWidgetItem
 {
 public:
     LVRPoseItem(ModelBridgePtr bridge, QTreeWidgetItem* parent = 0);
+    LVRPoseItem(Pose pose, QTreeWidgetItem* parent = 0);
     virtual ~LVRPoseItem();
 
     void setPose(const Pose& pose);

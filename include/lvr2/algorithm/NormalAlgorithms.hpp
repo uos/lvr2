@@ -55,7 +55,7 @@ namespace lvr2
  * @return Either the normal or `none` if the face has a zero area.
  */
 template <typename BaseVecT>
-boost::optional<Normal<typename BaseVecT::CoordType>> getFaceNormal(array<BaseVecT, 3> vertices);
+boost::optional<Normal<typename BaseVecT::CoordType>> getFaceNormal(std::array<BaseVecT, 3> vertices);
 
 /**
  * @brief Calculates a normal for each face in the mesh.

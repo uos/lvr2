@@ -2,6 +2,8 @@
 
 namespace lvr2
 {
+namespace descriptions
+{
 
 HDF5IO::HDF5IO(HDF5KernelPtr kernel, HDF5SchemaPtr schema)
     : m_kernel(kernel), m_schema(schema)
@@ -24,9 +26,8 @@ ScanProjectPtr HDF5IO::loadScanProject()
     using MyScanProjectIO = BaseScanProjectIO::AddFeatures<lvr2::ScanProjectIO>;
 
     MyScanProjectIO io(m_kernel, m_schema);
-    ScanProjectPtr ptr = io.loadScanProject();
-    return ptr;
+    return io.loadScanProject();
 }
-
+} // namespace descriptions
 } // namespace lvr2
 
