@@ -700,9 +700,17 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuSubmenu">
+     <property name="title">
+      <string>Open ScanProject</string>
+     </property>
+     <addaction name="actionOpen_scan_project"/>
+     <addaction name="actionHDF5"/>
+    </widget>
     <addaction name="actionOpen"/>
     <addaction name="actionOpenChunkedMesh"/>
     <addaction name="actionOpenScanProject"/>
+    <addaction name="menuSubmenu"/>
     <addaction name="actionExport"/>
     <addaction name="actionQuit"/>
     <addaction name="separator"/>
@@ -1583,6 +1591,16 @@
   <action name="actionExportLabeledPointcloud">
    <property name="text">
     <string>Export labeled pointcloud</string>
+   </property>
+  </action>
+  <action name="actionOpen_scan_project">
+   <property name="text">
+    <string>Directory</string>
+   </property>
+  </action>
+  <action name="actionHDF5">
+   <property name="text">
+    <string>HDF5</string>
    </property>
   </action>
  </widget>

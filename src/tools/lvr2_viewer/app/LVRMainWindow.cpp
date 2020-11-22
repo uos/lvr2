@@ -164,6 +164,8 @@ LVRMainWindow::LVRMainWindow()
     m_actionOpen = this->actionOpen;
     m_actionOpenChunkedMesh = this->actionOpenChunkedMesh;
     m_actionOpenScanProject = this->actionOpenScanProject;
+    m_actionOpenScanProjectDir = this->actionOpenScanProjectDir;
+    m_actionOpenScanProjectH5 = this->actionOpenScanProjectH5;
     m_actionExport = this->actionExport;
     m_actionQuit = this->actionQuit;
     // Toolbar item "Views"
@@ -330,6 +332,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
     QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
     QObject::connect(m_actionOpenScanProject, SIGNAL(triggered()), this, SLOT(loadScanProject()));
+    QObject::connect(m_actionOpenScanProjectDir, SIGNAL(triggered()), this, SLOT(loadScanProjectDir()));
+    QObject::connect(m_actionOpenScanProjectH5, SIGNAL(triggered()), this, SLOT(loadScanProjectH5()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(this->actionOpenLabeledPointcloud, SIGNAL(triggered()), this, SLOT(loadLabels()));
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
@@ -1272,6 +1276,20 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 	}
 
     }
+}
+
+void LVRMainWindow::loadScanProjectDir()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Hello World Dir");
+    msgBox.exec();
+}
+
+void LVRMainWindow::loadScanProjectH5()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Hello World H5");
+    msgBox.exec();
 }
 
 void LVRMainWindow::loadScanProject()
