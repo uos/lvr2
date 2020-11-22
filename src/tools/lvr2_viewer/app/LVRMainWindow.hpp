@@ -143,6 +143,7 @@ public Q_SLOTS:
     void comboBoxIndexChanged(int index);
     void addNewInstance(QTreeWidgetItem *);
     void loadModel();
+    void loadScanProject();
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();
     void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
@@ -294,6 +295,7 @@ private:
     // Toolbar item "File"
     QAction*                            m_actionOpen;
     QAction*                            m_actionOpenChunkedMesh;
+    QAction*                            m_actionOpenScanProject;
     QAction*                            m_actionExport;
     QAction*                            m_actionQuit;
     // Toolbar item "Views"

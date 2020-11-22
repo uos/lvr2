@@ -702,6 +702,7 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionOpenChunkedMesh"/>
+    <addaction name="actionOpenScanProject"/>
     <addaction name="actionExport"/>
     <addaction name="actionQuit"/>
     <addaction name="separator"/>
@@ -1567,6 +1568,11 @@
   <action name="actionOpenChunkedMesh">
    <property name="text">
     <string>Open chunked mesh</string>
+   </property>
+  </action>
+  <action name="actionOpenScanProject">
+   <property name="text">
+    <string>Open scan project</string>
    </property>
   </action>
   <action name="actionOpenLabeledPointcloud">

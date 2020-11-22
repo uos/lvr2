@@ -163,6 +163,7 @@ LVRMainWindow::LVRMainWindow()
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
     m_actionOpenChunkedMesh = this->actionOpenChunkedMesh;
+    m_actionOpenScanProject = this->actionOpenScanProject;
     m_actionExport = this->actionExport;
     m_actionQuit = this->actionQuit;
     // Toolbar item "Views"
@@ -328,6 +329,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 {
     QObject::connect(m_actionOpen, SIGNAL(triggered()), this, SLOT(loadModel()));
     QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
+    QObject::connect(m_actionOpenScanProject, SIGNAL(triggered()), this, SLOT(loadScanProject()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(this->actionOpenLabeledPointcloud, SIGNAL(triggered()), this, SLOT(loadLabels()));
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
@@ -1270,6 +1272,13 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 	}
 
     }
+}
+
+void LVRMainWindow::loadScanProject()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Hello World");
+    msgBox.exec();
 }
 
 void LVRMainWindow::loadModel()
