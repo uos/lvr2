@@ -204,7 +204,7 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<BaseVecT>& surface
         auto point1 = real_point1 - correct;
         auto point2 = real_point2 - correct;
         auto point3 = real_point3 - correct;
-        //TODO: calculation of max might need a fix here aswell
+        //TODO: change to round
         auto max_x = std::max(point1[0],std::max(point2[0],point3[0]));
         ssize_t fmax_x = (ssize_t)max_x + 1;
         auto min_x = std::min(point1[0],std::min(point2[0],point3[0]));
@@ -321,14 +321,13 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<BaseVecT>& surface
                             cv.clear();
                             
                             distances.clear();
-                            //FIXME: SQUARE THE RADIUS !!!!!!!... or actualy this only counts for C. Test this
                             size_t neighbors = surface.searchTree()->radiusSearch(point_dist, 1000, texelSize, cv, distances);
                             for (size_t j = 0; j < neighbors; j++)
                             {
                                 size_t pointIdx = cv[j];
                                 auto cp = arr[pointIdx];
 
-                                // the best point we are looking for is the one with the 
+                                // the point we are looking for is the one with the 
                                 // highest z value and the point that is still inside the texel range
 
                                 if(cp[2] >= highest_z)
@@ -341,6 +340,7 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<BaseVecT>& surface
                                 }
                             }   
                             // we make small steps so we dont accidentally miss points
+                            //FIXME: make this grow faster
                             point_dist[2] -= texelSize/4; 
 
                         } while(best_point == -1);                        
@@ -704,6 +704,7 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
             {
                 for (ssize_t x = 0; x < xDimTiff; x++)
                 {                
+                    //FIXME: default color should be black and not white
                     auto n = mat->at<float>((yDimTiff - y - 1) * (xDimTiff) + x);
                     n /= dimV;
                     n = round(n*255);
@@ -864,7 +865,6 @@ float texelSize, Eigen::MatrixXd affineMatrix, GeoTIFFIO* io)
             }
             else
             {
-                auto pos = mesh.getVertexPosition(vertexH);
                 // correct coordinates
                 BaseVecT correct(x_min,y_min,0);
                 pos = pos - correct;
@@ -1681,7 +1681,9 @@ int numNeighbors, Data stepSize, Eigen::MatrixXd& affineMatrix)
     // Calculate Average Distance between Vertexpoint and closest Neighbor in their Tile
     // ======================================================================= 
     // Naiv approach to creating a DTM directly from a prefilterd Pointcloud
-    ProgressBar progress_avg_dist((x_dim / stepSize)*(y_dim / stepSize), timestamp.getElapsedTime() + "Calculating average distance ");
+    
+    //This part creates more problems than it solves
+    /*ProgressBar progress_avg_dist((x_dim / stepSize)*(y_dim / stepSize), timestamp.getElapsedTime() + "Calculating average distance ");
 
     int numDiffs = 0;
     for (ssize_t x = x_min; x < x_max + 1; x++)
@@ -1692,7 +1694,7 @@ int numNeighbors, Data stepSize, Eigen::MatrixXd& affineMatrix)
             /*if(y%2 !=0)
             {
                 u_x += stepSize/2;
-            } */
+            } *
             Data u_y = y * stepSize;
 
             vector<size_t> indexes;
@@ -1711,10 +1713,11 @@ int numNeighbors, Data stepSize, Eigen::MatrixXd& affineMatrix)
         
     }
     std::cout << std::endl;
-
+    
     avg_distance = avg_distance/(numDiffs);
     std::cout << timestamp.getElapsedTime() << "Average Distance : " << avg_distance <<std::endl;
-
+    */
+    avg_distance = stepSize;
     std::map<std::tuple<ssize_t, ssize_t>,VertexHandle> dict1;
     
     // =======================================================================
@@ -2059,7 +2062,7 @@ int main(int argc, char* argv[])
     int minNeighbors = atoi(argv[4]); 
     int maxNeighbors = atoi(argv[5]); 
     float resolution = atof(argv[6]); 
-    float texelSize = atof(argv[7]); 
+    float texelSize = atof(argv[7]);  
     int activate_ground = atoi(argv[8]);
     int mode = atoi(argv[9]);
     string data(argv[10]);
@@ -2069,7 +2072,8 @@ int main(int argc, char* argv[])
     //"/home/mario/BA/UpToDatest/Develop/build/20200807_hs_blang_multi_ortho_refl.tif";
 
     //extractMesh<VecD,double>(mesh,usedArr,usedSurface,resolution,minNeighbors,minRadius,maxNeighbors,maxRadius,radiusSteps,affineMatrix);
-
+    /*void extractMesh(lvr2::HalfEdgeMesh<BaseVecT>& mesh,FloatChannel& points, PointsetSurfacePtr<BaseVecT>& surface, float resolution,
+    int smallWindow, float smallWindowHeight, int largeWindow, float largeWindowHeight, float slopeThreshold, Eigen::MatrixXd affineMatrix)*/
     bool targetDest = false;
     bool refPoints = true;
     bool gTiff = true;
@@ -2184,6 +2188,7 @@ int main(int argc, char* argv[])
         usedSurface = rebuildPointCloud<VecD>(p);
     }
     
+    std::cout << timestamp.getElapsedTime() << " Start" << std::endl;
     if(mode == 0)
     {
         std::cout << "Moving Average" << std::endl;
@@ -2200,6 +2205,7 @@ int main(int argc, char* argv[])
         //extractMesh<VecD,double>(mesh,usedArr,usedSurface,resolution,5,0.4,11,0.5,5,affineMatrix);
         extractMesh<VecD,double>(mesh,usedArr,usedSurface,resolution,minNeighbors,minRadius,maxNeighbors,maxRadius,radiusSteps,affineMatrix);
     }
+    std::cout << timestamp.getElapsedTime() << "End" << std::endl;
     
     // =======================================================================
     // Setup LVR_2 Function to allow the export of the Mesh as obj/ply
@@ -2221,6 +2227,7 @@ int main(int argc, char* argv[])
     finalize.setVertexNormals(vertexNormals);
 
     // this has to be the normal surface and not the extracted ground
+    //TODO: add option for choosin which color scale to use
     auto matResult = setColor<VecD>(mesh,clusterBiMap,*surface,texelSize,affineMatrix,io);
     finalize.setMaterializerResult(matResult);    
 
@@ -2259,21 +2266,3 @@ int main(int argc, char* argv[])
     delete(io);
     return 0;
 }
-
-
-
-
-/*
-if(affineMatrix.size() != 0)
-{
-    Eigen::Vector4f point(u_x,u_y,final_z,1);
-
-    Eigen::Vector4f solution;
-
-    solution = affineMatrix*point;
-
-    u_x = solution(0);
-    u_y = solution(1);
-    final_z = solution(2);
-}
-*/
