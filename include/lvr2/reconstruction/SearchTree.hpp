@@ -75,7 +75,6 @@ public:
         std::vector<CoordT>& distances
     ) const = 0;
 
-    //IS IT OK IF I CHANGE THIS??
     /**
      * @brief Returns all points within the radius `r` of `qp`.
 
