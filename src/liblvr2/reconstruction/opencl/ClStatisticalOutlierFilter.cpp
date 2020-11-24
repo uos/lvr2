@@ -151,18 +151,18 @@ void ClSOR::calcStatistics()
     m_mean_ = 0.0;
     m_std_dev_ = 0.0;
 
-    float sum = 0.0;
-    float sq_sum = 0.0;
+    double sum = 0.0;
+    double sq_sum = 0.0;
     // TODO PARALLELIZE VARIANCE AND MEAN
     for(int i = 0; i < (this->m_distances.dim * this->m_distances.width); i++)
     {
-        sum += this->m_distances.elements[i];
-        sq_sum += this->m_distances.elements[i] * this->m_distances.elements[i];
+        sum += static_cast<double>(this->m_distances.elements[i]);
+        sq_sum += static_cast<double>(this->m_distances.elements[i]) * static_cast<double>(this->m_distances.elements[i]);
     }
     // does this need casts
     std::cout  << "sum " << sum << "sq_sum " << sq_sum << std::endl;
-    m_mean_ = sum/m_distances.width;
-    m_std_dev_ = (sq_sum - sum * sum / this->m_distances.width) / (this->m_distances.width - 1);
+    m_mean_ = sum/static_cast<double>(m_distances.width);
+    m_std_dev_ = (sq_sum - sum * sum / static_cast<double>(this->m_distances.width)) / static_cast<double>((this->m_distances.width - 1));
     m_std_dev_ = std::sqrt(m_std_dev_);
     std::cout  << "Mean " << m_mean_ << "dev " << m_std_dev_ << std::endl;
 }

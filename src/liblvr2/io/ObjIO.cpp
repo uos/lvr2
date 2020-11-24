@@ -57,17 +57,14 @@
 namespace lvr2
 {
 
-using namespace std; // Bitte vergebt mir....
-// Meinst du wirklich, dass ich dir so etwas durchgehen lassen kann?
-
-void tokenize(const string& str,
-                      vector<string>& tokens,
-                      const string& delimiters = " ")
+void tokenize(const std::string& str,
+                      std::vector<std::string>& tokens,
+                      const std::string& delimiters = " ")
 {
     // Skip delimiters at beginning.
-    string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+    std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
     // Find first "non-delimiter".
-    string::size_type pos     = str.find_first_of(delimiters, lastPos);
+    std::string::size_type pos     = str.find_first_of(delimiters, lastPos);
 
     while (string::npos != pos || string::npos != lastPos)
     {
@@ -81,10 +78,10 @@ void tokenize(const string& str,
 }
 
 void ObjIO::parseMtlFile(
-        map<string, int>& matNames,
-        vector<Material>& materials,
-        vector<Texture>& textures,
-        string mtlname)
+        std::map<std::string, int>& matNames,
+        std::vector<Material>& materials,
+        std::vector<Texture>& textures,
+        std::string mtlname)
 {
     cout << "Parsing " << mtlname << endl;
 
@@ -92,7 +89,7 @@ void ObjIO::parseMtlFile(
     boost::filesystem::path p(mtlname);
     p = p.remove_filename();
 
-    ifstream in(mtlname.c_str());
+    std::ifstream in(mtlname.c_str());
     if(in.good())
     {
         char buffer[1024];
@@ -104,8 +101,8 @@ void ObjIO::parseMtlFile(
             // Skip comments
             if(buffer[0] == '#') continue;
 
-            stringstream ss(buffer);
-            string keyword;
+            std::stringstream ss(buffer);
+            std::string keyword;
             ss >> keyword;
 
 
@@ -167,25 +164,25 @@ void ObjIO::parseMtlFile(
     }
 }
 
-ModelPtr ObjIO::read(string filename)
+ModelPtr ObjIO::read(std::string filename)
 {
     // Get path from filename
     boost::filesystem::path p(filename);
 
-    ifstream in(filename.c_str());
+    std::ifstream in(filename.c_str());
 
     MeshBufferPtr mesh = MeshBufferPtr(new MeshBuffer);
 
-    vector<float>         vertices;
-    vector<float>         normals;
-    vector<unsigned char> colors;
-    vector<float>         texcoords;
-    vector<uint>          faceMaterials;
-    vector<uint>          faces;
-    vector<Material>&     materials = mesh->getMaterials();
-    vector<Texture>&      textures = mesh->getTextures();
+    std::vector<float>         vertices;
+    std::vector<float>         normals;
+    std::vector<unsigned char> colors;
+    std::vector<float>         texcoords;
+    std::vector<uint>          faceMaterials;
+    std::vector<uint>          faces;
+    std::vector<Material>&     materials = mesh->getMaterials();
+    std::vector<Texture>&      textures = mesh->getTextures();
 
-    map<string, int> matNames;
+    std::map<std::string, int> matNames;
 
     int currentMat = 0;
 
@@ -199,8 +196,8 @@ ModelPtr ObjIO::read(string filename)
             // Skip comments
             if(buffer[0] == '#') continue;
 
-            stringstream ss(buffer);
-            string keyword;
+            std::stringstream ss(buffer);
+            std::string keyword;
             ss >> keyword;
             float x, y, z;
             float r, g, b;
@@ -239,13 +236,13 @@ ModelPtr ObjIO::read(string filename)
             }
             else if(keyword == "f")
             {
-                vector<string> tokens;
+                std::vector<std::string> tokens;
                 tokenize(buffer, tokens);
 
                 if(tokens.size() < 4)
                     continue;
 
-                vector<string> tokens2;
+                std::vector<std::string> tokens2;
                 tokenize(tokens.at(1),tokens2,"/");
                 int a = atoi(tokens2.at(0).c_str());
                 tokens2.clear();
@@ -267,10 +264,10 @@ ModelPtr ObjIO::read(string filename)
             }
             else if(keyword == "usemtl")
             {
-                string mtlname;
+                std::string mtlname;
                 ss >> mtlname;
                 // Find name and set current material
-                map<string, int>::iterator it = matNames.find(mtlname);
+                std::map<std::string, int>::iterator it = matNames.find(mtlname);
                 if(it == matNames.end())
                 {
                     cout << "ObjIO:read(): Warning material '" << mtlname << "' is undefined." << endl;
@@ -286,12 +283,12 @@ ModelPtr ObjIO::read(string filename)
                 p = p.remove_filename();
 
                 // Append .mtl file name
-                string mtlfile;
+                std::string mtlfile;
                 ss >> mtlfile;
                 p = p / mtlfile;
 
                 // Get path as string and parse mtl
-                string mtl_path = p.string();
+                std::string mtl_path = p.string();
                 parseMtlFile(matNames, materials, textures, mtl_path);
             }
         }
@@ -353,7 +350,7 @@ void ObjIO::save( string filename )
     floatArr normals               = m_model->m_mesh->getVertexNormals();
     floatArr textureCoordinates    = m_model->m_mesh->getTextureCoordinates();
     indexArray faceIndices         = m_model->m_mesh->getFaceIndices();
-    vector<Material> &materials    = m_model->m_mesh->getMaterials();
+    std::vector<Material> &materials    = m_model->m_mesh->getMaterials();
     indexArray faceMaterialIndices = m_model->m_mesh->getFaceMaterialIndices();
     ucharArr colors                = m_model->m_mesh->getVertexColors(w_color);
 
@@ -382,19 +379,19 @@ void ObjIO::save( string filename )
     std::set<unsigned int> materialIndexSet;
     std::set<unsigned int> colorIndexSet;
 
-    ofstream out(filename.c_str());
-    ofstream mtlFile("textures.mtl");
+    std::ofstream out(filename.c_str());
+    std::ofstream mtlFile("textures.mtl");
 
     if(out.good())
     {
-        out<<"mtllib textures.mtl"<<endl;
+        out<<"mtllib textures.mtl"<<std::endl;
 
         if ( !vertices )
         {
             cerr << "Received no vertices to store. Aborting save operation." << endl;
             return;
         }
-        out << endl << endl << "##  Beginning of vertex definitions.\n";
+        out << std::endl << std::endl << "##  Beginning of vertex definitions.\n";
 
         for( size_t i=0; i < lenVertices; ++i )
         {
@@ -414,11 +411,11 @@ void ObjIO::save( string filename )
                     out << endl;
         }
 
-        out<<endl;
+        out<<std::endl;
 
         if (m_model->m_mesh->hasVertexNormals())
         {
-            out << endl << endl << "##  Beginning of vertex normals.\n";
+            out << std::endl << std::endl << "##  Beginning of vertex normals.\n";
             for( size_t i=0; i < lenNormals; ++i )
             {
                 out << "vn " << normals[i*3 + 0] << " "
@@ -427,7 +424,7 @@ void ObjIO::save( string filename )
             }
         }
 
-        out << endl << endl << "##  Beginning of vertexTextureCoordinates.\n";
+        out << std::endl << std::endl << "##  Beginning of vertexTextureCoordinates.\n";
 
         for( size_t i=0; i < lenTextureCoordinates; ++i )
         {
@@ -437,7 +434,7 @@ void ObjIO::save( string filename )
         }
 
 
-        out << endl << endl << "##  Beginning of faces.\n";
+        out << std::endl << std::endl << "##  Beginning of faces.\n";
         // format of a face: f v/vt/vn
         //for( size_t i = 0; i < lenFaces; ++i )
         //{
@@ -544,7 +541,7 @@ void ObjIO::save( string filename )
                     << faceIndices[face_index * 3 + 1] + 1 << " "
                     << faceIndices[face_index * 3 + 2] + 1 << "/"
                     << faceIndices[face_index * 3 + 2] + 1 << "/"
-                    << faceIndices[face_index * 3 + 2] + 1 << endl;
+                    << faceIndices[face_index * 3 + 2] + 1 << std::endl;
             }else if(first.m_texture == materials[faceMaterialIndices[texture_indices[i-1]]].m_texture )
             {
                 out << "f "
@@ -556,17 +553,17 @@ void ObjIO::save( string filename )
                     << faceIndices[face_index * 3 + 1] + 1 << " "
                     << faceIndices[face_index * 3 + 2] + 1 << "/"
                     << faceIndices[face_index * 3 + 2] + 1 << "/"
-                    << faceIndices[face_index * 3 + 2] + 1 << endl;
+                    << faceIndices[face_index * 3 + 2] + 1 << std::endl;
             }
         }
 
 
-        out<<endl;
+        out<<std::endl;
         out.close();
     }
     else
     {
-        cerr << "no good. file! \n";
+        std::cerr << "no good. file! \n";
     }
 
 
@@ -579,23 +576,23 @@ void ObjIO::save( string filename )
             const Material &m = materials[i];
             if(!m.m_texture)
             {
-                mtlFile << "newmtl color_" << i << endl;
+                mtlFile << "newmtl color_" << i << std::endl;
                 mtlFile << "Ka "
                         << m.m_color->at(0) / 255.0f << " "
                         << m.m_color->at(1) / 255.0f << " "
-                        << m.m_color->at(2) / 255.0f << endl;
+                        << m.m_color->at(2) / 255.0f << std::endl;
                 mtlFile << "Kd "
                         << m.m_color->at(0) / 255.0f << " "
                         << m.m_color->at(1) / 255.0f << " "
-                        << m.m_color->at(2) / 255.0f << endl << endl;
+                        << m.m_color->at(2) / 255.0f << std::endl << std::endl;
             }
             else
             {
                 mtlFile << "newmtl texture_"      << m.m_texture->idx() << endl;
-                mtlFile << "Ka 1.000 1.000 1.000" << endl;
-                mtlFile << "Kd 1.000 1.000 1.000" << endl;
+                mtlFile << "Ka 1.000 1.000 1.000" << std::endl;
+                mtlFile << "Kd 1.000 1.000 1.000" << std::endl;
                 mtlFile << "map_Kd texture_"      << m.m_texture->idx()
-                        << textureImageExtension << endl << endl;
+                        << textureImageExtension << std::endl << std::endl;
             }
         }
     }

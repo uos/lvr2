@@ -20,6 +20,12 @@ doubleArr ArrayIO<FeatureBase>::loadDoubleArray(const std::string &group, const 
 }
 
 template<typename FeatureBase>
+intArr ArrayIO<FeatureBase>::loadIntArray(const std::string &group, const std::string &container, std::vector<size_t> &dims) const
+{
+    return m_featureBase->m_kernel->loadIntArray(group, container, dims);
+}
+
+template<typename FeatureBase>
 void ArrayIO<FeatureBase>::saveFloatArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t> &dimensions, const boost::shared_array<float>& data) const
 {
     m_featureBase->m_kernel->saveFloatArray(groupName, datasetName, dimensions, data);
@@ -36,5 +42,9 @@ void ArrayIO<FeatureBase>::saveUCharArray(const std::string& groupName, const st
 {
     m_featureBase->m_kernel->saveUCharArray(groupName, datasetName, dimensions, data);
 }
-
+template<typename FeatureBase>
+void ArrayIO<FeatureBase>::saveIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t> &dimensions, const boost::shared_array<int>& data) const
+{
+    m_featureBase->m_kernel->saveIntArray(groupName, datasetName, dimensions, data);
+}
 } // namespace lvr2

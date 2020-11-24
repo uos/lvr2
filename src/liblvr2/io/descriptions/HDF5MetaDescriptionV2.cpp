@@ -23,6 +23,7 @@ void HDF5MetaDescriptionV2::saveScan(
     HighFive::Group &g,
     const YAML::Node &n) const
 {
+    std::cout <<"[HDFMETA2] save SCAN " << std::endl;
     YAML::Node config;
     config = n["config"];
     
@@ -282,7 +283,7 @@ YAML::Node HDF5MetaDescriptionV2::scanPosition(const HighFive::Group &g) const
     {
         node["pose_estimate"] = *poseEstimate;
     }
-
+    
     boost::optional<Transformd> registration = 
         hdf5util::getMatrix<Transformd>(g, "registration");
     if(poseEstimate)

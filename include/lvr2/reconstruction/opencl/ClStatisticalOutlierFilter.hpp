@@ -102,9 +102,9 @@ private:
     
     //
     int m_k;
-    float m_mult_;
-    float m_mean_;
-    float m_std_dev_;
+    double m_mult_;
+    double m_mean_;
+    double m_std_dev_;
     // V->points and normals
     LBPointArray<float> V;
     LBPointArray<float>* kd_tree_values;

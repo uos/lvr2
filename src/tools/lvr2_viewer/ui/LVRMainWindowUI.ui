@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1305</width>
+    <width>1198</width>
     <height>1006</height>
    </rect>
   </property>
@@ -22,7 +22,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
+     <widget class="QWidget" name="qvtkWidgetPlaceholder" native="ture"/>
     </item>
    </layout>
   </widget>
@@ -61,7 +61,7 @@
    <widget class="QWidget" name="dockWidgetSceneContents">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QTreeWidget" name="treeWidget">
+      <widget class="LVRModelTreeWidget" name="treeWidget">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -603,7 +603,7 @@
    <addaction name="actionShow_SpectralPointPreview"/>
    <addaction name="actionShow_SpectralHistogram"/>
    <addaction name="separator"/>
-   <addaction name="actionLabeling_Start"/>
+   <addaction name="actionConfirm_LabelSelection"/>
    <addaction name="actionSelected_Lasso"/>
    <addaction name="actionSelected_Polygon"/>
   </widget>
@@ -612,7 +612,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1305</width>
+     <width>1198</width>
      <height>22</height>
     </rect>
    </property>
@@ -670,14 +670,6 @@
     <addaction name="actionSimple_Plane_Classification"/>
     <addaction name="actionFurniture_Recognition"/>
    </widget>
-   <widget class="QMenu" name="menuLabel">
-    <property name="title">
-     <string>Labeling</string>
-    </property>
-    <addaction name="actionLabeling_Start"/>
-    <addaction name="actionLabeling_Stop"/>
-    <addaction name="actionLabeling_Export"/>
-   </widget>
    <widget class="QMenu" name="menuRendering">
     <property name="title">
      <string>Rendering</string>
@@ -705,8 +697,11 @@
     <addaction name="actionExport"/>
     <addaction name="actionQuit"/>
     <addaction name="separator"/>
-    <addaction name="actionOpenLabeledPointcloud"/>
-    <addaction name="actionExportLabeledPointcloud"/>
+    <addaction name="actionOpenScanProject"/>
+    <addaction name="actionExportScanProject"/>
+    <addaction name="separator"/>
+    <addaction name="actionReadWaveform"/>
+    <addaction name="actionOpen_SoilAssist"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuViews"/>
@@ -716,7 +711,6 @@
    <addaction name="menuFiltering"/>
    <addaction name="menuRegistration"/>
    <addaction name="menuClassification"/>
-   <addaction name="menuLabel"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetCamera">
@@ -1153,7 +1147,7 @@
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
-      <widget class="QTreeWidget" name="labelTreeWidget">
+      <widget class="LVRLabelTreeWidget" name="labelTreeWidget">
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
        </property>
@@ -1177,6 +1171,11 @@
          <string>Id</string>
         </property>
        </column>
+       <column>
+        <property name="text">
+         <string>Editable</string>
+        </property>
+       </column>
       </widget>
      </item>
      <item row="1" column="1">
@@ -1187,12 +1186,240 @@
        <item>
         <widget class="QLabel" name="selectedLabelLabel">
          <property name="text">
-          <string>SelectedLabel:</string>
+          <string>Current Class</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QComboBox" name="selectedInstanceComboBox"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="addLabelClassButton">
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>33</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Add New Class</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_addclass.png</normaloff>:/qv_addclass.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="addLabelInstanceButton">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>33</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Add Instance</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_instance.png</normaloff>:/qv_instance.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelSegmentation">
+         <property name="text">
+          <string>Segmentation:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButton">
+         <property name="minimumSize">
+          <size>
+           <width>33</width>
+           <height>33</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_segmentin.png</normaloff>:/qv_segmentin.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButton_2">
+         <property name="minimumSize">
+          <size>
+           <width>33</width>
+           <height>33</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_segmentout.png</normaloff>:/qv_segmentout.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelSelection">
+         <property name="text">
+          <string>Selection:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButton_3">
+         <property name="minimumSize">
+          <size>
+           <width>33</width>
+           <height>33</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_selectlasso.png</normaloff>:/qv_selectlasso.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButton_4">
+         <property name="minimumSize">
+          <size>
+           <width>33</width>
+           <height>33</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_selectpoly.png</normaloff>:/qv_selectpoly.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButton_5">
+         <property name="minimumSize">
+          <size>
+           <width>33</width>
+           <height>33</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_selectack.png</normaloff>:/qv_selectack.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButton_6">
+         <property name="minimumSize">
+          <size>
+           <width>33</width>
+           <height>33</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_selectcancel.png</normaloff>:/qv_selectcancel.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelToggleCam">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButton_7">
+         <property name="minimumSize">
+          <size>
+           <width>33</width>
+           <height>33</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/viewer.qrc">
+           <normaloff>:/qv_toggleselect.png</normaloff>:/qv_toggleselect.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <spacer name="horizontalSpacer_5">
@@ -1351,19 +1578,19 @@
     <string>Simple Plane Classification</string>
    </property>
   </action>
-  <action name="actionLabeling_Start">
+  <action name="actionConfirm_LabelSelection">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="checked">
     <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="../res/viewer.qrc">
-     <normaloff>:/qv_labeling.png</normaloff>:/qv_labeling.png</iconset>
+     <normaloff>:/qv_labeltool.png</normaloff>:/qv_labeltool.png</iconset>
    </property>
    <property name="text">
-    <string>Label Points</string>
+    <string>Confirm Selection</string>
    </property>
   </action>
   <action name="actionSelected_Lasso">
@@ -1569,9 +1796,9 @@
     <string>Open chunked mesh</string>
    </property>
   </action>
-  <action name="actionOpenLabeledPointcloud">
+  <action name="actionOpenScanProject">
    <property name="text">
-    <string>Open Labeled Pointcloud</string>
+    <string>Open Scan Project</string>
    </property>
   </action>
   <action name="actionExportLabeledPointcloud">
@@ -1579,17 +1806,47 @@
     <string>Export labeled pointcloud</string>
    </property>
   </action>
+  <action name="actionReadWaveform">
+   <property name="text">
+    <string>Open Waveform</string>
+   </property>
+  </action>
+  <action name="actionExportScanProject">
+   <property name="text">
+    <string>Export Scan Project</string>
+   </property>
+  </action>
+  <action name="actionOpen_Intermedia_Project">
+   <property name="text">
+    <string>Open Intermedia Project</string>
+   </property>
+  </action>
+    <action name="actionOpen_SoilAssist">
+   <property name="text">
+    <string>Open SoilAssist</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
-  <customwidget>
+  <!-- <customwidget>
    <class>QVTKWidget</class>
    <extends>QWidget</extends>
    <header>QVTKWidget.h</header>
-  </customwidget>
+  </customwidget> -->
   <customwidget>
    <class>lvr2::LVRPlotter</class>
    <extends>QWidget</extends>
    <header>LVRPlotter.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>LVRLabelTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>LVRLabelTreeWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>LVRModelTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>LVRModelTreeWidget.hpp</header>
   </customwidget>
  </customwidgets>
  <resources>

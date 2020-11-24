@@ -14,9 +14,46 @@
 
 #include <memory>
 #include <vector>
-
+#include<string>
 namespace lvr2
 {
+
+/*****************************************************************************
+ * @brief   Struct to hold a Fullwaveform Data for a scan
+ * 
+ *****************************************************************************/
+
+struct Waveform
+{
+    Waveform() : maxBucketSize(0),// amplitude(), deviation(), reflectance(), backgroundRadiation(),
+    waveformSamples(){};
+    ~Waveform(){};
+    /// Sensor type flag
+    static constexpr char                    sensorType[] = "Waveform";
+
+    /// Max Bucket Size of Waveform samples
+    int                                      maxBucketSize;
+/*
+    /// Amplitude
+    std::vector<float>                       amplitude;
+
+    /// Deviation
+    std::vector<float>                       deviation;
+
+    /// Reflectance
+    std::vector<float>                       reflectance;
+
+    /// Background Radiation
+    std::vector<float>                       backgroundRadiation;*/
+
+    //Waveform
+    std::vector<uint16_t>                    waveformSamples;
+    std::vector<long>                        waveformIndices;
+    std::vector<uint8_t>                     echoType;
+    std::vector<bool>                        lowPower;
+    //Eigen::Matrix<uint16_t, Eigen::Dynamic, Eigen::Dynamic>         waveformSamples;
+};
+using WaveformPtr = std::shared_ptr<Waveform>;
 
 /*****************************************************************************
  * @brief Class to represent a scan within a scan project
@@ -43,6 +80,9 @@ struct Scan
 
     /// Point buffer containing the scan points
     PointBufferPtr                  points;
+
+    /// Containing all Waveform related data
+    WaveformPtr                     waveform;
 
     /// Registration of this scan in project coordinates
     Transformd                      registration;
@@ -120,6 +160,9 @@ struct ScanImage
 
     /// OpenCV representation
     cv::Mat                         image;
+
+    /// Timestamp 
+    double                          timestamp;
 };
 
 
@@ -228,7 +271,6 @@ struct HyperspectralCameraModel
 
 using HyperspectralCameraModelPtr = std::shared_ptr<HyperspectralCameraModel>;
 
-
 /*****************************************************************************
  * @brief   Struct to hold a hyperspectral camera
  *          together with it's camera model and panoramas
@@ -266,8 +308,44 @@ struct HyperspectralCamera
 };
 
 using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
+/*****************************************************************************
+ * @brief   Struct to represent a LabelInstance
+ *****************************************************************************/
+struct LabelInstance
+{
+    static constexpr char           sensorType[] = "LabelInstance";
+    std::string instanceName;
 
+    Vector3i color;
 
+    std::vector<int> labeledIDs;
+};
+using LabelInstancePtr = std::shared_ptr<LabelInstance>;
+/*****************************************************************************
+ * @brief   Struct to represent a LabelClass
+ *****************************************************************************/
+struct LabelClass
+{
+    static constexpr char           sensorType[] = "LabelClass";
+    std::string className;
+
+    std::vector<LabelInstancePtr> instances;
+};
+using LabelClassPtr = std::shared_ptr<LabelClass>;
+/*****************************************************************************
+ * @brief   Struct to represent a LabelRoot
+ *****************************************************************************/
+struct LabelRoot
+{
+    static constexpr char           sensorType[] = "LabelRoot";
+    PointBufferPtr points;
+    WaveformPtr waveform;
+
+    std::vector<std::pair<std::pair<uint32_t,uint32_t>,uint32_t>> pointOffsets;
+
+    std::vector<LabelClassPtr> labelClasses;
+};
+using LabelRootPtr = std::shared_ptr<LabelRoot>;
 /*****************************************************************************
  * @brief   Represents a scan position consisting of a scan and
  *          images taken at this position
@@ -339,7 +417,10 @@ struct ScanProject
     /// system. It is assumed that all coordinate systems 
     /// loaded with this software are right-handed
     std::string                     coordinateSystem;
+
+
 };
+
 
 using ScanProjectPtr = std::shared_ptr<ScanProject>;
 
@@ -349,12 +430,30 @@ using ScanProjectPtr = std::shared_ptr<ScanProject>;
  *****************************************************************************/
 struct ScanProjectEditMark
 {
+    ScanProjectEditMark(){}
+    ScanProjectEditMark(ScanProjectPtr _project):project(project){}
     ScanProjectPtr project;
     /// True if scan pose has been changed, one bool for each scan position
     std::vector<bool> changed;
 };
-
 using ScanProjectEditMarkPtr = std::shared_ptr<ScanProjectEditMark>;
+
+/*****************************************************************************
+ * @brief   Struct to Represt a scan with Labels
+ *****************************************************************************/
+struct LabeledScanProjectEditMark
+{
+    LabeledScanProjectEditMark(){}
+    LabeledScanProjectEditMark(ScanProjectPtr _project)
+    {
+        editMarkProject = ScanProjectEditMarkPtr(new ScanProjectEditMark(_project));
+    }
+    ScanProjectEditMarkPtr editMarkProject;
+    
+    //Contains all data assoicated with Label
+    LabelRootPtr                    labelRoot;
+};
+using LabeledScanProjectEditMarkPtr = std::shared_ptr<LabeledScanProjectEditMark>;
 
 } // namespace lvr2
 

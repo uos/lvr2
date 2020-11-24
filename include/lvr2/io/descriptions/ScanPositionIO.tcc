@@ -60,6 +60,8 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
     {
         m_hyperspectralCameraIO->saveHyperspectralCamera(scanPosNo, scanPositionPtr->hyperspectralCamera);
     }
+
+    
 }
 
 template <typename  FeatureBase>
@@ -110,6 +112,7 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     {
         *ret = (*d.metaData).as<ScanPosition>();
     }
+ 
     
     // Get all sub scans
     size_t scanNo = 0;
@@ -125,11 +128,8 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
         // Check if it exists. If not, exit.
         if(m_featureBase->m_kernel->exists(groupName, dataSetName))
         {
-            std::cout << timestamp << "ScanPositionIO: Loading scan " 
-                      << groupName << "/" << dataSetName << std::endl;
             ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo);
             ret->scans.push_back(scan);
-            std::cout << scan->points->numPoints() << std::endl;
         }
         else
         {
