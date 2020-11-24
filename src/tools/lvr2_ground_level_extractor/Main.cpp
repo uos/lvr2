@@ -144,7 +144,7 @@ PointsetSurfacePtr<Vec> rebuildPointCloud(PointBufferPtr &base_buffer)
 //TODO: rename this
 //FIXME: new way of calculating moves out grid by 0.5, is this bad in any way when calculating the texture?
 template <typename BaseVecT, typename Data>
-Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,const lvr2::HalfEdgeMesh<BaseVecT>& mesh, Data texelSize, int mode)
+Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,const lvr2::HalfEdgeMesh<VecD>& mesh, Data texelSize, int mode)
 {
     // =======================================================================
     // Generate Bounding Box and set up Variables
@@ -269,10 +269,10 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,con
 
                     BaseVecT point = real_point1 * surface_1 + real_point2 * surface_2 + real_point3 * surface_3;
                     vector<size_t> cv;  
-                    vector<Data> distances;   
+                    vector<float> distances;   
 
                     // mode 1 shows the difference between original pc and the mesh
-                    if(mode == 1)
+                    /*if(mode == 1)
                     {                        
                         surface.searchTree()->kSearch(point, 1, cv);
                         // TODO: if I still want to use this, i should use the distance instead of calculating it manually
@@ -300,9 +300,12 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,con
                     //TODO: find a word for "Bestandskarte"
                     // mode 2 show the height difference between ground and highest point on one texel
                     else if(mode == 2)
-                    {                        
+                    { */                       
                         // search from maximum height
-                        BaseVecT point_dist = point; 
+                        Vec point_dist; 
+                        //sadly there is no other solution to this right now, and i need to convert double to float
+                        point_dist[0] = point[0];
+                        point_dist[1] = point[1];
                         point_dist[2] = z_max;
                        
                         size_t best_point = -1;
@@ -365,7 +368,7 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,con
                         {
                             min_distance = distance[(y_dim - y_tex  - 1) * (x_dim) + x_tex];
                         } 
-                    }
+                    //}
 
                 }
 
@@ -807,10 +810,10 @@ float texelSize, Eigen::MatrixXd affineMatrix, Eigen::MatrixXd fullAffineMatrix,
         {
             tex = readGeoTIFF(io,1,3); 
         }
-        /*else
+        else
         {
-            tex = generateHeightDifferenceTexture<Vec,float>(surface,mesh,texelSize,3);
-        }*/
+            tex = generateHeightDifferenceTexture<VecD,double>(surface,mesh,texelSize,3);
+        }
             
 
         // Code copied from Materializer.tcc; this part essentially does what the materializer does
@@ -1562,7 +1565,7 @@ void extractMesh(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, PointsetSu
             // if the point passes through the three tests, it gets recoginised as ground point
             double v_x = u_x+x_min;
             double v_y = u_y+y_min;
-            double  v_z = workGrid[x][y];
+            double v_z = workGrid[x][y];
             if(affineMatrix.size() != 0)
             {
                 Eigen::Vector4d point(v_x,v_y,v_z,1);
@@ -1781,9 +1784,9 @@ int numNeighbors, Data stepSize, Eigen::MatrixXd& affineMatrix)
                 final_z = final_z/trusted_neighbors;
             }
 
-            double d_x = 0;
-            double d_y = 0;
-            double d_z = 0;
+            double d_x = u_x;
+            double d_y = u_y;
+            double d_z = final_z;
 
             if(affineMatrix.size() != 0)
             {
@@ -1979,9 +1982,9 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
                 continue;
             }
 
-            double d_x = 0;
-            double d_y = 0;
-            double d_z = 0;
+            double d_x = u_x;
+            double d_y = u_y;
+            double d_z = final_z;
 
             if(affineMatrix.size() != 0)
             {
@@ -2091,8 +2094,8 @@ int main(int argc, char* argv[])
     /*void extractMesh(lvr2::HalfEdgeMesh<BaseVecT>& mesh,FloatChannel& points, PointsetSurfacePtr<BaseVecT>& surface, float resolution,
     int smallWindow, float smallWindowHeight, int largeWindow, float largeWindowHeight, float slopeThreshold, Eigen::MatrixXd affineMatrix)*/
     bool targetDest = false;
-    bool refPoints = true;
-    bool gTiff = true;
+    bool refPoints = false;
+    bool gTiff = false;
     string newTiffName = "out.tif";
 
     /*VecD srcPoints[4] = {VecD(-1.445081 ,11.642192 ,-1.354529),VecD(-82.324432 ,41.830395 ,5.222107),
