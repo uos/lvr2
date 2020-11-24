@@ -219,6 +219,7 @@ public Q_SLOTS:
 
     void assertToggles();
     void togglePoints(bool checkboxState);
+    void toggleLabelDock(bool checkboxState);
     void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);

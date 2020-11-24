@@ -2131,7 +2131,7 @@ void LVRPickingInteractor::setLassoTool(bool lassoToolSelected)
     }
 }
 
-void LVRPickingInteractor::setLabel(int labelId, std::vector<int> pointIds)
+void LVRPickingInteractor::setLabel(int labelId, std::vector<int>& pointIds)
 {
 
     for (int pointId : pointIds)
@@ -2141,6 +2141,14 @@ void LVRPickingInteractor::setLabel(int labelId, std::vector<int> pointIds)
     }
     //UpdateActor
     updateActor(labelId);
+}
+void LVRPickingInteractor::refreshActors()
+{
+    for(const auto& entry: m_labelActors)
+    {
+        updateActor(entry.first);
+    }
+
 }
 
 void LVRPickingInteractor::updateActor(int labelId)
