@@ -183,8 +183,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         // search on the stann kd tree. So we don't use
         // the template parameter T for di
         vector<size_t> id;
-        //WAS FLOAT BEFORE
-        vector<double> di;
+        vector<float> di;
 
         int n = 0;
         size_t k = k_0;
@@ -340,8 +339,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
     for( int i = 0; i < (int)numPoints; i++)
     {
         vector<size_t> id;
-        //WAS FLOAZ BEFORE
-        vector<double> di;
+        vector<float> di;
 
         this->m_searchTree->kSearch(pts[i], this->m_ki, id, di);
 
@@ -466,8 +464,7 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     int k = this->m_kd;
 
     vector<size_t> id;
-    //Was FLOAT BEFORE
-    vector<double> di;
+    vector<float> di;
 
     //Allocate ANN point
     {

@@ -113,17 +113,17 @@ using namespace lvr2;
 
 using Vec = BaseVector<float>;
 using VecD = BaseVector<double>;
-using PsSurface = lvr2::PointsetSurface<VecD>;
+using PsSurface = lvr2::PointsetSurface<Vec>;
 
 int globalTexIndex = 0;
 bool preventTranslation = true;
 
 template <typename BaseVecT>
-PointsetSurfacePtr<BaseVecT> loadPointCloud(string &data)
+PointsetSurfacePtr<Vec> loadPointCloud(string &data)
 {
     ModelPtr base_model = ModelFactory::readModel(data);
     PointBufferPtr base_buffer = base_model->m_pointCloud;
-    PointsetSurfacePtr<BaseVecT> surface;
+    PointsetSurfacePtr<Vec> surface;
     surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(base_buffer,"FLANN");
     surface->calculateSurfaceNormals();
     return surface;
@@ -132,9 +132,9 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(string &data)
 
 //creates a surface for K search
 template <typename BaseVecT>
-PointsetSurfacePtr<BaseVecT> rebuildPointCloud(PointBufferPtr &base_buffer)
+PointsetSurfacePtr<Vec> rebuildPointCloud(PointBufferPtr &base_buffer)
 {
-    PointsetSurfacePtr<BaseVecT> surface;
+    PointsetSurfacePtr<Vec> surface;
     surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(base_buffer,"FLANN");
     surface->calculateSurfaceNormals();
     return surface;
@@ -144,7 +144,7 @@ PointsetSurfacePtr<BaseVecT> rebuildPointCloud(PointBufferPtr &base_buffer)
 //TODO: rename this
 //FIXME: new way of calculating moves out grid by 0.5, is this bad in any way when calculating the texture?
 template <typename BaseVecT, typename Data>
-Texture generateHeightDifferenceTexture(const PointsetSurface<BaseVecT>& surface ,const lvr2::HalfEdgeMesh<BaseVecT>& mesh, Data texelSize, int mode)
+Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,const lvr2::HalfEdgeMesh<BaseVecT>& mesh, Data texelSize, int mode)
 {
     // =======================================================================
     // Generate Bounding Box and set up Variables
@@ -415,7 +415,7 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<BaseVecT>& surface
     return texture;
 }
 
-Eigen::MatrixXd computeAffineGeoRefMatrix(VecD srcPoints[4], VecD destPoints[4])
+std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> computeAffineGeoRefMatrix(VecD srcPoints[4], VecD destPoints[4])
 {
     ///Create one 12 x 12 Matrix and two 12 x 1 Vector, fill one with created Points
     Eigen::MatrixXd src(12,12);
@@ -460,10 +460,10 @@ Eigen::MatrixXd computeAffineGeoRefMatrix(VecD srcPoints[4], VecD destPoints[4])
     0, 0, 0, 1;
     //std::cout << affineTranslation << std::endl;
    
-    affineMatrix = affineTranslation * affineMatrix;
+    auto fullAffineMatrix = affineTranslation * affineMatrix;
     
 
-    return affineMatrix;
+    return {affineMatrix,fullAffineMatrix};
 }
 
 void warpGeoTIFF(GDALDatasetH& src,GDALDatasetH& dt,const std::string& geogCS, const std::string& newTiffName )
@@ -735,8 +735,8 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
 //cluster Materials sind nicht nutzbar für Farbe
 //TODO: rename into something more fitting
 template<typename BaseVecT>
-MaterializerResult<BaseVecT> setColor(const lvr2::HalfEdgeMesh<BaseVecT>& mesh, const ClusterBiMap<FaceHandle>& clusters, const PointsetSurface<BaseVecT>& surface, 
-float texelSize, Eigen::MatrixXd affineMatrix, GeoTIFFIO* io)
+MaterializerResult<BaseVecT> setColor(const lvr2::HalfEdgeMesh<BaseVecT>& mesh, const ClusterBiMap<FaceHandle>& clusters, const PointsetSurface<Vec>& surface, 
+float texelSize, Eigen::MatrixXd affineMatrix, Eigen::MatrixXd fullAffineMatrix, GeoTIFFIO* io)
 {
     // =======================================================================
     // Prepare necessary preconditions to create MaterializerResult
@@ -780,14 +780,14 @@ float texelSize, Eigen::MatrixXd affineMatrix, GeoTIFFIO* io)
 
             xMin = solution.coeff(0);
             yMin = solution.coeff(1);
-
+            /*
             if(preventTranslation)
             {
                 xMax -= affineMatrix(12);
                 xMin -= affineMatrix(12);
                 yMax -= affineMatrix(13);
                 yMax -= affineMatrix(13);
-            }
+            }*/
                 
         }
 
@@ -807,10 +807,10 @@ float texelSize, Eigen::MatrixXd affineMatrix, GeoTIFFIO* io)
         {
             tex = readGeoTIFF(io,1,3); 
         }
-        else
+        /*else
         {
-            tex = generateHeightDifferenceTexture<BaseVecT,double>(surface,mesh,texelSize,3);
-        }
+            tex = generateHeightDifferenceTexture<Vec,float>(surface,mesh,texelSize,3);
+        }*/
             
 
         // Code copied from Materializer.tcc; this part essentially does what the materializer does
@@ -844,8 +844,10 @@ float texelSize, Eigen::MatrixXd affineMatrix, GeoTIFFIO* io)
             //Add affine Translation if bool is set
             float yPixel = 0;
             float xPixel = 0;
+            
             if(io)
             {
+                //double pos0,pos1;
                 double geoTransform[6];
                 int y_dim_tiff = io->getRasterHeight();
                 int x_dim_tiff = io->getRasterWidth();
@@ -854,8 +856,12 @@ float texelSize, Eigen::MatrixXd affineMatrix, GeoTIFFIO* io)
                 io->getGeoTransform(geoTransform);   
                 if(preventTranslation) 
                 {
-                    pos[0] = pos[0] + affineMatrix(12);
-                    pos[1] = pos[1] + affineMatrix(13);
+                    pos[0] = pos[0] + fullAffineMatrix(12);
+                    pos[1] = pos[1] + fullAffineMatrix(13);
+                    /*pos0 = pos[0];
+                    pos1 = pos[1];
+                    pos0 += fullAffineMatrix(12);
+                    pos1 += fullAffineMatrix(13);*/
                 }
                 
                 xPixel = (pos[0] - geoTransform[0])/geoTransform[1];
@@ -904,7 +910,7 @@ Data weight(Data distance)
     return 1/distance;                
 }
 template <typename BaseVecT, typename Data>
-Data findLowestZ(float x, float y, float lowestZ, float highestZ, float searchArea, PointsetSurfacePtr<BaseVecT>& surface,FloatChannel& points)
+Data findLowestZ(float x, float y, float lowestZ, float highestZ, float searchArea, PointsetSurfacePtr<Vec>& surface,FloatChannel& points)
 {    
     Data bestZ = highestZ;
     Data currentZ = lowestZ;
@@ -979,7 +985,7 @@ floatArr transformCloud(FloatChannel& points, Eigen::MatrixXd affine)
 */
 
 template <typename BaseVecT, typename Data>
-std::tuple<floatArr, size_t> extractGround(FloatChannel& points, PointsetSurfacePtr<BaseVecT>& surface, float resolution,
+std::tuple<floatArr, size_t> extractGround(FloatChannel& points, PointsetSurfacePtr<Vec>& surface, float resolution,
  int smallWindow, float smallWindowHeight, int largeWindow, float largeWindowHeight, float slopeThreshold)
 {
     // =======================================================================
@@ -1274,7 +1280,7 @@ std::tuple<floatArr, size_t> extractGround(FloatChannel& points, PointsetSurface
 }
 
 template <typename BaseVecT, typename Data>
-void extractMesh(lvr2::HalfEdgeMesh<BaseVecT>& mesh,FloatChannel& points, PointsetSurfacePtr<BaseVecT>& surface, float resolution,
+void extractMesh(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, PointsetSurfacePtr<Vec>& surface, float resolution,
  int smallWindow, float smallWindowHeight, int largeWindow, float largeWindowHeight, float slopeThreshold, Eigen::MatrixXd affineMatrix)
 {
     // =======================================================================
@@ -1554,9 +1560,9 @@ void extractMesh(lvr2::HalfEdgeMesh<BaseVecT>& mesh,FloatChannel& points, Points
             }
             
             // if the point passes through the three tests, it gets recoginised as ground point
-            auto v_x = u_x+x_min;
-            auto v_y = u_y+y_min;
-            auto v_z = workGrid[x][y];
+            double v_x = u_x+x_min;
+            double v_y = u_y+y_min;
+            double  v_z = workGrid[x][y];
             if(affineMatrix.size() != 0)
             {
                 Eigen::Vector4d point(v_x,v_y,v_z,1);
@@ -1567,15 +1573,15 @@ void extractMesh(lvr2::HalfEdgeMesh<BaseVecT>& mesh,FloatChannel& points, Points
                 v_y = solution.coeff(1);
                 v_z = solution.coeff(2);
                 //Right now, LVR2 doesn't support Large Coordinates and we can't use the Translation fully
-
+                /*
                 if(preventTranslation)
                 {
                     v_x -= affineMatrix(12);
                     v_y -= affineMatrix(13);
                     v_z -= affineMatrix(14);
-                }
+                }*/
             }
-            VertexHandle v = mesh.addVertex(BaseVecT(v_x,v_y,v_z));
+            VertexHandle v = mesh.addVertex(VecD(v_x,v_y,v_z));
             dict.emplace(std::make_tuple(x,y),v);
             ++progress_points;
             counter++;
@@ -1633,7 +1639,7 @@ void extractMesh(lvr2::HalfEdgeMesh<BaseVecT>& mesh,FloatChannel& points, Points
 }
 
 template <typename BaseVecT, typename Data>
-void nearestNeighborNaiv(lvr2::HalfEdgeMesh<BaseVecT>& mesh, FloatChannel& points, PointsetSurfacePtr<BaseVecT>& surface,
+void nearestNeighborNaiv(lvr2::HalfEdgeMesh<VecD>& mesh, FloatChannel& points, PointsetSurfacePtr<Vec>& surface,
 int numNeighbors, Data stepSize, Eigen::MatrixXd& affineMatrix)
 {
     // =======================================================================
@@ -1775,24 +1781,29 @@ int numNeighbors, Data stepSize, Eigen::MatrixXd& affineMatrix)
                 final_z = final_z/trusted_neighbors;
             }
 
+            double d_x = 0;
+            double d_y = 0;
+            double d_z = 0;
+
             if(affineMatrix.size() != 0)
             {
                 Eigen::Vector4d point(u_x,u_y,final_z,1);
 
                 Eigen::Vector4d solution;
                 solution = affineMatrix*point;
-                u_x = solution.coeff(0);
-                u_y = solution.coeff(1);
-                final_z = solution.coeff(2);
+                d_x = solution.coeff(0);
+                d_y = solution.coeff(1);
+                d_z = solution.coeff(2);
                 //Right now, LVR2 doesn't support Large Coordinates and we can't use the Translation fully
+                /*
                 if(preventTranslation)
                 {
                     u_x -= affineMatrix(12);
                     u_y -= affineMatrix(13);
                     final_z -= affineMatrix(14);
-                }
+                }*/
             }
-            VertexHandle v1 = mesh.addVertex(BaseVecT(u_x,u_y,final_z));
+            VertexHandle v1 = mesh.addVertex(VecD(d_x,d_y,d_z)); 
             dict1.emplace(std::make_tuple(x,y),v1);
             ++progress_vert;
         }
@@ -1850,7 +1861,7 @@ int numNeighbors, Data stepSize, Eigen::MatrixXd& affineMatrix)
 }
 
 template <typename BaseVecT, typename Data>
-void movingAverage(lvr2::HalfEdgeMesh<BaseVecT>& mesh, FloatChannel& points, PointsetSurfacePtr<BaseVecT>& surface,
+void movingAverage(lvr2::HalfEdgeMesh<VecD>& mesh, FloatChannel& points, PointsetSurfacePtr<Vec>& surface,
 float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radiusSteps, float stepSize, Eigen::MatrixXd& affineMatrix )
 {
     // =======================================================================
@@ -1967,25 +1978,30 @@ float minRadius, float maxRadius, int minNeighbors, int maxNeighbors, int radius
                 ++progress_vert; 
                 continue;
             }
+
+            double d_x = 0;
+            double d_y = 0;
+            double d_z = 0;
+
             if(affineMatrix.size() != 0)
             {
                 Eigen::Vector4d point(u_x,u_y,final_z,1);
 
                 Eigen::Vector4d solution;
                 solution = affineMatrix*point;
-                u_x = solution.coeff(0);
-                u_y = solution.coeff(1);
-                final_z = solution.coeff(2);
+                d_x = solution.coeff(0);
+                d_y = solution.coeff(1);
+                d_z = solution.coeff(2);
                 //Right now, LVR2 doesn't support Large Coordinates and we can't use the Translation fully
-
+                /*
                 if(preventTranslation)
                 {
                     u_x -= affineMatrix(12);
                     u_y -= affineMatrix(13);
                     final_z -= affineMatrix(14);
-                }
+                }*/
             }
-            VertexHandle v1 = mesh.addVertex(BaseVecT(u_x,u_y,final_z)); 
+            VertexHandle v1 = mesh.addVertex(VecD(d_x,d_y,d_z)); 
             
             dict.emplace(std::make_tuple(x,y),v1);
             
@@ -2126,10 +2142,10 @@ int main(int argc, char* argv[])
     // =======================================================================
     // Compute Affine Transform Matrix from Transformed Reff Points
     // =======================================================================
-    Eigen::MatrixXd affineMatrix;
+    Eigen::MatrixXd affineMatrix, fullAffineMatrix;
     if(refPoints)
     {    
-        affineMatrix = computeAffineGeoRefMatrix(srcPoints,dstPoints);
+        tie(affineMatrix,fullAffineMatrix) = computeAffineGeoRefMatrix(srcPoints,dstPoints);
         //Right now, LVR2 doesn't support Large Coordinates and we can't use the Translation fully
         //In Functions where we use the Matrix we need to exclude the Translation
         std::cout << affineMatrix << std::endl;  
@@ -2150,14 +2166,14 @@ int main(int argc, char* argv[])
     // Load Pointcloud and create Model + Surface
     // =======================================================================
  
-    auto surface = loadPointCloud<VecD>(data);
+    auto surface = loadPointCloud<Vec>(data);
     ModelPtr base_model = ModelFactory::readModel(data);
     PointBufferPtr base_buffer = base_model->m_pointCloud;
 
     // get the pointcloud coordinates from the FloatChannel
     FloatChannel arr =  *(base_buffer->getFloatChannel("points"));   
 
-    PointsetSurfacePtr<VecD> usedSurface = surface;
+    PointsetSurfacePtr<Vec> usedSurface = surface;
     FloatChannel usedArr = arr;
 
     // =======================================================================
@@ -2180,30 +2196,30 @@ int main(int argc, char* argv[])
     // =======================================================================
     if(activate_ground != 0)
     {
-        auto [grid, np] = extractGround<VecD, double>(arr,surface,0.125,21,2,115,2.5,15);
+        auto [grid, np] = extractGround<Vec, float>(arr,surface,0.125,21,2,115,2.5,15);
         PointBufferPtr p;
         p = PointBufferPtr( new PointBuffer );
         p->setPointArray(grid,np);
         usedArr = *(p->getFloatChannel("points")); 
-        usedSurface = rebuildPointCloud<VecD>(p);
+        usedSurface = rebuildPointCloud<Vec>(p);
     }
     
     std::cout << timestamp.getElapsedTime() << " Start" << std::endl;
     if(mode == 0)
     {
         std::cout << "Moving Average" << std::endl;
-        movingAverage<VecD,double>(mesh,usedArr,usedSurface,minRadius,maxRadius,minNeighbors,maxNeighbors,radiusSteps,resolution,affineMatrix);
+        movingAverage<Vec,float>(mesh,usedArr,usedSurface,minRadius,maxRadius,minNeighbors,maxNeighbors,radiusSteps,resolution,affineMatrix);
     }
     else if(mode == 1)
     {
         std::cout << "Nearest Neighbor" << std::endl;
-        nearestNeighborNaiv<VecD,double>(mesh,usedArr,usedSurface,minNeighbors,resolution,affineMatrix);
+        nearestNeighborNaiv<Vec,float>(mesh,usedArr,usedSurface,minNeighbors,resolution,affineMatrix);
     }
     else
     {
         std::cout << "Threshold Method"<< std::endl;
         //extractMesh<VecD,double>(mesh,usedArr,usedSurface,resolution,5,0.4,11,0.5,5,affineMatrix);
-        extractMesh<VecD,double>(mesh,usedArr,usedSurface,resolution,minNeighbors,minRadius,maxNeighbors,maxRadius,radiusSteps,affineMatrix);
+        extractMesh<Vec,float>(mesh,usedArr,usedSurface,resolution,minNeighbors,minRadius,maxNeighbors,maxRadius,radiusSteps,affineMatrix);
     }
     std::cout << timestamp.getElapsedTime() << "End" << std::endl;
     
@@ -2212,7 +2228,7 @@ int main(int argc, char* argv[])
     // =======================================================================
     // creating a cluster map made up of one cluster is necessary to use the finalizer   
     
-    auto faceNormals = calcFaceNormals<VecD>(mesh);
+    //auto faceNormals = calcFaceNormals<Vec>(mesh);
     ClusterBiMap<FaceHandle> clusterBiMap;
     MeshHandleIteratorPtr<FaceHandle> iterator = mesh.facesBegin();
     auto newCluster = clusterBiMap.createCluster();
@@ -2222,13 +2238,13 @@ int main(int argc, char* argv[])
 
         ++iterator;
     }  
-    auto vertexNormals = calcVertexNormals<VecD>(mesh, faceNormals, *usedSurface);
+    //auto vertexNormals = calcVertexNormals<Vec>(mesh, faceNormals, *usedSurface);
     TextureFinalizer<VecD> finalize(clusterBiMap);
-    finalize.setVertexNormals(vertexNormals);
+    //finalize.setVertexNormals(vertexNormals);
 
     // this has to be the normal surface and not the extracted ground
     //TODO: add option for choosin which color scale to use
-    auto matResult = setColor<VecD>(mesh,clusterBiMap,*surface,texelSize,affineMatrix,io);
+    auto matResult = setColor<VecD>(mesh,clusterBiMap,*surface,texelSize,affineMatrix,fullAffineMatrix,io);
     finalize.setMaterializerResult(matResult);    
 
     auto buffer = finalize.apply(mesh);
