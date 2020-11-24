@@ -44,8 +44,10 @@ set(LVR2_SOURCES
     io/Timestamp.cpp
     io/BoctreeIO.cpp
     io/GridIO.cpp
+    io/Polygon.cpp
     io/PointBuffer.cpp
     io/WaveformBuffer.cpp
+    io/Polygon.cpp
     io/ModelFactory.cpp
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp

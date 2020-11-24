@@ -12,22 +12,35 @@
 #include <cstdlib>
 #include <vector>
 
+#include "H5_definitions.hpp"
 #include "H5Utils.hpp"
 
 namespace HighFive {
 
-class DataSet;
-class Group;
-class DataSpace;
-class DataType;
-class Selection;
-
-template <typename Derivate>
-class SliceTraits;
-
 class ElementSet {
   public:
+    ///
+    /// \brief Create a list of points of N-dimension for selection.
+    ///
+    /// \param list List of continuous coordinates (eg.: in 2 dimensions space `ElementSet{1, 2, 3 ,4}` create points
+    /// `(1, 2)` and `(3, 4)`).
+    explicit ElementSet(std::initializer_list<std::size_t> list);
+    ///
+    /// \brief Create a list of points of N-dimension for selection.
+    ///
+    /// \param list List of N-dim points.
+    explicit ElementSet(std::initializer_list<std::vector<std::size_t>> list);
+    ///
+    /// \brief Create a list of points of N-dimension for selection.
+    ///
+    /// \param element_ids List of continuous coordinates (eg.: in 2 dimensions space `ElementSet{1, 2, 3 ,4}` create points
+    /// `(1, 2)` and `(3, 4)`).
     explicit ElementSet(const std::vector<std::size_t>& element_ids);
+    ///
+    /// \brief Create a list of points of N-dimension for selection.
+    ///
+    /// \param element_ids List of N-dim points.
+    explicit ElementSet(const std::vector<std::vector<std::size_t>>& element_ids);
 
   private:
     std::vector<std::size_t> _ids;
@@ -36,13 +49,15 @@ class ElementSet {
     friend class SliceTraits;
 };
 
+
 template <typename Derivate>
 class SliceTraits {
   public:
     ///
-    /// select a region in the current Slice/Dataset of 'count' points at
-    /// 'offset' separated by 'stride'. If strides are not provided they will
+    /// \brief Select a region in the current Slice/Dataset of \p count points at
+    /// \p offset separated by \p stride. If strides are not provided they will
     /// default to 1 in all dimensions.
+    ///
     /// vector offset and count have to be from the same dimension
     ///
     Selection select(const std::vector<size_t>& offset,
@@ -51,20 +66,21 @@ class SliceTraits {
         const;
 
     ///
-    /// select a set of columns in the last dimension of this dataset.
+    /// \brief Select a set of columns in the last dimension of this dataset.
+    ///
     /// The column indices must be smaller than the dimension size.
     ///
     Selection select(const std::vector<size_t>& columns) const;
 
     ///
-    /// select a region in the current Slice/Dataset out of a list of elements
+    /// \brief Select a region in the current Slice/Dataset out of a list of elements.
     ///
     Selection select(const ElementSet& elements) const;
 
     ///
     /// Read the entire dataset into a buffer
     /// An exception is raised is if the numbers of dimension of the buffer and
-    /// of the dataset are different
+    /// of the dataset are different.
     ///
     /// The array type can be a N-pointer or a N-vector. For plain pointers
     /// not dimensionality checking will be performed, it is the user's
@@ -79,8 +95,10 @@ class SliceTraits {
     /// No dimensionality checks will be performed, it is the user's
     /// responsibility to ensure that the right amount of space has been
     /// allocated.
+    /// \param array: A buffer containing enough space for the data
+    /// \param dtype: The type of the data, in case it cannot be automatically guessed
     template <typename T>
-    void read(T* array) const;
+    void read(T* array, const DataType& dtype = DataType()) const;
 
     ///
     /// Write the integrality N-dimension buffer to this dataset
@@ -99,12 +117,13 @@ class SliceTraits {
     /// responsibility to ensure that the buffer holds the right amount of
     /// elements. For n-dimensional matrices the buffer layout follows H5
     /// default conventions.
+    /// \param buffer: A buffer containing the data to be written
+    /// \param dtype: The type of the data, in case it cannot be automatically guessed
     template <typename T>
-    void write(const T* buffer);
+    void write_raw(const T* buffer, const DataType& dtype = DataType());
 
-  private:
-    typedef Derivate derivate_type;
 };
-}
+
+}  // namespace HighFive
 
 #endif // H5SLICE_TRAITS_HPP

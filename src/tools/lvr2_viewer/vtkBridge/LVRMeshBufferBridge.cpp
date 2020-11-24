@@ -46,6 +46,7 @@
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkUnsignedCharArray.h>
 
 #include "lvr2/util/Util.hpp"
 

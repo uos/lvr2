@@ -8,5 +8,5 @@ find_path( NABO_INCLUDE_DIR nabo/nabo.h PATH_SUFFIXES nabo )
 find_library( NABO_LIBRARY NAMES nabo libnabo )
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(NABO DEFAULT_MSG
-                                     NABO_LIBRARY NABO_INCLUDE_DIR)
+find_package_handle_standard_args(Nabo DEFAULT_MSG
+                                     Nabo_LIBRARY Nabo_INCLUDE_DIR)

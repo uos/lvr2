@@ -160,6 +160,9 @@ struct ScanImage
 
     /// OpenCV representation
     cv::Mat                         image;
+
+    /// Timestamp 
+    double                          timestamp;
 };
 
 

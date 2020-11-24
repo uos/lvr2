@@ -766,36 +766,38 @@ ScanImage HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_d
 
         std::string groupName  = "/raw/photos/"  + scan_id_str + "/" + img_id_str;
         
-        HighFive::Group g;
+
         
         try
         {
-            g = getGroup(groupName);
+            HighFive::Group g = getGroup(groupName);
+            unsigned int dummy;
+            doubleArr intrinsics_arr = getArray<double>(groupName, "intrinsics", dummy);
+            doubleArr extrinsics_arr = getArray<double>(groupName, "extrinsics", dummy);
+
+            if(intrinsics_arr)
+            {
+                //ret.camera.setIntrinsics(Intrinsicsd(intrinsics_arr.get()));
+            }
+
+            if(extrinsics_arr)
+            {
+                //ret.camera.setExtrinsics(Extrinsicsd(extrinsics_arr.get()));
+            }
+
+            if(load_image_data)
+            {
+                getImage(g, "image", ret.image);
+            }
         }
+
+
+
         catch(HighFive::Exception& e)
         {
             std::cout << timestamp << "Error getting cam data: "
-                    << e.what() << std::endl;
+                      << e.what() << std::endl;
             throw e;
-        }
-
-        unsigned int dummy;
-        doubleArr intrinsics_arr = getArray<double>(groupName, "intrinsics", dummy);
-        doubleArr extrinsics_arr = getArray<double>(groupName, "extrinsics", dummy);
-        
-        if(intrinsics_arr)
-        {
-            //ret.camera.setIntrinsics(Intrinsicsd(intrinsics_arr.get()));
-        }
-
-        if(extrinsics_arr)
-        {
-            //ret.camera.setExtrinsics(Extrinsicsd(extrinsics_arr.get()));
-        }
-
-        if(load_image_data)
-        {
-            getImage(g, "image", ret.image);
         }
 
     }
@@ -1101,11 +1103,31 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, ScanImage& cam_data )
 
         std::string groupName = "/raw/photos/" + scan_id_str + "/" + photo_id_str;
 
-        HighFive::Group photo_group;
+
 
         try
         {
-            photo_group = getGroup(groupName);
+            HighFive::Group photo_group = getGroup(groupName);
+            // add image to scan_image_group
+            doubleArr intrinsics_arr(new double[9]);
+            //Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.camera.intrinsics();
+
+
+            doubleArr extrinsics_arr(new double[16]);
+            //Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.camera.extrinsics();
+
+            std::vector<size_t> dim_4 = {4,4};
+            std::vector<size_t> dim_3 = {3,3};
+
+            std::vector<hsize_t> chunks;
+            for(auto i: dim_4)
+            {
+                chunks.push_back(i);
+            }
+
+            addArray(photo_group, "intrinsics", dim_4, chunks, intrinsics_arr);
+            addArray(photo_group, "extrinsics", dim_3, chunks, extrinsics_arr);
+            addImage(photo_group, "image", cam_data.image);
         }
         catch(HighFive::Exception& e)
         {
@@ -1113,27 +1135,6 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, ScanImage& cam_data )
                     << e.what() << std::endl;
             throw e;
         }
-        
-        // add image to scan_image_group
-        doubleArr intrinsics_arr(new double[9]);
-        //Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.camera.intrinsics();
-
-
-        doubleArr extrinsics_arr(new double[16]);
-        //Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.camera.extrinsics();
-
-        std::vector<size_t> dim_4 = {4,4};
-        std::vector<size_t> dim_3 = {3,3};
-
-        std::vector<hsize_t> chunks;
-        for(auto i: dim_4)
-        {
-                chunks.push_back(i);
-        }
-
-        addArray(photo_group, "intrinsics", dim_4, chunks, intrinsics_arr);
-        addArray(photo_group, "extrinsics", dim_3, chunks, extrinsics_arr);
-        addImage(photo_group, "image", cam_data.image);
 
     }
 }
@@ -1174,11 +1175,11 @@ std::vector<std::string> HDF5IO::splitGroupNames(const std::string &groupName)
 HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
 {
     std::vector<std::string> groupNames = splitGroupNames(groupName);
-    HighFive::Group cur_grp;
+
 
     try
     {
-        cur_grp = m_hdf5_file->getGroup("/");
+        HighFive::Group cur_grp = m_hdf5_file->getGroup("/");
 
         for (size_t i = 0; i < groupNames.size(); i++)
         {
@@ -1198,6 +1199,7 @@ HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
                     + groupNames[i] + "' doesn't exist and create flag is false");
             }
         }
+        return cur_grp;
     }
     catch(HighFive::Exception& e)
     {
@@ -1208,13 +1210,13 @@ HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
         throw e;
     }
 
-    return cur_grp;
+
 }
 
 HighFive::Group HDF5IO::getGroup(HighFive::Group& g, const std::string &groupName, bool create)
 {
     std::vector<std::string> groupNames = splitGroupNames(groupName);
-    HighFive::Group cur_grp;
+
 
     try
     {
@@ -1224,11 +1226,13 @@ HighFive::Group HDF5IO::getGroup(HighFive::Group& g, const std::string &groupNam
 
             if (g.exist(groupNames[i]))
             {
-                cur_grp = g.getGroup(groupNames[i]);
+                HighFive::Group cur_grp = g.getGroup(groupNames[i]);
+                return cur_grp;
             }
             else if (create)
             {
-                cur_grp = g.createGroup(groupNames[i]);
+                HighFive::Group cur_grp = g.createGroup(groupNames[i]);
+                return cur_grp;
             }
             else
             {
@@ -1248,17 +1252,17 @@ HighFive::Group HDF5IO::getGroup(HighFive::Group& g, const std::string &groupNam
         throw e;
     }
 
-    return cur_grp;
+
 }
 
 bool HDF5IO::exist(const std::string &groupName)
 {
     std::vector<std::string> groupNames = splitGroupNames(groupName);
-    HighFive::Group cur_grp;
+
 
     try
     {
-        cur_grp = m_hdf5_file->getGroup("/");
+        HighFive::Group cur_grp = m_hdf5_file->getGroup("/");
 
         for (size_t i = 0; i < groupNames.size(); i++)
         {

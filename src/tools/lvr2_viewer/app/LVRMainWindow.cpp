@@ -50,6 +50,8 @@
 #include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/descriptions/DirectoryIO.hpp"
 
+#include "lvr2/io/Polygon.hpp"
+
 #include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/util/Util.hpp"
@@ -68,7 +70,7 @@
 
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
 #include "../vtkBridge/LVRChunkedMeshCuller.hpp"
-
+#include "../vtkBridge/LVRPolygonBridge.hpp"
 
 #include <QString>
 
@@ -254,7 +256,13 @@ LVRMainWindow::LVRMainWindow()
     //vtkSmartPointer<vtkAreaPicker> areaPicker = vtkSmartPointer<vtkAreaPicker>::New();
     //qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(areaPicker);
     vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+
+#ifdef LVR2_USE_VTK9
+    qvtkWidget->renderWindow()->GetInteractor()->SetPicker(pointPicker);
+#else
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+#endif
+
 
 
    // Widget to display the coordinate system
@@ -294,7 +302,12 @@ LVRMainWindow::~LVRMainWindow()
 
     if (m_pickingInteractor)
     {
+#ifdef LVR2_USE_VTK9
+        qvtkWidget->renderWindow()->GetInteractor()->SetInteractorStyle(nullptr);
+#else
         qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(nullptr);
+#endif
+
         m_pickingInteractor->Delete();
     }
 
@@ -343,6 +356,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->actionOpenScanProject, SIGNAL(triggered()), this, SLOT(openScanProject()));
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
     QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
+    QObject::connect(this->actionOpen_SoilAssist, SIGNAL(triggered()), this, SLOT(openSoilAssist()));
+
     QObject::connect(this->actionExportScanProject, SIGNAL(triggered()), this, SLOT(exportScanProject()));
     QObject::connect(this->actionOpen_Intermedia_Project, SIGNAL(triggered()), this, SLOT(openIntermediaProject()));
     QObject::connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showTreeContextMenu(const QPoint&)));
@@ -507,7 +522,12 @@ void LVRMainWindow::toggleLabelDock(bool checkBoxState)
 }
 void LVRMainWindow::showBackgroundDialog()
 {
+
+#ifdef LVR2_USE_VTK9
+    LVRBackgroundDialog dialog(qvtkWidget->renderWindow());
+#else
     LVRBackgroundDialog dialog(qvtkWidget->GetRenderWindow());
+#endif
     if(dialog.exec() == QDialog::Accepted)
     {
         if(dialog.renderGradient())
@@ -526,13 +546,29 @@ void LVRMainWindow::showBackgroundDialog()
             m_renderer->GradientBackgroundOff();
             m_renderer->SetBackground(r, g, b);
         }
+#ifdef LVR2_USE_VTK9
+        this->qvtkWidget->renderWindow()->Render();
+#else
         this->qvtkWidget->GetRenderWindow()->Render();
+#endif
+
     }
 }
 
 void LVRMainWindow::setupQVTK()
 {
-#ifndef LVR2_USE_VTK8
+
+#ifdef LVR2_USE_VTK8
+    qvtkWidget = new QVTKOpenGLWidget();
+#elif defined LVR2_USE_VTK9
+    qvtkWidget = new QVTKOpenGLNativeWidget();
+#else
+    qvtkWidget = new QVTKWidget();
+#endif
+verticalLayout->replaceWidget(qvtkWidgetPlaceholder,qvtkWidget);
+// qvtkWidgetPlaceholder = qvtkWidget;
+
+#if (!defined LVR2_USE_VTK8) && (!defined LVR2_USE_VTK9)
     // z buffer fix
     QSurfaceFormat surfaceFormat = qvtkWidget->windowHandle()->format();
     surfaceFormat.setStencilBufferSize(8);
@@ -553,9 +589,16 @@ void LVRMainWindow::setupQVTK()
     m_renderer->SetBackground(0.8, 0.8, 0.9);
     m_renderer->SetBackground2(1.0, 1.0, 1.0);
 
-    vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
+#ifdef LVR2_USE_VTK9
+    vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->renderWindow();
+    m_renderWindowInteractor = this->qvtkWidget->interactor();
 
+#else
+    vtkSmartPointer<vtkRenderWindow> renderWindow = this->qvtkWidget->GetRenderWindow();
     m_renderWindowInteractor = this->qvtkWidget->GetInteractor();
+
+#endif
+
     m_renderWindowInteractor->Initialize();
 
 
@@ -568,12 +611,20 @@ void LVRMainWindow::setupQVTK()
     m_pickingInteractor = LVRPickingInteractor::New();
     m_pickingInteractor->setRenderer(m_renderer);
 
+#ifdef LVR2_USE_VTK9
+    qvtkWidget->renderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+#else
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
+#endif
    // qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_labelInteractor );
 
     //vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
     vtkSmartPointer<vtkAreaPicker> pointPicker = vtkSmartPointer<vtkAreaPicker>::New();
+#ifdef LVR2_USE_VTK9
+    qvtkWidget->renderWindow()->GetInteractor()->SetPicker(pointPicker);
+#else
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+#endif
 
     // Camera and camera interpolator to be used for camera paths
     m_pathCamera = vtkSmartPointer<vtkCameraRepresentation>::New();
@@ -585,7 +636,11 @@ void LVRMainWindow::setupQVTK()
 
 #ifdef LVR2_USE_VTK_GE_7_1
     // Enable EDL per default
+#ifdef LVR2_USE_VTK9
+    qvtkWidget->renderWindow()->SetMultiSamples(0);
+#else
     qvtkWidget->GetRenderWindow()->SetMultiSamples(0);
+#endif
 
     m_basicPasses = vtkRenderStepsPass::New();
     m_edl = vtkEDLShading::New();
@@ -613,7 +668,11 @@ void LVRMainWindow::toogleEDL(bool state)
     {
         glrenderer->SetPass(m_edl);
     }
+#ifdef LVR2_USE_VTK9
+    this->qvtkWidget->renderWindow()->Render();
+#else
     this->qvtkWidget->GetRenderWindow()->Render();
+#endif
 #endif
 }
 
@@ -622,7 +681,11 @@ void LVRMainWindow::updateView()
 {
     m_renderer->ResetCamera();
     m_renderer->ResetCameraClippingRange();
+#ifdef LVR2_USE_VTK9
+    this->qvtkWidget->renderWindow()->Render();
+#else
     this->qvtkWidget->GetRenderWindow()->Render();
+#endif
 
     // Estimate cam speed -> imagine a plausible number
     // of move operations to reach the focal point
@@ -637,7 +700,11 @@ void LVRMainWindow::updateView()
 
 void LVRMainWindow::refreshView()
 {
+#ifdef LVR2_USE_VTK9
+    this->qvtkWidget->renderWindow()->Render();
+#else
     this->qvtkWidget->GetRenderWindow()->Render();
+#endif
 }
 
 void LVRMainWindow::saveCamera()
@@ -664,7 +731,11 @@ void LVRMainWindow::addArrow(LVRVtkArrow* a)
         m_renderer->AddActor(a->getStartActor());
         m_renderer->AddActor(a->getEndActor());
     }
+#ifdef LVR2_USE_VTK9
+    this->qvtkWidget->renderWindow()->Render();
+#else
     this->qvtkWidget->GetRenderWindow()->Render();
+#endif
 }
 
 void LVRMainWindow::removeArrow(LVRVtkArrow* a)
@@ -675,7 +746,11 @@ void LVRMainWindow::removeArrow(LVRVtkArrow* a)
         m_renderer->RemoveActor(a->getStartActor());
         m_renderer->RemoveActor(a->getEndActor());
     }
+#ifdef LVR2_USE_VTK9
+    this->qvtkWidget->renderWindow()->Render();
+#else
     this->qvtkWidget->GetRenderWindow()->Render();
+#endif
 }
 
 void LVRMainWindow::restoreSliders()
@@ -2277,11 +2352,19 @@ void LVRMainWindow::changePicker(bool labeling)
     if(labeling)
     {
         vtkSmartPointer<vtkAreaPicker> AreaPicker = vtkSmartPointer<vtkAreaPicker>::New();
+#ifdef LVR2_USE_VTK9
+        qvtkWidget->renderWindow()->GetInteractor()->SetPicker(AreaPicker);
+#else
         qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(AreaPicker);
+#endif
     } else
     {
         vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
+#ifdef LVR2_USE_VTK9
+        qvtkWidget->renderWindow()->GetInteractor()->SetPicker(pointPicker);
+#else
         qvtkWidget->GetRenderWindow()->GetInteractor()->SetPicker(pointPicker);
+#endif
     }
 }
 
@@ -2344,14 +2427,22 @@ void LVRMainWindow::showTransformationDialog()
         if(item->type() == LVRModelItemType)
         {
             LVRModelItem* item = static_cast<LVRModelItem*>(items.first());
+#ifdef LVR2_USE_VTK9
+            LVRTransformationDialog* dialog = new LVRTransformationDialog(item, qvtkWidget->renderWindow());
+#else
             LVRTransformationDialog* dialog = new LVRTransformationDialog(item, qvtkWidget->GetRenderWindow());
+#endif
         }
         else if(item->type() == LVRPointCloudItemType || item->type() == LVRMeshItemType)
         {
             if(item->parent()->type() == LVRModelItemType)
             {
                 LVRModelItem* l_item = static_cast<LVRModelItem*>(item->parent());
+#ifdef LVR2_USE_VTK9
+                LVRTransformationDialog* dialog = new LVRTransformationDialog(l_item, qvtkWidget->renderWindow());
+#else
                 LVRTransformationDialog* dialog = new LVRTransformationDialog(l_item, qvtkWidget->GetRenderWindow());
+#endif
             }
             else
             {
@@ -2383,12 +2474,20 @@ void LVRMainWindow::estimateNormals()
 
         if(pc_items.size() > 0)
         {
+#ifdef LVR2_USE_VTK9
+            LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_items, parent_items, treeWidget, qvtkWidget->renderWindow());
+#else
             LVREstimateNormalsDialog* dialog = new LVREstimateNormalsDialog(pc_items, parent_items, treeWidget, qvtkWidget->GetRenderWindow());
+#endif
             return;
         }
     }
     m_incompatibilityBox->exec();
+#ifdef LVR2_USE_VTK9
+    qvtkWidget->renderWindow()->Render();
+#else
     qvtkWidget->GetRenderWindow()->Render();
+#endif
 }
 
 void LVRMainWindow::reconstructUsingMarchingCubes()
@@ -2402,7 +2501,11 @@ void LVRMainWindow::reconstructUsingMarchingCubes()
         QTreeWidgetItem* parent_item = pc_item->parent();
         if(pc_item != NULL)
         {
+#ifdef LVR2_USE_VTK9
+            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("MC", pc_item, parent_item, treeWidget, qvtkWidget->renderWindow());
+#else
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("MC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+#endif
             return;
         }
     }
@@ -2420,7 +2523,11 @@ void LVRMainWindow::reconstructUsingPlanarMarchingCubes()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
         {
+#ifdef LVR2_USE_VTK9
+            LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("PMC", pc_item, parent_item, treeWidget, qvtkWidget->renderWindow());
+#else
             LVRReconstructViaMarchingCubesDialog* dialog = new LVRReconstructViaMarchingCubesDialog("PMC", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+#endif
             return;
         }
     }
@@ -2438,7 +2545,11 @@ void LVRMainWindow::reconstructUsingExtendedMarchingCubes()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
         {
+#ifdef LVR2_USE_VTK9
+            LVRReconstructViaExtendedMarchingCubesDialog* dialog = new LVRReconstructViaExtendedMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->renderWindow());
+#else
             LVRReconstructViaExtendedMarchingCubesDialog* dialog = new LVRReconstructViaExtendedMarchingCubesDialog("SF", pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+#endif
             return;
         }
     }
@@ -2456,7 +2567,11 @@ void LVRMainWindow::optimizePlanes()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(mesh_item != NULL)
         {
+#ifdef LVR2_USE_VTK9
+            LVRPlanarOptimizationDialog* dialog = new LVRPlanarOptimizationDialog(mesh_item, parent_item, treeWidget, qvtkWidget->renderWindow());
+#else
             LVRPlanarOptimizationDialog* dialog = new LVRPlanarOptimizationDialog(mesh_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+#endif
             return;
         }
     }
@@ -2474,7 +2589,11 @@ void LVRMainWindow::removeArtifacts()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(mesh_item != NULL)
         {
+#ifdef LVR2_USE_VTK9
+            LVRRemoveArtifactsDialog* dialog = new LVRRemoveArtifactsDialog(mesh_item, parent_item, treeWidget, qvtkWidget->renderWindow());
+#else
             LVRRemoveArtifactsDialog* dialog = new LVRRemoveArtifactsDialog(mesh_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+#endif
             return;
         }
     }
@@ -2492,7 +2611,11 @@ void LVRMainWindow::applyMLSProjection()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
         {
+#ifdef LVR2_USE_VTK9
+            LVRMLSProjectionDialog* dialog = new LVRMLSProjectionDialog(pc_item, parent_item, treeWidget, qvtkWidget->renderWindow());
+#else
             LVRMLSProjectionDialog* dialog = new LVRMLSProjectionDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+#endif
             return;
         }
     }
@@ -2510,7 +2633,11 @@ void LVRMainWindow::removeOutliers()
         LVRModelItem* parent_item = getModelItem(items.first());
         if(pc_item != NULL)
         {
+#ifdef LVR2_USE_VTK9
+            LVRRemoveOutliersDialog* dialog = new LVRRemoveOutliersDialog(pc_item, parent_item, treeWidget, qvtkWidget->renderWindow());
+#else
             LVRRemoveOutliersDialog* dialog = new LVRRemoveOutliersDialog(pc_item, parent_item, treeWidget, qvtkWidget->GetRenderWindow());
+#endif
             return;
         }
     }
@@ -2721,6 +2848,7 @@ void LVRMainWindow::changeSpectralColor()
     {
         item->getPointBufferBridge()->setSpectralChannels(channels, use_channel);
     }
+
     m_renderer->GetRenderWindow()->Render();
 }
 
@@ -3347,10 +3475,28 @@ void LVRMainWindow::polygonButtonToggled(bool checked)
 
 }
 
+void LVRMainWindow::openSoilAssist()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+            tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
+    if(!QFile::exists(fileName))
+    {
+        return;
+    }
+    PolygonPtr poly(new Polygon);
+    poly->load(fileName.toStdString());
+    PolygonBridgePtr polybrdige(new LVRPolygonBridge(poly));
+    m_renderer->AddActor(polybrdige->getPolygonActor());
+
+    highlightBoundingBoxes();
+    restoreSliders();
+    assertToggles();
+    updateView();
+}
+
 void LVRMainWindow::readLWF()
 {
 
-    
     LVRLabeledScanProjectEditMarkItem* projectItem;
     if (!(projectItem = checkForScanProject()))
     {
