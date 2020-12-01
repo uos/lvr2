@@ -70,7 +70,7 @@
 
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
 #include "../vtkBridge/LVRChunkedMeshCuller.hpp"
-#include "../vtkBridge/LVRPolygonBridge.hpp"
+#include "../vtkBridge/LVRSoilAssistBridge.hpp"
 
 #include <QString>
 
@@ -3483,10 +3483,16 @@ void LVRMainWindow::openSoilAssist()
     {
         return;
     }
-    PolygonPtr poly(new Polygon);
-    poly->load(fileName.toStdString());
-    PolygonBridgePtr polybrdige(new LVRPolygonBridge(poly));
-    m_renderer->AddActor(polybrdige->getPolygonActor());
+
+    SoilAssistFieldPtr field(new SoilAssistField);
+    field->fromH5File(fileName.toStdString());
+
+    SoilAssistBridgePtr polybrdige(new LVRSoilAssistBridge(field));
+    for(auto && actor : polybrdige->getPolygonActors())
+    {
+        m_renderer->AddActor(actor);
+
+    }
 
     highlightBoundingBoxes();
     restoreSliders();

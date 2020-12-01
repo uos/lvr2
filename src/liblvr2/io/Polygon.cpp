@@ -39,13 +39,25 @@ Polygon::Polygon()
    
 }
 
-    Polygon::Polygon(floatArr points, size_t n)
+Polygon::Polygon(floatArr points, size_t n)
 {
     // Generate channel object pointer and add it
     // to channel map
     FloatChannelPtr point_data(new FloatChannel(n, 3, points));
     this->addFloatChannel(point_data, "points");
 
+}
+
+Polygon::Polygon(std::vector<std::vector<float> >& points)
+{
+    floatArr arr(new float[points.size()*3]);
+    for(size_t i = 0 ; i < points.size() ; i++)
+    {
+        arr[i*3] = points[i][0];
+        arr[i*3+1] = points[i][1];
+        arr[i*3+2] = points[i][2];
+    }
+    this->setPointArray(arr, points.size());
 }
 
 
@@ -55,6 +67,8 @@ void Polygon::setPointArray(floatArr points, size_t n)
     FloatChannelPtr pts(new FloatChannel(n, 3, points));
     this->addFloatChannel(pts, "points");
 }
+
+
 
 
 void Polygon::load(std::string file)
