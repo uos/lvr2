@@ -1696,8 +1696,8 @@ void LVRMainWindow::loadScanProjectDir()
     DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
 
     DirectoryIO dirIO(dirKernel, hyperlibSchema);
-    ScanProjectPtr scanProject = dirIO.loadScanProject();
-/*    loadScanProject(scanProject);
+/*    ScanProjectPtr scanProject = dirIO.loadScanProject();
+    loadScanProject(scanProject);
 
     std::vector<ScanPositionPtr> positions = scanProject->positions;
     std::vector<ScanPtr> scans = positions[0]->scans;
@@ -1722,12 +1722,12 @@ void LVRMainWindow::loadScanProjectH5()
 
 void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject)
 {
-    /*
-    std::vector<ScanPositionPtr> positions = scanProject->positions;
-    std::vector<ScanPtr> scans = positions[0]->scans;
     std::cout << "test" << std::endl;
-    std::cout << positions.size() << std::endl;
-    */
+    std::vector<ScanPositionPtr> positions = scanProject->positions;
+    /*std::vector<ScanPtr> scans = positions[0]->scans;
+    std::cout << "test" << std::endl;
+    std::cout << positions.size() << std::endl;*/
+    
 }
 
 
