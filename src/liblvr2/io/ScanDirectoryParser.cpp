@@ -119,6 +119,25 @@ PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, con
     return PointBufferPtr(new PointBuffer);
 }
 
+PointBufferPtr ScanDirectoryParser::transform()
+{ 
+    for(auto i : m_scans)
+    {
+        // Apply transformation
+        std::cout << timestamp << "Transforming " << i->m_filename << std::endl;
+        ModelPtr model = ModelFactory::readModel(i->m_filename);
+        transformPointCloud<double>(model, i->m_pose);
+    
+        // Write reduced data
+        std::stringstream name_stream;
+        Path p(i->m_filename);
+        name_stream << p.stem().string() << "_transformed" << ".ply";
+        std::cout << timestamp << "Saving data to " << name_stream.str() << std::endl;
+        ModelFactory::saveModel(model, name_stream.str());
+    }
+    return PointBufferPtr(new PointBuffer);
+}
+
 PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
 {
     ModelPtr out_model(new Model);

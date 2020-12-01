@@ -323,7 +323,7 @@ void LVRLabelDialog::responseLabels(std::vector<uint16_t> labeledPoints)
 
     }
 
-    std::vector<size_t> pointsDimension = {3, points->GetNumberOfPoints()};
+    std::vector<size_t> pointsDimension = {3, static_cast<size_t>(points->GetNumberOfPoints())};
     boost::shared_array<double> sharedPoints(pointsData);
 
     //Unlabeled top item

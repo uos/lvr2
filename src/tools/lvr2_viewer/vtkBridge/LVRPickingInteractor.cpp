@@ -65,6 +65,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkIdFilter.h>
 #include <set>
+#include "../widgets/LVRItemTypes.hpp"
 
 namespace lvr2
 {
@@ -1332,22 +1333,23 @@ void LVRPickingInteractor::correspondenceSearchOff()
 void LVRPickingInteractor::labelingOn()
 {
     vtkRenderWindowInteractor *rwi = this->Interactor;
-    m_textActor->SetInput("Press \"l\" to select Points");
+    m_textActor->SetInput("Labeling Mode");
     m_textActor->VisibilityOn();
-    rwi->Render();
 
     m_labelingMode = true;
-    labelModeChanged(m_pickMode == PickLabel);
-    //m_pickMode = PickLabel;
+    m_pickMode = PickLabel;
+    labelModeChanged(true);
+    rwi->Render();
 
 }
 void LVRPickingInteractor::labelingOff()
 {
-        vtkRenderWindowInteractor *rwi = this->Interactor;
-	m_labelingMode = false;
-        m_pickMode = None;
-	m_textActor->VisibilityOff();
-        rwi->Render();
+    vtkRenderWindowInteractor *rwi = this->Interactor;
+    m_labelingMode = false;
+    m_pickMode = None;
+    m_textActor->VisibilityOff();
+    labelModeChanged(false);
+    rwi->Render();
 }
 void LVRPickingInteractor::handlePicking()
 {
@@ -1633,20 +1635,41 @@ void LVRPickingInteractor::OnKeyDown()
     vtkRenderWindowInteractor *rwi = this->Interactor;
     std::string key = rwi->GetKeySym();
 
-    if(key == "Escape" && m_labelingMode)
+    if (key == "Escape" && m_labelingMode)
     {
-	discardChanges();
+        if (isPolygonToolSelected())
+        {
+            if (!m_modified)
+            {
+                Q_EMIT(polygonSelected());
+            }
+
+            if (selectionPolygonSize() > 0)
+            {
+                resetSelection();
+                return;
+            }
+        }
+        else
+        {
+            if (!m_modified)
+            {
+                Q_EMIT(lassoSelected());
+                return;
+            }
+        }
+        discardChanges();
     }
-    if(key == "Return" && m_labelingMode)
+    if (key == "Return" && m_labelingMode)
     {
-	LVRInteractorStylePolygonPick::OnKeyDown();
-        if (m_pickMode == PickLabel && !lassoToolSelected)
+        LVRInteractorStylePolygonPick::OnKeyDown();
+        /*if (m_pickMode == PickLabel && !lassoToolSelected)
         {
     	    calculateSelection(true);
-        } 
-	saveCurrentLabelSelection();
+        } */
+        saveCurrentLabelSelection();
     }
-    if(key == "x" && m_correspondenceMode)
+    if (key == "x" && m_correspondenceMode)
     {
         m_textActor->SetInput("Pick first correspondence point...");
         m_textActor->VisibilityOn();
@@ -1654,16 +1677,22 @@ void LVRPickingInteractor::OnKeyDown()
         m_pickMode = PickFirst;
     }
 
-    if(key == "y" && m_correspondenceMode)
+    if (key == "y" && m_correspondenceMode)
     {
         m_textActor->SetInput("Pick second correspondence point...");
         m_textActor->VisibilityOn();
         rwi->Render();
         m_pickMode = PickSecond;
     }
-    if(m_labelingMode && key == "l")
+    if (key == "l" || key == "l")
     {
-        labelModeChanged(m_pickMode == PickLabel);
+        Q_EMIT(lassoSelected());
+        //labelModeChanged(m_pickMode == PickLabel);
+    }
+    if (key == "o" || key == "O")
+    {
+        Q_EMIT(polygonSelected());
+        //labelModeChanged(m_pickMode == PickLabel);
     }
 
     if(key == "f")
@@ -1787,6 +1816,15 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
       // Forward events
       LVRInteractorStylePolygonPick::OnLeftButtonUp();
+      if(!(m_labelInstances[m_selectedLabel])->isEditable())
+      {  QMessageBox warning;
+        warning.setText("The Selectled Label is set to not 'EDitable'. No Changes will be commited");
+        warning.setStandardButtons(QMessageBox::Ok);
+        warning.setIcon(QMessageBox::Warning);
+        warning.exec();
+
+          return;
+      }
 
       if (!m_points)
       {
@@ -1831,8 +1869,7 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
       std::vector<vtkVector2i> polygonPoints = this->GetPolygonPoints();
       std::vector<int> selectedPolyPoints;
-      selectedPolyPoints.resize(ids->GetNumberOfTuples());
-
+      selectedPolyPoints.reserve(ids->GetNumberOfTuples());
       for (vtkIdType i = 0; i < ids->GetNumberOfTuples(); i++)
       {
 	auto selectedPoint = m_points->GetPoint(ids->GetValue(i));
@@ -1841,7 +1878,10 @@ void LVRPickingInteractor::calculateSelection(bool select)
 	displayCoord = coordinate->GetComputedViewportValue(this->CurrentRenderer);
 	if (isInside(&polygonPoints, displayCoord[0], displayCoord[1]))
 	{
-		selectedPolyPoints.push_back(ids->GetValue(i));
+	    if(m_labelInstances[m_pointLabels[ids->GetValue(i)]]->isEditable())
+	    {
+	        selectedPolyPoints.push_back(ids->GetValue(i));
+	    }
 	}
       }
 
@@ -1893,11 +1933,8 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
 
       int r, g, b;
-      if(!m_labelColors.empty())
-      {
-        m_labelColors[m_selectedLabel].getRgb(&r, &g, &b);
-        m_selectedActor->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
-      }
+      m_labelInstances[m_selectedLabel]->getColor().getRgb(&r, &g, &b);
+      m_selectedActor->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
       //SelectedActor->GetProperty()->SetPointSize(3);
 
       m_renderer->AddActor(m_selectedActor);
@@ -1908,77 +1945,61 @@ void LVRPickingInteractor::calculateSelection(bool select)
 
 void LVRPickingInteractor::newLabel(QTreeWidgetItem* item)
 {
-    m_labelColors[item->data(3,0).toInt()] =  item->data(3,1).value<QColor>();
-    if(m_labelColors.size() == 1)
+
+    if (item->type() != LVRLabelInstanceItemType)
+    {
+        return;
+    }
+
+    LVRLabelInstanceTreeItem *instanceItem = static_cast<LVRLabelInstanceTreeItem *>(item);
+    int labelId = instanceItem->getId();
+
+    m_labelInstances[labelId] = instanceItem;
+    if(m_labelInstances.size() == 1)
     {
             //first Label set as the choosen label
-            m_selectedLabel = item->data(3,0).toInt();
+            m_selectedLabel = labelId;
     }
-    if(m_labelActors.find(item->data(3,0).toInt()) != m_labelActors.end())
+    if(m_labelActors.find(labelId) != m_labelActors.end())
     {
         //Instance known just change color
         int r,g,b;
-        m_labelColors[item->data(3,0).toInt()].getRgb(&r, &g, &b);
-        m_labelActors[item->data(3,0).toInt()]->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
+        instanceItem->getColor().getRgb(&r, &g, &b);
+        m_labelActors[labelId]->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
         this->GetInteractor()->GetRenderWindow()->Render();
         this->HighlightProp(NULL);
     }
-    /*
-    if (item->data(3,0).toInt() == 0)
-    {
-        //Add Actor for all Unlabeled Points
-        auto unlabeledMapper = vtkSmartPointer<vtkDataSetMapper>::New();
-        auto unlabeledActor = vtkSmartPointer<vtkActor>::New();
-        unlabeledActor->SetMapper(unlabeledMapper);
 
-        //Crete copy of points
-        double point[3];
-        auto selectedVtkPoints = vtkSmartPointer<vtkPoints>::New();
-        for (int i = 0; i < m_selectedPoints.size(); i++)
-        {
-            m_points->vtkDataSet::GetPoint(i, point);
-            selectedVtkPoints->InsertNextPoint(point);
-        }
- 
-        auto selectedVtkPoly = vtkSmartPointer<vtkPolyData>::New();
-        selectedVtkPoly->SetPoints(selectedVtkPoints);
-        auto vertexFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-        vertexFilter->SetInputData(selectedVtkPoly);
-        vertexFilter->Update();
-
-        auto polyData = vtkSmartPointer<vtkPolyData>::New();
-        polyData->ShallowCopy(vertexFilter->GetOutput());
-
-
-#if VTK_MAJOR_VERSION <= 5
-        unlabeledMapper->SetInput(polyData);
-#else
-        unlabeledMapper->SetInputData(polyData);
-#endif
-        unlabeledMapper->ScalarVisibilityOff();   
-
-        unlabeledActor->GetProperty()->SetColor(1,0.0,0.0); //(R,G,B)
-
-        if(m_labelActors.find(0) != m_labelActors.end())
-        {
-            this->CurrentRenderer->RemoveActor(m_labelActors[0]);
-            std::cout << "remove actor bedore" << std::endl;
-        }
-        m_labelActors[0] = unlabeledActor;
-
-        m_renderer->AddActor(unlabeledActor);
-    }*/
 }
 
 void LVRPickingInteractor::saveCurrentLabelSelection()
 {
+
+
+    if (m_pickMode != PickLabel)
+    {
+        if (!lassoToolSelected)
+        {
+            //calculateSelection(true);
+        }
+	    return;
+    }
+    if (!lassoToolSelected)
+    {
+        calculateSelection(true);
+    }
+
     int count = 0;
     std::set<uint16_t> modifiedActors;
+    std::vector<int> labeledIDs;
     for (int i = 0; i < m_selectedPoints.size(); i++)
     {
         //Set Current selection as new selection for the selected label 
         if(m_selectedPoints[i])
         {
+            //get All IDs Labeled
+            labeledIDs.push_back(i);
+
             if(m_pointLabels[i] != m_selectedLabel)
             {
                 //Only update if necessary
@@ -1998,6 +2019,8 @@ void LVRPickingInteractor::saveCurrentLabelSelection()
             }
         }
     }
+    //set vector if the LabelInstance
+    m_labelInstances[m_selectedLabel]->getInstancePtr()->labeledIDs = std::move(labeledIDs);
 
     if(m_labelActors.find(m_selectedLabel) != m_labelActors.end())
     {
@@ -2030,8 +2053,7 @@ void LVRPickingInteractor::discardChanges()
 	    {
 		for (int i = 0; i < m_pointLabels.size(); i++)
 		{
-			m_selectedPoints[i] = (m_pointLabels[i] == m_selectedLabel);
-
+		    m_selectedPoints[i] = (m_pointLabels[i] == m_selectedLabel);
 		}
 	        m_renderer->AddActor(m_labelActors[m_selectedLabel]);
       		this->GetInteractor()->GetRenderWindow()->Render();
@@ -2109,7 +2131,7 @@ void LVRPickingInteractor::setLassoTool(bool lassoToolSelected)
     }
 }
 
-void LVRPickingInteractor::setLabel(int labelId, std::vector<int> pointIds)
+void LVRPickingInteractor::setLabel(int labelId, std::vector<int>& pointIds)
 {
 
     for (int pointId : pointIds)
@@ -2119,6 +2141,14 @@ void LVRPickingInteractor::setLabel(int labelId, std::vector<int> pointIds)
     }
     //UpdateActor
     updateActor(labelId);
+}
+void LVRPickingInteractor::refreshActors()
+{
+    for(const auto& entry: m_labelActors)
+    {
+        updateActor(entry.first);
+    }
+
 }
 
 void LVRPickingInteractor::updateActor(int labelId)
@@ -2131,15 +2161,20 @@ void LVRPickingInteractor::updateActor(int labelId)
     double point[3];
     auto selectedVtkPoints = vtkSmartPointer<vtkPoints>::New();
     int count = 0;
+    std::vector<int> labelsID;
     for (int i = 0; i < m_pointLabels.size(); i++)
     {
         if (labelId == m_pointLabels[i])
         {
+            labelsID.push_back(i);
             count++;
             m_points->vtkDataSet::GetPoint(i, point);
             selectedVtkPoints->InsertNextPoint(point);
         }
     }
+
+    m_labelInstances[labelId]->getInstancePtr()->labeledIDs = std::move(labelsID);
+
     Q_EMIT(pointsLabeled(labelId, count));
 
     auto updatedVtkPoly = vtkSmartPointer<vtkPolyData>::New();
@@ -2160,7 +2195,7 @@ void LVRPickingInteractor::updateActor(int labelId)
     updateMapper->ScalarVisibilityOff();   
 
     int r, g, b;
-    m_labelColors[labelId].getRgb(&r, &g, &b);
+    m_labelInstances[labelId]->getColor().getRgb(&r, &g, &b);
     updatedActor->GetProperty()->SetColor(r/255.0, g/255.0, b/255.0); //(R,G,B)
 
     //Get Visiibility and Discard old Actor after that 
@@ -2180,7 +2215,7 @@ void LVRPickingInteractor::updateActor(int labelId)
 
 void LVRPickingInteractor::labelModeChanged(bool setLabeling)
 {
-
+/*
     //Check if no Labels were created
     if( m_labelColors.empty())
     {
@@ -2189,11 +2224,19 @@ void LVRPickingInteractor::labelModeChanged(bool setLabeling)
         noLabelDialog.setStandardButtons(QMessageBox::Ok);
         noLabelDialog.setIcon(QMessageBox::Warning);
         int returnValue = noLabelDialog.exec();
+        Q_EMIT(labelingStarted(true));
         return;
 
+    }*/
+    //m_pickMode = PickLabel;
+    LVRInteractorStylePolygonPick::toggleSelectionMode();
+    if(setLabeling)
+    {
+        Q_EMIT(labelingStarted(true));
+    } else
+    {
+        Q_EMIT(labelingStarted(false));
     }
-    Q_EMIT(labelingStarted(true));
-    m_pickMode = PickLabel;
 
 }
 
@@ -2230,4 +2273,12 @@ void LVRPickingInteractor::removeLabel(const int& id)
 
 }
 
+/*
+void LVRPickingInteractor::setEditability(uint16_t labelId, bool editable)
+{
+    if (m_labelInstances.find(labelId) != m_labelInstances.end())
+    {
+        m_labelEditability[labelId] = editable;
+    }
+}*/
 } /* namespace lvr2 */

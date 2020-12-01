@@ -38,9 +38,13 @@ namespace lvr2
 {
 
 LVRPoseItem::LVRPoseItem(ModelBridgePtr bridge, QTreeWidgetItem* parent):
+        LVRPoseItem(bridge->getPose())
+{}
+
+LVRPoseItem::LVRPoseItem(Pose pose, QTreeWidgetItem* parent):
         QTreeWidgetItem(parent, LVRPoseItemType)
 {
-    m_pose = bridge->getPose();
+    m_pose = pose;
 
     // Setup
     QIcon icon;
@@ -64,7 +68,6 @@ LVRPoseItem::LVRPoseItem(ModelBridgePtr bridge, QTreeWidgetItem* parent):
 
     setPose(m_pose);
 }
-
 
 void LVRPoseItem::setPose(const Pose& pose)
 {

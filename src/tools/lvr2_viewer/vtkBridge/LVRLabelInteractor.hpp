@@ -29,7 +29,7 @@
 #include <QStringList>
 #include <memory>
 #include <fstream>
-
+#include <ostream>
 // Define interaction style
 //class LVRLabelInteractorStyle : public QObject, public vtkInteractorStyleDrawPolygon
 class LVRLabelInteractorStyle : public QObject, public LVRInteractorStylePolygonPick
