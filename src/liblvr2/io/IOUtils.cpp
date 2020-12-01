@@ -28,6 +28,7 @@
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/WaveformBuffer.hpp"
 #include "lvr2/io/AsciiIO.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
 
@@ -388,7 +389,41 @@ void subsample(PointBufferPtr src, PointBufferPtr dst, const vector<size_t>& ind
 
 PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const std::vector<size_t>& indices)
 {
-    PointBufferPtr buffer(new PointBuffer);
+    WaveformBufferPtr buffer(new WaveformBuffer);
+
+    //check if Buffer contains Waveformdata
+    WaveformBufferPtr wSrc = std::dynamic_pointer_cast<WaveformBuffer>(src);
+    if(wSrc)
+    {
+	//calculate size of new array
+	boost::shared_array<size_t> waveformSizes(new size_t[indices.size()]);
+	auto oldSize = wSrc->getWaveformSize();	
+        for(int i = 0;i < indices.size(); i++) 
+	{
+	    size_t formsize = 0; 
+	    if( 0 == indices[i])
+	    {
+	    	waveformSizes[i] =  oldSize[indices[i]];
+	    } else
+	    {
+		waveformSizes[i] =  waveformSizes[i] + oldSize[indices[i]] - oldSize[indices[i] - 1];	
+	    }
+	}
+	boost::shared_array<uint16_t> newWaveform(new uint16_t[waveformSizes[indices.size()]]);
+	auto oldWaveform = wSrc->getWaveformArray();
+        for(int i = 0; i < indices.size(); i++) 
+	{
+	    if(i == 0)
+	    {
+	       std::memcpy(&newWaveform[0], &oldWaveform[0], waveformSizes[0]);
+	    }
+	    else
+	    {
+	       std::memcpy(&newWaveform[waveformSizes[i - 1]], &oldWaveform[oldSize[indices[i] - 1]], (waveformSizes[i] - waveformSizes[i - 1]));
+	    }
+
+	}
+    }
 
     // Go over all supported channel types and sub-sample
     subsample<char>(src, buffer, indices);

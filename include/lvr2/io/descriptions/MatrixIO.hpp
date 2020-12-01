@@ -4,7 +4,7 @@
 #define LVR2_IO_HDF5_MATRIXIO_HPP
 
 #include <Eigen/Dense>
-
+#include "lvr2/io/descriptions/FeatureBase.hpp"
 namespace lvr2 {
 
 template<typename FeatureBase>

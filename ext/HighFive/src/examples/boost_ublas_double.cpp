@@ -11,6 +11,9 @@
 #undef H5_USE_BOOST
 #define H5_USE_BOOST
 
+// In some versions of Boost (starting with 1.64), you have to include the serialization header before ublas
+#include <boost/serialization/vector.hpp>
+
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <highfive/H5File.hpp>
@@ -33,7 +36,7 @@ int main(void) {
 
         // fill it
         for (std::size_t i = 0; i < size_x; ++i) {
-            mat(i, i) = i;
+            mat(i, i) = static_cast<double>(i);
         }
 
         // Create a new HDF5 file

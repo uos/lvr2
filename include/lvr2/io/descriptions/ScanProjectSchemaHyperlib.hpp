@@ -1,5 +1,5 @@
-#ifndef SCANPROJECTPARSER_HYPERLIB_HPP_
-#define SCANPROJECTPARSER_HYPERLIB_HPP_
+#ifndef SCANPROJETSCHEMA_HYPERLIB_HPP_
+#define SCANPROJETSCHEMA_HYPERLIB_HPP_
 
 #include <string>
 
@@ -14,7 +14,7 @@ namespace lvr2
 class ScanProjectSchemaHyperlib : public DirectorySchema
 {
 public:
-    ScanProjectSchemaHyperlib() {};
+    ScanProjectSchemaHyperlib(std::string& rootDir) : DirectorySchema(rootDir) {};
 
     ~ScanProjectSchemaHyperlib() = default;
 
@@ -22,6 +22,8 @@ public:
     virtual Description position(const size_t &scanPosNo) const;
     virtual Description scan(const size_t &scanPosNo, const size_t &scanNo) const;
     virtual Description scan(const std::string &scanPositionPath, const size_t &scanNo) const;
+    virtual Description waveform(const size_t &scanPosNo, const size_t &scanNo) const;
+    virtual Description waveform(const std::string &scanPositionPath, const size_t &scanNo) const;
 
     virtual Description scanCamera(const size_t &scanPositionNo, const size_t &camNo) const;
     virtual Description scanCamera(const std::string &scanPositionPath, const size_t &camNo) const;
@@ -34,7 +36,7 @@ public:
         const std::string &scanImagePath, const size_t &scanImageNo) const;
 
 private:
-    boost::filesystem::path m_rootPath;
+    //boost::filesystem::path m_rootPath;
 };
 
 } // namespace lvr2

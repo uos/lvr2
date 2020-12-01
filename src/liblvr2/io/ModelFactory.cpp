@@ -38,6 +38,7 @@
 #include "lvr2/io/ObjIO.hpp"
 #include "lvr2/io/LasIO.hpp"
 #include "lvr2/io/HDF5IO.hpp"
+#include "lvr2/io/WaveformIO.hpp"
 #include "lvr2/io/BoctreeIO.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DatIO.hpp"
@@ -102,6 +103,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
     else if (extension ==".h5")
     {
         io = new HDF5IO;
+    }
+    else if (extension ==".lwf")
+    {
+	io = new WaveformIO;
     }
 #ifdef LVR2_USE_PCL
     else if (extension == ".pcd")

@@ -13,6 +13,7 @@
 #include "MatrixIO.hpp"
 #include "ScanIO.hpp"
 #include "ScanPositionIO.hpp"
+#include "LabelIO.hpp"
 
 namespace lvr2
 {
@@ -58,6 +59,8 @@ class ScanProjectIO
     // dependencies
     ScanPositionIO<FeatureBase>* m_scanPositionIO =
         static_cast<ScanPositionIO<FeatureBase>*>(m_featureBase);
+    LabelIO<FeatureBase>* m_labelIO = 
+        static_cast<LabelIO<FeatureBase>*>(m_featureBase);
 
     // static constexpr const char* ID = "ScanProjectIO";
     // static constexpr const char* OBJID = "ScanProject";
@@ -68,7 +71,10 @@ struct FeatureConstruct<ScanProjectIO, FeatureBase>
 {
 
     // DEPS
-    using deps = typename FeatureConstruct<ScanPositionIO, FeatureBase>::type;
+    //
+    using dep1 = typename FeatureConstruct<ScanPositionIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<LabelIO, FeatureBase>::type;
+    using deps = typename dep1::template Merge<dep2>;
 
     // add the feature itself
     using type = typename deps::template add_features<ScanProjectIO>::type;

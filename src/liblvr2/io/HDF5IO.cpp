@@ -32,6 +32,7 @@
 #include <chrono>
 #include <ctime>
 #include <algorithm>
+#include "lvr2/io/LabelBuffer.hpp"
 
 namespace lvr2
 {
@@ -49,7 +50,6 @@ HDF5IO::HDF5IO(const std::string filename, const std::string part_name, int open
     m_part_name(part_name),
     m_mesh_path(meshes_group+"/"+part_name)
 {
-    std::cout << timestamp << " Try to open file \"" << filename << "\"..." << std::endl;
     if(!open(filename, open_flag))
     {
         std::cerr << timestamp << " Could not open file \"" << filename << "\"!" << std::endl;
@@ -69,10 +69,10 @@ HDF5IO::HDF5IO(std::string filename, int open_flag) :
 
 HDF5IO::~HDF5IO()
 {
-    if(m_hdf5_file)
-    {
-        delete m_hdf5_file;
-    }
+    // if(m_hdf5_file)
+    // {
+    //     delete m_hdf5_file;
+    // }
 }
 
 void HDF5IO::setCompress(bool compress)
@@ -139,7 +139,21 @@ ModelPtr HDF5IO::read(std::string filename)
     } else {
         std::cout << timestamp << " PointCloud could not be loaded." << std::endl;
     }
-    
+
+    // read Labels
+    if(readLabel(model_ptr))
+    {
+        std::cout << timestamp << "Labels successfully loaded." << std::endl;
+    } else {
+        std::cout << timestamp << "Lables could not be loaded" << std::endl;
+    }
+     // read Waveform
+    if(readWaveform(model_ptr))
+    {
+        std::cout << timestamp << "Waveform successfully loaded." << std::endl;
+    } else {
+        std::cout << timestamp << "Waveform could not be loaded" << std::endl;
+    }   
     return model_ptr;
 }
 
@@ -229,6 +243,140 @@ bool HDF5IO::readMesh(ModelPtr model_ptr)
     return true;
 }
 
+bool HDF5IO::readLabel(ModelPtr model_ptr)
+{
+    boost::filesystem::path pointcloudRoot= "/pointclouds";
+    if (!exist(pointcloudRoot.string()))
+    {
+        return false;
+    }
+    model_ptr->m_label.reset(new LabelBuffer());
+
+    HighFive::Group pointcloudRootGroup = getGroup(pointcloudRoot.string());
+    size_t num_objects = pointcloudRootGroup.getNumberObjects();
+    for (size_t i = 0; i < num_objects; i++)
+    {
+    	boost::filesystem::path pointcloudPath = boost::filesystem::path(pointcloudRoot / boost::filesystem::path(pointcloudRootGroup.getObjectName(i)));
+	//read Points
+        std::vector<size_t> pointDims;
+	floatArr pointArray = getArray<float>(pointcloudPath.string(), "Points", pointDims);
+	//model_ptr->m_label->addPoints(pointArray);
+	std::cout <<" Dims " <<  pointDims[0] << "x" << pointDims[1]<< std::endl;
+	floatArr outPoints;
+        outPoints = floatArr( new float[ pointDims[0] * pointDims[1] ] );
+        for (int i = 0; i < pointDims[1] ; i++ )
+        {
+             outPoints[3 * i] = pointArray[i];
+             outPoints[(3 * i) + 1] = pointArray[i + pointDims[1]];
+             outPoints[(3 * i) + 2] = pointArray[i + (pointDims[1] * 2)];
+        }
+        PointBufferPtr pc;
+        pc = PointBufferPtr( new PointBuffer );
+    	pc->setPointArray(pointArray, (pointDims[1] -1));
+    	//m_model->m_pointCloud = PointBufferPtr( new PointBuffer);
+//	m_model-
+//	m_model->m_pointCloud.reset();
+	//m_model->m_pointCloud = pc;
+    	//model_ptr->m_pointCloud.reset(new PointBuffer(pointArray, pointDims[1] -1 ));
+    	model_ptr->m_pointCloud.reset(new PointBuffer(outPoints, pointDims[1]));
+
+    	pointcloudPath /= boost::filesystem::path("labels");
+    	if (!exist(pointcloudPath.string()))
+	{
+		return false;
+	}
+
+
+    	HighFive::Group pointcloudGroup = getGroup(pointcloudPath.string());
+        size_t num_pointclouds = pointcloudGroup.getNumberObjects();
+	for (size_t j = 0; j < num_pointclouds; j++)
+	{
+	    boost::filesystem::path labelClassPath = boost::filesystem::path(pointcloudPath / boost::filesystem::path(pointcloudGroup.getObjectName(j)));
+
+	    //Set Label Class
+	    LabelClassPtr label_class = std::make_shared<LabelClass>();
+	    label_class->className = pointcloudGroup.getObjectName(j);
+
+	    model_ptr->m_label->addLabelClass(label_class);
+
+    	    HighFive::Group labelClassGroup = getGroup(labelClassPath.string());
+            size_t num_labelClasses = labelClassGroup.getNumberObjects();
+	    for (size_t k = 0; k < num_labelClasses; k++)
+	    {
+
+        	std::vector<size_t> colorDims;
+        	std::vector<size_t> idsDims;
+        	
+	        boost::filesystem::path labelInstancePath = boost::filesystem::path(labelClassPath / boost::filesystem::path(labelClassGroup.getObjectName(k)));
+		boost::shared_array<int> labelIDArray = getArray<int>(labelInstancePath.string(), "IDs", idsDims);
+		boost::shared_array<int> colorArray = getArray<int>(labelInstancePath.string(), "Color", colorDims);
+
+		auto instance = make_shared<LabelInstance>();
+		instance->instanceName = labelClassGroup.getObjectName(k);
+
+		instance->color.resize(colorDims[0]);
+		instance->labeledIDs.resize(idsDims[0]);
+
+		//DO it better
+		for(int l = 0; l < colorDims[0]; l++)
+		{
+			instance->color[l] = colorArray[l];
+		}
+		//DO it better
+		for(int l = 0; l < idsDims[0]; l++)
+		{
+			instance->labeledIDs[l] = labelIDArray[l];
+		}
+		label_class->instances.push_back(instance);
+	    }
+	}
+    }
+    return true;
+}
+
+bool HDF5IO::readWaveform(ModelPtr model_ptr)
+{
+    const std::string mesh_resource_path = "meshes/" + m_part_name;
+    const std::string vertices("vertices");
+    const std::string indices("indices");
+
+    if(!exist(mesh_resource_path)){
+        return false;
+    } else {
+        auto mesh = getGroup(mesh_resource_path);
+        
+        if(!mesh.exist(vertices) || !mesh.exist(indices)){
+            std::cout << timestamp << " The mesh has to contain \"" << vertices
+                << "\" and \"" << indices << "\"" << std::endl;
+            std::cout << timestamp << " Return empty model pointer!" << std::endl;
+            return false;
+        }
+
+        std::vector<size_t> vertexDims;
+        std::vector<size_t> faceDims;
+
+        // read mesh buffer
+        floatArr vbuffer = getArray<float>(mesh_resource_path, vertices, vertexDims);
+        indexArray ibuffer = getArray<unsigned int>(mesh_resource_path, indices, faceDims);
+
+        if(vertexDims[0] == 0)
+        {
+            return false;
+        }
+        if(!model_ptr->m_mesh)
+        {
+            model_ptr->m_mesh.reset(new MeshBuffer());
+        }
+
+        model_ptr->m_mesh->setVertices(vbuffer, vertexDims[0]);
+
+        model_ptr->m_mesh->setFaceIndices(ibuffer, faceDims[0]);
+    }
+    return true;
+}
+
+
+
 bool HDF5IO::open(std::string filename, int open_flag)
 {
     // If file alredy exists, don't rewrite base structurec++11 init vector
@@ -294,6 +442,12 @@ void HDF5IO::save(ModelPtr model, std::string filename)
     } else {
         std::cout << timestamp << " Mesh could not saved to " << filename << std::endl;
     }
+    if(saveLabel(model))
+    {
+        std::cout << timestamp << " Label succesfully saved to " << filename << std::endl;
+    } else {
+        std::cout << timestamp << " Label could not saved to " << filename << std::endl;
+    }
 }
 
 bool HDF5IO::saveMesh(ModelPtr model_ptr)
@@ -356,7 +510,15 @@ bool HDF5IO::saveMesh(ModelPtr model_ptr)
     return true;
 
 }
-
+bool HDF5IO::saveLabel(ModelPtr model_ptr)
+{
+    if(!model_ptr->m_mesh)
+    {
+        std::cout << timestamp << " Model does not contain a mesh" << std::endl;
+        return false;
+    }
+    
+}
 Texture HDF5IO::getImage(std::string groupName, std::string datasetName)
 {
 
@@ -604,36 +766,38 @@ ScanImage HDF5IO::getSingleRawCamData(int scan_id, int img_id, bool load_image_d
 
         std::string groupName  = "/raw/photos/"  + scan_id_str + "/" + img_id_str;
         
-        HighFive::Group g;
+
         
         try
         {
-            g = getGroup(groupName);
+            HighFive::Group g = getGroup(groupName);
+            unsigned int dummy;
+            doubleArr intrinsics_arr = getArray<double>(groupName, "intrinsics", dummy);
+            doubleArr extrinsics_arr = getArray<double>(groupName, "extrinsics", dummy);
+
+            if(intrinsics_arr)
+            {
+                //ret.camera.setIntrinsics(Intrinsicsd(intrinsics_arr.get()));
+            }
+
+            if(extrinsics_arr)
+            {
+                //ret.camera.setExtrinsics(Extrinsicsd(extrinsics_arr.get()));
+            }
+
+            if(load_image_data)
+            {
+                getImage(g, "image", ret.image);
+            }
         }
+
+
+
         catch(HighFive::Exception& e)
         {
             std::cout << timestamp << "Error getting cam data: "
-                    << e.what() << std::endl;
+                      << e.what() << std::endl;
             throw e;
-        }
-
-        unsigned int dummy;
-        doubleArr intrinsics_arr = getArray<double>(groupName, "intrinsics", dummy);
-        doubleArr extrinsics_arr = getArray<double>(groupName, "extrinsics", dummy);
-        
-        if(intrinsics_arr)
-        {
-            //ret.camera.setIntrinsics(Intrinsicsd(intrinsics_arr.get()));
-        }
-
-        if(extrinsics_arr)
-        {
-            //ret.camera.setExtrinsics(Extrinsicsd(extrinsics_arr.get()));
-        }
-
-        if(load_image_data)
-        {
-            getImage(g, "image", ret.image);
         }
 
     }
@@ -939,11 +1103,31 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, ScanImage& cam_data )
 
         std::string groupName = "/raw/photos/" + scan_id_str + "/" + photo_id_str;
 
-        HighFive::Group photo_group;
+
 
         try
         {
-            photo_group = getGroup(groupName);
+            HighFive::Group photo_group = getGroup(groupName);
+            // add image to scan_image_group
+            doubleArr intrinsics_arr(new double[9]);
+            //Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.camera.intrinsics();
+
+
+            doubleArr extrinsics_arr(new double[16]);
+            //Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.camera.extrinsics();
+
+            std::vector<size_t> dim_4 = {4,4};
+            std::vector<size_t> dim_3 = {3,3};
+
+            std::vector<hsize_t> chunks;
+            for(auto i: dim_4)
+            {
+                chunks.push_back(i);
+            }
+
+            addArray(photo_group, "intrinsics", dim_4, chunks, intrinsics_arr);
+            addArray(photo_group, "extrinsics", dim_3, chunks, extrinsics_arr);
+            addImage(photo_group, "image", cam_data.image);
         }
         catch(HighFive::Exception& e)
         {
@@ -951,27 +1135,6 @@ void HDF5IO::addRawCamData( int scan_id, int img_id, ScanImage& cam_data )
                     << e.what() << std::endl;
             throw e;
         }
-        
-        // add image to scan_image_group
-        doubleArr intrinsics_arr(new double[9]);
-        //Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(intrinsics_arr.get()) = cam_data.camera.intrinsics();
-
-
-        doubleArr extrinsics_arr(new double[16]);
-        //Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::RowMajor>>(extrinsics_arr.get()) = cam_data.camera.extrinsics();
-
-        std::vector<size_t> dim_4 = {4,4};
-        std::vector<size_t> dim_3 = {3,3};
-
-        std::vector<hsize_t> chunks;
-        for(auto i: dim_4)
-        {
-                chunks.push_back(i);
-        }
-
-        addArray(photo_group, "intrinsics", dim_4, chunks, intrinsics_arr);
-        addArray(photo_group, "extrinsics", dim_3, chunks, extrinsics_arr);
-        addImage(photo_group, "image", cam_data.image);
 
     }
 }
@@ -1012,11 +1175,11 @@ std::vector<std::string> HDF5IO::splitGroupNames(const std::string &groupName)
 HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
 {
     std::vector<std::string> groupNames = splitGroupNames(groupName);
-    HighFive::Group cur_grp;
+
 
     try
     {
-        cur_grp = m_hdf5_file->getGroup("/");
+        HighFive::Group cur_grp = m_hdf5_file->getGroup("/");
 
         for (size_t i = 0; i < groupNames.size(); i++)
         {
@@ -1036,6 +1199,7 @@ HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
                     + groupNames[i] + "' doesn't exist and create flag is false");
             }
         }
+        return cur_grp;
     }
     catch(HighFive::Exception& e)
     {
@@ -1046,13 +1210,13 @@ HighFive::Group HDF5IO::getGroup(const std::string &groupName, bool create)
         throw e;
     }
 
-    return cur_grp;
+
 }
 
 HighFive::Group HDF5IO::getGroup(HighFive::Group& g, const std::string &groupName, bool create)
 {
     std::vector<std::string> groupNames = splitGroupNames(groupName);
-    HighFive::Group cur_grp;
+
 
     try
     {
@@ -1062,11 +1226,13 @@ HighFive::Group HDF5IO::getGroup(HighFive::Group& g, const std::string &groupNam
 
             if (g.exist(groupNames[i]))
             {
-                cur_grp = g.getGroup(groupNames[i]);
+                HighFive::Group cur_grp = g.getGroup(groupNames[i]);
+                return cur_grp;
             }
             else if (create)
             {
-                cur_grp = g.createGroup(groupNames[i]);
+                HighFive::Group cur_grp = g.createGroup(groupNames[i]);
+                return cur_grp;
             }
             else
             {
@@ -1086,17 +1252,17 @@ HighFive::Group HDF5IO::getGroup(HighFive::Group& g, const std::string &groupNam
         throw e;
     }
 
-    return cur_grp;
+
 }
 
 bool HDF5IO::exist(const std::string &groupName)
 {
     std::vector<std::string> groupNames = splitGroupNames(groupName);
-    HighFive::Group cur_grp;
+
 
     try
     {
-        cur_grp = m_hdf5_file->getGroup("/");
+        HighFive::Group cur_grp = m_hdf5_file->getGroup("/");
 
         for (size_t i = 0; i < groupNames.size(); i++)
         {

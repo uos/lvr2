@@ -2,6 +2,21 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+20.11.1 (2020-11-11)
+--------------------
+* fix for vtk8 issue
+* add missing include and clean up using std
+* use double for precision and refactor cl sor tool
+* adds sor filter tool based on gpu knn
+* added hdf5features example
+* faster loading. map buffers instead of insert next cells
+* added embree dep to cmake.in
+* merged raycaster and cleanup
+* working OpenCL Raycaster with better structure
+* fix colors in filtering
+* some performance optimizations
+* migrated dmc approach
+
 20.7.1 (2020-07-09)
 -------------------
 * removed cl2.hpp, FeatureProjector.cpp from lib
