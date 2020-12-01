@@ -43,6 +43,10 @@
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 
+
+#include "lvr2/io/descriptions/DirectoryIO.hpp"
+#include "ArrayIO.hpp"
+
 #include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/util/Util.hpp"
@@ -1280,9 +1284,22 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
 
 void LVRMainWindow::loadScanProjectDir()
 {
-    QMessageBox msgBox;
-    msgBox.setText("Hello World Dir");
-    msgBox.exec();
+
+    QString dirPath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
+    //DirectorySchemaPtr slamSchemaPtr(new ScanProjectSchemaSLAM);
+    DirectoryKernelPtr slamDirKernel(new DirectoryKernel(dirPath));
+    DirectoryIO slamIO(slamDirKernel, hyperlibSchema);
+    ScanProjectPtr slamProject = slamIO.loadScanProject();
+    
+    std::vector<ScanPositionPtr> positions = slamProject->positions;
+    std::vector<ScanPtr> scans = positions[0]->scans;
+    std::cout << "test" << std::endl;
+
+
+    std::cout << positions.size() << std::endl;
+
 }
 
 void LVRMainWindow::loadScanProjectH5()
