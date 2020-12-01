@@ -1713,15 +1713,21 @@ void LVRMainWindow::loadScanProjectH5()
     QString filename = QFileDialog::getOpenFileName(this, tr("Open scan project"), "", tr("Scan project (*.h5)"));
     std::string tmp = filename.toStdString();
 
-    HDF5SchemaPtr hdf5Scheme(new ScanProjectSchemaHDF5V2);
-    HDF5KernelPtr h5Kernel(new HDF5Kernel("slam.h5"));
+    HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2);
+    HDF5KernelPtr hdf5Kernel(new HDF5Kernel("slam.h5"));
+    descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
+    ScanProjectPtr scanProject = hdf5IO.loadScanProject();
+    loadScanProject(scanProject);
 }
 
 void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject)
 {
-    QMessageBox msgBox;
-    msgBox.setText("Hello World");
-    msgBox.exec();
+    /*
+    std::vector<ScanPositionPtr> positions = scanProject->positions;
+    std::vector<ScanPtr> scans = positions[0]->scans;
+    std::cout << "test" << std::endl;
+    std::cout << positions.size() << std::endl;
+    */
 }
 
 
