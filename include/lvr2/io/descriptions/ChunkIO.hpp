@@ -1,12 +1,12 @@
 #pragma once
-#ifndef LVR2_IO_HDF5_CHUNKIO_HPP
-#define LVR2_IO_HDF5_CHUNKIO_HPP
+#ifndef LVR2_IO_DESC_CHUNKIO_HPP
+#define LVR2_IO_DESC_CHUNKIO_HPP
 
 #include "ArrayIO.hpp"
 #include "MeshIO.hpp"
 #include "PointCloudIO.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
+#include "lvr2/io/descriptions/FeatureBase.hpp"
 #include "lvr2/io/Model.hpp"
 
 namespace lvr2

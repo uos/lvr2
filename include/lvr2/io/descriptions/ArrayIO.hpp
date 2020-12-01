@@ -1,11 +1,12 @@
-#pragma once
-#ifndef LVR2_IO_HDF5_ARRAYIO_HPP
-#define LVR2_IO_HDF5_ARRAYIO_HPP
 
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
+#ifndef LVR2_DESC_ARRAYIO_HPP
+#define LVR2_DESC_ARRAYIO_HPP
+
+#include "lvr2/io/descriptions/FeatureBase.hpp"
 #include <boost/shared_array.hpp>
 
-namespace lvr2 {
+namespace lvr2 
+{
 
 template<typename FeatureBase>
 class ArrayIO {
