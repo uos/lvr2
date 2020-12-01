@@ -180,6 +180,9 @@ LVRMainWindow::LVRMainWindow()
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
     m_actionOpenChunkedMesh = this->actionOpenChunkedMesh;
+    m_actionOpenScanProject = this->actionOpenScanProject;
+    m_actionOpenScanProjectDir = this->actionOpenScanProjectDir;
+    m_actionOpenScanProjectH5 = this->actionOpenScanProjectH5;
     m_actionExport = this->actionExport;
     m_actionQuit = this->actionQuit;
     // Toolbar item "Views"
@@ -354,6 +357,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(this->actionOpenScanProject, SIGNAL(triggered()), this, SLOT(openScanProject()));
+    QObject::connect(m_actionOpenScanProjectDir, SIGNAL(triggered()), this, SLOT(loadScanProjectDir()));
+    QObject::connect(m_actionOpenScanProjectH5, SIGNAL(triggered()), this, SLOT(loadScanProjectH5()));
+
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
     QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
     QObject::connect(this->actionOpen_SoilAssist, SIGNAL(triggered()), this, SLOT(openSoilAssist()));
@@ -1683,33 +1689,35 @@ void LVRMainWindow::unloadPointCloudData()
 
 void LVRMainWindow::loadScanProjectDir()
 {
-    // Commented out due to different type errors
+    QString dirPath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", 
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    std::string tmp = dirPath.toStdString();
+    DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+    DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
 
-    // QString dirPath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    DirectoryIO dirIO(dirKernel, hyperlibSchema);
+    ScanProjectPtr scanProject = dirIO.loadScanProject();
+/*    loadScanProject(scanProject);
 
-    // DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
-    // //DirectorySchemaPtr slamSchemaPtr(new ScanProjectSchemaSLAM);
-    // DirectoryKernelPtr slamDirKernel(new DirectoryKernel(dirPath));
-    // DirectoryIO slamIO(slamDirKernel, hyperlibSchema);
-    // ScanProjectPtr slamProject = slamIO.loadScanProject();
-    
-    // std::vector<ScanPositionPtr> positions = slamProject->positions;
-    // std::vector<ScanPtr> scans = positions[0]->scans;
-    // std::cout << "test" << std::endl;
+    std::vector<ScanPositionPtr> positions = scanProject->positions;
+    std::vector<ScanPtr> scans = positions[0]->scans;
+    std::cout << "test" << std::endl;
 
 
-    // std::cout << positions.size() << std::endl;
+    std::cout << positions.size() << std::endl;*/
 
 }
 
 void LVRMainWindow::loadScanProjectH5()
 {
-    QMessageBox msgBox;
-    msgBox.setText("Hello World H5");
-    msgBox.exec();
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open scan project"), "", tr("Scan project (*.h5)"));
+    std::string tmp = filename.toStdString();
+
+    HDF5SchemaPtr hdf5Scheme(new ScanProjectSchemaHDF5V2);
+    HDF5KernelPtr h5Kernel(new HDF5Kernel("slam.h5"));
 }
 
-void LVRMainWindow::loadScanProject()
+void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject)
 {
     QMessageBox msgBox;
     msgBox.setText("Hello World");
