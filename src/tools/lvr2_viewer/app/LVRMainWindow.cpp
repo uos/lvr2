@@ -1696,16 +1696,9 @@ void LVRMainWindow::loadScanProjectDir()
     DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
 
     DirectoryIO dirIO(dirKernel, hyperlibSchema);
-/*    ScanProjectPtr scanProject = dirIO.loadScanProject();
+    ScanProjectPtr scanProject = dirIO.loadScanProject();
+
     loadScanProject(scanProject);
-
-    std::vector<ScanPositionPtr> positions = scanProject->positions;
-    std::vector<ScanPtr> scans = positions[0]->scans;
-    std::cout << "test" << std::endl;
-
-
-    std::cout << positions.size() << std::endl;*/
-
 }
 
 void LVRMainWindow::loadScanProjectH5()
@@ -1713,8 +1706,8 @@ void LVRMainWindow::loadScanProjectH5()
     QString filename = QFileDialog::getOpenFileName(this, tr("Open scan project"), "", tr("Scan project (*.h5)"));
     std::string tmp = filename.toStdString();
 
-    HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2);
-    HDF5KernelPtr hdf5Kernel(new HDF5Kernel("slam.h5"));
+    HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
+    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
     descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
     ScanProjectPtr scanProject = hdf5IO.loadScanProject();
     loadScanProject(scanProject);
@@ -1722,8 +1715,23 @@ void LVRMainWindow::loadScanProjectH5()
 
 void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject)
 {
-    std::cout << "test" << std::endl;
     std::vector<ScanPositionPtr> positions = scanProject->positions;
+    std::cout << "Position size: " << positions.size() << std::endl;
+    int positioncnt  = 0;
+    for (ScanPositionPtr& position : positions) 
+    {   
+        std::cout << "Position count: " << positioncnt++ << std::endl;
+        std::vector<ScanPtr> scans = position->scans;
+
+        std::cout << "  Scan size: " << scans.size() << std::endl;
+
+        for (ScanPtr& scan : scans)
+        {
+            std::cout << "  " << scan->scanFile<< std::endl;
+            std::cout << "  " << scan->numPoints << std::endl;
+        }
+    }
+
     /*std::vector<ScanPtr> scans = positions[0]->scans;
     std::cout << "test" << std::endl;
     std::cout << positions.size() << std::endl;*/
