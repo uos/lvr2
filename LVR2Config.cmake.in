@@ -8,6 +8,7 @@
 # - LVR2_INCLUDE_DIRS
 # - LVR2_DEFINITIONS
 # - LVR2_LIBRARIES
+# - LVR2_LIBRARY
 #
 # Do not forget to add_defintions(${LVR2_DEFINITIONS}) as they
 # describe the build configuration of liblvr.
@@ -24,11 +25,15 @@ cmake_policy(SET CMP0012 NEW)
 set(LVR2_INCLUDE_DIRS @LVR2_INSTALL_INCLUDE_DIRS@)
 set(LVR2_DEFINITIONS @LVR2_DEFINITIONS@)
 
+find_package(PkgConfig REQUIRED)
+
 option(LVR2_USE_STATIC_LIBS OFF)
 if(LVR2_USE_STATIC_LIBS)
-  set(LVR2_LIBRARIES lvr2_static)
+  find_library(LVR2_LIBRARY NAMES lvr2_static)
+  set(LVR2_LIBRARIES ${LVR2_LIBRARY})
 else()
-  set(LVR2_LIBRARIES lvr2)
+  find_library(LVR2_LIBRARY NAMES lvr2)
+  set(LVR2_LIBRARIES ${LVR2_LIBRARY})
 endif()
 
 find_package(OpenCV REQUIRED)

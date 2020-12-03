@@ -633,15 +633,15 @@ endif()
 # CMAKE FILES
 ###############################################################################
 
-install(EXPORT lvr2Targets
-    FILE lvr2Targets.cmake
-    NAMESPACE lvr2::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
-
 include(CMakePackageConfigHelpers)
 set(INCLUDE_INSTALL_DIR include/)
 set(LIB_INSTALL_DIR lib/)
 set(SYSCONFIG_INSTALL_DIR etc/lvr2/)
+
+install(EXPORT lvr2Targets
+    FILE lvr2Targets.cmake
+    NAMESPACE lvr2::
+    DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2)
 
 configure_package_config_file(LVR2Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
@@ -669,7 +669,7 @@ install(FILES
     CMakeModules/FindOpenNI2.cmake
     CMakeModules/FindQVTK.cmake
     CMakeModules/FindSTANN.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
+    DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2/Modules)
 
 
 ###############################################################################
