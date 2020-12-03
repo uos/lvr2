@@ -5,6 +5,8 @@
 set(DMC_RECONSTRUCTION_SOURCES
         Main.cpp
         Options.cpp
+		../../../include/lvr2/reconstruction/metrics/DMCMetric.cpp
+		../../../include/lvr2/reconstruction/metrics/DummyMetric.cpp
 		)
 
 #####################################################################################

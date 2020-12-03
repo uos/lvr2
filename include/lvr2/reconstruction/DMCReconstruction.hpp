@@ -44,6 +44,9 @@
 #include "lvr2/io/Progress.hpp"
 #include "DMCVecPointHandle.hpp"
 
+#include "metrics/DMCMetric.hpp"
+#include "metrics/DummyMetric.hpp"
+
 #include "Octree.hpp"
 #include "DualOctree.hpp"
 #include "Location.hh"
@@ -131,7 +134,8 @@ protected:
     void buildTree(
         C_Octree<BaseVecT, BoxT, my_dummy> &parent,
         int levels,
-        bool dual);
+        bool dual,
+        DMCMetric &metric);
 
     /**
      * @brief Traverses the octree and insert for each leaf the getSurface-function into the thread pool.

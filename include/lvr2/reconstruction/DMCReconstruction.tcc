@@ -93,8 +93,17 @@ template<typename BaseVecT, typename BoxT>
 void DMCReconstruction<BaseVecT, BoxT>::buildTree(
         C_Octree<BaseVecT, BoxT, my_dummy> &parent,
         int levels,
-        bool dual)
+        bool dual,
+        DMCMetric &metric)
 {
+
+    // Dummy compilation test
+
+    CellHandle handle1;
+    std::vector<CellHandle> handles;
+    
+    metric.get_distance(handle1, handles);
+
     m_leaves = 0;
     int cells = 1;
     int max_cells = (1 << m_maxLevel);
@@ -687,7 +696,8 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     // start building adaptive octree
     string comment = timestamp.getElapsedTime() + "Creating Octree...";
     cout << comment << endl;
-    buildTree(*octree, m_maxLevel, m_dual);
+    DummyMetric me;
+    buildTree(*octree, m_maxLevel, m_dual, me);
 
     comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
     cout << comment << endl;
