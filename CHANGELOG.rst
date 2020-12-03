@@ -2,8 +2,8 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+20.11.2 (2020-12-03)
+--------------------
 * fix install dirs for lvr2 targets
 
 20.11.1 (2020-11-11)
