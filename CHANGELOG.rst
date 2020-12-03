@@ -2,6 +2,10 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix install dirs for lvr2 targets
+
 20.11.1 (2020-11-11)
 --------------------
 * fix for vtk8 issue
