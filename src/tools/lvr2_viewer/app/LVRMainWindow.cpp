@@ -1689,16 +1689,16 @@ void LVRMainWindow::unloadPointCloudData()
 
 void LVRMainWindow::loadScanProjectDir()
 {
-    QString dirPath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", 
+    QString filename = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", 
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    std::string tmp = dirPath.toStdString();
+    std::string tmp = filename.toStdString();
     DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
     DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
 
     DirectoryIO dirIO(dirKernel, hyperlibSchema);
     ScanProjectPtr scanProject = dirIO.loadScanProject();
 
-    loadScanProject(scanProject);
+    loadScanProject(scanProject, filename);
 }
 
 void LVRMainWindow::loadScanProjectH5()
@@ -1710,32 +1710,23 @@ void LVRMainWindow::loadScanProjectH5()
     HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
     descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
     ScanProjectPtr scanProject = hdf5IO.loadScanProject();
-    loadScanProject(scanProject);
+    loadScanProject(scanProject, filename);
 }
 
-void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject)
+void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename)
 {
     std::vector<ScanPositionPtr> positions = scanProject->positions;
-    std::cout << "Position size: " << positions.size() << std::endl;
-    int positioncnt  = 0;
-    for (ScanPositionPtr& position : positions) 
-    {   
-        std::cout << "Position count: " << positioncnt++ << std::endl;
-        std::vector<ScanPtr> scans = position->scans;
 
-        std::cout << "  Scan size: " << scans.size() << std::endl;
+    ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
+    bridge->addActors(m_renderer);
+    LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+    QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+    root->setText(0, filename);
+    root->addChild(item);
+    item->setExpanded(false);    
 
-        for (ScanPtr& scan : scans)
-        {
-            std::cout << "  " << scan->scanFile<< std::endl;
-            std::cout << "  " << scan->numPoints << std::endl;
-        }
-    }
-
-    /*std::vector<ScanPtr> scans = positions[0]->scans;
-    std::cout << "test" << std::endl;
-    std::cout << positions.size() << std::endl;*/
-    
+    // TODO: Ball wegbekommen
+    // Code verstehen (LVRScanProjectBridge und LVRScanProjectItem)
 }
 
 

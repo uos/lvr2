@@ -160,7 +160,7 @@ public Q_SLOTS:
     void comboBoxIndexChanged(int index);
     void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
-    void loadScanProject(ScanProjectPtr scanProject);
+    void loadScanProject(ScanProjectPtr scanProject, QString filename);
     void loadScanProjectDir();
     void loadScanProjectH5();
     void loadModels(const QStringList& filenames);
