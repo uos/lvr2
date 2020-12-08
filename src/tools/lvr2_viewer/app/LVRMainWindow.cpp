@@ -1715,6 +1715,8 @@ void LVRMainWindow::loadScanProjectH5()
 
 void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename)
 {
+    this->checkBoxShowFocal->setChecked(false);
+
     std::vector<ScanPositionPtr> positions = scanProject->positions;
 
     ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
@@ -1724,7 +1726,7 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
     root->setText(0, filename);
     root->addChild(item);
     item->setExpanded(false);    
-
+    refreshView();
     // TODO: Ball wegbekommen
     // Code verstehen (LVRScanProjectBridge und LVRScanProjectItem)
 }
