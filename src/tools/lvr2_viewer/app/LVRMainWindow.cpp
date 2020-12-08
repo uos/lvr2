@@ -1482,8 +1482,6 @@ void LVRMainWindow::loadChunkedMesh(const QStringList& filenames, std::vector<st
             QFileInfo info((*it));
             QString base = info.fileName();
 
-            std::cout << base.toStdString() << std::endl;
-
             if (info.suffix() == "h5")
             {
 //                std::vector<std::string> layers = {"mesh0", "mesh1"};
@@ -1518,6 +1516,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
             // check for h5
             QFileInfo info((*it));
             QString base = info.fileName();
+
 	    if(info.suffix() == "")
 	    {
                 //read intermediaformat
@@ -1723,7 +1722,11 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
     bridge->addActors(m_renderer);
     LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
     QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
-    root->setText(0, filename);
+
+    QFileInfo info((filename));
+    QString base = info.fileName();
+
+    root->setText(0, base);
     root->addChild(item);
     item->setExpanded(false);    
     refreshView();
