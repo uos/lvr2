@@ -26,39 +26,76 @@
  */
 
 /**
- * LVRItemTypes.hpp
+ * LVRModel.hpp
  *
- *  @date Feb 17, 2014
+ *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#ifndef LVRSCANIMAGEBRIDGE_HPP_
+#define LVRSCANIMAGEBRIDGE_HPP_
+
+#include "lvr2/io/Model.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/types/ScanTypes.hpp"
+
+#include "LVRPointBufferBridge.hpp"
+#include "LVRMeshBufferBridge.hpp"
+
+#include <vtkSmartPointer.h>
+#include <vtkRenderer.h>
+#include <vtkImageData.h>
+
+#include <boost/shared_ptr.hpp>
 
 namespace lvr2
 {
-    enum {
-        LVRModelItemType = 1001,
-        LVRPointCloudItemType,
-        LVRMeshItemType,
-        LVRPoseItemType,
-        LVRPickItemType,
-        LVRLabelItemType,
-        LVRRecordedFrameItemType,
-        LVRScanDataItemType,
-        LVRCamDataItemType,
-        LVRCamerasItemType,
-        LVRBoundingBoxItemType,
-        LVRCvImageItemType,
-        LVRLabelClassType,
-        LVRLabelInstanceType,
-        LVRScanProjectItemType,
-        LVRScanPositionItemType,
-        LVRLabelClassItemType,
-        LVRLabelInstanceItemType,
-        LVRLabeledScanProjectEditMarkItemType,
-        LVRScanImageType,
-        LVRScanCamType
-    };
-} // namespace lvr2
 
-#endif /* LVRITEMTYPES_HPP_ */
+/**
+ * @brief   Main class for conversion of LVR model instances to vtk actors. This class
+ *          parses the internal model structures to vtk representations that can be
+ *          added to a vtkRenderer instance.
+ */
+class LVRScanImageBridge
+{
+public:
+
+    /**
+     * @brief       Constructor. Parses the model information and generates vtk actor
+     *              instances for the given data.
+     */
+    LVRScanImageBridge(ScanImagePtr model);
+
+    LVRScanImageBridge(const LVRScanImageBridge& b);
+
+    /**
+     * @brief       Destructor.
+     */
+    virtual ~LVRScanImageBridge();
+
+    /**
+     * @brief       Adds the generated actors to the given renderer
+     */
+    void         addActors(vtkSmartPointer<vtkRenderer> renderer);
+
+    /**
+     * @brief       Removes the generated actors from the given renderer
+     */
+    void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
+
+
+    void		setVisibility(bool visible);
+
+
+    // Declare scanImage item classes as friends to have fast access to data chunks
+    friend class LVRScanImageItem;
+
+private:
+
+    vtkSmartPointer<vtkImageData> imageData;
+};
+
+typedef boost::shared_ptr<LVRScanImageBridge> ScanImageBridgePtr;
+
+} /* namespace lvr2 */
+
+#endif /* LVRSCANIMAGEBRIDGE_HPP_ */

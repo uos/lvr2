@@ -26,39 +26,51 @@
  */
 
 /**
- * LVRItemTypes.hpp
+ * LVRModel.cpp
  *
- *  @date Feb 17, 2014
+ *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#include "LVRScanImageBridge.hpp"
+
+#include "lvr2/geometry/Matrix4.hpp"
+
+#include <vtkTransform.h>
+#include <vtkActor.h>
+#include <vtkProperty.h>
 
 namespace lvr2
 {
-    enum {
-        LVRModelItemType = 1001,
-        LVRPointCloudItemType,
-        LVRMeshItemType,
-        LVRPoseItemType,
-        LVRPickItemType,
-        LVRLabelItemType,
-        LVRRecordedFrameItemType,
-        LVRScanDataItemType,
-        LVRCamDataItemType,
-        LVRCamerasItemType,
-        LVRBoundingBoxItemType,
-        LVRCvImageItemType,
-        LVRLabelClassType,
-        LVRLabelInstanceType,
-        LVRScanProjectItemType,
-        LVRScanPositionItemType,
-        LVRLabelClassItemType,
-        LVRLabelInstanceItemType,
-        LVRLabeledScanProjectEditMarkItemType,
-        LVRScanImageType,
-        LVRScanCamType
-    };
-} // namespace lvr2
 
-#endif /* LVRITEMTYPES_HPP_ */
+class LVRScanImageBridge;
+
+LVRScanImageBridge::LVRScanImageBridge(ScanImagePtr image)
+{
+    std::cout << "ScanImageBridgeConstructor" << std::endl;
+}
+void LVRScanImageBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
+{
+    //TODO IMPLEMENT ME
+    std::cout << "addActors()" << std::endl;
+}
+
+void LVRScanImageBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
+{
+    //TODO IMPLEMENT ME
+    std::cout << "removeActors()" << std::endl;
+}
+
+
+void LVRScanImageBridge::setVisibility(bool visible){
+    //TODO IMPLEMENT ME
+    std::cout << "setting visibility to " << visible << std::endl;
+}
+
+LVRScanImageBridge::~LVRScanImageBridge()
+{
+    
+}
+
+
+
+} /* namespace lvr2 */

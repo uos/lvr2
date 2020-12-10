@@ -26,39 +26,71 @@
  */
 
 /**
- * LVRItemTypes.hpp
+ * LVRScanCamItem.cpp
  *
- *  @date Feb 17, 2014
+ *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#include "LVRScanCamItem.hpp"
+#include "LVRPointCloudItem.hpp"
+#include "LVRMeshItem.hpp"
+#include "LVRItemTypes.hpp"
+#include "LVRTextureMeshItem.hpp"
+
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
+#include <vtkPolyDataMapper.h>
 
 namespace lvr2
 {
-    enum {
-        LVRModelItemType = 1001,
-        LVRPointCloudItemType,
-        LVRMeshItemType,
-        LVRPoseItemType,
-        LVRPickItemType,
-        LVRLabelItemType,
-        LVRRecordedFrameItemType,
-        LVRScanDataItemType,
-        LVRCamDataItemType,
-        LVRCamerasItemType,
-        LVRBoundingBoxItemType,
-        LVRCvImageItemType,
-        LVRLabelClassType,
-        LVRLabelInstanceType,
-        LVRScanProjectItemType,
-        LVRScanPositionItemType,
-        LVRLabelClassItemType,
-        LVRLabelInstanceItemType,
-        LVRLabeledScanProjectEditMarkItemType,
-        LVRScanImageType,
-        LVRScanCamType
-    };
-} // namespace lvr2
 
-#endif /* LVRITEMTYPES_HPP_ */
+LVRScanCamItem::LVRScanCamItem(ScanCamBridgePtr bridge, QString name) :
+    QTreeWidgetItem(LVRScanCamType), m_scanCamBridge(bridge), m_name(name)
+{
+    // Setup tree widget icon
+    QIcon icon;
+    icon.addFile(QString::fromUtf8(":/qv_model_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
+    setIcon(0, icon);
+
+    // Setup item properties
+    setText(0, m_name);
+    setCheckState(0, Qt::Checked);
+
+}
+
+LVRScanCamItem::LVRScanCamItem(const LVRScanCamItem& item)
+{
+    m_scanCamBridge   = item.m_scanCamBridge;
+    m_name          = item.m_name;
+}
+
+
+QString LVRScanCamItem::getName()
+{
+    return m_name;
+}
+
+void LVRScanCamItem::setName(QString name)
+{
+    m_name = name;
+    setText(0, m_name);
+}
+
+
+bool LVRScanCamItem::isEnabled()
+{
+    return this->checkState(0);
+}
+
+void LVRScanCamItem::setVisibility(bool visible)
+{
+	m_scanCamBridge->setVisibility(visible);
+}
+
+
+LVRScanCamItem::~LVRScanCamItem()
+{
+    // TODO Auto-generated destructor stub
+}
+
+} /* namespace lvr2 */

@@ -26,39 +26,81 @@
  */
 
 /**
- * LVRItemTypes.hpp
+ * LVRScanImageItem.cpp
  *
- *  @date Feb 17, 2014
+ *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#include "LVRScanImageItem.hpp"
+#include "LVRPointCloudItem.hpp"
+#include "LVRMeshItem.hpp"
+#include "LVRItemTypes.hpp"
+#include "LVRTextureMeshItem.hpp"
+
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
+#include <vtkPolyDataMapper.h>
 
 namespace lvr2
 {
-    enum {
-        LVRModelItemType = 1001,
-        LVRPointCloudItemType,
-        LVRMeshItemType,
-        LVRPoseItemType,
-        LVRPickItemType,
-        LVRLabelItemType,
-        LVRRecordedFrameItemType,
-        LVRScanDataItemType,
-        LVRCamDataItemType,
-        LVRCamerasItemType,
-        LVRBoundingBoxItemType,
-        LVRCvImageItemType,
-        LVRLabelClassType,
-        LVRLabelInstanceType,
-        LVRScanProjectItemType,
-        LVRScanPositionItemType,
-        LVRLabelClassItemType,
-        LVRLabelInstanceItemType,
-        LVRLabeledScanProjectEditMarkItemType,
-        LVRScanImageType,
-        LVRScanCamType
-    };
-} // namespace lvr2
 
-#endif /* LVRITEMTYPES_HPP_ */
+LVRScanImageItem::LVRScanImageItem(ScanImageBridgePtr bridge, QString name) :
+    QTreeWidgetItem(LVRScanImageType), m_scanImageBridge(bridge), m_name(name)
+{
+    // Setup tree widget icon
+    QIcon icon;
+    icon.addFile(QString::fromUtf8(":/qv_model_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
+    setIcon(0, icon);
+
+    // Setup item properties
+    setText(0, m_name);
+    setCheckState(0, Qt::Checked);
+}
+
+LVRScanImageItem::LVRScanImageItem(const LVRScanImageItem& item)
+{
+    m_scanImageBridge   = item.m_scanImageBridge;
+    m_name          = item.m_name;
+}
+
+
+QString LVRScanImageItem::getName()
+{
+    return m_name;
+}
+
+void LVRScanImageItem::setName(QString name)
+{
+    m_name = name;
+    setText(0, m_name);
+}
+
+ScanImageBridgePtr LVRScanImageItem::getScanImageBridge()
+{
+	return m_scanImageBridge;
+}
+
+bool LVRScanImageItem::isEnabled()
+{
+    return this->checkState(0);
+}
+
+void LVRScanImageItem::setVisibility(bool visible)
+{
+	m_scanImageBridge->setVisibility(visible);
+}
+
+void LVRScanImageItem::setScanImageVisibility(int column, bool globalValue)
+{
+	if(checkState(column) == globalValue || globalValue == true)
+	{
+	    setVisibility(checkState(column));
+	}
+}
+
+LVRScanImageItem::~LVRScanImageItem()
+{
+    // TODO Auto-generated destructor stub
+}
+
+} /* namespace lvr2 */

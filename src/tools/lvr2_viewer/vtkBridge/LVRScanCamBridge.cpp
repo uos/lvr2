@@ -26,39 +26,57 @@
  */
 
 /**
- * LVRItemTypes.hpp
+ * LVRScanCamBridge.cpp
  *
- *  @date Feb 17, 2014
+ *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#include "LVRScanCamBridge.hpp"
+
+#include "lvr2/geometry/Matrix4.hpp"
+
+#include <vtkTransform.h>
+#include <vtkActor.h>
+#include <vtkProperty.h>
 
 namespace lvr2
 {
-    enum {
-        LVRModelItemType = 1001,
-        LVRPointCloudItemType,
-        LVRMeshItemType,
-        LVRPoseItemType,
-        LVRPickItemType,
-        LVRLabelItemType,
-        LVRRecordedFrameItemType,
-        LVRScanDataItemType,
-        LVRCamDataItemType,
-        LVRCamerasItemType,
-        LVRBoundingBoxItemType,
-        LVRCvImageItemType,
-        LVRLabelClassType,
-        LVRLabelInstanceType,
-        LVRScanProjectItemType,
-        LVRScanPositionItemType,
-        LVRLabelClassItemType,
-        LVRLabelInstanceItemType,
-        LVRLabeledScanProjectEditMarkItemType,
-        LVRScanImageType,
-        LVRScanCamType
-    };
-} // namespace lvr2
 
-#endif /* LVRITEMTYPES_HPP_ */
+class LVRMeshBufferBridge;
+
+LVRScanCamBridge::LVRScanCamBridge(ScanCameraPtr camera)
+{
+    std::cout << "ScanCamBridgeConstructor" << std::endl;
+}
+
+LVRScanCamBridge::LVRScanCamBridge(const LVRScanCamBridge& b)
+{
+
+}
+
+
+void LVRScanCamBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
+{
+    //TODO IMPLEMENT ME
+    std::cout << "ScanCam addActors()" << std::endl;
+}
+
+void LVRScanCamBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
+{
+    //TODO IMPLEMENT ME
+    std::cout << "ScanCam removeActors()" << std::endl;
+}
+
+void LVRScanCamBridge::setVisibility(bool visible)
+{
+    //TODO IMPLEMENT ME
+    std::cout << "ScanCam setVisibility()" << std::endl;
+}
+
+
+LVRScanCamBridge::~LVRScanCamBridge()
+{
+    // TODO Auto-generated destructor stub
+}
+
+} /* namespace lvr2 */
