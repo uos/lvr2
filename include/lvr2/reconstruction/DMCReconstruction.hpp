@@ -46,6 +46,7 @@
 
 #include "metrics/DMCMetric.hpp"
 #include "metrics/DummyMetric.hpp"
+#include "metrics/MSRMetric.hpp"
 
 #include "Octree.hpp"
 #include "DualOctree.hpp"

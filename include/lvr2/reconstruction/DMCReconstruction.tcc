@@ -104,6 +104,10 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
     
     metric.get_distance(handle1, handles);
 
+    // metric compilation test
+    MSRMetric<BaseVecT, BoxT> metr;
+
+
     m_leaves = 0;
     int cells = 1;
     int max_cells = (1 << m_maxLevel);
@@ -257,6 +261,11 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
                         // this is not necessarily a dual leaf
                         DualLeaf<BaseVecT, BoxT> *leaf = new DualLeaf<BaseVecT, BoxT>(corners);
 
+
+
+
+                        
+
                         // calculate distances
                         float distances[8];
                         BaseVecT vertex_positions[12];
@@ -269,170 +278,33 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
                             std::tie(projectedDistance, euklideanDistance) = this->m_surface->distance(corners[i]);
                             distances[i] = projectedDistance;
                         }
-                        leaf->getIntersections(corners, distances, vertex_positions);
 
-                        /*for(int z = 0; z < 8; z++)
-                        {
-                            std::cout << distances[z] << std::endl;
-                        }
-                        std::cout << "-------" << std::endl;*/
+                        
+                
 
-                        // check for valid length of the distances
-                        bool distancesValid = true;
-                        bool d_all_null = false;
+                        bool pointsFittingWell = true;
+                        int index = leaf->getIndex(distances);
 
-                        // calculate max tolerated distance
-                        float length = 0;
-                        if(!dual)
+
+                        double current_error = metr.get_distance(this->m_surface, points, corners, leaf, dual);
+
+                        std::cout << current_error << std::endl;
+
+                        // split descision happens here
+                        // compare value of the metric to max error of dmc reconstruction instance
+                        if(current_error > m_maxError)
                         {
-                            length = corners[1][0] - corners[0][0];
-                            length *= 1.7;
-                        }
-                        else
-                        {
-                            for(uint s = 0; s < 12; s++)
-                            {
-                                BaseVecT vec_tmp = corners[edgeDistanceTable[s][0]] - corners[edgeDistanceTable[s][1]];
-                                float float_tmp = sqrt(vec_tmp[0] * vec_tmp[0] + vec_tmp[1] * vec_tmp[1] + vec_tmp[2] * vec_tmp[2]);
-                                if(float_tmp > length)
-                                {
-                                    length = float_tmp;
-                                }
-                            }
-                            // length *= 1.7;
+                            splitting_pos.push_back(idx);
+                            pointsFittingWell = false;
                         }
 
-                        for(unsigned char a = 0; a < 8; a++)
+
+                        if(MCTable[index][0] == -1 || !pointsFittingWell)
+                        // if((!dual && MCTable[index][0] == -1) || cur_Level >= levels - 2 || !pointsFittingWell)
                         {
-                            if(abs(distances[a]) > length)
-                            {
-                                distancesValid = false;
-                                /*if(dual && cur_Level < levels - 2)
-                                {
-                                    markToSplit = false;
-                                }*/
-                            }
-                            else if(distances[a] > 0)
-                            {
-                                d_all_null = false;
-                            }
+                            markToSplit = true;
                         }
-                        if(distancesValid)
-                        {
-                            bool pointsFittingWell = true;
-
-                            vector< vector<BaseVecT> > triangles;
-                            int index = leaf->getIndex(distances);
-                            /*if(index == 0 || index == 255)
-                            {
-                                for(int a = 0; a < 8; a++)
-                                {
-                                    std::cout << corners[a][0] << "; " << corners[a][1] << "; " << corners[a][2] << std::endl;
-                                }
-                                std::cout << "++++++++++++" << std::endl;
-                                for(unsigned char a = 0; a < 8; a++)
-                                {
-                                    std::cout << distances[a] << std::endl;
-                                }
-                                std::cout << "------------" << std::endl;
-                            }*/
-                            if(!d_all_null)
-                            {
-                                uint edge_index = 0;
-
-                                for(unsigned char a = 0; MCTable[index][a] != -1; a+= 3)
-                                {
-                                    vector<BaseVecT> triangle_vertices;
-                                    for(unsigned char b = 0; b < 3; b++)
-                                    {
-                                        edge_index = MCTable[index][a + b];
-                                        triangle_vertices.push_back(vertex_positions[edge_index]);
-                                    }
-                                    triangles.push_back(triangle_vertices);
-                                }
-
-                                // check, whether the points are fitting well
-                                vector<float*> matrices = vector<float*>();
-
-                                // calculate rotation matrix of every triangle
-                                for ( uint a = 0; a < triangles.size(); a++ )
-                                {
-                                    float matrix[9] = { 0 };
-                                    BaseVecT v1 = triangles[a][0];
-                                    BaseVecT v2 = triangles[a][1];
-                                    BaseVecT v3 = triangles[a][2];
-                                    getRotationMatrix(matrix, v1, v2, v3);
-
-                                    matrices.push_back(matrix);
-                                }
-
-                                vector<float> error(triangles.size(), 0);
-                                vector<int> counter(triangles.size(), 0);
-
-                                // for every point check to which trinagle it is the nearest
-                                if(triangles.size() > 0)
-                                {
-                                    for ( uint a = 0; a < points.size(); a++ )
-                                    {
-                                        signed char min_dist_pos = -1;
-                                        float min_dist = -1;
-
-                                        // check which triangle is nearest
-                                        for ( uint b = 0; b < triangles.size(); b++ )
-                                        {
-                                            BaseVecT tmp = {(*points[a])[0] - (triangles[b][0])[0],
-                                                            (*points[a])[1] - (triangles[b][0])[1],
-                                                            (*points[a])[2] - (triangles[b][0])[2]};
-
-                                            // use rotation matrix for triangle and point
-                                            BaseVecT t1 = triangles[b][0] - triangles[b][0];
-                                            BaseVecT t2 = triangles[b][1] - triangles[b][0];
-                                            BaseVecT t3 = triangles[b][2] - triangles[b][0];
-                                            matrixDotVector(matrices[b], &t1);
-                                            matrixDotVector(matrices[b], &t2);
-                                            matrixDotVector(matrices[b], &t3);
-                                            matrixDotVector(matrices[b], &tmp);
-
-                                            // calculate distance from point to triangle
-                                            float d = getDistance(tmp, t1, t2, t3);
-
-                                            if( min_dist == -1 )
-                                            {
-                                                min_dist = d;
-                                                min_dist_pos = b;
-                                            }
-                                            else if( d < min_dist )
-                                            {
-                                                min_dist = d;
-                                                min_dist_pos = b;
-                                            }
-                                        }
-
-                                        error[min_dist_pos] += (min_dist * min_dist);
-                                        counter[min_dist_pos] += 1;
-                                    }
-
-                                    uint a = 0;
-                                    while(a < error.size() && pointsFittingWell)
-                                    {
-                                        error[a] /= counter[a];
-                                        error[a] = sqrt(error[a]);
-
-                                        if(error[a] > m_maxError)
-                                        {
-                                            splitting_pos.push_back(idx);
-                                            pointsFittingWell = false;
-                                        }
-                                        a++;
-                                    }
-                                }
-                            }
-                            if(MCTable[index][0] == -1 || !pointsFittingWell)
-                            // if((!dual && MCTable[index][0] == -1) || cur_Level >= levels - 2 || !pointsFittingWell)
-                            {
-                                markToSplit = true;
-                            }
-                        }
+         
                         delete(leaf);
                     }
                     idx++;
