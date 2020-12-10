@@ -29,6 +29,8 @@ LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString n
         addChild(modelItem);
     }
     
+    std::cout << "Cams.size() is " << bridge->getScanPosition()->cams.size() << std::endl;
+
     LVRPoseItem* posItem = new LVRPoseItem(bridge->getPose());
     addChild(posItem);
 

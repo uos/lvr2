@@ -144,18 +144,18 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     do
     {
         // Get description for next scan
-        Description camDescr = m_featureBase->m_description->scanCamera(scanPosNo, scanNo);
+        Description camDescr = m_featureBase->m_description->scanCamera(scanPosNo, camNo);
 
         std::string groupName;
         std::string dataSetName;
         std::tie(groupName, dataSetName) = getNames("", "", camDescr);
 
         // Check if file exists. If not, exit.
-        if(m_featureBase->m_kernel->exists(groupName, dataSetName))
+        if(m_featureBase->m_kernel->exists(groupName))
         {
             std::cout << timestamp << "ScanPositionIO: Loading camera " 
                       << groupName << "/" << dataSetName << std::endl;
-            ScanCameraPtr cam = m_scanCameraIO->loadScanCamera(scanPosNo, scanNo);
+            ScanCameraPtr cam = m_scanCameraIO->loadScanCamera(scanPosNo, camNo);
             ret->cams.push_back(cam);
         }
         else
