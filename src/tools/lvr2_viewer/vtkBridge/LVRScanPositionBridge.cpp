@@ -1,5 +1,6 @@
 #include "LVRScanPositionBridge.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
 
 namespace lvr2
 {
@@ -11,7 +12,12 @@ LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) : m_scanp
     for(auto scan : position->scans)
     {
         ModelPtr model(new Model);
-        model->m_pointCloud = scan->points;
+
+        std::cout << "Unreduced Points: " << scan->points->numPoints() << std::endl;
+        PointBufferPtr buffer = scan->points;
+        OctreeReduction oct(buffer, 0.1, 5);
+        model->m_pointCloud = oct.getReducedPoints();
+
         ModelBridgePtr modelBridge(new LVRModelBridge(model));
         models.push_back(modelBridge);
     }        
