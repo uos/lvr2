@@ -28,8 +28,8 @@
 /**
  * LVRModel.cpp
  *
- *  @date Feb 6, 2014
- *  @author Thomas Wiemann
+ *  @date Dec 10, 2020
+ *  @author Arthur Schreiber
  */
 #include "LVRScanImageBridge.hpp"
 
@@ -44,26 +44,53 @@ namespace lvr2
 
 class LVRScanImageBridge;
 
-LVRScanImageBridge::LVRScanImageBridge(ScanImagePtr image)
+LVRScanImageBridge::LVRScanImageBridge(ScanImagePtr img)
 {
-    std::cout << "ScanImageBridgeConstructor" << std::endl;
+    image = img;
 }
 void LVRScanImageBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
 {
-    //TODO IMPLEMENT ME
-    std::cout << "addActors()" << std::endl;
+    renderer->AddActor(imageActor);
 }
 
 void LVRScanImageBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
 {
-    //TODO IMPLEMENT ME
-    std::cout << "removeActors()" << std::endl;
+    renderer->RemoveActor(imageActor);
+    imageActor = nullptr;
+    imageData = nullptr;
 }
 
+void LVRScanImageBridge::setImage(const cv::Mat& img)
+{
+    imageData = vtkSmartPointer<vtkImageData>::New();
+    int numOfChannels = img.channels();
+     // dimension set to 1 for z since it's 2D
+    imageData->SetDimensions(img.cols, img.rows, 1);
+    // NOTE: if your image isn't uchar for some reason you'll need to change this type
+    imageData->AllocateScalars(VTK_UNSIGNED_CHAR, numOfChannels);
+    // the flipped image data gets put into tempCVImage
+    cv::Mat tempCVImage;
+    cv::flip(img, tempCVImage, 0);
+
+    // the number of byes in the cv::Mat, assuming the data type is uchar
+    size_t byte_count = img.cols * img.rows * numOfChannels * sizeof(unsigned char);
+
+    // copy the internal cv::Mat data into the vtkImageData pointer
+    memcpy(imageData->GetScalarPointer(), tempCVImage.data, byte_count);
+
+    imageData->Modified();
+
+    imageActor = vtkSmartPointer<vtkImageActor>::New();
+
+    imageActor->GetMapper()->SetInputData(imageData);
+                
+    std::cout << "Loading Image succeeded!" << std::endl;
+}
 
 void LVRScanImageBridge::setVisibility(bool visible){
     //TODO IMPLEMENT ME
-    std::cout << "setting visibility to " << visible << std::endl;
+    
+    std::cout << "setting visibility to " << visible << image->imageFile.string() <<std::endl;
 }
 
 LVRScanImageBridge::~LVRScanImageBridge()

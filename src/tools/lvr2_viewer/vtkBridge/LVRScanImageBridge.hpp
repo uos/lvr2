@@ -44,6 +44,8 @@
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 #include <vtkImageData.h>
+#include <vtkImageActor.h>
+#include <vtkImageMapper3D.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -63,7 +65,7 @@ public:
      * @brief       Constructor. Parses the model information and generates vtk actor
      *              instances for the given data.
      */
-    LVRScanImageBridge(ScanImagePtr model);
+    LVRScanImageBridge(ScanImagePtr img);
 
     LVRScanImageBridge(const LVRScanImageBridge& b);
 
@@ -83,6 +85,8 @@ public:
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
 
+    void        setImage(const cv::Mat& img);
+
     void		setVisibility(bool visible);
 
 
@@ -91,7 +95,9 @@ public:
 
 private:
 
+    ScanImagePtr image;
     vtkSmartPointer<vtkImageData> imageData;
+    vtkSmartPointer<vtkImageActor> imageActor;
 };
 
 typedef boost::shared_ptr<LVRScanImageBridge> ScanImageBridgePtr;

@@ -45,6 +45,7 @@ ScanImagePtr ScanImageIO<FeatureBase>::loadScanImage(
                   << groupName << "/" << scanImageName << "." << std::endl;
     }
 
+    ret->imageFile = scanImageName;
     //TODO load data
     return ret;
 }

@@ -28,8 +28,8 @@
 /**
  * LVRScanCamBridge.hpp
  *
- *  @date Feb 6, 2014
- *  @author Thomas Wiemann
+ *  @date Dec 10, 2020
+ *  @author Arthur Schreiber
  */
 #ifndef LVRSCANCAMBRIDGE_HPP_
 #define LVRSCANCAMBRIDGE_HPP_
@@ -90,7 +90,7 @@ public:
     friend class LVRScanCamItem;
 
 private:
-
+    ScanCameraPtr cam;
 };
 
 typedef boost::shared_ptr<LVRScanCamBridge> ScanCamBridgePtr;

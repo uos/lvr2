@@ -51,7 +51,7 @@ public:
     LVRScanImageItem(const LVRScanImageItem& item);
     virtual ~LVRScanImageItem();
 
-
+    void                setImage(const cv::Mat& img);
     QString             getName();
     void                setName(QString name);
     bool                isEnabled();

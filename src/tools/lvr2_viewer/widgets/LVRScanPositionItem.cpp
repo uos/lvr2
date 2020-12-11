@@ -45,6 +45,9 @@ LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString n
 
     // Setup item properties
     setText(0, name);
+    int nr = name.toInt();
+    setData(0, Qt::UserRole, nr);
+    
     setCheckState(0, Qt::Checked);
 }
 

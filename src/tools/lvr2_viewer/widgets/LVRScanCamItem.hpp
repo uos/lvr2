@@ -35,6 +35,7 @@
 #define LVRSCANCAMITEM_H_
 
 #include "../vtkBridge/LVRScanCamBridge.hpp"
+#include "../vtkBridge/LVRScanImageBridge.hpp"
 #include "LVRPoseItem.hpp"
 
 #include <QString>

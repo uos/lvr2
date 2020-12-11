@@ -28,24 +28,27 @@
 /**
  * LVRScanCamItem.cpp
  *
- *  @date Feb 6, 2014
- *  @author Thomas Wiemann
+ *  @date Dec 10, 2020
+ *  @author Arthur Schreiber
  */
 #include "LVRScanCamItem.hpp"
 #include "LVRPointCloudItem.hpp"
 #include "LVRMeshItem.hpp"
 #include "LVRItemTypes.hpp"
 #include "LVRTextureMeshItem.hpp"
+#include "LVRScanImageItem.hpp"
+
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 #include <vtkPolyDataMapper.h>
+#include <QTextStream>
 
 namespace lvr2
 {
 
 LVRScanCamItem::LVRScanCamItem(ScanCamBridgePtr bridge, QString name) :
-    QTreeWidgetItem(LVRScanCamType), m_scanCamBridge(bridge), m_name(name)
+    QTreeWidgetItem(LVRScanCamItemType), m_scanCamBridge(bridge), m_name(name)
 {
     // Setup tree widget icon
     QIcon icon;
@@ -54,7 +57,19 @@ LVRScanCamItem::LVRScanCamItem(ScanCamBridgePtr bridge, QString name) :
 
     // Setup item properties
     setText(0, m_name);
+
+    int camNo = name.right(name.size() - name.lastIndexOf('_') - 1).toInt();
+    setData(0, Qt::UserRole, camNo);
+
     setCheckState(0, Qt::Checked);
+
+    for(int i = 0; i < m_scanCamBridge->cam->images.size(); i++)
+    {
+        ScanImageBridgePtr imgBridge(new LVRScanImageBridge(m_scanCamBridge->cam->images[i]));
+        QString imgName = QString::fromStdString(m_scanCamBridge->cam->images[i]->imageFile.string());
+        LVRScanImageItem* imgItem = new LVRScanImageItem(imgBridge, imgName);
+        addChild(imgItem);
+    }
 
 }
 

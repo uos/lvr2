@@ -44,10 +44,8 @@ ScanCameraPtr ScanCameraIO<FeatureBase>::loadScanCamera(
     {
         Description scanImageDescr = m_featureBase->m_description->scanImage(scanPosNo, 0, scanCamNo, scanImageNo);
         std::tie(groupName, dataSetName) = getNames("", "", scanImageDescr);
-        std::cout << groupName << "/" << dataSetName << std::endl;
         if(m_featureBase->m_kernel->exists(groupName, dataSetName))
         {
-            std::cout << "Found image " << dataSetName << std::endl;
             ScanImagePtr scanImage = m_scanImageIO->loadScanImage(scanPosNo, scanCamNo, scanImageNo);
             ret->images.push_back(scanImage);
         }

@@ -28,8 +28,8 @@
 /**
  * LVRScanCamBridge.cpp
  *
- *  @date Feb 6, 2014
- *  @author Thomas Wiemann
+ *  @date Dec 10, 2020
+ *  @author Arthur Schreiber
  */
 #include "LVRScanCamBridge.hpp"
 
@@ -46,7 +46,7 @@ class LVRMeshBufferBridge;
 
 LVRScanCamBridge::LVRScanCamBridge(ScanCameraPtr camera)
 {
-    std::cout << "ScanCamBridgeConstructor" << std::endl;
+    cam = camera;
 }
 
 LVRScanCamBridge::LVRScanCamBridge(const LVRScanCamBridge& b)

@@ -28,8 +28,8 @@
 /**
  * LVRScanImageItem.cpp
  *
- *  @date Feb 6, 2014
- *  @author Thomas Wiemann
+ *  @date Dec 10, 2020
+ *  @author Arthur Schreiber
  */
 #include "LVRScanImageItem.hpp"
 #include "LVRPointCloudItem.hpp"
@@ -45,7 +45,7 @@ namespace lvr2
 {
 
 LVRScanImageItem::LVRScanImageItem(ScanImageBridgePtr bridge, QString name) :
-    QTreeWidgetItem(LVRScanImageType), m_scanImageBridge(bridge), m_name(name)
+    QTreeWidgetItem(LVRScanImageItemType), m_scanImageBridge(bridge), m_name(name)
 {
     // Setup tree widget icon
     QIcon icon;
@@ -54,7 +54,9 @@ LVRScanImageItem::LVRScanImageItem(ScanImageBridgePtr bridge, QString name) :
 
     // Setup item properties
     setText(0, m_name);
-    setCheckState(0, Qt::Checked);
+    int imgNr = name.left(8).toInt();
+    setData(0, Qt::UserRole, imgNr);
+    setCheckState(0, Qt::Unchecked);
 }
 
 LVRScanImageItem::LVRScanImageItem(const LVRScanImageItem& item)
@@ -83,6 +85,11 @@ ScanImageBridgePtr LVRScanImageItem::getScanImageBridge()
 bool LVRScanImageItem::isEnabled()
 {
     return this->checkState(0);
+}
+
+void LVRScanImageItem::setImage(const cv::Mat& img)
+{
+    m_scanImageBridge->setImage(img);
 }
 
 void LVRScanImageItem::setVisibility(bool visible)
