@@ -2177,7 +2177,11 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
                 img = *dirKernel->loadImage(*d.groupName, *d.dataSetName);
             }
 
-            cv::cvtColor(img, img, CV_BGR2RGB);
+            #if (CV_VERSION_MAJOR >= 4)
+                cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+            #else
+                cv::cvtColor(img, img, CV_BGR2RGB);
+            #endif
             //std::cout << filename.toStdString() << std::endl;
             LVRScanImageItem *item = static_cast<LVRScanImageItem*>(treeWidgetItem);
             //item->setVisibility(item->checkState(0));
