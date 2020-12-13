@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, University Osnabrück
+ * Copyright (c) 2020, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,18 +33,24 @@
  */
 
 
+
  namespace lvr2
  {
     template <typename BaseVecT, typename BoxT>
     MSRMetric<BaseVecT, BoxT>::MSRMetric()
     {
+        // do nothing yet
+    }
 
+    template <typename BaseVecT, typename BoxT>
+    MSRMetric<BaseVecT, BoxT>::~MSRMetric()
+    {
+        // do nothing yet
     }
 
     template <typename BaseVecT, typename BoxT>
     const double MSRMetric<BaseVecT, BoxT>::get_distance(PointsetSurfacePtr<BaseVecT> surface, vector<coord<float>*> points,  BaseVecT corners[], DualLeaf<BaseVecT, BoxT> *leaf, bool dual)
     {
-        
         double error_sum;
 
         // pasted and adapted from DMCReconstruction.tcc

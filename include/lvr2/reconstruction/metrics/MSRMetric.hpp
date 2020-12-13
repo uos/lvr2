@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, University Osnabrück
+ * Copyright (c) 2020, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,13 +35,19 @@
 #ifndef MSRMETRIC_HPP
 #define MSRMETRIC_HPP
 
+#include "DMCReconstructionMetric.hpp"
 #include "../DualOctree.hpp"
 
 namespace lvr2
 {
 
+
+/**
+*@brief original implementation of adapted to DMCReconstructionMetric interface
+*/
+
 template <typename BaseVecT, typename BoxT>
-class MSRMetric
+class MSRMetric : public DMCReconstructionMetric<BaseVecT, BoxT>
 {
 
 public:
@@ -51,13 +57,22 @@ public:
     MSRMetric();
 
     /**
+     * @brief destructor 
+     */
+    ~MSRMetric();
+
+    /**
      * @brief Calculates the distance between a surface and points
-     * 
      * @param surface 
+     * @param points 
+     * @param corners
+     * @param leaf
+     * @param dual
      * @return the msr distances between the given surface and the points
      */
     const double get_distance(PointsetSurfacePtr<BaseVecT> surface, vector<coord<float>*> points, BaseVecT corners[], DualLeaf<BaseVecT, BoxT> *leaf, bool dual);
 
+private:
     /**
      * @brief Calculates a rotation matrix for a triangle that rotates it into xy
      *

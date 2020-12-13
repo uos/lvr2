@@ -33,6 +33,7 @@
  */
 
 #include "lvr2/geometry/BaseMesh.hpp"
+#include "metrics/DMCReconstructionMetric.hpp"
 #include <vector>
 #include <random>
 using std::vector;
@@ -94,20 +95,8 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
         C_Octree<BaseVecT, BoxT, my_dummy> &parent,
         int levels,
         bool dual,
-        DMCMetric &metric)
+        DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric)
 {
-
-    // Dummy compilation test
-
-    CellHandle handle1;
-    std::vector<CellHandle> handles;
-    
-    metric.get_distance(handle1, handles);
-
-    // metric compilation test
-    MSRMetric<BaseVecT, BoxT> metr;
-
-
     m_leaves = 0;
     int cells = 1;
     int max_cells = (1 << m_maxLevel);
@@ -286,9 +275,9 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
                         int index = leaf->getIndex(distances);
 
 
-                        double current_error = metr.get_distance(this->m_surface, points, corners, leaf, dual);
+                        double current_error = reconstructionMetric->get_distance(this->m_surface, points, corners, leaf, dual);
 
-                        std::cout << current_error << std::endl;
+                        
 
                         // split descision happens here
                         // compare value of the metric to max error of dmc reconstruction instance
@@ -568,8 +557,12 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     // start building adaptive octree
     string comment = timestamp.getElapsedTime() + "Creating Octree...";
     cout << comment << endl;
-    DummyMetric me;
-    buildTree(*octree, m_maxLevel, m_dual, me);
+    
+
+    // metric is set here
+    DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric = new MSRMetric<BaseVecT, BoxT>;
+    
+    buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric);
 
     comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
     cout << comment << endl;

@@ -18,6 +18,7 @@
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/DMCReconstruction.hpp"
+#include "lvr2/reconstruction/metrics/MSRMetric.hpp"
 #include "lvr2/reconstruction/FastReconstruction.hpp"
 
 #include "lvr2/config/lvropenmp.hpp"

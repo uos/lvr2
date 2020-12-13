@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, University Osnabrück
+ * Copyright (c) 2020, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,26 +25,55 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /*
- * DMCReconstruction.hpp
+/*
+ * MSRReconstructionMetric.hpp
  *
- *  Created on: 3.12.2020
+ *  Created on: Dec 11, 2020
  *      Author: Martin ben Ahmed
  */
 
-#include "DMCMetric.hpp"
+#ifndef DMCRECONSTRUCTIONMETRIC_HPP
+#define DMCRECONSTRUCTIONMETRIC_HPP
+
+#include "../DualOctree.hpp"
+
 
 namespace lvr2
 {
 
-DMCMetric::DMCMetric()
+/**
+*@brief Interface for DMC Reconstruction Metrics
+*/
+
+template <typename BaseVecT, typename BoxT>
+class DMCReconstructionMetric
 {
 
-}
+public:
 
-DMCMetric::~DMCMetric()
-{
-    // do nothing
-}
+    /**
+     * @brief Constructor
+     */
+    DMCReconstructionMetric() = default;
 
-}
+    /**
+     * @brief Destructor
+     */
+    ~DMCReconstructionMetric() = default;
+
+    /**
+     * @brief Calculates the distance between a surface and points
+     * @param surface 
+     * @param points 
+     * @param corners
+     * @param leaf
+     * @param dual
+     * @return the msr distances between the given surface and the points
+     */
+    virtual const double get_distance(PointsetSurfacePtr<BaseVecT> surface, vector<coord<float>*> points, BaseVecT corners[], DualLeaf<BaseVecT, BoxT> *leaf, bool dual) = 0;
+
+};
+
+} // Namespace lvr2
+
+#endif // DMCRECONSTRUCTIONMETRIC_HPP
