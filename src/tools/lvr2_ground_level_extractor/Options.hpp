@@ -72,16 +72,6 @@ public:
     string  getOutputFileName() const;
 
     /**
-     * @brief   Returns the output file name
-     */
-    std::vector<string>  getOutputFileNames() const;
-
-    /**
-     * @brief   Returns the output folder name
-     */
-    string  getOutputFolderName() const;
-
-    /**
      * @brief   Returns the specified extraction method
      */
     string  getExtractionMethod() const;
@@ -228,14 +218,14 @@ inline std::ostream& operator<<(std::ostream& os, const Options &o)
     //o.printTransformation(os);
 
     std::cout << "##### Input File Name: " << o.getInputFileName() << std::endl;
-    //std::cout << "##### Output File Name: " << o.getOutputFileName() << std::endl;
+    std::cout << "##### Output File Name: " << o.getOutputFileName() + ".ply/.obj" << std::endl;
     std::cout << "##### Extraction Method: " << o.getExtractionMethod() << std::endl;
     std::cout << "##### Resolution: " << o.getResolution() << std::endl;
-    //std::cout << "##### GeoTIFF: " << o.getInputGeoTIFF()[0] << std::endl;
-    //std::cout << "##### Reference Points File: " << o.getInputReferencePairs()[0] << std::endl;
+    std::cout << "##### GeoTIFF: " << o.getInputGeoTIFF()[0] << std::endl;
+    std::cout << "##### Reference Points File: " << o.getInputReferencePairs()[0] << std::endl;
     std::cout << "##### Starting Band: " << o.getStartingBand() << std::endl;
     std::cout << "##### Number of Bands: " << o.getNumberOfBands() << std::endl;
-    //std::cout << "##### Target System: " << o.getTargetSystem() << std::endl;
+    std::cout << "##### Target System: " << o.getTargetSystem() << std::endl;
     std::cout << "##### Color Scale: " << o.getColorScale() << std::endl;
     std::cout << "##### Number of Neighbors: " << o.getNumberNeighbors() << std::endl;
     std::cout << "##### Min. Radius: " << o.getMinRadius() << std::endl;

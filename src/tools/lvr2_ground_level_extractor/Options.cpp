@@ -61,8 +61,7 @@ Options::Options(int argc, char** argv)
     m_descr.add_options()
         ("help", "Produce help message")
         ("inputFile", value< string >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
-        ("outputFile", value< std::vector<string> >()->multitoken()->default_value(std::vector<string>{"dtm_mesh.ply", "dtm_mesh.obj"}), "Output file name. Supported formats are ASCII .obj and binary .ply")
-        ("outputFolder", value< string >()->default_value(""), "Set a Folder to save your models in.")
+        ("outputFile", value< string>()->default_value("dtm_mesh"), "Output file name. Supported formats are ASCII .obj and binary .ply")
         ("extractionMethod",value<string>(&m_method)->default_value("NN"),"Choose between three different methods to extract a DTM: NN(Nearest Neighbor), IMA (Improved Moving Average), THM (Threshold Method).")
         ("resolution", value<float>(&m_resolution)->default_value(1), "Set a resolution. Default is set to 1 and decreasing the value increases the number of points.")
         ("inputGeoTIFF", value< string >()->default_value(""), "Provide a GeoTIFF. Its data will be extracted and projected onto the model. You need to chose the bands you want to display.")
@@ -86,22 +85,12 @@ Options::Options(int argc, char** argv)
 
 string Options::getInputFileName() const
 {
-    return (m_variables["inputFile"].as< string >());
+    return (m_variables["inputFile"].as<string>());
 }
 
 string Options::getOutputFileName() const
 {
-    return getOutputFileNames()[0];
-}
-
-std::vector<string> Options::getOutputFileNames() const
-{
-    return  m_variables["outputFile"].as< std::vector<string> >();
-}
-
-string Options::getOutputFolderName() const
-{
-    return m_variables["outputFolder"].as<string>();
+    return m_variables["outputFile"].as<string>();
 }
 
 string Options::getExtractionMethod() const

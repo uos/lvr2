@@ -136,7 +136,8 @@ PointsetSurfacePtr<Vec> loadPointCloud(string data)
 }
 
 template <typename BaseVecT, typename Data>
-Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,SearchTreeFlann<BaseVecT>& tree,const lvr2::HalfEdgeMesh<VecD>& mesh, Data texelSize, Eigen::MatrixXd affineMatrix)
+Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,SearchTreeFlann<BaseVecT>& tree,const lvr2::HalfEdgeMesh<VecD>& mesh, Data texelSize, 
+Eigen::MatrixXd affineMatrix, string colorScale)
 {
     // =======================================================================
     // Generate Bounding Box and prepare Variables
@@ -219,8 +220,8 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,Sea
     // =======================================================================
     // Iterate over all faces + calculate which Texel they are represented by
     // =======================================================================
-
-    ProgressBar progressDistance(mesh.numFaces(), timestamp.getElapsedTime() + "Calcing distances ");
+    std::cout << timestamp.getElapsedTime() + "Generating Height Difference Texture" << std::endl;
+    ProgressBar progressDistance(mesh.numFaces(), timestamp.getElapsedTime() + "Calculating Distance from Point Cloud to Model ");
     
     for (size_t i = 0; i < mesh.numFaces(); i++)
     {
@@ -386,6 +387,36 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,Sea
 
     ColorMap colorMap(maxDistance - minDistance);
     float color[3];
+    GradientType type;
+    // Get Color Scale --> Default to JET if not supported
+    if(colorScale == "GREY")
+    {
+        type = GREY;
+    }
+    else if(colorScale == "JET")
+    {
+        type = JET;
+    }
+    else if(colorScale == "HOT")
+    {
+        type = HOT;
+    }
+    else if(colorScale == "HSV")
+    {
+        type = HSV;
+    }
+    else if(colorScale == "SHSV")
+    {
+        type = SHSV;
+    }
+    else if(colorScale == "SIMPSONS")
+    {
+        type = SIMPSONS;
+    }
+    else
+    {
+        type = JET;
+    }
 
     for (int y = 0; y < yDim; y++)
     {
@@ -399,7 +430,7 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,Sea
             }
             else
             {
-            colorMap.getColor(color,distance[(yDim - y - 1) * (xDim) + x] - minDistance,JET);
+            colorMap.getColor(color,distance[(yDim - y - 1) * (xDim) + x] - minDistance,type);
 
             texture.m_data[(yDim - y - 1) * (xDim * 3) + x * 3 + 0] = color[0] * 255;
             texture.m_data[(yDim - y - 1) * (xDim * 3) + x * 3 + 1] = color[1] * 255;
@@ -413,10 +444,13 @@ Texture generateHeightDifferenceTexture(const PointsetSurface<Vec>& surface ,Sea
     std::cout << std::endl;
     return texture;
 }
-//TODO: Dynamische Matrix abhängig von anzahl an Punkten, src und dest dynamisch einfügen, M = 3 * Anzahl Punkte
-std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> computeAffineGeoRefMatrix(VecD srcPoints[4], VecD destPoints[4], int numberPoints)
+
+std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> computeAffineGeoRefMatrix(VecD* srcPoints, VecD* destPoints, int numberPoints)
 {
-    // Create one 12 x 12 Matrix and two 12 x 1 Vector, fill one with created Points
+    /* Create one M x 12 Matrix (contains the reference point coordinates in the point clouds systems), 
+        one M x 1 Vector (contains the reference point coordinates in the target system)
+        and one 12 x 1 Vector (will contain the transformation matrix values)*/
+    // M = 3 * numberPoints
     Eigen::MatrixXd src(3 * numberPoints,12);
     Eigen::VectorXd dest(3 * numberPoints);
     for(int i = 0; i < numberPoints; i++)
@@ -428,33 +462,13 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> computeAffineGeoRefMatrix(VecD srcP
         dest.row(i*3+1) << destPoints[i].y;
         dest.row(i*3+2) << destPoints[i].z;       
     }
-    
-    /*src << 
-    srcPoints[0].x, srcPoints[0].y, srcPoints[0].z, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, srcPoints[0].x, srcPoints[0].y, srcPoints[0].z, 1, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, srcPoints[0].x, srcPoints[0].y, srcPoints[0].z, 1,
-    srcPoints[1].x, srcPoints[1].y, srcPoints[1].z, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, srcPoints[1].x, srcPoints[1].y, srcPoints[1].z, 1, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, srcPoints[1].x, srcPoints[1].y, srcPoints[1].z, 1,
-    srcPoints[2].x, srcPoints[2].y, srcPoints[2].z, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, srcPoints[2].x, srcPoints[2].y, srcPoints[2].z, 1, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, srcPoints[2].x, srcPoints[2].y, srcPoints[2].z, 1,
-    srcPoints[3].x, srcPoints[3].y, srcPoints[3].z, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, srcPoints[3].x, srcPoints[3].y, srcPoints[3].z, 1, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, srcPoints[3].x, srcPoints[3].y, srcPoints[3].z, 1;*/
-    
-    
-    /*dest << 
-    destPoints[0].x, destPoints[0].y, destPoints[0].z,
-    destPoints[1].x, destPoints[1].y, destPoints[1].z,
-    destPoints[2].x, destPoints[2].y, destPoints[2].z,
-    destPoints[3].x, destPoints[3].y, destPoints[3].z;
-    */
+       
     Eigen::VectorXd affineValues(12);
-    affineValues = src.colPivHouseholderQr().solve(dest);
-    
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    affineValues = svd.solve(dest);    
     Eigen::MatrixXd affineMatrix(4,4);
    
+    // Here we seperate Translation and Rotation, because we cannot ouput nodels with large coordinates
     auto ar = affineValues.array();
     affineMatrix << 
     ar[0], ar[1], ar[2], 0,
@@ -469,27 +483,27 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> computeAffineGeoRefMatrix(VecD srcP
     0, 0, 1, ar[11], 
     0, 0, 0, 1;
    
-    auto fullAffineMatrix = affineTranslation * affineMatrix;    
-
+    auto fullAffineMatrix = affineTranslation * affineMatrix;  
     return {affineMatrix,fullAffineMatrix};
 }
 
+// Based on the "GDAL Warp API tutorial" on https://gdal.org/tutorials/warp_tut.html
 void warpGeoTIFF(GDALDatasetH& src,GDALDatasetH& dt,const std::string& geogCS, const std::string& newTiffName )
 {    
     const char *pszSrcWKT = NULL;
     char *pszDstWKT  = NULL;
 
-    //Initialse Driver
+    // Initialise Driver
     GDALDriverH hDriver = GDALGetDriverByName( "GTiff" );
     CPLAssert( hDriver != NULL );
 
-    //Get Coordinate Information from Source
+    // Get Coordinate Information from Source
     pszSrcWKT = GDALGetProjectionRef(src);
     CPLAssert( pszSrcWKT != NULL && strlen(src) > 0 );
 
     GDALDataType eDT = GDALGetRasterDataType(GDALGetRasterBand(src,1));
 
-    //Create Coordinate Informatiom for Destination    
+    // Create Coordinate Informatiom for Destination    
     OGRSpatialReference oSRS;
     oSRS.SetFromUserInput(geogCS.c_str());
     oSRS.exportToWkt(&pszDstWKT);
@@ -519,7 +533,7 @@ void warpGeoTIFF(GDALDatasetH& src,GDALDatasetH& dt,const std::string& geogCS, c
     GDALSetProjection( dt, pszDstWKT );
     GDALSetGeoTransform( dt, adfDstGeoTransform );  
 
-    //Set No-Data Value and Color Info
+    // Extract and Set additional raster data
     
     for (size_t i = 1; i <= GDALGetRasterCount(src); i++)
     {
@@ -545,7 +559,7 @@ void warpGeoTIFF(GDALDatasetH& src,GDALDatasetH& dt,const std::string& geogCS, c
         
     }    
 
-    //Warp Image
+    // Warp Image
     GDALWarpOptions *psWarpOptions = GDALCreateWarpOptions();
     psWarpOptions->hSrcDS = src;
     psWarpOptions->hDstDS = dt;
@@ -554,7 +568,7 @@ void warpGeoTIFF(GDALDatasetH& src,GDALDatasetH& dt,const std::string& geogCS, c
     psWarpOptions->papszWarpOptions = 
     CSLSetNameValue(psWarpOptions->papszWarpOptions,"OPTIMIZE_SIZE","TRUE");
 
-    //reprojections transformer
+    // reprojections transformer
     psWarpOptions->pTransformerArg =
         GDALCreateGenImgProjTransformer( src,
                                         GDALGetProjectionRef(src),
@@ -563,7 +577,7 @@ void warpGeoTIFF(GDALDatasetH& src,GDALDatasetH& dt,const std::string& geogCS, c
                                         FALSE, 0.0, 1 );
     psWarpOptions->pfnTransformer = GDALGenImgProjTransform;
 
-    //execute
+    // execute warp
     GDALWarpOperation oOperation;
     oOperation.Initialize( psWarpOptions );
     oOperation.ChunkAndWarpImage( 0, 0,
@@ -710,7 +724,8 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
 
 template<typename BaseVecT>
 MaterializerResult<BaseVecT> projectTexture(const lvr2::HalfEdgeMesh<BaseVecT>& mesh, const ClusterBiMap<FaceHandle>& clusters, const PointsetSurface<Vec>& surface, 
-float texelSize, Eigen::MatrixXd affineMatrix, Eigen::MatrixXd fullAffineMatrix, GeoTIFFIO* io,SearchTreeFlann<BaseVecT>& tree)
+float texelSize, Eigen::MatrixXd affineMatrix, Eigen::MatrixXd fullAffineMatrix, GeoTIFFIO* io,SearchTreeFlann<BaseVecT>& tree, int startingBand, int numberOfBands,
+string colorScale)
 {
     // =======================================================================
     // Prepare necessary preconditions to create MaterializerResult
@@ -742,11 +757,11 @@ float texelSize, Eigen::MatrixXd affineMatrix, Eigen::MatrixXd fullAffineMatrix,
         Texture tex;
         if(io)
         {            
-            tex = readGeoTIFF(io,1,3);             
+            tex = readGeoTIFF(io,startingBand,startingBand + numberOfBands -1);             
         }
         else
         {
-            tex = generateHeightDifferenceTexture<VecD,double>(surface,tree,mesh,texelSize,affineMatrix);
+            tex = generateHeightDifferenceTexture<VecD,double>(surface,tree,mesh,texelSize,affineMatrix,colorScale);
         }     
 
         //Rotates the extreme Values to fit the Texture
@@ -1562,22 +1577,18 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    std::cout << options << std::endl;
-
-    //TODO: Falsche Anzahl an Bändern (nicht 1 oder 3) abfangen    
+    std::cout << options << std::endl; 
 
     // =======================================================================
     // Load Pointcloud and create Model + Surface + SearchTree
     // =======================================================================
 
-    ModelPtr baseModel = ModelFactory::readModel(options.getInputFileName());
-    if (!baseModel)
+    auto surface = loadPointCloud<Vec>(options.getInputFileName());   
+    if(surface == nullptr)
     {
-        std::cout << timestamp.getElapsedTime() << "IO Error: Unable to parse " << options.getInputFileName() << std::endl;
         return 0;
-    }
-    auto surface = loadPointCloud<Vec>(options.getInputFileName());    
-    PointBufferPtr baseBuffer = baseModel->m_pointCloud;
+    } 
+    PointBufferPtr baseBuffer = surface->pointBuffer();
     auto tree = SearchTreeFlann<VecD> (baseBuffer);
     // get the pointcloud coordinates from the FloatChannel
     FloatChannel arr =  *(baseBuffer->getFloatChannel("points"));   
@@ -1606,14 +1617,11 @@ int main(int argc, char* argv[])
         std::cout << timestamp.getElapsedTime() << "IO Error: Unable to interpret " << options.getExtractionMethod() << std::endl;
         return 0;
     }
-
-    //TODO:abhängig von eingaben setzen
-    bool targetDest = false;
-    bool gTiff = false;
-    string newTiffName = "out.tif";
-
-    //TODO: aus input extrahieren
-    string typ1;
+    
+    string newTiffName = options.getOutputFileName()+".tif";
+    string currenSystem;
+    VecD srcPoints[4];
+    VecD dstPoints[4];
 
     if(!options.getInputReferencePairs().empty())
     {
@@ -1625,7 +1633,7 @@ int main(int argc, char* argv[])
             return 0;
         }
 
-        std::getline(input, typ1);
+        std::getline(input, currenSystem);
         VecD s,d;
         char ch;
         for(int i = 0; i < 4; i++){
@@ -1642,7 +1650,6 @@ int main(int argc, char* argv[])
     // =======================================================================
     GeoTIFFIO* io = NULL;
     GDALDataset* set;
-    //TODO: gucken ob file existiert
     //"/home/mario/Schreibtisch/field_scans/ortho_austausch/20200807_hs_blang_rgb_ortho.tif";
     //"/home/mario/Schreibtisch/field_scans/ortho_austausch/20200807_hs_blang_multi_ortho_refl.tif";
     //"/home/mario/BA/UpToDatest/Develop/build/20200807_hs_blang_multi_ortho_refl.tif";
@@ -1650,20 +1657,26 @@ int main(int argc, char* argv[])
     {
         if(!options.getInputReferencePairs().empty())
         {
-            //TODO:typ1 extrahiert auf refferenzpunkten
-            string typ2 = options.getTargetSystem();
+            string targetSystem = options.getTargetSystem();
             VecD dstP[4];
 
-            transformPoints(typ1,typ2,dstPoints,dstP);
+            transformPoints(currenSystem,targetSystem,dstPoints,dstP);
 
             std::copy(std::begin(dstP),std::end(dstP),std::begin(dstPoints));
 
             if(!options.getInputGeoTIFF().empty())
             {
                 GDALDatasetH src = GDALOpen(options.getInputGeoTIFF().c_str(),GA_ReadOnly);
-                GDALDatasetH dt;
-                // creates a new GeoTIFF file with the transformed info of the old one
-                warpGeoTIFF(src,dt,typ2,newTiffName);
+                if(src == NULL)
+                {
+                    std::cout << timestamp.getElapsedTime() << "IO Error: Unable to read " << options.getInputGeoTIFF() << std::endl;
+                }
+                else
+                {
+                    GDALDatasetH dt;
+                    // creates a new GeoTIFF file with the transformed info of the old one
+                    warpGeoTIFF(src,dt,targetSystem,newTiffName);
+                }
             }
         }
     
@@ -1680,7 +1693,7 @@ int main(int argc, char* argv[])
         // In Functions where we use the Matrix we need to exclude the Translation
         if(!options.getInputGeoTIFF().empty())
         {
-            if(targetDest)
+            if(options.getTargetSystem().empty())
             {                
                 io = new GeoTIFFIO(newTiffName);
             }
@@ -1690,10 +1703,10 @@ int main(int argc, char* argv[])
             }
         }      
     } 
+
     // =======================================================================
     // Extract ground from the point cloud
     // =======================================================================
-    //TODO: daten aus input hier einfügen
     std::cout << timestamp.getElapsedTime() << "Start" << std::endl;
     if(mode == 0)
     {
@@ -1728,34 +1741,27 @@ int main(int argc, char* argv[])
         ++iterator;
     }  
     TextureFinalizer<VecD> finalize(clusterBiMap);
-    //TODO: add option for choosing which color scale to use
-    //TODO: eingabe von welchen bändern gelsen werden sollen
-    auto matResult = projectTexture<VecD>(mesh,clusterBiMap,*usedSurface,texelSize,affineMatrix,fullAffineMatrix,io,tree);
+    auto matResult = 
+    projectTexture<VecD>(mesh,clusterBiMap,*usedSurface,texelSize,affineMatrix,fullAffineMatrix,io,tree,options.getStartingBand(),
+    options.getNumberOfBands(),options.getColorScale());
     finalize.setMaterializerResult(matResult);  
     auto buffer = finalize.apply(mesh);
     buffer->addIntAtomic(1, "mesh_save_textures");
     buffer->addIntAtomic(1, "mesh_texture_image_extension");
-    std::cout << timestamp.getElapsedTime() << " Setting Model" << std::endl;
+    std::cout << timestamp.getElapsedTime() << "Setting Model" << std::endl;
     auto m = ModelPtr(new Model(buffer)); 
-    //TODO: make filenames less messy
-    //TODO: ouput nach vorgabe und in eigenem Ordner
-    auto t = std::time(nullptr);
-    auto tm = *std::localtime(&t);
-    std::ostringstream oss;
-    oss << std::put_time(&tm, "%d-%m-%Y_%H-%M-%S");
-    auto time = oss.str();
 
     // =======================================================================
     // Export Files as PLY and OBJ with a JPEG as Texture
     // =======================================================================    
     std::cout << timestamp.getElapsedTime() << "Saving Model as ply" << std::endl;
-    ModelFactory::saveModel(m,time +"groundextraction" + ".ply");
+    ModelFactory::saveModel(m,options.getOutputFileName() + ".ply");
 
     std::cout << timestamp.getElapsedTime() << "Saving Model as obj" << std::endl;
-    ModelFactory::saveModel(m,time +"groundextraction" + ".obj");  
+    ModelFactory::saveModel(m,options.getOutputFileName() + ".obj");  
 
     ofstream file;
-    file.open ("transformmatrix.txt");
+    file.open (options.getOutputFileName() + "_transformmatrix.txt");
     file << affineMatrix << "\n" << fullAffineMatrix;
     file.close();
 
