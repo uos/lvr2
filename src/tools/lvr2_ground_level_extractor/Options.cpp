@@ -60,113 +60,33 @@ Options::Options(int argc, char** argv)
     // Create option descriptions
     m_descr.add_options()
         ("help", "Produce help message")
-        ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
-        ("outputFile", value< vector<string> >()->multitoken()->default_value(vector<string>{"triangle_mesh.ply", "triangle_mesh.obj"}), "Output file name. Supported formats are ASCII (.pts, .xyz) and .ply")
-        ("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
-        ("noExtrusion", "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
-        ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
-        ("pcm,p", value<string>(&m_pcm)->default_value("FLANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
-        ("ransac", "Set this flag for RANSAC based normal estimation.")
-        ("decomposition,d", value<string>(&m_pcm)->default_value("PMC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection (SF), Dual Marching Cubes with an adaptive Octree (DMC) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")
-        ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
-        ("clusterPlanes,c", "Cluster planar regions based on normal threshold, do not shift vertices into regression plane.")
-        ("cleanContours", value<int>(&m_cleanContourIterations)->default_value(0), "Remove noise artifacts from contours. Same values are between 2 and 4")
-        ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
-        ("fillHoles,f", value<int>(&m_fillHoles)->default_value(0), "Maximum size for hole filling")
-        ("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
-        ("pnt", value<float>(&m_planeNormalThreshold)->default_value(0.85), "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
-        ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(10), "Threshold for small region removal. If 0 nothing will be deleted.")
-        ("writeClassificationResult,w", "Write classification results to file 'clusters.clu'")
-        ("exportPointNormals,e", "Exports original point cloud data together with normals into a single file called 'pointnormals.ply'")
-        ("saveGrid,g", "Writes the generated grid to a file called 'fastgrid.grid. The result can be rendered with qviewer.")
-        ("saveOriginalData,s", "Save the original points and the estimated normals together with the reconstruction into one file ('triangle_mesh.ply')")
-        ("scanPoseFile", value<string>()->default_value(""), "ASCII file containing scan positions that can be used to flip normals")
-        ("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
-        ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
-        ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
-        ("mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")
-        ("retesselate,t", "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")
-        ("lft", value<float>(&m_lineFusionThreshold)->default_value(0.01), "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")
-        ("generateTextures", "Generate textures during finalization.")
-        ("texMinClusterSize", value<int>(&m_texMinClusterSize)->default_value(100), "Minimum number of faces of a cluster to create a texture from")
-        ("texMaxClusterSize", value<int>(&m_texMaxClusterSize)->default_value(0), "Maximum number of faces of a cluster to create a texture from (0 = no limit)")
-        ("textureAnalysis", "Enable texture analysis features for texture matchung.")
-        ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
-        ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
-        ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
-        ("threads", value<int>(&m_numThreads)->default_value( lvr2::OpenMPConfig::getNumThreads() ), "Number of threads")
-        ("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
-        ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
-        ("reductionRatio", value<float>(&m_edgeCollapseReductionRatio)->default_value(0.0), "Percentage of faces to remove via edge-collapse (0.0 means no reduction, 1.0 means to remove all faces which can be removed)")
-        ("tp", value<string>(&m_texturePack)->default_value(""), "Path to texture pack")
-        ("co", value<string>(&m_statsCoeffs)->default_value(""), "Coefficents file for texture matching based on statistics")
-        ("nsc", value<unsigned int>(&m_numStatsColors)->default_value(16), "Number of colors for texture statistics")
-        ("nccv", value<unsigned int>(&m_numCCVColors)->default_value(64), "Number of colors for texture matching based on color information")
-        ("ct", value<unsigned int>(&m_coherenceThreshold)->default_value(50), "Coherence threshold for texture matching based on color information")
-        ("colt", value<float>(&m_colorThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on colors")
-        ("stat", value<float>(&m_statsThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on statistics")
-        ("feat", value<float>(&m_featuresThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on features")
-        ("cro", "Use texture matching based on cross correlation.")
-        ("patt", value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
-        ("mtv", value<int>(&m_minimumTransformationVotes)->default_value(3), "Minimum number of votes to consider a texture transformation as correct")
-        ("vcfp", "Use color information from pointcloud to paint vertices")
-        ("useGPU", "GPU normal estimation")
-        ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint --flipPoint x y z" )
-        ("texFromImages,q", "Foo Bar ............")
-        ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
-    ;
+        ("inputFile", value< string >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
+        ("outputFile", value< std::vector<string> >()->multitoken()->default_value(std::vector<string>{"dtm_mesh.ply", "dtm_mesh.obj"}), "Output file name. Supported formats are ASCII .obj and binary .ply")
+        ("outputFolder", value< string >()->default_value(""), "Set a Folder to save your models in.")
+        ("extractionMethod",value<string>(&m_method)->default_value("NN"),"Choose between three different methods to extract a DTM: NN(Nearest Neighbor), IMA (Improved Moving Average), THM (Threshold Method).")
+        ("resolution", value<float>(&m_resolution)->default_value(1), "Set a resolution. Default is set to 1 and decreasing the value increases the number of points.")
+        ("inputGeoTIFF", value< string >()->default_value(""), "Provide a GeoTIFF. Its data will be extracted and projected onto the model. You need to chose the bands you want to display.")
+        ("inputReferencePairs", value< string >()->default_value(""),"Input file with reference coordinate pairs.")
+        ("startingBand", value<int>(&m_startingBand)->default_value(1),"Set the first you want to extract.")
+        ("numberOfBands", value<int>(&m_numberBands)->default_value(1),"Set the number of Bands you want to extract from the TIFF, includuing the starting band. You can chose between 1 or 3 Bands.")
+        ("targetSystem", value<string>(&m_target)->default_value(""),"Name the coordinate system you want the model (and GeoTIFF) to be transformed into. This only works if you have provided a sufficient amount of reference points.")
+        ("colorScale", value<string>(&m_colorScale)->default_value("JET"), "Set the color scale you want the Band or Heigh Difference Texture to be shown in.")
+        ("numberNeighbors", value<int>(&m_numberNeighbors)->default_value(1), "Set the Number of Neighbors used by NN and IMA.")
+        ("minRadius",value<float>(&m_minRadius)->default_value(0), "Set the minimum Radius used in IMA.")
+        ("maxRadius",value<float>(&m_maxRadius)->default_value(1), "Set the maximum Radius used in IMA.")
+        ("radiusSteps",value<int>(&m_radiusSteps)->default_value(100), "Set the amount of steps to reach the maximum Radius.")
+        ("swSize", value<int>(&m_swSize)->default_value(3), "Size of the small window (x*x) in THM.")
+        ("swThreshold", value<float>(&m_swThreshold)->default_value(1),"Threshold for the small window in THM.")
+        ("lwSize", value<int>(&m_lwSize)->default_value(3), "Size of the large window (x*x) in THM.")
+        ("lwThreshold", value<float>(&m_lwThreshold)->default_value(3),"Threshold for the large window in THM.")
+        ("slopeThreshold", value<float>(&m_slopeThreshold)->default_value(30),"Threshold for the slope's angle in THM.");
 
     setup();
 }
 
-float Options::getVoxelsize() const
-{
-    return m_variables["voxelsize"].as<float>();
-}
-
-float Options::getSharpFeatureThreshold() const
-{
-    return m_variables["sft"].as<float>();
-}
-
-float Options::getSharpCornerThreshold() const
-{
-    return m_variables["sct"].as<float>();
-}
-
-int Options::getNumThreads() const
-{
-    return m_variables["threads"].as<int>();
-}
-
-int Options::getKi() const
-{
-    return m_variables["ki"].as<int>();
-}
-
-int Options::getKd() const
-{
-    return m_variables["kd"].as<int>();
-}
-
-int Options::getKn() const
-{
-    return m_variables["kn"].as<int>();
-}
-
-int Options::getIntersections() const
-{
-    return m_variables["intersections"].as<int>();
-}
-
-int Options::getPlaneIterations() const
-{
-    return m_variables["planeIterations"].as<int>();
-}
-
 string Options::getInputFileName() const
 {
-    return (m_variables["inputFile"].as< vector<string> >())[0];
+    return (m_variables["inputFile"].as< string >());
 }
 
 string Options::getOutputFileName() const
@@ -174,305 +94,118 @@ string Options::getOutputFileName() const
     return getOutputFileNames()[0];
 }
 
-vector<string> Options::getOutputFileNames() const
+std::vector<string> Options::getOutputFileNames() const
 {
-    return  m_variables["outputFile"].as< vector<string> >();
+    return  m_variables["outputFile"].as< std::vector<string> >();
 }
 
-string Options::getPCM() const
+string Options::getOutputFolderName() const
 {
-    return (m_variables["pcm"].as< string >());
+    return m_variables["outputFolder"].as<string>();
 }
 
-string Options::getClassifier() const
+string Options::getExtractionMethod() const
 {
-    return (m_variables["classifier"].as< string >());
+    return m_variables["extractionMethod"].as<string>();
 }
 
-string Options::getDecomposition() const
+float Options::getResolution() const
 {
-    return (m_variables["decomposition"].as< string >());
+    return m_variables["resolution"].as<float>();
 }
 
-string Options::getScanPoseFile() const
+string Options::getInputGeoTIFF() const
 {
-    return (m_variables["scanPoseFile"].as<string>());
+    return m_variables["inputGeoTIFF"].as<string>();
 }
 
-float Options::getEdgeCollapseReductionRatio() const
+string Options::getInputReferencePairs() const
 {
-    return (m_variables["reductionRatio"].as<float>());
+    return m_variables["inputReferencePairs"].as<string>();
 }
 
-int    Options::getDanglingArtifacts() const
+int Options::getStartingBand() const
 {
-    return (m_variables["rda"].as<int> ());
+    return m_variables["startingBand"].as<int>();
 }
 
-int    Options::getFillHoles() const
+int Options::getNumberOfBands() const
 {
-    return (m_variables["fillHoles"].as<int> ());
+    return m_variables["numberOfBands"].as<int>();
 }
 
-int   Options::getMinPlaneSize() const
+string Options::getTargetSystem() const
 {
-    return (m_variables["mp"].as<int> ());
+    return m_variables["targetSystem"].as<string>();
 }
 
-bool Options::printUsage() const
+string Options::getColorScale() const
 {
-  if (m_variables.count("help"))
-    {
-        cout << endl;
-        cout << m_descr << endl;
-        return true;
-    }
-  else if (!m_variables.count("inputFile"))
-    {
-        cout << "Error: You must specify an input file." << endl;
-        cout << endl;
-        cout << m_descr << endl;
-        return true;
-    }
-  return false;
+    return m_variables["colorScale"].as<string>();
 }
 
-bool Options::saveFaceNormals() const
+int Options::getNumberNeighbors() const
 {
-    return m_variables.count("saveFaceNormals");
+    return m_variables["numberNeighbors"].as<int>();
 }
 
-bool Options::writeClassificationResult() const
+float Options::getMinRadius() const
 {
-    return m_variables.count("writeClassificationResult")
-            || m_variables.count("w");
+    return m_variables["minRadius"].as<float>();
 }
 
-bool Options::doTextureAnalysis() const
+float Options::getMaxRadius() const
 {
-    return m_variables.count("textureAnalyis");
+    return m_variables["maxRadius"].as<float>();
 }
 
-bool Options::filenameSet() const
+int Options::getRadiusSteps() const
 {
-    return (m_variables["inputFile"].as< vector<string> >()).size() > 0;
+    return m_variables["radiusSteps"].as<int>();
 }
 
-bool Options::recalcNormals() const
+int Options::getSWSize() const
 {
-    return (m_variables.count("recalcNormals"));
+    return m_variables["swSize"].as<int>();
 }
 
-bool Options::savePointNormals() const
+float Options::getSWThreshold() const
 {
-    return (m_variables.count("exportPointNormals"));
+    return m_variables["swThreshold"].as<float>();
 }
 
-bool Options::saveNormals() const
+int Options::getLWSize() const
 {
-    return (m_variables.count("saveNormals"));
+    return m_variables["lwSize"].as<int>();
 }
 
-bool Options::saveGrid() const
+float Options::getLWThreshold() const
 {
-    return (m_variables.count("saveGrid"));
+    return m_variables["lwThreshold"].as<float>();
 }
 
-bool Options::useRansac() const
+float Options::getSlopeThreshold() const
 {
-    return (m_variables.count("ransac"));
+    return m_variables["slopeThreshold"].as<float>();
 }
 
-bool Options::saveOriginalData() const
-{
-    return (m_variables.count("saveOriginalData"));
-}
-
-bool Options::optimizePlanes() const
-{
-    return m_variables.count("optimizePlanes")
-        || m_variables.count("retesselate");
-}
-
-bool Options::clusterPlanes() const
-{
-    return m_variables.count("clusterPlanes");
-}
-
-bool Options::extrude() const
-{
-    if(m_variables.count("noExtrusion"))
-    {
+bool Options::printUsage() const {
+        if (m_variables.count("help"))
+        {
+            cout << endl;
+            cout << m_descr << endl;
+            return true;
+        }
+        else if (!m_variables.count("inputFile"))
+        {
+            cout << "Error: You must specify an input file." << endl;
+            cout << endl;
+            cout << m_descr << endl;
+            return true;
+        }
         return false;
     }
-    else
-    {
-        return true;
-    }
-}
 
-bool Options::colorRegions() const
-{
-    return m_variables.count("colorRegions");
-}
-
-bool Options::retesselate() const
-{
-    return m_variables.count("retesselate");
-}
-
-bool Options::generateTextures() const
-{
-    return m_variables.count("generateTextures");
-}
-
-float Options::getNormalThreshold() const
-{
-    return m_variables["pnt"].as<float>();
-}
-
-int Options::getSmallRegionThreshold() const
-{
-    return m_variables["smallRegionThreshold"].as<int>();
-}
-
-int Options::getCleanContourIterations() const
-{
-    return m_variables["cleanContours"].as<int>();
-}
-
-float Options::getTexelSize() const
-{
-    return m_texelSize;
-}
-
-float Options::getLineFusionThreshold() const
-{
-    return m_variables["lft"].as<float>();
-}
-
-string Options::getTexturePack() const
-{
-    return m_variables["tp"].as<string>();
-}
-
-unsigned int Options::getNumStatsColors() const
-{
-    return m_variables["nsc"].as<unsigned int>();
-}
-
-unsigned int Options::getNumCCVColors() const
-{
-    return m_variables["nccv"].as<unsigned int>();
-}
-
-unsigned int Options::getCoherenceThreshold() const
-{
-    return m_variables["ct"].as<unsigned int>();
-}
-
-float Options::getColorThreshold() const
-{
-    return m_variables["colt"].as<float>();
-}
-
-float Options::getStatsThreshold() const
-{
-    return m_variables["stat"].as<float>();
-}
-
-float Options::getFeatureThreshold() const
-{
-    return m_variables["feat"].as<float>();
-}
-
-bool Options::getUseCrossCorr() const
-{
-    return m_variables.count("cro");
-}
-
-float Options::getPatternThreshold() const
-{
-    return m_variables["patt"].as<float>();
-}
-
-int Options::getMinimumTransformationVotes() const
-{
-    return m_variables["mtv"].as<int>();
-}
-
-float* Options::getStatsCoeffs()const
-{
-    float* result = new float[14];
-        std::ifstream in (m_variables["tp"].as<string>().c_str());
-    if (in.good())
-    {
-        for(int i = 0; i < 14; i++)
-        {
-            in >> result[i];
-        }
-        in.close();
-    }
-    else
-    {
-        for(int i = 0; i < 14; i++)
-        {
-            result[i] = 0.5;
-        }
-    }
-    return result;
-}
-
-int Options::getTexMinClusterSize() const
-{
-    return m_variables["texMinClusterSize"].as<int>();
-}
-
-int Options::getTexMaxClusterSize() const
-{
-    return m_variables["texMaxClusterSize"].as<int>();
-}
-
-bool Options::vertexColorsFromPointcloud() const
-{
-    return m_variables.count("vcfp");
-}
-
-bool Options::useGPU() const
-{
-    return m_variables.count("useGPU");
-}
-
-vector<float> Options::getFlippoint() const
-{
-    vector<float> dest;
-    if(m_variables.count("flipPoint"))
-    {
-        dest = (m_variables["flipPoint"].as< vector<float> >());
-        if(dest.size() != 3)
-        {
-            dest.clear();
-            dest.push_back(10000000);
-            dest.push_back(10000000);
-            dest.push_back(10000000);
-        }
-    }else{
-        dest.push_back(10000000);
-        dest.push_back(10000000);
-        dest.push_back(10000000);
-    }
-    return dest;
-}
-
-bool Options::texturesFromImages() const
-{
-    return m_variables.count("texFromImages");
-}
-
-string Options::getProjectDir() const
-{
-    return m_variables["projectDir"].as<string>();
-}
 
 Options::~Options() {
     // TODO Auto-generated destructor stub
