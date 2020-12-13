@@ -68,7 +68,7 @@ public:
      * @param corners
      * @param leaf
      * @param dual
-     * @return the msr distances between the given surface and the points
+     * @return the distance between the given surface and the points
      */
     virtual const double get_distance(PointsetSurfacePtr<BaseVecT> surface, vector<coord<float>*> points, BaseVecT corners[], DualLeaf<BaseVecT, BoxT> *leaf, bool dual) = 0;
 
