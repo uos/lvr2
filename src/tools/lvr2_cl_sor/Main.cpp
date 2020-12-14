@@ -48,6 +48,7 @@ void filter(lvr2::PointBufferPtr& cloud, lvr2::indexArray& inlier, size_t j)
     for(auto channelPair: floatChannels)
     {
         std::string name = channelPair.first;
+        std::cout << name << std::endl;
         auto channel2 = channelPair.second;
         lvr2::FloatChannelPtr filtered(new lvr2::FloatChannel(j, channel2.width()));
         channels.push_back(filtered);
@@ -135,7 +136,7 @@ int main(int argc, char** argv){
     lvr2::uintArr inlier = lvr2::uintArr(new unsigned int[num_points]);
 
     cout << timestamp << "Constructing kd-tree..." << endl;
-    ClSOR sor(points, num_points, 20);
+    ClSOR sor(points, num_points, 40);
     cout << timestamp << "Finished kd-tree construction." << endl;
 
 

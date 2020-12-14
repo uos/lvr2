@@ -17,7 +17,7 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRBoundingBoxBridge.cpp
     vtkBridge/LVRModelBridge.cpp
     vtkBridge/LVRScanProjectBridge.cpp
-        vtkBridge/LVRSoilAssistBridge.cpp
+    vtkBridge/LVRSoilAssistBridge.cpp
     vtkBridge/LVRScanPositionBridge.cpp
     vtkBridge/LVRPointBufferBridge.cpp
     vtkBridge/LVRMeshBufferBridge.cpp
@@ -66,6 +66,7 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRLabelInstanceTreeItem.cpp
     widgets/LVRModelTreeWidget.cpp
     widgets/LVRLabeledScanProjectEditMarkItem.cpp
+    widgets/LVRScanProjectOpenDialog.cpp
     util/qttf.cpp
 )
 
@@ -101,6 +102,7 @@ set(LVR2_VIEWER_MOCS
     widgets/LVRPointInfo.hpp
     widgets/LVRPlotter.hpp
     widgets/LVRHistogram.hpp
+    widgets/LVRScanProjectOpenDialog.hpp
 )
 
 #####################################################################################
@@ -131,6 +133,7 @@ list(APPEND LVR2_VIEWER_UIS
    ui/LVRPointInfo.ui
    ui/LVRTooltipDialogUI.ui
    ui/LVRHistogram.ui
+   ui/LVRScanProjectOpenDialogUI.ui
 )
 
 #####################################################################################

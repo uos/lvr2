@@ -108,6 +108,7 @@
 #include "../widgets/LVRBoundingBoxItem.hpp"
 #include "../widgets/LVRPointInfo.hpp"
 #include "../widgets/LVRLabelClassTreeItem.hpp"
+#include "../widgets/LVRScanProjectOpenDialog.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRLabelInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -355,9 +356,9 @@ private:
     QAction*                            m_actionSimple_Plane_Classification;
     QAction*                            m_actionFurniture_Recognition;
     // Toolbar items "Labeling"
-    QAction* 				m_actionStart_labeling;
-    QAction* 				m_actionStop_labeling;
-    QAction* 				m_actionExtract_labeling;
+    QAction* 				            m_actionStart_labeling;
+    QAction* 				            m_actionStop_labeling;
+    QAction* 				            m_actionExtract_labeling;
     // Toolbar item "About"
     QMenu*                              m_menuAbout;
     // QToolbar below toolbar
@@ -410,7 +411,7 @@ private:
     QAction*                            m_actionShowWaveform;
 
     LVRPickingInteractor*               m_pickingInteractor;
-    LVRLabelInteractorStyle*		m_labelInteractor; 
+    LVRLabelInteractorStyle*		    m_labelInteractor; 
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 
 #ifdef LVR2_USE_VTK8

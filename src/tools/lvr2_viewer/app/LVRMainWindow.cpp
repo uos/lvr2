@@ -3261,13 +3261,17 @@ void LVRMainWindow::openIntermediaProject()
 }
 void LVRMainWindow::openScanProject()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-                tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
-    if(!QFile::exists(fileName))
-    {
-        return;
-    }
-    openHDF5(fileName.toStdString());
+    // QString fileName = QFileDialog::getOpenFileName(this,
+    //             tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
+    // if(!QFile::exists(fileName))
+    // {
+    //     return;
+    // }
+    // openHDF5(fileName.toStdString());
+
+    LVRScanProjectOpenDialog dialog(this);
+    
+    
 }
  
 void LVRMainWindow::openHDF5(std::string fileName)
