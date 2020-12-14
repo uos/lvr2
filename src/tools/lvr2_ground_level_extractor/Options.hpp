@@ -222,7 +222,7 @@ inline std::ostream& operator<<(std::ostream& os, const Options &o)
     std::cout << "##### Extraction Method: " << o.getExtractionMethod() << std::endl;
     std::cout << "##### Resolution: " << o.getResolution() << std::endl;
     std::cout << "##### GeoTIFF: " << o.getInputGeoTIFF()[0] << std::endl;
-    std::cout << "##### Reference Points File: " << o.getInputReferencePairs()[0] << std::endl;
+    std::cout << "##### Reference Points File: " << o.getInputReferencePairs() << std::endl;
     std::cout << "##### Starting Band: " << o.getStartingBand() << std::endl;
     std::cout << "##### Number of Bands: " << o.getNumberOfBands() << std::endl;
     std::cout << "##### Target System: " << o.getTargetSystem() << std::endl;
