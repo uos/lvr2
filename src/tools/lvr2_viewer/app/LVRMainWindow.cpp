@@ -1691,13 +1691,16 @@ void LVRMainWindow::loadScanProjectDir()
     QString filename = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", 
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     std::string tmp = filename.toStdString();
-    DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
-    DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
+    if (tmp != "") 
+    {
+        DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+        DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
 
-    DirectoryIO dirIO(dirKernel, hyperlibSchema);
-    ScanProjectPtr scanProject = dirIO.loadScanProject();
+        DirectoryIO dirIO(dirKernel, hyperlibSchema);
+        ScanProjectPtr scanProject = dirIO.loadScanProject();
 
-    loadScanProject(scanProject, filename);
+        loadScanProject(scanProject, filename);
+    }
 }
 
 void LVRMainWindow::loadScanProjectH5()
@@ -1705,11 +1708,14 @@ void LVRMainWindow::loadScanProjectH5()
     QString filename = QFileDialog::getOpenFileName(this, tr("Open scan project"), "", tr("Scan project (*.h5)"));
     std::string tmp = filename.toStdString();
 
-    HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
-    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
-    descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-    ScanProjectPtr scanProject = hdf5IO.loadScanProject();
-    loadScanProject(scanProject, filename);
+    if (tmp != "")
+    {
+        HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
+        HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
+        descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
+        ScanProjectPtr scanProject = hdf5IO.loadScanProject();
+        loadScanProject(scanProject, filename);
+    }
 }
 
 void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename)
