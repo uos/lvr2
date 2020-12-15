@@ -57,7 +57,6 @@ Description ScanProjectSchemaSLAM::scan(const size_t &scanPosNo, const size_t &s
 
     // Save scan file name
     std::stringstream scan_stream;
-    scan_stream << "scan" << std::setfill('0') << std::setw(3) << scanNo;
     d.dataSetName = scan_stream.str() + ".3d";
 
     // Setup meta info -> Read frames file and pose file to setup valid 
@@ -67,22 +66,23 @@ Description ScanProjectSchemaSLAM::scan(const size_t &scanPosNo, const size_t &s
     boost::filesystem::path scan_path(*d.dataSetName);
     
     Eigen::Matrix<double, 4, 4> poseEstimate;
-    if(boost::filesystem::exists(pose_path))
+    std::cout << pose_path << std::endl;
+    if(boost::filesystem::exists(m_rootPath / pose_path))
     {
-        poseEstimate = getTransformationFromPose<double>(pose_path);
+        poseEstimate = getTransformationFromPose<double>(m_rootPath / pose_path);
     } 
 
     Eigen::Matrix<double, 4, 4> registration;
-    if(boost::filesystem::exists(frames_path))
+    if(boost::filesystem::exists(m_rootPath / frames_path))
     {
-        registration = getTransformationFromFrames<double>(frames_path);
+        registration = getTransformationFromFrames<double>(m_rootPath / frames_path);
     }  
 
     // Try to load scan data
     size_t num_pts = 0;
-    if(boost::filesystem::exists(scan_path))
+    if(boost::filesystem::exists(m_rootPath / scan_path))
     {
-        num_pts = countPointsInFile(scan_path);
+        num_pts = countPointsInFile(m_rootPath / scan_path);
     }
 
     // Encode meta data
@@ -121,7 +121,17 @@ Description ScanProjectSchemaSLAM::scan(const std::string& scanPositionPath, con
 {
     return scan(0, scanNo);
 }
+Description ScanProjectSchemaSLAM::waveform(const size_t &scanPosNo, const size_t &scanNo) const 
+{
+    Description d; 
+    
+    return d;
+}
 
+Description ScanProjectSchemaSLAM::waveform(const std::string& scanPositionPath, const size_t &scanNo) const
+{
+    return scan(0, scanNo);
+}
 Description ScanProjectSchemaSLAM::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
 {
     // Scan camera is not supported

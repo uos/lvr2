@@ -42,8 +42,6 @@
 #include <set>
 #include <map>
 
-using namespace std;
-
 namespace lvr2
 {
 
@@ -69,7 +67,7 @@ public:
      *
      * @param filename  The file to read.
      */
-    ModelPtr read( string filename );
+    ModelPtr read( std::string filename );
 
     /**
      * @brief     Writes the mesh to an obj file.
@@ -77,15 +75,15 @@ public:
      * @param  model     The model containing all mesh data
      * @param  filename  The file name to use
      */
-    void save( string filename );
+    void save( std::string filename );
 
 
 private:
 
-    void parseMtlFile(map<string, int>& matNames,
-            vector<Material>& materials,
-            vector<Texture>& textures,
-            string mtlname);
+    void parseMtlFile(std::map<string, int>& matNames,
+            std::vector<Material>& materials,
+            std::vector<Texture>& textures,
+            std::string mtlname);
 
 };
 

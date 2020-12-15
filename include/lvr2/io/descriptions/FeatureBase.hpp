@@ -1,6 +1,6 @@
 #pragma once
-#ifndef LVR2_IO_GFeatureBase_HPP
-#define LVR2_IO_GFeatureBase_HPP
+#ifndef LVR2_IO_DESC_FeatureBase_HPP
+#define LVR2_IO_DESC_FeatureBase_HPP
 
 #include <memory>
 #include <tuple>

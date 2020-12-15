@@ -60,11 +60,16 @@
 #endif
 
 #include <QtGui>
+
 #ifdef LVR2_USE_VTK8
-    #include "ui_LVRMainWindowQVTKOGLUI.h"
+    #include "QVTKOpenGLWidget.h"
+#elif defined LVR2_USE_VTK9
+    #include "QVTKOpenGLNativeWidget.h"
 #else
-    #include "ui_LVRMainWindowUI.h"
+    #include "QVTKWidget.h"
 #endif
+
+#include "ui_LVRMainWindowUI.h"
 #include "ui_LVRAboutDialogUI.h"
 #include "ui_LVRTooltipDialogUI.h"
 
@@ -72,7 +77,13 @@
 
 #include "../widgets/LVRPlotter.hpp"
 #include "../vtkBridge/LVRModelBridge.hpp"
+#include "../vtkBridge/LVRLabeledScanProjectEditMarkBridge.hpp"
+#include "../vtkBridge/LVRScanProjectBridge.hpp"
 #include "../widgets/LVRModelItem.hpp"
+#include "../widgets/LVRScanProjectItem.hpp"
+#include "../widgets/LVRScanPositionItem.hpp"
+#include "../widgets/LVRLabelItem.hpp"
+#include "../widgets/LVRLabeledScanProjectEditMarkItem.hpp"
 #include "../widgets/LVRPointCloudItem.hpp"
 #include "../widgets/LVRMeshItem.hpp"
 #include "../widgets/LVRItemTypes.hpp"
@@ -89,11 +100,14 @@
 #include "../widgets/LVRFilteringMLSProjectionDialog.hpp"
 #include "../widgets/LVRFilteringRemoveOutliersDialog.hpp"
 #include "../widgets/LVRBackgroundDialog.hpp"
+#include "../widgets/LVRPointcloudSelectionDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
+#include "../widgets/LVRLabelTreeWidget.hpp"
 #include "../widgets/LVRScanDataItem.hpp"
 #include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"
 #include "../widgets/LVRPointInfo.hpp"
+#include "../widgets/LVRLabelClassTreeItem.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRLabelInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -111,6 +125,7 @@
 #define LABELED_POINT_COLUMN 1
 #define LABEL_VISIBLE_COLUMN 2
 #define LABEL_ID_COLUMN 3
+#define LABEL_EDITABLE_COLUMN 4
 
 
 
@@ -133,6 +148,7 @@ public:
     virtual ~LVRMainWindow();
     std::mutex display_mutex;
 
+    void deleteLabelInstance(QTreeWidgetItem* item);
 public Q_SLOTS:
     void updateDisplayLists(actorMap lowRes, actorMap highRes);
             
@@ -140,9 +156,13 @@ public Q_SLOTS:
             //                std::unordered_map<size_t, vtkSmartPointer<MeshChunkActor> > highResActors);
 
 
+    void openIntermediaProject();
     void comboBoxIndexChanged(int index);
-    void addNewInstance(QTreeWidgetItem *);
+    void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
+    void loadScanProject();
+    void loadScanProjectDir();
+    void loadScanProjectH5();
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();
     void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
@@ -151,9 +171,14 @@ public Q_SLOTS:
     void changePicker(bool labeling);
     void showLabelTreeContextMenu(const QPoint&);
     void updatePointCount(const uint16_t, const int);
+    void readLWF();
+    void openSoilAssist();
+    void exportScanProject();
 
     void cellSelected(QTreeWidgetItem* item, int column);
     void addLabelClass();
+    void lassoButtonToggled(bool);
+    void polygonButtonToggled(bool);
 
     void showTransformationDialog();
     void showTreeContextMenu(const QPoint&);
@@ -203,6 +228,7 @@ public Q_SLOTS:
 
     void assertToggles();
     void togglePoints(bool checkboxState);
+    void toggleLabelDock(bool checkboxState);
     void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
@@ -250,7 +276,8 @@ protected Q_SLOTS:
     void highlightBoundingBoxes();
 
     void visibilityChanged(QTreeWidgetItem*, int);
-    void loadLabels();
+    void openHDF5(std::string fileName);
+    void openScanProject();
 
 Q_SIGNALS:
     void labelChanged(uint16_t);
@@ -263,6 +290,7 @@ private:
     void setupQVTK();
     void connectSignalsAndSlots();
     LVRModelItem* loadModelItem(QString name);
+    LVRLabeledScanProjectEditMarkItem* checkForScanProject();
     bool childNameExists(QTreeWidgetItem* item, const QString& name);
     QString increaseFilename(QString filename);
 
@@ -270,6 +298,7 @@ private:
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
     LVRLabelDialog*                   		m_labelDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
+    std::map<uint32_t, WaveformPtr>             m_waveformOffset;
     LVRPlotter*                                 m_PointPreviewPlotter;
     int                                         m_previewPoint;
     PointBufferPtr                              m_previewPointBuffer;
@@ -294,6 +323,9 @@ private:
     // Toolbar item "File"
     QAction*                            m_actionOpen;
     QAction*                            m_actionOpenChunkedMesh;
+    QAction*                            m_actionOpenScanProject;
+    QAction*                            m_actionOpenScanProjectDir;
+    QAction*                            m_actionOpenScanProjectH5;
     QAction*                            m_actionExport;
     QAction*                            m_actionQuit;
     // Toolbar item "Views"
@@ -372,12 +404,22 @@ private:
     
     //Label
     QAction*                            m_actionAddLabelClass;
+    QAction*                            m_actionDeleteLabelClass;
     QAction*                            m_actionAddNewInstance;
     QAction*                            m_actionRemoveInstance;
+    QAction*                            m_actionShowWaveform;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
+
+#ifdef LVR2_USE_VTK8
+    QVTKOpenGLWidget* qvtkWidget;
+#elif defined LVR2_USE_VTK9
+    QVTKOpenGLNativeWidget* qvtkWidget;
+#else
+    QVTKWidget* qvtkWidget;
+#endif
 
 
     // EDM Rendering

@@ -45,9 +45,9 @@
 #include <vtkFloatArray.h>
 #include <vtkIdFilter.h>
 #include <vtkDataSetSurfaceFilter.h>
-
+#include <vtkUnsignedCharArray.h>
 #include "lvr2/util/Util.hpp"
-
+#include <vtkIdTypeArray.h>
 namespace lvr2
 {
 
@@ -483,7 +483,7 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 		vtkSmartPointer<vtkIdFilter>::New();
 
 	pointFilter->SetInputData(m_vtk_polyData);
-#if VTK890
+#if VTK890 || defined LVR2_USE_VTK9
 	pointFilter->SetCellIdsArrayName("OriginalIds");
 	pointFilter->SetPointIdsArrayName("OriginalIds");
 #else
@@ -491,12 +491,12 @@ void LVRPointBufferBridge::computePointCloudActor(PointBufferPtr pc)
 #endif
 	pointFilter->Update();
 
-//	vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter = 
-//		vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
-//	surfaceFilter->SetInputConnection(pointFilter->GetOutputPort());
-//	surfaceFilter->Update();
-//
-//	m_id_polyData = surfaceFilter->GetOutput();
+	vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter =
+		vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+	surfaceFilter->SetInputConnection(pointFilter->GetOutputPort());
+	surfaceFilter->Update();
+
+	m_id_polyData = surfaceFilter->GetOutput();
 
 //m_vtk_polyData->GetPointData()->AddArray(ids);
 

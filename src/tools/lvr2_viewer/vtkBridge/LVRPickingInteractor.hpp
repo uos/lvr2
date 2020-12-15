@@ -50,6 +50,7 @@
 #include <boost/shared_array.hpp>
 
 #include <memory>
+#include "../widgets/LVRLabelInstanceTreeItem.hpp"
 #include "LVRInteractorStylePolygonPick.hpp"
 #include <map>
 
@@ -115,6 +116,7 @@ public:
     vtkSmartPointer<vtkPolyData> getPoints();
 
     std::vector<uint16_t>& getLabeles();
+    //void setEditability(uint16_t labelId, bool editable);
 public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
@@ -122,13 +124,15 @@ public Q_SLOTS:
     void labelingOn();
     void labelingOff();
     void setLabeledPointVisibility(int, bool);
-    void setLabel(int, std::vector<int>);
+    void setLabel(int, std::vector<int>&);
+    void refreshActors();
     void requestLabels();
 
     void labelModeChanged(bool);
     void newLabel(QTreeWidgetItem*);
     void setLassoTool(bool);
     void labelSelected(uint16_t);
+    void saveCurrentLabelSelection();
 
     void setMotionFactor(double factor);
     void setRotationFactor(double factor);
@@ -145,6 +149,8 @@ public Q_SLOTS:
     void resetCamera();
 
 Q_SIGNALS:
+    void lassoSelected();
+    void polygonSelected();
     void clusterSelected(double*);
     void firstPointPicked(double*);
     void secondPointPicked(double*);
@@ -224,7 +230,6 @@ private:
     //Labeling
     bool isInside(std::vector<vtkVector2i>* polygon, int& pX, int& pY);
     void calculateSelection(bool select);
-    void saveCurrentLabelSelection();
     void discardChanges();
     void updateActor(int);
 
@@ -232,39 +237,37 @@ private:
     PickMode            m_pickMode;
 
     /// Text actor to display info if in picking mode
-    vtkSmartPointer<vtkTextActor>     m_textActor;
-    vtkSmartPointer<vtkActor>         m_sphereActor;
-    vtkSmartPointer<vtkActor>         m_cubeActor;
-    vtkSmartPointer<vtkActor>         m_polyActor;
-    std::vector<bool>	              m_selectedPoints;
+    vtkSmartPointer<vtkTextActor>       m_textActor;
+    vtkSmartPointer<vtkActor>           m_sphereActor;
+    vtkSmartPointer<vtkActor>           m_cubeActor;
+    vtkSmartPointer<vtkActor>           m_polyActor;
+    std::vector<bool>	                m_selectedPoints;
     std::map<uint16_t, vtkSmartPointer<vtkActor>> m_labelActors;
-    vtkSmartPointer<vtkActor> m_selectedActor;
-    std::vector<uint16_t>              m_pointLabels;
-    vtkSmartPointer<vtkPolyData>      m_points;
-    vtkSmartPointer<vtkDataSetMapper> m_selectedMapper;
-    vtkSmartPointer<vtkIdTypeArray> m_selectedIds; 
+    vtkSmartPointer<vtkActor>           m_selectedActor;
+    std::vector<uint16_t>               m_pointLabels;
+    vtkSmartPointer<vtkPolyData>        m_points;
+    vtkSmartPointer<vtkDataSetMapper>   m_selectedMapper;
+    vtkSmartPointer<vtkIdTypeArray>     m_selectedIds; 
 
-    vtkSmartPointer<vtkRenderer>    m_renderer;
+    vtkSmartPointer<vtkRenderer>        m_renderer;
 
-    bool                            m_correspondenceMode;
-    bool 			    m_labelingMode;
-    bool 			    m_modified;
+    bool                                m_correspondenceMode;
+    bool 			                    m_labelingMode;
+    bool 			                    m_modified;
 
-    unsigned int                    m_numberOfClicks;
-    int                             m_previousPosition[2];
-    int                             m_startCameraMovePosition[2];
-    int 			    m_selectedLabel;
+    unsigned int                        m_numberOfClicks;
+    int                                 m_previousPosition[2];
+    int                                 m_startCameraMovePosition[2];
+    int 			                    m_selectedLabel;
 
+    double                              m_viewUp[3];
+    float                               m_motionFactor;
+    float                               m_rotationFactor;
 
-    double                          m_viewUp[3];
+    InteractorMode                      m_interactorMode;
+    ShooterMode                         m_shooterMode;
 
-    float                           m_motionFactor;
-    float                           m_rotationFactor;
-
-    InteractorMode                  m_interactorMode;
-    ShooterMode                     m_shooterMode;
-
-    std::map<uint16_t, QColor>	    m_labelColors;
+    std::map<uint16_t, LVRLabelInstanceTreeItem*> m_labelInstances;
 
 
 };

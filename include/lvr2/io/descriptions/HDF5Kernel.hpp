@@ -22,7 +22,8 @@ public:
 
     HDF5Kernel() = delete;
     HDF5Kernel(const std::string& hdf5file);
-    ~HDF5Kernel() { delete m_metaDescription;}
+    ~HDF5Kernel() {
+         delete m_metaDescription;}
 
     virtual void saveMeshBuffer(
         const std::string& group, 
@@ -76,6 +77,16 @@ public:
         const std::string& container, 
         std::vector<size_t> &dims) const;
 
+    virtual intArr loadIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+        
+    virtual uint16Arr loadUInt16Array(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+
     virtual void saveFloatArray(
         const std::string& groupName, 
         const std::string& datasetName, 
@@ -91,6 +102,16 @@ public:
         const std::string& groupName, const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<unsigned char>& data) const;
+
+    virtual void saveIntArray(
+        const std::string& groupName, const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<int>& data) const;
+
+    virtual void saveUInt16Array(
+        const std::string& groupName, const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<uint16_t>& data) const;
 
     virtual bool exists(const std::string& group) const;
     virtual bool exists(const std::string& group, const std::string& container) const;

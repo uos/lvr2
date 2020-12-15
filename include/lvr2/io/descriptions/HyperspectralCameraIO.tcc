@@ -39,8 +39,7 @@ void HyperspectralCameraIO<Derived>::saveHyperspectralCamera(
     m_matrixIO->saveMatrix(group, "extrinsicsEstimate", hyperspectralCameraPtr->extrinsicsEstimate);
 
     std::vector<size_t> dim = {1, 1};
-    std::vector<hsize_t> chunks = {1, 1};
-
+ 
     // saving focalLength
     doubleArr focalLength(new double[1]);
     focalLength[0] = hyperspectralCameraPtr->focalLength;
@@ -52,8 +51,7 @@ void HyperspectralCameraIO<Derived>::saveHyperspectralCamera(
     m_arrayIO->saveDoubleArray(group, "offsetAngle", dim, offsetAngle);
 
     dim = {3, 1};
-    chunks = {3, 1};
-
+  
     doubleArr principal(new double[3]);
     principal[0] = hyperspectralCameraPtr->principal[0];
     principal[1] = hyperspectralCameraPtr->principal[1];

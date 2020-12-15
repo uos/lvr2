@@ -16,19 +16,28 @@
 #include <initializer_list>
 
 #ifdef H5_USE_BOOST
+// starting Boost 1.64, serialization header must come before ublas
+#include <boost/serialization/vector.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #endif
 
+#ifdef H5_USE_EIGEN
+#include <Eigen/Eigen>
+#endif
+
 #include "H5Object.hpp"
+#include "bits/H5_definitions.hpp"
 
 namespace HighFive {
 
-class File;
-class DataSet;
-
+///
+/// \brief Class representing the space (dimensions) of a dataset
+///
 class DataSpace : public Object {
   public:
+
+    const static ObjectType type = ObjectType::DataSpace;
 
     static const size_t UNLIMITED = SIZE_MAX;
 
@@ -47,9 +56,9 @@ class DataSpace : public Object {
     explicit DataSpace(const std::vector<size_t>& dims);
 
     /// Make sure that DataSpace({1,2,3}) works on GCC. This is
-    /// the shortcut form of the vector initalizer, but one some compilers (gcc)
+    /// the shortcut form of the vector initializer, but one some compilers (gcc)
     /// this does not resolve correctly without this constructor.
-    explicit DataSpace(std::initializer_list<size_t> items);
+    DataSpace(const std::initializer_list<size_t>& items);
 
     /// Allow directly listing 1 or more dimensions to initialize,
     /// that is, DataSpace(1,2) means DataSpace(std::vector<size_t>{1,2}).
@@ -64,8 +73,8 @@ class DataSpace : public Object {
               const IT end);
 
     /// \brief Create a resizable N-dimensional dataspace
-    /// \params dims Initial size of dataspace
-    /// \params maxdims Maximum size of the dataspace
+    /// \param dims Initial size of dataspace
+    /// \param maxdims Maximum size of the dataspace
     explicit DataSpace(const std::vector<size_t>& dims,
                        const std::vector<size_t>& maxdims);
 
@@ -89,6 +98,10 @@ class DataSpace : public Object {
     /// associated dataset dimension
     std::vector<size_t> getDimensions() const;
 
+    /// \brief getElementCount
+    /// \return the total number of elements in the dataspace
+    size_t getElementCount() const;
+
     /// \brief getMaxDimensions
     /// \return return a vector of N-element, each element is the size of the
     /// associated dataset maximum dimension
@@ -106,13 +119,18 @@ class DataSpace : public Object {
     ///  - vector of std::string
     ///  - boost::multi_array (with H5_USE_BOOST defined)
     template <typename Value>
-    static DataSpace From(const std::vector<Value>& vec);
+    static DataSpace From(const std::vector<Value>& container);
 
     /// Create a dataspace matching the container dimensions for a
     /// std::array.
     template <typename Value, std::size_t N>
     static DataSpace From(const std::array<Value, N>&);
 
+    template <typename ValueT, std::size_t N>
+    static DataSpace From(const ValueT(&container)[N]);
+
+    template <std::size_t N, std::size_t Width>
+    static DataSpace FromCharArrayStrings(const char(&)[N][Width]);
 
 #ifdef H5_USE_BOOST
     template <typename Value, std::size_t Dims>
@@ -122,15 +140,29 @@ class DataSpace : public Object {
     static DataSpace From(const boost::numeric::ublas::matrix<Value>& mat);
 #endif
 
+#ifdef H5_USE_EIGEN
+    template <typename Value, int M, int N>
+    static DataSpace From(const Eigen::Matrix<Value, M, N>& mat);
+
+    template <typename Value, int M, int N>
+    static DataSpace From(const std::vector<Eigen::Matrix<Value, M, N>>& vec);
+#ifdef H5_USE_BOOST
+    template <typename Value, int M, int N, size_t Dims>
+    static DataSpace From(const boost::multi_array<Eigen::Matrix<Value, M, N>, Dims>& vec);
+#endif
+#endif
+
   protected:
-    explicit DataSpace();
+    DataSpace() = default;
 
     friend class Attribute;
     friend class File;
     friend class DataSet;
 };
-}
 
+}  // namespace HighFive
+
+// We include bits right away since DataSpace is user-constructible
 #include "bits/H5Dataspace_misc.hpp"
 
 #endif // H5DATASPACE_HPP

@@ -71,6 +71,10 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     bool readPointCloud(ModelPtr model_ptr);
 
     bool readMesh(ModelPtr model_ptr);
+    
+    bool readLabel(ModelPtr model_ptr);
+    
+    bool readWaveform(ModelPtr model_ptr);
 
 
     /**
@@ -83,6 +87,7 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
     virtual void save(ModelPtr model, std::string filename);
 
     bool saveMesh(ModelPtr model_ptr);
+    bool saveLabel(ModelPtr model_ptr);
 
 
 
@@ -90,7 +95,8 @@ class HDF5IO : public BaseIO, public AttributeMeshIOBase
      * @brief Construct a new HDF5IO object. Do not use this. Only used by ModelFactory
      *  
      */
-    HDF5IO() {}
+    HDF5IO() {
+	    std::cout << "default " << std::endl;}
 
     HDF5IO(std::string filename, int open_flags = HighFive::File::ReadWrite);
 
