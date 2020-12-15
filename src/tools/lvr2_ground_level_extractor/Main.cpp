@@ -118,9 +118,10 @@ int globalTexIndex = 0;
 bool preventTranslation = true;
 
 template <typename BaseVecT>
-PointsetSurfacePtr<Vec> loadPointCloud(string data)
+PointsetSurfacePtr<BaseVecT> loadPointCloud(string data)
 {
     // Load point cloud data and create adaptiveKSearchSuface
+    
     ModelPtr baseModel = ModelFactory::readModel(data);
     if (!baseModel)
     {
@@ -128,7 +129,7 @@ PointsetSurfacePtr<Vec> loadPointCloud(string data)
         return nullptr;
     }
     PointBufferPtr baseBuffer = baseModel->m_pointCloud;
-    PointsetSurfacePtr<Vec> surface;
+    PointsetSurfacePtr<BaseVecT> surface;
     surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(baseBuffer,"FLANN");
     surface->calculateSurfaceNormals();
     return surface;
@@ -229,18 +230,18 @@ Eigen::MatrixXd affineMatrix, string colorScale)
         auto realPoint1 = mesh.getVertexPositionsOfFace(*iterator)[0];
         auto realPoint2 = mesh.getVertexPositionsOfFace(*iterator)[1];
         auto realPoint3 = mesh.getVertexPositionsOfFace(*iterator)[2];
-        //Normalise Point Coordinates
+        // Normalise Point Coordinates
         auto point1 = realPoint1 - correct;
         auto point2 = realPoint2 - correct;
         auto point3 = realPoint3 - correct;
         auto maxX = std::max(point1[0],std::max(point2[0],point3[0]));
-        ssize_t fmaxX = (ssize_t)(std::round(maxX));
+        ssize_t fmaxX = (ssize_t)(maxX +1);
         auto minX = std::min(point1[0],std::min(point2[0],point3[0]));
-        ssize_t fminX = (ssize_t)(std::round(minX));
+        ssize_t fminX = (ssize_t)(minX -1);
         auto maxY = std::max(point1[1],std::max(point2[1],point3[1]));
-        ssize_t fmaxY = (ssize_t)(std::round(maxY));
+        ssize_t fmaxY = (ssize_t)(maxY +1);
         auto minY = std::min(point1[1],std::min(point2[1],point3[1]));
-        ssize_t fminY = (ssize_t)(std::round(minY));
+        ssize_t fminY = (ssize_t)(minY -1);
 
         fminY = std::round(fminY/texelSize);
         fmaxY = std::round(fmaxY/texelSize);
@@ -251,6 +252,7 @@ Eigen::MatrixXd affineMatrix, string colorScale)
         Data faceSurface = 0.5 *((point2[0] - point1[0])*(point3[1] - point1[1])
             - (point2[1] - point1[1]) * (point3[0] - point1[0]));
         
+        // Check Texels around the faces
         #pragma omp parallel for collapse(2)
         for (ssize_t y = fminY; y < fmaxY; y++)
         {
@@ -280,8 +282,8 @@ Eigen::MatrixXd affineMatrix, string colorScale)
                 }
                 else
                 {
-                    ssize_t xTex = std::round(u_x/texelSize);
-                    ssize_t yTex = std::round(u_y/texelSize); 
+                    ssize_t xTex = u_x/texelSize;
+                    ssize_t yTex = u_y/texelSize;
                     if(((yDim - yTex  - 1) * (xDim) + xTex) < 0 || ((yDim - yTex  - 1) * (xDim) + xTex) > (yDim * xDim))
                     {
                         continue;
@@ -464,7 +466,7 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> computeAffineGeoRefMatrix(VecD* src
     affineValues = svd.solve(dest);    
     Eigen::MatrixXd affineMatrix(4,4);
    
-    // Here we seperate Translation and Rotation, because we cannot ouput nodels with large coordinates
+    // Here we seperate Translation and Rotation, because we cannot ouput models with large coordinates
     auto ar = affineValues.array();
     affineMatrix << 
     ar[0], ar[1], ar[2], 0,
@@ -479,8 +481,7 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> computeAffineGeoRefMatrix(VecD* src
     0, 0, 1, ar[11], 
     0, 0, 0, 1;
    
-    auto fullAffineMatrix = affineTranslation * affineMatrix;  
-    return {affineMatrix,fullAffineMatrix};
+    return {affineMatrix,affineTranslation};
 }
 
 // Based on the "GDAL Warp API tutorial" on https://gdal.org/tutorials/warp_tut.html
@@ -530,7 +531,6 @@ void warpGeoTIFF(GDALDatasetH& src,GDALDatasetH& dt,const std::string& geogCS, c
     GDALSetGeoTransform( dt, adfDstGeoTransform );  
 
     // Extract and Set additional raster data
-    
     for (size_t i = 1; i <= GDALGetRasterCount(src); i++)
     {
         auto bandSrc = GDALGetRasterBand(src,i);
@@ -625,12 +625,10 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
     int numBands = io->getNumBands();
     double geoTransform[6];
     io->getGeoTransform(geoTransform);
-
     int bandRange = lastBand - firstBand + 1;
     float texelSize = geoTransform[1]; 
-    
+    // Create Texture with GeoTIFF's resolution
     Texture texture(globalTexIndex++, xDimTiff, yDimTiff, 3, 1, texelSize);
-
     // =======================================================================
     // Insert Band Information into Texture
     // =======================================================================
@@ -652,7 +650,7 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
         max = (max-min)/(min+1);
         
         size_t maxV = (size_t)(max*multi);      
-        // build colorMap based on max/min
+        // Build colorMap based on max/min
         ColorMap colorMap(maxV);
         float color[3];
 
@@ -693,7 +691,6 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
             auto min = values[1];
 
             auto dimV = max - min;
-
             for (ssize_t y = 0; y < yDimTiff; y++)
             {
                 for (ssize_t x = 0; x < xDimTiff; x++)
@@ -708,6 +705,7 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
                     texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + (b - 1)] = n;               
                 }              
             }
+            std::cout << "works6" << std::endl;
             delete(mat);
         }
         
@@ -715,8 +713,7 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
     else
     {
         std::cerr << "Wrong Number Of Bands ! Only 1 or 3 Bands are allowed!" << std::endl;
-    }
-    
+    } 
     std::cout << std::endl;
     return texture; 
 }
@@ -754,30 +751,29 @@ string colorScale)
         ssize_t zMin = (ssize_t)(std::round(min.z));
 
         Texture tex;
+        // If a GeoTIFF was read --> Extract its Bands
+        // Else, create a height difference texture
         if(io)
-        {            
-            tex = readGeoTIFF(io,startingBand,startingBand + numberOfBands -1);             
+        {           
+            tex = readGeoTIFF(io,startingBand,startingBand + numberOfBands -1);           
         }
         else
         {
             tex = generateHeightDifferenceTexture<VecD,double>(surface,tree,mesh,texelSize,affineMatrix,colorScale);
         }     
 
-        //Rotates the extreme Values to fit the Texture
+        // Rotates the extreme Values to fit the Texture
         if(affineMatrix.size() != 0)
         {
             Eigen::Vector4d pointMax(xMax,yMax,zMax,1);
             Eigen::Vector4d pointMin(xMin,yMin,zMin,1);
 
             Eigen::Vector4d solution;
-            //Remove affine Translation if bool is set
             solution = affineMatrix*pointMax;
-            
             auto xOldMax = solution.coeff(0);
             auto yOldMax = solution.coeff(1);
 
             solution = affineMatrix*pointMin;
-
             auto xOldMin = solution.coeff(0);
             auto yOldMin = solution.coeff(1); 
 
@@ -805,9 +801,8 @@ string colorScale)
         }
 
         ssize_t xDim = (abs(xMax) + abs(xMin));
-        ssize_t yDim = (abs(yMax) + abs(yMin));
-        // Correct coordinates
-        BaseVecT correct(xMin,yMin,0);    
+        ssize_t yDim = (abs(yMax) + abs(yMin));   
+        BaseVecT correct(xMin,yMin,0); 
 
         // Code copied from Materializer.tcc; this part essentially does what the materializer does
         // save Texture as Material so it can be correctly generated by the finalizer
@@ -840,6 +835,7 @@ string colorScale)
             
             if(io)
             {
+                // Calculate Texture Coordinates based on GeoTIFF Data
                 double geoTransform[6];
                 int y_dim_tiff = io->getRasterHeight();
                 int x_dim_tiff = io->getRasterWidth();
@@ -859,13 +855,13 @@ string colorScale)
             }
             else
             {
+                // Calculate Texture Coordinates based on normalised Model coordinates
                 pos = pos - correct;
                 xPixel = pos[0]/xDim;
                 yPixel = 1 - pos[1]/yDim;
             }         
             
             TexCoords texCoords(xPixel,yPixel);
-            
             if (vertexTexCoords.get(vertexH))
             {
                 vertexTexCoords.get(vertexH).get().push(clusterH, texCoords);
@@ -947,7 +943,6 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
     // =======================================================================
     // Generate the Bounding Box and calculate the Grids size
     // =======================================================================
-    
     auto bb = surface->getBoundingBox();
     auto max = bb.getMax();
     auto min = bb.getMin();
@@ -962,18 +957,14 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
     ssize_t yDim = abs(yMax) + abs(yMin);
 
     int maxNeighbors = 1;
-
     Data averageHeight = 0;
-
     Data xR = xDim/resolution;
     int xReso = std::round(xR);
-
     Data yR = yDim/resolution;
     int yReso = std::round(yR);
 
     vector<vector<Data>> workGrid;
     workGrid.resize(xReso+1, vector<Data>(yReso+1,0));
-
     vector<size_t> indices;  
     vector<Data> distances;  
     
@@ -989,7 +980,7 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
             Data u_y = y * resolution;
 
             indices.clear();
-            //Set the grid points height according to its nearest neighbors
+            // Set the grid node's height according to its nearest neighbors
             
             int numberNeighbors = tree.kSearch(BaseVecT(u_x + xMin,u_y + yMin,findLowestZ<BaseVecT,Data>(u_x + xMin,u_y + yMin,zMin,zMax,resolution/2,tree,points)),
              maxNeighbors, indices, distances);
@@ -1009,18 +1000,14 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
             workGrid[x][y] = averageHeight;
             ++progressGrid;
         }
-    }
-        
+    } 
     std::cout << std::endl;
     
     // =======================================================================
     // Extraction of Ground Points via Thresholding
     // =======================================================================
     // Three steps that try to filter ground points from non-ground points
-    ProgressBar progressPoints(xDim/resolution * yDim/resolution, timestamp.getElapsedTime() + "Checking Points");
-    
-    int counter = 0;
-    
+    ProgressBar progressPoints(xDim/resolution * yDim/resolution, timestamp.getElapsedTime() + "Checking Points");    
     std::map<std::tuple<ssize_t, ssize_t>,VertexHandle> dict;
     
     for (ssize_t y = 0; y < yReso; y++)
@@ -1032,7 +1019,6 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
                 ++progressPoints;
                 continue;
             }
-
             Data u_x = x * resolution;
             Data u_y = y * resolution;
 
@@ -1090,7 +1076,7 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
             {
                 for (int ywin = -1; ywin <= 0; ywin++)
                 {
-                    //Only use points that are we have set b4
+                    //Only use points that we have set before
                     if(ywin == 0 && xwin == 1)
                     {
                         continue;
@@ -1170,14 +1156,14 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
                 continue;
             }
             
-            // If the point passes through the three tests, it gets recoginised as ground point
+            // If the node passes through the three tests, it gets recoginised as ground point
             Data v_x = u_x+xMin;
             Data v_y = u_y+yMin;
             Data v_z = workGrid[x][y];
+            // Apply transformation matrix
             if(affineMatrix.size() != 0)
             {
                 Eigen::Vector4d point(v_x,v_y,v_z,1);
-
                 Eigen::Vector4d solution;
                 solution = affineMatrix*point;
                 v_x = solution.coeff(0);
@@ -1187,12 +1173,11 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
             VertexHandle v = mesh.addVertex(VecD(v_x,v_y,v_z));
             dict.emplace(std::make_tuple(x,y),v);
             ++progressPoints;
-            counter++;
         }
         
     }
     std::cout << std::endl;
-
+    //Write nodes to mesh structure and create faces
     ProgressBar progressGrid2(dict.size(), timestamp.getElapsedTime() + "Writing Grid");
     std::map<std::tuple<ssize_t, ssize_t>,VertexHandle>::iterator pf1;
     std::map<std::tuple<ssize_t, ssize_t>,VertexHandle>::iterator pf2;
@@ -1250,13 +1235,10 @@ SearchTreeFlann<BaseVecT>& tree ,int numNeighbors, Data stepSize, Eigen::MatrixX
     ssize_t xDim = abs(xMax) + abs(xMin);
     ssize_t yDim = abs(yMax) + abs(yMin);
 
-    // Lists used when constructing
     vector<size_t> indices;
     vector<Data> distances;
     Data finalZ = 0;         
-    Data avgDistance = 0;
     int trustedNeighbors = 0;
-
     int numberNeighbors = numNeighbors;
 
     xMin = xMin * (1/stepSize);
@@ -1264,7 +1246,6 @@ SearchTreeFlann<BaseVecT>& tree ,int numNeighbors, Data stepSize, Eigen::MatrixX
     yMin = yMin * (1/stepSize);
     yMax = yMax * (1/stepSize);      
     
-    avgDistance = stepSize;
     std::map<std::tuple<ssize_t, ssize_t>,VertexHandle> dict1;
     
     // =======================================================================
@@ -1277,25 +1258,26 @@ SearchTreeFlann<BaseVecT>& tree ,int numNeighbors, Data stepSize, Eigen::MatrixX
         {               
             Data u_x = x * stepSize;
             Data u_y = y * stepSize;
-            
             indices.clear();
             distances.clear();
-
             finalZ = 0;  
+            //Check if there are ground points near the node
             Data closeZ = findLowestZ<BaseVecT,Data>(u_x,u_y,zMin,zMax,stepSize/2,tree,points);
             if(closeZ == std::numeric_limits<Data>::max())
             {
                 ++progressVert;
                 continue;
-            }              
+            }         
+            //Use Nearest Neighbor Search to find the necessary amount of neighbors     
             tree.kSearch(BaseVecT(u_x,u_y,closeZ),numberNeighbors,indices,distances);
             
             trustedNeighbors = numberNeighbors;
             for (int i = 0; i < numberNeighbors; i++)
             {
-                if(distances[i] > avgDistance)
+                if(distances[i] > stepSize)
                 {
                     trustedNeighbors--;
+                    break;
                 }
                 else
                 {
@@ -1305,8 +1287,8 @@ SearchTreeFlann<BaseVecT>& tree ,int numNeighbors, Data stepSize, Eigen::MatrixX
                 }
             }
 
-            // If the center vertice isn't trustworthy, we can't complete
-            // Any triangle and thus skip the others
+            // If there are not enough points surrounding our node, it is left blank
+            // Else, the nodes height value is set to its neighbors aithmetic mean
             if(trustedNeighbors < numberNeighbors)
             {
                 ++progressVert;
@@ -1317,10 +1299,11 @@ SearchTreeFlann<BaseVecT>& tree ,int numNeighbors, Data stepSize, Eigen::MatrixX
                 finalZ = finalZ/trustedNeighbors;
             }
 
+            //Valid Nodes are saved 
             Data d_x = u_x;
             Data d_y = u_y;
             Data d_z = finalZ;
-
+            //Apply Translation Matrix
             if(affineMatrix.size() != 0)
             {
                 Eigen::Vector4d point(u_x,u_y,finalZ,1);
@@ -1338,9 +1321,8 @@ SearchTreeFlann<BaseVecT>& tree ,int numNeighbors, Data stepSize, Eigen::MatrixX
 
     }
     std::cout << std::endl;
-
+    // Write Nodes to the mesh structure and connect them to faces
     ProgressBar progressGrid(dict1.size(), timestamp.getElapsedTime() + "Writing Grid");
-
     std::map<std::tuple<ssize_t, ssize_t>,VertexHandle>::iterator pf1;
     std::map<std::tuple<ssize_t, ssize_t>,VertexHandle>::iterator pf2;
 
@@ -1417,7 +1399,7 @@ SearchTreeFlann<BaseVecT>& tree, float minRadius, float maxRadius, int minNeighb
 
     std::map<std::tuple<ssize_t, ssize_t>,VertexHandle> dict;
 
-    ProgressBar progressVert((xDim/stepSize)*(yDim/stepSize), timestamp.getElapsedTime() + "Calculating z values "); 
+    ProgressBar progressVert((xDim/stepSize)*(yDim/stepSize), timestamp.getElapsedTime() + "Calculating height values"); 
 
     // =======================================================================
     // Calculate Vertice Height and create Hexagonial Net
@@ -1426,20 +1408,18 @@ SearchTreeFlann<BaseVecT>& tree, float minRadius, float maxRadius, int minNeighb
     {        
         for (ssize_t y = yMin; y < yMax; y++)
         {           
-              
             Data u_x = x * stepSize;
             Data u_y = y * stepSize;
 
             BaseVecT point;
-            
             found = 0;
             finalZ = 0;  
             addedDistance = 0;
-
             indices.clear();
             distances.clear(); 
 
             radius = minRadius;
+            // Use lowestZ to find the start of the ground area --> if there is no ground area, the node is skipped
             Data u_z = findLowestZ<BaseVecT,Data>(u_x,u_y,zMin,zMax,stepSize/2,tree,points);
             if(u_z == std::numeric_limits<Data>::max())
             {
@@ -1448,7 +1428,7 @@ SearchTreeFlann<BaseVecT>& tree, float minRadius, float maxRadius, int minNeighb
             }
             point = BaseVecT(u_x,u_y,u_z);
             // If we don't find enough points in the current radius, we extend the radius
-            // If we hit the maximum extension and still find nothing, the point is left blank
+            // If we hit the maximum extension and still find nothing, the node is left blank
             while (found == 0)
             {
                 numberNeighbors = tree.radiusSearch(point,maxNeighbors,radius,indices,distances);
@@ -1468,7 +1448,7 @@ SearchTreeFlann<BaseVecT>& tree, float minRadius, float maxRadius, int minNeighb
                     break;
                 }                 
             }
-
+            // The nodes height value is calculated by weighting the surrounding points depending on their distance to the node
             if(found == 1)
             {
                 for (int i = 0; i < numberNeighbors; i++)
@@ -1495,10 +1475,11 @@ SearchTreeFlann<BaseVecT>& tree, float minRadius, float maxRadius, int minNeighb
                 continue;
             }
 
+            // The viable nodes are saved
             Data d_x = u_x;
             Data d_y = u_y;
             Data d_z = finalZ;
-
+            // Apply Translation Matrix
             if(affineMatrix.size() != 0)
             {
                 Eigen::Vector4d point(u_x,u_y,finalZ,1);
@@ -1517,7 +1498,7 @@ SearchTreeFlann<BaseVecT>& tree, float minRadius, float maxRadius, int minNeighb
         
     }
     std::cout << std::endl;
-
+    //All nodes are put inside the mesh structure
     std::map<std::tuple<ssize_t, ssize_t>,VertexHandle>::iterator pf1;
     std::map<std::tuple<ssize_t, ssize_t>,VertexHandle>::iterator pf2;
 
@@ -1578,6 +1559,7 @@ int main(int argc, char* argv[])
     auto surface = loadPointCloud<Vec>(options.getInputFileName());   
     if(surface == nullptr)
     {
+        std::cout << timestamp.getElapsedTime() << "IO Error: Unable to interpret " << options.getInputFileName() << std::endl;
         return 0;
     } 
     PointBufferPtr baseBuffer = surface->pointBuffer();
@@ -1617,7 +1599,7 @@ int main(int argc, char* argv[])
     int numberOfPoints;
     VecD *srcPoints;
     VecD *dstPoints;
-
+     // Read Coordinate System and Reference Points from the provided File
     if(!options.getInputReferencePairs().empty())
     {
         ifstream input;
@@ -1630,7 +1612,6 @@ int main(int argc, char* argv[])
             std::cout << timestamp.getElapsedTime() << "IO Error: Unable to read " << options.getExtractionMethod() << std::endl;
             return 0;
         }
-        // Read Coordinate System and Reference Points from the File
         std::getline(input, currenSystem);        
         std::getline(input,num);
         numberOfPoints = std::stoi(num);        
@@ -1649,7 +1630,6 @@ int main(int argc, char* argv[])
     // Read GeoTIFF and Warp
     // =======================================================================
     GeoTIFFIO* io = NULL;
-    GDALDataset* set;
     string newGeoTIFFName = options.getOutputFileName()+".tif";
 
     if(!options.getTargetSystem().empty())
@@ -1686,12 +1666,13 @@ int main(int argc, char* argv[])
     // =======================================================================
     // Compute Affine Transform Matrix from Transformed Reff Points
     // =======================================================================
-    Eigen::MatrixXd affineMatrix, fullAffineMatrix;
+    Eigen::MatrixXd affineMatrix, affineTranslation, fullAffineMatrix;
     if(!options.getInputReferencePairs().empty())
     {    
         // Right now, LVR2 doesn't support Large Coordinates and we can't use the Translation fully
         // In Functions where we use the Matrix we need to exclude the Translation 
-        tie(affineMatrix,fullAffineMatrix) = computeAffineGeoRefMatrix(srcPoints,dstPoints,numberOfPoints);        
+        tie(affineMatrix,affineTranslation) = computeAffineGeoRefMatrix(srcPoints,dstPoints,numberOfPoints); 
+        fullAffineMatrix = affineTranslation * affineMatrix;        
     } 
 
     // =======================================================================
@@ -1720,7 +1701,7 @@ int main(int argc, char* argv[])
     // =======================================================================
     // Setup LVR_2 Function to allow the export of the Mesh as obj/ply
     // =======================================================================
-    // Creating a cluster map made up of one cluster is necessary to use the finalizer   
+    // Creating a cluster map made up of one cluster is necessary to use the finalizer and project the texture
     ClusterBiMap<FaceHandle> clusterBiMap;
     MeshHandleIteratorPtr<FaceHandle> iterator = mesh.facesBegin();
     auto newCluster = clusterBiMap.createCluster();
@@ -1736,7 +1717,7 @@ int main(int argc, char* argv[])
     auto matResult = 
     projectTexture<VecD>(mesh,clusterBiMap,*usedSurface,texelSize,affineMatrix,fullAffineMatrix,io,tree,options.getStartingBand(),
     options.getNumberOfBands(),options.getColorScale());
-    // Path Texture and Texture Coordinate into the Finalizer
+    // Pass Texture and Texture Coordinate into the Finalizer
     finalize.setMaterializerResult(matResult);  
     // Convert Mesh into Buffer and create Model
     auto buffer = finalize.apply(mesh);
@@ -1754,13 +1735,12 @@ int main(int argc, char* argv[])
     std::cout << timestamp.getElapsedTime() << "Saving Model as obj" << std::endl;
     ModelFactory::saveModel(m,options.getOutputFileName() + ".obj");  
 
-    ofstream file;
-    file.open (options.getOutputFileName() + "_transformmatrix.txt");
-    file << affineMatrix << "\n" << fullAffineMatrix;
-    file.close();
-
     if(!options.getInputReferencePairs().empty())
     {
+        ofstream file;
+        file.open (options.getOutputFileName() + "_transformmatrix.txt");
+        file << "Transformation Matrix without Translation\n" << affineMatrix << "\n" << "Translation\n" << affineTranslation;
+        file.close();
         delete(srcPoints);
         delete(dstPoints);
 
