@@ -653,7 +653,7 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
         // Build colorMap based on max/min
         ColorMap colorMap(maxV);
         float color[3];
-
+        ProgressBar progressGeoTIFF(yDimTiff* xDimTiff, timestamp.getElapsedTime() + "Extracting GeoTIFF data ");
         for (ssize_t y = 0; y < yDimTiff; y++)
         {
             for (ssize_t x = 0; x < xDimTiff; x++)
@@ -664,13 +664,15 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
                     texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + 0] = 0;
                     texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + 1] = 0;
                     texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + 2] = 0;  
+                    ++progressGeoTIFF;
                     continue;
                 }
                 colorMap.getColor(color, (n-min)/(min+1)*multi,JET);
         
                 texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + 0] = color[0] * 255;
                 texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + 1] = color[1] * 255;
-                texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + 2] = color[2] * 255;                
+                texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + 2] = color[2] * 255;
+                ++progressGeoTIFF;                
             }              
         }
         delete(mat);
@@ -678,6 +680,7 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
     }
     else if (bandRange == 3)
     {
+        ProgressBar progressGeoTIFF(yDimTiff* xDimTiff*3, timestamp.getElapsedTime() + "Extracting GeoTIFF data ");
         for (int b = firstBand; b <= lastBand; b++)
         {
             cv::Mat *mat = io->readBand(b);
@@ -702,10 +705,10 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
                     {
                         n = 0;
                     }
-                    texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + (b - 1)] = n;               
+                    texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + (b - 1)] = n; 
+                    ++progressGeoTIFF;              
                 }              
             }
-            std::cout << "works6" << std::endl;
             delete(mat);
         }
         
