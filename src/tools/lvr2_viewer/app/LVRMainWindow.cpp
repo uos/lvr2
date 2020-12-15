@@ -1686,7 +1686,7 @@ void LVRMainWindow::unloadPointCloudData()
 
 }
 
-void LVRMainWindow::loadScanProjectDir()
+void LVRMainWindow::loadScanProjectDir(bool lazy)
 {
     QString filename = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", 
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
@@ -1695,9 +1695,8 @@ void LVRMainWindow::loadScanProjectDir()
     {
         DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
         DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
-
         DirectoryIO dirIO(dirKernel, hyperlibSchema);
-        ScanProjectPtr scanProject = dirIO.loadScanProject();
+        ScanProjectPtr scanProject = dirIO.loadScanProject(lazy);
 
         loadScanProject(scanProject, filename);
     }

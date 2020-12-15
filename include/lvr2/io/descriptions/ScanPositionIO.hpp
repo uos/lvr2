@@ -54,7 +54,7 @@ class ScanPositionIO
     //   const std::string group&, 
     //   const ScanPositionPtr& scanPositionPtr);
 
-    ScanPositionPtr loadScanPosition(const size_t& scanPosNo);
+    ScanPositionPtr loadScanPosition(const size_t& scanPosNo, bool lazy = false);
     //ScanPositionPtr load(const std::string& group, const std::string& container);
 
   protected:

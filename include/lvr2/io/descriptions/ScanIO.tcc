@@ -1,5 +1,6 @@
 #include "lvr2/io/yaml/Scan.hpp"
 #include <boost/optional/optional_io.hpp>
+#include "lvr2/registration/OctreeReduction.hpp"
 
 namespace lvr2
 {
@@ -65,7 +66,7 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
 }
 
 template <typename FeatureBase>
-ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& scanNo)
+ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& scanNo, bool lazy)
 {
     ScanPtr ret(new Scan);
 
@@ -110,6 +111,14 @@ ScanPtr ScanIO<FeatureBase>::loadScan(const size_t& scanPosNo, const size_t& sca
 
     // Load actual data
     ret->points = m_featureBase->m_kernel->loadPointBuffer(groupName, scanName);
+
+    // Octree Reduction
+    if(!lazy)
+    {   
+        OctreeReduction oct(ret->points, 0.1, 5);
+        ret->points = oct.getReducedPoints();
+    }
+
     /*
     boost::shared_array<float> pointData;
     std::vector<size_t> pointDim;

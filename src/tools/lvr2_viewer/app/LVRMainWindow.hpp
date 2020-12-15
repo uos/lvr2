@@ -162,7 +162,7 @@ public Q_SLOTS:
     void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
     void loadScanProject(ScanProjectPtr scanProject, QString filename);
-    void loadScanProjectDir();
+    void loadScanProjectDir(bool lazy = true);
     void loadScanProjectH5();
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();

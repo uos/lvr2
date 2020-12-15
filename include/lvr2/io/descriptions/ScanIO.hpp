@@ -21,7 +21,7 @@ class ScanIO
    // void save(const std::string& group, const std::string& container, const std::string& metaFile, const ScanPtr& scan);
     void saveScan(const size_t& scanPosNo, const size_t& scanNo, const ScanPtr& buffer);
   
-    ScanPtr loadScan(const size_t& scanPosNo, const size_t& scanNo);
+    ScanPtr loadScan(const size_t& scanPosNo, const size_t& scanNo, bool lazy = false);
     //ScanPtr load(const std::string& group, const std::string& container);
     
   protected:

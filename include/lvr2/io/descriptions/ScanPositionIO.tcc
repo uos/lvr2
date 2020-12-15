@@ -65,7 +65,7 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
 }
 
 template <typename  FeatureBase>
-ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& scanPosNo)
+ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& scanPosNo, bool lazy)
 {
     ScanPositionPtr ret(new ScanPosition);
 
@@ -128,7 +128,7 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
         // Check if it exists. If not, exit.
         if(m_featureBase->m_kernel->exists(groupName, dataSetName))
         {
-            ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo);
+            ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo, lazy);
             ret->scans.push_back(scan);
         }
         else
