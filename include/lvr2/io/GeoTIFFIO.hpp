@@ -93,6 +93,12 @@ public:
     void getGeoTransform(double * geoTransform);
 
     /**
+     * @param band_index index of the band of interest
+     * @return no data value of chosen band
+     */ 
+    double getNoDataValue(int band_index);
+
+    /**
      * @param band_index index of the band to be read
      * @return indexed band of the dataset as cv::Mat *
      */

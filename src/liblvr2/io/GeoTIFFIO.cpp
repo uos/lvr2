@@ -106,6 +106,12 @@ void GeoTIFFIO::getGeoTransform(double * geoTransform)
     }
 }
 
+double GeoTIFFIO::getNoDataValue(int band_index)
+{
+    GDALRasterBand *band = m_gtif_dataset->GetRasterBand(band_index);
+    return band->GetNoDataValue();
+}
+
 cv::Mat *GeoTIFFIO::readBand(int index)
 {
     GDALRasterBand *band = m_gtif_dataset->GetRasterBand(index);

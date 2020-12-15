@@ -593,11 +593,42 @@ void transformPoints(string src,string dt, BaseVecT* srcPoints, BaseVecT* destPo
 
 }
 
-Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
+Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand, string colorScale)
 {
     // =======================================================================
     // Read key Information from the TIFF
     // ======================================================================= 
+
+    GradientType type;
+    // Get Color Scale --> Default to JET if not supported
+    if(colorScale == "GREY")
+    {
+        type = GREY;
+    }
+    else if(colorScale == "JET")
+    {
+        type = JET;
+    }
+    else if(colorScale == "HOT")
+    {
+        type = HOT;
+    }
+    else if(colorScale == "HSV")
+    {
+        type = HSV;
+    }
+    else if(colorScale == "SHSV")
+    {
+        type = SHSV;
+    }
+    else if(colorScale == "SIMPSONS")
+    {
+        type = SIMPSONS;
+    }
+    else
+    {
+        type = JET;
+    }
     
     int yDimTiff = io->getRasterHeight();
     int xDimTiff = io->getRasterWidth();
@@ -614,13 +645,37 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
     if(bandRange == 1)
     {
         cv::Mat *mat = io->readBand(firstBand);
+        double noData = io->getNoDataValue(firstBand);
         // Get minimum/maximum of band and remove comma
         int counter = 0;
-        float values[2];
-        io->getMaxMinOfBand(values,firstBand);
+        //float values[2];
+
+        // Since faulty GeoTIFFs with no Max/Min exists, this is done manually
+        /*io->getMaxMinOfBand(values,firstBand);
         
         auto max = values[0];
-        auto min = values[1];
+        auto min = values[1];*/
+        double max = std::numeric_limits<double>::min();
+        double min = std::numeric_limits<double>::max();
+        for (ssize_t y = 0; y < yDimTiff; y++)
+        {
+            for (ssize_t x = 0; x < xDimTiff; x++)
+            {                
+                auto n = mat->at<float>((yDimTiff - y - 1) * (xDimTiff) + x);
+                if(n == noData)
+                {
+                    continue;
+                }
+                if(n >= max)
+                {
+                    max = n;
+                }
+                if(n <= min)
+                {
+                    min = n;
+                }
+            }              
+        }
         int multi = 1;
         if(abs(min) < 1 || abs(max) < 1)
         {
@@ -646,7 +701,7 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
                     ++progressGeoTIFF;
                     continue;
                 }
-                colorMap.getColor(color, (n-min)/(min+1)*multi,JET);
+                colorMap.getColor(color, (n-min)/(min+1)*multi,type);
         
                 texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + 0] = color[0] * 255;
                 texture.m_data[(yDimTiff  - y - 1) * (xDimTiff * 3) + x * 3 + 1] = color[1] * 255;
@@ -663,15 +718,37 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand)
         for (int b = firstBand; b <= lastBand; b++)
         {
             cv::Mat *mat = io->readBand(b);
+            double noData = io->getNoDataValue(firstBand);
             // Get minimum/maximum of band and find multipler that removes comma
             int counter = 0;
-            float values[2];
+            /*float values[2];
             io->getMaxMinOfBand(values,b);
             
             int multi = 1;
             auto max = values[0];
-            auto min = values[1];
+            auto min = values[1];*/
 
+            double max = std::numeric_limits<double>::min();
+            double min = std::numeric_limits<double>::max();
+            for (ssize_t y = 0; y < yDimTiff; y++)
+            {
+                for (ssize_t x = 0; x < xDimTiff; x++)
+                {                
+                    auto n = mat->at<float>((yDimTiff - y - 1) * (xDimTiff) + x);
+                    if(n == noData)
+                    {
+                        continue;
+                    }
+                    if(n >= max)
+                    {
+                        max = n;
+                    }
+                    if(n <= min)
+                    {
+                        min = n;
+                    }
+                }              
+            }
             auto dimV = max - min;
             for (ssize_t y = 0; y < yDimTiff; y++)
             {
@@ -737,7 +814,7 @@ string colorScale)
         // Else, create a height difference texture
         if(io)
         {           
-            tex = readGeoTIFF(io,startingBand,startingBand + numberOfBands -1);           
+            tex = readGeoTIFF(io,startingBand,startingBand + numberOfBands -1, colorScale);           
         }
         else
         {
@@ -1534,6 +1611,7 @@ int main(int argc, char* argv[])
         return 0;
     }
     std::cout << options << std::endl; 
+
     // =======================================================================
     // Load Pointcloud and create Model + Surface + SearchTree
     // =======================================================================
