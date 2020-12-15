@@ -297,7 +297,7 @@ private:
 
     QList<QTreeWidgetItem*>                     m_items_copied;
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
-    LVRLabelDialog*                   		m_labelDialog;
+    LVRLabelDialog*                   		    m_labelDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     std::map<uint32_t, WaveformPtr>             m_waveformOffset;
     LVRPlotter*                                 m_PointPreviewPlotter;

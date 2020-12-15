@@ -3259,6 +3259,7 @@ void LVRMainWindow::openIntermediaProject()
     labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
 
 }
+
 void LVRMainWindow::openScanProject()
 {
     // QString fileName = QFileDialog::getOpenFileName(this,
@@ -3269,9 +3270,16 @@ void LVRMainWindow::openScanProject()
     // }
     // openHDF5(fileName.toStdString());
 
-    LVRScanProjectOpenDialog dialog(this);
+    LVRScanProjectOpenDialog* dialog = new LVRScanProjectOpenDialog(this);
     
-    
+    // Display
+    dialog->setModal(true);
+    dialog->raise();
+    dialog->activateWindow();
+    dialog->exec();
+
+    delete dialog;
+
 }
  
 void LVRMainWindow::openHDF5(std::string fileName)
