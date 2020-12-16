@@ -106,6 +106,7 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
             QColor color(instancePtr->color[0],instancePtr->color[1],instancePtr->color[2]);
             if(first)
             {
+                //TODO: ADD COLOR To Class
                 classItem->setColor(color);
             }
             int id = 0;
@@ -117,14 +118,15 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
 
             classItem->addChildnoChanges(instanceItem);
 
-            comboBox->addItem(QString::fromStdString(instanceItem->getName()), id);
             interactor->newLabel(instanceItem);
+            comboBox->addItem(QString::fromStdString(instanceItem->getName()), id);
             int comboBoxPos = comboBox->findData(instanceItem->getId());
-            comboBox->setCurrentIndex(comboBoxPos);
-            
             interactor->setLabel(id, instancePtr->labeledIDs);
+            comboBox->setCurrentIndex(comboBoxPos);
         }
     }
+
+    interactor->refreshActors();
 
 }
 int LVRLabelTreeWidget::getNextId()

@@ -603,7 +603,7 @@
    <addaction name="actionShow_SpectralPointPreview"/>
    <addaction name="actionShow_SpectralHistogram"/>
    <addaction name="separator"/>
-   <addaction name="actionConfirm_LabelSelection"/>
+   <addaction name="actionShow_LabelDock"/>
    <addaction name="actionSelected_Lasso"/>
    <addaction name="actionSelected_Polygon"/>
   </widget>
@@ -1578,9 +1578,9 @@
     <string>Simple Plane Classification</string>
    </property>
   </action>
-  <action name="actionConfirm_LabelSelection">
+  <action name="actionShow_LabelDock">
    <property name="checkable">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="checked">
     <bool>false</bool>
@@ -1590,7 +1590,7 @@
      <normaloff>:/qv_labeltool.png</normaloff>:/qv_labeltool.png</iconset>
    </property>
    <property name="text">
-    <string>Confirm Selection</string>
+    <string>Show LabelDock</string>
    </property>
   </action>
   <action name="actionSelected_Lasso">

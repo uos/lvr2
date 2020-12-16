@@ -160,6 +160,9 @@ public Q_SLOTS:
     void comboBoxIndexChanged(int index);
     void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
+    void loadScanProject();
+    void loadScanProjectDir();
+    void loadScanProjectH5();
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();
     void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
@@ -225,6 +228,7 @@ public Q_SLOTS:
 
     void assertToggles();
     void togglePoints(bool checkboxState);
+    void toggleLabelDock(bool checkboxState);
     void toggleNormals(bool checkboxState);
     void toggleMeshes(bool checkboxState);
     void toggleWireframe(bool checkboxState);
@@ -319,6 +323,9 @@ private:
     // Toolbar item "File"
     QAction*                            m_actionOpen;
     QAction*                            m_actionOpenChunkedMesh;
+    QAction*                            m_actionOpenScanProject;
+    QAction*                            m_actionOpenScanProjectDir;
+    QAction*                            m_actionOpenScanProjectH5;
     QAction*                            m_actionExport;
     QAction*                            m_actionQuit;
     // Toolbar item "Views"

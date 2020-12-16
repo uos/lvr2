@@ -3,7 +3,7 @@
 #ifndef LVR2_IO_HDF5_SCANIO_HPP
 #define LVR2_IO_HDF5_SCANIO_HPP
 
-#include "ArrayIO.hpp"
+#include "lvr2/io/descriptions/ArrayIO.hpp"
 #include "MatrixIO.hpp"
 #include "WaveformIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"

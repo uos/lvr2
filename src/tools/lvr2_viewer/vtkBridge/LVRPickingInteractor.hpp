@@ -124,7 +124,8 @@ public Q_SLOTS:
     void labelingOn();
     void labelingOff();
     void setLabeledPointVisibility(int, bool);
-    void setLabel(int, std::vector<int>);
+    void setLabel(int, std::vector<int>&);
+    void refreshActors();
     void requestLabels();
 
     void labelModeChanged(bool);

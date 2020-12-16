@@ -369,7 +369,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
-    QObject::connect(this->actionConfirm_LabelSelection, SIGNAL(triggered()), m_pickingInteractor, SLOT(saveCurrentLabelSelection()));
+    QObject::connect(this->actionShow_LabelDock, SIGNAL(toggled(bool)), this, SLOT(toggleLabelDock(bool)));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(triggered()), this, SLOT(showColorDialog()));
     QObject::connect(m_actionRenameModelItem, SIGNAL(triggered()), this, SLOT(renameModelItem()));
@@ -509,6 +509,17 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 }
 
+void LVRMainWindow::toggleLabelDock(bool checkBoxState)
+{
+    if(checkBoxState)
+    {
+        this->dockWidgetLabel->show();
+    }else
+    {
+        this->dockWidgetLabel->hide();
+    }
+
+}
 void LVRMainWindow::showBackgroundDialog()
 {
 
@@ -1328,7 +1339,6 @@ void LVRMainWindow::addLabelClass()
    // Q_EMIT(labelAdded(instanceItem));
     m_pickingInteractor->newLabel(instanceItem);
     int comboBoxPos = selectedInstanceComboBox->findData(instanceItem->getId());
-    std::cout << instanceItem->getId() << std::endl;
     selectedInstanceComboBox->setCurrentIndex(comboBoxPos);
     //Q_EMIT(labelChanged(id));
 }
@@ -1504,20 +1514,20 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
             QString base = info.fileName();
 	    if(info.suffix() == "")
 	    {
-            //read intermediaformat
-	        DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(info.absoluteFilePath().toStdString())); 
-            std::string tmp = info.absolutePath().toStdString();
-            DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib(tmp)); 
-            DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
-            ScanProjectPtr scanProject = dirIO.loadScanProject();
-            ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
-            bridge->addActors(m_renderer);
-            LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
-            QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
-            root->addChild(item);
-            item->setExpanded(false);
+                //read intermediaformat
+                DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(info.absoluteFilePath().toStdString())); 
+                std::string tmp = info.absolutePath().toStdString();
+                DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib(tmp)); 
+                DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
+                ScanProjectPtr scanProject = dirIO.loadScanProject();
+                ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
+                bridge->addActors(m_renderer);
+                LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+                QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+                root->addChild(item);
+                item->setExpanded(false);
             //lastItem = item;
-        }else if (info.suffix() == "h5")
+            }else if (info.suffix() == "h5")
             {
                 openHDF5(info.absoluteFilePath().toStdString());
             } else {
@@ -1670,6 +1680,42 @@ void LVRMainWindow::unloadPointCloudData()
     }
 
 }
+
+void LVRMainWindow::loadScanProjectDir()
+{
+    // Commented out due to different type errors
+
+    // QString dirPath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    // DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
+    // //DirectorySchemaPtr slamSchemaPtr(new ScanProjectSchemaSLAM);
+    // DirectoryKernelPtr slamDirKernel(new DirectoryKernel(dirPath));
+    // DirectoryIO slamIO(slamDirKernel, hyperlibSchema);
+    // ScanProjectPtr slamProject = slamIO.loadScanProject();
+    
+    // std::vector<ScanPositionPtr> positions = slamProject->positions;
+    // std::vector<ScanPtr> scans = positions[0]->scans;
+    // std::cout << "test" << std::endl;
+
+
+    // std::cout << positions.size() << std::endl;
+
+}
+
+void LVRMainWindow::loadScanProjectH5()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Hello World H5");
+    msgBox.exec();
+}
+
+void LVRMainWindow::loadScanProject()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Hello World");
+    msgBox.exec();
+}
+
 
 void LVRMainWindow::showImage()
 {
@@ -3396,7 +3442,7 @@ void LVRMainWindow::exportLabels()
 void LVRMainWindow::comboBoxIndexChanged(int index)
 {
     labelTreeWidget->itemSelected(selectedInstanceComboBox->itemData(index).toInt());
-	Q_EMIT(labelChanged(selectedInstanceComboBox->itemData(index).toInt()));
+    Q_EMIT(labelChanged(selectedInstanceComboBox->itemData(index).toInt()));
 }
 
 void LVRMainWindow::lassoButtonToggled(bool checked)
