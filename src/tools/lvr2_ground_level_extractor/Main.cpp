@@ -444,7 +444,6 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> computeAffineGeoRefMatrix(VecD* src
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
     affineValues = svd.solve(dest);    
     Eigen::MatrixXd affineMatrix(4,4);
-   
     // Here we seperate Translation and Rotation, because we cannot ouput models with large coordinates
     auto ar = affineValues.array();
     affineMatrix << 
@@ -780,7 +779,7 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand, string colorScal
 template<typename BaseVecT>
 MaterializerResult<BaseVecT> projectTexture(const lvr2::HalfEdgeMesh<BaseVecT>& mesh, const ClusterBiMap<FaceHandle>& clusters, const PointsetSurface<Vec>& surface, 
 float texelSize, Eigen::MatrixXd affineMatrix, Eigen::MatrixXd fullAffineMatrix, GeoTIFFIO* io,SearchTreeFlann<BaseVecT>& tree, int startingBand, int numberOfBands,
-string colorScale)
+string colorScale, bool noTransformation)
 {
     // =======================================================================
     // Prepare necessary preconditions to create MaterializerResult
@@ -887,8 +886,8 @@ string colorScale)
         for (auto vertexH : clusterVertices)
         {            
             auto pos = mesh.getVertexPosition(vertexH);
-            // Correct coordinates
-            
+
+            // Correct coordinates            
             float yPixel = 0;
             float xPixel = 0;
             
@@ -903,8 +902,22 @@ string colorScale)
                 io->getGeoTransform(geoTransform);   
                 if(preventTranslation) 
                 {
-                    pos[0] = pos[0] + fullAffineMatrix(12);
-                    pos[1] = pos[1] + fullAffineMatrix(13);
+                    // To correctly depict the GeoTIFFs data we need the referenced coordinates
+                    if(noTransformation)
+                    {
+                        Eigen::Vector4d point(pos[0],pos[1],0,1);
+
+                        Eigen::Vector4d solution;
+                        solution = fullAffineMatrix*point;
+                        pos[0] = solution.coeff(0);
+                        pos[1] = solution.coeff(1);
+                    }
+                    else
+                    {
+                        pos[0] = pos[0] + fullAffineMatrix(12);
+                        pos[1] = pos[1] + fullAffineMatrix(13);
+                    } 
+                    
                 }
                 
                 xPixel = (pos[0] - geoTransform[0])/geoTransform[1];
@@ -1320,14 +1333,14 @@ SearchTreeFlann<BaseVecT>& tree ,int numNeighbors, Data stepSize, Eigen::MatrixX
             indices.clear();
             distances.clear();
             finalZ = 0;  
-            //Check if there are ground points near the node
+            // Check if there are ground points near the node
             Data closeZ = findLowestZ<BaseVecT,Data>(u_x,u_y,zMin,zMax,stepSize/2,tree,points);
             if(closeZ == std::numeric_limits<Data>::max())
             {
                 ++progressVert;
                 continue;
             }         
-            //Use Nearest Neighbor Search to find the necessary amount of neighbors     
+            // Use Nearest Neighbor Search to find the necessary amount of neighbors     
             tree.kSearch(BaseVecT(u_x,u_y,closeZ),numberNeighbors,indices,distances);
             
             trustedNeighbors = numberNeighbors;
@@ -1726,13 +1739,31 @@ int main(int argc, char* argv[])
     // =======================================================================
     // Compute Affine Transform Matrix from Transformed Reff Points
     // =======================================================================
-    Eigen::MatrixXd affineMatrix, affineTranslation, fullAffineMatrix;
+    Eigen::MatrixXd affineMatrix, affineTranslation, fullAffineMatrix, checkMatrix;
+    bool noTransformation = false;
     if(!options.getInputReferencePairs().empty())
     {    
         // Right now, LVR2 doesn't support Large Coordinates and we can't use the Translation fully
         // In Functions where we use the Matrix we need to exclude the Translation 
         tie(affineMatrix,affineTranslation) = computeAffineGeoRefMatrix(srcPoints,dstPoints,numberOfPoints); 
-        fullAffineMatrix = affineTranslation * affineMatrix;        
+        fullAffineMatrix = affineTranslation * affineMatrix;
+
+        // Check, if Rotation is supported
+        for (int i = 0; i < 16; i++)
+        {
+            // This is supposed to detect numbers that cannot be represented with float accuracy after Transformation
+            // If there is an easier or more accurate way to achieve this, insert it here
+            // Optimal Solution would probably be to output vertices as doubles
+            if(abs(affineMatrix(i)) != 0)
+            {
+                if(abs(affineMatrix(i)) < 0.00001 || abs(affineMatrix(i)) > 1000)
+                {
+                    noTransformation = true;
+                    affineMatrix = checkMatrix;
+                    break;
+                }
+            }
+        }        
     } 
 
     // =======================================================================
@@ -1776,7 +1807,7 @@ int main(int argc, char* argv[])
     // Generate Texture for the OBJ file
     auto matResult = 
     projectTexture<VecD>(mesh,clusterBiMap,*usedSurface,texelSize,affineMatrix,fullAffineMatrix,io,tree,options.getStartingBand(),
-    options.getNumberOfBands(),options.getColorScale());
+    options.getNumberOfBands(),options.getColorScale(), noTransformation);
     // Pass Texture and Texture Coordinate into the Finalizer
     finalize.setMaterializerResult(matResult);  
     // Convert Mesh into Buffer and create Model
@@ -1799,7 +1830,15 @@ int main(int argc, char* argv[])
     {
         ofstream file;
         file.open (options.getOutputFileName() + "_transformmatrix.txt");
-        file << "Transformation Matrix without Translation\n" << affineMatrix << "\n" << "Translation\n" << affineTranslation;
+        if(!noTransformation)
+        {
+            file << "Transformation Matrix without Translation\n" << affineMatrix << "\n" << "Translation\n" << affineTranslation;
+        }
+        else
+        {
+            std::cout << timestamp.getElapsedTime() << "Transformation cannot be applied without destroying the model. Full Transformation can be found in " << options.getOutputFileName() + "_transformmatrix.txt" << std::endl;
+            file << "Full Transformation\n" << fullAffineMatrix;
+        }
         file.close();
         delete(srcPoints);
         delete(dstPoints);
