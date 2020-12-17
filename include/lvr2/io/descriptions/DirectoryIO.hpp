@@ -6,26 +6,31 @@
 #include "lvr2/io/descriptions/FeatureBase.hpp"
 #include "lvr2/io/descriptions/ScanProjectIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include <memory> // shared_ptr
 
 namespace lvr2
 {
 
-class DirectoryIO
+using DirectoryIOBase = FeatureBuild<ScanProjectIO>;
+
+class DirectoryIO : public DirectoryIOBase
 {
 public:
-    DirectoryIO() = delete;
-    DirectoryIO(DirectoryKernelPtr kernel, DirectorySchemaPtr schema) : m_kernel(kernel), m_schema(schema) {}
-
-    void saveScanProject(ScanProjectPtr project);
-    ScanProjectPtr loadScanProject();
-
-private:
-    DirectoryKernelPtr m_kernel;
-    DirectorySchemaPtr m_schema;
+    
+    /**
+     * @brief Construct a new Directory IO object.
+     * DirectoryIO allows only combinations of DirectoryKernels and DirectorySchemas in constructor
+     * 
+     * @param kernel 
+     * @param schema 
+     */
+    DirectoryIO(DirectoryKernelPtr kernel, DirectorySchemaPtr schema) 
+    : DirectoryIOBase(kernel, schema) 
+    {}
 };
 
 using DirectoryIOPtr = std::shared_ptr<DirectoryIO>;
 
 } // namespace lvr2
 
-#endif
+#endif // DIRECTORYIO_HPP
