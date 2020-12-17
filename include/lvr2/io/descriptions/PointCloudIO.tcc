@@ -16,6 +16,19 @@ PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(const std::string& grou
     return m_featureBase->m_kernel->loadPointBuffer(group, name);
 }
 
+template<typename FeatureBase>
+PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
+    const std::string& group, const std::string& name, 
+    const ReductionAlgorithm& reduction)
+{
+    // Load full version of point cloud data
+    PointBufferPtr ptr =  m_featureBase->m_kernel->loadPointBuffer(group, name);
+
+    // Return reduced version 
+    reduction.setPointBuffer(ptr);
+    return reduction.getReducedPoints();
+}
+
 
 template<typename FeatureBase>
 bool PointCloudIO<FeatureBase>::isPointCloud(

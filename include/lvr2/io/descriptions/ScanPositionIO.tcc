@@ -139,7 +139,7 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     } 
     while (true);
 
-    // Get all scan camera
+    // Get all scan cameras
     size_t camNo = 0;
     do
     {

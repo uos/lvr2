@@ -7,6 +7,7 @@
 #include "MatrixIO.hpp"
 #include "WaveformIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/registration/ReductionAlgorithm.hpp"
 
 #include <sstream>
 #include <yaml-cpp/yaml.h>
@@ -22,6 +23,7 @@ class ScanIO
     void saveScan(const size_t& scanPosNo, const size_t& scanNo, const ScanPtr& buffer);
   
     ScanPtr loadScan(const size_t& scanPosNo, const size_t& scanNo);
+    ScanPtr loadScan(const size_t& scanPosNo, const size_t& scanNo, ReductionAlgorithm& reduction);
     //ScanPtr load(const std::string& group, const std::string& container);
     
   protected:
