@@ -25,10 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef REDUCTION_ALGORITHM_HPP
-#define REDUCTION_ALGORITHM_HPP
+#ifndef LVR2_REDUCTION_ALGORITHM_HPP
+#define LVR2_REDUCTION_ALGORITHM_HPP
 
 #include "lvr2/io/PointBuffer.hpp"
+
+#include <memory>
 
 namespace lvr2
 {
@@ -59,11 +61,38 @@ public:
       * @param ptr Point buffer containing the original point cloud data
       */
      virtual void setPointBuffer(PointBufferPtr ptr) { m_pointBuffer = ptr; }
-
 protected:
+
      PointBufferPtr      m_pointBuffer;
 };
 
+using ReductionAlgorithmPtr = std::shared_ptr<ReductionAlgorithm>;
+
+
+
+
+// EXAMPLE: Reduce All: return empty
+class AllReductionAlgorithm : public ReductionAlgorithm 
+{
+public:
+     virtual PointBufferPtr getReducedPoints() 
+     {
+          PointBufferPtr empty;
+          return empty;
+     }
+};
+
+
+class NoReductionAlgorithm : public ReductionAlgorithm 
+{
+public:
+     virtual PointBufferPtr getReducedPoints() 
+     {
+          return m_pointBuffer;
+     }
+};
+
+
 } // namespace lvr2
 
-#endif
+#endif // LVR2_REDUCTION_ALGORITHM_HPP

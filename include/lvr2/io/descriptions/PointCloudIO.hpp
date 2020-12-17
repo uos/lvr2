@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_POINTBUFFERIO_HPP
-#define LVR2_IO_HDF5_POINTBUFFERIO_HPP
+#ifndef LVR2_IO_DIRECTORY_POINTBUFFERIO_HPP
+#define LVR2_IO_DIRECTORY_POINTBUFFERIO_HPP
 
 #include <boost/optional.hpp>
 
@@ -76,19 +76,22 @@ public:
      *                          cloud data stored at the position 
      *                          defined by \ref group and \ref container
      */
-    PointBufferPtr loadPointCloud( const std::string& group, const std::string& container, 
-        const ReductionAlgorithm& reduction);
+    PointBufferPtr loadPointCloud(
+        const std::string& group,
+        const std::string& container, 
+        ReductionAlgorithmPtr reduction);
     
 protected:
 
     /// Checks whether the indicated group contains point cloud data
-    bool isPointCloud(const std::string& group);
+    bool isPointCloud(const std::string& group, 
+        const std::string& name);
 
     /// Add access to feature base
-    FeatureBase* m_FeatureBase = static_cast<FeatureBase*>(this);
+    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
     /// Dependencies
-    VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_file_access);
+    // VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_featureBase);
 
     /// Class ID
     static constexpr const char* ID = "PointCloudIO";
@@ -97,20 +100,9 @@ protected:
     static constexpr const char* OBJID = "PointBuffer";
 };
 
-template<typename FeatureBase>
-struct FeatureConstruct<PointCloudIO, FeatureBase> {
-    
-    // DEPS
-    using deps = typename FeatureConstruct<VariantChannelIO, FeatureBase>::type;
-
-    // add actual feature
-    using type = typename deps::template add_features<PointCloudIO>::type;
-     
-};
-
 } // namespace lvr2 
 
 #include "PointCloudIO.tcc"
 
 
-#endif // LVR2_IO_HDF5_POINTBUFFERIO_HPP
+#endif // LVR2_IO_DIRECTORY_POINTBUFFERIO_HPP

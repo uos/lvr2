@@ -55,45 +55,33 @@ class VariantChannelIO {
 public:
 
     template<typename ...Tp>
-    void save(std::string groupName, std::string datasetName, const VariantChannel<Tp...>& vchannel);
-    
-    template<typename ...Tp>
-    void save(HighFive::Group& group, std::string datasetName, const VariantChannel<Tp...>& vchannel);
-    
-    template<typename VariantChannelT>
-    boost::optional<VariantChannelT> load(std::string groupName, std::string datasetName);
+    void save(  std::string groupName,
+                std::string datasetName,
+                const VariantChannel<Tp...>& vchannel);
     
     template<typename VariantChannelT>
-    boost::optional<VariantChannelT> load(HighFive::Group& group, std::string datasetName);
+    boost::optional<VariantChannelT> load(
+                std::string groupName,
+                std::string datasetName);
     
     template<typename VariantChannelT>
-    boost::optional<VariantChannelT> loadVariantChannel(std::string groupName, std::string datasetName);
+    boost::optional<VariantChannelT> loadVariantChannel(
+                std::string groupName, 
+                std::string datasetName);
 
 protected:
-
-    template<typename VariantChannelT>
-    boost::optional<VariantChannelT> loadDynamic(HighFive::DataType dtype,
-        HighFive::Group& group,
-        std::string name);
-
-    template<typename ...Tp>
-    void saveDynamic(HighFive::Group& group,
-        std::string datasetName,
-        const VariantChannel<Tp...>& vchannel
-    );
-
-    FeatureBase* m_file_access = static_cast<FeatureBase*>(this);
-    ChannelIO<FeatureBase>* m_channel_io = static_cast<ChannelIO<FeatureBase>*>(m_file_access);
+    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    ChannelIO<FeatureBase>* m_channel_io = static_cast<ChannelIO<FeatureBase>*>(m_featureBase);
 };
 
 /**
  * Define you dependencies here:
  */
-template<typename BaseIO>
-struct Hdf5Construct<VariantChannelIO, BaseIO> {
+template<typename FeatureBase>
+struct FeatureConstruct<VariantChannelIO, FeatureBase> {
     
     // DEPS
-    using deps = typename Hdf5Construct<ChannelIO, BaseIO>::type;
+    using deps = typename FeatureConstruct<ChannelIO, FeatureBase>::type;
 
     // add actual feature
     using type = typename deps::template add_features<VariantChannelIO>::type;
