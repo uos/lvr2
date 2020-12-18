@@ -120,6 +120,28 @@ YAML::Node loadMetaInformation(const std::string &in)
                       << "LoadMetaInformation(SLAM6D): Warning: No pose file found." << std::endl;
         }
         return node;
+    } else if(inPath.extension().string() == "") {
+        // no extension specified: HDF5 Schemas
+        // try yaml extension
+
+        boost::filesystem::path inPath_corrected = inPath / ".yaml";
+
+
+        YAML::Node n;
+        if (boost::filesystem::exists(inPath_corrected))
+        {
+            std::cout << timestamp
+                      << "LoadMetaInformation(YAML): Loading " << inPath_corrected << std::endl;
+            n = YAML::LoadFile( inPath_corrected.string());
+        }
+        else
+        {
+            std::cout << timestamp
+                      << "LoadMetaInformation(YAML): Unable to find yaml file: " << inPath_corrected << std::endl;
+        }
+        return n;
+    } else {
+        std::cout << "Kernel Panic: Meta extension " << inPath.extension() << " unknown. " << std::endl; 
     }
 }
 

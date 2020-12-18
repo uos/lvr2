@@ -65,8 +65,6 @@ void DirectoryKernel::saveMetaYAML(
     saveMetaInformation(p.string(), node);
 }
 
-
-
 MeshBufferPtr DirectoryKernel::loadMeshBuffer(
     const std::string &group,
     const std::string container) const
@@ -129,6 +127,7 @@ bool DirectoryKernel::exists(const std::string &group) const
 {
     return boost::filesystem::exists(getAbsolutePath(group, ""));
 }
+
 bool DirectoryKernel::exists(const std::string &group, const std::string &container) const
 {
     // Check if container is not empty to prevent checking
