@@ -49,7 +49,7 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             writeFrame(transform, framesOutPath);
         }
     } else if(p.extension().string() == "") {
-        // no extension specified: HDF5
+        // no extension specified: HDF5-Schemas
         // use yaml
         std::ofstream out(outfile + ".yaml");
         out << node;
