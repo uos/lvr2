@@ -95,15 +95,17 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
         C_Octree<BaseVecT, BoxT, my_dummy> &parent,
         int levels,
         bool dual,
-        DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric)
+        DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric,
+        int delta)
 {
     m_leaves = 0;
     int cells = 1;
     int max_cells = (1 << m_maxLevel);
     float* max_bb_width = std::max_element(bb_size, bb_size+3);
-
+    int cellCounter = 0;
     for(int cur_Level = levels; cur_Level > 0; --cur_Level)
     {
+        
         // calculating stepwidth at current level for transformation into real world coordinates
         if(cur_Level < levels)
         {
@@ -113,8 +115,8 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
         float stepWidth = *max_bb_width / cells;
 
         CellHandle ch_end = parent.end();
-
-        int cellCounter = 0;
+        int levelCellCounter = 0;
+        
 
         // visiting all cells of the octree
         for (CellHandle ch = parent.root(); ch != ch_end; ++ch)
@@ -123,7 +125,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
             if ((parent.level(ch) == cur_Level))
             {
                 cellCounter++;
-
+                levelCellCounter++;
                 // get the points of the current (dual) cell(s)
                 vector< vector<coord<float>*> > cellPoints;
                 std::vector<CellHandle> cellHandles;
@@ -249,55 +251,60 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
 
                         // this is not necessarily a dual leaf
                         DualLeaf<BaseVecT, BoxT> *leaf = new DualLeaf<BaseVecT, BoxT>(corners);
-
-
-
-
                         
+                        // only calculate cell error for levels bigger than detla
 
-                        // calculate distances
-                        float distances[8];
-                        BaseVecT vertex_positions[12];
-                        float projectedDistance;
-                        float euklideanDistance;
-                        for (unsigned char i = 0; i < 8; i++)
+                        if(cur_Level > delta)
                         {
+                             // calculate distances
+                            float distances[8];
+                            BaseVecT vertex_positions[12];
                             float projectedDistance;
                             float euklideanDistance;
-                            std::tie(projectedDistance, euklideanDistance) = this->m_surface->distance(corners[i]);
-                            distances[i] = projectedDistance;
+                            for (unsigned char i = 0; i < 8; i++)
+                            {
+                                float projectedDistance;
+                                float euklideanDistance;
+                                std::tie(projectedDistance, euklideanDistance) = this->m_surface->distance(corners[i]);
+                                distances[i] = projectedDistance;
+                            }
+
+                            bool pointsFittingWell = true;
+                            int index = leaf->getIndex(distances);
+
+
+                            double current_error = reconstructionMetric->get_distance(this->m_surface, points, corners, leaf, dual);
+
+                            
+
+                            // split descision happens here
+                            // compare value of the metric to max error of dmc reconstruction instance
+                            if(current_error > m_maxError)
+                            {
+                                splitting_pos.push_back(idx);
+                                pointsFittingWell = false;
+                            }
+
+
+                            if(MCTable[index][0] == -1 || !pointsFittingWell)
+                            // if((!dual && MCTable[index][0] == -1) || cur_Level >= levels - 2 || !pointsFittingWell)
+                            {
+                                markToSplit = true;
+                            }
+            
                         }
-
-                        
-                
-
-                        bool pointsFittingWell = true;
-                        int index = leaf->getIndex(distances);
-
-
-                        double current_error = reconstructionMetric->get_distance(this->m_surface, points, corners, leaf, dual);
-
-                        
-
-                        // split descision happens here
-                        // compare value of the metric to max error of dmc reconstruction instance
-                        if(current_error > m_maxError)
+                        // if the level is smaller or equals delta, mark to split anyways
+                        else
                         {
                             splitting_pos.push_back(idx);
-                            pointsFittingWell = false;
-                        }
-
-
-                        if(MCTable[index][0] == -1 || !pointsFittingWell)
-                        // if((!dual && MCTable[index][0] == -1) || cur_Level >= levels - 2 || !pointsFittingWell)
-                        {
                             markToSplit = true;
                         }
-         
+                        
                         delete(leaf);
                     }
                     idx++;
                 }
+                
                 if(markToSplit)
                 {
                     vector<coord<float>*> points;
@@ -378,7 +385,9 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
             }
         // end of visiting all cells of the octree
         }
-        std::cout << cellCounter << " cells at level " << cur_Level << std::endl;
+        
+        std::cout << levelCellCounter << " of " << cellCounter << " cells at level " << cur_Level << std::endl;
+    
     // end of visiting the current level
     }
 }
@@ -562,7 +571,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     // metric is set here
     DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric = new MSRMetric<BaseVecT, BoxT>;
     
-    buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric);
+    buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric, 0);
 
     comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
     cout << comment << endl;
@@ -574,6 +583,99 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     delete(octree);
     cout << endl;
 }
+
+template<typename BaseVecT, typename BoxT>
+void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, BaseMesh<BaseVecT> &deepMesh, int delta)
+{
+    // delta cannot be smaller than zero
+    if(delta < 0)
+    {
+        string comment = timestamp.getElapsedTime() + "Error: delta cannot be below zero."; 
+        cout << comment << endl;
+        return;
+    }
+    // if delta is equal to zero, just use the the simple getMesh function
+    //TODO: fix it
+    else if(delta == 0)
+    {
+        string comment = timestamp.getElapsedTime() + "Warning: delta is equal to zero. Returning flat mesh only."; 
+        cout << comment << endl;
+        getMesh(flatMesh);
+    }
+    // else the delta must be greater than 0
+    else
+    {
+        string comment = timestamp.getElapsedTime() + "Creating two meshes with delta delta of " + to_string(delta) + "."; 
+        cout << comment << endl;
+
+
+        // use this metric
+        // lets see where we will put this later
+        DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric = new MSRMetric<BaseVecT, BoxT>;
+
+
+        /* *************** FLAT OCTREE ************************* */
+
+        comment = timestamp.getElapsedTime() + "Building flat octree..."; 
+        cout << comment << endl;
+
+        // build flat tree without delta
+        buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric, 0);
+
+        // printing progress
+        comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
+        cout << comment << endl;
+        m_pointHandler->clear();
+        
+        // creating mesh
+        comment = timestamp.getElapsedTime() + "Creating flat mesh ";
+        m_progressBar = new ProgressBar(m_leaves, comment);
+        traverseTree(flatMesh, *octree);
+        cout << endl;
+        
+        
+        /* *************** DEEP OCTREE ************************* */
+        
+        // reloading pointcloud
+        floatArr points_floatArr = this->m_surface->pointBuffer()->getPointArray();
+        coord3fArr points = *((coord3fArr*) &points_floatArr);
+        vector<coord<float>*> containedPoints;
+        for(size_t i = 0; i < this->m_surface->pointBuffer()->numPoints(); i++)
+        {
+            containedPoints.push_back(&points[i]);
+        }
+
+        m_pointHandler = std::unique_ptr<DMCPointHandle<BaseVecT>>(new DMCVecPointHandle<BaseVecT>(containedPoints));
+
+        comment = timestamp.getElapsedTime() + "Building deep octree..."; 
+        cout << comment << endl;
+    
+
+        // we have to increase m_maxLevel and put it into buildTree as levels (2nd param.)
+        m_maxLevel += delta;
+        deepOctree = new C_Octree<BaseVecT, BoxT, my_dummy>();
+        deepOctree->initialize(m_maxLevel);
+
+        // build deep tree with delta
+        buildTree(*deepOctree, m_maxLevel, m_dual, reconstructionMetric, delta);
+
+
+        comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
+        cout << comment << endl;
+        m_pointHandler->clear();
+
+      
+        comment = timestamp.getElapsedTime() + "Creating deep mesh ";
+        m_progressBar = new ProgressBar(m_leaves, comment);
+        traverseTree(deepMesh, *deepOctree);
+        cout << endl;
+        
+        
+        return;
+    }
+
+}
+
 
 template<typename BaseVecT, typename BoxT>
 DualLeaf<BaseVecT, BoxT>* DMCReconstruction<BaseVecT, BoxT>::getDualLeaf(
@@ -645,7 +747,7 @@ void DMCReconstruction<BaseVecT, BoxT>::traverseTree(
             for(unsigned char c = 0; c < 8; c++)
             {
                 DualLeaf<BaseVecT, BoxT> *dualLeaf = getDualLeaf(ch, cells, octree, c);
-
+                
                 getSurface(mesh, dualLeaf, cells, (short)octree.level(ch));
 
                 // free memory
@@ -656,6 +758,7 @@ void DMCReconstruction<BaseVecT, BoxT>::traverseTree(
     }
     return;
 }
+
 
 template<typename BaseVecT, typename BoxT>
 void DMCReconstruction<BaseVecT, BoxT>::detectVertexForDualCell(
@@ -785,6 +888,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getSurface(
         mesh.addFace(triangle_vertices[0], triangle_vertices[1], triangle_vertices[2]);
     }
 }
+
 
 template<typename BaseVecT, typename BoxT>
 void DMCReconstruction<BaseVecT, BoxT>::getMesh(

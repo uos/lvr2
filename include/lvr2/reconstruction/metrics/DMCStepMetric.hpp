@@ -36,7 +36,8 @@
 #define DMCSTEPMETRIC_HPP
 
 #include "../CellHandle.hh"
-#include <vector>
+#include "../../geometry/HalfEdgeMesh.hpp"
+
 
 namespace lvr2
 {
@@ -44,6 +45,7 @@ namespace lvr2
 /**
 *@brief Interface for DMC Step Metrics
 */
+
 
 
 class DMCStepMetric
@@ -63,12 +65,12 @@ class DMCStepMetric
 
 
     /**
-     * @brief Calculates the distance between the reconstructions of a parent and eight child cells
-     * @param parentCell the parent cell
-     * @param childCells vector of child cells of parentCell
-     * @return the distance between the reconstruction of parent and children cells
+     * @brief Calculates the distance between two meshes
+     * @param a mesh a 
+     * @param b mesh b
+     * @return the distance between both meshes
      */
-    virtual const double get_distance(CellHandle parentCell, std::vector<CellHandle> childCells) = 0;
+    virtual const double get_distance(HalfEdgeMesh<BaseVector<float> > a, HalfEdgeMesh<BaseVector<float> >  b) = 0;
 
 
 };

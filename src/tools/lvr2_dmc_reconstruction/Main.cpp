@@ -19,8 +19,10 @@
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/DMCReconstruction.hpp"
 #include "lvr2/reconstruction/metrics/MSRMetric.hpp"
+#include "lvr2/reconstruction/metrics/DMCStepMetric.hpp"
 #include "lvr2/reconstruction/FastReconstruction.hpp"
-
+#include "lvr2/reconstruction/metrics/OneSidedHausdorffMetric.hpp"
+#include "lvr2/reconstruction/metrics/SymmetricHausdorffMetric.hpp"
 #include "lvr2/config/lvropenmp.hpp"
 
 using namespace lvr2;
@@ -128,18 +130,31 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    HalfEdgeMesh<Vec> mesh;
+
+    int delta = 1;
+    HalfEdgeMesh<Vec> flatMesh;
+    HalfEdgeMesh<Vec> deepMesh;
 
     DMCReconstruction<Vec, FastBox<Vec>> dmc(surface, surface->getBoundingBox(), true, options.getMaxLevel(), options.getMaxError());
 
-    dmc.getMesh(mesh);
+    // creating and compairing two meshes
+    dmc.getMesh(flatMesh, deepMesh, delta);
 
+    DMCStepMetric *metric = new SymmetricHausdorffMetric();
+
+    // get distance between the two meshes
+    metric->get_distance(flatMesh, deepMesh);
+    
     // Finalize mesh
     lvr2::SimpleFinalizer<Vec> finalize;
-    auto meshBuffer = finalize.apply(mesh);
+    auto meshBuffer = finalize.apply(flatMesh);
 
     auto m = ModelPtr(new Model(meshBuffer));
-    ModelFactory::saveModel(m, "triangle_mesh.ply");
+    ModelFactory::saveModel(m, "flat_mesh.ply");
+
+    meshBuffer = finalize.apply(deepMesh);
+    m = ModelPtr(new Model(meshBuffer));
+    ModelFactory::saveModel(m, "deep_mesh.ply");
 
     cout << timestamp << "Finished reconstruction" << endl;
 
