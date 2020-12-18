@@ -15,8 +15,14 @@
 
 #include <boost/optional.hpp>
 
-#include "lvr2/config/lvropenmp.hpp"
+#include <gdal.h>
+#include <gdalwarper.h>
+#include <ogr_spatialref.h>
+#include <ogr_geometry.h>
 
+#include <Eigen/QR>
+
+#include "lvr2/config/lvropenmp.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
@@ -55,18 +61,11 @@
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
 #include "lvr2/registration/KDTree.hpp"
 #include "lvr2/display/ColorMap.hpp"
-
-#include "gdal.h"
-#include "gdalwarper.h"
-
-#include <Eigen/QR>
-
 #include "lvr2/geometry/BVH.hpp"
-
 #include "lvr2/reconstruction/DMCReconstruction.hpp"
-
 #include "lvr2/io/PLYIO.hpp"
 #include "lvr2/io/GeoTIFFIO.hpp"
+
 
 #include "Options.hpp"
 
