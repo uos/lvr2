@@ -1791,6 +1791,7 @@ int main(int argc, char* argv[])
     // =======================================================================
     // Setup LVR_2 Function to allow the export of the Mesh as obj/ply
     // =======================================================================
+    
     // Creating a cluster map made up of one cluster is necessary to use the finalizer and project the texture
     ClusterBiMap<FaceHandle> clusterBiMap;
     MeshHandleIteratorPtr<FaceHandle> iterator = mesh.facesBegin();
@@ -1801,14 +1802,18 @@ int main(int argc, char* argv[])
 
         ++iterator;
     }  
+    
     // Initialise Finalizer with ClusterMap
     TextureFinalizer<VecD> finalize(clusterBiMap);
+    
     // Generate Texture for the OBJ file
     auto matResult = 
     projectTexture<VecD>(mesh,clusterBiMap,*usedSurface,texelSize,affineMatrix,fullAffineMatrix,io,tree,options.getStartingBand(),
     options.getNumberOfBands(),options.getColorScale(), noTransformation);
+   
     // Pass Texture and Texture Coordinate into the Finalizer
     finalize.setMaterializerResult(matResult);  
+    
     // Convert Mesh into Buffer and create Model
     auto buffer = finalize.apply(mesh);
     buffer->addIntAtomic(1, "mesh_save_textures");
