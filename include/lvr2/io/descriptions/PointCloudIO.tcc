@@ -16,12 +16,28 @@ PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(const std::string& grou
     return m_featureBase->m_kernel->loadPointBuffer(group, name);
 }
 
+template<typename FeatureBase>
+PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud( 
+    const std::string& group,
+    const std::string& container, 
+    ReductionAlgorithmPtr reduction)
+{
+    if(reduction)
+    {
+        PointBufferPtr buffer = loadPointCloud(group, container);
+        reduction->setPointBuffer(buffer);
+        return reduction->getReducedPoints();
+    } else {
+        return loadPointCloud(group, container);
+    }
+}
 
 template<typename FeatureBase>
 bool PointCloudIO<FeatureBase>::isPointCloud(
-    HighFive::Group& group)
+    const std::string& group, const std::string& name)
 {
-    return true;
+    // TODO: better not read anything for isPointCloud check
+    return static_cast<bool>(loadPointCloud(group, name));
 }
 
 } // namespace lvr2 

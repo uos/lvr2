@@ -4,6 +4,7 @@
 #define LVR2_IO_HDF5_SCANPROJECTIO_HPP
 
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/registration/ReductionAlgorithm.hpp"
 
 #include <boost/optional.hpp>
 #include <regex>
@@ -53,6 +54,7 @@ class ScanProjectIO
     void saveScanProject(const ScanProjectPtr& scanProjectPtr);
 
     ScanProjectPtr loadScanProject();
+    ScanProjectPtr loadScanProject(ReductionAlgorithm& reduction);
 
   protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);

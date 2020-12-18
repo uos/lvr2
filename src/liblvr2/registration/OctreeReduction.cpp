@@ -11,10 +11,10 @@ OctreeReduction::OctreeReduction(
     PointBufferPtr &pointBuffer,
     const double &voxelSize,
     const size_t &minPointsPerVoxel)
-    : m_voxelSize(voxelSize),
+    : m_pointBuffer(pointBuffer), 
+      m_voxelSize(voxelSize),
       m_minPointsPerVoxel(minPointsPerVoxel),
-      m_numPoints(pointBuffer->numPoints()),
-      m_pointBuffer(pointBuffer)
+      m_numPoints(pointBuffer->numPoints())
 {
     size_t n = pointBuffer->numPoints();
     m_flags = new bool[n];
