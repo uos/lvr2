@@ -1,6 +1,6 @@
 #pragma once
-#ifndef LVR2_IO_HDF5_CHANNELIO_HPP
-#define LVR2_IO_HDF5_CHANNELIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_CHANNELIO_HPP
+#define LVR2_IO_DESCRIPTIONS_CHANNELIO_HPP
 
 #include "lvr2/types/Channel.hpp"
 #include "lvr2/io/Timestamp.hpp"
@@ -24,7 +24,7 @@ public:
     void save(
         std::string group,
         std::string name,
-        const Channel<T>& channel);
+        const Channel<T>& channel) const;
     
     // convinience shortcuts
     UCharChannelOptional loadUCharChannel(std::string groupName, std::string datasetName);
@@ -32,10 +32,11 @@ public:
     DoubleChannelOptional loadDoubleChannel(std::string groupName, std::string datasetName);
     IndexChannelOptional loadIndexChannel(std::string groupName, std::string datasetName);
     
-    void saveUCharChannel(std::string groupName, std::string datasetName, UCharChannel& channel);
-    void saveFloatChannel(std::string groupName, std::string datasetName, FloatChannel& channel);
-    void saveDoubleChannel(std::string groupName, std::string datasetName, DoubleChannel& channel);
-    void saveIndexChannel(std::string groupName, std::string datasetName, UCharChannel& channel);
+    // TODO:
+    // void saveUCharChannel(std::string groupName, std::string datasetName, const UCharChannel& channel) const;
+    // void saveFloatChannel(std::string groupName, std::string datasetName, const FloatChannel& channel) const;
+    // void saveDoubleChannel(std::string groupName, std::string datasetName, const DoubleChannel& channel) const;
+    // void saveIndexChannel(std::string groupName, std::string datasetName, const UCharChannel& channel) const;
 
 protected:
 
@@ -64,23 +65,23 @@ protected:
     // TODO all save functions
     void _save( std::string group, 
                 std::string name, 
-                const Channel<float>& channel);
+                const Channel<float>& channel) const;
 
     void _save( std::string group,
                 std::string name,
-                const Channel<unsigned char>& channel);
+                const Channel<unsigned char>& channel) const;
 
     void _save( std::string group,
                 std::string name,
-                const Channel<double>& channel);
+                const Channel<double>& channel) const;
 
     void _save( std::string group,
                 std::string name,
-                const Channel<int>& channel);
+                const Channel<int>& channel) const;
 
     void _save( std::string group,
                 std::string name,
-                const Channel<uint16_t>& channel);
+                const Channel<uint16_t>& channel) const;
 
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
@@ -91,4 +92,4 @@ protected:
 
 #include "ChannelIO.tcc"
 
-#endif
+#endif // LVR2_IO_DESCRIPTIONS_CHANNELIO_HPP

@@ -10,6 +10,9 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
 {
     Description d = m_featureBase->m_description->position(scanPosNo);
   
+    std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
+    std::cout << d << std::endl;
+
     // Setup defaults
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanPosNo;

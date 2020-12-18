@@ -9,7 +9,7 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
 
     if (p.extension() == ".yaml")
     {
-        std::cout << timestamp << "SaveMetaInformation(YAML): " << outfile << std::endl;
+        // std::cout << timestamp << "SaveMetaInformation(YAML): " << outfile << std::endl;
         std::ofstream out(outfile.c_str());
         out << node;
         out.close();
@@ -48,6 +48,14 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesOutPath << std::endl;
             writeFrame(transform, framesOutPath);
         }
+    } else if(p.extension().string() == "") {
+        // no extension specified: HDF5
+        // use yaml
+        std::ofstream out(outfile + ".yaml");
+        out << node;
+        out.close();
+    } else {
+        std::cout << "Kernel Panic: Meta extension " << p.extension() << " unknown. " << std::endl; 
     }
 }
 

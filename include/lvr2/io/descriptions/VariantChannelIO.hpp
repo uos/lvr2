@@ -4,6 +4,7 @@
 
 #include "lvr2/io/descriptions/FeatureBase.hpp"
 #include "lvr2/types/VariantChannel.hpp"
+#include "lvr2/io/yaml/VariantChannel.hpp"
 
 // Dependencies
 #include "lvr2/io/descriptions/ChannelIO.hpp"

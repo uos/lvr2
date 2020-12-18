@@ -4,6 +4,20 @@ namespace lvr2
 template<typename FeatureBase>
 void PointCloudIO<FeatureBase>::savePointCloud(
     const std::string& groupName, 
+    const PointBufferPtr& buffer)
+{
+    // TODO
+    std::cout << "[PointCloudIO::savePointCloud] TODO" << std::endl;
+
+    for(auto elem : *buffer)
+    {
+        m_vchannel_io->save(groupName, elem.first, elem.second);
+    }
+}
+
+template<typename FeatureBase>
+void PointCloudIO<FeatureBase>::savePointCloud(
+    const std::string& groupName, 
     const std::string& container, 
     const PointBufferPtr& buffer)
 {

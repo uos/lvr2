@@ -16,7 +16,7 @@ void DirectoryKernel::saveMeshBuffer(
 
     ModelPtr model(new Model);
     model->m_mesh = buffer;
-    std::cout << timestamp << "Directory Kernel::saveMeshBuffer(): " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::saveMeshBuffer(): " << p.string() << std::endl;
     ModelFactory::saveModel(model, p.string());
 }
 
@@ -32,7 +32,7 @@ void DirectoryKernel::savePointBuffer(
     }
     ModelPtr model(new Model);
     model->m_pointCloud = buffer;
-    std::cout << timestamp << "Directory Kernel::savePointBuffer(): " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::savePointBuffer(): " << p.string() << std::endl;
     ModelFactory::saveModel(model, p.string());
 }
 
@@ -46,7 +46,7 @@ void DirectoryKernel::saveImage(
     {
         boost::filesystem::create_directories(p.parent_path());
     }
-    std::cout << timestamp << "Directory Kernel::saveImage(): " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::saveImage(): " << p.string() << std::endl;
 
     cv::imwrite(p.string(), image);
 }
@@ -61,7 +61,7 @@ void DirectoryKernel::saveMetaYAML(
     {
         boost::filesystem::create_directories(p.parent_path());
     }
-    std::cout << timestamp << "Directory Kernel::saveMetaYAML(): " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::saveMetaYAML(): " << p.string() << std::endl;
     saveMetaInformation(p.string(), node);
 }
 
@@ -85,12 +85,12 @@ PointBufferPtr DirectoryKernel::loadPointBuffer(
     const std::string &container) const
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
-    std::cout << timestamp << "Directory Kernel::loadPointBuffer(): " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::loadPointBuffer(): " << p.string() << std::endl;
     ModelPtr model = ModelFactory::readModel(p.string());
     if (model)
     {
-        std::cout << model->m_pointCloud << std::endl;
-        std::cout << "Model Count " <<  model->m_pointCloud->numPoints() << std::endl;
+        // std::cout << model->m_pointCloud << std::endl;
+        // std::cout << "Model Count " <<  model->m_pointCloud->numPoints() << std::endl;
         return model->m_pointCloud;
     }
 }
@@ -101,7 +101,7 @@ boost::optional<cv::Mat> DirectoryKernel::loadImage(
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
     boost::optional<cv::Mat> opt;
-    std::cout << timestamp << "Directory Kernel::loadImage: " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::loadImage: " << p.string() << std::endl;
     if(boost::filesystem::exists(p))
     {
         opt = cv::imread(p.string());
@@ -120,7 +120,7 @@ void DirectoryKernel::loadMetaYAML(
     YAML::Node& n) const
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
-    std::cout << timestamp << "Directory Kernel::loadMetaYAML: " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::loadMetaYAML: " << p.string() << std::endl;
     YAML::Node node = loadMetaInformation(p.string());
     n = node;
 }

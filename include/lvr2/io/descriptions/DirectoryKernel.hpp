@@ -108,12 +108,17 @@ public:
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<uint16_t>& data) const;
 
+    void saveFloatChannel(
+        const std::string& group, const std::string& name, 
+        const Channel<float>& channel);
+
     virtual bool exists(const std::string& group) const;
     virtual bool exists(const std::string& group, const std::string& container) const;
 
     virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const;
     virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const;
 
+    
 protected:
     template <typename T>
     boost::shared_array<T> loadArray(const std::string &group, const std::string &container, std::vector<size_t> &dims) const
@@ -147,7 +152,7 @@ protected:
             }
             dims.push_back(tmp);
         }
-                std::cout << "DImSize " << dims[0] << "  " <<dims[1] << std::endl;
+                std::cout << "DimSize " << dims[0] << "  " <<dims[1] << std::endl;
          T* rawData = new T[totalArraySize];
 
         in.read(reinterpret_cast<char *>(rawData), totalArraySize * sizeof(T));
@@ -175,11 +180,34 @@ protected:
                 }
             }
             
-            std::ofstream out;
+            boost::filesystem::path p = getAbsolutePath(group, container);
+            if(!boost::filesystem::exists(p.parent_path()))
+            {
+                boost::filesystem::create_directories(p.parent_path());
+            }
+
+            std::cout << "Writing Array of size " << length << " to " << p << std::endl;
+            
+            // 1. HEADER
+            // size_t type_id = PointBuffer::index_of_type<T>::value;
+            // std::ofstream fout_header(p.string() + ".def");
+            // fout_header << type_id;
+
+            // for(size_t i=0; i<dims.size(); i++)
+            // {
+            //     fout_header << dims[i];
+            // }
+
+            // fout_header.close();
+
+            // 2. DATA
+            std::ofstream fout_data(p.string() + ".data", std::ios::binary);
             for (size_t i = 0; i < length; i++)
             {
-                out << data[i];
+                fout_data << data[i];
             }
+
+            fout_data.close();
         }
     }
 

@@ -3,6 +3,28 @@
 namespace lvr2
 {
 
+std::ostream& operator<<(std::ostream& os, const Description& desc)
+{
+    os << "LVR Description: \n";
+    if(desc.groupName)
+    {
+        os << "-- groupName: " << *desc.groupName << "\n";
+    }
+
+    if(desc.dataSetName)
+    {
+        os << "-- dataSetName: " << *desc.dataSetName << "\n";
+    }
+
+    if(desc.metaName)
+    {
+        os << "-- metaName: " << *desc.metaName << "\n";
+    }
+    
+    return os;
+}
+
+
 std::pair<std::string, std::string> getNames(
     const std::string& defaultGroup, 
     const std::string& defaultContainer, 

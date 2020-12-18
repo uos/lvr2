@@ -55,6 +55,7 @@ set(LVR2_SOURCES
     io/ScanDirectoryParser.cpp
     io/ScanIOUtils.cpp
     io/WaveformIO.cpp
+    io/descriptions/ScanProjectSchemaRaw.cpp
     io/descriptions/ScanProjectSchemaSLAM.cpp
     io/descriptions/ScanProjectSchemaHyperlib.cpp
     io/descriptions/ScanProjectSchemaHDF5V2.cpp

@@ -46,6 +46,9 @@ template<typename FeatureBase>
 class PointCloudIO 
 {
 public:
+
+    void savePointCloud(const std::string& group, const PointBufferPtr& buffer);
+
     /**
      * @brief Save a point buffer at the position defined by \ref group and \ref container
      * 
@@ -91,13 +94,23 @@ protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
     /// Dependencies
-    // VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_featureBase);
+    VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_featureBase);
 
     /// Class ID
     static constexpr const char* ID = "PointCloudIO";
 
     /// Object ID
     static constexpr const char* OBJID = "PointBuffer";
+};
+
+template <typename FeatureBase>
+struct FeatureConstruct<PointCloudIO, FeatureBase >
+{
+    // DEPS
+    using deps = typename FeatureConstruct<VariantChannelIO, FeatureBase >::type;
+
+    // ADD THE FEATURE ITSELF
+    using type = typename deps::template add_features<PointCloudIO>::type;
 };
 
 } // namespace lvr2 

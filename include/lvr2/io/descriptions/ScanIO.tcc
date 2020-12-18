@@ -7,60 +7,42 @@ namespace lvr2
 template <typename FeatureBase>
 void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo, const ScanPtr& scanPtr)
 {
-    // Setup defaults: no group and scan number into .ply file. 
-    // Write meta into a yaml file with same file name as the 
-    // scan file. 
-    std::string groupName = "";
-   
-    std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << scanNo;
-    std::string scanName = sstr.str() + ".ply";
-    std::string metaName = sstr.str() + ".yaml";
-
     // Default meta yaml
-    YAML::Node node;
-    node = *scanPtr;
 
     // Get group and dataset names according to 
     // data fomat description and override defaults if 
     // when possible
     Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
 
-    if(d.groupName)
-    {
-        groupName = *d.groupName;
-    }
+    std::cout << "[ScanIO] Scan " << scanPosNo << "," << scanNo <<  " - Description: " << std::endl;
+    std::cout << d << std::endl;
 
-    if(d.dataSetName)
+    if(!d.dataSetName)
     {
-        scanName = *d.dataSetName;
-    }
+        // handle as group: go deeper
+        if(d.metaName)
+        {
+            YAML::Node node;
+            node = *scanPtr;
+            m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+        }
 
-    if(d.metaName)
-    {
-        metaName = *d.metaName;
-    }
+        m_pclIO->savePointCloud(*d.groupName, scanPtr->points);
 
-    if(d.metaData)
-    {
-        node = *d.metaData;
-    }
+        // TODO write multi channels buffer
+        std::cout << "Scan is not dataset. Handle as group. " << std::endl;
+    } else {
+        // handle as dataset: write data
 
+        std::cout << "Scan is dataset. Store. " << std::endl;
+        m_pclIO->savePointCloud(*d.groupName, *d.dataSetName, scanPtr->points);
+    }
     
-    // Save all scan data and meta data if present
-    m_pclIO->savePointCloud(groupName, scanName, scanPtr->points);
-
-    // Get meta data from scan and save
-    m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
-
     // Save Waveform data
     if (scanPtr->waveform)
     {
-	    std::cout << "[ScanIO]Waveform found " <<std::endl;
+	    // std::cout << "[ScanIO]Waveform found " <<std::endl;
         m_fullWaveformIO->saveFullWaveform(scanPosNo, scanNo, scanPtr->waveform);
-    } else 
-    {
-	    std::cout << "[ScanIO]no Waveform " <<std::endl;
     }
 
 }

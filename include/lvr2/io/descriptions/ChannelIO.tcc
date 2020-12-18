@@ -29,9 +29,22 @@ template<typename T>
 void ChannelIO<FeatureBase>::save(
     std::string group,
     std::string name,
-    const Channel<T>& channel)
+    const Channel<T>& channel) const
 {
-    _save(group, name, channel);
+    if constexpr(std::is_same<T, float>::value ) {
+        _save(group, name, channel);
+    } else if constexpr(std::is_same<T, unsigned char>::value ) {
+        _save(group, name, channel);
+    } else if constexpr(std::is_same<T, double>::value ) {
+        _save(group, name, channel);
+    } else if constexpr(std::is_same<T, int>::value ) {
+        _save(group, name, channel);
+    } else if constexpr(std::is_same<T, uint16_t>::value ) {
+        _save(group, name, channel);
+    } else {
+        // NOT IMPLEMENTED TYPE TO WRITE
+        std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
+    }
 }
 
 // PROTECTED
@@ -181,56 +194,56 @@ template<typename FeatureBase>
 void ChannelIO<FeatureBase>::_save(  
     std::string group, 
     std::string name, 
-    const Channel<float>& channel)
+    const Channel<float>& channel) const
 {
     std::vector<size_t> dims(2);
     dims[0] = channel.width();
     dims[1] = channel.numElements();
-    m_featureBase->kernel->saveFloatArray(group, name, channel.dataPtr(), dims);
+    m_featureBase->m_kernel->saveFloatArray(group, name, dims, channel.dataPtr());
 }
 
 template<typename FeatureBase>
 void ChannelIO<FeatureBase>::_save( std::string group,
                 std::string name,
-                const Channel<unsigned char>& channel)
+                const Channel<unsigned char>& channel) const
 {
     std::vector<size_t> dims(2);
     dims[0] = channel.width();
     dims[1] = channel.numElements();
-    m_featureBase->kernel->saveUCharArray(group, name, channel.dataPtr(), dims);
+    m_featureBase->m_kernel->saveUCharArray(group, name, dims, channel.dataPtr());
 }
 
 template<typename FeatureBase>
 void ChannelIO<FeatureBase>::_save( std::string group,
             std::string name,
-            const Channel<double>& channel)
+            const Channel<double>& channel) const
 {
     std::vector<size_t> dims(2);
     dims[0] = channel.width();
     dims[1] = channel.numElements();
-    m_featureBase->kernel->saveDoubleArray(group, name, channel.dataPtr(), dims);
+    m_featureBase->m_kernel->saveDoubleArray(group, name, dims, channel.dataPtr());
 }
 
 template<typename FeatureBase>
 void ChannelIO<FeatureBase>::_save( std::string group,
             std::string name,
-            const Channel<int>& channel)
+            const Channel<int>& channel) const
 {
     std::vector<size_t> dims(2);
     dims[0] = channel.width();
     dims[1] = channel.numElements();
-    m_featureBase->kernel->saveIntArray(group, name, channel.dataPtr(), dims);
+    m_featureBase->m_kernel->saveIntArray(group, name, dims, channel.dataPtr());
 }
 
 template<typename FeatureBase>
 void ChannelIO<FeatureBase>::_save( std::string group,
             std::string name,
-            const Channel<uint16_t>& channel)
+            const Channel<uint16_t>& channel) const
 {
     std::vector<size_t> dims(2);
     dims[0] = channel.width();
     dims[1] = channel.numElements();
-    m_featureBase->kernel->saveUInt16Array(group, name, channel.dataPtr(), dims);
+    m_featureBase->m_kernel->saveUInt16Array(group, name, dims, channel.dataPtr());
 }
 
 
