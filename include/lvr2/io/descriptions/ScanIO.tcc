@@ -17,24 +17,19 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
     std::cout << "[ScanIO] Scan " << scanPosNo << "," << scanNo <<  " - Description: " << std::endl;
     std::cout << d << std::endl;
 
+    if(d.metaName)
+    {
+        YAML::Node node;
+        node = *scanPtr;
+        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+    }
+
     if(!d.dataSetName)
     {
-        // handle as group: go deeper
-        if(d.metaName)
-        {
-            YAML::Node node;
-            node = *scanPtr;
-            m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
-        }
-
+        // Scan is not a dataset: handle as group of channels
         m_pclIO->savePointCloud(*d.groupName, scanPtr->points);
-
-        // TODO write multi channels buffer
-        std::cout << "Scan is not dataset. Handle as group. " << std::endl;
     } else {
-        // handle as dataset: write data
-
-        std::cout << "Scan is dataset. Store. " << std::endl;
+        // Scan is a dataset: write data
         m_pclIO->savePointCloud(*d.groupName, *d.dataSetName, scanPtr->points);
     }
     

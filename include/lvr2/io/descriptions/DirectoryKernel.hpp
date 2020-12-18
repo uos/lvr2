@@ -186,21 +186,6 @@ protected:
                 boost::filesystem::create_directories(p.parent_path());
             }
 
-            std::cout << "Writing Array of size " << length << " to " << p << std::endl;
-            
-            // 1. HEADER
-            // size_t type_id = PointBuffer::index_of_type<T>::value;
-            // std::ofstream fout_header(p.string() + ".def");
-            // fout_header << type_id;
-
-            // for(size_t i=0; i<dims.size(); i++)
-            // {
-            //     fout_header << dims[i];
-            // }
-
-            // fout_header.close();
-
-            // 2. DATA
             std::ofstream fout_data(p.string() + ".data", std::ios::binary);
             for (size_t i = 0; i < length; i++)
             {

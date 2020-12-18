@@ -63,36 +63,12 @@ void VariantChannelIO<Derived>::save(
 
     using VChannelT = VariantChannel<Tp...>;
 
-    std::cout << datasetName << " " << vchannel.type() << std::endl;
-
+    // creating meta node of variantchannel containing type and size
     YAML::Node node;
     node = vchannel;
 
     m_featureBase->m_kernel->saveMetaYAML(groupName, datasetName, node);
-
-
-
     store<Derived, VChannelT>(groupName, datasetName, vchannel, m_channel_io);
-
-    // Each type?
-
-    // Better with proper template specializations. But it works
-    // for(size_t i=0; i<VChannelT::num_types; i++)
-    // {
-    //     using ZeroType = typename VChannelT::template type_of_index<0>;
-
-    //     ZeroType bla;
-
-    //     Channel<float> c;
-    // }
-
-
-
-    if(vchannel.template is_type<float>())
-    {
-        m_channel_io->template save<float>(groupName, datasetName, 
-            vchannel.template extract<float>());
-    }
 }
 
 template<typename Derived>
