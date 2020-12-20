@@ -22,65 +22,21 @@
 
 #include <Eigen/QR>
 
-#include "lvr2/config/lvropenmp.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/geometry/Normal.hpp"
-#include "lvr2/attrmaps/StableVector.hpp"
-#include "lvr2/attrmaps/VectorMap.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
-#include "lvr2/algorithm/NormalAlgorithms.hpp"
-#include "lvr2/algorithm/ColorAlgorithms.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
-#include "lvr2/algorithm/Tesselator.hpp"
-#include "lvr2/algorithm/ClusterPainter.hpp"
-#include "lvr2/algorithm/ClusterAlgorithms.hpp"
-#include "lvr2/algorithm/CleanupAlgorithms.hpp"
-#include "lvr2/algorithm/ReductionAlgorithms.hpp"
-#include "lvr2/algorithm/Materializer.hpp"
 #include "lvr2/algorithm/Texturizer.hpp"
-#include "lvr2/texture/TextureFactory.hpp"
-//#include "lvr2/algorithm/ImageTexturizer.hpp"
-
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
-#include "lvr2/reconstruction/BilinearFastBox.hpp"
-#include "lvr2/reconstruction/TetraederBox.hpp"
-#include "lvr2/reconstruction/FastReconstruction.hpp"
 #include "lvr2/reconstruction/PointsetSurface.hpp"
-#include "lvr2/reconstruction/SearchTree.hpp"
 #include "lvr2/reconstruction/SearchTreeFlann.hpp"
-#include "lvr2/reconstruction/HashGrid.hpp"
-#include "lvr2/reconstruction/PointsetGrid.hpp"
-#include "lvr2/reconstruction/SharpBox.hpp"
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/PlutoMapIO.hpp"
-#include "lvr2/util/Factories.hpp"
-#include "lvr2/algorithm/GeometryAlgorithms.hpp"
-#include "lvr2/algorithm/UtilAlgorithms.hpp"
-#include "lvr2/registration/KDTree.hpp"
-#include "lvr2/display/ColorMap.hpp"
-#include "lvr2/geometry/BVH.hpp"
-#include "lvr2/reconstruction/DMCReconstruction.hpp"
-#include "lvr2/io/PLYIO.hpp"
 #include "lvr2/io/GeoTIFFIO.hpp"
-
+#include "lvr2/display/ColorMap.hpp"
 
 #include "Options.hpp"
-
-#if defined CUDA_FOUND
-    #define GPU_FOUND
-
-    #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
-
-    typedef lvr2::CudaSurface GpuSurface;
-#elif defined OPENCL_FOUND
-    #define GPU_FOUND
-
-    #include "lvr2/reconstruction/opencl/ClSurface.hpp"
-    typedef lvr2::ClSurface GpuSurface;
-#endif
 
 using boost::optional;
 using std::unique_ptr;
@@ -90,7 +46,6 @@ using namespace lvr2;
 
 using Vec = BaseVector<float>;
 using VecD = BaseVector<double>;
-using PsSurface = lvr2::PointsetSurface<Vec>;
 
 int globalTexIndex = 0;
 bool preventTranslation = true;
@@ -1681,7 +1636,7 @@ int main(int argc, char* argv[])
         input.open(options.getInputReferencePairs());
         if(input.fail())
         {
-            std::cout << timestamp.getElapsedTime() << "IO Error: Unable to read " << options.getExtractionMethod() << std::endl;
+            std::cout << timestamp.getElapsedTime() << "IO Error: Unable to read " << options.getInputReferencePairs() << std::endl;
             return 0;
         }
         std::getline(input, currenSystem);        
