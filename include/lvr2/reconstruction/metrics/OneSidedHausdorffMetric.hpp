@@ -36,7 +36,7 @@
 #define ONESIDEDHAUSDORFFMETRIC_HPP
 
 #include "DMCStepMetric.hpp"
-
+#include <algorithm>
 
 namespace lvr2
 {

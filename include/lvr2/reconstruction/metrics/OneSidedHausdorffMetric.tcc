@@ -55,36 +55,40 @@
         double min_distance = std::numeric_limits<double>::max();
         double current_distance = 0.0;
 
+        int i = 0;
+        int j = 0;
+        
+
+        std::cout << "Size of A: " << a.numVertices() << std::endl;
+        std::cout << "Size of B: " << b.numVertices() << std::endl;
         // iterating over vertex handles of a and b
         #pragma omp parallel
         for (auto vertexHandleA : a.vertices())
         {
+            // getting vertex A
+            auto vertexA = a.getVertexPosition(vertexHandleA);
+            
+            // resetting min distance after each run of the inner loop
+            double min_distance = std::numeric_limits<double>::max();
+            
             for(auto vertexHandleB : b.vertices())
             {
-                // getting the vertices from both handles
-                auto vertexA = a.getVertexPosition(vertexHandleA);
+                
+                // getting the vertex B    
                 auto vertexB = b.getVertexPosition(vertexHandleB);
 
                 // calculating the distance between to vertices
                 current_distance = vertexA.distance(b.getVertexPosition(vertexHandleB));
-                
-                
-                // saving the min. distance from a to any vertex of b
-                if(current_distance < min_distance)
+    
+                // cancel distance calculation if current_distance is smaller than max_distance
+                if(current_distance < max_distance)
                 {
-                    min_distance = current_distance;
-                }
-                // break if distance is zero thus vectors are not the same
-                if(current_distance == 0)
-                {
+                    min_distance = 0;
                     break;
                 }
+                min_distance = std::min(min_distance, current_distance);
             }
-            // saving the greatest of the shortest distance from a to b
-            if(min_distance > max_distance)
-            {
-                max_distance = min_distance;
-            }
+            max_distance = std::max(max_distance, min_distance);
         }
         
         std::cout <<  std::endl;
