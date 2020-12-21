@@ -74,12 +74,14 @@ Description ScanProjectSchemaRaw::scan(const std::string &scanPositionPath, cons
     Description d;
     boost::filesystem::path scansPath = boost::filesystem::path(scanPositionPath) / "scans";
     boost::filesystem::path scanPath = scansPath / sstr.str();
-    boost::filesystem::path metaPath = "meta.yaml";
+
     d.groupName = scanPath.string();
-    d.metaName = metaPath.string();
+    d.dataSetName = "channels";
+    d.metaName = "meta.yaml";
 
     return d;
 }
+
 Description ScanProjectSchemaRaw::waveform(const size_t &scanPosNo, const size_t &scanNo) const
 {
     // Get information about scan the associated scan position

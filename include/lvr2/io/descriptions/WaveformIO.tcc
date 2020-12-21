@@ -140,6 +140,8 @@ template <typename Derived>
 WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, const size_t& scanNo)
 {
     WaveformPtr ret(new Waveform);
+
+    
     Description d = m_featureBase->m_description->waveform(scanPosNo, scanNo);
     // Init default values
     std::stringstream sstr;

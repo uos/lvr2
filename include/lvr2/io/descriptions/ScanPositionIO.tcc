@@ -45,46 +45,54 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
 template <typename  FeatureBase>
 ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& scanPosNo)
 {
-    ScanPositionPtr ret(new ScanPosition);
+    ScanPositionPtr ret;
 
     Description d = m_featureBase->m_description->position(scanPosNo);
 
-    std::cout << "[ScanPositionIO] - Description:" << std::endl;
+    if(!m_featureBase->m_kernel->exists(*d.groupName))
+    {
+        return ret;
+    }
+
+    std::cout << "[ScanPositionIO] load() with Description:" << std::endl;
     std::cout << d << std::endl;
 
     // Setup defaults
-
     if(d.metaName)
     {
-        YAML::Node node;
-        node = *ret;
-        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, node);
+        if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
+        {
+            std::cout << timestamp << " [ScanPositionIO]: Specified meta file not found. " << std::endl;
+            return ret;
+        } 
+
+        YAML::Node meta;
+        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
+        
+    } else {
+        // no meta name specified but scan position is there: 
+        ret.reset(new ScanPosition);
     }
     
     // Get all sub scans
     size_t scanNo = 0;
-    do
+    while(true)
     {
-        // Get description for next scan
-        Description scanDescr = m_featureBase->m_description->scan(scanPosNo, scanNo);
-
-        std::string groupName;
-        std::string dataSetName;
-        std::tie(groupName, dataSetName) = getNames("", "", scanDescr);
-
-        // Check if it exists. If not, exit.
-        if(m_featureBase->m_kernel->exists(groupName, dataSetName))
+        ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo);
+        
+        if(scan)
         {
-            ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo);
             ret->scans.push_back(scan);
-        }
-        else
-        {
+        } else {
             break;
         }
+
         ++scanNo;
-    } 
-    while (true);
+    }
+
+    // TODO: make below lines same as above ones
+    // let the features decide if data is available
 
     // Get all scan cameras
     size_t camNo = 0;

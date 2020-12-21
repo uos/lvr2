@@ -43,8 +43,6 @@ struct convert<VChannelT>
         {
             return false;
         }
-        
-        // Makes no sense to read with and height here...
        
         return true;
     }

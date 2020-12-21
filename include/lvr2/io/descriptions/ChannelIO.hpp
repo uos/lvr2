@@ -18,7 +18,7 @@ public:
     template<typename T> 
     ChannelOptional<T> load(
         std::string group,
-        std::string name);
+        std::string name) const;
 
     template<typename T> 
     void save(
@@ -38,29 +38,31 @@ public:
     // void saveDoubleChannel(std::string groupName, std::string datasetName, const DoubleChannel& channel) const;
     // void saveIndexChannel(std::string groupName, std::string datasetName, const UCharChannel& channel) const;
 
+    std::vector<size_t> loadDimensions(std::string groupName, std::string datasetName) const;
+
 protected:
 
     // Need this functions:
     // - kernel is no template
     bool load(  std::string group,
                 std::string name,
-                Channel<float>& channel);
+                Channel<float>& channel) const;
 
     bool load(  std::string group,
                 std::string name,
-                Channel<unsigned char>& channel);
+                Channel<unsigned char>& channel) const;
 
     bool load(  std::string group,
                 std::string name,
-                Channel<double>& channel);
+                Channel<double>& channel) const;
 
     bool load(  std::string group, 
                 std::string name,
-                Channel<int>& channel);
+                Channel<int>& channel) const;
 
     bool load(  std::string group,
                 std::string name,
-                Channel<uint16_t>& channel);
+                Channel<uint16_t>& channel) const;
 
     // TODO all save functions
     void _save( std::string group, 

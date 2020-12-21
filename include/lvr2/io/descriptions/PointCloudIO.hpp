@@ -69,6 +69,8 @@ public:
      */
     PointBufferPtr loadPointCloud(const std::string& group, const std::string& container);
 
+    PointBufferPtr loadPointCloud(const std::string& group);
+
     /**
      * @brief Loads a reduced version of a point cloud
      * 

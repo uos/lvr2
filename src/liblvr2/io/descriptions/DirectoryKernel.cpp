@@ -1,5 +1,7 @@
 #include "lvr2/io/descriptions/DirectoryKernel.hpp"
 
+#include <boost/range/iterator_range.hpp>
+
 namespace lvr2
 {
 
@@ -178,8 +180,6 @@ boost::filesystem::path DirectoryKernel::getAbsolutePath(const std::string &grou
     return ret;
 }
 
-
-
 ucharArr DirectoryKernel::loadUCharArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
     return loadArray<unsigned char>(group, container, dims);   
@@ -226,6 +226,62 @@ void DirectoryKernel::saveIntArray(const std::string& groupName, const std::stri
 void DirectoryKernel::saveUInt16Array(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<uint16_t>& data) const
 {
     saveArray<uint16_t>(groupName, datasetName, dimensions, data);
+}
+
+std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
+        const std::string& group) const
+{
+    std::unordered_map<std::string, YAML::Node> ret;
+
+    boost::filesystem::path groupPath(getAbsolutePath(group, ""));
+    for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(groupPath), {}))
+    {
+        if(isMeta(entry.path().string()))
+        {
+            ret[entry.path().stem().string()] = loadMetaInformation(
+                entry.path().string());
+        }
+    }
+
+    return ret;
+}
+
+std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
+    const std::string& group, const std::string& sensor_type)
+{
+    std::unordered_map<std::string, YAML::Node> ret;
+
+    boost::filesystem::path groupPath(getAbsolutePath(group, ""));
+    for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(groupPath), {}))
+    {
+        if(isMeta(entry.path().string()))
+        {
+            YAML::Node meta = loadMetaInformation(
+                entry.path().string());
+
+            if(meta["sensor_type"])
+            {
+                if(meta["sensor_type"].as<std::string>() == sensor_type)
+                {
+                    ret[entry.path().stem().string()] = meta;
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+bool DirectoryKernel::isMeta(const std::string& path) const
+{
+    boost::filesystem::path p(path);
+
+    if(p.extension() == ".yaml")
+    {
+        return true;
+    }
+
+    return false;
 }
 
 } // namespace lvr2
