@@ -188,27 +188,43 @@ private:
 /// Overlaoeded outpur operator
 inline std::ostream& operator<<(std::ostream& os, const Options &o)
 {
-    //o.printTransformation(os);
-
     std::cout << "##### Input File Name: " << o.getInputFileName() << std::endl;
     std::cout << "##### Output File Name: " << o.getOutputFileName() + ".ply/.obj" << std::endl;
     std::cout << "##### Extraction Method: " << o.getExtractionMethod() << std::endl;
     std::cout << "##### Resolution: " << o.getResolution() << std::endl;
-    std::cout << "##### GeoTIFF: " << o.getInputGeoTIFF() << std::endl;
-    std::cout << "##### Reference Points File: " << o.getInputReferencePairs() << std::endl;
+    if(!o.getInputGeoTIFF().empty())
+    {
+        std::cout << "##### GeoTIFF: " << o.getInputGeoTIFF() << std::endl;
+    }
+    if(!o.getInputReferencePairs().empty())
+    {
+        std::cout << "##### Reference Points File: " << o.getInputReferencePairs() << std::endl;
+    }
     std::cout << "##### Starting Band: " << o.getStartingBand() << std::endl;
     std::cout << "##### Number of Bands: " << o.getNumberOfBands() << std::endl;
-    std::cout << "##### Target System: " << o.getTargetSystem() << std::endl;
     std::cout << "##### Color Scale: " << o.getColorScale() << std::endl;
-    std::cout << "##### Number of Neighbors: " << o.getNumberNeighbors() << std::endl;
-    std::cout << "##### Min. Radius: " << o.getMinRadius() << std::endl;
-    std::cout << "##### Max. Radius: " << o.getMaxRadius() << std::endl;
-    std::cout << "##### Number of Radius Steps: " << o.getRadiusSteps() << std::endl;
-    std::cout << "##### Small Window Size: " << o.getSWSize() << std::endl;
-    std::cout << "##### Small Window Threshold: " << o.getSWThreshold() << std::endl;
-    std::cout << "##### Large Window Size: " << o.getLWSize() << std::endl;
-    std::cout << "##### Large Window Threshold: " << o.getLWThreshold() << std::endl;
-    std::cout << "##### Slope Threshold: " << o.getSlopeThreshold() << std::endl;    
+    if(!o.getTargetSystem().empty())
+    {
+        std::cout << "##### Target System: " << o.getTargetSystem() << std::endl;
+    }    
+    if(o.getExtractionMethod() == "IMA" || o.getExtractionMethod() == "NN")
+    {
+        std::cout << "##### Number of Neighbors: " << o.getNumberNeighbors() << std::endl;
+    }
+    if(o.getExtractionMethod() == "IMA")
+    {
+        std::cout << "##### Min. Radius: " << o.getMinRadius() << std::endl;
+        std::cout << "##### Max. Radius: " << o.getMaxRadius() << std::endl;
+        std::cout << "##### Number of Radius Steps: " << o.getRadiusSteps() << std::endl;
+    }
+    if(o.getExtractionMethod() == "THM")
+    {
+        std::cout << "##### Small Window Size: " << o.getSWSize() << std::endl;
+        std::cout << "##### Small Window Threshold: " << o.getSWThreshold() << std::endl;
+        std::cout << "##### Large Window Size: " << o.getLWSize() << std::endl;
+        std::cout << "##### Large Window Threshold: " << o.getLWThreshold() << std::endl;
+        std::cout << "##### Slope Threshold: " << o.getSlopeThreshold() << std::endl;  
+    }  
 
     return os;
 }

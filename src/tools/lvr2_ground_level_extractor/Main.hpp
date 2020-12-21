@@ -976,7 +976,7 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
 
 /**
  * @brief Generates a Texture that shows the distance between a mesh and the point clouds it is based on. 
- * Each of the texture's texels represents the distance between the mesh to the highest point of the point cloud inside the texel's area.
+ * Each of the texture's texels represent the distance between the mesh to the highest point of the point cloud inside the texel's area.
  * 
  * @tparam BaseVecT Sets which BaseVector template is used.
  * @tparam Data Sets which data type (float,double) is used.
