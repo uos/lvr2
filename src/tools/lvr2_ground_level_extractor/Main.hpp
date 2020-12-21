@@ -205,7 +205,7 @@ void warpGeoTIFF(GDALDatasetH& src, GDALDatasetH& dt, const std::string& geogCS,
 }
 
 /**
- * @brief Transforms a set of points from one geo-referenced coordinate system to another utilsing GDAL.
+ * @brief Transforms a set of points from one geo-referenced coordinate system to another utilising GDAL.
  * 
  * @tparam BaseVecT Sets which BaseVector template is used.
  * @param src EPSG Code of the source coordinate system.
@@ -248,7 +248,7 @@ void transformPoints(string src,string dt, BaseVecT* srcPoints, BaseVecT* destPo
  * @param x x coordinate.
  * @param y y coordinate.
  * @param lowestZ Lowest recorded z coordinate value of the point clouds bounding box.
- * @param highestZ Highest recored z coordinate value of the point clouds bounding box.
+ * @param highestZ Highest recorded z coordinate value of the point clouds bounding box.
  * @param searchArea Size of the radius around the specified datum that is to be searched for points.
  * @param tree A search tree that houses the point clouds information and that can be used for radius search (uses the FLANN).
  * @param points Is used in conjunction with @tree to extract information about the points found using radius search.
@@ -310,9 +310,9 @@ Data findLowestZ(Data x, Data y, Data lowestZ, Data highestZ, Data searchArea, S
  * @param points Contains the information of all the points from the point cloud.
  * @param surface Point cloud manager that can generate the point clouds bounding box.
  * @param tree Search Tree that utilises the FLANN to enable Radius and Nearest Neighbor Search on the point clouds data.
- * @param numNeighbors Number of neighbors used for Nearest Neighbor Search.
+ * @param numNeighbors Number of neighbours used for Nearest Neighbor Search.
  * @param resolution Parameter that sets the distance between the vertices of the mesh.
- * @param affineMatrix If a matrix is provided, the meshe's vertices will be transformed using it.
+ * @param affineMatrix If a matrix is provided, the mesh's vertices will be transformed using it.
  */
 template <typename BaseVecT, typename Data>
 void nearestNeighborMethod(lvr2::HalfEdgeMesh<VecD>& mesh, FloatChannel& points, PointsetSurfacePtr<Vec>& surface,
@@ -465,8 +465,8 @@ SearchTreeFlann<BaseVecT>& tree ,int numNeighbors, Data resolution, Eigen::Matri
 
 /**
  * @brief Utilises an improved version of the Moving Average algorithm to generate a DTM from a point cloud. Based on 
- * [W. Maleika. Moving average optimization in digital terrain model generation based on testmultibeam echosounder data.Geo-Marine Letters, 35(1):61–68, 2015.].
- * The algorithm searches for points in a predefined radius around the nodes. If enough points are found, the nodes height is calculaed based on their elevation.
+ * [W. Maleika. Moving average optimization in digital terrain model generation based on test multibeam echosounder data.Geo-Marine Letters, 35(1):61–68, 2015.].
+ * The algorithm searches for points in a predefined radius around the nodes. If enough points are found, the height of the nodes is calculated based on their elevation.
  * How much a single point influences the node is decided by the point's distance to the node. When the amount of points is too low, the search radius is extended,
  * until the maximum radius is reached. Should this happen, the node is excluded from the mesh.
  * 
@@ -478,11 +478,11 @@ SearchTreeFlann<BaseVecT>& tree ,int numNeighbors, Data resolution, Eigen::Matri
  * @param tree Search Tree that utilises the FLANN to enable Radius and Nearest Neighbor Search on the point clouds data.
  * @param minRadius Starting Radius.
  * @param maxRadius Maximum Radius.
- * @param minNeighbors The minimum amount of neighbors. If less neighbors are fround, the node is excluded from the model.
- * @param maxNeighbors The maximum amount of neighbors to look for.
- * @param radiusSteps The amount of steos necessary to extend from the @minRadius to the @maxRadius.
+ * @param minNeighbors The minimum amount of neighbours. If fewer neighbours are found, the node is excluded from the model.
+ * @param maxNeighbors The maximum amount of neighbours to look for.
+ * @param radiusSteps The number of steps necessary to extend from the @minRadius to the @maxRadius.
  * @param resolution Parameter that sets the distance between the vertices of the mesh.
- * @param affineMatrix If a matrix is provided, the meshe's vertices will be transformed using it.
+ * @param affineMatrix If a matrix is provided, the mesh's vertices will be transformed using it.
  */
 template <typename BaseVecT, typename Data>
 void improvedMovingAverage(lvr2::HalfEdgeMesh<VecD>& mesh, FloatChannel& points, PointsetSurfacePtr<Vec>& surface,
@@ -665,13 +665,13 @@ SearchTreeFlann<BaseVecT>& tree, float minRadius, float maxRadius, int minNeighb
 
 /**
  * @brief Extracts the ground points from a PLY point cloud and puts them into a HalfEdgeMesh structure using an algorithm based on 
- * [P.  Rashidi  and  H.  Rastiveis.   Extraction  of  Ground  Points  from  LiDAR  Data  Based  onSlope and Progressive Window Thresholding (SPWT).
+ * [P.  Rashidi  and  H.  Rastiveis.   Extraction  of  Ground  Points  from  LiDAR  Data  Based  on Slope and Progressive Window Thresholding (SPWT).
  * Earth Observation and GeomaticsEngineering, 2(1):36–44, 2018.]
- * The point cloud is used to built a grid of nodes. Each node has to pass three tests. These tests try to confirm, wether the node is a ground point.
- * The Small Window Thresholding method compares a node's z value to its neighbors' z values. If the difference between the lowest neighbor and the node exceeds a threshold
+ * The point cloud is used to build a grid of nodes. Each node has to pass three tests to be included in the DTM. These tests try to confirm, whether the node is a ground point.
+ * The Small Window Thresholding method compares a node's z value to its neighbours' z values. If the difference between the lowest neighbour and the node exceeds a threshold
  * set by the user, the node does not belong to the ground layer and it is excluded from the mesh. 
- * Large Window Thresholding operates similarly. It compares a node's z value to neighbors in a larger radius.
- * The Slope Thresholding Method calculates the slope angle between a node and its direct neighbors. If the angle exceeds a threshold, the node is excluded from the model.
+ * Large Window Thresholding operates similarly. It compares a node's z value to its neighbours in a larger radius.
+ * The Slope Thresholding Method calculates the slope angle between a node and its direct neighbours. If the angle exceeds a threshold, the node is excluded from the model.
  * 
  * @tparam BaseVecT Sets which BaseVector template is used.
  * @tparam Data Sets which data type (float,double) is used.
@@ -680,12 +680,12 @@ SearchTreeFlann<BaseVecT>& tree, float minRadius, float maxRadius, int minNeighb
  * @param surface Point cloud manager that can generate the point clouds bounding box.
  * @param resolution Parameter that sets the distance between the vertices of the mesh.
  * @param tree Search Tree that utilises the FLANN to enable Radius and Nearest Neighbor Search on the point clouds data.
- * @param smallWindow Sets the the size of the x * x window of neighbors' around a node that is used on Small Window Thresholding.
+ * @param smallWindow Sets the size of the x * x window of neighbors' around a node that is used on Small Window Thresholding.
  * @param smallWindowHeight Sets the threshold for Small Window Thresholding.
- * @param largeWindow Sets the the size of the x * x window of neighbors' around a node that is used on Large Window Thresholding.
+ * @param largeWindow Sets the size of the x * x window of neighbors' around a node that is used on Large Window Thresholding.
  * @param largeWindowHeight Sets the threshold for Large Window Thresholding.
  * @param slopeThreshold Sets the threshold for Slope Thresholding.
- * @param affineMatrix If a matrix is provided, the meshe's vertices will be transformed using it.
+ * @param affineMatrix If a matrix is provided, the mesh's vertices will be transformed using it.
  */
 template <typename BaseVecT, typename Data>
 void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, PointsetSurfacePtr<Vec>& surface, float resolution,
@@ -973,8 +973,9 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
 
     std::cout << std::endl;
 }
+
 /**
- * @brief Generates a Texture that shows the distance between a mesh and the point clouds its based on in a color scale of choice. 
+ * @brief Generates a Texture that shows the distance between a mesh and the point clouds it is based on. 
  * Each of the texture's texels represents the distance between the mesh to the highest point of the point cloud inside the texel's area.
  * 
  * @tparam BaseVecT Sets which BaseVector template is used.
@@ -983,8 +984,8 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
  * @param tree Search Tree that utilises the FLANN to enable Radius and Nearest Neighbor Search on the point clouds data. 
  * @param mesh Mesh structure that is compared to the point cloud.
  * @param texelSize The x*x size of a texel. This also sets the resolution of the texture.
- * @param affineMatrix If the mesh was tranformed using a matrix, it needs to be used here aswell for the texture to be generated correctly.
- * @param colorScale The user can chose between the following color scales: GREY, JET, HOT, HSV, SHSV, SIMPSONS.
+ * @param affineMatrix If the mesh was transformed using a matrix, it needs to be used here as well for the texture to be generated correctly.
+ * @param colorScale The user can choose between the following colour scales: GREY, JET, HOT, HSV, SHSV, SIMPSONS.
  * @return Texture Depicts the height difference between @mesh and point cloud.
  */
 template <typename BaseVecT, typename Data>
@@ -1297,12 +1298,12 @@ Eigen::MatrixXd affineMatrix, string colorScale)
 
 /**
  * @brief Extracts one or three Bands from a GeoTIFF and writes the data into a Texture. 
- * One band is depicted in a color scale of choice and three bands are interepreted as RGB.
+ * One band is depicted in a colour scale of choice and three bands are interpreted as RGB.
  * 
  * @param io Contains the GeoTIFF's data.
  * @param firstBand The first band of the GeoTIFF to extract.
  * @param lastBand The last band of the GeoTIFF to extract. If this is equal to @firstBand, this band is extracted.
- * @param colorScale The color scale the band is depicted in: GREY, JET, HOT, HSV, SHSV, SIMPSONS.
+ * @param colorScale The colour scale the band is depicted in: GREY, JET, HOT, HSV, SHSV, SIMPSONS.
  * @return Texture Contains the extracted band's data.
  */
 Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand, string colorScale)

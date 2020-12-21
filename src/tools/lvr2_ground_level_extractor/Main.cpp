@@ -43,13 +43,12 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(string data)
 
 /**
  * @brief Creates textures for a provided @mesh and calculates the texture coordinates. A texture is either generated from the @mesh compared to the point cloud it is
- * based on or a GeoTIFF. It @returns a format that can be used in the TextureFinalizer. The finalizer is used to create an OBJ/PLY of the @mesh and a JPEG containing
- * the textures data.
+ * based on or a GeoTIFF. It @returns a format that can be used in the TextureFinalizer.
  * 
  * @tparam BaseVecT Sets which BaseVector template is used.
  * @param mesh Model the texture is projected onto.
  * @param clusters Cluster containing all faces of the model.
- * @param surface Point cloud manager that calculates the boundib box.
+ * @param surface Point cloud manager that calculates the bounding box.
  * @param texelSize Texel size of the generated texture. Also sets its resolution.
  * @param affineMatrix If the mesh was transformed or a GeoTIFF is used as texture, the transformation matrix needs to be provided. Transformation matrix without Translation.
  * @param fullAffineMatrix Transformation matrix with Translation.
@@ -57,7 +56,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(string data)
  * @param tree Search Tree that utilises the FLANN to enable Radius and Nearest Neighbor Search on the point clouds data. 
  * @param startingBand First Band to extract from the GeoTIFF.
  * @param numberOfBands Number of Bands to extract from the GeoTIFF.
- * @param colorScale The color scale that is used in the generated texture: GREY, JET, HOT, HSV, SHSV, SIMPSONS.
+ * @param colorScale The colour scale that is used in the generated texture: GREY, JET, HOT, HSV, SHSV, SIMPSONS.
  * @param noTransformation If the transformation matrix was not applied to the @mesh, this should be set to true.
  * @return MaterializerResult<BaseVecT> Return a structure that contains the texture and the texture coordinates. It can be used in conjunction with the TextureFinlaizer 
  * to create a textured OBJ.
