@@ -86,7 +86,6 @@ protected:
                 const Channel<uint16_t>& channel) const;
 
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
-
 };
 
 

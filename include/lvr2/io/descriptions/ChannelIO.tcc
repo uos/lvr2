@@ -8,8 +8,6 @@ ChannelOptional<T> ChannelIO<FeatureBase>::load(
 {   
     ChannelOptional<T> ret;
     Channel<T> c;
-    
-    
 
     if constexpr(std::is_same<T, float>::value ) {
         if(load(group, name, c)){ret = c;}
@@ -58,8 +56,6 @@ void ChannelIO<FeatureBase>::save(
         std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
     }
 }
-
-
 
 template<typename FeatureBase>
 std::vector<size_t> ChannelIO<FeatureBase>::loadDimensions(

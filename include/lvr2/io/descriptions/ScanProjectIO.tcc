@@ -3,8 +3,9 @@
 namespace lvr2
 {
 
-template <typename FeatureBase>
-void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProjectPtr)
+template<typename FeatureBase>
+void ScanProjectIO<FeatureBase>::save(
+    ScanProjectPtr scanProject) const
 {
     Description d = m_featureBase->m_description->scanProject();
 
@@ -21,21 +22,28 @@ void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProje
     if(d.metaName)
     {
         YAML::Node node;
-        node = *scanProjectPtr;
+        node = *scanProject;
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
     }
 
     // std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
     // Iterate over all positions and save
-    for (size_t i = 0; i < scanProjectPtr->positions.size(); i++)
+    for (size_t i = 0; i < scanProject->positions.size(); i++)
     {
         // std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
-        m_scanPositionIO->saveScanPosition(i, scanProjectPtr->positions[i]);
+        m_scanPositionIO->saveScanPosition(i, scanProject->positions[i]);
     }
 }
 
 template <typename FeatureBase>
-ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
+void ScanProjectIO<FeatureBase>::saveScanProject(
+    ScanProjectPtr scanProject) const
+{
+    save(scanProject);
+}
+
+template <typename FeatureBase>
+ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
 {
     ScanProjectPtr ret;
 

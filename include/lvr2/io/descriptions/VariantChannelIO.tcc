@@ -8,7 +8,7 @@ namespace lvr2
 // Anker
 template<typename Derived, typename VChannelT, size_t I,
     typename std::enable_if<I == 0, void>::type* = nullptr>
-void store(
+void saveDynamic(
     const std::string& group,
     const std::string& name,
     const VChannelT& channel,
@@ -23,7 +23,7 @@ void store(
 // Recursion
 template<typename Derived, typename VChannelT, size_t I,
     typename std::enable_if<I != 0, void>::type* = nullptr>
-void store(
+void saveDynamic(
     const std::string& group,
     const std::string& name,
     const VChannelT& channel,
@@ -36,18 +36,18 @@ void store(
         io->template save<StoreType>(group, name, 
             channel.template extract<StoreType>());
     } else {
-        store<Derived, VChannelT, I-1>(group, name, channel, io);
+        saveDynamic<Derived, VChannelT, I-1>(group, name, channel, io);
     }
 }
 
 template<typename Derived, typename VChannelT>
-void store(
+void saveDynamic(
     const std::string& group,
     const std::string& name,
     const VChannelT& channel,
     const ChannelIO<Derived>* io)
 {
-    store<Derived, VChannelT, VChannelT::num_types - 1>(group, name, channel, io);
+    saveDynamic<Derived, VChannelT, VChannelT::num_types - 1>(group, name, channel, io);
 }
 
 template<typename Derived>
@@ -66,7 +66,7 @@ void VariantChannelIO<Derived>::save(
     node = vchannel;
 
     m_featureBase->m_kernel->saveMetaYAML(groupName, datasetName, node);
-    store<Derived, VChannelT>(groupName, datasetName, vchannel, m_channel_io);
+    saveDynamic<Derived, VChannelT>(groupName, datasetName, vchannel, m_channel_io);
 }
 
 
