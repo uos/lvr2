@@ -13,27 +13,56 @@ namespace lvr2
 template <typename FeatureBase>
 void ScanCameraIO<FeatureBase>::saveScanCamera(
     const size_t& scanPosNo, const size_t& scanCamNo, 
-    ScanCameraPtr& camera)
+    ScanCameraPtr cameraPtr) const
 {
     // TODO
+    Description d = m_featureBase->m_description->scanCamera(scanPosNo, scanCamNo);
+
+    std::cout << "[ScanCameraIO] Cam " << scanPosNo << "," << scanCamNo <<  " - Description: " << std::endl;
+    std::cout << d << std::endl;
+
+    if(d.metaName)
+    {
+        YAML::Node node;
+        node = *cameraPtr;
+        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+    }
+
+
+    for(size_t scanImageNo = 0; scanImageNo < cameraPtr->images.size(); scanImageNo++)
+    {
+        std::cout << "Saving image " << scanImageNo << std::endl;
+        m_scanImageIO->saveScanImage(scanPosNo, scanCamNo, scanImageNo, cameraPtr->images[scanImageNo]);
+    }
+    
 }
 
 template <typename FeatureBase>
 ScanCameraPtr ScanCameraIO<FeatureBase>::loadScanCamera(
     const size_t& scanPosNo, const size_t& scanCamNo)
 {
-    ScanCameraPtr ret(new ScanCamera);
+    ScanCameraPtr ret;
 
     Description d = m_featureBase->m_description->scanCamera(scanPosNo, scanCamNo);
 
-    if(d.metaData)
+    if(!d.groupName)
     {
-        *ret = (*d.metaData).as<ScanCamera>();
+        return ret;
     }
-    else
+
+    if(!m_featureBase->m_kernel->exists(*d.groupName))
     {
-        std::cout << timestamp << "ScanCameraIO::loadScanCamera(): Warning: No meta data found for cam_"
-                  << scanCamNo << "." << std::endl;
+        return ret;
+    }
+
+
+    if(d.metaName)
+    {
+        YAML::Node meta;
+        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        ret = std::make_shared<ScanCamera>(meta.as<ScanCamera>());
+    } else {
+        ret.reset(new ScanCamera);
     }
 
     std::string groupName;
@@ -42,7 +71,7 @@ ScanCameraPtr ScanCameraIO<FeatureBase>::loadScanCamera(
     size_t scanImageNo = 0;
     do
     {
-        Description scanImageDescr = m_featureBase->m_description->scanImage(scanPosNo, 0, scanCamNo, scanImageNo);
+        Description scanImageDescr = m_featureBase->m_description->scanImage(scanPosNo, scanCamNo, scanImageNo);
         std::tie(groupName, dataSetName) = getNames("", "", scanImageDescr);
         if(m_featureBase->m_kernel->exists(groupName, dataSetName))
         {

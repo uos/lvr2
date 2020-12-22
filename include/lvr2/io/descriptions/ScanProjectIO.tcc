@@ -12,10 +12,12 @@ void ScanProjectIO<FeatureBase>::save(
     std::cout << "[ScanProjectIO] ScanProject - Description: " << std::endl;
     std::cout << d << std::endl;
 
+    
+
     if(!d.groupName)
     {
-        std::cout << timestamp << "[ScanProjectIO] Description does not give a group for the ScanProject" << std::endl;
-        return;
+        std::cout << timestamp << "[ScanProjectIO] Description does not contain a group for the ScanProject" << std::endl;
+        d.groupName = "";
     }
 
     // Default scan project yaml
@@ -49,6 +51,11 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
 
     // Load description and meta data for scan project
     Description d = m_featureBase->m_description->scanProject();
+
+    if(!d.groupName)
+    {
+        d.groupName = "";
+    }
 
     if(!m_featureBase->m_kernel->exists(*d.groupName))
     {

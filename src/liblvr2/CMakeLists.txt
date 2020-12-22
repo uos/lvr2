@@ -5,6 +5,7 @@ set(LVR2_SOURCES
     texture/TextureFactory.cpp
     util/Util.cpp
     util/Hdf5Util.cpp
+    util/Synthetic.cpp
     display/Renderable.cpp
     display/GroundPlane.cpp
     display/MultiPointCloud.cpp

@@ -36,7 +36,7 @@ void ScanIO<FeatureBase>::save(
         // Scan is a dataset: write data
         m_pclIO->savePointCloud(*d.groupName, *d.dataSetName, scanPtr->points);
     }
-    
+
     // Save Waveform data
     if (scanPtr->waveform)
     {
@@ -92,6 +92,8 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     }
     
 
+    
+
     /*
     boost::shared_array<float> pointData;
     std::vector<size_t> pointDim;
@@ -132,6 +134,8 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     //     if(!ret){ ret.reset(new Scan); }
     //     ret->waveform = fwPtr;
     // }
+
+
 
     return ret;
 }

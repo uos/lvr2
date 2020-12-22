@@ -9,44 +9,46 @@ ScanImagePtr ScanImageIO<FeatureBase>::loadScanImage(
     const size_t& camNr, 
     const size_t& imgNr)
 {
-    ScanImagePtr ret(new ScanImage);
+    ScanImagePtr ret;
 
-    Description d = m_featureBase->m_description->scanImage(scanPos, 0, camNr, imgNr);
+    Description d = m_featureBase->m_description->scanImage(scanPos, camNr, imgNr);
 
-    // Init default values
-    std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << imgNr;
-    std::string scanImageName = sstr.str() + ".png";
-    std::string metaName = sstr.str() + ".yaml";
-    std::string groupName = "";
-
-    if(d.groupName)
+    if(!d.groupName)
     {
-        groupName = *d.groupName;
+        return ret;
     }
 
-    if(d.dataSetName)
+    if(!m_featureBase->m_kernel->exists(*d.groupName))
     {
-        scanImageName = *d.dataSetName;
+        return ret;
     }
-
+    
     if(d.metaName)
     {
-        metaName = *d.metaName;
+        if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
+        {
+            return ret;
+        }
+        
+        YAML::Node meta;
+        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        ret = std::make_shared<ScanImage>(meta.as<ScanImage>());
+    } else {
+        ret.reset(new ScanImage);
     }
 
-    if(d.metaData)
-    {
-        *ret = (*d.metaData).as<ScanImage>();
-    }
-    else
-    {
-        std::cout << timestamp << "ScanImageIO::loadScanImage(): Warning: No meta data found for "
-                  << groupName << "/" << scanImageName << "." << std::endl;
-    }
-
-    ret->imageFile = scanImageName;
+    ret->imageFile = *d.dataSetName;
+    
     //TODO load data
+
+    // loading
+    // should data be loaded ?
+    boost::optional<cv::Mat> opt_img = m_imageIO->loadImage(*d.groupName, *d.dataSetName);
+    if(opt_img)
+    {
+        ret->image = *opt_img;
+    }
+
     return ret;
 }
 
@@ -55,25 +57,24 @@ void  ScanImageIO<FeatureBase>::saveScanImage(
     const size_t& scanPos, 
     const size_t& camNr, 
     const size_t& imgNr, 
-    ScanImagePtr& buffer)
+    ScanImagePtr imgPtr) const
 {
     // TODO
+    Description d = m_featureBase->m_description->scanImage(scanPos, camNr, imgNr);
+
+    std::cout << "[ScanImageIO] Image " << scanPos << "," << camNr << "," << imgNr <<  " - Description: " << std::endl;
+    std::cout << d << std::endl;
+
+    if(d.metaName)
+    {
+        // add image file to meta
+        imgPtr->imageFile = *d.dataSetName;
+        YAML::Node node;
+        node = *imgPtr;
+        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+    }
+
+    m_imageIO->save(*d.groupName, *d.dataSetName, imgPtr->image);
 }
-
-// template <typename FeatureBase>
-// ScanImagePtr ScanImageIO<FeatureBase>::loadScanImage(
-//     const std::string& group, 
-//     const std::string& container)
-// {
-//     ScanImagePtr ret;
-
-//     // check wether the given group is type ScanProjectIO
-
-//     // TODO
-
-//     return ret;
-// }
-
-
 
 } // namespace lvr2

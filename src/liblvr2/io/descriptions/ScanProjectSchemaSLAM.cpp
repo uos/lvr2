@@ -132,7 +132,8 @@ Description ScanProjectSchemaSLAM::waveform(const std::string& scanPositionPath,
 {
     return scan(0, scanNo);
 }
-Description ScanProjectSchemaSLAM::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
+Description ScanProjectSchemaSLAM::scanCamera(
+    const size_t &scanPositionNo, const size_t &camNo) const
 {
     // Scan camera is not supported
     Description d;
@@ -143,7 +144,8 @@ Description ScanProjectSchemaSLAM::scanCamera(const size_t &scanPositionNo, cons
     return d;
 }
 
-Description ScanProjectSchemaSLAM::scanCamera(const std::string &scanPositionPath, const size_t &camNo) const
+Description ScanProjectSchemaSLAM::scanCamera(
+    const std::string &scanPositionPath, const size_t &camNo) const
 {
     // Scan camera is not supported
     Description d;
@@ -155,7 +157,7 @@ Description ScanProjectSchemaSLAM::scanCamera(const std::string &scanPositionPat
 }
 
 Description ScanProjectSchemaSLAM::scanImage(
-    const size_t &scanPosNo, const size_t &scanNo,
+    const size_t &scanPosNo, 
     const size_t &scanCameraNo, const size_t &scanImageNo) const
 {
     // Scan images are not supported
