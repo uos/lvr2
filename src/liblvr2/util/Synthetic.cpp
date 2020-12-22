@@ -1,4 +1,5 @@
 #include "lvr2/util/Synthetic.hpp"
+#include <opencv2/imgproc.hpp>
 
 namespace lvr2 {
 
@@ -139,11 +140,33 @@ PointBufferPtr genSpherePoints(
     int num_long,
     int num_lat)
 {
-    PointBufferPtr ret;
+    PointBufferPtr ret(new PointBuffer);
 
-
+    auto mesh = genSphere(num_long, num_lat);
+    (*ret)["points"] = (*mesh)["vertices"]; 
 
     return ret;
+}
+
+ScanImagePtr genLVRImage()
+{
+    ScanImagePtr imgPtr(new ScanImage);
+
+    cv::Mat img(500, 500, CV_8UC3, cv::Scalar(239,234,224));
+
+    // outter lines
+    cv::line(img, cv::Point(250, 50), cv::Point(450, 450), cv::Scalar(0, 0, 0), 3, CV_AA );
+    cv::line(img, cv::Point(250, 50), cv::Point(50, 450), cv::Scalar(0, 0, 0), 3, CV_AA );
+    cv::line(img, cv::Point(50, 450), cv::Point(450, 450), cv::Scalar(0, 0, 0), 3, CV_AA );
+
+    // inner lines
+    cv::line(img, cv::Point(150, 250), cv::Point(350, 250), cv::Scalar(0, 0, 0), 3, CV_AA );
+    cv::line(img, cv::Point(150, 250), cv::Point(250, 450), cv::Scalar(0, 0, 0), 3, CV_AA );
+    cv::line(img, cv::Point(350, 250), cv::Point(250, 450), cv::Scalar(0, 0, 0), 3, CV_AA );
+
+    imgPtr->image = img;
+
+    return imgPtr;
 }
 
 } // namespace synthetic

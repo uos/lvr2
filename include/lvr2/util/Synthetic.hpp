@@ -17,6 +17,8 @@ MeshBufferPtr genSphere(
 PointBufferPtr genSpherePoints(int num_long=50,
     int num_lat=50);
 
+ScanImagePtr genLVRImage();
+
 } // namespace synthetic
 
 } // namespace lvr2
