@@ -15,9 +15,9 @@ template <typename FeatureBase>
 class LabelIO
 {
 public:
-  void saveLabels(std::string &group, LabelRootPtr rootPtr);
+  void saveLabels(std::string &group, LabelRootPtr rootPtr) const;
 
-  LabelRootPtr loadLabels(const std::string& groupName);
+  LabelRootPtr loadLabels(const std::string& groupName) const;
   
 protected:
 

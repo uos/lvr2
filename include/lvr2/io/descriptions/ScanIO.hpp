@@ -19,16 +19,30 @@ template <typename FeatureBase>
 class ScanIO
 {
   public:
-   // void save(const std::string& group, const std::string& container, const std::string& metaFile, const ScanPtr& scan);
-    void saveScan(const size_t& scanPosNo, const size_t& scanNo, const ScanPtr& buffer);
   
-    ScanPtr loadScan(const size_t& scanPosNo, const size_t& scanNo);
-
-    ScanPtr loadScan(const size_t& scanPosNo, const size_t& scanNo, ReductionAlgorithmPtr reduction);
-
+    void save(
+            const size_t& scanPosNo, 
+            const size_t& scanNo, 
+            ScanPtr buffer
+        ) const;
     
-    //ScanPtr load(const std::string& group, const std::string& container);
-    
+    void saveScan(
+            const size_t& scanPosNo, 
+            const size_t& scanNo, 
+            ScanPtr buffer
+        ) const;
+  
+    ScanPtr loadScan(
+            const size_t& scanPosNo, 
+            const size_t& scanNo
+        ) const;
+
+    ScanPtr loadScan(
+            const size_t& scanPosNo, 
+            const size_t& scanNo, 
+            ReductionAlgorithmPtr reduction
+        ) const;
+
   protected:
     bool isScan(const std::string& group);
 

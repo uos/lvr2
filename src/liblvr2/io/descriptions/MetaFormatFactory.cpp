@@ -9,7 +9,7 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
 
     if (p.extension() == ".yaml")
     {
-        std::cout << timestamp << "SaveMetaInformation(YAML): " << outfile << std::endl;
+        // std::cout << timestamp << "SaveMetaInformation(YAML): " << outfile << std::endl;
         std::ofstream out(outfile.c_str());
         out << node;
         out.close();
@@ -32,7 +32,7 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             boost::filesystem::path posePath(outfilePath.stem().string() + ".pose");
             boost::filesystem::path poseOutPath = p.parent_path() / posePath;
 
-            std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << poseOutPath << std::endl;
+            // std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << poseOutPath << std::endl;
             writePose(position, angles, poseOutPath);
         }
 
@@ -45,9 +45,17 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             boost::filesystem::path dir = outfilePath.parent_path();
             boost::filesystem::path framesPath(outfilePath.stem().string() + ".frames");
             boost::filesystem::path framesOutPath = p.parent_path() / framesPath;
-            std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesOutPath << std::endl;
+            // std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesOutPath << std::endl;
             writeFrame(transform, framesOutPath);
         }
+    } else if(p.extension().string() == "") {
+        // no extension specified: HDF5-Schemas
+        // use yaml
+        std::ofstream out(outfile + ".yaml");
+        out << node;
+        out.close();
+    } else {
+        std::cout << timestamp << " [MetaFormatFactory] Meta extension " << p.extension() << " unknown. " << std::endl; 
     }
 }
 
@@ -59,8 +67,8 @@ YAML::Node loadMetaInformation(const std::string &in)
         YAML::Node n;
         if (boost::filesystem::exists(inPath))
         {
-            std::cout << timestamp
-                      << "LoadMetaInformation(YAML): Loading " << inPath << std::endl;
+            // std::cout << timestamp
+            //           << "LoadMetaInformation(YAML): Loading " << inPath << std::endl;
             n = YAML::LoadFile(inPath.string());
         }
         else
@@ -80,8 +88,8 @@ YAML::Node loadMetaInformation(const std::string &in)
         std::ifstream in_str(poseInPath.c_str());
         if (in_str.good())
         {
-            std::cout << timestamp
-                      << "LoadMetaInformation(SLAM6D): Loading " << poseInPath << std::endl;
+            // std::cout << timestamp
+            //           << "LoadMetaInformation(SLAM6D): Loading " << poseInPath << std::endl;
 
             double x, y, z, r, t, p;
             in_str >> x >> y >> z >> r >> t >> p;
@@ -101,8 +109,8 @@ YAML::Node loadMetaInformation(const std::string &in)
         boost::filesystem::path framesInPath = inPath.parent_path() / framesPath;
         if (boost::filesystem::exists(framesInPath))
         {
-            std::cout << timestamp
-                      << "LoadMetaInformation(SLAM6D): Loading " << framesInPath << std::endl;
+            // std::cout << timestamp
+            //           << "LoadMetaInformation(SLAM6D): Loading " << framesInPath << std::endl;
             Transformd registration = getTransformationFromFrames<double>(framesInPath);
             node["registration"] = registration;
         }
@@ -112,6 +120,28 @@ YAML::Node loadMetaInformation(const std::string &in)
                       << "LoadMetaInformation(SLAM6D): Warning: No pose file found." << std::endl;
         }
         return node;
+    } else if(inPath.extension().string() == "") {
+        // no extension specified: HDF5 Schemas
+        // try yaml extension
+
+        boost::filesystem::path inPath_corrected(inPath.string() + ".yaml");
+
+
+        YAML::Node n;
+        if (boost::filesystem::exists(inPath_corrected))
+        {
+            // std::cout << timestamp
+            //           << "LoadMetaInformation(YAML): Loading " << inPath_corrected << std::endl;
+            n = YAML::LoadFile( inPath_corrected.string());
+        }
+        else
+        {
+            std::cout << timestamp
+                      << "LoadMetaInformation(YAML): Unable to find yaml file: " << inPath_corrected << std::endl;
+        }
+        return n;
+    } else {
+        std::cout << "Kernel Panic: Meta extension " << inPath.extension() << " unknown. " << std::endl; 
     }
 }
 

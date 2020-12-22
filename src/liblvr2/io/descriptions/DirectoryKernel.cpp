@@ -1,5 +1,7 @@
 #include "lvr2/io/descriptions/DirectoryKernel.hpp"
 
+#include <boost/range/iterator_range.hpp>
+
 namespace lvr2
 {
 
@@ -16,7 +18,7 @@ void DirectoryKernel::saveMeshBuffer(
 
     ModelPtr model(new Model);
     model->m_mesh = buffer;
-    std::cout << timestamp << "Directory Kernel::saveMeshBuffer(): " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::saveMeshBuffer(): " << p.string() << std::endl;
     ModelFactory::saveModel(model, p.string());
 }
 
@@ -32,7 +34,7 @@ void DirectoryKernel::savePointBuffer(
     }
     ModelPtr model(new Model);
     model->m_pointCloud = buffer;
-    std::cout << timestamp << "Directory Kernel::savePointBuffer(): " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::savePointBuffer(): " << p.string() << std::endl;
     ModelFactory::saveModel(model, p.string());
 }
 
@@ -46,7 +48,7 @@ void DirectoryKernel::saveImage(
     {
         boost::filesystem::create_directories(p.parent_path());
     }
-    std::cout << timestamp << "Directory Kernel::saveImage(): " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::saveImage(): " << p.string() << std::endl;
 
     cv::imwrite(p.string(), image);
 }
@@ -61,11 +63,9 @@ void DirectoryKernel::saveMetaYAML(
     {
         boost::filesystem::create_directories(p.parent_path());
     }
-    std::cout << timestamp << "Directory Kernel::saveMetaYAML(): " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::saveMetaYAML(): " << p.string() << std::endl;
     saveMetaInformation(p.string(), node);
 }
-
-
 
 MeshBufferPtr DirectoryKernel::loadMeshBuffer(
     const std::string &group,
@@ -85,12 +85,12 @@ PointBufferPtr DirectoryKernel::loadPointBuffer(
     const std::string &container) const
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
-    std::cout << timestamp << "Directory Kernel::loadPointBuffer(): " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::loadPointBuffer(): " << p.string() << std::endl;
     ModelPtr model = ModelFactory::readModel(p.string());
     if (model)
     {
-        std::cout << model->m_pointCloud << std::endl;
-        std::cout << "Model Count " <<  model->m_pointCloud->numPoints() << std::endl;
+        // std::cout << model->m_pointCloud << std::endl;
+        // std::cout << "Model Count " <<  model->m_pointCloud->numPoints() << std::endl;
         return model->m_pointCloud;
     }
 }
@@ -101,7 +101,7 @@ boost::optional<cv::Mat> DirectoryKernel::loadImage(
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
     boost::optional<cv::Mat> opt;
-    std::cout << timestamp << "Directory Kernel::loadImage: " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::loadImage: " << p.string() << std::endl;
     if(boost::filesystem::exists(p))
     {
         opt = cv::imread(p.string());
@@ -120,7 +120,7 @@ void DirectoryKernel::loadMetaYAML(
     YAML::Node& n) const
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
-    std::cout << timestamp << "Directory Kernel::loadMetaYAML: " << p.string() << std::endl;
+    // std::cout << timestamp << "Directory Kernel::loadMetaYAML: " << p.string() << std::endl;
     YAML::Node node = loadMetaInformation(p.string());
     n = node;
 }
@@ -129,6 +129,7 @@ bool DirectoryKernel::exists(const std::string &group) const
 {
     return boost::filesystem::exists(getAbsolutePath(group, ""));
 }
+
 bool DirectoryKernel::exists(const std::string &group, const std::string &container) const
 {
     // Check if container is not empty to prevent checking
@@ -179,8 +180,6 @@ boost::filesystem::path DirectoryKernel::getAbsolutePath(const std::string &grou
     return ret;
 }
 
-
-
 ucharArr DirectoryKernel::loadUCharArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
     return loadArray<unsigned char>(group, container, dims);   
@@ -227,6 +226,62 @@ void DirectoryKernel::saveIntArray(const std::string& groupName, const std::stri
 void DirectoryKernel::saveUInt16Array(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<uint16_t>& data) const
 {
     saveArray<uint16_t>(groupName, datasetName, dimensions, data);
+}
+
+std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
+        const std::string& group) const
+{
+    std::unordered_map<std::string, YAML::Node> ret;
+
+    boost::filesystem::path groupPath(getAbsolutePath(group, ""));
+    for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(groupPath), {}))
+    {
+        if(isMeta(entry.path().string()))
+        {
+            ret[entry.path().stem().string()] = loadMetaInformation(
+                entry.path().string());
+        }
+    }
+
+    return ret;
+}
+
+std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
+    const std::string& group, const std::string& sensor_type)
+{
+    std::unordered_map<std::string, YAML::Node> ret;
+
+    boost::filesystem::path groupPath(getAbsolutePath(group, ""));
+    for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(groupPath), {}))
+    {
+        if(isMeta(entry.path().string()))
+        {
+            YAML::Node meta = loadMetaInformation(
+                entry.path().string());
+
+            if(meta["sensor_type"])
+            {
+                if(meta["sensor_type"].as<std::string>() == sensor_type)
+                {
+                    ret[entry.path().stem().string()] = meta;
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+bool DirectoryKernel::isMeta(const std::string& path) const
+{
+    boost::filesystem::path p(path);
+
+    if(p.extension() == ".yaml")
+    {
+        return true;
+    }
+
+    return false;
 }
 
 } // namespace lvr2
