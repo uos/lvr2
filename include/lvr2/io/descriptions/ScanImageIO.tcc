@@ -55,30 +55,24 @@ void  ScanImageIO<FeatureBase>::saveScanImage(
     const size_t& scanPos, 
     const size_t& camNr, 
     const size_t& imgNr, 
-    ScanImagePtr buffer) const
+    ScanImagePtr imgPtr) const
 {
     // TODO
-    // Description d = m_featureBase->m_description->scanImage(scanPos, camNr, imgNr);
+    Description d = m_featureBase->m_description->scanImage(scanPos, camNr, imgNr);
 
-    // std::cout << "[ScanImageIO] Image " << scanPosNo << "," << camNr << "," << imgNr <<  " - Description: " << std::endl;
-    // std::cout << d << std::endl;
+    std::cout << "[ScanImageIO] Image " << scanPos << "," << camNr << "," << imgNr <<  " - Description: " << std::endl;
+    std::cout << d << std::endl;
 
+    if(d.metaName)
+    {
+        // add image file to meta
+        imgPtr->imageFile = *d.dataSetName;
+        YAML::Node node;
+        node = *imgPtr;
+        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+    }
+
+    m_imageIO->save(*d.groupName, *d.dataSetName, imgPtr->image);
 }
-
-// template <typename FeatureBase>
-// ScanImagePtr ScanImageIO<FeatureBase>::loadScanImage(
-//     const std::string& group, 
-//     const std::string& container)
-// {
-//     ScanImagePtr ret;
-
-//     // check wether the given group is type ScanProjectIO
-
-//     // TODO
-
-//     return ret;
-// }
-
-
 
 } // namespace lvr2

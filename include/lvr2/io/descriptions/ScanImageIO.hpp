@@ -18,7 +18,7 @@ class ScanImageIO
         const size_t& scanPos, 
         const size_t& camNr, 
         const size_t& imgNr, 
-        ScanImagePtr buffer
+        ScanImagePtr imgPtr
     ) const;
 
     ScanImagePtr loadScanImage(const size_t& scanPos, const size_t& camNr, const size_t& imgNr);
