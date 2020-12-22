@@ -2,29 +2,49 @@ namespace lvr2
 {
 
 template<typename FeatureBase>
-void PointCloudIO<FeatureBase>::savePointCloud(
-    const std::string& groupName, 
-    const PointBufferPtr& buffer)
+void PointCloudIO<FeatureBase>::save(
+    const std::string& group, 
+    const std::string& name,
+    PointBufferPtr pcl) const
 {
-    for(auto elem : *buffer)
+    boost::filesystem::path p(name);
+    if(p.extension() == "")
     {
-        m_vchannel_io->save(groupName, elem.first, elem.second);
+        std::string groupandname = group + "/" + name;
+        save(groupandname, pcl);
+
+        
+    } else {
+        m_featureBase->m_kernel->savePointBuffer(group, name, pcl);
+    }
+}
+
+template<typename FeatureBase>
+void PointCloudIO<FeatureBase>::save(
+    const std::string& groupandname, 
+    PointBufferPtr pcl) const
+{
+    for(auto elem : *pcl)
+    {
+        m_vchannel_io->save(groupandname, elem.first, elem.second);
     }
 }
 
 template<typename FeatureBase>
 void PointCloudIO<FeatureBase>::savePointCloud(
-    const std::string& groupName, 
-    const std::string& container, 
-    const PointBufferPtr& buffer)
+    const std::string& group, 
+    const std::string& name, 
+    PointBufferPtr pcl) const
 {
-    boost::filesystem::path p(container);
-    if(p.extension() == "") {
-        // no extension: assuming to store each channel
-        savePointCloud(groupName + "/" + container, buffer );
-    } else {
-        m_featureBase->m_kernel->savePointBuffer(groupName, container, buffer);
-    }
+    save(group, name, pcl);
+}
+
+template<typename FeatureBase>
+void PointCloudIO<FeatureBase>::savePointCloud(
+    const std::string& groupandname,
+    PointBufferPtr pcl) const
+{
+    save(groupandname, pcl);
 }
 
 template<typename FeatureBase>

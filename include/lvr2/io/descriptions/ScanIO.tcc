@@ -5,7 +5,10 @@ namespace lvr2
 {
 
 template <typename FeatureBase>
-void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo, const ScanPtr& scanPtr)
+void ScanIO<FeatureBase>::save(
+    const size_t& scanPosNo,
+    const size_t& scanNo,
+    ScanPtr scanPtr) const
 {
     // Default meta yaml
 
@@ -24,7 +27,6 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
     }
 
-
     if(!d.dataSetName)
     {
         // Scan is not a dataset: handle as group of channels
@@ -40,12 +42,20 @@ void ScanIO<FeatureBase>::saveScan(const size_t& scanPosNo, const size_t& scanNo
 	    // std::cout << "[ScanIO]Waveform found " <<std::endl;
         m_fullWaveformIO->saveFullWaveform(scanPosNo, scanNo, scanPtr->waveform);
     }
+}
 
+template <typename FeatureBase>
+void ScanIO<FeatureBase>::saveScan(
+    const size_t& scanPosNo,
+    const size_t& scanNo,
+    ScanPtr scanPtr) const
+{
+    save(scanPosNo, scanNo, scanPtr);
 }
 
 template <typename FeatureBase>
 ScanPtr ScanIO<FeatureBase>::loadScan(
-    const size_t& scanPosNo, const size_t& scanNo)
+    const size_t& scanPosNo, const size_t& scanNo) const
 {
     ScanPtr ret;
 
@@ -70,7 +80,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     } else {
         std::cout << timestamp << " [ScanIO] No meta name specified. " << std::endl;
         return ret;
-    } 
+    }
 
     if(d.dataSetName)
     {
@@ -129,7 +139,7 @@ template <typename FeatureBase>
 ScanPtr ScanIO<FeatureBase>::loadScan(
     const size_t& scanPosNo, 
     const size_t& scanNo, 
-    ReductionAlgorithmPtr reduction)
+    ReductionAlgorithmPtr reduction) const
 {
     ScanPtr ret(new Scan);
 

@@ -6,7 +6,9 @@ namespace lvr2
 {
 
 template <typename  FeatureBase>
-void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, const ScanPositionPtr& scanPositionPtr)
+void ScanPositionIO< FeatureBase>::save(
+    const size_t& scanPosNo, 
+    ScanPositionPtr scanPositionPtr) const
 {
     Description d = m_featureBase->m_description->position(scanPosNo);
   
@@ -38,12 +40,19 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
     {
         m_hyperspectralCameraIO->saveHyperspectralCamera(scanPosNo, scanPositionPtr->hyperspectralCamera);
     }
-
-    
 }
 
 template <typename  FeatureBase>
-ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& scanPosNo)
+void ScanPositionIO< FeatureBase>::saveScanPosition(
+    const size_t& scanPosNo, 
+    ScanPositionPtr scanPositionPtr) const
+{
+    save(scanPosNo, scanPositionPtr);
+}
+
+template <typename  FeatureBase>
+ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
+    const size_t& scanPosNo) const
 {
     ScanPositionPtr ret;
 
@@ -139,9 +148,15 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     return ret;
 }
 
+template <typename  FeatureBase>
+ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
+    const size_t& scanPosNo, ReductionAlgorithmPtr reduction) const
+{
+    // TODO
+}
 
 template <typename  FeatureBase>
-bool ScanPositionIO< FeatureBase>::isScanPosition(const std::string& group)
+bool ScanPositionIO< FeatureBase>::isScanPosition(const std::string& group) const
 {
    return true;
 }
