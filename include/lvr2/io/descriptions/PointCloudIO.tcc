@@ -2,26 +2,119 @@ namespace lvr2
 {
 
 template<typename FeatureBase>
-void PointCloudIO<FeatureBase>::savePointCloud(
-    const std::string& groupName, 
-    const std::string& container, 
-    const PointBufferPtr& buffer)
+void PointCloudIO<FeatureBase>::save(
+    const std::string& group, 
+    const std::string& name,
+    PointBufferPtr pcl) const
 {
-    m_featureBase->m_kernel->savePointBuffer(groupName, container, buffer);
+    boost::filesystem::path p(name);
+    if(p.extension() == "")
+    {
+        std::string groupandname = group + "/" + name;
+        save(groupandname, pcl);
+
+        
+    } else {
+        m_featureBase->m_kernel->savePointBuffer(group, name, pcl);
+    }
 }
 
 template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(const std::string& group, const std::string& name)
+void PointCloudIO<FeatureBase>::save(
+    const std::string& groupandname, 
+    PointBufferPtr pcl) const
 {
-    return m_featureBase->m_kernel->loadPointBuffer(group, name);
+    for(auto elem : *pcl)
+    {
+        m_vchannel_io->save(groupandname, elem.first, elem.second);
+    }
 }
 
+template<typename FeatureBase>
+void PointCloudIO<FeatureBase>::savePointCloud(
+    const std::string& group, 
+    const std::string& name, 
+    PointBufferPtr pcl) const
+{
+    save(group, name, pcl);
+}
+
+template<typename FeatureBase>
+void PointCloudIO<FeatureBase>::savePointCloud(
+    const std::string& groupandname,
+    PointBufferPtr pcl) const
+{
+    save(groupandname, pcl);
+}
+
+template<typename FeatureBase>
+PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
+    const std::string& group, 
+    const std::string& name)
+{
+    boost::filesystem::path p(name);
+    if(p.extension() == "") {
+        // no extension: assuming to store each channel
+        return loadPointCloud(group + "/" + name);
+    } else {
+        return m_featureBase->m_kernel->loadPointBuffer(group, name);
+    }
+}
+
+template<typename FeatureBase>
+PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud( 
+    const std::string& group,
+    const std::string& container, 
+    ReductionAlgorithmPtr reduction)
+{
+    if(reduction)
+    {
+        PointBufferPtr buffer = loadPointCloud(group, container);
+        reduction->setPointBuffer(buffer);
+        return reduction->getReducedPoints();
+    } else {
+        return loadPointCloud(group, container);
+    }
+}
+
+template<typename FeatureBase>
+PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
+    const std::string& group)
+{
+    PointBufferPtr ret;
+
+    using VChannelT = typename PointBuffer::val_type;
+
+    // load all channel in group
+    for(auto meta : m_featureBase->m_kernel->metas(group) ) 
+    {
+        if(meta.second["sensor_type"])
+        {
+            if(meta.second["sensor_type"].template as<std::string>() == "Channel")
+            {   
+                boost::optional<VChannelT> copt = m_vchannel_io->template loadVariantChannel<VChannelT>(group, meta.first);
+                
+                if(copt)
+                {
+                    if(!ret)
+                    {
+                        ret.reset(new PointBuffer);
+                    }
+                    (*ret)[meta.first] = *copt;
+                }
+            }
+        }
+    }
+
+    return ret;
+}
 
 template<typename FeatureBase>
 bool PointCloudIO<FeatureBase>::isPointCloud(
-    HighFive::Group& group)
+    const std::string& group, const std::string& name)
 {
-    return true;
+    // TODO: better not read anything for isPointCloud check
+    return static_cast<bool>(loadPointCloud(group, name));
 }
 
 } // namespace lvr2 

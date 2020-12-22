@@ -25,7 +25,6 @@ struct convert<lvr2::Scan>
      */
     static Node encode(const lvr2::Scan& scan) {
         Node node;
-        
         node["sensor_type"] = lvr2::Scan::sensorType;
 
         node["start_time"]  = scan.startTime;
@@ -63,7 +62,7 @@ struct convert<lvr2::Scan>
         scan.endTime = node["end_time"].as<double>();
         scan.poseEstimation = node["pose_estimate"].as<lvr2::Transformd>();
         scan.registration = node["registration"].as<lvr2::Transformd>();
-        
+
         const Node& config = node["config"];
 
         
@@ -72,7 +71,6 @@ struct convert<lvr2::Scan>
 
         scan.phiMin = config["phi"][0].as<double>();
         scan.phiMax = config["phi"][1].as<double>();
-
 
         scan.vResolution = config["v_res"].as<double>();
         scan.hResolution = config["h_res"].as<double>();

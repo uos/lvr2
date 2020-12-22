@@ -124,15 +124,8 @@ void LVRInteractorStylePolygonPick::OnChar()
   {
     case 'l':
     case 'L':
-      // r toggles the rubber band selection mode for mouse button 1
-      if (this->CurrentMode == VTKISRBP_ORIENT)
-      {
-        this->CurrentMode = VTKISRBP_SELECT;
-      }
-      else
-      {
-        this->CurrentMode = VTKISRBP_ORIENT;
-      }
+      // l toggles the rubber band selection mode for mouse button 1
+      //toggleSelectionMode();
       break;
     case 'p':
     case 'P':
@@ -393,14 +386,11 @@ void LVRInteractorStylePolygonPick::PrintSelf(ostream& os, vtkIndent indent)
 
 void LVRInteractorStylePolygonPick::SetPolygonTool()
 {
-    std::cout << "lasso" << std::endl;
   lassoToolSelected = false; 
 }
 
 void LVRInteractorStylePolygonPick::SetLassoTool()
 {
-    std::cout << "no lasso" << std::endl;
-
   lassoToolSelected = true; 
 }
 void LVRInteractorStylePolygonPick::OnKeyDown()
@@ -418,10 +408,33 @@ void LVRInteractorStylePolygonPick::OnKeyDown()
         if ((this->StartPosition[0] != this->EndPosition[0]) ||
             (this->StartPosition[1] != this->EndPosition[1]))
         {
-            std::cout << "did this " << std::endl;
             this->Pick();
             firstPoint = true;
         }
         this->Moving = 0;
     }
+}
+void LVRInteractorStylePolygonPick::toggleSelectionMode()
+{
+      if (this->CurrentMode == VTKISRBP_ORIENT)
+      {
+        this->CurrentMode = VTKISRBP_SELECT;
+      }
+      else
+      {
+        this->CurrentMode = VTKISRBP_ORIENT;
+      }
+}
+
+bool LVRInteractorStylePolygonPick::isPolygonToolSelected()
+{
+    return !lassoToolSelected;
+}
+int LVRInteractorStylePolygonPick::selectionPolygonSize()
+{
+    return this->Internal->points.size();
+}
+void LVRInteractorStylePolygonPick::resetSelection()
+{
+	this->Internal->Clear();
 }

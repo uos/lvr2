@@ -5,11 +5,16 @@
 #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/yaml/Scan.hpp"
+#include "lvr2/io/yaml/Waveform.hpp"
+#include "lvr2/io/yaml/Label.hpp"
 #include "lvr2/io/yaml/ScanImage.hpp"
 #include "lvr2/io/yaml/ScanPosition.hpp"
 #include "lvr2/io/yaml/MatrixIO.hpp"
 #include "lvr2/io/yaml/ScanProject.hpp"
 #include "lvr2/io/yaml/ScanCamera.hpp"
+
+#include <boost/optional/optional_io.hpp>
+
 
 namespace lvr2
 {
@@ -25,7 +30,7 @@ Description ScanProjectSchemaHyperlib::scanProject() const
     boost::filesystem::path metaPath(*d.metaName);
     try
     {
-        d.metaData = YAML::LoadFile(metaPath.string());
+        d.metaData = YAML::LoadFile((m_rootPath / metaPath).string());
     }
     catch(const YAML::BadFile& e)
     {
@@ -58,7 +63,7 @@ Description ScanProjectSchemaHyperlib::position(const size_t &scanPosNo) const
     
     try
     {
-        d.metaData = YAML::LoadFile( (positionPath / metaPath).string());
+        d.metaData = YAML::LoadFile( (m_rootPath / positionPath / metaPath).string());
     }
     catch(YAML::BadFile& e)
     {
@@ -80,7 +85,6 @@ Description ScanProjectSchemaHyperlib::scan(const size_t &scanPosNo, const size_
 
 Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath, const size_t &scanNo) const
 {
-
     Description d;
     boost::filesystem::path groupPath(scanPositionPath);
     boost::filesystem::path scansPath("scans");
@@ -90,8 +94,52 @@ Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath,
 
     // Create dataset path
     std::stringstream sstr;
-    sstr << "scan" << std::setfill('0') << std::setw(8) << scanNo;
+    sstr << std::setfill('0') << std::setw(8) << scanNo;
     d.dataSetName = sstr.str() + std::string(".ply");
+
+    // Load meta data for scan
+    boost::filesystem::path metaPath(sstr.str() + ".yaml");
+    d.metaData = boost::none;
+    try
+    {
+        d.metaData = YAML::LoadFile((m_rootPath / totalGroupPath / metaPath).string());
+    }
+    catch(YAML::BadFile& e)
+    {
+        // Nothing to do, meta node will contail default values
+        YAML::Node node;
+        node = Scan();
+        d.metaData = node;
+    }
+
+    // std::cout << "scan: " << scanPositionPath << " " << scanNo << std::endl;
+    // std::cout << d.metaData << std::endl; 
+   
+    d.metaName = metaPath.string();
+    d.groupName = totalGroupPath.string();
+    return d;
+}
+Description ScanProjectSchemaHyperlib::waveform(const size_t &scanPosNo, const size_t &scanNo) const
+{
+    // Get information about scan the associated scan position
+    Description d = position(scanPosNo);   
+    return waveform(*d.groupName, scanNo);
+}
+
+Description ScanProjectSchemaHyperlib::waveform(const std::string &scanPositionPath, const size_t &scanNo) const
+{
+
+    Description d;
+    boost::filesystem::path groupPath(scanPositionPath);
+    boost::filesystem::path scansPath("scans");
+    boost::filesystem::path waveformPath("waveform");
+    boost::filesystem::path totalGroupPath = groupPath / scansPath / waveformPath;
+    d.groupName = totalGroupPath.string();
+
+    // Create dataset path
+    std::stringstream sstr;
+    sstr << std::setfill('0') << std::setw(8) << scanNo;
+    d.dataSetName = sstr.str() + std::string(".lwf");
 
     // Load meta data for scan
     boost::filesystem::path metaPath(sstr.str() + ".yaml");
@@ -104,7 +152,7 @@ Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath,
     {
         // Nothing to do, meta node will contail default values
         YAML::Node node;
-        node = Scan();
+        node = Waveform();
         d.metaData = node;
     }
    
@@ -113,7 +161,8 @@ Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath,
     return d;
 }
 
-Description ScanProjectSchemaHyperlib::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
+Description ScanProjectSchemaHyperlib::scanCamera(
+    const size_t &scanPositionNo, const size_t &camNo) const
 {
     Description g = position(scanPositionNo);
     return scanCamera(*g.groupName, camNo);
@@ -141,7 +190,7 @@ Description ScanProjectSchemaHyperlib::scanCamera(const std::string &scanPositio
     d.metaData = boost::none;
     try
     {
-         d.metaData = YAML::LoadFile( (groupPath / camPath / metaPath).string());
+         d.metaData = YAML::LoadFile( (m_rootPath / groupPath / camPath / metaPath).string());
     }
     catch(const YAML::BadFile& e)
     {
@@ -157,7 +206,7 @@ Description ScanProjectSchemaHyperlib::scanCamera(const std::string &scanPositio
 }
 
 Description ScanProjectSchemaHyperlib::scanImage(
-    const size_t &scanPosNo, const size_t &scanNo,
+    const size_t &scanPosNo, 
     const size_t &scanCameraNo, const size_t &scanImageNo) const
 {
     // Scan images are not supported
@@ -188,7 +237,7 @@ Description ScanProjectSchemaHyperlib::scanImage(
 
     try
     {
-        d.metaData = YAML::LoadFile((siPath / dPath / metaPath).string());
+        d.metaData = YAML::LoadFile((m_rootPath / siPath / dPath / metaPath).string());
     }
     catch(YAML::BadFile& e)
     {

@@ -106,6 +106,7 @@ public:
         inline CellHandle edge_neighbor  ( CellHandle _ch, int _idx ) const;
         inline std::pair<std::vector<CellHandle>, std::vector<uint> > all_corner_neighbors( CellHandle _ch, int _idx ) const;
         inline CellHandle corner_neighbor( CellHandle _ch, int _idx ) const;
+        
 
         //! Moving the picked cell, i.e. picking one of the neighbouring cells (if possible)
         void MovePickedCell(int _key, double* _mvm);
@@ -173,6 +174,9 @@ public:
 
         //! Get the level to be treated as leaf level
         inline LocCode GetExtractionLevel() const { return m_ExtractionLevel; }
+
+        // get a deep copy of the octree
+        inline  C_Octree< BaseVecT, BoxT, T_CellData >* copy();
     //@}
 
     //! @name memory
@@ -261,6 +265,21 @@ public:
     //! Vector containing the cells
     std::vector<T_CellData> m_OctreeCell;
 };
+
+template <typename BaseVecT, typename BoxT, typename T_CellData>
+ C_Octree< BaseVecT, BoxT, T_CellData >* C_Octree< BaseVecT, BoxT, T_CellData >::copy()
+ {
+      C_Octree< BaseVecT, BoxT, T_CellData >* copy = new  C_Octree< BaseVecT, BoxT, T_CellData >();
+      
+      copy->m_rootLevel = m_rootLevel;
+      copy->m_nextFreeBlock = m_nextFreeBlock;
+      copy->m_PickedCell = m_PickedCell;
+      copy->m_NumberOfGeneratedCells = m_NumberOfGeneratedCells;
+      copy->m_OctreeCell = m_OctreeCell;
+
+      return copy;
+
+ }
 
 template <typename BaseVecT, typename BoxT, typename T_CellData>
 void C_Octree< BaseVecT, BoxT, T_CellData >::reserve( unsigned int _size )

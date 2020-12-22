@@ -36,6 +36,7 @@
 
 #include "lvr2/io/Model.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 #include "LVRPointBufferBridge.hpp"
 #include "LVRMeshBufferBridge.hpp"
@@ -90,6 +91,7 @@ public:
 
     void        setPose(const Pose& pose);
     void        setTransform(const Transformd& transform);
+    void        setWaveform(WaveformPtr waveform);
 
     Pose        getPose();
 
@@ -104,6 +106,10 @@ public:
     {
         return m_meshBridge;
     }
+    WaveformPtr getWaveform()
+    {
+        return m_waveform;
+    }
 
     // Declare model item classes as friends to have fast access to data chunks
     friend class LVRModelItem;
@@ -115,6 +121,7 @@ private:
     PointBufferBridgePtr            m_pointBridge;
     MeshBufferBridgePtr             m_meshBridge;
     Pose                            m_pose;
+    WaveformPtr                     m_waveform;
 };
 
 typedef boost::shared_ptr<LVRModelBridge> ModelBridgePtr;

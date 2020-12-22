@@ -49,16 +49,26 @@ template <typename FeatureBase>
 class ScanPositionIO
 {
   public:
-    void saveScanPosition(const size_t& scanPosNo, const ScanPositionPtr& scanPositionPtr);
-    // void save(
-    //   const std::string group&, 
-    //   const ScanPositionPtr& scanPositionPtr);
 
-    ScanPositionPtr loadScanPosition(const size_t& scanPosNo);
-    //ScanPositionPtr load(const std::string& group, const std::string& container);
+    void save(
+        const size_t& scanPosNo,
+        ScanPositionPtr scanPositionPtr
+        ) const;
 
+    void saveScanPosition(
+        const size_t& scanPosNo,
+        ScanPositionPtr scanPositionPtr
+        ) const;
+
+    ScanPositionPtr loadScanPosition(
+        const size_t& scanPosNo) const;
+
+    ScanPositionPtr loadScanPosition(
+        const size_t& scanPosNo, 
+        ReductionAlgorithmPtr reduction) const;
+   
   protected:
-    bool isScanPosition(const std::string& group);
+    bool isScanPosition(const std::string& group) const;
 
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
     // dependencies
@@ -83,8 +93,8 @@ struct FeatureConstruct< ScanPositionIO, FeatureBase>
     using dep3 = typename FeatureConstruct<ScanIO, FeatureBase>::type;
     using dep4 = typename FeatureConstruct<ScanCameraIO, FeatureBase>::type;
     using dep5 = typename FeatureConstruct<HyperspectralCameraIO, FeatureBase>::type;
-    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>::template Merge<
-        dep4>::template Merge<dep5>;
+    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>::template
+     Merge<dep4>::template Merge<dep5>;
 
     // add the feature itself
     using type = typename deps::template add_features<ScanPositionIO>::type;

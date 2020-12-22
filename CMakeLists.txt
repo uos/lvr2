@@ -47,7 +47,7 @@ include_directories(include)
 if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
-    #add_compile_options(-O0 -g)
+    add_compile_options(-O0 -g)
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)
@@ -178,10 +178,13 @@ if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
   add_subdirectory(ext/QVTKOpenGLWidget)
   include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
   list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
-
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
+elseif(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "9")
+  add_subdirectory(ext/QVTKOpenGLWidget)
+  include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+  list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK9)
 endif()
-
 if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
 endif()
@@ -217,10 +220,10 @@ endif()
 # Searching for NABO
 #------------------------------------------------------------------------------
 find_package(Nabo)
-if(NABO_FOUND)
-  include_directories(${NABO_INCLUDE_DIRS})
+if(Nabo_FOUND)
+  include_directories(${Nabo_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_NABO)
-endif(NABO_FOUND)
+endif(Nabo_FOUND)
 
 #------------------------------------------------------------------------------
 ## Searching for PCL
@@ -380,19 +383,15 @@ include_directories( ${LASLIB_INCLUDE_DIR} )
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
 # HighFive
-set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
-set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
-add_subdirectory(ext/HighFive)
 include_directories("ext/HighFive/include")
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
 message(STATUS "Found HDF5")
 
 # yaml-cpp
-find_package(yaml-cpp)
+find_package(yaml-cpp REQUIRED)
 # no found variable
 include_directories(${YAML_CPP_INCLUDE_DIR})
-#link_directories(${YAML_CPP_LIBRARIES})
 
 # SLAM6D stuff
 add_subdirectory(ext/slam6d)
@@ -572,6 +571,10 @@ if(OPENCL_FOUND)
 list(APPEND LVR2_LIB_DEPENDENCIES ${OpenCL_LIBRARIES})
 endif()
 
+if(MPI_FOUND)
+  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${MPI_LIBRARIES})
+endif()
+
 if(YAML_CPP_LIBRARIES)
 list(APPEND LVR2_LIB_DEPENDENCIES ${YAML_CPP_LIBRARIES})
 endif()
@@ -613,6 +616,7 @@ add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 add_subdirectory(src/tools/lvr2_chunking_server)
 add_subdirectory(src/tools/lvr2_scanproject_parser)
+add_subdirectory(src/tools/lvr2_ground_level_extractor)
 
 if(CURSES_FOUND AND embree_FOUND)
     add_subdirectory(src/tools/lvr2_ascii_viewer)

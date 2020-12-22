@@ -1,6 +1,6 @@
 #pragma once
-#ifndef LVR2_IO_GFeatureBase_HPP
-#define LVR2_IO_GFeatureBase_HPP
+#ifndef LVR2_IO_DESC_FeatureBase_HPP
+#define LVR2_IO_DESC_FeatureBase_HPP
 
 #include <memory>
 #include <tuple>
@@ -116,12 +116,12 @@ public:
     using Merge = typename OTHER::template add_features<Features...>::type;
 
 
-    #if __cplusplus <= 201500L
-        // feature of c++17
-        #pragma message("using Tp::save... needs c++17 at least or a newer compiler")
-    #endif
+    // #if __cplusplus <= 201500L
+    //     // feature of c++17
+    //     #pragma message("using Tp::save... needs c++17 at least or a newer compiler")
+    // #endif
 
-    //using Features<FeatureBase<Features...> >::save...;
+    // using Features<FeatureBase<Features...> >::save...;
 
     FeatureBase(
         const FileKernelPtr inKernel, 

@@ -51,6 +51,10 @@ public:
   void SetLassoTool();
   void SetPolygonTool();
   void StartSelect();
+  void toggleSelectionMode();
+  void resetSelection();
+  int selectionPolygonSize();
+  bool isPolygonToolSelected();
 
   //@{
   /**

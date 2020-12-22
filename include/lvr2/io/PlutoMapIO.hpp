@@ -261,7 +261,7 @@ public:
     void flush();
 
 private:
-    hf::File m_file;
+    std::shared_ptr<hf::File> m_file;
 
     // group names
 
@@ -272,11 +272,11 @@ private:
     static constexpr const char* LABELS_GROUP = "/labels";
 
     // main groups for reference
-    hf::Group m_geometryGroup;
-    hf::Group m_attributesGroup;
-    hf::Group m_clusterSetsGroup;
-    hf::Group m_texturesGroup;
-    hf::Group m_labelsGroup;
+    hf::Group* m_geometryGroup;
+    hf::Group* m_attributesGroup;
+    hf::Group* m_clusterSetsGroup;
+    hf::Group* m_texturesGroup;
+    hf::Group* m_labelsGroup;
 };
 } // namespace lvr2
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_MATRIXIO_HPP
-#define LVR2_IO_HDF5_MATRIXIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_MATRIXIO_HPP
+#define LVR2_IO_DESCRIPTIONS_MATRIXIO_HPP
 
 #include <Eigen/Dense>
-
+#include "lvr2/io/descriptions/FeatureBase.hpp"
 namespace lvr2 {
 
 template<typename FeatureBase>
@@ -12,10 +12,18 @@ class MatrixIO {
 public:
 
     template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-    void saveMatrix(std::string groupName,
+    void save(
+        std::string groupName,
         std::string datasetName,
         const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat
-    );
+    ) const;
+
+    template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+    void saveMatrix(
+        std::string groupName,
+        std::string datasetName,
+        const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat
+    ) const;
 
     template<typename MatrixT>
     MatrixT loadMatrix(std::string groupName,
@@ -30,4 +38,4 @@ protected:
 
 #include "MatrixIO.tcc"
 
-#endif // LVR2_IO_HDF5_MATRIXIO_HPP
+#endif // LVR2_IO_DESCRIPTIONS_MATRIXIO_HPP

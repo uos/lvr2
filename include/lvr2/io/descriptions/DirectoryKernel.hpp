@@ -4,6 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <regex>
+#include <iostream>
 
 #include "lvr2/io/descriptions/FileKernel.hpp"
 #include "lvr2/io/descriptions/MetaFormatFactory.hpp"
@@ -71,6 +72,16 @@ public:
         const std::string& container, 
         std::vector<size_t> &dims) const;
 
+    virtual intArr loadIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+    
+    virtual uint16Arr loadUInt16Array(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+
     virtual void saveFloatArray(
         const std::string& groupName, 
         const std::string& datasetName, 
@@ -86,6 +97,18 @@ public:
         const std::string& groupName, const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<unsigned char>& data) const;
+    
+    virtual void saveIntArray(
+        const std::string& groupName, const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<int>& data) const;
+
+    virtual void saveUInt16Array(
+        const std::string& groupName, const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<uint16_t>& data) const;
+
+    
 
     virtual bool exists(const std::string& group) const;
     virtual bool exists(const std::string& group, const std::string& container) const;
@@ -93,33 +116,64 @@ public:
     virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const;
     virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const;
 
+    // TODO: metas with "sensor_type" filter
+    virtual std::unordered_map<std::string, YAML::Node> metas(
+        const std::string& group) const;
+
+    virtual std::unordered_map<std::string, YAML::Node> metas(
+        const std::string& group, const std::string& sensor_type
+    );
+
+    virtual bool isMeta(const std::string& path) const;
+
 protected:
     template <typename T>
-    boost::shared_array<T> loadArray(const std::string &group, const std::string &constainer, std::vector<size_t> &dims) const
+    boost::shared_array<T> loadArray(
+        const std::string &group, 
+        const std::string &container, 
+        std::vector<size_t> &dims) const
     {
-        if (dims.size() > 0)
+        dims.resize(0);
+
+        boost::filesystem::path p = getAbsolutePath(group, container);
+
+        std::string filename = p.string();
+
+        if(p.extension() == "")
         {
-            size_t length = dims[0];
-            for (size_t i = 1; i < dims.size(); i++)
-            {
-                if (dims[i] != 0)
-                {
-                    length *= dims[i];
-                }
-                else
-                {
-                    std::cout << timestamp << "Warning: DirectoryKernel::LoadArray(): Found zero dim: " << i << std::endl;
-                }
-            }
-            T *data = new T[length];
-            std::ifstream in;
-            for (size_t i = 0; i < length; i++)
-            {
-                in >> data[i];
-            }
-            return boost::shared_array<T>(data);
+            filename += ".data";
         }
-        return boost::shared_array<T>(nullptr);
+
+        std::ifstream in(filename, std::ios::in | std::ios::binary);
+        if (!in.good())
+        {
+            return boost::shared_array<T>(nullptr);
+        }
+
+        //read Dimensions size
+        size_t dimSize;
+        size_t totalArraySize = 0;
+        in.read(reinterpret_cast<char *>(&dimSize), sizeof(dimSize));
+
+        for(int i = 0; i < dimSize; i++)
+        {
+            size_t tmp;
+            in.read(reinterpret_cast<char *>(&tmp), sizeof(tmp));
+            if(totalArraySize == 0)
+            {
+                totalArraySize = tmp;
+            } else{
+                totalArraySize *= tmp;
+            }
+            dims.push_back(tmp);
+        }
+        
+        // std::cout << "DimSize " << dims[0] << "  " <<dims[1] << std::endl;
+        T* rawData = new T[totalArraySize];
+
+        in.read(reinterpret_cast<char *>(rawData), totalArraySize * sizeof(T));
+        boost::shared_array<T> ret(rawData);
+        return ret;
     }
 
     template <typename T>
@@ -142,11 +196,34 @@ protected:
                 }
             }
             
-            std::ofstream out;
-            for (size_t i = 0; i < length; i++)
+            boost::filesystem::path p = getAbsolutePath(group, container);
+            if(!boost::filesystem::exists(p.parent_path()))
             {
-                out << data[i];
+                boost::filesystem::create_directories(p.parent_path());
             }
+
+            std::string filename = p.string();
+            if(p.extension() == "")
+            {
+                filename += ".data";
+            }
+
+            std::ofstream fout_data(filename, std::ios::out | std::ios::binary);
+            
+            // dims
+            size_t ndims = dims.size();
+            fout_data.write(reinterpret_cast<const char *>(&ndims), sizeof(size_t));
+
+            for(size_t i=0; i<ndims; i++)
+            {
+                fout_data.write(reinterpret_cast<const char *>(&dims[i]), sizeof(size_t));
+            }
+
+            // data
+            fout_data.write(reinterpret_cast<const char *>(&data[0]), sizeof(T) * length);
+
+
+            fout_data.close();
         }
     }
 

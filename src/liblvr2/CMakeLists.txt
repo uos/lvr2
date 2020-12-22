@@ -5,6 +5,7 @@ set(LVR2_SOURCES
     texture/TextureFactory.cpp
     util/Util.cpp
     util/Hdf5Util.cpp
+    util/Synthetic.cpp
     display/Renderable.cpp
     display/GroundPlane.cpp
     display/MultiPointCloud.cpp
@@ -34,6 +35,7 @@ set(LVR2_SOURCES
     io/Progress.cpp
     io/MeshBuffer.cpp
     io/LineReader.cpp
+    io/LabelBuffer.cpp
 #    io/KinectGrabber.cpp
     io/DatIO.cpp
     io/LasIO.cpp
@@ -43,19 +45,27 @@ set(LVR2_SOURCES
     io/Timestamp.cpp
     io/BoctreeIO.cpp
     io/GridIO.cpp
+    io/Polygon.cpp
+    io/SoilAssistField.cpp
+    io/SoilAssistSubField.cpp
     io/PointBuffer.cpp
+    io/WaveformBuffer.cpp
+    io/Polygon.cpp
     io/ModelFactory.cpp
     io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/ScanIOUtils.cpp
+    io/WaveformIO.cpp
+    io/descriptions/ScanProjectSchemaRaw.cpp
     io/descriptions/ScanProjectSchemaSLAM.cpp
     io/descriptions/ScanProjectSchemaHyperlib.cpp
+    io/descriptions/ScanProjectSchemaHDF5V2.cpp
+    io/descriptions/LabelScanProjectSchemaHDF5V2.cpp
     io/descriptions/DirectoryKernel.cpp
-    io/descriptions/DirectoryIO.cpp
     io/descriptions/MetaFormatFactory.cpp
     io/descriptions/ScanProjectSchema.cpp
     io/descriptions/HDF5Kernel.cpp
-    io/descriptions/HDF5IO.cpp
+    io/descriptions/LabelHDF5IO.cpp
     io/descriptions/HDF5MetaDescriptionV2.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp

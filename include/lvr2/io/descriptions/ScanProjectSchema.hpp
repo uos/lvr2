@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include <boost/optional.hpp>
+#include <boost/filesystem.hpp>
 
 #include <yaml-cpp/yaml.h>
 namespace lvr2
@@ -21,6 +22,8 @@ struct Description
     NodeOptional metaData;
 };
 
+std::ostream& operator<<(std::ostream& os, const Description& desc);
+
 std::pair<std::string, std::string> getNames(
     const std::string& defaultGroup, 
     const std::string& defaultContainer, 
@@ -36,24 +39,48 @@ public:
     virtual Description scanProject() const = 0;
     virtual Description position(const size_t& scanPosNo) const = 0;
     virtual Description scan(const size_t& scanPosNo, const size_t& scanNo) const = 0;
-    virtual Description scan(const std::string& scanPositionPath, const size_t& scanNo) const = 0;
-    
+
+
+
     virtual Description scanCamera(const size_t& scanPositionNo, const size_t& camNo) const = 0;
     virtual Description scanCamera(const std::string& scanPositionPath, const size_t& camNo) const = 0;
  
     virtual Description scanImage(
-        const size_t& scanPosNo, const size_t& scanNo,
-        const size_t& scanCameraNo, const size_t& scanImageNo) const = 0;
+        const size_t& scanPosNo, 
+        const size_t& scanCameraNo, 
+        const size_t& scanImageNo) const = 0;
 
     virtual Description scanImage(
-        const std::string& scanImagePath, const size_t& scanImageNo) const = 0;
+        const std::string& scanImagePath, 
+        const size_t& scanImageNo) const = 0;
 
     virtual Description hyperspectralCamera(const size_t& position) const
     {
         /// TODO: IMPLEMENT ME!!!
         return Description();
     }
+    virtual Description labelInstance(const std::string& group, const std::string& className, const std::string &instanceName) const
+    {
+        Description d;
+        d.groupName = "";
+        d.dataSetName = "";
+        d.metaData = boost::none; 
+    }
 
+    virtual Description waveform(const size_t& scanPosNo, const size_t& scanNo) const 
+    {
+        Description d;
+        d.groupName = "";
+        d.dataSetName = "waveform";
+        d.metaData = boost::none; 
+    }
+    virtual Description waveform(const std::string& scanPositionPath, const size_t& scanNo) const
+    {
+        Description d;
+        d.groupName = scanPositionPath;
+        d.dataSetName = "waveform";
+        d.metaData = boost::none; 
+    }
     virtual Description hyperSpectralTimestamps(const std::string& group) const
     {
         Description d;
@@ -82,16 +109,27 @@ public:
     HDF5Schema() {}
 };
 
+/// Marker interface for HDF5 schemas
+class LabelHDF5Schema : public HDF5Schema
+{
+public:
+    LabelHDF5Schema() {}
+};
+
 /// Marker interface for directory schemas
 class DirectorySchema : public ScanProjectSchema
 {
 public:
-    DirectorySchema() {}
+    DirectorySchema(const std::string& root) : m_rootPath(root) {}
+
+protected:
+    boost::filesystem::path m_rootPath;
 };
 
 using ScanProjectSchemaPtr = std::shared_ptr<ScanProjectSchema>;
 using DirectorySchemaPtr = std::shared_ptr<DirectorySchema>;
 using HDF5SchemaPtr = std::shared_ptr<HDF5Schema>;
+using LabelHDF5SchemaPtr = std::shared_ptr<LabelHDF5Schema>;
 
 } // namespace lvr2
 

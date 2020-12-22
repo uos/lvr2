@@ -67,6 +67,7 @@ public:
 
     PointBufferPtr randomSubSample(const size_t& targetSize);
     PointBufferPtr octreeSubSample(const double& voxelSize, const size_t& minPoints = 5);
+    PointBufferPtr transform();
     
     ~ScanDirectoryParser();
 

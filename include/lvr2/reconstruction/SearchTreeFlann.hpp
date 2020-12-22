@@ -80,10 +80,12 @@ public:
     ) const override;
 
     /// See interface documentation.
-    virtual void radiusSearch(
+    virtual int radiusSearch(
         const BaseVecT& qp,
-        CoordT r,
-        vector<size_t>& indices
+        int k,
+        float r,
+        vector<size_t>& indices,
+        vector<CoordT>& distances
     ) const override;
 
     void kSearchMany(
