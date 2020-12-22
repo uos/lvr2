@@ -14,7 +14,7 @@ namespace lvr2
 class ScanProjectSchemaHyperlib : public DirectorySchema
 {
 public:
-    ScanProjectSchemaHyperlib(std::string& rootDir) : DirectorySchema(rootDir) {};
+    ScanProjectSchemaHyperlib(const std::string& rootDir) : DirectorySchema(rootDir) {};
 
     ~ScanProjectSchemaHyperlib() = default;
 

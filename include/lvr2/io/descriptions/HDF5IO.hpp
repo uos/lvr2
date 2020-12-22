@@ -11,18 +11,17 @@ namespace lvr2
 {
 namespace descriptions
 {
-class HDF5IO
+
+using HDF5IOBase = FeatureBuild<ScanProjectIO>;
+
+class HDF5IO : public HDF5IOBase
 {
 public:
-    HDF5IO(HDF5KernelPtr kernel, HDF5SchemaPtr schema);
-
-    void saveScanProject(ScanProjectPtr project);
-    ScanProjectPtr loadScanProject();
-
-private:
-    HDF5KernelPtr   m_kernel;
-    HDF5SchemaPtr   m_schema;
+    HDF5IO(HDF5KernelPtr kernel, HDF5SchemaPtr schema)
+    : HDF5IOBase(kernel, schema)
+    { }
 };
+
 } // namepsace descriptions
 } // namespace lvr2
 

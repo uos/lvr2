@@ -6,6 +6,7 @@
 #include <regex> 
 #include <boost/optional.hpp>
 #include <yaml-cpp/yaml.h>
+#include <unordered_map>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
@@ -124,6 +125,33 @@ public:
 
     virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const = 0;
     virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const = 0;
+
+    // TODO: make pure virtual
+    virtual std::unordered_map<std::string, YAML::Node> metas(
+        const std::string& group) const
+    {
+        std::unordered_map<std::string, YAML::Node> ret;
+        return ret;
+    }
+
+    // TODO: make pure virtual
+    virtual std::unordered_map<std::string, YAML::Node> metas(
+        const std::string& group, const std::string& sensor_type) const
+    {
+        std::unordered_map<std::string, YAML::Node> ret;
+        return ret;
+    }
+
+    // TODO: make pure virtual
+    virtual bool isMeta(const std::string& path) const
+    {
+        return false;
+    }
+    /**
+     * @brief   Returns the path to the file resource of the 
+     *          kernel
+     */
+    std::string fileResource() const { return m_fileResourceName; }
 
 protected:
     std::string m_fileResourceName;

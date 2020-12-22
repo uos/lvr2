@@ -3,97 +3,88 @@
 namespace lvr2
 {
 
-template <typename FeatureBase>
-void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProjectPtr)
+template<typename FeatureBase>
+void ScanProjectIO<FeatureBase>::save(
+    ScanProjectPtr scanProject) const
 {
     Description d = m_featureBase->m_description->scanProject();
 
-    // Default names
-    std::string group = "";
-    std::string metaName = "meta.yaml";
+    std::cout << "[ScanProjectIO] ScanProject - Description: " << std::endl;
+    std::cout << d << std::endl;
+
+    if(!d.groupName)
+    {
+        std::cout << timestamp << "[ScanProjectIO] Description does not give a group for the ScanProject" << std::endl;
+        return;
+    }
 
     // Default scan project yaml
-    YAML::Node node;
-    node = *scanProjectPtr;
-
-    // Try to override defaults
-    if(d.groupName)
+    if(d.metaName)
     {
-        group = *d.groupName;
+        YAML::Node node;
+        node = *scanProject;
+        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+    }
+
+    // std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
+    // Iterate over all positions and save
+    for (size_t i = 0; i < scanProject->positions.size(); i++)
+    {
+        // std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
+        m_scanPositionIO->saveScanPosition(i, scanProject->positions[i]);
+    }
+}
+
+template <typename FeatureBase>
+void ScanProjectIO<FeatureBase>::saveScanProject(
+    ScanProjectPtr scanProject) const
+{
+    save(scanProject);
+}
+
+template <typename FeatureBase>
+ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
+{
+    ScanProjectPtr ret;
+
+    // Load description and meta data for scan project
+    Description d = m_featureBase->m_description->scanProject();
+
+    if(!m_featureBase->m_kernel->exists(*d.groupName))
+    {
+        return ret;
     }
 
     if(d.metaName)
     {
-        node = *d.metaName;
-    }
-    m_featureBase->m_kernel->saveMetaYAML(group, metaName, node);
-    std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
-    // Iterate over all positions and save
-    for (size_t i = 0; i < scanProjectPtr->positions.size(); i++)
-    {
-        std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
-        m_scanPositionIO->saveScanPosition(i, scanProjectPtr->positions[i]);
-    }
-}
+        YAML::Node meta;
+        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        ret = std::make_shared<ScanProject>(meta.as<ScanProject>());
+    } else {
+        // what to do here?
+        // some schemes do not have meta descriptions: slam6d
+        // create without meta information: generate meta afterwards
 
-template <typename FeatureBase>
-ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
-{
-    ScanProjectPtr ret(new ScanProject);
-
-    // Load description and meta data for scan project
-    Description d = m_featureBase->m_description->scanProject();
-    if(d.metaData)
-    {
-        try
-        {
-            *ret = (d.metaData.get()).as<ScanProject>();
-        }
-        catch(YAML::TypedBadConversion<ScanProject>& e)
-        {
-            d.metaData = boost::none;  
-        }
+        std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
+        ret.reset(new ScanProject);
     }
+
 
     // Get all sub scans
     size_t scanPosNo = 0;
-    do
+    while(true)
     {
         // Get description for next scan
-        Description scanDescr = m_featureBase->m_description->position(scanPosNo);
-
-        std::string groupName;
-        std::string dataSetName;
-        std::tie(groupName, dataSetName) = getNames("", "", scanDescr);
-
-        // Check if scan position group is valid, else break
-        if(scanDescr.groupName)
-        {
-            // Check if it exists. If not, exit.
-            if (m_featureBase->m_kernel->exists(groupName))
-            {
-                std::cout << timestamp
-                          << "ScanProjectIO: Loading scanposition "
-                          << scanPosNo << std::endl;
-
-                ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
-                ret->positions.push_back(scanPos);
-            }
-            else
-            {
-                break;
-            }
-            ++scanPosNo;
-        }
-        else
+        ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
+        if(!scanPos)
         {
             break;
         }
-    } 
-    while (true);
+        ret->positions.push_back(scanPos);
+        scanPosNo++;
+    }
 
     return ret;
 }
-
 
 } // namespace lvr2

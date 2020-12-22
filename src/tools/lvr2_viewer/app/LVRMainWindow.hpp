@@ -108,6 +108,8 @@
 #include "../widgets/LVRBoundingBoxItem.hpp"
 #include "../widgets/LVRPointInfo.hpp"
 #include "../widgets/LVRLabelClassTreeItem.hpp"
+#include "../widgets/LVRScanProjectOpenDialog.hpp"
+#include "../widgets/LVRScanImageItem.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRLabelInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -160,8 +162,8 @@ public Q_SLOTS:
     void comboBoxIndexChanged(int index);
     void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
-    void loadScanProject();
-    void loadScanProjectDir();
+    void loadScanProject(ScanProjectPtr scanProject, QString filename);
+    void loadScanProjectDir(bool lazy = true);
     void loadScanProjectH5();
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();

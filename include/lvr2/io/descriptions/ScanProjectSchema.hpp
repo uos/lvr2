@@ -22,6 +22,8 @@ struct Description
     NodeOptional metaData;
 };
 
+std::ostream& operator<<(std::ostream& os, const Description& desc);
+
 std::pair<std::string, std::string> getNames(
     const std::string& defaultGroup, 
     const std::string& defaultContainer, 

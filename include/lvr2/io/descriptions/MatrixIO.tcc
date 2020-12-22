@@ -4,9 +4,9 @@ namespace lvr2
 
 template<typename FeatureBase>
 template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-void MatrixIO<FeatureBase>::saveMatrix(std::string groupName,
+void MatrixIO<FeatureBase>::save(std::string groupName,
     std::string datasetName,
-    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat)
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat) const
 {
     std::vector<size_t > dims = {_Rows, _Cols};
     const _Scalar* ptr = mat.data();
@@ -18,6 +18,15 @@ void MatrixIO<FeatureBase>::saveMatrix(std::string groupName,
     boost::shared_array<double> d_ptr(dmat.data());
 
     m_featureBase->m_kernel->saveDoubleArray(groupName, datasetName, dims, d_ptr);
+}
+
+template<typename FeatureBase>
+template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+void MatrixIO<FeatureBase>::saveMatrix(std::string groupName,
+    std::string datasetName,
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat) const
+{
+    save(groupName, datasetName, mat);   
 }
 
 template<typename FeatureBase>

@@ -112,8 +112,8 @@ Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath,
         d.metaData = node;
     }
 
-    std::cout << "scan: " << scanPositionPath << " " << scanNo << std::endl;
-    std::cout << d.metaData << std::endl; 
+    // std::cout << "scan: " << scanPositionPath << " " << scanNo << std::endl;
+    // std::cout << d.metaData << std::endl; 
    
     d.metaName = metaPath.string();
     d.groupName = totalGroupPath.string();

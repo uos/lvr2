@@ -6,41 +6,21 @@ namespace lvr2
 {
 
 template <typename  FeatureBase>
-void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, const ScanPositionPtr& scanPositionPtr)
+void ScanPositionIO< FeatureBase>::save(
+    const size_t& scanPosNo, 
+    ScanPositionPtr scanPositionPtr) const
 {
     Description d = m_featureBase->m_description->position(scanPosNo);
   
-    // Setup defaults
-    std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << scanPosNo;
-
-    std::string metaName = "meta.yaml";
-    std::string groupName = sstr.str();
-   
-    if(d.metaName)
-    {
-        metaName = *d.metaName;
-    }
-
-    if(d.groupName)
-    {
-        groupName = *d.groupName;
-    }
+    std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
+    std::cout << d << std::endl;
 
     // Save meta information
-    if(d.metaData)
+    if(d.metaName)
     {
-        m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, *(d.metaData));
-    }
-    else
-    {
-        std::cout << timestamp << "ScanPositionIO::save(): Warning: No meta information "
-                  << "for scan position " << scanPosNo << " found." << std::endl;
-        std::cout << timestamp << "Creating new meta data from given struct." << std::endl; 
-                 
         YAML::Node node;
         node = *scanPositionPtr;
-        m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
+        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
     }
     
     // Save all scans
@@ -60,102 +40,86 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
     {
         m_hyperspectralCameraIO->saveHyperspectralCamera(scanPosNo, scanPositionPtr->hyperspectralCamera);
     }
-
-    
 }
 
 template <typename  FeatureBase>
-ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& scanPosNo)
+void ScanPositionIO< FeatureBase>::saveScanPosition(
+    const size_t& scanPosNo, 
+    ScanPositionPtr scanPositionPtr) const
 {
-    ScanPositionPtr ret(new ScanPosition);
+    save(scanPosNo, scanPositionPtr);
+}
 
-    // char buffer[sizeof(int) * 5];
-    // sprintf(buffer, "%08d", scanPos);
-    // string nr_str(buffer);
-    // std::string basePath = "raw/" + nr_str + "/";
-
-    // if (hdf5util::exist(m_file_access->m_hdf5_file, basePath))
-    // {
-    //     HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, basePath);
-    //     ret = load(group);
-    // }
+template <typename  FeatureBase>
+ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
+    const size_t& scanPosNo) const
+{
+    ScanPositionPtr ret;
 
     Description d = m_featureBase->m_description->position(scanPosNo);
 
+    if(!m_featureBase->m_kernel->exists(*d.groupName))
+    {
+        return ret;
+    }
+
+    std::cout << "[ScanPositionIO] load() with Description:" << std::endl;
+    std::cout << d << std::endl;
+
     // Setup defaults
-    std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << scanPosNo;
-
-    std::string metaName = "meta.yaml";
-    std::string groupName = sstr.str();
-
     if(d.metaName)
     {
-        metaName = *d.metaName;
-    }
+        if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
+        {
+            std::cout << timestamp << " [ScanPositionIO]: Specified meta file not found. " << std::endl;
+            return ret;
+        } 
 
-    if(d.groupName)
-    {
-        groupName = *d.groupName;
+        YAML::Node meta;
+        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
+        
+    } else {
+        // no meta name specified but scan position is there: 
+        ret.reset(new ScanPosition);
     }
-
-    if(!d.metaData)
-    {
-        std::cout << timestamp << "ScanPositionIO::load(): Warning: No meta information "
-                  << "for scan position " << scanPosNo << " found." << std::endl;
-        std::cout << timestamp << "Creating new meta data with default values." << std::endl; 
-        YAML::Node node;
-        node = *ret;
-        d.metaData = node;
-    }
-    else
-    {
-        *ret = (*d.metaData).as<ScanPosition>();
-    }
- 
     
     // Get all sub scans
     size_t scanNo = 0;
-    do
+    while(true)
     {
-        // Get description for next scan
-        Description scanDescr = m_featureBase->m_description->scan(scanPosNo, scanNo);
-
-        std::string groupName;
-        std::string dataSetName;
-        std::tie(groupName, dataSetName) = getNames("", "", scanDescr);
-
-        // Check if it exists. If not, exit.
-        if(m_featureBase->m_kernel->exists(groupName, dataSetName))
+        ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo);
+        
+        if(scan)
         {
-            ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo);
             ret->scans.push_back(scan);
-        }
-        else
-        {
+        } else {
             break;
         }
-        ++scanNo;
-    } 
-    while (true);
 
-    // Get all scan camera
+        ++scanNo;
+    }
+
+    // TODO: make below lines same as above ones
+    // let the features decide if data is available
+
+    // Get all scan cameras
     size_t camNo = 0;
     do
     {
         // Get description for next scan
-        Description camDescr = m_featureBase->m_description->scanCamera(scanPosNo, scanNo);
+        Description camDescr = m_featureBase->m_description->scanCamera(scanPosNo, camNo);
 
         std::string groupName;
         std::string dataSetName;
         std::tie(groupName, dataSetName) = getNames("", "", camDescr);
 
         // Check if file exists. If not, exit.
-        if(m_featureBase->m_kernel->exists(groupName, dataSetName))
+        if(m_featureBase->m_kernel->exists(groupName))
         {
             std::cout << timestamp << "ScanPositionIO: Loading camera " 
                       << groupName << "/" << dataSetName << std::endl;
-            ScanCameraPtr cam = m_scanCameraIO->loadScanCamera(scanPosNo, scanNo);
+            ScanCameraPtr cam = m_scanCameraIO->loadScanCamera(scanPosNo, camNo);
             ret->cams.push_back(cam);
         }
         else
@@ -169,6 +133,7 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     Description hyperDescr = m_featureBase->m_description->hyperspectralCamera(scanPosNo);
     if(hyperDescr.dataSetName)
     {
+        std::string groupName;
         std::string dataSetName;
         std::tie(groupName, dataSetName) = getNames("", "", hyperDescr);
 
@@ -183,9 +148,15 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     return ret;
 }
 
+template <typename  FeatureBase>
+ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
+    const size_t& scanPosNo, ReductionAlgorithmPtr reduction) const
+{
+    // TODO
+}
 
 template <typename  FeatureBase>
-bool ScanPositionIO< FeatureBase>::isScanPosition(const std::string& group)
+bool ScanPositionIO< FeatureBase>::isScanPosition(const std::string& group) const
 {
    return true;
 }

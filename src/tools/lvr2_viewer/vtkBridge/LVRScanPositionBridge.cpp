@@ -11,7 +11,10 @@ LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) : m_scanp
     for(auto scan : position->scans)
     {
         ModelPtr model(new Model);
+
+        std::cout << "Unreduced Points: " << scan->points->numPoints() << std::endl;
         model->m_pointCloud = scan->points;
+
         ModelBridgePtr modelBridge(new LVRModelBridge(model));
         models.push_back(modelBridge);
     }        
