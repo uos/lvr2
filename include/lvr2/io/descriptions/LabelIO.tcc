@@ -5,7 +5,7 @@ namespace lvr2
 template <typename Derived>
 void LabelIO<Derived>::saveLabels(
     std::string& groupName,
-    LabelRootPtr labelRootPtr)
+    LabelRootPtr labelRootPtr) const
 {
     //TODO Maybe add Description conatining the group and datasetname
     boost::filesystem::path pointCloud("pointCloud");
@@ -64,10 +64,8 @@ void LabelIO<Derived>::saveLabels(
             sharedColorData[0] = instancePtr->color[0];
             sharedColorData[1] = instancePtr->color[1];
             sharedColorData[2] = instancePtr->color[2];
-            boost::shared_array<int>colors (sharedColorData);
+            boost::shared_array<int> colors(sharedColorData);
             m_arrayIO->saveIntArray(groupName, "Color", dim, colors);
-
-            
         }
     }
     //save Waveform
@@ -83,7 +81,7 @@ void LabelIO<Derived>::saveLabels(
 }
 
 template <typename Derived>
-LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group)
+LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group) const
 {
     LabelRootPtr ret(new LabelRoot);
 

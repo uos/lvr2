@@ -1,9 +1,10 @@
 #pragma once
-#ifndef LVR2_IO_HDF5_VARIANTCHANNELIO_HPP
-#define LVR2_IO_HDF5_VARIANTCHANNELIO_HPP
+#ifndef LVR2_IO_DIRECTORY_VARIANT_CHANNEL_IO_HPP
+#define LVR2_IO_DIRECTORY_VARIANT_CHANNEL_IO_HPP
 
 #include "lvr2/io/descriptions/FeatureBase.hpp"
 #include "lvr2/types/VariantChannel.hpp"
+#include "lvr2/io/yaml/VariantChannel.hpp"
 
 // Dependencies
 #include "lvr2/io/descriptions/ChannelIO.hpp"
@@ -46,11 +47,7 @@ namespace lvr2 {
  * 
  */
 
-struct ConstructType {
-
-};
-
-template<typename FeatureBase = ConstructType>
+template<typename FeatureBase>
 class VariantChannelIO {
 public:
 
@@ -92,4 +89,4 @@ struct FeatureConstruct<VariantChannelIO, FeatureBase> {
 
 #include "VariantChannelIO.tcc"
 
-#endif // LVR2_IO_HDF5_VARIANTCHANNELIO_HPP
+#endif // LVR2_IO_DIRECTORY_VARIANT_CHANNEL_IO_HPP

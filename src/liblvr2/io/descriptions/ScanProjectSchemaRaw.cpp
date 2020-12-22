@@ -2,7 +2,7 @@
 #include <iomanip>
 
 #include "lvr2/types/ScanTypes.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/yaml/Scan.hpp"
 #include "lvr2/io/yaml/Waveform.hpp"
@@ -19,34 +19,23 @@
 namespace lvr2
 {
 
-Description ScanProjectSchemaHyperlib::scanProject() const
+Description ScanProjectSchemaRaw::scanProject() const
 {
     Description d;
-    d.groupName = boost::none;           // All scan related data is stored in the "raw" group
+    d.groupName = "raw";           // All scan related data is stored in the "raw" group
     d.dataSetName = boost::none;    // No dataset name for project root
     d.metaName = "meta.yaml";
     d.metaData = boost::none;
-
-    boost::filesystem::path metaPath(*d.metaName);
-    try
-    {
-        d.metaData = YAML::LoadFile((m_rootPath / metaPath).string());
-    }
-    catch(const YAML::BadFile& e)
-    {
-        // Nothing to do, meta node will contain default values
-        YAML::Node node;
-        node = ScanProject();
-        d.metaData = node;
-    }
     
     return d;
 }
 
-Description ScanProjectSchemaHyperlib::position(const size_t &scanPosNo) const
+Description ScanProjectSchemaRaw::position(const size_t &scanPosNo) const
 {
-    Description d; 
-   
+    Description d_parent = scanProject();
+
+    Description d;
+    
     // Save scan file name
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanPosNo;
@@ -57,76 +46,50 @@ Description ScanProjectSchemaHyperlib::position(const size_t &scanPosNo) const
 
     // Load meta data
     boost::filesystem::path positionPath(sstr.str());
-    boost::filesystem::path metaPath(*d.metaName);
 
+    // append positionPath to parent path if necessary
+    if(d_parent.groupName)
+    {
+        positionPath = boost::filesystem::path(*d_parent.groupName) / positionPath;
+    }
+
+    boost::filesystem::path metaPath(*d.metaName);
     d.groupName = (positionPath).string();
-    
-    try
-    {
-        d.metaData = YAML::LoadFile( (m_rootPath / positionPath / metaPath).string());
-    }
-    catch(YAML::BadFile& e)
-    {
-         // Nothing to do, meta node will contail default values
-        YAML::Node node;
-        node = ScanPosition();
-        d.metaData = node;
-    }
     
     return d;
 }
 
-Description ScanProjectSchemaHyperlib::scan(const size_t &scanPosNo, const size_t &scanNo) const
+Description ScanProjectSchemaRaw::scan(const size_t &scanPosNo, const size_t &scanNo) const
 {
     // Get information about scan the associated scan position
-    Description d = position(scanPosNo);   
+    Description d = position(scanPosNo);
     return scan(*d.groupName, scanNo);
 }
 
-Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath, const size_t &scanNo) const
+Description ScanProjectSchemaRaw::scan(const std::string &scanPositionPath, const size_t &scanNo) const
 {
-    Description d;
-    boost::filesystem::path groupPath(scanPositionPath);
-    boost::filesystem::path scansPath("scans");
-    boost::filesystem::path dataPath("data");
-    boost::filesystem::path totalGroupPath = groupPath / scansPath / dataPath;
-    d.groupName = totalGroupPath.string();
-
-    // Create dataset path
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanNo;
-    d.dataSetName = sstr.str() + std::string(".ply");
 
-    // Load meta data for scan
-    boost::filesystem::path metaPath(sstr.str() + ".yaml");
-    d.metaData = boost::none;
-    try
-    {
-        d.metaData = YAML::LoadFile((m_rootPath / totalGroupPath / metaPath).string());
-    }
-    catch(YAML::BadFile& e)
-    {
-        // Nothing to do, meta node will contail default values
-        YAML::Node node;
-        node = Scan();
-        d.metaData = node;
-    }
+    Description d;
+    boost::filesystem::path scansPath = boost::filesystem::path(scanPositionPath) / "scans";
+    boost::filesystem::path scanPath = scansPath / sstr.str();
 
-    // std::cout << "scan: " << scanPositionPath << " " << scanNo << std::endl;
-    // std::cout << d.metaData << std::endl; 
-   
-    d.metaName = metaPath.string();
-    d.groupName = totalGroupPath.string();
+    d.groupName = scanPath.string();
+    d.dataSetName = "channels";
+    d.metaName = "meta.yaml";
+
     return d;
 }
-Description ScanProjectSchemaHyperlib::waveform(const size_t &scanPosNo, const size_t &scanNo) const
+
+Description ScanProjectSchemaRaw::waveform(const size_t &scanPosNo, const size_t &scanNo) const
 {
     // Get information about scan the associated scan position
     Description d = position(scanPosNo);   
     return waveform(*d.groupName, scanNo);
 }
 
-Description ScanProjectSchemaHyperlib::waveform(const std::string &scanPositionPath, const size_t &scanNo) const
+Description ScanProjectSchemaRaw::waveform(const std::string &scanPositionPath, const size_t &scanNo) const
 {
 
     Description d;
@@ -161,13 +124,13 @@ Description ScanProjectSchemaHyperlib::waveform(const std::string &scanPositionP
     return d;
 }
 
-Description ScanProjectSchemaHyperlib::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
+Description ScanProjectSchemaRaw::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
 {
     Description g = position(scanPositionNo);
     return scanCamera(*g.groupName, camNo);
 }
 
-Description ScanProjectSchemaHyperlib::scanCamera(const std::string &scanPositionPath, const size_t &camNo) const
+Description ScanProjectSchemaRaw::scanCamera(const std::string &scanPositionPath, const size_t &camNo) const
 {
     Description d;
    
@@ -204,7 +167,7 @@ Description ScanProjectSchemaHyperlib::scanCamera(const std::string &scanPositio
     return d;
 }
 
-Description ScanProjectSchemaHyperlib::scanImage(
+Description ScanProjectSchemaRaw::scanImage(
     const size_t &scanPosNo, const size_t &scanNo,
     const size_t &scanCameraNo, const size_t &scanImageNo) const
 {
@@ -213,7 +176,7 @@ Description ScanProjectSchemaHyperlib::scanImage(
     return scanImage(*d_cam.groupName, scanImageNo);
 }
 
-Description ScanProjectSchemaHyperlib::scanImage(
+Description ScanProjectSchemaRaw::scanImage(
     const std::string &scanImagePath, const size_t &scanImageNo) const
 {
     Description d;
@@ -246,7 +209,6 @@ Description ScanProjectSchemaHyperlib::scanImage(
         d.metaData = node;
     }
    
-
     return d; 
 }
 

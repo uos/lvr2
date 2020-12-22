@@ -14,6 +14,18 @@
 
 namespace lvr2 {
 
+#define CONST_FUNC_ALIAS(X,Y) template<typename... Ts> \
+    auto X(Ts&&... ts) const -> decltype(Y(std::forward<Ts>(ts)...)) \
+    { \
+        return Y(std::forward<Ts>(ts)...); \
+    }
+
+#define FUNC_ALIAS(X,Y) template<typename... Ts> \
+    auto X(Ts&&... ts) -> decltype(Y(std::forward<Ts>(ts)...)) \
+    { \
+        return Y(std::forward<Ts>(ts)...); \
+    }
+
 /**
  * @class PointCloudIO 
  * @brief Hdf5IO Feature for handling PointBuffer related IO
@@ -46,6 +58,17 @@ template<typename FeatureBase>
 class PointCloudIO 
 {
 public:
+
+    void save(
+        const std::string& group, 
+        const std::string& name, 
+        PointBufferPtr pcl
+        ) const;
+
+
+    void save(const std::string& groupandname, 
+        PointBufferPtr pcl) const;
+
     /**
      * @brief Save a point buffer at the position defined by \ref group and \ref container
      * 
@@ -53,7 +76,14 @@ public:
      * @param container         Container of the point cloud data
      * @param buffer            Point cloud data
      */
-    void savePointCloud(const std::string& group, const std::string& container, const PointBufferPtr& buffer);
+    void savePointCloud(
+        const std::string& group, 
+        const std::string& name, 
+        PointBufferPtr pcl) const;
+
+    void savePointCloud(
+        const std::string& groupandname,
+        PointBufferPtr pcl) const;
 
     /**
      * @brief  Loads a point cloud
@@ -65,6 +95,8 @@ public:
      *                          defined by \ref group and \ref container
      */
     PointBufferPtr loadPointCloud(const std::string& group, const std::string& container);
+
+    PointBufferPtr loadPointCloud(const std::string& group);
 
     /**
      * @brief Loads a reduced version of a point cloud
@@ -84,6 +116,8 @@ public:
 protected:
 
     /// Checks whether the indicated group contains point cloud data
+    // How can we decide if no meta data is available?
+    // We cannot
     bool isPointCloud(const std::string& group, 
         const std::string& name);
 
@@ -91,7 +125,7 @@ protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
     /// Dependencies
-    // VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_featureBase);
+    VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_featureBase);
 
     /// Class ID
     static constexpr const char* ID = "PointCloudIO";
@@ -100,9 +134,18 @@ protected:
     static constexpr const char* OBJID = "PointBuffer";
 };
 
+template <typename FeatureBase>
+struct FeatureConstruct<PointCloudIO, FeatureBase >
+{
+    // DEPS
+    using deps = typename FeatureConstruct<VariantChannelIO, FeatureBase >::type;
+
+    // ADD THE FEATURE ITSELF
+    using type = typename deps::template add_features<PointCloudIO>::type;
+};
+
 } // namespace lvr2 
 
 #include "PointCloudIO.tcc"
-
 
 #endif // LVR2_IO_DIRECTORY_POINTBUFFERIO_HPP

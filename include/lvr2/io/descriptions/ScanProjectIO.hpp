@@ -51,10 +51,11 @@ template <typename FeatureBase>
 class ScanProjectIO
 {
   public:
-    void saveScanProject(const ScanProjectPtr& scanProjectPtr);
+    void save(ScanProjectPtr scanProject) const;
+    void saveScanProject(ScanProjectPtr scanProject) const;
 
-    ScanProjectPtr loadScanProject();
-    ScanProjectPtr loadScanProject(ReductionAlgorithm& reduction);
+    ScanProjectPtr loadScanProject() const;
+    // ScanProjectPtr loadScanProject(ReductionAlgorithm& reduction) const;
 
   protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);

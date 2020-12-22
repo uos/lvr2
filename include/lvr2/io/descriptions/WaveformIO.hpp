@@ -25,7 +25,6 @@ protected:
   FeatureBase *m_featureBase = static_cast<FeatureBase *>(this);
 
 // dependencies
- ArrayIO<FeatureBase>* m_arrayIO = static_cast<ArrayIO<FeatureBase>*>(m_featureBase);
  MatrixIO<FeatureBase>* m_matrixIO = static_cast<MatrixIO<FeatureBase>*>(m_featureBase);
   static constexpr const char *ID = "FullWaveformIO";
   static constexpr const char *OBJID = "FullWaveform";
@@ -44,9 +43,7 @@ struct FeatureConstruct<FullWaveformIO, FeatureBase>
 {
 
     // DEPS
-    using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<MatrixIO, FeatureBase>::type;
-    using deps = typename dep1::template Merge<dep2>;
+    using deps = typename FeatureConstruct<MatrixIO, FeatureBase>::type;
 
     // ADD THE FEATURE ITSELF
     using type = typename deps::template add_features<FullWaveformIO>::type;
