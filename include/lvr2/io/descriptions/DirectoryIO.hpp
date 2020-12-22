@@ -17,7 +17,7 @@ public:
     DirectoryIO(DirectoryKernelPtr kernel, DirectorySchemaPtr schema) : m_kernel(kernel), m_schema(schema) {}
 
     void saveScanProject(ScanProjectPtr project);
-    ScanProjectPtr loadScanProject();
+    ScanProjectPtr loadScanProject(bool lazy = false);
 
 private:
     DirectoryKernelPtr m_kernel;

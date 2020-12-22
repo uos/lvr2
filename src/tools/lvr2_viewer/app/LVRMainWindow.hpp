@@ -109,6 +109,7 @@
 #include "../widgets/LVRPointInfo.hpp"
 #include "../widgets/LVRLabelClassTreeItem.hpp"
 #include "../widgets/LVRScanProjectOpenDialog.hpp"
+#include "../widgets/LVRScanImageItem.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRLabelInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -162,7 +163,7 @@ public Q_SLOTS:
     void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
     void loadScanProject(ScanProjectPtr scanProject, QString filename);
-    void loadScanProjectDir();
+    void loadScanProjectDir(bool lazy = true);
     void loadScanProjectH5();
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();
@@ -297,7 +298,7 @@ private:
 
     QList<QTreeWidgetItem*>                     m_items_copied;
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
-    LVRLabelDialog*                   		    m_labelDialog;
+    LVRLabelDialog*                   		m_labelDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     std::map<uint32_t, WaveformPtr>             m_waveformOffset;
     LVRPlotter*                                 m_PointPreviewPlotter;
@@ -356,9 +357,9 @@ private:
     QAction*                            m_actionSimple_Plane_Classification;
     QAction*                            m_actionFurniture_Recognition;
     // Toolbar items "Labeling"
-    QAction* 				            m_actionStart_labeling;
-    QAction* 				            m_actionStop_labeling;
-    QAction* 				            m_actionExtract_labeling;
+    QAction* 				m_actionStart_labeling;
+    QAction* 				m_actionStop_labeling;
+    QAction* 				m_actionExtract_labeling;
     // Toolbar item "About"
     QMenu*                              m_menuAbout;
     // QToolbar below toolbar
@@ -411,7 +412,7 @@ private:
     QAction*                            m_actionShowWaveform;
 
     LVRPickingInteractor*               m_pickingInteractor;
-    LVRLabelInteractorStyle*		    m_labelInteractor; 
+    LVRLabelInteractorStyle*		m_labelInteractor; 
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 
 #ifdef LVR2_USE_VTK8

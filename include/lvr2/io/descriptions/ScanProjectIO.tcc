@@ -37,7 +37,7 @@ void ScanProjectIO<FeatureBase>::saveScanProject(const ScanProjectPtr& scanProje
 }
 
 template <typename FeatureBase>
-ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
+ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject(bool lazy)
 {
     ScanProjectPtr ret(new ScanProject);
 
@@ -76,7 +76,7 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject()
                           << "ScanProjectIO: Loading scanposition "
                           << scanPosNo << std::endl;
 
-                ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
+                ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo, lazy);
                 ret->positions.push_back(scanPos);
             }
             else

@@ -12,13 +12,13 @@ void DirectoryIO::saveScanProject(ScanProjectPtr project)
     io.saveScanProject(project);
 }
 
-ScanProjectPtr DirectoryIO::loadScanProject()
+ScanProjectPtr DirectoryIO::loadScanProject(bool lazy)
 {
     using BaseScanProjectIO = lvr2::FeatureBase<>;
     using MyScanProjectIO = BaseScanProjectIO::AddFeatures<lvr2::ScanProjectIO>;
 
     MyScanProjectIO io(m_kernel, m_schema);
-    ScanProjectPtr ptr = io.loadScanProject();
+    ScanProjectPtr ptr = io.loadScanProject(lazy);
     return ptr;
 }
 

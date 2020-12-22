@@ -52,7 +52,7 @@ class ScanProjectIO
   public:
     void saveScanProject(const ScanProjectPtr& scanProjectPtr);
 
-    ScanProjectPtr loadScanProject();
+    ScanProjectPtr loadScanProject(bool lazy = false);
 
   protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);

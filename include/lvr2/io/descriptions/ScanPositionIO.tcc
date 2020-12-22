@@ -65,7 +65,7 @@ void ScanPositionIO< FeatureBase>::saveScanPosition(const size_t& scanPosNo, con
 }
 
 template <typename  FeatureBase>
-ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& scanPosNo)
+ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& scanPosNo, bool lazy)
 {
     ScanPositionPtr ret(new ScanPosition);
 
@@ -128,7 +128,7 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
         // Check if it exists. If not, exit.
         if(m_featureBase->m_kernel->exists(groupName, dataSetName))
         {
-            ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo);
+            ScanPtr scan = m_scanIO->loadScan(scanPosNo, scanNo, lazy);
             ret->scans.push_back(scan);
         }
         else
@@ -144,18 +144,18 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(const size_t& sca
     do
     {
         // Get description for next scan
-        Description camDescr = m_featureBase->m_description->scanCamera(scanPosNo, scanNo);
+        Description camDescr = m_featureBase->m_description->scanCamera(scanPosNo, camNo);
 
         std::string groupName;
         std::string dataSetName;
         std::tie(groupName, dataSetName) = getNames("", "", camDescr);
 
         // Check if file exists. If not, exit.
-        if(m_featureBase->m_kernel->exists(groupName, dataSetName))
+        if(m_featureBase->m_kernel->exists(groupName))
         {
             std::cout << timestamp << "ScanPositionIO: Loading camera " 
                       << groupName << "/" << dataSetName << std::endl;
-            ScanCameraPtr cam = m_scanCameraIO->loadScanCamera(scanPosNo, scanNo);
+            ScanCameraPtr cam = m_scanCameraIO->loadScanCamera(scanPosNo, camNo);
             ret->cams.push_back(cam);
         }
         else

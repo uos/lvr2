@@ -1686,18 +1686,20 @@ void LVRMainWindow::unloadPointCloudData()
 
 }
 
-void LVRMainWindow::loadScanProjectDir()
+void LVRMainWindow::loadScanProjectDir(bool lazy)
 {
     QString filename = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", 
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     std::string tmp = filename.toStdString();
-    DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
-    DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
+    if (tmp != "") 
+    {
+        DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+        DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
+        DirectoryIO dirIO(dirKernel, hyperlibSchema);
+        ScanProjectPtr scanProject = dirIO.loadScanProject(lazy);
 
-    DirectoryIO dirIO(dirKernel, hyperlibSchema);
-    ScanProjectPtr scanProject = dirIO.loadScanProject();
-
-    loadScanProject(scanProject, filename);
+        loadScanProject(scanProject, filename);
+    }
 }
 
 void LVRMainWindow::loadScanProjectH5()
@@ -1705,11 +1707,14 @@ void LVRMainWindow::loadScanProjectH5()
     QString filename = QFileDialog::getOpenFileName(this, tr("Open scan project"), "", tr("Scan project (*.h5)"));
     std::string tmp = filename.toStdString();
 
-    HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
-    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
-    descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-    ScanProjectPtr scanProject = hdf5IO.loadScanProject();
-    loadScanProject(scanProject, filename);
+    if (tmp != "")
+    {
+        HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
+        HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
+        descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
+        ScanProjectPtr scanProject = hdf5IO.loadScanProject();
+        loadScanProject(scanProject, filename);
+    }
 }
 
 void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename)
@@ -1727,6 +1732,7 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
     QString base = info.fileName();
 
     root->setText(0, base);
+    root->setData(0,Qt::UserRole, filename);
     root->addChild(item);
     item->setExpanded(false);    
     refreshView();
@@ -2146,6 +2152,57 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
     else if (treeWidgetItem->parent() && treeWidgetItem->parent()->type() == LVRScanDataItemType)
     {
         setModelVisibility(treeWidgetItem->parent(), column);
+    }
+    else if (treeWidgetItem->type() == LVRScanImageItemType)
+    {
+        if(treeWidgetItem->checkState(0))
+        {
+            QString filename = treeWidgetItem->parent()->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
+            std::string tmp = filename.toStdString();
+            QFileInfo info(filename);
+
+            int img_nr = treeWidgetItem->data(0, Qt::UserRole).toInt();
+            int cam_nr = treeWidgetItem->parent()->data(0, Qt::UserRole).toInt();
+            int scanpos_nr = treeWidgetItem->parent()->parent()->data(0, Qt::UserRole).toInt();
+            cv::Mat img;
+            if (info.suffix() == "h5")
+            {
+                HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
+                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
+                descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
+                Description d = hdf5Schema->scanImage(scanpos_nr, 0, cam_nr, img_nr);
+                img = *hdf5Kernel->loadImage(*d.groupName, *d.dataSetName);
+            }
+            else
+            {
+                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+                DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
+                DirectoryIO dirIO(dirKernel, hyperlibSchema);
+                Description d = hyperlibSchema->scanImage(scanpos_nr, 0, cam_nr, img_nr);
+                img = *dirKernel->loadImage(*d.groupName, *d.dataSetName);
+            }
+
+            #if (CV_VERSION_MAJOR >= 4)
+                cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+            #else
+                cv::cvtColor(img, img, CV_BGR2RGB);
+            #endif
+            //std::cout << filename.toStdString() << std::endl;
+            LVRScanImageItem *item = static_cast<LVRScanImageItem*>(treeWidgetItem);
+            //item->setVisibility(item->checkState(0));
+            item->setImage(img);
+            item->getScanImageBridge()->addActors(m_renderer);
+            refreshView();
+            updateView();
+        }
+        else
+        {
+            LVRScanImageItem *item = static_cast<LVRScanImageItem*>(treeWidgetItem);
+            item->getScanImageBridge()->removeActors(m_renderer);
+            std::cout << "Remove Actors" << std::endl;
+            refreshView();
+            updateView();
+        }
     }
 }
 
