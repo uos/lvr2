@@ -46,11 +46,13 @@ public:
     virtual Description scanCamera(const std::string& scanPositionPath, const size_t& camNo) const = 0;
  
     virtual Description scanImage(
-        const size_t& scanPosNo, const size_t& scanNo,
-        const size_t& scanCameraNo, const size_t& scanImageNo) const = 0;
+        const size_t& scanPosNo, 
+        const size_t& scanCameraNo, 
+        const size_t& scanImageNo) const = 0;
 
     virtual Description scanImage(
-        const std::string& scanImagePath, const size_t& scanImageNo) const = 0;
+        const std::string& scanImagePath, 
+        const size_t& scanImageNo) const = 0;
 
     virtual Description hyperspectralCamera(const size_t& position) const
     {

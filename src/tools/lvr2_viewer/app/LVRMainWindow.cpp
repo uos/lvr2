@@ -2172,7 +2172,7 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
                 HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
                 HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
                 descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-                Description d = hdf5Schema->scanImage(scanpos_nr, 0, cam_nr, img_nr);
+                Description d = hdf5Schema->scanImage(scanpos_nr, cam_nr, img_nr);
                 img = *hdf5Kernel->loadImage(*d.groupName, *d.dataSetName);
             }
             else
@@ -2180,7 +2180,7 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
                 DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
                 DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
                 DirectoryIO dirIO(dirKernel, hyperlibSchema);
-                Description d = hyperlibSchema->scanImage(scanpos_nr, 0, cam_nr, img_nr);
+                Description d = hyperlibSchema->scanImage(scanpos_nr, cam_nr, img_nr);
                 img = *dirKernel->loadImage(*d.groupName, *d.dataSetName);
             }
 

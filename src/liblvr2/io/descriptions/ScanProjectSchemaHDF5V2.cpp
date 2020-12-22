@@ -122,7 +122,7 @@ Description ScanProjectSchemaHDF5V2::scanCamera(const std::string &scanPositionP
 }
 
 Description ScanProjectSchemaHDF5V2::scanImage(
-    const size_t &scanPosNo, const size_t &scanNo,
+    const size_t &scanPosNo, 
     const size_t &scanCameraNo, const size_t &scanImageNo) const
 {
     // Scan images are not supported
