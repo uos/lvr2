@@ -125,6 +125,12 @@ public:
     virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const = 0;
     virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const = 0;
 
+    /**
+     * @brief   Returns the path to the file resource of the 
+     *          kernel
+     */
+    std::string fileResource() const { return m_fileResourceName; }
+
 protected:
     std::string m_fileResourceName;
 };

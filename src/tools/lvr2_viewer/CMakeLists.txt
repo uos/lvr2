@@ -67,7 +67,6 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRModelTreeWidget.cpp
     widgets/LVRLabeledScanProjectEditMarkItem.cpp
     widgets/LVRScanProjectOpenDialog.cpp
-    widgets/LVRFileAndDirectoryDialog.cpp
     util/qttf.cpp
 )
 
@@ -103,7 +102,6 @@ set(LVR2_VIEWER_MOCS
     widgets/LVRPointInfo.hpp
     widgets/LVRPlotter.hpp
     widgets/LVRHistogram.hpp
-    widgets/LVRFileAndDirectoryDialog.hpp
     widgets/LVRScanProjectOpenDialog.hpp
 )
 
