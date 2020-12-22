@@ -1,5 +1,9 @@
 #include "lvr2/util/Synthetic.hpp"
 #include <opencv2/imgproc.hpp>
+#include "opencv2/core/utility.hpp"
+#ifndef CV_AA
+#define CV_AA cv::LINE_AA
+#endif
 
 namespace lvr2 {
 
