@@ -148,28 +148,13 @@ Description ScanProjectSchemaRaw::scanCamera(const std::string &scanPositionPath
 
     boost::filesystem::path metaPath(*d.metaName);
 
-    // Load camera information from yaml
     d.metaData = boost::none;
-    try
-    {
-         d.metaData = YAML::LoadFile( (m_rootPath / groupPath / camPath / metaPath).string());
-    }
-    catch(const YAML::BadFile& e)
-    {
-         // Nothing to do, meta node will contail default values
-        YAML::Node node;
-        node = ScanCamera();
-        d.metaData = node;
-    }
-    
-   
 
     return d;
 }
 
 Description ScanProjectSchemaRaw::scanImage(
-    const size_t &scanPosNo, const size_t &scanNo,
-    const size_t &scanCameraNo, const size_t &scanImageNo) const
+    const size_t &scanPosNo, const size_t &scanCameraNo, const size_t &scanImageNo) const
 {
     // Scan images are not supported
     Description d_cam = scanCamera(scanPosNo, scanCameraNo);

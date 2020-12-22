@@ -11,7 +11,7 @@ ScanImagePtr ScanImageIO<FeatureBase>::loadScanImage(
 {
     ScanImagePtr ret(new ScanImage);
 
-    Description d = m_featureBase->m_description->scanImage(scanPos, 0, camNr, imgNr);
+    Description d = m_featureBase->m_description->scanImage(scanPos, camNr, imgNr);
 
     // Init default values
     std::stringstream sstr;
@@ -55,9 +55,14 @@ void  ScanImageIO<FeatureBase>::saveScanImage(
     const size_t& scanPos, 
     const size_t& camNr, 
     const size_t& imgNr, 
-    ScanImagePtr& buffer)
+    ScanImagePtr buffer) const
 {
     // TODO
+    // Description d = m_featureBase->m_description->scanImage(scanPos, camNr, imgNr);
+
+    // std::cout << "[ScanImageIO] Image " << scanPosNo << "," << camNr << "," << imgNr <<  " - Description: " << std::endl;
+    // std::cout << d << std::endl;
+
 }
 
 // template <typename FeatureBase>

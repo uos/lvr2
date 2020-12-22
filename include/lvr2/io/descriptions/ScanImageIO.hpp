@@ -14,7 +14,13 @@ template <typename FeatureBase>
 class ScanImageIO
 {
   public:
-    void saveScanImage(const size_t& scanPos, const size_t& camNr, const size_t& imgNr, ScanImagePtr& buffer);
+    void saveScanImage(
+        const size_t& scanPos, 
+        const size_t& camNr, 
+        const size_t& imgNr, 
+        ScanImagePtr buffer
+    ) const;
+
     ScanImagePtr loadScanImage(const size_t& scanPos, const size_t& camNr, const size_t& imgNr);
     
   protected:
