@@ -110,6 +110,7 @@ boost::optional<cv::Mat> DirectoryKernel::loadImage(
     else
     {
         opt = boost::none;
+        std::cout << "Loading image failed!" << std::endl;
     }
     return opt;
 }

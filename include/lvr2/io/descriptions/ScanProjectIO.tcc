@@ -87,5 +87,4 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
     return ret;
 }
 
-
 } // namespace lvr2

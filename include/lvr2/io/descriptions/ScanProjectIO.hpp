@@ -55,24 +55,24 @@ class ScanProjectIO
     void saveScanProject(ScanProjectPtr scanProject) const;
 
     ScanProjectPtr loadScanProject() const;
-    // ScanProjectPtr loadScanProject(ReductionAlgorithm& reduction) const;
+    // ScanProjectPtr loadScanProject(ReductionAlgorithmPtr reduction) const;
 
   protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
     // dependencies
     ScanPositionIO<FeatureBase>* m_scanPositionIO =
         static_cast<ScanPositionIO<FeatureBase>*>(m_featureBase);
+    // THIS DEP IS NOT USED. TODO: Where to move?
     LabelIO<FeatureBase>* m_labelIO = 
         static_cast<LabelIO<FeatureBase>*>(m_featureBase);
 
-    // static constexpr const char* ID = "ScanProjectIO";
-    // static constexpr const char* OBJID = "ScanProject";
+    static constexpr const char* ID = "ScanProjectIO";
+    static constexpr const char* OBJID = "ScanProject";
 };
 
 template <typename FeatureBase>
 struct FeatureConstruct<ScanProjectIO, FeatureBase>
 {
-
     // DEPS
     //
     using dep1 = typename FeatureConstruct<ScanPositionIO, FeatureBase>::type;

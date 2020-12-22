@@ -26,39 +26,46 @@
  */
 
 /**
- * LVRItemTypes.hpp
+ * LVRScanImageItem.h
  *
- *  @date Feb 17, 2014
+ *  @date Feb 6, 2014
  *  @author Thomas Wiemann
  */
-#ifndef LVRITEMTYPES_HPP_
-#define LVRITEMTYPES_HPP_
+#ifndef LVRSCANIMAGEITEM_H_
+#define LVRSCANIMAGEITEM_H_
+
+#include "../vtkBridge/LVRScanImageBridge.hpp"
+#include "LVRPoseItem.hpp"
+
+#include <QString>
+#include <QColor>
+#include <QTreeWidgetItem>
 
 namespace lvr2
 {
-    enum {
-        LVRModelItemType = 1001,
-        LVRPointCloudItemType,
-        LVRMeshItemType,
-        LVRPoseItemType,
-        LVRPickItemType,
-        LVRLabelItemType,
-        LVRRecordedFrameItemType,
-        LVRScanDataItemType,
-        LVRCamDataItemType,
-        LVRCamerasItemType,
-        LVRBoundingBoxItemType,
-        LVRCvImageItemType,
-        LVRLabelClassType,
-        LVRLabelInstanceType,
-        LVRScanProjectItemType,
-        LVRScanPositionItemType,
-        LVRLabelClassItemType,
-        LVRLabelInstanceItemType,
-        LVRLabeledScanProjectEditMarkItemType,
-        LVRScanImageItemType,
-        LVRScanCamItemType
-    };
-} // namespace lvr2
 
-#endif /* LVRITEMTYPES_HPP_ */
+class LVRScanImageItem : public QTreeWidgetItem
+{
+public:
+    LVRScanImageItem(ScanImageBridgePtr bridge, QString name = "");
+    LVRScanImageItem(const LVRScanImageItem& item);
+    virtual ~LVRScanImageItem();
+
+    void                setImage(const cv::Mat& img);
+    QString             getName();
+    void                setName(QString name);
+    bool                isEnabled();
+    ScanImageBridgePtr	getScanImageBridge();
+    void                setScanImageVisibility(int column, bool globalValue);
+
+public Q_SLOTS:
+	void			setVisibility(bool visible);
+
+protected:
+    ScanImageBridgePtr  m_scanImageBridge;
+    QString         m_name;
+};
+
+} /* namespace lvr2 */
+
+#endif /* LVRSCANIMAGEITEM_H_ */

@@ -147,6 +147,11 @@ public:
     {
         return false;
     }
+    /**
+     * @brief   Returns the path to the file resource of the 
+     *          kernel
+     */
+    std::string fileResource() const { return m_fileResourceName; }
 
 protected:
     std::string m_fileResourceName;
