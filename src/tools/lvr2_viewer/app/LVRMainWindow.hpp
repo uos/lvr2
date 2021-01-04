@@ -91,7 +91,6 @@
 #include "../widgets/LVRAnimationDialog.hpp"
 #include "../widgets/LVRTransformationDialog.hpp"
 #include "../widgets/LVRCorrespondanceDialog.hpp"
-#include "../widgets/LVRLabelDialog.hpp"
 #include "../widgets/LVRReconstructionEstimateNormalsDialog.hpp"
 #include "../widgets/LVRReconstructionMarchingCubesDialog.hpp"
 #include "../widgets/LVRReconstructionExtendedMarchingCubesDialog.hpp"
@@ -111,7 +110,6 @@
 #include "../widgets/LVRScanProjectOpenDialog.hpp"
 #include "../widgets/LVRScanImageItem.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
-#include "../vtkBridge/LVRLabelInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
 
 #include <iostream>
@@ -298,7 +296,6 @@ private:
 
     QList<QTreeWidgetItem*>                     m_items_copied;
     LVRCorrespondanceDialog*                    m_correspondanceDialog;
-    LVRLabelDialog*                   		m_labelDialog;
     std::map<LVRPointCloudItem*, LVRHistogram*> m_histograms;
     std::map<uint32_t, WaveformPtr>             m_waveformOffset;
     LVRPlotter*                                 m_PointPreviewPlotter;
@@ -412,7 +409,6 @@ private:
     QAction*                            m_actionShowWaveform;
 
     LVRPickingInteractor*               m_pickingInteractor;
-    LVRLabelInteractorStyle*		m_labelInteractor; 
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
 
 #ifdef LVR2_USE_VTK8

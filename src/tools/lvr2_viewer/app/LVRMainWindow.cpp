@@ -612,8 +612,6 @@ verticalLayout->replaceWidget(qvtkWidgetPlaceholder,qvtkWidget);
     m_camera = vtkSmartPointer<vtkCamera>::New();
 
     // Custom interactor to handle picking actions
-    //m_pickingInteractor = new LVRPickingInteractor();
-    //m_labelInteractor = LVRLabelInteractorStyle::New();
     m_pickingInteractor = LVRPickingInteractor::New();
     m_pickingInteractor->setRenderer(m_renderer);
 

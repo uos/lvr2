@@ -25,7 +25,6 @@ set(LVR2_VIEWER_SOURCES
     vtkBridge/LVRLabelBridge.cpp
     vtkBridge/LVRPickingInteractor.cpp
     vtkBridge/LVRInteractorStylePolygonPick.cpp
-    vtkBridge/LVRLabelInteractor.cpp
     vtkBridge/LVRVtkArrow.cpp
     vtkBridge/LVRChunkedMeshCuller.cpp
     vtkBridge/LVRChunkedMeshBridge.cpp
@@ -44,7 +43,6 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRRenameDialog.cpp
     widgets/LVRAnimationDialog.cpp
     widgets/LVRTransformationDialog.cpp
-    widgets/LVRLabelDialog.cpp
     widgets/LVRCorrespondanceDialog.cpp
     widgets/LVRReconstructionEstimateNormalsDialog.cpp
     widgets/LVRReconstructionMarchingCubesDialog.cpp
@@ -88,7 +86,6 @@ set(LVR2_VIEWER_MOCS
     app/LVRMainWindow.hpp
     vtkBridge/LVRPickingInteractor.hpp
     vtkBridge/LVRInteractorStylePolygonPick.hpp
-    vtkBridge/LVRLabelInteractor.hpp
     widgets/LVRRenameDialog.hpp
     widgets/LVRAnimationDialog.hpp
     widgets/LVRTransformationDialog.hpp
@@ -99,7 +96,6 @@ set(LVR2_VIEWER_MOCS
     widgets/LVROptimizationRemoveArtifactsDialog.hpp
     widgets/LVRFilteringRemoveOutliersDialog.hpp
     widgets/LVRFilteringMLSProjectionDialog.hpp
-    widgets/LVRLabelDialog.hpp
     widgets/LVRCorrespondanceDialog.hpp
     widgets/LVRBackgroundDialog.hpp
     widgets/LVRPointcloudSelectionDialog.hpp
@@ -124,7 +120,6 @@ list(APPEND LVR2_VIEWER_UIS
    ui/LVRAnimationDialogUI.ui
    ui/LVRTransformationDialogUI.ui
    ui/LVRRegistrationPickCorrespondancesDialogUI.ui
-   ui/LVRLabelDialogUI.ui
    ui/LVRAboutDialogUI.ui
    ui/LVRReconstructionMarchingCubesDialogUI.ui
    ui/LVRReconstructionExtendedMarchingCubesDialogUI.ui
