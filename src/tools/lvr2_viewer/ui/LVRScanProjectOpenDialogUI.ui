@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>265</height>
+    <width>397</width>
+    <height>362</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>50</x>
-     <y>230</y>
+     <y>320</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -98,6 +98,34 @@
     <string>Select Schema</string>
    </property>
    <widget class="QComboBox" name="comboBoxSchema">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>33</y>
+      <width>361</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>None</string>
+     </property>
+    </item>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBoxReduction">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>234</y>
+     <width>381</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Select Reduction</string>
+   </property>
+   <widget class="QComboBox" name="comboBoxReduction">
     <property name="geometry">
      <rect>
       <x>10</x>
