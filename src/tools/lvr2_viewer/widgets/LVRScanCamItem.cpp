@@ -37,6 +37,7 @@
 #include "LVRItemTypes.hpp"
 #include "LVRTextureMeshItem.hpp"
 #include "LVRScanImageItem.hpp"
+#include "LVRCameraModelItem.hpp"
 
 
 #include <vtkSmartPointer.h>
@@ -70,7 +71,9 @@ LVRScanCamItem::LVRScanCamItem(ScanCamBridgePtr bridge, QString name) :
         LVRScanImageItem* imgItem = new LVRScanImageItem(imgBridge, imgName);
         addChild(imgItem);
     }
-
+    
+    LVRCameraModelItem* model = new LVRCameraModelItem(*(m_scanCamBridge->cam));
+    addChild(model);
 }
 
 LVRScanCamItem::LVRScanCamItem(const LVRScanCamItem& item)
