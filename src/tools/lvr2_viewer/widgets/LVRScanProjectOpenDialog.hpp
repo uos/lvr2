@@ -59,6 +59,18 @@ public:
      */
     FileKernelPtr kernel() {return m_kernel;}
 
+
+    /// Used to represent the type
+    /// of the currently selected scan project
+    enum ProjectType{NONE, DIR, HDF5};
+
+    /**
+     * @brief Returns ProjectType
+     * 
+     * @return ProjectType
+     */
+    ProjectType projectType() {return m_projectType;}
+
 public Q_SLOTS:
     /// Shows the QFileDialog
     void openPathDialog();
@@ -67,10 +79,6 @@ public Q_SLOTS:
     void schemaSelectionChanged(int index);
 
 private:
-
-    /// Internally used to represent the type
-    /// of the currently selected scan project
-    enum ProjectType{NONE, DIR, HDF5};
 
     /// Connects signals and slots
     void connectSignalsAndSlots();

@@ -3354,9 +3354,28 @@ void LVRMainWindow::openScanProject()
     dialog->raise();
     dialog->activateWindow();
     dialog->exec();
+/*
+    ScanProjectSchemaPtr schema = dialog->schema();
+    FileKernelPtr kernel = dialog->kernel();
+    LVRScanProjectOpenDialog::ProjectType projectType = dialog->projectType();
 
+    ScanProjectPtr scanProject;
+    
+    switch(projectType)
+    {
+        case LVRScanProjectOpenDialog::DIR:
+            DirectoryIO dirIO((DirectoryKernelPtr*)kernel, (DirectorySchemaPtr*)schema);
+            scanProject = dirIO.loadScanProject();
+            break;
+
+        case LVRScanProjectOpenDialog::HDF5:
+            descriptions::HDF5IO hdf5IO((HDF5KernelPtr*)kernel, (HDF5SchemaPtr*)schema);
+            scanProject = hdf5IO.loadScanProject();
+            break;
+    }
+    loadScanProject(scanProject, "test");
+*/
     delete dialog;
-
 }
  
 void LVRMainWindow::openHDF5(std::string fileName)
