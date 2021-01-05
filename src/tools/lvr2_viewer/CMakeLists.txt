@@ -72,6 +72,7 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRScanImageItem.cpp
     widgets/LVRScanProjectOpenDialog.cpp
     util/qttf.cpp
+    widgets/LVRCameraModelItem.cpp
 )
 
 #if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
