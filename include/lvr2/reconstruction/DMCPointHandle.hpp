@@ -56,7 +56,7 @@ public:
         vector<coord<float>*> splittedPoints[8],
         bool dual) = 0;
 
-    virtual void clear();
+    virtual void clear() = 0;
 
 };
 

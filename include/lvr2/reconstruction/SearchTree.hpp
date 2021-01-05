@@ -83,10 +83,12 @@ public:
      * @param indices     A vector that will be filled with the indices of
      *                    the points that were found.
      */
-    virtual void radiusSearch(
+    virtual int radiusSearch(
         const BaseVecT& qp,
-        CoordT r,
-        std::vector<size_t>& indices
+        int k,
+        float r,
+        std::vector<size_t>& indices,
+        std::vector<CoordT>& distances
     ) const = 0;
 
     /// Like the other overload, but ignoring the `distances` vector.

@@ -24,6 +24,12 @@ GeoTIFFIO::GeoTIFFIO(std::string filename)
     m_gtif_dataset = (GDALDataset *) GDALOpen(filename.c_str(), GA_ReadOnly);
 }
 
+GeoTIFFIO::GeoTIFFIO(GDALDataset * dataset)
+{
+    GDALAllRegister();
+    m_gtif_dataset = dataset;
+}
+
 int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
 {
     if (!m_gtif_dataset)
@@ -76,6 +82,13 @@ int GeoTIFFIO::getRasterHeight()
     
 }
 
+void GeoTIFFIO::getMaxMinOfBand(float* values, int band_index)
+{
+    GDALRasterBand *band = m_gtif_dataset->GetRasterBand(band_index);
+    values[0] = band->GetMaximum();
+    values[1] = band->GetMinimum();
+}
+
 int GeoTIFFIO::getNumBands()
 {
     if(m_gtif_dataset)
@@ -85,6 +98,20 @@ int GeoTIFFIO::getNumBands()
     return 0;
 }
 
+void GeoTIFFIO::getGeoTransform(double * geoTransform)
+{
+    if(m_gtif_dataset)
+    {
+        m_gtif_dataset->GetGeoTransform(geoTransform);
+    }
+}
+
+double GeoTIFFIO::getNoDataValue(int band_index)
+{
+    GDALRasterBand *band = m_gtif_dataset->GetRasterBand(band_index);
+    return band->GetNoDataValue();
+}
+
 cv::Mat *GeoTIFFIO::readBand(int index)
 {
     GDALRasterBand *band = m_gtif_dataset->GetRasterBand(index);
@@ -92,11 +119,11 @@ cv::Mat *GeoTIFFIO::readBand(int index)
     {
         int nXSize = band->GetXSize();
         int nYSize = band->GetYSize();
-        uint16_t *buf = (uint16_t *) CPLMalloc(sizeof(uint16_t) * nXSize * nYSize);
+        double *buf = (double*) CPLMalloc(sizeof(double) * nXSize * nYSize);
 
-        CPLErr error = band->RasterIO(GF_Read, 0, 0, nXSize, nYSize, buf, nXSize, nYSize, GDT_UInt16, 0, 0);
+        CPLErr error = band->RasterIO(GF_Read, 0, 0, nXSize, nYSize, buf, nXSize, nYSize, GDT_Float32, 0, 0);
 
-        cv::Mat *mat = new cv::Mat(nXSize, nYSize, CV_16UC1, buf);
+        cv::Mat *mat = new cv::Mat(nXSize, nYSize, CV_32FC1, buf);
         
         return mat;
     }

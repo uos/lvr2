@@ -39,6 +39,7 @@
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/io/Timestamp.hpp"
+#include "lvr2/registration/ReductionAlgorithm.hpp"
 
 #include <vector>
 
@@ -75,13 +76,53 @@ private:
     template<typename T>
     void swapInChannel(lvr2::Channel<T>& ch, const size_t& l, const size_t& r);
 
-    double  m_voxelSize;
-    size_t  m_minPointsPerVoxel;
-    size_t  m_numPoints; 
-    bool*   m_flags;
+    double              m_voxelSize;
+    size_t              m_minPointsPerVoxel;
+    size_t              m_numPoints; 
+    bool*               m_flags;
+    PointBufferPtr      m_pointBuffer;
+    Vector3f            m_points;
+};
 
-    PointBufferPtr  m_pointBuffer;
-    Vector3f        m_points;
+/**
+ * @brief Reference implemention of an octree-based reduction algorithm
+ * 
+ */
+class OctreeReductionAlgorithm : public ReductionAlgorithm
+{
+    OctreeReductionAlgorithm(double voxelSize, size_t minPoints) : 
+        m_octree(nullptr), m_voxelSize(voxelSize), m_minPoints(minPoints) {};
+
+    void setPointBuffer(PointBufferPtr ptr) override
+    {
+        // Create octree
+        m_octree = new OctreeReduction(ptr, m_voxelSize, m_minPoints);
+    }
+
+    PointBufferPtr getReducedPoints()
+    {
+        if(m_octree)
+        {
+            return m_octree->getReducedPoints();
+        }
+        else
+        {
+            return PointBufferPtr(new PointBuffer());
+        }
+    }
+
+    ~OctreeReductionAlgorithm()
+    {
+        if(m_octree)
+        {
+            delete m_octree;
+        }
+    }
+
+private:
+    OctreeReduction*    m_octree;
+    double              m_voxelSize;
+    size_t              m_minPoints;
 };
 
 } // namespace lvr2

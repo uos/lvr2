@@ -33,6 +33,7 @@
  */
 
 #include "lvr2/geometry/BaseMesh.hpp"
+#include "metrics/DMCReconstructionMetric.hpp"
 #include <vector>
 #include <random>
 using std::vector;
@@ -93,15 +94,18 @@ template<typename BaseVecT, typename BoxT>
 void DMCReconstruction<BaseVecT, BoxT>::buildTree(
         C_Octree<BaseVecT, BoxT, my_dummy> &parent,
         int levels,
-        bool dual)
+        bool dual,
+        DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric,
+        int delta)
 {
     m_leaves = 0;
     int cells = 1;
     int max_cells = (1 << m_maxLevel);
     float* max_bb_width = std::max_element(bb_size, bb_size+3);
-
+    int cellCounter = 0;
     for(int cur_Level = levels; cur_Level > 0; --cur_Level)
     {
+        
         // calculating stepwidth at current level for transformation into real world coordinates
         if(cur_Level < levels)
         {
@@ -111,8 +115,8 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
         float stepWidth = *max_bb_width / cells;
 
         CellHandle ch_end = parent.end();
-
-        int cellCounter = 0;
+        int levelCellCounter = 0;
+        
 
         // visiting all cells of the octree
         for (CellHandle ch = parent.root(); ch != ch_end; ++ch)
@@ -121,7 +125,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
             if ((parent.level(ch) == cur_Level))
             {
                 cellCounter++;
-
+                levelCellCounter++;
                 // get the points of the current (dual) cell(s)
                 vector< vector<coord<float>*> > cellPoints;
                 std::vector<CellHandle> cellHandles;
@@ -247,187 +251,60 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
 
                         // this is not necessarily a dual leaf
                         DualLeaf<BaseVecT, BoxT> *leaf = new DualLeaf<BaseVecT, BoxT>(corners);
+                        
+                        // only calculate cell error for levels bigger than detla
 
-                        // calculate distances
-                        float distances[8];
-                        BaseVecT vertex_positions[12];
-                        float projectedDistance;
-                        float euklideanDistance;
-                        for (unsigned char i = 0; i < 8; i++)
+                        if(cur_Level > delta)
                         {
+                             // calculate distances
+                            float distances[8];
+                            BaseVecT vertex_positions[12];
                             float projectedDistance;
                             float euklideanDistance;
-                            std::tie(projectedDistance, euklideanDistance) = this->m_surface->distance(corners[i]);
-                            distances[i] = projectedDistance;
-                        }
-                        leaf->getIntersections(corners, distances, vertex_positions);
-
-                        /*for(int z = 0; z < 8; z++)
-                        {
-                            std::cout << distances[z] << std::endl;
-                        }
-                        std::cout << "-------" << std::endl;*/
-
-                        // check for valid length of the distances
-                        bool distancesValid = true;
-                        bool d_all_null = false;
-
-                        // calculate max tolerated distance
-                        float length = 0;
-                        if(!dual)
-                        {
-                            length = corners[1][0] - corners[0][0];
-                            length *= 1.7;
-                        }
-                        else
-                        {
-                            for(uint s = 0; s < 12; s++)
+                            for (unsigned char i = 0; i < 8; i++)
                             {
-                                BaseVecT vec_tmp = corners[edgeDistanceTable[s][0]] - corners[edgeDistanceTable[s][1]];
-                                float float_tmp = sqrt(vec_tmp[0] * vec_tmp[0] + vec_tmp[1] * vec_tmp[1] + vec_tmp[2] * vec_tmp[2]);
-                                if(float_tmp > length)
-                                {
-                                    length = float_tmp;
-                                }
+                                float projectedDistance;
+                                float euklideanDistance;
+                                std::tie(projectedDistance, euklideanDistance) = this->m_surface->distance(corners[i]);
+                                distances[i] = projectedDistance;
                             }
-                            // length *= 1.7;
-                        }
 
-                        for(unsigned char a = 0; a < 8; a++)
-                        {
-                            if(abs(distances[a]) > length)
-                            {
-                                distancesValid = false;
-                                /*if(dual && cur_Level < levels - 2)
-                                {
-                                    markToSplit = false;
-                                }*/
-                            }
-                            else if(distances[a] > 0)
-                            {
-                                d_all_null = false;
-                            }
-                        }
-                        if(distancesValid)
-                        {
                             bool pointsFittingWell = true;
-
-                            vector< vector<BaseVecT> > triangles;
                             int index = leaf->getIndex(distances);
-                            /*if(index == 0 || index == 255)
+
+
+                            double current_error = reconstructionMetric->get_distance(this->m_surface, points, corners, leaf, dual);
+
+                            
+
+                            // split descision happens here
+                            // compare value of the metric to max error of dmc reconstruction instance
+                            if(current_error > m_maxError)
                             {
-                                for(int a = 0; a < 8; a++)
-                                {
-                                    std::cout << corners[a][0] << "; " << corners[a][1] << "; " << corners[a][2] << std::endl;
-                                }
-                                std::cout << "++++++++++++" << std::endl;
-                                for(unsigned char a = 0; a < 8; a++)
-                                {
-                                    std::cout << distances[a] << std::endl;
-                                }
-                                std::cout << "------------" << std::endl;
-                            }*/
-                            if(!d_all_null)
-                            {
-                                uint edge_index = 0;
-
-                                for(unsigned char a = 0; MCTable[index][a] != -1; a+= 3)
-                                {
-                                    vector<BaseVecT> triangle_vertices;
-                                    for(unsigned char b = 0; b < 3; b++)
-                                    {
-                                        edge_index = MCTable[index][a + b];
-                                        triangle_vertices.push_back(vertex_positions[edge_index]);
-                                    }
-                                    triangles.push_back(triangle_vertices);
-                                }
-
-                                // check, whether the points are fitting well
-                                vector<float*> matrices = vector<float*>();
-
-                                // calculate rotation matrix of every triangle
-                                for ( uint a = 0; a < triangles.size(); a++ )
-                                {
-                                    float matrix[9] = { 0 };
-                                    BaseVecT v1 = triangles[a][0];
-                                    BaseVecT v2 = triangles[a][1];
-                                    BaseVecT v3 = triangles[a][2];
-                                    getRotationMatrix(matrix, v1, v2, v3);
-
-                                    matrices.push_back(matrix);
-                                }
-
-                                vector<float> error(triangles.size(), 0);
-                                vector<int> counter(triangles.size(), 0);
-
-                                // for every point check to which trinagle it is the nearest
-                                if(triangles.size() > 0)
-                                {
-                                    for ( uint a = 0; a < points.size(); a++ )
-                                    {
-                                        signed char min_dist_pos = -1;
-                                        float min_dist = -1;
-
-                                        // check which triangle is nearest
-                                        for ( uint b = 0; b < triangles.size(); b++ )
-                                        {
-                                            BaseVecT tmp = {(*points[a])[0] - (triangles[b][0])[0],
-                                                            (*points[a])[1] - (triangles[b][0])[1],
-                                                            (*points[a])[2] - (triangles[b][0])[2]};
-
-                                            // use rotation matrix for triangle and point
-                                            BaseVecT t1 = triangles[b][0] - triangles[b][0];
-                                            BaseVecT t2 = triangles[b][1] - triangles[b][0];
-                                            BaseVecT t3 = triangles[b][2] - triangles[b][0];
-                                            matrixDotVector(matrices[b], &t1);
-                                            matrixDotVector(matrices[b], &t2);
-                                            matrixDotVector(matrices[b], &t3);
-                                            matrixDotVector(matrices[b], &tmp);
-
-                                            // calculate distance from point to triangle
-                                            float d = getDistance(tmp, t1, t2, t3);
-
-                                            if( min_dist == -1 )
-                                            {
-                                                min_dist = d;
-                                                min_dist_pos = b;
-                                            }
-                                            else if( d < min_dist )
-                                            {
-                                                min_dist = d;
-                                                min_dist_pos = b;
-                                            }
-                                        }
-
-                                        error[min_dist_pos] += (min_dist * min_dist);
-                                        counter[min_dist_pos] += 1;
-                                    }
-
-                                    uint a = 0;
-                                    while(a < error.size() && pointsFittingWell)
-                                    {
-                                        error[a] /= counter[a];
-                                        error[a] = sqrt(error[a]);
-
-                                        if(error[a] > m_maxError)
-                                        {
-                                            splitting_pos.push_back(idx);
-                                            pointsFittingWell = false;
-                                        }
-                                        a++;
-                                    }
-                                }
+                                splitting_pos.push_back(idx);
+                                pointsFittingWell = false;
                             }
+
+
                             if(MCTable[index][0] == -1 || !pointsFittingWell)
                             // if((!dual && MCTable[index][0] == -1) || cur_Level >= levels - 2 || !pointsFittingWell)
                             {
                                 markToSplit = true;
                             }
+            
                         }
+                        // if the level is smaller or equals delta, mark to split anyways
+                        else
+                        {
+                            splitting_pos.push_back(idx);
+                            markToSplit = true;
+                        }
+                        
                         delete(leaf);
                     }
                     idx++;
                 }
+                
                 if(markToSplit)
                 {
                     vector<coord<float>*> points;
@@ -508,7 +385,9 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
             }
         // end of visiting all cells of the octree
         }
-        std::cout << cellCounter << " cells at level " << cur_Level << std::endl;
+        
+        std::cout << levelCellCounter << " of " << cellCounter << " cells at level " << cur_Level << std::endl;
+    
     // end of visiting the current level
     }
 }
@@ -687,7 +566,12 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     // start building adaptive octree
     string comment = timestamp.getElapsedTime() + "Creating Octree...";
     cout << comment << endl;
-    buildTree(*octree, m_maxLevel, m_dual);
+    
+
+    // metric is set here
+    DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric = new MSRMetric<BaseVecT, BoxT>;
+    
+    buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric, 0);
 
     comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
     cout << comment << endl;
@@ -699,6 +583,99 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     delete(octree);
     cout << endl;
 }
+
+template<typename BaseVecT, typename BoxT>
+void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, BaseMesh<BaseVecT> &deepMesh, int delta)
+{
+    // delta cannot be smaller than zero
+    if(delta < 0)
+    {
+        string comment = timestamp.getElapsedTime() + "Error: delta cannot be below zero."; 
+        cout << comment << endl;
+        return;
+    }
+    // if delta is equal to zero, just use the the simple getMesh function
+    //TODO: fix it
+    else if(delta == 0)
+    {
+        string comment = timestamp.getElapsedTime() + "Warning: delta is equal to zero. Returning flat mesh only."; 
+        cout << comment << endl;
+        getMesh(flatMesh);
+    }
+    // else the delta must be greater than 0
+    else
+    {
+        string comment = timestamp.getElapsedTime() + "Creating two meshes with delta delta of " + to_string(delta) + "."; 
+        cout << comment << endl;
+
+
+        // use this metric
+        // lets see where we will put this later
+        DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric = new MSRMetric<BaseVecT, BoxT>;
+
+
+        /* *************** FLAT OCTREE ************************* */
+
+        comment = timestamp.getElapsedTime() + "Building flat octree..."; 
+        cout << comment << endl;
+
+        // build flat tree without delta
+        buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric, 0);
+
+        // printing progress
+        comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
+        cout << comment << endl;
+        m_pointHandler->clear();
+        
+        // creating mesh
+        comment = timestamp.getElapsedTime() + "Creating flat mesh ";
+        m_progressBar = new ProgressBar(m_leaves, comment);
+        traverseTree(flatMesh, *octree);
+        cout << endl;
+        
+        
+        /* *************** DEEP OCTREE ************************* */
+        
+        // reloading pointcloud
+        floatArr points_floatArr = this->m_surface->pointBuffer()->getPointArray();
+        coord3fArr points = *((coord3fArr*) &points_floatArr);
+        vector<coord<float>*> containedPoints;
+        for(size_t i = 0; i < this->m_surface->pointBuffer()->numPoints(); i++)
+        {
+            containedPoints.push_back(&points[i]);
+        }
+
+        m_pointHandler = std::unique_ptr<DMCPointHandle<BaseVecT>>(new DMCVecPointHandle<BaseVecT>(containedPoints));
+
+        comment = timestamp.getElapsedTime() + "Building deep octree..."; 
+        cout << comment << endl;
+    
+
+        // we have to increase m_maxLevel and put it into buildTree as levels (2nd param.)
+        m_maxLevel += delta;
+        deepOctree = new C_Octree<BaseVecT, BoxT, my_dummy>();
+        deepOctree->initialize(m_maxLevel);
+
+        // build deep tree with delta
+        buildTree(*deepOctree, m_maxLevel, m_dual, reconstructionMetric, delta);
+
+
+        comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
+        cout << comment << endl;
+        m_pointHandler->clear();
+
+      
+        comment = timestamp.getElapsedTime() + "Creating deep mesh ";
+        m_progressBar = new ProgressBar(m_leaves, comment);
+        traverseTree(deepMesh, *deepOctree);
+        cout << endl;
+        
+        
+        return;
+    }
+
+}
+
 
 template<typename BaseVecT, typename BoxT>
 DualLeaf<BaseVecT, BoxT>* DMCReconstruction<BaseVecT, BoxT>::getDualLeaf(
@@ -770,7 +747,7 @@ void DMCReconstruction<BaseVecT, BoxT>::traverseTree(
             for(unsigned char c = 0; c < 8; c++)
             {
                 DualLeaf<BaseVecT, BoxT> *dualLeaf = getDualLeaf(ch, cells, octree, c);
-
+                
                 getSurface(mesh, dualLeaf, cells, (short)octree.level(ch));
 
                 // free memory
@@ -781,6 +758,7 @@ void DMCReconstruction<BaseVecT, BoxT>::traverseTree(
     }
     return;
 }
+
 
 template<typename BaseVecT, typename BoxT>
 void DMCReconstruction<BaseVecT, BoxT>::detectVertexForDualCell(
@@ -910,6 +888,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getSurface(
         mesh.addFace(triangle_vertices[0], triangle_vertices[1], triangle_vertices[2]);
     }
 }
+
 
 template<typename BaseVecT, typename BoxT>
 void DMCReconstruction<BaseVecT, BoxT>::getMesh(

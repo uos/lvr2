@@ -93,15 +93,27 @@ int SearchTreeFlann<BaseVecT>::kSearch(
 }
 
 template<typename BaseVecT>
-void SearchTreeFlann<BaseVecT>::radiusSearch(
+int SearchTreeFlann<BaseVecT>::radiusSearch(
     const BaseVecT& qp,
-    CoordT r,
-    vector<size_t>& indices
+    int k,
+    float r,
+    vector<size_t>& indices,
+    vector<CoordT>& distances
 ) const
 {
-    panic_unimplemented("radiusSearch() is not implemented for FLANN yet");
-}
+    //panic_unimplemented("radiusSearch() is not implemented for FLANN yet");
 
+    CoordT point[3] = { qp.x, qp.y, qp.z };
+    flann::Matrix<CoordT> query_point(point, 1, 3);
+
+    indices.resize(k);
+    distances.resize(k);
+
+    flann::Matrix<size_t> ind(indices.data(), 1, k);
+    flann::Matrix<CoordT> dist(distances.data(), 1, k);
+
+    return m_tree->radiusSearch(query_point, ind, dist, r, flann::SearchParams());
+}
 template<typename BaseVecT>
 void SearchTreeFlann<BaseVecT>::kSearchMany(
     const BaseVecT* query,

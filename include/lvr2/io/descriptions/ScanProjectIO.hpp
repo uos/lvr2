@@ -4,6 +4,7 @@
 #define LVR2_IO_HDF5_SCANPROJECTIO_HPP
 
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/registration/ReductionAlgorithm.hpp"
 
 #include <boost/optional.hpp>
 #include <regex>
@@ -50,26 +51,28 @@ template <typename FeatureBase>
 class ScanProjectIO
 {
   public:
-    void saveScanProject(const ScanProjectPtr& scanProjectPtr);
+    void save(ScanProjectPtr scanProject) const;
+    void saveScanProject(ScanProjectPtr scanProject) const;
 
-    ScanProjectPtr loadScanProject();
+    ScanProjectPtr loadScanProject() const;
+    // ScanProjectPtr loadScanProject(ReductionAlgorithmPtr reduction) const;
 
   protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
     // dependencies
     ScanPositionIO<FeatureBase>* m_scanPositionIO =
         static_cast<ScanPositionIO<FeatureBase>*>(m_featureBase);
+    // THIS DEP IS NOT USED. TODO: Where to move?
     LabelIO<FeatureBase>* m_labelIO = 
         static_cast<LabelIO<FeatureBase>*>(m_featureBase);
 
-    // static constexpr const char* ID = "ScanProjectIO";
-    // static constexpr const char* OBJID = "ScanProject";
+    static constexpr const char* ID = "ScanProjectIO";
+    static constexpr const char* OBJID = "ScanProject";
 };
 
 template <typename FeatureBase>
 struct FeatureConstruct<ScanProjectIO, FeatureBase>
 {
-
     // DEPS
     //
     using dep1 = typename FeatureConstruct<ScanPositionIO, FeatureBase>::type;
