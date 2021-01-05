@@ -3354,7 +3354,7 @@ void LVRMainWindow::openScanProject()
     dialog->raise();
     dialog->activateWindow();
     dialog->exec();
-/*
+
     ScanProjectSchemaPtr schema = dialog->schema();
     FileKernelPtr kernel = dialog->kernel();
     LVRScanProjectOpenDialog::ProjectType projectType = dialog->projectType();
@@ -3364,17 +3364,24 @@ void LVRMainWindow::openScanProject()
     switch(projectType)
     {
         case LVRScanProjectOpenDialog::DIR:
-            DirectoryIO dirIO((DirectoryKernelPtr*)kernel, (DirectorySchemaPtr*)schema);
+        {
+            DirectoryKernelPtr dirKernel = std::dynamic_pointer_cast<DirectoryKernel>(kernel); 
+            DirectorySchemaPtr dirSchema = std::dynamic_pointer_cast<DirectorySchema>(schema);
+            DirectoryIO dirIO(dirKernel, dirSchema);
             scanProject = dirIO.loadScanProject();
             break;
-
+        }
         case LVRScanProjectOpenDialog::HDF5:
-            descriptions::HDF5IO hdf5IO((HDF5KernelPtr*)kernel, (HDF5SchemaPtr*)schema);
+        {
+            HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel); 
+            HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
+            descriptions::HDF5IO hdf5IO(hdfKernel, hdfSchema);
             scanProject = hdf5IO.loadScanProject();
             break;
+        }
     }
-    loadScanProject(scanProject, "test");
-*/
+    loadScanProject(scanProject, QString::fromStdString(kernel->fileResource()));
+
     delete dialog;
 }
  
