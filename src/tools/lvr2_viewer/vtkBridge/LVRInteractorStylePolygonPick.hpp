@@ -34,18 +34,18 @@
 #define LVRInteractorStylePolygonPick_h
 
 #include "vtkInteractionStyleModule.h" // For export macro
-#include "vtkInteractorStyleTrackballCamera.h"
+//#include "vtkInteractorStyleTrackballCamera.h"
+#include "vtkInteractorStyleDrawPolygon.h"
 
 #include "vtkVector.h"
 #include <vector>
-class vtkUnsignedCharArray;
+//class vtkUnsignedCharArray;
 
-class VTKINTERACTIONSTYLE_EXPORT LVRInteractorStylePolygonPick
-  : public vtkInteractorStyleTrackballCamera
+class VTKINTERACTIONSTYLE_EXPORT LVRInteractorStylePolygonPick : public vtkInteractorStyleDrawPolygon
 {
 public:
   static LVRInteractorStylePolygonPick* New();
-  vtkTypeMacro(LVRInteractorStylePolygonPick, vtkInteractorStyleTrackballCamera);
+  vtkTypeMacro(LVRInteractorStylePolygonPick, vtkInteractorStyleDrawPolygon);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   void SetLassoTool();
@@ -67,9 +67,9 @@ public:
   void OnKeyDown() override;
   //@}
 
-  vtkSetMacro(DrawPolygonPixels, bool);
-  vtkGetMacro(DrawPolygonPixels, bool);
-  vtkBooleanMacro(DrawPolygonPixels, bool);
+//  vtkSetMacro(DrawPolygonPixels, bool);
+//  vtkGetMacro(DrawPolygonPixels, bool);
+//  vtkBooleanMacro(DrawPolygonPixels, bool);
 
   std::vector<vtkVector2i> GetPolygonPoints();
 
@@ -78,26 +78,26 @@ protected:
   ~LVRInteractorStylePolygonPick() override;
 
   virtual void Pick();
-  virtual void DrawPolygon();
+//  virtual void DrawPolygon();
 
-  int StartPosition[2];
-  int EndPosition[2];
+//  int StartPosition[2];
+//  int EndPosition[2];
 
-  int Moving;
+//  int Moving;
   bool firstPoint = true;
 
-  vtkUnsignedCharArray* PixelArray;
+//  vtkUnsignedCharArray* PixelArray;
 
   int CurrentMode;
-  bool DrawPolygonPixels;
+//  bool DrawPolygonPixels;
   bool lassoToolSelected = true;
 
 private:
   LVRInteractorStylePolygonPick(const LVRInteractorStylePolygonPick&) = delete;
   void operator=(const LVRInteractorStylePolygonPick&) = delete;
 
-  class vtkInternal;
-  vtkInternal* Internal;
+//  class vtkInternal;
+//  vtkInternal* Internal;
 };
 
 #endif

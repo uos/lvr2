@@ -32,6 +32,7 @@ vtkStandardNewMacro(LVRInteractorStylePolygonPick);
 #define VTKISRBP_ORIENT 0
 #define VTKISRBP_SELECT 1
 
+/*
 //-----------------------------------------------------------------------------
 class LVRInteractorStylePolygonPick::vtkInternal
 {
@@ -85,24 +86,29 @@ public:
     }
   }
 };
+*/
 
 //--------------------------------------------------------------------------
 LVRInteractorStylePolygonPick::LVRInteractorStylePolygonPick()
 {
-  this->Internal = new vtkInternal();
   this->CurrentMode = VTKISRBP_ORIENT;
+    /*
+  this->Internal = new vtkInternal();
   this->StartPosition[0] = this->StartPosition[1] = 0;
   this->EndPosition[0] = this->EndPosition[1] = 0;
   this->Moving = 0;
   this->DrawPolygonPixels = true;
   this->PixelArray = vtkUnsignedCharArray::New();
+  */
 }
 
 //--------------------------------------------------------------------------
 LVRInteractorStylePolygonPick::~LVRInteractorStylePolygonPick()
 {
+    /*
   this->PixelArray->Delete();
   delete this->Internal;
+  */
 }
 
 //--------------------------------------------------------------------------
@@ -114,7 +120,8 @@ void LVRInteractorStylePolygonPick::StartSelect()
 //----------------------------------------------------------------------------
 std::vector<vtkVector2i> LVRInteractorStylePolygonPick::GetPolygonPoints()
 {
-  return this->Internal->points;
+  return vtkInteractorStyleDrawPolygon::GetPolygonPoints();
+  //return this->Internal->points;
 }
 
 //--------------------------------------------------------------------------
@@ -130,6 +137,7 @@ void LVRInteractorStylePolygonPick::OnChar()
     case 'p':
     case 'P':
     {
+        /*
       vtkRenderWindowInteractor* rwi = this->Interactor;
       int* eventPos = rwi->GetEventPosition();
       this->FindPokedRenderer(eventPos[0], eventPos[1]);
@@ -138,7 +146,7 @@ void LVRInteractorStylePolygonPick::OnChar()
       this->EndPosition[0] = eventPos[0];
       this->EndPosition[1] = eventPos[1];
       this->Pick();
-      break;
+      break;*/
     }
     default:
       this->Superclass::OnChar();
@@ -155,7 +163,9 @@ void LVRInteractorStylePolygonPick::OnLeftButtonDown()
     this->Superclass::OnLeftButtonDown();
     return;
   }
-
+  vtkInteractorStyleDrawPolygon::OnLeftButtonDown();
+  this->FindPokedRenderer(10,10);
+/*
   if (!this->Interactor)
   {
     return;
@@ -193,6 +203,7 @@ void LVRInteractorStylePolygonPick::OnLeftButtonDown()
 
   //renWin->GetRGBACharPixelData(0, 0, size[0] - 1, size[1] - 1, 1, this->PixelArray);
   this->FindPokedRenderer(this->StartPosition[0], this->StartPosition[1]);
+  */
 }
 
 //--------------------------------------------------------------------------
@@ -204,7 +215,8 @@ void LVRInteractorStylePolygonPick::OnMouseMove()
     this->Superclass::OnMouseMove();
     return;
   }
-
+  vtkInteractorStyleDrawPolygon::OnMouseMove();
+/*
   if (!this->Interactor || !this->Moving)
   {
     return;
@@ -244,6 +256,7 @@ void LVRInteractorStylePolygonPick::OnMouseMove()
       this->DrawPolygon();
     }
   }
+  */
 }
 
 //--------------------------------------------------------------------------
@@ -256,6 +269,9 @@ void LVRInteractorStylePolygonPick::OnLeftButtonUp()
     return;
   }
 
+  vtkInteractorStyleDrawPolygon::OnLeftButtonUp();
+  this->Pick();
+  /*
   if (!this->Interactor || !this->Moving)
   {
     return;
@@ -280,7 +296,8 @@ void LVRInteractorStylePolygonPick::OnLeftButtonUp()
   {
     this->Pick();
   }
-  this->Moving = 0;
+  //this->Moving = 0;
+  */
   // this->CurrentMode = VTKISRBP_ORIENT;
 }
 
@@ -302,9 +319,6 @@ void LVRInteractorStylePolygonPick::Pick()
 
   max[0] = std::max_element(polygonPoints.begin(), polygonPoints.end(), compareX)->GetX();
   max[1] = std::max_element(polygonPoints.begin(), polygonPoints.end(), compareY)->GetY();
-  //std::cout << "Minimum : " << min[0] << "  " << min[1] << std::endl;
-  //std::cout << "Maximum : " << max[0] << "  " << max[1] << std::endl;
-  //std::cout << "Count: " << polygonPoints.size() << std::endl;
 
   rbcenter[0] = (min[0] + max[0]) / 2.0;
   rbcenter[1] = (min[1] + max[1]) / 2.0;
@@ -347,7 +361,7 @@ void LVRInteractorStylePolygonPick::Pick()
 
   this->Interactor->Render();
 }
-
+/*
 //--------------------------------------------------------------------------
 void LVRInteractorStylePolygonPick::DrawPolygon()
 {
@@ -377,7 +391,7 @@ void LVRInteractorStylePolygonPick::DrawPolygon()
   this->Interactor->GetRenderWindow()->SetPixelData(0, 0, size[0] - 1, size[1] - 1, pixels, 0);
   this->Interactor->GetRenderWindow()->Frame();
 }
-
+*/
 //--------------------------------------------------------------------------
 void LVRInteractorStylePolygonPick::PrintSelf(ostream& os, vtkIndent indent)
 {
@@ -432,9 +446,9 @@ bool LVRInteractorStylePolygonPick::isPolygonToolSelected()
 }
 int LVRInteractorStylePolygonPick::selectionPolygonSize()
 {
-    return this->Internal->points.size();
+    return vtkInteractorStyleDrawPolygon::GetPolygonPoints().size();
 }
 void LVRInteractorStylePolygonPick::resetSelection()
 {
-	this->Internal->Clear();
+    //vtkInteractorStyleDrawPolygon::C Clear();
 }
