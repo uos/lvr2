@@ -49,10 +49,10 @@ constexpr int CHUNK_SIZE = 1 << CHUNK_SHIFT;
 constexpr int SCALE = 100;
 
 /// HDF5 class structure for saving meshes
-using HDF5MeshToolIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
-                                    lvr2::hdf5features::ChannelIO,
-                                    lvr2::hdf5features::VariantChannelIO,
-                                    lvr2::hdf5features::MeshIO>;
+// using HDF5MeshToolIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
+//                                     lvr2::hdf5features::ChannelIO,
+//                                     lvr2::hdf5features::VariantChannelIO,
+//                                     lvr2::hdf5features::MeshIO>;
 
 /**
  * @brief Tells the user how to call this program
@@ -190,13 +190,6 @@ int main(int argc, char** argv)
     // Convert halfedgemesh to an IO format
     lvr2::SimpleFinalizer<lvr2::BaseVector<int>> finalizer;
     auto buffer = finalizer.apply(mesh);
-    
-    std::cout << "Write mesh into HDF5 file..." << std::endl;
-
-    // Write mesh into HDF5 file
-    HDF5MeshToolIO hdf5;
-    hdf5.open(dst_dir_name + "/" + mesh_name_h5);
-    hdf5.save("tsdf_mesh", buffer);
 
     std::cout << "Write mesh into PLY file..." << std::endl;
 
@@ -204,6 +197,13 @@ int main(int argc, char** argv)
     auto model_ptr = std::make_shared<lvr2::Model>(buffer);
     lvr2::PLYIO ply_io;
     ply_io.save(model_ptr, dst_dir_name + "/" + mesh_name_ply);
+
+    // std::cout << "Write mesh into HDF5 file..." << std::endl;
+
+    // // Write mesh into HDF5 file
+    // HDF5MeshToolIO hdf5;
+    // hdf5.open(dst_dir_name + "/" + mesh_name_h5);
+    // hdf5.save("tsdf_mesh", buffer);
 
     std::cout << "mesh saved!" << std::endl;
 
