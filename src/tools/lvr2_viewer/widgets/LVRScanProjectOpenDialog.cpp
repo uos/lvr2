@@ -9,13 +9,15 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     QDialog(parent),
     m_schema(nullptr),
     m_kernel(nullptr),
-    m_projectType(NONE)
+    m_projectType(NONE),
+    m_reductionType(ALL)
 {
     m_parent = parent;
     m_ui = new LVRScanProjectOpenDialogUI;
     m_ui->setupUi(this);
 
-    connectSignalsAndSlots();    
+    connectSignalsAndSlots();
+    addReductionTypes();    
 }
 
 void LVRScanProjectOpenDialog::connectSignalsAndSlots()
@@ -23,6 +25,7 @@ void LVRScanProjectOpenDialog::connectSignalsAndSlots()
      // Add connections
     QObject::connect(m_ui->toolButtonPath, SIGNAL(pressed()), this, SLOT(openPathDialog()));    
     QObject::connect(m_ui->comboBoxSchema, SIGNAL(currentIndexChanged(int)), this, SLOT(schemaSelectionChanged(int)));
+    QObject::connect(m_ui->comboBoxReduction, SIGNAL(currentIndexChanged(int)), this, SLOT(reductionSelectionChanged(int)));
 }
 
 void LVRScanProjectOpenDialog::schemaSelectionChanged(int index)
@@ -40,6 +43,24 @@ void LVRScanProjectOpenDialog::schemaSelectionChanged(int index)
             default:
                 break;
         }
+    }
+}
+
+void LVRScanProjectOpenDialog::reductionSelectionChanged(int index)
+{
+    switch(index)
+    {
+        case 0:
+            m_reductionType = ALL;
+            break;
+        case 1:
+            m_reductionType = NO;
+            break;
+        case 2:
+            m_reductionType = OCTREE;
+            break;
+        default:
+            break;
     }
 }
 
@@ -101,6 +122,17 @@ void LVRScanProjectOpenDialog::updateAvailableSchemas()
         default:
             b->addItem("None");      
     }
+}
+
+void LVRScanProjectOpenDialog::addReductionTypes()
+{
+    QComboBox* b = m_ui->comboBoxReduction;
+    b->clear();
+
+    b->addItem("All Reduction");
+    b->addItem("No Reduction");
+    b->addItem("Octree Reduction");
+
 }
 
 void LVRScanProjectOpenDialog::openPathDialog()

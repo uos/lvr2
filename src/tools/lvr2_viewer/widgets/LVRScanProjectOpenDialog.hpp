@@ -64,6 +64,10 @@ public:
     /// of the currently selected scan project
     enum ProjectType{NONE, DIR, HDF5};
 
+    /// Used to represent the type
+    /// of the currently selected scan project
+    enum ReductionType{ALL, NO, OCTREE};
+
     /**
      * @brief Returns ProjectType
      * 
@@ -71,12 +75,22 @@ public:
      */
     ProjectType projectType() {return m_projectType;}
 
+    /**
+     * @brief Returns ReductionType
+     * 
+     * @return ReductionType
+     */
+    ReductionType reductionType() {return m_reductionType;}
+
 public Q_SLOTS:
     /// Shows the QFileDialog
     void openPathDialog();
 
     /// Called when a diffent schema was selected
     void schemaSelectionChanged(int index);
+
+    /// Called when a diffent reduction was selected
+    void reductionSelectionChanged(int index);
 
 private:
 
@@ -86,6 +100,8 @@ private:
     /// Updates the list of available schemas
     /// depending on selected scan project type
     void updateAvailableSchemas();
+
+    void addReductionTypes();
 
     /// Sets the current (directory) schema based
     /// on the selected list index in the combo box
@@ -109,6 +125,8 @@ private:
 
     /// Current scan project type
     ProjectType                     m_projectType;
+
+    ReductionType                   m_reductionType;
 };
 
 } // namespace std
