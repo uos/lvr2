@@ -10,7 +10,7 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     m_schema(nullptr),
     m_kernel(nullptr),
     m_projectType(NONE),
-    m_reductionType(ALL)
+    m_reductionPtr(nullptr)
 {
     m_parent = parent;
     m_ui = new LVRScanProjectOpenDialogUI;
@@ -51,13 +51,13 @@ void LVRScanProjectOpenDialog::reductionSelectionChanged(int index)
     switch(index)
     {
         case 0:
-            m_reductionType = ALL;
+            m_reductionPtr = ReductionAlgorithmPtr(new AllReductionAlgorithm());
             break;
         case 1:
-            m_reductionType = NO;
+            m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
             break;
         case 2:
-            m_reductionType = OCTREE;
+            m_reductionPtr = nullptr;
             break;
         default:
             break;
