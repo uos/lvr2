@@ -1,20 +1,6 @@
-/*=========================================================================
-
-  Program:   Visualization Toolkit
-  Module:    LVRInteractorStylePolygonPick.h
-
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
 /**
  * @class   LVRInteractorStylePolygonPick
- * @brief   Like TrackBallCamera, but this can pick props underneath a rubber band selection
+ * @brief   this can pick props underneath a rubber band selection
  * rectangle.
  *
  *
@@ -26,20 +12,16 @@
  * When the 'p' key is hit the above pick operation occurs on a 1x1 rectangle.
  * In other respects it behaves the same as its parent class.
  *
- * @sa
- * vtkAreaPicker
  */
 
 #ifndef LVRInteractorStylePolygonPick_h
 #define LVRInteractorStylePolygonPick_h
 
-#include "vtkInteractionStyleModule.h" // For export macro
-//#include "vtkInteractorStyleTrackballCamera.h"
+#include "vtkInteractionStyleModule.h"
 #include "vtkInteractorStyleDrawPolygon.h"
 
 #include "vtkVector.h"
 #include <vector>
-//class vtkUnsignedCharArray;
 
 class VTKINTERACTIONSTYLE_EXPORT LVRInteractorStylePolygonPick : public vtkInteractorStyleDrawPolygon
 {
@@ -56,20 +38,11 @@ public:
   int selectionPolygonSize();
   bool isPolygonToolSelected();
 
-  //@{
-  /**
-   * Event bindings
-   */
   void OnMouseMove() override;
   void OnLeftButtonDown() override;
   void OnLeftButtonUp() override;
   void OnChar() override;
   void OnKeyDown() override;
-  //@}
-
-//  vtkSetMacro(DrawPolygonPixels, bool);
-//  vtkGetMacro(DrawPolygonPixels, bool);
-//  vtkBooleanMacro(DrawPolygonPixels, bool);
 
   std::vector<vtkVector2i> GetPolygonPoints();
 
@@ -78,26 +51,18 @@ protected:
   ~LVRInteractorStylePolygonPick() override;
 
   virtual void Pick();
-//  virtual void DrawPolygon();
+ // virtual void DrawPolygon();
 
-//  int StartPosition[2];
-//  int EndPosition[2];
-
-//  int Moving;
   bool firstPoint = true;
 
-//  vtkUnsignedCharArray* PixelArray;
-
   int CurrentMode;
-//  bool DrawPolygonPixels;
   bool lassoToolSelected = true;
 
 private:
   LVRInteractorStylePolygonPick(const LVRInteractorStylePolygonPick&) = delete;
   void operator=(const LVRInteractorStylePolygonPick&) = delete;
+  std::vector<vtkVector2i> polygonPoints;
 
-//  class vtkInternal;
-//  vtkInternal* Internal;
 };
 
 #endif

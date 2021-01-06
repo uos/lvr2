@@ -22,7 +22,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QWidget" name="qvtkWidgetPlaceholder" native="ture"/>
+     <widget class="QWidget" name="qvtkWidgetPlaceholder" native="true"/>
     </item>
    </layout>
   </widget>
@@ -700,7 +700,6 @@
     <addaction name="actionOpenScanProject"/>
     <addaction name="actionOpenScanProjectDir"/>
     <addaction name="actionOpenScanProjectH5"/>
-
     <addaction name="actionExportScanProject"/>
     <addaction name="separator"/>
     <addaction name="actionReadWaveform"/>
@@ -1166,7 +1165,7 @@
        </column>
        <column>
         <property name="text">
-         <string>Visble</string>
+         <string>Visible</string>
         </property>
        </column>
        <column>
@@ -1221,6 +1220,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="addLabelInstanceButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="minimumSize">
           <size>
            <width>100</width>
@@ -1804,19 +1806,14 @@
     <string>Open Scan Project</string>
    </property>
   </action>
-    <action name="actionOpenScanProjectDir">
+  <action name="actionOpenScanProjectDir">
    <property name="text">
     <string>Open Scan Project Directory</string>
    </property>
-  </action>  
+  </action>
   <action name="actionOpenScanProjectH5">
    <property name="text">
     <string>Open Scan Project H5</string>
-   </property>
-  </action>
-  <action name="actionExportLabeledPointcloud">
-   <property name="text">
-    <string>Export labeled pointcloud</string>
    </property>
   </action>
   <action name="actionReadWaveform">
@@ -1834,18 +1831,13 @@
     <string>Open Intermedia Project</string>
    </property>
   </action>
-    <action name="actionOpen_SoilAssist">
+  <action name="actionOpen_SoilAssist">
    <property name="text">
     <string>Open SoilAssist</string>
    </property>
   </action>
  </widget>
  <customwidgets>
-  <!-- <customwidget>
-   <class>QVTKWidget</class>
-   <extends>QWidget</extends>
-   <header>QVTKWidget.h</header>
-  </customwidget> -->
   <customwidget>
    <class>lvr2::LVRPlotter</class>
    <extends>QWidget</extends>

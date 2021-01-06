@@ -129,7 +129,7 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group) const
             instancePtr->color[1] = rgbData[1];
             instancePtr->color[2] = rgbData[2];
 
-            std::vector<int> tmp(idData.get(), idData.get() + idDim[0]);
+            std::vector<long long> tmp(idData.get(), idData.get() + idDim[0]);
             instancePtr->labeledIDs = std::move(tmp);
 
             classPtr->instances.push_back(instancePtr);

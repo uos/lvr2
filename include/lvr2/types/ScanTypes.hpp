@@ -318,7 +318,7 @@ struct LabelInstance
 
     Vector3i color;
 
-    std::vector<int> labeledIDs;
+    std::vector<long long> labeledIDs;
 };
 using LabelInstancePtr = std::shared_ptr<LabelInstance>;
 /*****************************************************************************

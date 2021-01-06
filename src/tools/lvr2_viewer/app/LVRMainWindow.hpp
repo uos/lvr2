@@ -158,7 +158,8 @@ public Q_SLOTS:
 
     void openIntermediaProject();
     void comboBoxIndexChanged(int index);
-    void addNewInstance(LVRLabelClassTreeItem *);
+    void addLabelInstance();
+    void addLabelInstance(LVRLabelClassTreeItem *);
     void loadModel();
     void loadScanProject(ScanProjectPtr scanProject, QString filename);
     void loadScanProjectDir(bool lazy = true);
@@ -167,7 +168,6 @@ public Q_SLOTS:
     void loadChunkedMesh();
     void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
     void manualICP();
-    void manualLabeling();
     void changePicker(bool labeling);
     void showLabelTreeContextMenu(const QPoint&);
     void updatePointCount(const uint16_t, const int);
@@ -267,7 +267,6 @@ public Q_SLOTS:
     std::set<LVRModelItem*> getSelectedModelItems();
     std::set<LVRPointCloudItem*> getSelectedPointCloudItems();
     std::set<LVRMeshItem*> getSelectedMeshItems();
-    void exportLabels();
 
 protected Q_SLOTS:
     void setModelVisibility(QTreeWidgetItem* treeWidgetItem, int column);
@@ -282,9 +281,7 @@ protected Q_SLOTS:
 Q_SIGNALS:
     void labelChanged(uint16_t);
     void correspondenceDialogOpened();
-    void labelAdded(QTreeWidgetItem*);
     void hidePoints(int, bool);
-    void labelLoaded(int, std::vector<int>);
 
 private:
     void setupQVTK();
@@ -354,9 +351,9 @@ private:
     QAction*                            m_actionSimple_Plane_Classification;
     QAction*                            m_actionFurniture_Recognition;
     // Toolbar items "Labeling"
-    QAction* 				m_actionStart_labeling;
-    QAction* 				m_actionStop_labeling;
-    QAction* 				m_actionExtract_labeling;
+    QAction*            				m_actionStart_labeling;
+    QAction* 			            	m_actionStop_labeling;
+    QAction* 				            m_actionExtract_labeling;
     // Toolbar item "About"
     QMenu*                              m_menuAbout;
     // QToolbar below toolbar
@@ -426,8 +423,6 @@ private:
     vtkSmartPointer<vtkEDLShading>      m_edl;
 #endif
 
-    bool m_labeling = false;
-    int m_id = 1;
     static const string UNKNOWNNAME;
     QTreeWidgetItem* m_selectedLabelItem;
 

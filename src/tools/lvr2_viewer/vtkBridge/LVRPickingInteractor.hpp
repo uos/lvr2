@@ -116,7 +116,6 @@ public:
     vtkSmartPointer<vtkPolyData> getPoints();
 
     std::vector<uint16_t>& getLabeles();
-    //void setEditability(uint16_t labelId, bool editable);
 public Q_SLOTS:
     void correspondenceSearchOn();
     void correspondenceSearchOff();
@@ -124,7 +123,7 @@ public Q_SLOTS:
     void labelingOn();
     void labelingOff();
     void setLabeledPointVisibility(int, bool);
-    void setLabel(int, std::vector<int>&);
+    void setLabel(int, std::vector<long long>&);
     void refreshActors();
     void requestLabels();
 
@@ -246,13 +245,10 @@ private:
     vtkSmartPointer<vtkActor>           m_selectedActor;
     std::vector<uint16_t>               m_pointLabels;
     vtkSmartPointer<vtkPolyData>        m_points;
-    vtkSmartPointer<vtkDataSetMapper>   m_selectedMapper;
-    vtkSmartPointer<vtkIdTypeArray>     m_selectedIds; 
 
     vtkSmartPointer<vtkRenderer>        m_renderer;
 
     bool                                m_correspondenceMode;
-    bool 			                    m_labelingMode;
     bool 			                    m_modified;
 
     unsigned int                        m_numberOfClicks;

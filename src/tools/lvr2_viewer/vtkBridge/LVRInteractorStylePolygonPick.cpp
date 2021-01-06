@@ -1,19 +1,4 @@
-/*=========================================================================
-
-  Program:   Visualization Toolkit
-  Module:    LVRInteractorStylePolygonPick.cxx
-
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
 #include "LVRInteractorStylePolygonPick.hpp"
-
 #include <vtkAbstractPropPicker.h>
 #include <vtkNew.h>
 #include <vtkAreaPicker.h>
@@ -32,99 +17,32 @@ vtkStandardNewMacro(LVRInteractorStylePolygonPick);
 #define VTKISRBP_ORIENT 0
 #define VTKISRBP_SELECT 1
 
-/*
-//-----------------------------------------------------------------------------
-class LVRInteractorStylePolygonPick::vtkInternal
-{
-public:
-  std::vector<vtkVector2i> points;
-
-  void PopPoint()
-  {
-    this->points.pop_back();
-  }
-
-  void AddPoint(const vtkVector2i& point) { this->points.push_back(point); }
-
-  void AddPoint(int x, int y) { this->AddPoint(vtkVector2i(x, y)); }
-
-  void RemoveLastPoint(){this->points.pop_back();}
-  vtkVector2i GetPoint(vtkIdType index) const { return this->points[index]; }
-
-  vtkIdType GetNumberOfPoints() const { return static_cast<vtkIdType>(this->points.size()); }
-
-  void Clear() { this->points.clear(); }
-
-  void DrawPixels(
-    const vtkVector2i& StartPos, const vtkVector2i& EndPos, unsigned char* pixels, int* size)
-  {
-    int x1 = StartPos.GetX(), x2 = EndPos.GetX();
-    int y1 = StartPos.GetY(), y2 = EndPos.GetY();
-
-    double x = x2 - x1;
-    double y = y2 - y1;
-    double length = sqrt(x * x + y * y);
-    if (length == 0)
-    {
-      return;
-    }
-    double addx = x / length;
-    double addy = y / length;
-
-    x = x1;
-    y = y1;
-    int row, col;
-    for (double i = 0; i < length; i += 1)
-    {
-      col = (int)x;
-      row = (int)y;
-      pixels[3 * (row * size[0] + col)] = 255 ^ pixels[3 * (row * size[0] + col)];
-      pixels[3 * (row * size[0] + col) + 1] = 255 ^ pixels[3 * (row * size[0] + col) + 1];
-      pixels[3 * (row * size[0] + col) + 2] = 255 ^ pixels[3 * (row * size[0] + col) + 2];
-      x += addx;
-      y += addy;
-    }
-  }
-};
-*/
-
-//--------------------------------------------------------------------------
 LVRInteractorStylePolygonPick::LVRInteractorStylePolygonPick()
 {
-  this->CurrentMode = VTKISRBP_ORIENT;
-    /*
-  this->Internal = new vtkInternal();
-  this->StartPosition[0] = this->StartPosition[1] = 0;
-  this->EndPosition[0] = this->EndPosition[1] = 0;
-  this->Moving = 0;
-  this->DrawPolygonPixels = true;
-  this->PixelArray = vtkUnsignedCharArray::New();
-  */
+    this->CurrentMode = VTKISRBP_ORIENT;
 }
 
-//--------------------------------------------------------------------------
 LVRInteractorStylePolygonPick::~LVRInteractorStylePolygonPick()
 {
-    /*
-  this->PixelArray->Delete();
-  delete this->Internal;
-  */
+
 }
 
-//--------------------------------------------------------------------------
 void LVRInteractorStylePolygonPick::StartSelect()
 {
-  this->CurrentMode = VTKISRBP_SELECT;
+    this->CurrentMode = VTKISRBP_SELECT;
 }
 
-//----------------------------------------------------------------------------
 std::vector<vtkVector2i> LVRInteractorStylePolygonPick::GetPolygonPoints()
 {
-  return vtkInteractorStyleDrawPolygon::GetPolygonPoints();
-  //return this->Internal->points;
+    if (lassoToolSelected)
+    {
+        return vtkInteractorStyleDrawPolygon::GetPolygonPoints();
+    } else
+    {
+        return polygonPoints;
+    }
 }
 
-//--------------------------------------------------------------------------
 void LVRInteractorStylePolygonPick::OnChar()
 {
   switch (this->Interactor->GetKeyCode())
@@ -153,159 +71,82 @@ void LVRInteractorStylePolygonPick::OnChar()
   }
 }
 
-//--------------------------------------------------------------------------
 void LVRInteractorStylePolygonPick::OnLeftButtonDown()
 {
   
-  if (this->CurrentMode != VTKISRBP_SELECT)
-  {
-    // if not in rubber band mode, let the parent class handle it
-    this->Superclass::OnLeftButtonDown();
-    return;
-  }
-  vtkInteractorStyleDrawPolygon::OnLeftButtonDown();
-  this->FindPokedRenderer(10,10);
-/*
-  if (!this->Interactor)
-  {
-    return;
-  }
+    if (this->CurrentMode != VTKISRBP_SELECT)
+    {
+        // if not in rubber band mode, let the parent class handle it
+        this->Superclass::OnLeftButtonDown();
+        return;
+    }
+    if (lassoToolSelected)
+    {
+        //Lasso Tool
+        vtkInteractorStyleDrawPolygon::OnLeftButtonDown();
+        this->FindPokedRenderer(10,10);
+    } else 
+    {
+        //Polygon Tool
+      //  vtkVector2i newPoint(this->Interactor->GetEventPosition()[0],
+      //                          this->Interactor->GetEventPosition()[1]);
+        std::cout << this->Interactor->GetEventPosition()[0] << std::endl;
+        std::cout << this->Interactor->GetEventPosition()[1] << std::endl;
+        std::cout << this->Interactor->GetEventPosition()[2] << std::endl;
 
-  // otherwise record the rubber band starting coordinate
+    }
 
-  this->Moving = 1;
-  if (!lassoToolSelected)
-  {
-  	if (!firstPoint)
-  	{
-  	  return;
-  	}
-  	firstPoint = false;
-  }
-
-
-  vtkRenderWindow* renWin = this->Interactor->GetRenderWindow();
-
-  this->StartPosition[0] = this->Interactor->GetEventPosition()[0];
-  this->StartPosition[1] = this->Interactor->GetEventPosition()[1];
-  this->EndPosition[0] = this->StartPosition[0];
-  this->EndPosition[1] = this->StartPosition[1];
-
-  this->PixelArray->Initialize();
-  this->PixelArray->SetNumberOfComponents(3);
-  int* size = renWin->GetSize();
-  this->PixelArray->SetNumberOfTuples(size[0] * size[1]);
-
-  renWin->GetPixelData(0, 0, size[0] - 1, size[1] - 1, 1, this->PixelArray);
-  this->Internal->Clear();
-  this->Internal->AddPoint(this->StartPosition[0], this->StartPosition[1]);
-  this->InvokeEvent(vtkCommand::StartInteractionEvent);
-
-  //renWin->GetRGBACharPixelData(0, 0, size[0] - 1, size[1] - 1, 1, this->PixelArray);
-  this->FindPokedRenderer(this->StartPosition[0], this->StartPosition[1]);
-  */
 }
 
-//--------------------------------------------------------------------------
 void LVRInteractorStylePolygonPick::OnMouseMove()
 {
-  if (this->CurrentMode != VTKISRBP_SELECT)
-  {
-    // if not in rubber band mode,  let the parent class handle it
-    this->Superclass::OnMouseMove();
-    return;
-  }
-  vtkInteractorStyleDrawPolygon::OnMouseMove();
-/*
-  if (!this->Interactor || !this->Moving)
-  {
-    return;
-  }
-
-  this->EndPosition[0] = this->Interactor->GetEventPosition()[0];
-  this->EndPosition[1] = this->Interactor->GetEventPosition()[1];
-  int* size = this->Interactor->GetRenderWindow()->GetSize();
-  if (this->EndPosition[0] > (size[0] - 1))
-  {
-    this->EndPosition[0] = size[0] - 1;
-  }
-  if (this->EndPosition[0] < 0)
-  {
-    this->EndPosition[0] = 0;
-  }
-  if (this->EndPosition[1] > (size[1] - 1))
-  {
-    this->EndPosition[1] = size[1] - 1;
-  }
-  if (this->EndPosition[1] < 0)
-  {
-    this->EndPosition[1] = 0;
-  }
-
-  vtkVector2i lastPoint = this->Internal->GetPoint(this->Internal->GetNumberOfPoints() - 1);
-  vtkVector2i newPoint(this->EndPosition[0], this->EndPosition[1]);
-  if ((lastPoint - newPoint).SquaredNorm() > 100)
-  {
-    if (!lassoToolSelected && this->Internal->GetNumberOfPoints() > 2)
+    if (this->CurrentMode != VTKISRBP_SELECT)
     {
-	    this->Internal->RemoveLastPoint();
+        // if not in rubber band mode,  let the parent class handle it
+        this->Superclass::OnMouseMove();
+        return;
     }
-    this->Internal->AddPoint(newPoint);
-    if (this->DrawPolygonPixels)
+    if (lassoToolSelected)
     {
-      this->DrawPolygon();
+        //Lasso Tool
+        vtkInteractorStyleDrawPolygon::OnMouseMove();
+    } else 
+    {
+        //Polygon Tool
     }
-  }
-  */
 }
 
-//--------------------------------------------------------------------------
 void LVRInteractorStylePolygonPick::OnLeftButtonUp()
 {
-  if (this->CurrentMode != VTKISRBP_SELECT)
-  {
-    // if not in rubber band mode,  let the parent class handle it
-    this->Superclass::OnLeftButtonUp();
-    return;
-  }
-
-  vtkInteractorStyleDrawPolygon::OnLeftButtonUp();
-  this->Pick();
-  /*
-  if (!this->Interactor || !this->Moving)
-  {
-    return;
-  }
-
-  if (!lassoToolSelected)
-  {
-    
-    vtkVector2i newPoint(this->Interactor->GetEventPosition()[0], this->Interactor->GetEventPosition()[1]);
-    this->Internal->AddPoint(newPoint);
-    if (this->DrawPolygonPixels)
+    if (this->CurrentMode != VTKISRBP_SELECT)
     {
-      this->DrawPolygon();
+        // if not in rubber band mode,  let the parent class handle it
+        this->Superclass::OnLeftButtonUp();
+        return;
     }
-    this->Moving = 0;
-    return;
-  }
+    if (lassoToolSelected)
+    {
+        //Lasso Tool
+        vtkInteractorStyleDrawPolygon::OnLeftButtonUp();
+    } else
+    {
+        //Polygon Tool
+        polygonPoints.push_back(vtkVector2i(this->Interactor->GetEventPosition()[0],
+                                this->Interactor->GetEventPosition()[1]));
+    }
 
-  // otherwise record the rubber band end coordinate and then fire off a pick
-  if ((this->StartPosition[0] != this->EndPosition[0]) ||
-    (this->StartPosition[1] != this->EndPosition[1]))
-  {
-    this->Pick();
-  }
-  //this->Moving = 0;
-  */
-  // this->CurrentMode = VTKISRBP_ORIENT;
+    this->FindPokedRenderer(10,10);
+
+    if (this->selectionPolygonSize() >= 3)
+    {
+        this->Pick();
+    }
 }
 
 
 
 inline bool compareX(vtkVector2i i, vtkVector2i j) {return (i[0] < j[0]);};
 inline bool compareY(vtkVector2i i, vtkVector2i j) {return (i[1] < j[1]);};
-//--------------------------------------------------------------------------
 void LVRInteractorStylePolygonPick::Pick()
 {
   // calculate binding box
@@ -446,9 +287,15 @@ bool LVRInteractorStylePolygonPick::isPolygonToolSelected()
 }
 int LVRInteractorStylePolygonPick::selectionPolygonSize()
 {
-    return vtkInteractorStyleDrawPolygon::GetPolygonPoints().size();
+    if (lassoToolSelected)
+    {
+        return vtkInteractorStyleDrawPolygon::GetPolygonPoints().size();
+    } else
+    {
+        return polygonPoints.size();
+    }
 }
 void LVRInteractorStylePolygonPick::resetSelection()
 {
-    //vtkInteractorStyleDrawPolygon::C Clear();
+    polygonPoints.clear();
 }
