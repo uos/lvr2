@@ -3368,7 +3368,8 @@ void LVRMainWindow::openScanProject()
             DirectoryKernelPtr dirKernel = std::dynamic_pointer_cast<DirectoryKernel>(kernel); 
             DirectorySchemaPtr dirSchema = std::dynamic_pointer_cast<DirectorySchema>(schema);
             DirectoryIO dirIO(dirKernel, dirSchema);
-            scanProject = dirIO.loadScanProject();
+            ReductionAlgorithmPtr reduction(new NoReductionAlgorithm());
+            scanProject = dirIO.loadScanProject(reduction);
             break;
         }
         case LVRScanProjectOpenDialog::HDF5:

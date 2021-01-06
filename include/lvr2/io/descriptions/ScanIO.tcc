@@ -146,7 +146,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     const size_t& scanNo, 
     ReductionAlgorithmPtr reduction) const
 {
-    ScanPtr ret(new Scan);
+    ScanPtr ret;
 
     Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
 
@@ -169,6 +169,10 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
 
     if(d.metaName)
     {
+        if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
+        {
+            return ret;
+        }
         metaName = *d.metaName;
     }
 
@@ -177,8 +181,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     // Cf. https://stackoverflow.com/questions/50807707/yaml-cpp-encoding-decoding-pointers
     if(d.metaData)
     {
-        // ret = std::make_shared<Scan>((*d.metaData).as<Scan>());
-        *ret = (*d.metaData).as<Scan>();
+        ret = std::make_shared<Scan>((*d.metaData).as<Scan>());
     }
     else
     {
@@ -189,7 +192,10 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     std::cout << ret->registration << std::endl;
 
     // Load actual data
-    ret->points = m_pclIO->loadPointCloud(groupName, scanName, reduction);
+    if(d.dataSetName)
+    {
+        ret->points = m_pclIO->loadPointCloud(groupName, scanName, reduction);
+    }
     /*
     boost::shared_array<float> pointData;
     std::vector<size_t> pointDim;

@@ -55,7 +55,7 @@ class ScanProjectIO
     void saveScanProject(ScanProjectPtr scanProject) const;
 
     ScanProjectPtr loadScanProject() const;
-    // ScanProjectPtr loadScanProject(ReductionAlgorithmPtr reduction) const;
+    ScanProjectPtr loadScanProject(ReductionAlgorithmPtr reduction) const;
 
   protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
