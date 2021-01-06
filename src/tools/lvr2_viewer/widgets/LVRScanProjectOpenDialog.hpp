@@ -9,6 +9,7 @@
 #include "lvr2/io/descriptions/DirectoryKernel.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
 
 
 #include "ui_LVRScanProjectOpenDialogUI.h"

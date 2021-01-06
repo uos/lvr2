@@ -57,7 +57,7 @@ void LVRScanProjectOpenDialog::reductionSelectionChanged(int index)
             m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
             break;
         case 2:
-            m_reductionPtr = nullptr;
+            m_reductionPtr = ReductionAlgorithmPtr(new OctreeReductionAlgorithm(0.1, 5));
             break;
         default:
             break;

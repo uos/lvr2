@@ -3358,6 +3358,7 @@ void LVRMainWindow::openScanProject()
     ScanProjectSchemaPtr schema = dialog->schema();
     FileKernelPtr kernel = dialog->kernel();
     LVRScanProjectOpenDialog::ProjectType projectType = dialog->projectType();
+    ReductionAlgorithmPtr reduction = dialog->reductionPtr();
 
     ScanProjectPtr scanProject;
     
@@ -3368,7 +3369,6 @@ void LVRMainWindow::openScanProject()
             DirectoryKernelPtr dirKernel = std::dynamic_pointer_cast<DirectoryKernel>(kernel); 
             DirectorySchemaPtr dirSchema = std::dynamic_pointer_cast<DirectorySchema>(schema);
             DirectoryIO dirIO(dirKernel, dirSchema);
-            ReductionAlgorithmPtr reduction(new NoReductionAlgorithm());
             scanProject = dirIO.loadScanProject(reduction);
             break;
         }
@@ -3377,7 +3377,7 @@ void LVRMainWindow::openScanProject()
             HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel); 
             HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
             descriptions::HDF5IO hdf5IO(hdfKernel, hdfSchema);
-            scanProject = hdf5IO.loadScanProject();
+            scanProject = hdf5IO.loadScanProject(reduction);
             break;
         }
     }
