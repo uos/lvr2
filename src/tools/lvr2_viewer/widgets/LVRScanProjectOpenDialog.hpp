@@ -8,6 +8,7 @@
 #include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/descriptions/DirectoryKernel.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
+#include "lvr2/registration/ReductionAlgorithm.hpp"
 
 
 #include "ui_LVRScanProjectOpenDialogUI.h"
@@ -64,9 +65,6 @@ public:
     /// of the currently selected scan project
     enum ProjectType{NONE, DIR, HDF5};
 
-    /// Used to represent the type
-    /// of the currently selected scan project
-    enum ReductionType{ALL, NO, OCTREE};
 
     /**
      * @brief Returns ProjectType
@@ -76,11 +74,11 @@ public:
     ProjectType projectType() {return m_projectType;}
 
     /**
-     * @brief Returns ReductionType
+     * @brief Returns ReductionPtr
      * 
-     * @return ReductionType
+     * @return ReductionPtr
      */
-    ReductionType reductionType() {return m_reductionType;}
+    ReductionAlgorithmPtr reductionPtr() {return m_reductionPtr;}
 
 public Q_SLOTS:
     /// Shows the QFileDialog
@@ -126,7 +124,7 @@ private:
     /// Current scan project type
     ProjectType                     m_projectType;
 
-    ReductionType                   m_reductionType;
+    ReductionAlgorithmPtr           m_reductionPtr;
 };
 
 } // namespace std
