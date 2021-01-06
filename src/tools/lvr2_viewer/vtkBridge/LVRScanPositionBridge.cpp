@@ -10,13 +10,14 @@ LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) : m_scanp
 
     for(auto scan : position->scans)
     {
-        ModelPtr model(new Model);
-
-        std::cout << "Unreduced Points: " << scan->points->numPoints() << std::endl;
-        model->m_pointCloud = scan->points;
-
-        ModelBridgePtr modelBridge(new LVRModelBridge(model));
-        models.push_back(modelBridge);
+            ModelPtr model(new Model);
+            if (scan->points)
+            {
+            std::cout << "Unreduced Points: " << scan->points->numPoints() << std::endl;
+            model->m_pointCloud = scan->points;
+            }
+            ModelBridgePtr modelBridge(new LVRModelBridge(model));
+            models.push_back(modelBridge);
     }        
     Eigen::Vector3d pos;
     Eigen::Vector3d angles;
