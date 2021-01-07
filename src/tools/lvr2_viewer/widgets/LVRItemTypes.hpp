@@ -58,7 +58,9 @@ namespace lvr2
         LVRLabeledScanProjectEditMarkItemType,
         LVRScanImageItemType,
         LVRScanCamItemType,
-        LVRCameraModelItemType
+        LVRCameraModelItemType,
+        LVRImageModelItemType,
+        LVRExtrinsicsItemType
     };
 } // namespace lvr2
 

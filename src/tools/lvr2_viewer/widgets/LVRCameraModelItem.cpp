@@ -3,7 +3,8 @@
 namespace lvr2
 {
 
-LVRCameraModelItem::LVRCameraModelItem(ScanCamera& cam)
+LVRCameraModelItem::LVRCameraModelItem(ScanCamera& cam) :
+    QTreeWidgetItem(LVRCameraModelItemType)
 {
     m_model = cam.camera;
 
@@ -18,12 +19,21 @@ LVRCameraModelItem::LVRCameraModelItem(ScanCamera& cam)
     m_fyItem = new QTreeWidgetItem(this);
     m_cyItem = new QTreeWidgetItem(this);
     m_distortionItem = new QTreeWidgetItem(this);
+    
+
 
     addChild(m_fxItem);
     addChild(m_cxItem);
     addChild(m_fyItem);
     addChild(m_cyItem);
     addChild(m_distortionItem);
+    
+    for (int i = 0; i < 4; i++)
+    {
+        m_distortionCoef[i] = new QTreeWidgetItem(this);
+        m_distortionItem->addChild(m_distortionCoef[i]);
+    }
+
     setModel(m_model);
 }
 
@@ -45,7 +55,15 @@ void LVRCameraModelItem::setModel(PinholeModeld& model)
     m_cyItem->setText(1, num.setNum(m_model.cy,'f'));
 
     m_distortionItem->setText(0, "Distortion Model:");
+
     m_distortionItem->setText(1, QString::fromStdString(m_model.distortionModel));
+
+    for (int i = 0; i < 4; i++)
+    {
+        num = QString("k") + QString::number(i);
+        m_distortionCoef[i]->setText(0, num);
+        m_distortionCoef[i]->setText(1, num.setNum(m_model.k[i]));
+    }
 }
 
 

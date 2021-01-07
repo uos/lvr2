@@ -4,6 +4,7 @@
 #include <QTreeWidgetItem>
 #include "lvr2/types/ScanTypes.hpp"
 #include <QtWidgets/qtreewidget.h>
+#include "LVRItemTypes.hpp"
 
 namespace lvr2
 {
@@ -22,6 +23,7 @@ protected:
     QTreeWidgetItem* m_fyItem;
     QTreeWidgetItem* m_cyItem;
     QTreeWidgetItem* m_distortionItem;
+    QTreeWidgetItem* m_distortionCoef[4];
 
 };
 

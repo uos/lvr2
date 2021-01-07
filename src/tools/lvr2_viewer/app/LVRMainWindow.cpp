@@ -370,6 +370,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
+    QObject::connect(treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(doubleClick(QTreeWidgetItem*, int)));
 
     QObject::connect(labelTreeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showLabelTreeContextMenu(const QPoint&)));
 
@@ -2155,6 +2156,7 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
     {
         setModelVisibility(treeWidgetItem->parent(), column);
     }
+
     else if (treeWidgetItem->type() == LVRScanImageItemType)
     {
         if(treeWidgetItem->checkState(0))
@@ -3166,6 +3168,42 @@ void LVRMainWindow::updatePointCount(uint16_t id, int selectedPointCount)
         }
     }
 }
+
+void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
+{
+   if (item->type() == LVRExtrinsicsItemType)
+    {
+        QMessageBox msgBox;
+        LVRExtrinsicsItem* ext = static_cast<LVRExtrinsicsItem*>(item); 
+        QString mat;
+        QString num;
+        for (int i = 0; i < 16; i++)
+        {
+            if(i % 4 == 0)
+            {
+                mat += QString("\n");
+            }
+            num = QString::number(ext->extrinsics()(i));
+            if(ext->extrinsics()(i) >= 0)
+            {
+                num = QString(" ") + num;
+            }
+            if(num.length() < 3)
+            {
+                num += QString(".");
+            }
+            while (num.length() < 11)
+            {
+                num += QString("0");
+            }
+
+            mat += num + QString("   ");
+        }
+        msgBox.setText(mat);
+        msgBox.exec();
+    }
+}
+
 void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
 {
     if(column == LABEL_NAME_COLUMN)

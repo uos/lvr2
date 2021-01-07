@@ -106,7 +106,7 @@ struct convert<lvr2::ScanCamera>
 
         if(scanCam.camera.distortionModel == "opencv")
         {
-            Node distortionNode = node["distortion"];
+            Node distortionNode = node["distortion_coefficients"];
             scanCam.camera.k.clear();
             if(distortionNode)
             {

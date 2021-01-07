@@ -110,6 +110,7 @@
 #include "../widgets/LVRLabelClassTreeItem.hpp"
 #include "../widgets/LVRScanProjectOpenDialog.hpp"
 #include "../widgets/LVRScanImageItem.hpp"
+#include "../widgets/LVRExtrinsicsItem.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRLabelInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -178,6 +179,7 @@ public Q_SLOTS:
     void exportScanProject();
 
     void cellSelected(QTreeWidgetItem* item, int column);
+    void doubleClick(QTreeWidgetItem* item, int column);
     void addLabelClass();
     void lassoButtonToggled(bool);
     void polygonButtonToggled(bool);

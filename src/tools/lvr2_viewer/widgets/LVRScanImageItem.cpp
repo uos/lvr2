@@ -57,6 +57,7 @@ LVRScanImageItem::LVRScanImageItem(ScanImageBridgePtr bridge, QString name) :
     int imgNr = name.left(8).toInt();
     setData(0, Qt::UserRole, imgNr);
     setCheckState(0, Qt::Unchecked);
+    addChild(new LVRImageModelItem(*(m_scanImageBridge->image)));
 }
 
 LVRScanImageItem::LVRScanImageItem(const LVRScanImageItem& item)

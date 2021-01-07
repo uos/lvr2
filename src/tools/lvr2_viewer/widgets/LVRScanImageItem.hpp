@@ -40,6 +40,7 @@
 #include <QString>
 #include <QColor>
 #include <QTreeWidgetItem>
+#include "LVRImageModelItem.hpp"
 
 namespace lvr2
 {
