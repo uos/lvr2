@@ -48,6 +48,7 @@
 #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 #include "lvr2/io/descriptions/LabelScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/descriptions/DirectoryIO.hpp"
 
 #include "lvr2/io/Polygon.hpp"
@@ -94,7 +95,6 @@ LVRMainWindow::LVRMainWindow()
 
     // Init members
     m_correspondanceDialog = new LVRCorrespondanceDialog(treeWidget);
-    //m_labelDialog = new LVRLabelDialog(treeWidget);
     m_incompatibilityBox = new QMessageBox();
     m_aboutDialog = new QDialog(this);
     Ui::AboutDialog aboutDialog;
@@ -297,11 +297,6 @@ LVRMainWindow::~LVRMainWindow()
     {
         delete m_correspondanceDialog;
     }
-    /*
-    if(m_labelDialog)
-    {
-        delete m_labelDialog;
-    }*/
 
     if (m_pickingInteractor)
     {
@@ -370,10 +365,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
 
-    QObject::connect(labelTreeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showLabelTreeContextMenu(const QPoint&)));
-
-
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+
     QObject::connect(this->actionShow_LabelDock, SIGNAL(toggled(bool)), this, SLOT(toggleLabelDock(bool)));
 
     QObject::connect(m_actionShowColorDialog, SIGNAL(triggered()), this, SLOT(showColorDialog()));
@@ -462,14 +455,15 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_pickingInteractor, SIGNAL(secondPointPicked(double*)),m_correspondanceDialog, SLOT(secondPointPicked(double*)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointSelected(vtkActor*, int)), this, SLOT(showPointPreview(vtkActor*, int)));
     QObject::connect(m_pickingInteractor, SIGNAL(pointsLabeled(const uint16_t, const int)), this, SLOT(updatePointCount(const uint16_t, const int)));
-    QObject::connect(m_pickingInteractor, SIGNAL(lassoSelected()), this->actionSelected_Lasso, SLOT(toggle()));
-    QObject::connect(m_pickingInteractor, SIGNAL(polygonSelected()), this->actionSelected_Polygon, SLOT(toggle()));
+    QObject::connect(m_pickingInteractor, SIGNAL(lassoSelected()), this->lassoButton, SLOT(toggle()));
+    QObject::connect(m_pickingInteractor, SIGNAL(polygonSelected()), this->polygonButton, SLOT(toggle()));
 
-    QObject::connect(this, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
+    QObject::connect(this->lassoButton, SIGNAL(toggled(bool)), this, SLOT(lassoButtonToggled(bool)));
+    QObject::connect(this->polygonButton, SIGNAL(toggled(bool)), this, SLOT(polygonButtonToggled(bool)));
 
-    QObject::connect(labelTreeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(visibilityChanged(QTreeWidgetItem*, int)));
     QObject::connect(this, SIGNAL(labelChanged(uint16_t)), m_pickingInteractor, SLOT(labelSelected(uint16_t)));
-
+    QObject::connect(labelTreeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showLabelTreeContextMenu(const QPoint&)));
+    QObject::connect(labelTreeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(visibilityChanged(QTreeWidgetItem*, int)));
     QObject::connect(labelTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(cellSelected(QTreeWidgetItem*, int)));
 
     // Interaction with interactor
@@ -482,10 +476,10 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(this->buttonResetCamera, SIGNAL(pressed()), m_pickingInteractor, SLOT(resetCamera()));
     QObject::connect(this->pushButtonTrackball, SIGNAL(pressed()), m_pickingInteractor, SLOT(modeTrackball()));
     QObject::connect(this->pushButtonFly , SIGNAL(pressed()), m_pickingInteractor, SLOT(modeShooter()));
-
-
-    QObject::connect(this->actionSelected_Lasso, SIGNAL(toggled(bool)), this, SLOT(lassoButtonToggled(bool)));
-    QObject::connect(this->actionSelected_Polygon, SIGNAL(toggled(bool)), this, SLOT(polygonButtonToggled(bool)));
+    QObject::connect(this->discardSelectionButton, SIGNAL(pressed()), m_pickingInteractor, SLOT(discardChanges()));
+    QObject::connect(this->confirmSelectionButton, SIGNAL(pressed()), m_pickingInteractor, SLOT(saveCurrentLabelSelection()));
+    QObject::connect(this->addToSelectionButton, SIGNAL(toggled(bool)), m_pickingInteractor, SLOT(setAddToSelection(bool)));
+    QObject::connect(this, SIGNAL(hidePoints(int, bool)), m_pickingInteractor, SLOT(setLabeledPointVisibility(int, bool)));
     QObject::connect(m_correspondanceDialog, SIGNAL(disableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOff()));
     QObject::connect(m_pickingInteractor, SIGNAL(labelingStarted(bool)), this, SLOT(changePicker(bool)));
     QObject::connect(m_correspondanceDialog, SIGNAL(enableCorrespondenceSearch()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
@@ -610,9 +604,7 @@ verticalLayout->replaceWidget(qvtkWidgetPlaceholder,qvtkWidget);
 #else
     qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_pickingInteractor );
 #endif
-   // qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle( m_labelInteractor );
 
-    //vtkSmartPointer<vtkPointPicker> pointPicker = vtkSmartPointer<vtkPointPicker>::New();
     vtkSmartPointer<vtkAreaPicker> pointPicker = vtkSmartPointer<vtkAreaPicker>::New();
 #ifdef LVR2_USE_VTK9
     qvtkWidget->renderWindow()->GetInteractor()->SetPicker(pointPicker);
@@ -1016,7 +1008,7 @@ void LVRMainWindow::deleteLabelInstance(QTreeWidgetItem* item)
     m_pickingInteractor->removeLabel(item->data(LABEL_ID_COLUMN, 0).toInt());
     QTreeWidgetItem* parentItem = item->parent();
     LVRLabelClassTreeItem* topLevelItem = static_cast<LVRLabelClassTreeItem* >(parentItem);
-    //update the Count avoidign the standart "signal" case to avoid race conditions
+    //update the Count avoiding the standart "signal" case to avoid race conditions
     topLevelItem->setText(LABELED_POINT_COLUMN, QString::number(topLevelItem->text(LABELED_POINT_COLUMN).toInt() - item->text(LABELED_POINT_COLUMN).toInt()));
     topLevelItem->removeChild(item);
     //remove the ComboBox entry
@@ -1026,6 +1018,7 @@ void LVRMainWindow::deleteLabelInstance(QTreeWidgetItem* item)
         selectedInstanceComboBox->removeItem(comboBoxPos);
     }
 }
+
 void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
 {
     QList<QTreeWidgetItem*> items = labelTreeWidget->selectedItems();
@@ -1180,11 +1173,15 @@ void LVRMainWindow::addLabelClass()
         std::map<QString, LVRPointCloudItem*> pointclouds;
 	
         //check if a Scan Project is loaded
-        if(!checkForScanProject())
+        LVRLabeledScanProjectEditMarkItem* projectItem;
+        if (!(projectItem = checkForScanProject()))
         {
             return;
         }
-        
+        if (!projectItem->getLabeledScanProjectEditMarkBridge()->getLabeledScanProjectEditMark()->labelRoot)
+        {
+            projectItem->getLabeledScanProjectEditMarkBridge()->getLabeledScanProjectEditMark()->labelRoot = labelTreeWidget->getLabelRoot();
+        }
 
         while (*itu)
         {
@@ -1271,17 +1268,31 @@ void LVRMainWindow::addLabelClass()
     }
 
     //Ask For the Label name 
-    bool accepted;
-    QString className = QInputDialog::getText(this, tr("Choose name for new Label class"),
-    tr("Class name:"), QLineEdit::Normal,
-    tr("Labelname") , &accepted);
-    if (!accepted || className.isEmpty())
+    QString className;
+    QStringList classNames = labelTreeWidget->getTopLevelItemNames();
+    do
     {
-        //No valid Input
+        bool accepted;
+        className = QInputDialog::getText(this, tr("Choose name for new Label class"),
+        tr("Class name:"), QLineEdit::Normal,
+        tr("Labelname") , &accepted);
+        if (!accepted || className.isEmpty())
+        {
+            //No valid Input
             return;
-    }
+        }  
+        if(classNames.contains(className))
+        {
+            QMessageBox classNameInUseDialog;
+            classNameInUseDialog.setText("Classname already used! Choose diffrent Classname.");
+            classNameInUseDialog.setStandardButtons(QMessageBox::Ok);
+            classNameInUseDialog.setIcon(QMessageBox::Warning);
+            classNameInUseDialog.exec();
+        }
 
-    QColor labelColor = QColorDialog::getColor(Qt::red, this, tr("Choose default Label Color for label Class(willbe used for first isntance)"));
+    } while(classNames.contains(className));
+
+    QColor labelColor = QColorDialog::getColor(Qt::red, this, tr("Choose default color for labelclass"));
     if (!labelColor.isValid())
     {
             //Non Valid Color Return 
@@ -1509,7 +1520,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 //read intermediaformat
                 DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(info.absoluteFilePath().toStdString())); 
                 std::string tmp = info.absolutePath().toStdString();
-                DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib(tmp)); 
+                DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaRaw(tmp)); 
                 DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
                 ScanProjectPtr scanProject = dirIO.loadScanProject();
                 ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
@@ -1680,7 +1691,7 @@ void LVRMainWindow::loadScanProjectDir(bool lazy)
     std::string tmp = filename.toStdString();
     if (tmp != "") 
     {
-        DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+        DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaRaw(tmp));
         DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
         DirectoryIO dirIO(dirKernel, hyperlibSchema);
 
@@ -3183,10 +3194,10 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
             else
             {
                 //ask if all childs Should be updated
-    		QMessageBox colorUpdateDialog;
-		colorUpdateDialog.setText("Labelclass default color changed. Shall all instance colors be updated?");
-		colorUpdateDialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-	        colorUpdateDialog.setDefaultButton(QMessageBox::Yes);
+                QMessageBox colorUpdateDialog;
+                colorUpdateDialog.setText("Labelclass default color changed. Shall all instance colors be updated?");
+                colorUpdateDialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+                colorUpdateDialog.setDefaultButton(QMessageBox::Yes);
                 int returnValue = colorUpdateDialog.exec();
                 if (returnValue == QMessageBox::Yes)
                 {
@@ -3277,15 +3288,28 @@ void LVRMainWindow::addLabelInstance(LVRLabelClassTreeItem * selectedTopLevelIte
 {
     
     QString choosenLabel = selectedTopLevelItem->text(LABEL_NAME_COLUMN);
-    bool accepted;
-    QString instanceName = QInputDialog::getText(this, tr("Choose Name for new Instance"),
-    tr("Instance name:"), QLineEdit::Normal,
-                    QString(choosenLabel + QString::number(selectedTopLevelItem->childCount() + 1)) , &accepted);
-    if (!accepted || instanceName.isEmpty())
+    QStringList instanceNames = selectedTopLevelItem->getChildNames();  
+    QString instanceName;
+    do
     {
-            //No valid Input
-            return;
-    }
+        bool accepted;
+        instanceName = QInputDialog::getText(this, tr("Choose Name for new Instance"),
+        tr("Instance name:"), QLineEdit::Normal,
+                        QString(choosenLabel + QString::number(selectedTopLevelItem->childCount() + 1)) , &accepted);
+        if (!accepted || instanceName.isEmpty())
+        {
+                //No valid Input
+                return;
+        }
+        if(instanceNames.contains(instanceName))
+        {
+            QMessageBox instanceNameInUseDialog;
+            instanceNameInUseDialog.setText("Instancename already used! Choose diffrent Instancename.");
+            instanceNameInUseDialog.setStandardButtons(QMessageBox::Ok);
+            instanceNameInUseDialog.setIcon(QMessageBox::Warning);
+            instanceNameInUseDialog.exec();
+        }
+    }while(instanceNames.contains(instanceName));
 
     QColor labelColor = QColorDialog::getColor(selectedTopLevelItem->data(LABEL_ID_COLUMN, 1).value<QColor>(), this, tr("Choose Label Color for first instance"));
     if (!labelColor.isValid())
@@ -3365,7 +3389,7 @@ void LVRMainWindow::openHDF5(std::string fileName)
     {
         this->dockWidgetLabel->show();
         m_pickingInteractor->setPoints(this->treeWidget->getBridgePtr()->getLabelBridgePtr()->getPointBridge()->getPolyIDData());
-        this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot, m_pickingInteractor,selectedInstanceComboBox);
+        this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot, m_pickingInteractor, selectedInstanceComboBox);
     } else
     {
         labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
@@ -3390,24 +3414,23 @@ void LVRMainWindow::lassoButtonToggled(bool checked)
         if(labelTreeWidget->topLevelItemCount() == 0)
         {
             //NO label was created - show warning
-            const QSignalBlocker blocker(this->actionSelected_Lasso);
+            const QSignalBlocker blocker(this->lassoButton);
             QMessageBox noLabelDialog;
-            noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
+            noLabelDialog.setText("No Label Instance was created! Create an instance before labeling points.");
             noLabelDialog.setStandardButtons(QMessageBox::Ok);
             noLabelDialog.setIcon(QMessageBox::Warning);
             int returnValue = noLabelDialog.exec();
-            this->actionSelected_Lasso->setChecked(false);
-
+            this->lassoButton->setChecked(false);
             return;
         }
-	//setLasso Tool
+        //setLasso Tool
         m_pickingInteractor->setLassoTool(true);
         //check if Polygon tool was enabled
-        if (this->actionSelected_Polygon->isChecked())
+        if (this->polygonButton->isChecked())
         {
-            const QSignalBlocker blocker(this->actionSelected_Polygon);
-            this->actionSelected_Polygon->setChecked(false);
-	    return;
+            const QSignalBlocker blocker(this->polygonButton);
+            this->polygonButton->setChecked(false);
+            return;
         }
         m_pickingInteractor->labelingOn();
     } else
@@ -3424,23 +3447,23 @@ void LVRMainWindow::polygonButtonToggled(bool checked)
         if(labelTreeWidget->topLevelItemCount() == 0)
         {
             //NO label was created - show warning
-            const QSignalBlocker blocker(this->actionSelected_Polygon);
+            const QSignalBlocker blocker(this->polygonButton);
             QMessageBox noLabelDialog;
             noLabelDialog.setText("No Label Instance was created! Create an instance beofre labeling Points.");
             noLabelDialog.setStandardButtons(QMessageBox::Ok);
             noLabelDialog.setIcon(QMessageBox::Warning);
             int returnValue = noLabelDialog.exec();
-            this->actionSelected_Polygon->setChecked(false);
+            this->polygonButton->setChecked(false);
             return;
         }
         //setPolygonTool
         m_pickingInteractor->setLassoTool(false);
         //check if lasso tool was enabled
-        if (this->actionSelected_Lasso->isChecked())
+        if (this->lassoButton->isChecked())
         {
-            const QSignalBlocker blocker(this->actionSelected_Lasso);
-            this->actionSelected_Lasso->setChecked(false);
-	    return;
+            const QSignalBlocker blocker(this->lassoButton);
+            this->lassoButton->setChecked(false);
+            return;
         }
         m_pickingInteractor->labelingOn();
     } else
@@ -3677,7 +3700,7 @@ void LVRMainWindow::exportScanProject()
 
             //Intermedia
             std::string tmp = fileName.toStdString();
-            DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+            DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaRaw(tmp));
             DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(fileName.toStdString()));
             DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
         

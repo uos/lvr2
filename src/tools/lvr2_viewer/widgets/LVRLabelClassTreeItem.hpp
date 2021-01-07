@@ -63,6 +63,7 @@ public:
     void addChildnoChanges(QTreeWidgetItem *child);
     std::string getName();
     LabelClassPtr getLabelClassPtr();
+    QStringList getChildNames();
 private:
     LabelClassPtr m_labelClassPtr;
 };

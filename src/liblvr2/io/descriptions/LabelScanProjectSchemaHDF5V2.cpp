@@ -45,7 +45,6 @@ Description LabelScanProjectSchemaHDF5V2::scan(const size_t &scanPosNo, const si
     // Group name
     std::stringstream group_stream;
     group_stream << "/raw/" << std::setfill('0') << std::setw(8) << scanPosNo << "/scans/data/" << std::setfill('0') << std::setw(8) << scanNo;
-  
     return scan(group_stream.str(), scanNo);
 }
 
@@ -57,7 +56,8 @@ Description LabelScanProjectSchemaHDF5V2::scan(const std::string& scanPositionPa
 
     // Scan name is always points in the 
     // respective HDF5 group
-    d.dataSetName = "points";
+    // comment in to raw/000/scans/data/0000/points/points(dataset)
+    //d.dataSetName = "points";
 
     return d;
 }

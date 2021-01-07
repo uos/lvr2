@@ -1797,6 +1797,7 @@ bool LVRPickingInteractor::isInside(std::vector<vtkVector2i>* polygon, int& pX, 
 void LVRPickingInteractor::calculateSelection(bool select)
 {
 
+    select = m_addToSelection;
     // Forward events
     LVRInteractorStylePolygonPick::OnLeftButtonUp();
     if (!(m_labelInstances[m_selectedLabel])->isEditable())
@@ -2225,6 +2226,11 @@ void LVRPickingInteractor::removeLabel(const int& id)
     }
     updateActor(0);
 
+}
+
+void LVRPickingInteractor::setAddToSelection(bool addToSelection)
+{
+    m_addToSelection = addToSelection;
 }
 
 } /* namespace lvr2 */

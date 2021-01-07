@@ -126,6 +126,8 @@ public Q_SLOTS:
     void setLabel(int, std::vector<long long>&);
     void refreshActors();
     void requestLabels();
+    void discardChanges();
+    void setAddToSelection(bool);
 
     void labelModeChanged(bool);
     void newLabel(QTreeWidgetItem*);
@@ -229,7 +231,6 @@ private:
     //Labeling
     bool isInside(std::vector<vtkVector2i>* polygon, int& pX, int& pY);
     void calculateSelection(bool select);
-    void discardChanges();
     void updateActor(int);
 
     /// Indicates picking mode
@@ -250,6 +251,7 @@ private:
 
     bool                                m_correspondenceMode;
     bool 			                    m_modified;
+    bool                                m_addToSelection = true;
 
     unsigned int                        m_numberOfClicks;
     int                                 m_previousPosition[2];

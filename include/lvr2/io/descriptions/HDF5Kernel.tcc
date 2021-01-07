@@ -162,7 +162,7 @@ void HDF5Kernel::saveArray(
         );
 
         const T* ptr = data.get();
-        dataset->write(ptr);
+        dataset->write_raw(ptr);
         m_hdf5File->flush();
     } 
     else 
@@ -230,7 +230,7 @@ bool HDF5Kernel::addChannel(const std::string group, const std::string name, con
                 g, name, dataSpace, properties);
 
         const T* ptr = channel.dataPtr().get();
-        dataset->write(ptr);
+        dataset->write_raw(ptr);
         m_hdf5File->flush();
         std::cout << timestamp << " Added attribute \"" << name << "\" to group \"" << group
                   << "\" to the given HDF5 file!" << std::endl;
@@ -322,7 +322,7 @@ void HDF5Kernel::save(HighFive::Group &g,
         );
 
         const T* ptr = channel.dataPtr().get();
-        dataset->write(ptr);
+        dataset->write_raw(ptr);
         m_hdf5File->flush();
     } 
     else 

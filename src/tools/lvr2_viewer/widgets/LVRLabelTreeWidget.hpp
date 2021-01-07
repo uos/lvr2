@@ -15,6 +15,7 @@ public:
     void setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPickingInteractor*, QComboBox*);
     int getNextId();
 
+    QStringList getTopLevelItemNames();
     lvr2::LabelRootPtr getLabelRoot();
 private:
     int m_id = 1;

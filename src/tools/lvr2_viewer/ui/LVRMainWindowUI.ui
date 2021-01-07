@@ -604,8 +604,6 @@
    <addaction name="actionShow_SpectralHistogram"/>
    <addaction name="separator"/>
    <addaction name="actionShow_LabelDock"/>
-   <addaction name="actionSelected_Lasso"/>
-   <addaction name="actionSelected_Polygon"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -1252,7 +1250,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton">
+        <widget class="QToolButton" name="addToSelectionButton">
          <property name="minimumSize">
           <size>
            <width>33</width>
@@ -1272,10 +1270,19 @@
            <height>30</height>
           </size>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroup</string>
+         </attribute>
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_2">
+        <widget class="QToolButton" name="removeFromSelectionButton">
          <property name="minimumSize">
           <size>
            <width>33</width>
@@ -1295,6 +1302,12 @@
            <height>30</height>
           </size>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroup</string>
+         </attribute>
         </widget>
        </item>
        <item>
@@ -1305,7 +1318,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_3">
+        <widget class="QToolButton" name="lassoButton">
          <property name="minimumSize">
           <size>
            <width>33</width>
@@ -1325,10 +1338,13 @@
            <height>30</height>
           </size>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_4">
+        <widget class="QToolButton" name="polygonButton">
          <property name="minimumSize">
           <size>
            <width>33</width>
@@ -1348,10 +1364,13 @@
            <height>30</height>
           </size>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_5">
+        <widget class="QToolButton" name="confirmSelectionButton">
          <property name="minimumSize">
           <size>
            <width>33</width>
@@ -1374,7 +1393,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_6">
+        <widget class="QToolButton" name="discardSelectionButton">
          <property name="minimumSize">
           <size>
            <width>33</width>
@@ -1596,36 +1615,6 @@
    </property>
    <property name="text">
     <string>Show LabelDock</string>
-   </property>
-  </action>
-  <action name="actionSelected_Lasso">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../res/viewer.qrc">
-     <normaloff>:/qv_lassoTool.png</normaloff>:/qv_lassoTool.png</iconset>
-   </property>
-   <property name="text">
-    <string>Lasso Tool</string>
-   </property>
-  </action>
-  <action name="actionSelected_Polygon">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../res/viewer.qrc">
-     <normaloff>:/qv_polygonTool.png</normaloff>:/qv_polygonTool.png</iconset>
-   </property>
-   <property name="text">
-    <string>Polygon Tool</string>
    </property>
   </action>
   <action name="actionLabeling_Stop">
@@ -1858,4 +1847,7 @@
   <include location="../res/viewer.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>

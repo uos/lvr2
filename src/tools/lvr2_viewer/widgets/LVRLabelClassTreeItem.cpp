@@ -125,6 +125,16 @@ LabelClassPtr LVRLabelClassTreeItem::getLabelClassPtr()
 {
     return m_labelClassPtr;
 }
+
+QStringList LVRLabelClassTreeItem::getChildNames()
+{
+    QStringList out;
+    for(int i = 0; i < childCount(); i++)
+    {
+        out << child(i)->text(0);
+    }
+    return out;
+}
 LVRLabelClassTreeItem::~LVRLabelClassTreeItem()
 {
 }

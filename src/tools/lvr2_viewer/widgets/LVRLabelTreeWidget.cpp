@@ -24,14 +24,6 @@ void LVRLabelTreeWidget::addTopLevelItem(QTreeWidgetItem *item)
 
 void LVRLabelTreeWidget::itemSelected(int selectedId)
 {
-
-    QPalette pal;
-    pal.setColor(QPalette::Background, Qt::black);
-    if(m_selectedItem != nullptr)
-    {
-    //    m_selectedItem->setPalette(pal);
-    }
-    
     lvr2::LVRLabelInstanceTreeItem *foundItem = nullptr;
     //find item
     for(int i = 0; i < this->topLevelItemCount(); i++)
@@ -84,6 +76,7 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
             instanceNames << QString::fromStdString(instancePtr->instanceName);
         }
     }
+
     QInputDialog dialog;
     dialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
     dialog.setComboBoxItems(instanceNames);
@@ -92,7 +85,6 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
     {
         return;
     }
-
 
     for(lvr2::LabelClassPtr classPtr: labelRoot->labelClasses)
     {
@@ -106,7 +98,6 @@ void LVRLabelTreeWidget::setLabelRoot(lvr2::LabelRootPtr labelRoot, lvr2::LVRPic
             QColor color(instancePtr->color[0],instancePtr->color[1],instancePtr->color[2]);
             if(first)
             {
-                //TODO: ADD COLOR To Class
                 classItem->setColor(color);
             }
             int id = 0;
@@ -137,4 +128,14 @@ int LVRLabelTreeWidget::getNextId()
 lvr2::LabelRootPtr LVRLabelTreeWidget::getLabelRoot()
 {
     return m_root;
+}
+
+QStringList LVRLabelTreeWidget::getTopLevelItemNames()
+{
+    QStringList out;
+    for (int i = 0; i < topLevelItemCount(); i++)
+    {
+        out << topLevelItem(i)->text(0);
+    }
+    return out;
 }

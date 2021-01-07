@@ -76,7 +76,8 @@ Description ScanProjectSchemaRaw::scan(const std::string &scanPositionPath, cons
     boost::filesystem::path scanPath = scansPath / sstr.str();
 
     d.groupName = scanPath.string();
-    d.dataSetName = "channels";
+    //comment in for raw/000/scans/data/000/channels/points...
+    //d.dataSetName = "channels";
     d.metaName = "meta.yaml";
 
     return d;

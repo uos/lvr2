@@ -11,10 +11,12 @@ void PointCloudIO<FeatureBase>::save(
     if(p.extension() == "")
     {
         std::string groupandname = group + "/" + name;
+        std::cout << groupandname << std::endl;
         save(groupandname, pcl);
 
         
     } else {
+        std::cout << group << " " << name << std::endl;
         m_featureBase->m_kernel->savePointBuffer(group, name, pcl);
     }
 }
