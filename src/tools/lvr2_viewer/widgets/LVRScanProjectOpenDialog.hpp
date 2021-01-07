@@ -81,6 +81,12 @@ public:
      */
     ReductionAlgorithmPtr reductionPtr() {return m_reductionPtr;}
 
+
+    /**
+     *  @brief Return whether the dialog was finished with OK
+     */
+    bool successful();
+
 public Q_SLOTS:
     /// Shows the QFileDialog
     void openPathDialog();
@@ -90,6 +96,9 @@ public Q_SLOTS:
 
     /// Called when a diffent reduction was selected
     void reductionSelectionChanged(int index);
+
+    //Called when OK is pressed
+    void acceptOpen();
 
 private:
 
@@ -126,6 +135,8 @@ private:
     ProjectType                     m_projectType;
 
     ReductionAlgorithmPtr           m_reductionPtr;
+
+    bool                            m_successful;
 };
 
 } // namespace std

@@ -3395,6 +3395,12 @@ void LVRMainWindow::openScanProject()
 
     ScanProjectSchemaPtr schema = dialog->schema();
     FileKernelPtr kernel = dialog->kernel();
+
+    if(!dialog->successful())
+    {
+        return;
+    }
+
     LVRScanProjectOpenDialog::ProjectType projectType = dialog->projectType();
     ReductionAlgorithmPtr reduction = dialog->reductionPtr();
 

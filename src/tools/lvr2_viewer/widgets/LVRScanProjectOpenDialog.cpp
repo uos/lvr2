@@ -10,7 +10,8 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     m_schema(nullptr),
     m_kernel(nullptr),
     m_projectType(NONE),
-    m_reductionPtr(nullptr)
+    m_reductionPtr(nullptr),
+    m_successful(false)
 {
     m_parent = parent;
     m_ui = new LVRScanProjectOpenDialogUI;
@@ -24,8 +25,19 @@ void LVRScanProjectOpenDialog::connectSignalsAndSlots()
 {
      // Add connections
     QObject::connect(m_ui->toolButtonPath, SIGNAL(pressed()), this, SLOT(openPathDialog()));    
+    QObject::connect(m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptOpen()));
     QObject::connect(m_ui->comboBoxSchema, SIGNAL(currentIndexChanged(int)), this, SLOT(schemaSelectionChanged(int)));
     QObject::connect(m_ui->comboBoxReduction, SIGNAL(currentIndexChanged(int)), this, SLOT(reductionSelectionChanged(int)));
+}
+
+void LVRScanProjectOpenDialog::acceptOpen()
+{
+    m_successful = true;
+}
+
+bool LVRScanProjectOpenDialog::successful()
+{
+    return m_successful;
 }
 
 void LVRScanProjectOpenDialog::schemaSelectionChanged(int index)
