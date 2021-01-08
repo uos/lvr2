@@ -474,6 +474,12 @@ void LVRPickingInteractor::OnRightButtonDown()
 
 void LVRPickingInteractor::OnMouseWheelBackward()
 {
+    if(m_pickMode == PickLabel)
+    {
+        //disableZooming for Picking
+        return;
+    }
+
     switch(m_interactorMode)
     {
     case TRACKBALL:
@@ -493,6 +499,11 @@ void LVRPickingInteractor::OnMouseWheelBackward()
 
 void LVRPickingInteractor::OnMouseWheelForward()
 {
+    if(m_pickMode == PickLabel)
+    {
+        //disableZooming for Picking
+        return;
+    }
     switch(m_interactorMode)
     {
     case TRACKBALL:
@@ -1664,15 +1675,13 @@ void LVRPickingInteractor::OnKeyDown()
         rwi->Render();
         m_pickMode = PickSecond;
     }
-    if (key == "l" || key == "l")
+    if (key == "l" || key == "L")
     {
         Q_EMIT(lassoSelected());
-        //labelModeChanged(m_pickMode == PickLabel);
     }
     if (key == "o" || key == "O")
     {
         Q_EMIT(polygonSelected());
-        //labelModeChanged(m_pickMode == PickLabel);
     }
 
     if(key == "f")
@@ -1719,7 +1728,6 @@ void LVRPickingInteractor::OnChar()
         case 'd':
         case 'D':
             strafeShooter(this->m_motionFactor);
-            cout << "D" << endl;
             break;
         case 'u':
         case 'U':
@@ -1963,6 +1971,7 @@ void LVRPickingInteractor::saveCurrentLabelSelection()
     {
         //TODO Combine with icon status
         calculateSelection(true);
+        resetSelection();
     }
 
     std::set<uint16_t> modifiedActors;

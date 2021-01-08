@@ -20,6 +20,8 @@ vtkStandardNewMacro(LVRInteractorStylePolygonPick);
 LVRInteractorStylePolygonPick::LVRInteractorStylePolygonPick()
 {
     this->CurrentMode = VTKISRBP_ORIENT;
+    m_pixel = vtkUnsignedCharArray::New();
+    
 }
 
 LVRInteractorStylePolygonPick::~LVRInteractorStylePolygonPick()
@@ -45,36 +47,73 @@ std::vector<vtkVector2i> LVRInteractorStylePolygonPick::GetPolygonPoints()
 
 void LVRInteractorStylePolygonPick::OnChar()
 {
-  switch (this->Interactor->GetKeyCode())
-  {
-    case 'l':
-    case 'L':
-      // l toggles the rubber band selection mode for mouse button 1
-      //toggleSelectionMode();
-      break;
-    case 'p':
-    case 'P':
+    this->Superclass::OnChar();
+}
+void LVRInteractorStylePolygonPick::createPixelArray()
+{
+    vtkNew<vtkUnsignedCharArray> tmpPixelArray;
+    const int* windowSize = this->Interactor->GetRenderWindow()->GetSize();
+    tmpPixelArray->DeepCopy(m_pixel);
+    unsigned char* pixels = tmpPixelArray->GetPointer(0);
+    if(moving)
     {
-        /*
-      vtkRenderWindowInteractor* rwi = this->Interactor;
-      int* eventPos = rwi->GetEventPosition();
-      this->FindPokedRenderer(eventPos[0], eventPos[1]);
-      this->StartPosition[0] = eventPos[0];
-      this->StartPosition[1] = eventPos[1];
-      this->EndPosition[0] = eventPos[0];
-      this->EndPosition[1] = eventPos[1];
-      this->Pick();
-      break;*/
+        polygonPoints.push_back(movingPoint);
     }
-    default:
-      this->Superclass::OnChar();
-  }
+    for(size_t i = 0; i < polygonPoints.size(); i++)
+    {
+        if(i < polygonPoints.size() - 1)
+        {
+            createPixelLine(polygonPoints[i], polygonPoints[i + 1], pixels, windowSize); 
+        }
+        else if(polygonPoints.size() > 2)
+        {
+            //Last Point connect First and Last Element ignore if only a line
+            createPixelLine(polygonPoints[i], polygonPoints[0], pixels, windowSize); 
+        }
+    }
+    this->Interactor->GetRenderWindow()->SetPixelData(0, 0, windowSize[0] - 1, windowSize[1] - 1, pixels, 1);
+    if(moving)
+    {
+        polygonPoints.pop_back();
+    }
+    //this->Interactor->GetRenderWindow()->Frame();
+}
+
+//Copied From VTK InteractorStyleDrawPolygon 9.0.20210107 
+void LVRInteractorStylePolygonPick::createPixelLine(const vtkVector2i& StartPos, const vtkVector2i& EndPos, unsigned char* pixels, const int* size)
+{
+    int x1 = StartPos.GetX(), x2 = EndPos.GetX();
+    int y1 = StartPos.GetY(), y2 = EndPos.GetY();
+
+    double x = x2 - x1;
+    double y = y2 - y1;
+    double length = sqrt(x * x + y * y);
+    if (length == 0)
+    {
+        return;
+    }
+    double addx = x / length;
+    double addy = y / length;
+
+    x = x1;
+    y = y1;
+    int row, col;
+    for (double i = 0; i < length; i += 1)
+    {
+        col = (int)x;
+        row = (int)y;
+        pixels[3 * (row * size[0] + col)] = 255 ^ pixels[3 * (row * size[0] + col)];
+        pixels[3 * (row * size[0] + col) + 1] = 255 ^ pixels[3 * (row * size[0] + col) + 1];
+        pixels[3 * (row * size[0] + col) + 2] = 255 ^ pixels[3 * (row * size[0] + col) + 2];
+        x += addx;
+        y += addy;
+    }
 }
 
 void LVRInteractorStylePolygonPick::OnLeftButtonDown()
 {
-  
-    if (this->CurrentMode != VTKISRBP_SELECT)
+
+if (this->CurrentMode != VTKISRBP_SELECT)
     {
         // if not in rubber band mode, let the parent class handle it
         this->Superclass::OnLeftButtonDown();
@@ -87,13 +126,18 @@ void LVRInteractorStylePolygonPick::OnLeftButtonDown()
         this->FindPokedRenderer(10,10);
     } else 
     {
+        if(!moving)
+        {
+            moving = true;
+            const int* windowSize = this->Interactor->GetRenderWindow()->GetSize();
+            this->Interactor->GetRenderWindow()->GetPixelData(0, 0, windowSize[0] - 1, windowSize[1] - 1, 1, m_pixel);
+        }
         //Polygon Tool
-      //  vtkVector2i newPoint(this->Interactor->GetEventPosition()[0],
-      //                          this->Interactor->GetEventPosition()[1]);
-        std::cout << this->Interactor->GetEventPosition()[0] << std::endl;
-        std::cout << this->Interactor->GetEventPosition()[1] << std::endl;
-        std::cout << this->Interactor->GetEventPosition()[2] << std::endl;
-
+        if (polygonPoints.empty())
+        {
+            polygonPoints.push_back(vtkVector2i(this->Interactor->GetEventPosition()[0],
+                                this->Interactor->GetEventPosition()[1]));
+        }
     }
 
 }
@@ -113,6 +157,12 @@ void LVRInteractorStylePolygonPick::OnMouseMove()
     } else 
     {
         //Polygon Tool
+        if(moving)
+        {
+            movingPoint = vtkVector2i(this->Interactor->GetEventPosition()[0],
+                                this->Interactor->GetEventPosition()[1]);
+        }
+        createPixelArray();
     }
 }
 
@@ -131,6 +181,7 @@ void LVRInteractorStylePolygonPick::OnLeftButtonUp()
     } else
     {
         //Polygon Tool
+        //moving = false;
         polygonPoints.push_back(vtkVector2i(this->Interactor->GetEventPosition()[0],
                                 this->Interactor->GetEventPosition()[1]));
     }
@@ -149,104 +200,76 @@ inline bool compareX(vtkVector2i i, vtkVector2i j) {return (i[0] < j[0]);};
 inline bool compareY(vtkVector2i i, vtkVector2i j) {return (i[1] < j[1]);};
 void LVRInteractorStylePolygonPick::Pick()
 {
-  // calculate binding box
-  std::vector<vtkVector2i> polygonPoints = this->GetPolygonPoints();
-  double rbcenter[3];
-  int* size = this->Interactor->GetRenderWindow()->GetSize();
-  int min[2], max[2];
-  
-  min[0] = std::min_element(polygonPoints.begin(), polygonPoints.end(), compareX)->GetX();
-  min[1] = std::min_element(polygonPoints.begin(), polygonPoints.end(), compareY)->GetY();
+    // calculate binding box
+    std::vector<vtkVector2i> polygonPoints = this->GetPolygonPoints();
+    double rbcenter[3];
+    int* size = this->Interactor->GetRenderWindow()->GetSize();
+    int min[2], max[2];
 
-  max[0] = std::max_element(polygonPoints.begin(), polygonPoints.end(), compareX)->GetX();
-  max[1] = std::max_element(polygonPoints.begin(), polygonPoints.end(), compareY)->GetY();
+    min[0] = std::min_element(polygonPoints.begin(), polygonPoints.end(), compareX)->GetX();
+    min[1] = std::min_element(polygonPoints.begin(), polygonPoints.end(), compareY)->GetY();
 
-  rbcenter[0] = (min[0] + max[0]) / 2.0;
-  rbcenter[1] = (min[1] + max[1]) / 2.0;
-  rbcenter[2] = 0;
+    max[0] = std::max_element(polygonPoints.begin(), polygonPoints.end(), compareX)->GetX();
+    max[1] = std::max_element(polygonPoints.begin(), polygonPoints.end(), compareY)->GetY();
 
-  if (this->State == VTKIS_NONE)
-  {
-    // tell the RenderWindowInteractor's picker to make it happen
-    vtkRenderWindowInteractor* rwi = this->Interactor;
+    rbcenter[0] = (min[0] + max[0]) / 2.0;
+    rbcenter[1] = (min[1] + max[1]) / 2.0;
+    rbcenter[2] = 0;
 
-    vtkAssemblyPath* path = nullptr;
-    rwi->StartPickCallback();
-    vtkAbstractPropPicker* picker = vtkAbstractPropPicker::SafeDownCast(rwi->GetPicker());
-    if (picker != nullptr)
+    if (this->State == VTKIS_NONE)
     {
-      vtkAreaPicker* areaPicker = vtkAreaPicker::SafeDownCast(picker);
-      if (areaPicker != nullptr)
-      {
-        areaPicker->AreaPick(min[0], min[1], max[0], max[1], this->CurrentRenderer);
-      }
-      else
-      {
-        picker->Pick(rbcenter[0], rbcenter[1], 0.0, this->CurrentRenderer);
-      }
-      path = picker->GetPath();
-    }
-    if (path == nullptr)
-    {
-      this->HighlightProp(nullptr);
-      this->PropPicked = 0;
-    }
-    else
-    {
-      // highlight the one prop that the picker saved in the path
-      // this->HighlightProp(path->GetFirstNode()->GetViewProp());
-      this->PropPicked = 1;
-    }
-    rwi->EndPickCallback();
-  }
+        // tell the RenderWindowInteractor's picker to make it happen
+        vtkRenderWindowInteractor* rwi = this->Interactor;
 
-  this->Interactor->Render();
+        vtkAssemblyPath* path = nullptr;
+        rwi->StartPickCallback();
+        vtkAbstractPropPicker* picker = vtkAbstractPropPicker::SafeDownCast(rwi->GetPicker());
+        if (picker != nullptr)
+        {
+            vtkAreaPicker* areaPicker = vtkAreaPicker::SafeDownCast(picker);
+            if (areaPicker != nullptr)
+            {
+                areaPicker->AreaPick(min[0], min[1], max[0], max[1], this->CurrentRenderer);
+            }
+            else
+            {
+                picker->Pick(rbcenter[0], rbcenter[1], 0.0, this->CurrentRenderer);
+            }
+            path = picker->GetPath();
+        }
+        if (path == nullptr)
+        {
+            this->HighlightProp(nullptr);
+            this->PropPicked = 0;
+        }
+        else
+        {
+            // highlight the one prop that the picker saved in the path
+            this->PropPicked = 1;
+        }
+        rwi->EndPickCallback();
+    }
+    this->Interactor->Render();
 }
-/*
-//--------------------------------------------------------------------------
-void LVRInteractorStylePolygonPick::DrawPolygon()
-{
-  vtkNew<vtkUnsignedCharArray> tmpPixelArray;
-  tmpPixelArray->DeepCopy(this->PixelArray);
-  unsigned char* pixels = tmpPixelArray->GetPointer(0);
-  int* size = this->Interactor->GetRenderWindow()->GetSize();
 
-  // draw each line segment
-  for (vtkIdType i = 0; i < this->Internal->GetNumberOfPoints() - 1; i++)
-  {
-    const vtkVector2i& a = this->Internal->GetPoint(i);
-    const vtkVector2i& b = this->Internal->GetPoint(i + 1);
-
-    this->Internal->DrawPixels(a, b, pixels, size);
-  }
-
-  // draw a line from the end to the start
-  if (this->Internal->GetNumberOfPoints() >= 3)
-  {
-    const vtkVector2i& start = this->Internal->GetPoint(0);
-    const vtkVector2i& end = this->Internal->GetPoint(this->Internal->GetNumberOfPoints() - 1);
-
-    this->Internal->DrawPixels(start, end, pixels, size);
-  }
-
-  this->Interactor->GetRenderWindow()->SetPixelData(0, 0, size[0] - 1, size[1] - 1, pixels, 0);
-  this->Interactor->GetRenderWindow()->Frame();
-}
-*/
-//--------------------------------------------------------------------------
 void LVRInteractorStylePolygonPick::PrintSelf(ostream& os, vtkIndent indent)
 {
-  this->Superclass::PrintSelf(os, indent);
+    this->Superclass::PrintSelf(os, indent);
 }
 
 void LVRInteractorStylePolygonPick::SetPolygonTool()
 {
-  lassoToolSelected = false; 
+    lassoToolSelected = false; 
+    const int* size = this->Interactor->GetRenderWindow()->GetSize();
+    m_pixel->Initialize();
+    m_pixel->SetNumberOfComponents(3);
+    m_pixel->SetNumberOfTuples(size[0] * size[1]);
+    this->Interactor->GetRenderWindow()->GetPixelData(0, 0, size[0] - 1, size[1] - 1, 1, m_pixel);
 }
 
 void LVRInteractorStylePolygonPick::SetLassoTool()
 {
-  lassoToolSelected = true; 
+    lassoToolSelected = true; 
 }
 void LVRInteractorStylePolygonPick::OnKeyDown()
 {
@@ -297,5 +320,12 @@ int LVRInteractorStylePolygonPick::selectionPolygonSize()
 }
 void LVRInteractorStylePolygonPick::resetSelection()
 {
+    moving = false;
     polygonPoints.clear();
+    lassoToolSelected = false; 
+    const int* size = this->Interactor->GetRenderWindow()->GetSize();
+    m_pixel->Initialize();
+    m_pixel->SetNumberOfComponents(3);
+    m_pixel->SetNumberOfTuples(size[0] * size[1]);
+    this->Interactor->GetRenderWindow()->GetPixelData(0, 0, size[0] - 1, size[1] - 1, 1, m_pixel);
 }

@@ -1098,50 +1098,20 @@ void LVRMainWindow::showLabelTreeContextMenu(const QPoint& p)
                         }
                     }
                 }
-                /*
-                Channel<uint16_t>::Optional opt = labelTreeWidget->getLabelRoot()->points->getChannel<uint16_t>("waveform");
-                if (opt)
+ 
+                floatArr plotData(new float[combinedWaveform.size()]);
+                LVRPlotter* plotter = new LVRPlotter;
+                for(int i = 0; i < combinedWaveform.size(); i++)
                 {
-                    size_t n = opt->numElements();
-                    size_t width = opt->width();
-                    boost::shared_array<uint16_t> waveforms = opt->dataPtr();
-
-                    //get Selected Ids
-                    std::vector<int> labelID;
-                    std::vector<uint16_t> labeledPoints = m_pickingInteractor->getLabeles();
-                    int index = item->data(LABEL_ID_COLUMN, 0).toInt();
-
-                    for (int i = 0; i < labeledPoints.size(); i++)
-                    {
-                        if (index == labeledPoints[i])
-                        {
-                            labelID.push_back(i);
-                        }
-                    }
-
-                    std::vector<int> combinedWaveform;
-                    combinedWaveform.resize(width);
-                    for (auto id : labelID)
-                    {
-                        for (int i = 0; i < width; i++)
-                        {
-                            combinedWaveform[i] += waveforms[(id * width) + i];
-                        }
-                    }
-                    */
-                    floatArr plotData(new float[combinedWaveform.size()]);
-                    LVRPlotter* plotter =new LVRPlotter;
-                    for(int i = 0; i < combinedWaveform.size(); i++)
-                    {
-                        plotData[i] = (combinedWaveform[i] / countWaveform[i]);
-                    }
-                    plotter->setPoints(plotData, combinedWaveform.size());
-                    plotter->setXRange(0, combinedWaveform.size());
-                    QDialog window(this);
-                    QHBoxLayout *HLayout = new QHBoxLayout(&window);
-                    HLayout->addWidget(plotter);
-                    window.setLayout(HLayout);
-                    window.exec();
+                    plotData[i] = (combinedWaveform[i] / countWaveform[i]);
+                }
+                plotter->setPoints(plotData, combinedWaveform.size());
+                plotter->setXRange(0, combinedWaveform.size());
+                QDialog window(this);
+                QHBoxLayout *HLayout = new QHBoxLayout(&window);
+                HLayout->addWidget(plotter);
+                window.setLayout(HLayout);
+                window.exec();
 
                 /*} else
                 {
@@ -1515,8 +1485,8 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
             QFileInfo info((*it));
             QString base = info.fileName();
 
-	    if(info.suffix() == "")
-	    {
+            if(info.suffix() == "")
+            {
                 //read intermediaformat
                 DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(info.absoluteFilePath().toStdString())); 
                 std::string tmp = info.absolutePath().toStdString();
@@ -1525,15 +1495,16 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 ScanProjectPtr scanProject = dirIO.loadScanProject();
                 ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
                 bridge->addActors(m_renderer);
-                LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
-                QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
-                root->addChild(item);
+                LVRScanProjectItem* item = new LVRScanProjectItem(bridge, base);
+                //QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+                //root->addChild(item);
+                treeWidget->addTopLevelItem(item);
                 item->setExpanded(false);
-            //lastItem = item;
             }else if (info.suffix() == "h5")
             {
                 openHDF5(info.absoluteFilePath().toStdString());
-            } else {
+            } else 
+            {
                 lastItem = loadModelItem(*it);
             }
 
@@ -1555,25 +1526,22 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
         updateView();
 
 
-	vtkSmartPointer<vtkPoints> points = 
-		vtkSmartPointer<vtkPoints>::New();
-	QTreeWidgetItemIterator itu(treeWidget);
-	LVRPointCloudItem* citem;
+        vtkSmartPointer<vtkPoints> points = 
+            vtkSmartPointer<vtkPoints>::New();
+        QTreeWidgetItemIterator itu(treeWidget);
+        LVRPointCloudItem* citem;
 	
-	while (*itu)
-	{
-        	QTreeWidgetItem* item = *itu;
+        while (*itu)
+        {
+            QTreeWidgetItem* item = *itu;
+            if ( item->type() == LVRPointCloudItemType)
+            {
+                citem = static_cast<LVRPointCloudItem*>(*itu);
+                points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
 
-		if ( item->type() == LVRPointCloudItemType)
-		{
-			citem = static_cast<LVRPointCloudItem*>(*itu);
-			points->SetData(citem->getPointBufferBridge()->getPointCloudActor()->GetMapper()->GetInput()->GetPointData()->GetScalars());
-
-			//m_pickingInteractor->setPoints(citem->getPointBufferBridge()->getPolyIDData());
-            //labelTreeWidget->getLabelRoot()->points = citem->getPointBuffer();
-		}
-		itu++;
-	}
+            }
+            itu++;
+        }
 
     }
 }
@@ -1732,7 +1700,7 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
     QString base = info.fileName();
 
     root->setText(0, base);
-    root->setData(0,Qt::UserRole, filename);
+    root->setData(0, Qt::UserRole, filename);
     root->addChild(item);
     item->setExpanded(false);    
     refreshView();
@@ -3131,6 +3099,7 @@ void LVRMainWindow::updateDisplayLists(actorMap lowRes, actorMap highRes)
     }
     m_renderer->GetRenderWindow()->Render();
 }
+
 void LVRMainWindow::updatePointCount(uint16_t id, int selectedPointCount)
 {
 
@@ -3152,6 +3121,7 @@ void LVRMainWindow::updatePointCount(uint16_t id, int selectedPointCount)
         }
     }
 }
+
 void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
 {
     if(column == LABEL_NAME_COLUMN)
@@ -3170,7 +3140,7 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
                 return;
             }
 
-	    //update comboxBoxItem
+            //update comboxBoxItem
             int comboBoxPos = selectedInstanceComboBox->findData(item->data(LABEL_ID_COLUMN, 0).toInt());
             if (comboBoxPos >= 0)
             {
@@ -3210,7 +3180,7 @@ void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
                 }
 	
             }
-            }
+        }
     }
     else
     {
@@ -3237,30 +3207,27 @@ void LVRMainWindow::visibilityChanged(QTreeWidgetItem* changedItem, int column)
     if (column == LABEL_VISIBLE_COLUMN || column == LABEL_EDITABLE_COLUMN)
     {
         //check if Instance or whole label changed
-	if (changedItem->parent())
-	{
-	    if(column == LABEL_VISIBLE_COLUMN)
-	    {
-	    	//parent exists item is an instance
-	    	Q_EMIT(hidePoints(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_VISIBLE_COLUMN)));
-	    } 
-	    else if (column == LABEL_EDITABLE_COLUMN)
-	    {
-		//m_pickingInteractor->setEditability(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_EDITABLE_COLUMN));
-	    }
-	} else
-	{
-		//Check if unlabeled item
-		for (int i = 0; i < changedItem->childCount(); i++)
-	    {
-	        QTreeWidgetItem* childItem = changedItem->child(i);
+        if (changedItem->parent())
+        {
+            if(column == LABEL_VISIBLE_COLUMN)
+            {
+                //parent exists item is an instance
+                Q_EMIT(hidePoints(changedItem->data(LABEL_ID_COLUMN,0).toInt(), changedItem->checkState(LABEL_VISIBLE_COLUMN)));
+            } 
+        } else
+        {
+            //Check if unlabeled item
+            for (int i = 0; i < changedItem->childCount(); i++)
+            {
+                QTreeWidgetItem* childItem = changedItem->child(i);
 
-	        //sets child elements checkbox on toplevel box value if valuechanged a singal will be emitted and handeled
-	        childItem->setCheckState(column, changedItem->checkState(column));
-	    }
+                //sets child elements checkbox on toplevel box value if valuechanged a singal will be emitted and handeled
+                childItem->setCheckState(column, changedItem->checkState(column));
+            }
         }
     }
 }
+
 void LVRMainWindow::addLabelInstance()
 {
     if (labelTreeWidget->topLevelItemCount() == 0)
@@ -3329,6 +3296,7 @@ void LVRMainWindow::addLabelInstance(LVRLabelClassTreeItem * selectedTopLevelIte
     int comboBoxPos = selectedInstanceComboBox->findData(instanceItem->getId());
     selectedInstanceComboBox->setCurrentIndex(comboBoxPos);
 }
+
 void LVRMainWindow::openIntermediaProject()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Choose IntermediaProject"),"",QFileDialog::ShowDirsOnly| QFileDialog::DontResolveSymlinks);
@@ -3356,13 +3324,6 @@ void LVRMainWindow::openIntermediaProject()
 
 void LVRMainWindow::openScanProject()
 {
-    // QString fileName = QFileDialog::getOpenFileName(this,
-    //             tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
-    // if(!QFile::exists(fileName))
-    // {
-    //     return;
-    // }
-    // openHDF5(fileName.toStdString());
 
     LVRScanProjectOpenDialog* dialog = new LVRScanProjectOpenDialog(this);
     
@@ -3376,17 +3337,20 @@ void LVRMainWindow::openScanProject()
 
 }
  
-void LVRMainWindow::openHDF5(std::string fileName)
+void LVRMainWindow::openHDF5(std::string filePath)
 {
+    
+    QFileInfo info(QString::fromStdString(filePath));
     LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
-    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName));
+    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(filePath));
     LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
     LabeledScanProjectEditMarkPtr labelScanProject = h5IO.loadScanProject();
    
-    this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, fileName);
+    this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, info.fileName().toStdString());
 
     if(labelScanProject->labelRoot)
     {
+        this->actionShow_LabelDock->setChecked(true);
         this->dockWidgetLabel->show();
         m_pickingInteractor->setPoints(this->treeWidget->getBridgePtr()->getLabelBridgePtr()->getPointBridge()->getPolyIDData());
         this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot, m_pickingInteractor, selectedInstanceComboBox);
@@ -3396,9 +3360,6 @@ void LVRMainWindow::openHDF5(std::string fileName)
     }
     this->treeWidget->getBridgePtr()->addActors(m_renderer);
     updateView();
-
-
-   
 }
 
 void LVRMainWindow::comboBoxIndexChanged(int index)
@@ -3662,9 +3623,6 @@ void LVRMainWindow::exportScanProject()
         if (topItem->type() == LVRLabeledScanProjectEditMarkItemType)
         {
             LVRLabeledScanProjectEditMarkItem *item = static_cast<LVRLabeledScanProjectEditMarkItem *>(topItem);
-            /*
-            LVRLabeledScanProjectEditMarkBridge transfer(item->getLabeledScanProjectEditMarkBridge()->getScanProjectBridgePtr()->getScanPositions()[0]->getModels()[0]);
-            labeledScanProject = transfer.getLabeledScanProjectEditMark();*/
             labeledScanProject = item->getLabeledScanProjectEditMarkBridge()->getLabeledScanProjectEditMark();
         }
         else if(topItem->type() == LVRModelItemType)
