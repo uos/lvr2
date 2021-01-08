@@ -108,8 +108,6 @@ public:
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<uint16_t>& data) const;
 
-    
-
     virtual bool exists(const std::string& group) const;
     virtual bool exists(const std::string& group, const std::string& container) const;
 

@@ -83,6 +83,7 @@ set(LVR2_SOURCES
     registration/TreeUtils.cpp
     registration/OctreeReduction.cpp
     registration/RegistrationPipeline.cpp
+    types/CustomChannelTypes.cpp
 )
 
 #####################################################################################

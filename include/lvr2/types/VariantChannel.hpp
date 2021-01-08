@@ -13,7 +13,6 @@
 
 namespace lvr2 {
 
-
 template<typename... T>
 class VariantChannel : public boost::variant<Channel<T>...>
 {

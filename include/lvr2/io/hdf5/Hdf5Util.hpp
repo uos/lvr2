@@ -25,6 +25,35 @@ namespace lvr2
 namespace hdf5util
 {
 
+using H5AllowedTypes = std::tuple<
+        char,
+        signed char,
+        unsigned char,
+        short,
+        unsigned short,
+        int, 
+        unsigned,
+        long,
+        unsigned long,
+        long long,
+        unsigned long long,
+        float,
+        double,
+        bool,
+        std::string
+    >;
+
+template <typename T, typename... Us>
+struct has_type;
+
+template <typename T, typename... Us>
+struct has_type<T, std::tuple<Us...>> : std::disjunction<std::is_same<T, Us>...> {};
+
+template<typename T>
+using H5AllowsType = has_type<T, H5AllowedTypes>;
+
+
+
 template<typename T>
 void addArray(
     HighFive::Group& g, 

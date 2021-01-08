@@ -293,41 +293,47 @@ void HDF5Kernel::save(HighFive::Group &g,
           std::string datasetName,
           const Channel<T> &channel) const
 {
-    if(m_hdf5File && m_hdf5File->isValid())
+
+    if constexpr(hdf5util::H5AllowsType<T>::value)
     {
-        std::vector<size_t > dims = {channel.numElements(), channel.width()};
+        if(m_hdf5File && m_hdf5File->isValid())
+        {
+            std::vector<size_t > dims = {channel.numElements(), channel.width()};
 
-        HighFive::DataSpace dataSpace(dims);
-        HighFive::DataSetCreateProps properties;
+            HighFive::DataSpace dataSpace(dims);
+            HighFive::DataSetCreateProps properties;
 
-        // if(m_file_access->m_chunkSize)
-        // {
-        //     for(size_t i = 0; i < chunkSizes.size(); i++)
-        //     {
-        //         if(chunkSizes[i] > dims[i])
-        //         {
-        //             chunkSizes[i] = dims[i];
-        //         }
-        //     }
-        //     properties.add(HighFive::Chunking(chunkSizes));
-        // }
-        // if(m_file_access->m_compress)
-        // {
-        //     //properties.add(HighFive::Shuffle());
-        //     properties.add(HighFive::Deflate(9));
-        // }
-   
-        std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
-            g, datasetName, dataSpace, properties
-        );
+            // if(m_file_access->m_chunkSize)
+            // {
+            //     for(size_t i = 0; i < chunkSizes.size(); i++)
+            //     {
+            //         if(chunkSizes[i] > dims[i])
+            //         {
+            //             chunkSizes[i] = dims[i];
+            //         }
+            //     }
+            //     properties.add(HighFive::Chunking(chunkSizes));
+            // }
+            // if(m_file_access->m_compress)
+            // {
+            //     //properties.add(HighFive::Shuffle());
+            //     properties.add(HighFive::Deflate(9));
+            // }
+    
+            std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
+                g, datasetName, dataSpace, properties
+            );
 
-        const T* ptr = channel.dataPtr().get();
-        dataset->write(ptr);
-        m_hdf5File->flush();
-    } 
-    else 
-    {
-        throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
+            const T* ptr = channel.dataPtr().get();
+            dataset->write(ptr);
+            m_hdf5File->flush();
+        } 
+        else 
+        {
+            throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
+        }
+    } else {
+        std::cout << "[Hdf5IO - save]: Type not supported by Hdf5" << std::endl;
     }
 }
 

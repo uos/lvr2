@@ -172,57 +172,63 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
 {
     std::unique_ptr<HighFive::DataSet> dataset;
 
-    if (g.exist(datasetName))
+    if constexpr (H5AllowsType<T>::value == true)
     {
-        try
-        {
-            dataset = std::make_unique<HighFive::DataSet>(g.getDataSet(datasetName));
-        }
-        catch (HighFive::DataSetException& ex)
-        {
-            std::cout << "[Hdf5Util - createDataset] " << datasetName << " is not a dataset"
-                      << std::endl;
-        }
 
-        // check existing dimensions
-        const std::vector<size_t> dims_old = dataset->getSpace().getDimensions();
-        const std::vector<size_t> dims_new = dataSpace.getDimensions();
-
-        if (dataset->getDataType() != HighFive::AtomicType<T>())
+        if (g.exist(datasetName))
         {
-            // different datatype -> delete
-            int result = H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT);
-            dataset = std::make_unique<HighFive::DataSet>(
-                g.createDataSet<T>(datasetName, dataSpace, properties));
-        }
-        else if (dims_old[0] != dims_new[0] || dims_old[1] != dims_new[1])
-        {
-            // same datatype but different size -> resize
-
-            std::cout << "[Hdf5Util - createDataset] WARNING: size has changed. resizing dataset "
-                      << std::endl;
-
-            //
             try
             {
-                dataset->resize(dims_new);
+                dataset = std::make_unique<HighFive::DataSet>(g.getDataSet(datasetName));
             }
             catch (HighFive::DataSetException& ex)
             {
-                std::cout << "[Hdf5Util - createDataset] WARNING: could not resize. Generating new "
-                             "space..."
-                          << std::endl;
-                int result = H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT);
+                std::cout << "[Hdf5Util - createDataset] " << datasetName << " is not a dataset"
+                        << std::endl;
+            }
 
+            // check existing dimensions
+            const std::vector<size_t> dims_old = dataset->getSpace().getDimensions();
+            const std::vector<size_t> dims_new = dataSpace.getDimensions();
+
+            if (dataset->getDataType() != HighFive::AtomicType<T>())
+            {
+                // different datatype -> delete
+                int result = H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT);
                 dataset = std::make_unique<HighFive::DataSet>(
                     g.createDataSet<T>(datasetName, dataSpace, properties));
             }
+            else if (dims_old[0] != dims_new[0] || dims_old[1] != dims_new[1])
+            {
+                // same datatype but different size -> resize
+
+                std::cout << "[Hdf5Util - createDataset] WARNING: size has changed. resizing dataset "
+                        << std::endl;
+
+                //
+                try
+                {
+                    dataset->resize(dims_new);
+                }
+                catch (HighFive::DataSetException& ex)
+                {
+                    std::cout << "[Hdf5Util - createDataset] WARNING: could not resize. Generating new "
+                                "space..."
+                            << std::endl;
+                    int result = H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT);
+
+                    dataset = std::make_unique<HighFive::DataSet>(
+                        g.createDataSet<T>(datasetName, dataSpace, properties));
+                }
+            }
         }
-    }
-    else
-    {
-        dataset = std::make_unique<HighFive::DataSet>(
-            g.createDataSet<T>(datasetName, dataSpace, properties));
+        else
+        {
+            dataset = std::make_unique<HighFive::DataSet>(
+                g.createDataSet<T>(datasetName, dataSpace, properties));
+        }
+    } else {
+        std::cout << "[Hdf5Util - createDataset] WARNING: could not create dataset ' << " << datasetName << "'. Data Type not allowed by H5" << std::endl;
     }
 
     return std::move(dataset);
