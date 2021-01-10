@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LVRScanProjectOpenDialogUI</class>
+ <class>LVRReductionAlgorithmDialogUI</class>
  <widget class="QDialog" name="LVRReductionAlgorithmDialogUI">
   <property name="geometry">
    <rect>
@@ -63,7 +63,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>LVRScanProjectOpenDialogUI</receiver>
+   <receiver>LVRReductionAlgorithmDialogUI</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -79,7 +79,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>LVRScanProjectOpenDialogUI</receiver>
+   <receiver>LVRReductionAlgorithmDialogUI</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
