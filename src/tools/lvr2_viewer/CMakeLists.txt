@@ -71,6 +71,7 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRScanCamItem.cpp
     widgets/LVRScanImageItem.cpp
     widgets/LVRScanProjectOpenDialog.cpp
+    widgets/LVRReductionAlgorithmDialog.cpp
     util/qttf.cpp
     widgets/LVRCameraModelItem.cpp
     widgets/LVRImageModelItem.cpp
@@ -110,6 +111,7 @@ set(LVR2_VIEWER_MOCS
     widgets/LVRPlotter.hpp
     widgets/LVRHistogram.hpp
     widgets/LVRScanProjectOpenDialog.hpp
+    widgets/LVRReductionAlgorithmDialog.hpp
 )
 
 #####################################################################################
@@ -141,6 +143,7 @@ list(APPEND LVR2_VIEWER_UIS
    ui/LVRTooltipDialogUI.ui
    ui/LVRHistogram.ui
    ui/LVRScanProjectOpenDialogUI.ui
+   ui/LVRReductionAlgorithmDialogUI.ui
 )
 
 #####################################################################################

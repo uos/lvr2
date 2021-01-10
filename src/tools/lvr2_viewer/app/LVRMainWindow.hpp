@@ -109,6 +109,7 @@
 #include "../widgets/LVRPointInfo.hpp"
 #include "../widgets/LVRLabelClassTreeItem.hpp"
 #include "../widgets/LVRScanProjectOpenDialog.hpp"
+#include "../widgets/LVRReductionAlgorithmDialog.hpp"
 #include "../widgets/LVRScanImageItem.hpp"
 #include "../widgets/LVRExtrinsicsItem.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
@@ -210,6 +211,7 @@ public Q_SLOTS:
     void changeShading(int shader);
 
     void showImage();
+    void changeReductionAlgorithm();
     void setViewToCamera();
 
     /// Updates all selected LVRPointCloudItems to the desired Spectral. **can take seconds**
@@ -321,6 +323,7 @@ private:
     ChunkedMeshCuller* m_chunkCuller;
     QMenu*                                      m_treeParentItemContextMenu;
     QMenu*                                      m_treeChildItemContextMenu;
+    QMenu*                                      m_scanPositionContextMenu;
 
     QMenu*                                      m_labelTreeParentItemContextMenu;
     QMenu*                                      m_labelTreeChildItemContextMenu;
@@ -404,6 +407,7 @@ private:
     QAction*                            m_actionUnloadPointCloudData;
 
     QAction*                            m_actionShowImage;
+    QAction*                            m_actionReductionAlgorithm;
     QAction*                            m_actionSetViewToCamera;
     
     //Label

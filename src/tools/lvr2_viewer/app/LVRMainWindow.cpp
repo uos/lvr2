@@ -148,8 +148,13 @@ LVRMainWindow::LVRMainWindow()
     m_actionShowImage = new QAction("Show Image", this);
     m_actionSetViewToCamera = new QAction("Set view to camera", this);
 
+    m_actionReductionAlgorithm = new QAction("Change ReductionAlgorithm", this);
+
     this->addAction(m_actionCopyModelItem);
     this->addAction(m_actionPasteModelItem);
+
+    m_scanPositionContextMenu = new QMenu();
+    m_scanPositionContextMenu->addAction(m_actionReductionAlgorithm);
 
     m_labelTreeParentItemContextMenu = new QMenu();
     m_labelTreeParentItemContextMenu->addAction(m_actionAddLabelClass);
@@ -348,6 +353,7 @@ LVRMainWindow::~LVRMainWindow()
     delete m_actionUnloadPointCloudData;
     delete m_actionShowImage;
     delete m_actionSetViewToCamera;
+    delete m_actionReductionAlgorithm;
     
 }
 
@@ -393,6 +399,8 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(m_actionShowImage, SIGNAL(triggered()), this, SLOT(showImage()));
     QObject::connect(m_actionSetViewToCamera, SIGNAL(triggered()), this, SLOT(setViewToCamera()));
+
+    QObject::connect(m_actionReductionAlgorithm, SIGNAL(triggered()), this, SLOT(changeReductionAlgorithm()));
 
 
     QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
@@ -1416,6 +1424,11 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
 
             delete con_menu;
         }
+        if(item->type() == LVRScanPositionItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            m_scanPositionContextMenu->exec(globalPos);
+        }
     }
 }
 
@@ -1741,6 +1754,44 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
     refreshView();
     // TODO: Ball wegbekommen
     // Code verstehen (LVRScanProjectBridge und LVRScanProjectItem)
+}
+
+
+void LVRMainWindow::changeReductionAlgorithm()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    LVRReductionAlgorithmDialog* dialog = new LVRReductionAlgorithmDialog(this);
+    
+    // Display
+    dialog->setModal(true);
+    dialog->raise();
+    dialog->activateWindow();
+    dialog->exec();
+
+    if(!dialog->successful())
+    {
+        return;
+    }
+
+    ReductionAlgorithmPtr reduction = dialog->reductionPtr();
+
+     if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+
+        if(item->type() == LVRScanPositionItemType)
+        {
+            std::cout << "ScanPosition " << item->data(0, Qt::UserRole).toInt() << std::endl;
+
+            LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(item);
+            
+        }
+    }
+    
+
+
+    delete dialog;
 }
 
 

@@ -79,6 +79,11 @@ bool LVRScanPositionItem::isEnabled()
     return this->checkState(0);
 }
 
+void LVRScanPositionItem::setBridge(ScanPositionBridgePtr bridge)
+{
+    m_scanPositionBridge = bridge;
+}
+
 void LVRScanPositionItem::setVisibility(bool visible)
 {
     for (auto model : m_scanPositionBridge->getModels())
