@@ -56,6 +56,11 @@ void LVRScanPositionBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
     }
 }
 
+void LVRScanPositionBridge::setModels(std::vector<ModelBridgePtr> newModels)
+{
+    models = newModels;
+}
+
 void LVRScanPositionBridge::setVisibility(bool visible)
 {
     for(auto model : models)

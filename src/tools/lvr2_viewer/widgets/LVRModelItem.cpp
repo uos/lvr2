@@ -127,6 +127,11 @@ bool LVRModelItem::isEnabled()
     return this->checkState(0);
 }
 
+void LVRModelItem::setBridge(ModelBridgePtr bridge)
+{
+    m_modelBridge = bridge;
+}
+
 void LVRModelItem::setVisibility(bool visible)
 {
 	m_modelBridge->setVisibility(visible);

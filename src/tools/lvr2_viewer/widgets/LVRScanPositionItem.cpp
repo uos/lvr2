@@ -82,6 +82,41 @@ bool LVRScanPositionItem::isEnabled()
 void LVRScanPositionItem::setBridge(ScanPositionBridgePtr bridge)
 {
     m_scanPositionBridge = bridge;
+    for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
+    {
+        delete child(0);
+    }
+    for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
+    {
+        delete child(0);
+    }
+    delete child(0);
+    for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
+    {
+        std::stringstream pos;
+        pos << "" << std::setfill('0') << std::setw(8) << i;
+        std::string posName = pos.str();
+        std::vector<ModelBridgePtr> models;
+        models = bridge->getModels();
+        LVRModelItem* modelItem = new LVRModelItem(models[i], QString::fromStdString(posName));
+        if(bridge->getScanPosition()->scans[i]->waveform)
+        {
+            modelItem->getModelBridge()->setWaveform(bridge->getScanPosition()->scans[i]->waveform);
+        }
+        addChild(modelItem);
+    }
+
+    for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
+    {
+        ScanCamBridgePtr camBridge(new LVRScanCamBridge(bridge->getScanPosition()->cams[0]));
+        QString camName;
+        QTextStream(&camName) << "cam_" << i;
+        LVRScanCamItem* camItem = new LVRScanCamItem(camBridge, camName);
+        addChild(camItem);
+    }
+
+    LVRPoseItem* posItem = new LVRPoseItem(bridge->getPose());
+    addChild(posItem);
 }
 
 void LVRScanPositionItem::setVisibility(bool visible)

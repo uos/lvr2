@@ -88,6 +88,7 @@ public:
     Pose getPose();
 
     std::vector<ModelBridgePtr> getModels();
+    void setModels(std::vector<ModelBridgePtr> models);
     void setVisibility(bool visible);
 
 private:

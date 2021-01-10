@@ -166,9 +166,11 @@ LVRMainWindow::LVRMainWindow()
     m_labelTreeChildItemContextMenu->addAction(m_actionShowWaveform);
 
     m_treeParentItemContextMenu = new QMenu;
+    m_treeParentItemContextMenu->addAction(m_actionReductionAlgorithm);
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
     m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
     m_treeParentItemContextMenu->addAction(m_actionCopyModelItem);
+    
 
     m_treeChildItemContextMenu = new QMenu;
     m_treeChildItemContextMenu->addAction(m_actionExportModelTransformed);
@@ -1429,6 +1431,11 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
             QPoint globalPos = treeWidget->mapToGlobal(p);
             m_scanPositionContextMenu->exec(globalPos);
         }
+        if(item->type() == LVRScanProjectItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            m_scanPositionContextMenu->exec(globalPos);
+        }
     }
 }
 
@@ -1780,17 +1787,119 @@ void LVRMainWindow::changeReductionAlgorithm()
     {
         QTreeWidgetItem* item = items.first();
 
+        if(item->type() == LVRModelItemType)
+        {
+            std::cout << "Scan " << item->data(0, Qt::UserRole).toInt() << std::endl;
+
+            LVRModelItem* modelItem = static_cast<LVRModelItem*>(item);
+            
+            QString filename = modelItem->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
+            std::string tmp = filename.toStdString();
+            QFileInfo info(filename);
+
+            ScanPtr scan;
+
+            int scanpos_nr = modelItem->parent()->data(0, Qt::UserRole).toInt();
+            int scan_nr = modelItem->data(0, Qt::UserRole).toInt();
+            if (info.suffix() == "h5")
+            {
+                HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
+                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
+                descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
+                scan = hdf5IO.loadScan(scanpos_nr, scan_nr, reduction);
+            }
+            else
+            {
+                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+                DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
+                DirectoryIO dirIO(dirKernel, hyperlibSchema);
+                scan = dirIO.loadScan(scanpos_nr, scan_nr, reduction);
+            }
+
+            ModelPtr model(new Model(scan->points));
+            modelItem->getModelBridge()->removeActors(m_renderer);
+            ModelBridgePtr newBridge(new LVRModelBridge(model));
+            newBridge->addActors(m_renderer);
+            modelItem->setBridge(newBridge);
+
+            LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(modelItem->parent());
+            std::vector<ModelBridgePtr> models = posItem->getScanPositionBridge()->getModels();
+            models[scan_nr] = newBridge;
+            posItem->getScanPositionBridge()->setModels(models);
+
+        }
+
         if(item->type() == LVRScanPositionItemType)
         {
             std::cout << "ScanPosition " << item->data(0, Qt::UserRole).toInt() << std::endl;
 
             LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(item);
             
+            QString filename = posItem->parent()->parent()->data(0, Qt::UserRole).toString();
+            std::string tmp = filename.toStdString();
+            QFileInfo info(filename);
+
+            ScanPositionPtr scanPos;
+
+            int scanpos_nr = posItem->data(0, Qt::UserRole).toInt();
+            if (info.suffix() == "h5")
+            {
+                HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
+                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
+                descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
+                scanPos = hdf5IO.loadScanPosition(scanpos_nr, reduction);
+            }
+            else
+            {
+                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+                DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
+                DirectoryIO dirIO(dirKernel, hyperlibSchema);
+                scanPos = dirIO.loadScanPosition(scanpos_nr, reduction);
+            }
+
+            posItem->getScanPositionBridge()->removeActors(m_renderer);
+            ScanPositionBridgePtr newBridge(new LVRScanPositionBridge(scanPos));
+            newBridge->addActors(m_renderer);
+            posItem->setBridge(newBridge);
+
+        }
+        if(item->type() == LVRScanProjectItemType)
+        {
+            std::cout << "ScanProject " << item->data(0, Qt::UserRole).toInt() << std::endl;
+
+            LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item);
+            
+            QString filename = projItem->parent()->data(0, Qt::UserRole).toString();
+            std::string tmp = filename.toStdString();
+            QFileInfo info(filename);
+
+            ScanProjectPtr scanProj;
+
+            if (info.suffix() == "h5")
+            {
+                HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
+                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
+                descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
+                scanProj = hdf5IO.loadScanProject(reduction);
+            }
+            else
+            {
+                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+                DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
+                DirectoryIO dirIO(dirKernel, hyperlibSchema);
+                scanProj = dirIO.loadScanProject(reduction);
+            }
+
+            projItem->getScanProjectBridge()->removeActors(m_renderer);
+            ScanProjectBridgePtr newBridge(new LVRScanProjectBridge(scanProj));
+            newBridge->addActors(m_renderer);
+            projItem->setBridge(newBridge);
+
         }
     }
     
 
-
+    refreshView();
     delete dialog;
 }
 

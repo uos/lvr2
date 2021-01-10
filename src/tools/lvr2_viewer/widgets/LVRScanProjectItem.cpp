@@ -57,6 +57,24 @@ bool LVRScanProjectItem::isEnabled()
     return this->checkState(0);
 }
 
+void LVRScanProjectItem::setBridge(ScanProjectBridgePtr bridge)
+{
+    m_scanProjectBridge = bridge;
+    for(int i = 0; i < bridge->getScanProject()->positions.size(); i++)
+    {
+        delete child(0);
+    }
+    for(int i = 0; i < bridge->getScanProject()->positions.size(); i++)
+    {
+        std::stringstream pos;
+        pos << "" << std::setfill('0') << std::setw(8) << i;
+        std::string posName = pos.str();
+        LVRScanPositionItem* scanPosItem = new LVRScanPositionItem(bridge->getScanPositions()[i], QString::fromStdString(posName));
+        addChild(scanPosItem);
+
+    }
+}
+
 void LVRScanProjectItem::setVisibility(bool visible)
 {
     for (auto position : m_scanProjectBridge->getScanPositions())
