@@ -1805,7 +1805,11 @@ void LVRMainWindow::changeReductionAlgorithm()
             int scan_nr = modelItem->data(0, Qt::UserRole).toInt();
             
             std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
-
+            if (io == nullptr)
+            {
+                std::cerr << "No IOPtr" << std::endl;
+                return;
+            }
             if (info.suffix() == "h5")
             {
                 auto hdf5IO = std::dynamic_pointer_cast<descriptions::HDF5IO>(io);
@@ -1845,7 +1849,11 @@ void LVRMainWindow::changeReductionAlgorithm()
             int scanpos_nr = posItem->data(0, Qt::UserRole).toInt();
             
             std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
-
+            if (io == nullptr)
+            {
+                std::cerr << "No IOPtr" << std::endl;
+                return;
+            }
             if (info.suffix() == "h5")
             {
                 auto hdf5IO = std::dynamic_pointer_cast<descriptions::HDF5IO>(io);
@@ -1876,7 +1884,11 @@ void LVRMainWindow::changeReductionAlgorithm()
             ScanProjectPtr scanProj;
 
             std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
-
+            if (io == nullptr)
+            {
+                std::cerr << "No IOPtr" << std::endl;
+                return;
+            }
             if (info.suffix() == "h5")
             {
                 auto hdf5IO = std::dynamic_pointer_cast<descriptions::HDF5IO>(io);
