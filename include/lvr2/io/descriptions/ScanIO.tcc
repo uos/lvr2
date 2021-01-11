@@ -187,9 +187,10 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     {
         std::cout << timestamp << "ScanIO::load(): Warning: No meta data found for "
                   << groupName << "/" << scanName << "." << std::endl;
+        return ret;
     }
-    std::cout << ret->poseEstimation << std::endl;
-    std::cout << ret->registration << std::endl;
+    //std::cout << ret->poseEstimation << std::endl;
+    //std::cout << ret->registration << std::endl;
 
     // Load actual data
     if(d.dataSetName)
