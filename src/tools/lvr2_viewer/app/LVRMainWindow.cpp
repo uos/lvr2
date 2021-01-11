@@ -1548,7 +1548,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 ScanProjectPtr scanProject = dirIO.loadScanProject();
                 ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
                 bridge->addActors(m_renderer);
-                LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+                LVRScanProjectItem* item = new LVRScanProjectItem(bridge, nullptr, "ScanProject");
                 QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
                 root->addChild(item);
                 item->setExpanded(false);
@@ -1740,7 +1740,7 @@ void LVRMainWindow::loadScanProjectH5()
     }
 }
 
-void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename)
+void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io)
 {
     this->checkBoxShowFocal->setChecked(false);
 
@@ -1748,7 +1748,7 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
 
     ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
     bridge->addActors(m_renderer);
-    LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+    LVRScanProjectItem* item = new LVRScanProjectItem(bridge, io, "ScanProject");
     QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
 
     QFileInfo info((filename));
@@ -1792,6 +1792,8 @@ void LVRMainWindow::changeReductionAlgorithm()
             std::cout << "Scan " << item->data(0, Qt::UserRole).toInt() << std::endl;
 
             LVRModelItem* modelItem = static_cast<LVRModelItem*>(item);
+            LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item->parent()->parent());
+
             
             QString filename = modelItem->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
             std::string tmp = filename.toStdString();
@@ -1801,19 +1803,18 @@ void LVRMainWindow::changeReductionAlgorithm()
 
             int scanpos_nr = modelItem->parent()->data(0, Qt::UserRole).toInt();
             int scan_nr = modelItem->data(0, Qt::UserRole).toInt();
+            
+            std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+
             if (info.suffix() == "h5")
             {
-                HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
-                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
-                descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-                scan = hdf5IO.loadScan(scanpos_nr, scan_nr, reduction);
+                auto hdf5IO = std::dynamic_pointer_cast<descriptions::HDF5IO>(io);
+                scan = hdf5IO->loadScan(scanpos_nr, scan_nr, reduction);
             }
             else
             {
-                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
-                DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
-                DirectoryIO dirIO(dirKernel, hyperlibSchema);
-                scan = dirIO.loadScan(scanpos_nr, scan_nr, reduction);
+                auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+                scan = dirIO->loadScan(scanpos_nr, scan_nr, reduction);
             }
 
             ModelPtr model(new Model(scan->points));
@@ -1834,7 +1835,7 @@ void LVRMainWindow::changeReductionAlgorithm()
             std::cout << "ScanPosition " << item->data(0, Qt::UserRole).toInt() << std::endl;
 
             LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(item);
-            
+            LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item->parent());
             QString filename = posItem->parent()->parent()->data(0, Qt::UserRole).toString();
             std::string tmp = filename.toStdString();
             QFileInfo info(filename);
@@ -1842,19 +1843,18 @@ void LVRMainWindow::changeReductionAlgorithm()
             ScanPositionPtr scanPos;
 
             int scanpos_nr = posItem->data(0, Qt::UserRole).toInt();
+            
+            std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+
             if (info.suffix() == "h5")
             {
-                HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
-                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
-                descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-                scanPos = hdf5IO.loadScanPosition(scanpos_nr, reduction);
+                auto hdf5IO = std::dynamic_pointer_cast<descriptions::HDF5IO>(io);
+                scanPos = hdf5IO->loadScanPosition(scanpos_nr, reduction);
             }
             else
             {
-                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
-                DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
-                DirectoryIO dirIO(dirKernel, hyperlibSchema);
-                scanPos = dirIO.loadScanPosition(scanpos_nr, reduction);
+                auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+                scanPos = dirIO->loadScanPosition(scanpos_nr, reduction);
             }
 
             posItem->getScanPositionBridge()->removeActors(m_renderer);
@@ -1875,19 +1875,17 @@ void LVRMainWindow::changeReductionAlgorithm()
 
             ScanProjectPtr scanProj;
 
+            std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+
             if (info.suffix() == "h5")
             {
-                HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
-                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
-                descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-                scanProj = hdf5IO.loadScanProject(reduction);
+                auto hdf5IO = std::dynamic_pointer_cast<descriptions::HDF5IO>(io);
+                scanProj = hdf5IO->loadScanProject(reduction);
             }
             else
             {
-                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
-                DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
-                DirectoryIO dirIO(dirKernel, hyperlibSchema);
-                scanProj = dirIO.loadScanProject(reduction);
+                auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+                scanProj = dirIO->loadScanProject(reduction);
             }
 
             projItem->getScanProjectBridge()->removeActors(m_renderer);
@@ -3565,27 +3563,29 @@ void LVRMainWindow::openScanProject()
     ReductionAlgorithmPtr reduction = dialog->reductionPtr();
 
     ScanProjectPtr scanProject;
-    
+    std::shared_ptr<FeatureBuild<ScanProjectIO>> io;
     switch(projectType)
     {
         case LVRScanProjectOpenDialog::DIR:
         {
             DirectoryKernelPtr dirKernel = std::dynamic_pointer_cast<DirectoryKernel>(kernel); 
             DirectorySchemaPtr dirSchema = std::dynamic_pointer_cast<DirectorySchema>(schema);
-            DirectoryIO dirIO(dirKernel, dirSchema);
-            scanProject = dirIO.loadScanProject(reduction);
+            auto dirIOPtr = std::shared_ptr<DirectoryIO>(new DirectoryIO(dirKernel, dirSchema));
+            io = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(dirIOPtr);
+            scanProject = io->loadScanProject(reduction);
             break;
         }
         case LVRScanProjectOpenDialog::HDF5:
         {
             HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel); 
             HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
-            descriptions::HDF5IO hdf5IO(hdfKernel, hdfSchema);
-            scanProject = hdf5IO.loadScanProject(reduction);
+            auto hdf5IOPtr = std::shared_ptr<descriptions::HDF5IO>(new descriptions::HDF5IO(hdfKernel, hdfSchema));
+            io = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
+            scanProject = io->loadScanProject(reduction);
             break;
         }
     }
-    loadScanProject(scanProject, QString::fromStdString(kernel->fileResource()));
+    loadScanProject(scanProject, QString::fromStdString(kernel->fileResource()), io);
 
     delete dialog;
 }

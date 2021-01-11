@@ -11,9 +11,10 @@
 namespace lvr2
 {
 
-LVRScanProjectItem::LVRScanProjectItem(ScanProjectBridgePtr bridge, QString name) :
+LVRScanProjectItem::LVRScanProjectItem(ScanProjectBridgePtr bridge, std::shared_ptr<FeatureBuild<ScanProjectIO>> io, QString name) :
     QTreeWidgetItem(LVRScanProjectItemType), m_scanProjectBridge(bridge), m_name(name)
 {
+    m_io = io;
     for(int i = 0; i < bridge->getScanProject()->positions.size(); i++)
     {
         std::stringstream pos;
@@ -33,6 +34,7 @@ LVRScanProjectItem::LVRScanProjectItem(const LVRScanProjectItem& item)
 {
     m_scanProjectBridge   = item.m_scanProjectBridge;
     m_name          = item.m_name;
+    m_io = item.m_io;
 }
 
 
@@ -73,6 +75,11 @@ void LVRScanProjectItem::setBridge(ScanProjectBridgePtr bridge)
         addChild(scanPosItem);
 
     }
+}
+
+std::shared_ptr<FeatureBuild<ScanProjectIO>> LVRScanProjectItem::getIO()
+{
+    return m_io;
 }
 
 void LVRScanProjectItem::setVisibility(bool visible)

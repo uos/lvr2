@@ -164,7 +164,7 @@ public Q_SLOTS:
     void comboBoxIndexChanged(int index);
     void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
-    void loadScanProject(ScanProjectPtr scanProject, QString filename);
+    void loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io = nullptr);
     void loadScanProjectDir(bool lazy = true);
     void loadScanProjectH5();
     void loadModels(const QStringList& filenames);
