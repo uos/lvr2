@@ -57,6 +57,8 @@ public:
      */
     ReductionAlgorithmPtr reductionPtr() {return m_reductionPtr;}
 
+    int reductionName() {return m_reduction;}
+
 
     /**
      *  @brief Return whether the dialog was finished with OK
@@ -67,6 +69,9 @@ public Q_SLOTS:
 
     /// Called when a diffent reduction was selected
     void reductionSelectionChanged(int index);
+
+    void updateVoxelValue(int value);
+    void changeVoxelState(bool state);
 
     //Called when OK is pressed
     void acceptOpen();
@@ -88,6 +93,10 @@ private:
     ReductionAlgorithmPtr           m_reductionPtr;
 
     bool                            m_successful;
+
+    double                          m_voxelSize;
+
+    int                             m_reduction;
 };
 
 } // namespace std

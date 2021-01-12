@@ -16,6 +16,7 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     m_parent = parent;
     m_ui = new LVRScanProjectOpenDialogUI;
     m_ui->setupUi(this);
+    m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
 
     connectSignalsAndSlots();
     addReductionTypes();    
@@ -27,7 +28,7 @@ void LVRScanProjectOpenDialog::connectSignalsAndSlots()
     QObject::connect(m_ui->toolButtonPath, SIGNAL(pressed()), this, SLOT(openPathDialog()));    
     QObject::connect(m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptOpen()));
     QObject::connect(m_ui->comboBoxSchema, SIGNAL(currentIndexChanged(int)), this, SLOT(schemaSelectionChanged(int)));
-    QObject::connect(m_ui->comboBoxReduction, SIGNAL(currentIndexChanged(int)), this, SLOT(reductionSelectionChanged(int)));
+    QObject::connect(m_ui->pushButtonReduction, SIGNAL(pressed()), this, SLOT(openReductionDialog()));
 }
 
 void LVRScanProjectOpenDialog::acceptOpen()
@@ -138,13 +139,41 @@ void LVRScanProjectOpenDialog::updateAvailableSchemas()
 
 void LVRScanProjectOpenDialog::addReductionTypes()
 {
-    QComboBox* b = m_ui->comboBoxReduction;
-    b->clear();
+    m_ui->pushButtonReduction->setText("No Reduction");
+}
 
-    b->addItem("All Reduction");
-    b->addItem("No Reduction");
-    b->addItem("Octree Reduction");
+void LVRScanProjectOpenDialog::openReductionDialog()
+{
+    LVRReductionAlgorithmDialog* dialog = new LVRReductionAlgorithmDialog(this);
+    
+    // Display
+    dialog->setModal(true);
+    dialog->raise();
+    dialog->activateWindow();
+    dialog->exec();
 
+    if(!dialog->successful())
+    {
+        return;
+    }
+
+    m_reductionPtr = dialog->reductionPtr();
+                    
+    switch(dialog->reductionName())
+    {
+        case 0:
+            m_ui->pushButtonReduction->setText("All Reduction");
+            break;
+        case 1:
+            m_ui->pushButtonReduction->setText("No Reduction");
+            break;
+        case 2:
+            m_ui->pushButtonReduction->setText("Octree Reduction");
+            break;   
+        default:
+            break;     
+    }
+    
 }
 
 void LVRScanProjectOpenDialog::openPathDialog()

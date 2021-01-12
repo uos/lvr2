@@ -10,6 +10,7 @@
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
+#include "LVRReductionAlgorithmDialog.hpp"
 
 
 #include "ui_LVRScanProjectOpenDialogUI.h"
@@ -90,6 +91,8 @@ public:
 public Q_SLOTS:
     /// Shows the QFileDialog
     void openPathDialog();
+
+    void openReductionDialog();
 
     /// Called when a diffent schema was selected
     void schemaSelectionChanged(int index);
