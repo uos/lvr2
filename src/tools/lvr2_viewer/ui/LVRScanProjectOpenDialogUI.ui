@@ -126,6 +126,9 @@
     <string>Select Reduction</string>
    </property>
    <widget class="QPushButton" name="pushButtonReduction">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>11</x>

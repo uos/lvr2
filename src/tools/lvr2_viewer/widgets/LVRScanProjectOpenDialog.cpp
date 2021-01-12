@@ -135,6 +135,7 @@ void LVRScanProjectOpenDialog::updateAvailableSchemas()
         default:
             b->addItem("None");      
     }
+    m_ui->pushButtonReduction->setEnabled(true);
 }
 
 void LVRScanProjectOpenDialog::addReductionTypes()
