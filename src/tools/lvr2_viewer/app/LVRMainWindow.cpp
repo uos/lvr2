@@ -188,8 +188,6 @@ LVRMainWindow::LVRMainWindow()
     m_actionOpen = this->actionOpen;
     m_actionOpenChunkedMesh = this->actionOpenChunkedMesh;
     m_actionOpenScanProject = this->actionOpenScanProject;
-    m_actionOpenScanProjectDir = this->actionOpenScanProjectDir;
-    m_actionOpenScanProjectH5 = this->actionOpenScanProjectH5;
     m_actionExport = this->actionExport;
     m_actionQuit = this->actionQuit;
     // Toolbar item "Views"
@@ -365,8 +363,6 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(this->actionOpenScanProject, SIGNAL(triggered()), this, SLOT(openScanProject()));
-    QObject::connect(m_actionOpenScanProjectDir, SIGNAL(triggered()), this, SLOT(loadScanProjectDir()));
-    QObject::connect(m_actionOpenScanProjectH5, SIGNAL(triggered()), this, SLOT(loadScanProjectH5()));
 
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
     QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
@@ -1705,39 +1701,6 @@ void LVRMainWindow::unloadPointCloudData()
         }
     }
 
-}
-
-void LVRMainWindow::loadScanProjectDir(bool lazy)
-{
-    QString filename = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", 
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    std::string tmp = filename.toStdString();
-    if (tmp != "") 
-    {
-        DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
-        DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
-        DirectoryIO dirIO(dirKernel, hyperlibSchema);
-
-        // TODO: Lazy loading by ReductionAlgorithm.
-        ScanProjectPtr scanProject = dirIO.loadScanProject();
-
-        loadScanProject(scanProject, filename);
-    }
-}
-
-void LVRMainWindow::loadScanProjectH5()
-{
-    QString filename = QFileDialog::getOpenFileName(this, tr("Open scan project"), "", tr("Scan project (*.h5)"));
-    std::string tmp = filename.toStdString();
-
-    if (tmp != "")
-    {
-        HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
-        HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
-        descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-        ScanProjectPtr scanProject = hdf5IO.loadScanProject();
-        loadScanProject(scanProject, filename);
-    }
 }
 
 void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io)

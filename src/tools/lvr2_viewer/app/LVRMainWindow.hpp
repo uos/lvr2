@@ -165,8 +165,6 @@ public Q_SLOTS:
     void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
     void loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io = nullptr);
-    void loadScanProjectDir(bool lazy = true);
-    void loadScanProjectH5();
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();
     void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
@@ -331,8 +329,6 @@ private:
     QAction*                            m_actionOpen;
     QAction*                            m_actionOpenChunkedMesh;
     QAction*                            m_actionOpenScanProject;
-    QAction*                            m_actionOpenScanProjectDir;
-    QAction*                            m_actionOpenScanProjectH5;
     QAction*                            m_actionExport;
     QAction*                            m_actionQuit;
     // Toolbar item "Views"
