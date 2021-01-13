@@ -46,6 +46,8 @@
 #include <vtkImageData.h>
 #include <vtkImageActor.h>
 #include <vtkImageMapper3D.h>
+#include <vtkImageMapper.h>
+#include <vtkActor2D.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -97,7 +99,7 @@ private:
 
     ScanImagePtr image;
     vtkSmartPointer<vtkImageData> imageData;
-    vtkSmartPointer<vtkImageActor> imageActor;
+    vtkSmartPointer<vtkActor2D> imageActor;
 };
 
 typedef boost::shared_ptr<LVRScanImageBridge> ScanImageBridgePtr;

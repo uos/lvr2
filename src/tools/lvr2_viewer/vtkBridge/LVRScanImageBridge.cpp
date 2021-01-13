@@ -80,9 +80,13 @@ void LVRScanImageBridge::setImage(const cv::Mat& img)
 
     imageData->Modified();
 
-    imageActor = vtkSmartPointer<vtkImageActor>::New();
+    imageActor = vtkSmartPointer<vtkActor2D>::New();
 
-    imageActor->GetMapper()->SetInputData(imageData);
+    vtkSmartPointer<vtkImageMapper> mapper = vtkSmartPointer<vtkImageMapper>::New();
+    mapper->SetInputData(imageData);
+    mapper->SetColorWindow(255);
+    mapper->SetColorLevel(128);
+    imageActor->SetMapper(mapper);
                 
     std::cout << "Loading Image succeeded!" << std::endl;
 }
