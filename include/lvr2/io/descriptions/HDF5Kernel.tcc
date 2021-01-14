@@ -162,7 +162,7 @@ void HDF5Kernel::saveArray(
         );
 
         const T* ptr = data.get();
-        dataset->write(ptr);
+        dataset->write_raw(ptr);
         m_hdf5File->flush();
     } 
     else 
