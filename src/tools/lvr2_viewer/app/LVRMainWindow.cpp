@@ -73,6 +73,10 @@
 #include "../vtkBridge/LVRSoilAssistBridge.hpp"
 
 #include <QString>
+#include <QImage>
+#include <QPixmap>
+#include <QLabel>
+
 
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
@@ -2289,58 +2293,6 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
     {
         setModelVisibility(treeWidgetItem->parent(), column);
     }
-
-    else if (treeWidgetItem->type() == LVRScanImageItemType)
-    {
-        if(treeWidgetItem->checkState(0))
-        {
-            QString filename = treeWidgetItem->parent()->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
-            std::string tmp = filename.toStdString();
-            QFileInfo info(filename);
-
-            int img_nr = treeWidgetItem->data(0, Qt::UserRole).toInt();
-            int cam_nr = treeWidgetItem->parent()->data(0, Qt::UserRole).toInt();
-            int scanpos_nr = treeWidgetItem->parent()->parent()->data(0, Qt::UserRole).toInt();
-            cv::Mat img;
-            if (info.suffix() == "h5")
-            {
-                HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
-                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
-                descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-                Description d = hdf5Schema->scanImage(scanpos_nr, cam_nr, img_nr);
-                img = *hdf5Kernel->loadImage(*d.groupName, *d.dataSetName);
-            }
-            else
-            {
-                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
-                DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
-                DirectoryIO dirIO(dirKernel, hyperlibSchema);
-                Description d = hyperlibSchema->scanImage(scanpos_nr, cam_nr, img_nr);
-                img = *dirKernel->loadImage(*d.groupName, *d.dataSetName);
-            }
-
-            #if (CV_VERSION_MAJOR >= 4)
-                cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
-            #else
-                cv::cvtColor(img, img, CV_BGR2RGB);
-            #endif
-            //std::cout << filename.toStdString() << std::endl;
-            LVRScanImageItem *item = static_cast<LVRScanImageItem*>(treeWidgetItem);
-            //item->setVisibility(item->checkState(0));
-            item->setImage(img);
-            item->getScanImageBridge()->addActors(m_renderer);
-            refreshView();
-            updateView();
-        }
-        else
-        {
-            LVRScanImageItem *item = static_cast<LVRScanImageItem*>(treeWidgetItem);
-            item->getScanImageBridge()->removeActors(m_renderer);
-            std::cout << "Remove Actors" << std::endl;
-            refreshView();
-            updateView();
-        }
-    }
 }
 
 
@@ -3304,7 +3256,7 @@ void LVRMainWindow::updatePointCount(uint16_t id, int selectedPointCount)
 
 void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
 {
-   if (item->type() == LVRExtrinsicsItemType)
+    if (item->type() == LVRExtrinsicsItemType)
     {
         QMessageBox msgBox;
         LVRExtrinsicsItem* ext = static_cast<LVRExtrinsicsItem*>(item); 
@@ -3334,6 +3286,47 @@ void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
         }
         msgBox.setText(mat);
         msgBox.exec();
+    }
+    else if (item->type() == LVRScanImageItemType)
+    {
+        QString filename = item->parent()->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
+        std::string tmp = filename.toStdString();
+        QFileInfo info(filename);
+
+        int img_nr = item->data(0, Qt::UserRole).toInt();
+        int cam_nr = item->parent()->data(0, Qt::UserRole).toInt();
+        int scanpos_nr = item->parent()->parent()->data(0, Qt::UserRole).toInt();
+        cv::Mat img;
+        if (info.suffix() == "h5")
+        {
+            HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
+            HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
+            descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
+            Description d = hdf5Schema->scanImage(scanpos_nr, cam_nr, img_nr);
+            img = *hdf5Kernel->loadImage(*d.groupName, *d.dataSetName);
+        }
+        else
+        {
+            DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+            DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
+            DirectoryIO dirIO(dirKernel, hyperlibSchema);
+            Description d = hyperlibSchema->scanImage(scanpos_nr, cam_nr, img_nr);
+            img = *dirKernel->loadImage(*d.groupName, *d.dataSetName);
+        }
+
+        #if (CV_VERSION_MAJOR >= 4)
+            cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+        #else
+            cv::cvtColor(img, img, CV_BGR2RGB);
+        #endif
+
+        QImage image(img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
+        QPixmap pixMap = QPixmap::fromImage(image);
+        QLabel* label = new QLabel(); 
+        label->setAlignment(Qt::AlignCenter);
+        pixMap = pixMap.scaled(label->size(), Qt::KeepAspectRatio);
+        label->setPixmap(pixMap);
+        label->show();
     }
 }
 
