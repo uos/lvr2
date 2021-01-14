@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_LABELIO_HPP
-#define LVR2_IO_HDF5_LABELIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_LABELIO_HPP
+#define LVR2_IO_DESCRIPTIONS_LABELIO_HPP
 
 #include "lvr2/io/descriptions/ArrayIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
@@ -51,4 +51,4 @@ struct FeatureConstruct<LabelIO, FeatureBase> {
 
 #include "LabelIO.tcc"
 
-#endif // LABELIO
+#endif // LVR2_IO_DESCRIPTIONS_LABELIO_HPP
