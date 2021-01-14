@@ -3,7 +3,19 @@ namespace lvr2
 
 namespace hdf5util
 {
-    
+
+template<typename T>
+void addAtomic(HighFive::Group& g,
+    const std::string datasetName,
+    const T data)
+{
+    std::vector<size_t> dim = {1};
+    HighFive::DataSpace dataSpace(dim);
+    HighFive::DataSetCreateProps properties;
+    auto dataset = createDataset<T>(g, datasetName, dataSpace, properties);
+    dataset->write_raw(&data);
+}
+
 template<typename T>
 void addArray(HighFive::Group& g,
     const std::string datasetName,
@@ -34,7 +46,7 @@ void addArray(HighFive::Group& g,
     // }
     HighFive::DataSet dataset = g.createDataSet<T>(datasetName, dataSpace, properties);
     const T* ptr = data.get();
-    dataset.write(ptr);
+    dataset.write_raw(ptr);
 
     //std::cout << timestamp << " Wrote " << datasetName << " to HDF5 file." << std::endl;
 }
@@ -48,6 +60,50 @@ void addArray(
 {
     std::vector<size_t> dim = {length, 1};
     addArray(g, datasetName, dim, data);
+}
+
+template<typename T>
+void addVector(HighFive::Group& g,
+    const std::string datasetName,
+    const std::vector<T>& data)
+{
+    std::vector<size_t> dim = {data.size()};
+    HighFive::DataSpace dataSpace(dim);
+    HighFive::DataSetCreateProps properties;
+
+    HighFive::DataSet dataset = g.createDataSet<T>(datasetName, dataSpace, properties);
+    const T* ptr = data.data();
+    dataset.write_raw(ptr);
+}
+
+template<typename T>
+boost::optional<T> getAtomic(
+    const HighFive::Group& g,
+    const std::string datasetName)
+{
+    boost::optional<T> ret;
+
+    if(g.isValid())
+    {
+        if(g.exist(datasetName))
+        {
+            HighFive::DataSet dataset = g.getDataSet(datasetName);
+            std::vector<size_t> dims = dataset.getSpace().getDimensions();
+            
+            if(dims[0] == 1)
+            {
+                T data;
+                dataset.read(&data);
+                ret = data;
+            } else {
+                throw std::runtime_error("[Hdf5Util - getAtomic]: try to load dataset of size > 1 as atomic.");
+            }
+        }
+    } else {
+        throw std::runtime_error("[Hdf5Util - getAtomic]: Hdf5 file not open.");
+    }
+
+    return ret;
 }
 
 template<typename T>
@@ -73,6 +129,38 @@ boost::shared_array<T> getArray(
 
             dataset.read(ret.get());
         }
+    }
+
+    return ret;
+}
+
+
+template<typename T>
+boost::optional<std::vector<T> > getVector(
+    const HighFive::Group& g, 
+    const std::string& datasetName)
+{
+    boost::optional<std::vector<T> > ret;
+
+    if(g.isValid())
+    {
+        if(g.exist(datasetName))
+        {
+            HighFive::DataSet dataset = g.getDataSet(datasetName);
+            std::vector<size_t> dim = dataset.getSpace().getDimensions();
+
+            if(dim.size() > 1 && dim[2] > 1)
+            {
+                // is not a vector
+                throw std::runtime_error("[Hdf5Util - getVector]: second dimension too big for a vector (>1).");
+            }
+
+            std::vector<T> data(dim[0]);
+            dataset.read(&data[0]);
+            ret = data;
+        }
+    } else {
+        throw std::runtime_error("[Hdf5Util - getVector]: Hdf5 file not open.");
     }
 
     return ret;
@@ -126,7 +214,7 @@ void addMatrix(HighFive::Group& group,
         );
 
         const _Scalar* ptr = mat.data();
-        dataset->write(ptr);
+        dataset->write_raw(ptr);
         
     } 
     else 

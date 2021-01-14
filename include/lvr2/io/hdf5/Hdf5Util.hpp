@@ -26,6 +26,16 @@ namespace hdf5util
 {
 
 template<typename T>
+void addAtomic(HighFive::Group& g,
+    const std::string datasetName,
+    const T data);
+
+void addString(
+    HighFive::Group& g,
+    const std::string datasetName,
+    const std::string data);
+
+template<typename T>
 void addArray(
     HighFive::Group& g, 
     const std::string datasetName, 
@@ -40,10 +50,29 @@ void addArray(
     boost::shared_array<T>& data);
 
 template<typename T>
-    boost::shared_array<T> getArray(
+void addVector(HighFive::Group& g,
+    const std::string datasetName,
+    const std::vector<T>& data);
+
+template<typename T>
+boost::optional<T> getAtomic(
+    const HighFive::Group& g,
+    const std::string datasetName);
+
+boost::optional<std::string> getString(
+    const HighFive::Group& g,
+    const std::string& datasetName);
+
+template<typename T>
+boost::shared_array<T> getArray(
     const HighFive::Group& g, 
     const std::string& datasetName,
     std::vector<size_t>& dim);
+
+template<typename T>
+boost::optional<std::vector<T> > getVector(
+    const HighFive::Group& g, 
+    const std::string& datasetName);
 
 template<typename T>
 std::vector<size_t> getDimensions(

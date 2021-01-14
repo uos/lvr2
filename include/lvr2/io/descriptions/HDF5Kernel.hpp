@@ -262,8 +262,6 @@ public:
     template<typename T>
     cv::Mat createMat(const std::vector<size_t>& dims) const;
 
-    void loadMetaData(const YAML::Node& node);
-
     std::shared_ptr<HighFive::File>  m_hdf5File;
 
     HDF5MetaDescriptionBase* m_metaDescription;

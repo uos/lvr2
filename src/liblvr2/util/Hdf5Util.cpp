@@ -6,6 +6,49 @@ namespace lvr2
 namespace hdf5util
 {
 
+void addString(
+    HighFive::Group& g,
+    const std::string datasetName,
+    const std::string data)
+{
+    const char* data_ptr = data.c_str();
+    size_t nchars = data.length();
+
+    std::vector<size_t> dim = {nchars};
+    HighFive::DataSpace dataSpace(dim);
+    HighFive::DataSetCreateProps properties;
+
+    auto dataset = createDataset<char>(g, datasetName, dataSpace, properties);
+    dataset->write_raw(data_ptr);
+}
+
+boost::optional<std::string> getString(
+    const HighFive::Group& g,
+    const std::string& datasetName)
+{
+    boost::optional<std::string> ret;
+
+    if(g.isValid())
+    {
+        if(g.exist(datasetName))
+        {
+            HighFive::DataSet dataset = g.getDataSet(datasetName);
+            std::vector<size_t> dim = dataset.getSpace().getDimensions();
+
+            char data_ptr[dim[0]];            
+            dataset.read(data_ptr);
+            std::string data(data_ptr);
+            ret = data;
+        }
+    }
+    else 
+    {
+        throw std::runtime_error("[Hdf5 - StringIO]: Hdf5 file not open.");
+    }
+
+    return ret;
+}
+
 std::vector<std::string> splitGroupNames(const std::string& groupName)
 {
     std::vector<std::string> ret;
@@ -37,22 +80,22 @@ void writeBaseStructure(std::shared_ptr<HighFive::File> hdf5_file)
 {
     int version = 1;
     hdf5_file->createDataSet<int>("version", HighFive::DataSpace::From(version)).write(version);
-    HighFive::Group raw_data_group = hdf5_file->createGroup("raw");
+    // HighFive::Group raw_data_group = hdf5_file->createGroup("raw");
 
-    // Create string with current time
-    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    std::time_t t_now = std::chrono::system_clock::to_time_t(now);
-    std::string time(ctime(&t_now));
+    // // Create string with current time
+    // std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    // std::time_t t_now = std::chrono::system_clock::to_time_t(now);
+    // std::string time(ctime(&t_now));
 
-    // Add current time to raw data group
-    raw_data_group.createDataSet<std::string>("created", HighFive::DataSpace::From(time))
-        .write(time);
-    raw_data_group.createDataSet<std::string>("changed", HighFive::DataSpace::From(time))
-        .write(time);
+    // // Add current time to raw data group
+    // raw_data_group.createDataSet<std::string>("created", HighFive::DataSpace::From(time))
+    //     .write(time);
+    // raw_data_group.createDataSet<std::string>("changed", HighFive::DataSpace::From(time))
+    //     .write(time);
 
-    // Create empty reference frame
-    std::vector<float> frame = Matrix4<BaseVector<float>>().getVector();
-    raw_data_group.createDataSet<float>("position", HighFive::DataSpace::From(frame)).write(frame);
+    // // Create empty reference frame
+    // std::vector<float> frame = Matrix4<BaseVector<float>>().getVector();
+    // raw_data_group.createDataSet<float>("position", HighFive::DataSpace::From(frame)).write(frame);
 }
 
 HighFive::Group getGroup(std::shared_ptr<HighFive::File> hdf5_file,

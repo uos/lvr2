@@ -26,12 +26,16 @@ void HDF5Kernel::savePointBuffer(
     const PointBufferPtr &buffer) const
 {
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
+
+    std::string tmp = "PointBuffer";
+    std::cout << "Set Attribute type='PointBuffer' at group '" << group << "'" << std::endl;
+    hdf5util::setAttribute(g, "type", tmp);
+
     for(auto elem : *buffer)
     {
         this->template save(g, elem.first, elem.second);
     }
 }
-
 
 void HDF5Kernel::saveImage(
     const std::string &groupName,
@@ -184,32 +188,52 @@ void HDF5Kernel::saveMetaYAML(
     if(hg.isValid() && node["sensor_type"] )
     {
         std::string sensor_type = node["sensor_type"].as<std::string>();
-        if(sensor_type == "ScanPosition")
+
+        hdf5util::setAttribute(hg, "sensor_type", sensor_type);
+
+        if(sensor_type == "Channel")
         {
-            m_metaDescription->saveScanPosition(hg, node);
+            // How to write meta for channel?
+            return;
         }
-        else if(sensor_type == "Scan")
+
+        HighFive::Group meta_group = hdf5util::getGroup(hg, metaName);
+
+        // mark as meta for corresponding sensor_type
+        bool meta_flag = true;
+        hdf5util::setAttribute(meta_group, "meta", meta_flag );
+        hdf5util::setAttribute(meta_group, "sensor_type", sensor_type);
+
+        ScanPosition sp;
+
+        if(sensor_type == ScanProject::sensorType)
         {
-            cout << "save Scan " << endl;
-            m_metaDescription->saveScan(hg, node);
+            m_metaDescription->saveScanProject(meta_group, node);
         }
-        else if(sensor_type == "ScanCamera")
+        else if(sensor_type == ScanPosition::sensorType)
         {
-            m_metaDescription->saveScanCamera(hg, node);
+            m_metaDescription->saveScanPosition(meta_group, node);
         }
-        else if(sensor_type == "ScanProject")
+        else if(sensor_type == Scan::sensorType)
         {
-            m_metaDescription->saveScanProject(hg, node);
+            m_metaDescription->saveScan(meta_group, node);
         }
-        else if(sensor_type == "HyperspectralCamera")
+        else if(sensor_type == ScanCamera::sensorType)
         {
-            m_metaDescription->saveHyperspectralCamera(hg, node);
+            m_metaDescription->saveScanCamera(meta_group, node);
         }
-        else if(sensor_type == "HyperspectralPanoramaChannel")
+        else if(sensor_type == ScanImage::sensorType)
         {
-            m_metaDescription->saveHyperspectralPanoramaChannel(hg, node);
+            m_metaDescription->saveScanImage(meta_group, node);
         }
-        else 
+        else if(sensor_type == HyperspectralCamera::sensorType)
+        {
+            m_metaDescription->saveHyperspectralCamera(meta_group, node);
+        }
+        else if(sensor_type == HyperspectralPanoramaChannel::sensorType)
+        {
+            m_metaDescription->saveHyperspectralPanoramaChannel(meta_group, node);
+        } else 
         {
             std::cout << timestamp
                       << "HDF5Kernel::SaveMetaYAML(): Warning: Sensor type '"
@@ -217,6 +241,7 @@ void HDF5Kernel::saveMetaYAML(
         }
         m_hdf5File->flush();
     }
+    
 }
 
 MeshBufferPtr HDF5Kernel::loadMeshBuffer(
@@ -361,11 +386,6 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
     
 
     return ret;
-}
-
-void HDF5Kernel::loadMetaData(const YAML::Node& node)
-{
-    
 }
 
 void HDF5Kernel::loadMetaYAML(

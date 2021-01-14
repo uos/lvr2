@@ -25,6 +25,8 @@ void ScanProjectIO<FeatureBase>::save(
     {
         YAML::Node node;
         node = *scanProject;
+        std::cout << "[ScanProjectIO] saveMetaYAML, Group: "
+                    << *d.groupName << ", metaName: " << *d.metaName << std::endl;
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
     }
 
