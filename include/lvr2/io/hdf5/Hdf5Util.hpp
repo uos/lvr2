@@ -124,9 +124,15 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
 template <typename T>
 void setAttribute(HighFive::Group& g, const std::string& attr_name, T& data);
 
-// For DataSet as well
-// template <typename T>
-// void setAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data);
+template <typename T>
+void setAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data);
+
+template <typename T>
+bool checkAttribute(HighFive::Group& g, const std::string& attr_name, T& data);
+
+template <typename T>
+bool checkAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data);
+
 
 
 

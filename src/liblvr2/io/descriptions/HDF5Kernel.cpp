@@ -618,7 +618,6 @@ bool HDF5Kernel::exists(const std::string &group, const std::string &container) 
 
 void HDF5Kernel::subGroupNames(const std::string &group, std::vector<string> &subGroupNames) const
 {
-
     HighFive::Group h5Group = hdf5util::getGroup(m_hdf5File, group);
     subGroupNames = h5Group.listObjectNames();
 }
@@ -661,6 +660,74 @@ bool HDF5Kernel::addChannel(const std::string group, const std::string name, con
 bool HDF5Kernel::addChannel(const std::string group, const std::string name, const UCharChannel& channel)  const
 {
     return addChannel<unsigned char>(group, name, channel);
+}
+
+
+std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
+    const std::string& group) const
+{
+    std::unordered_map<std::string, YAML::Node> ret;
+
+    
+
+    
+    return ret;
+}
+
+
+std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
+    const std::string& group, const std::string& sensor_type) const
+{
+    std::unordered_map<std::string, YAML::Node> ret;
+
+    std::cout << "FIND METAS OF SENSOR TYPE " << sensor_type << std::endl;
+
+    HighFive::Group h5Group = hdf5util::getGroup(m_hdf5File, group, false);
+    for(std::string groupName : h5Group.listObjectNames())
+    {
+        HighFive::ObjectType h5type = h5Group.getObjectType(groupName);
+
+        if(h5type == HighFive::ObjectType::Group)
+        {
+            HighFive::Group metaGroup = h5Group.getGroup(groupName);
+            if(metaGroup.hasAttribute("sensor_type"))
+            {
+                std::string tmp = sensor_type;
+                if(hdf5util::checkAttribute(metaGroup, "sensor_type", tmp))
+                {
+                    std::cout << "-- " << groupName << ": MetaGroup of type " << sensor_type << std::endl; 
+                }
+            }
+        }
+
+        if(h5type == HighFive::ObjectType::Dataset)
+        {
+            HighFive::DataSet metaDataset = h5Group.getDataSet(groupName);
+            if(metaDataset.hasAttribute("sensor_type"))
+            {
+                std::string tmp = sensor_type;
+                if(hdf5util::checkAttribute(metaDataset, "sensor_type", tmp))
+                {
+                    std::cout << "-- " << groupName << ": MetaDataset of type " << sensor_type << std::endl; 
+                }
+            }
+        }
+
+        // try{
+        //     HighFive::Group metaGroup = h5Group.getGroup(groupName);
+        //     std::cout << "-- " << groupName << ": MetaGroup" << std::endl;
+        // } catch(HighFive::GroupException ex) {
+        //     std::cout << "NOT A GROUP" << std::endl;
+        // }
+        
+        // HighFive::DataSet dataset = h5Group.getDataSet(groupName);
+        // if(dataset.hasAttribute("sensor_type"))
+        // {
+        //     std::cout << "Dataset with sensor type found!" << std::endl;
+        // }
+    }
+
+    return ret;
 }
 
 } // namespace lvr2

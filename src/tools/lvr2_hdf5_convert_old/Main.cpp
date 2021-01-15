@@ -89,7 +89,6 @@ bool compare(PointBufferPtr p1, PointBufferPtr p2)
         return false;}
     if(!p1 && !p2){return true;}
 
-
     for(auto elem : *p1)
     {
         auto it = p2->find(elem.first);
@@ -265,20 +264,14 @@ void writeTest()
 
     std::cout << "--------------------------" << std::endl;
     std::cout << "LOAD SCANPROJECT" << std::endl;
-    ScanProjectPtr sp_loaded = hdf5_io.loadScanProject();
+    // ScanProjectPtr sp_loaded = hdf5_io.loadScanProject();
 
-
-    // DirectoryKernelPtr dir_kernel(new DirectoryKernel(filename));
-    // DirectorySchemaPtr dir_schema(new ScanProjectSchemaRaw(filename));
-    // DirectoryIO dir_io(dir_kernel, dir_schema);
-    // dir_io.saveScanProject(sp);
-
-    if(compare(sp, sp_loaded))
-    {
-        std::cout << "IO works correct!" << std::endl;
-    } else {
-        std::cout << "Something is wrong!" << std::endl;
-    }
+    // if(compare(sp, sp_loaded))
+    // {
+    //     std::cout << "IO works correct!" << std::endl;
+    // } else {
+    //     std::cout << "Something is wrong!" << std::endl;
+    // }
 
 
 }

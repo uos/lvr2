@@ -264,12 +264,12 @@ public:
         const VariantChannel<Tp...>& vchannel
     ) const;
 
-    // virtual std::unordered_map<std::string, YAML::Node> metas(
-    //     const std::string& group) const;
+    virtual std::unordered_map<std::string, YAML::Node> metas(
+        const std::string& group) const;
 
-    // virtual std::unordered_map<std::string, YAML::Node> metas(
-    //     const std::string& group, const std::string& sensor_type
-    // );
+    virtual std::unordered_map<std::string, YAML::Node> metas(
+        const std::string& group, const std::string& sensor_type
+    ) const;
 
     template<typename T>
     cv::Mat createMat(const std::vector<size_t>& dims) const;

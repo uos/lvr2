@@ -375,6 +375,42 @@ void setAttribute(HighFive::Group& g, const std::string& attr_name, T& data)
 }
 
 template <typename T>
+void setAttribute(
+    HighFive::DataSet& d,
+    const std::string& attr_name, 
+    T& data)
+{
+    bool use_existing_attribute = false;
+    bool overwrite = false;
+
+    if (d.hasAttribute(attr_name))
+    {
+        // check if attribute is the same
+        HighFive::Attribute attr = d.getAttribute(attr_name);
+        if (attr.getDataType() == HighFive::AtomicType<T>())
+        {
+            T value;
+            attr.read(value);
+
+            use_existing_attribute = true;
+            if (value != data)
+            {
+                overwrite = true;
+            }
+        }
+    }
+
+    if (!use_existing_attribute)
+    {
+        d.createAttribute<T>(attr_name, data);
+    }
+    else if (overwrite)
+    {
+        d.getAttribute(attr_name).write<T>(data);
+    }
+}
+
+template <typename T>
 bool checkAttribute(HighFive::Group& g, const std::string& attr_name, T& data)
 {
     // check if attribute exists
@@ -385,6 +421,33 @@ bool checkAttribute(HighFive::Group& g, const std::string& attr_name, T& data)
 
     // check if attribute type is the same
     HighFive::Attribute attr = g.getAttribute(attr_name);
+    if (attr.getDataType() != HighFive::AtomicType<T>())
+    {
+        return false;
+    }
+
+    // check if attribute value is the same
+    T value;
+    attr.read(value);
+    if (value != data)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T>
+bool checkAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data)
+{
+    // check if attribute exists
+    if (!d.hasAttribute(attr_name))
+    {
+        return false;
+    }
+
+    // check if attribute type is the same
+    HighFive::Attribute attr = d.getAttribute(attr_name);
     if (attr.getDataType() != HighFive::AtomicType<T>())
     {
         return false;

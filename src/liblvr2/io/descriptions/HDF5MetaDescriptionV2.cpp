@@ -140,6 +140,13 @@ void HDF5MetaDescriptionV2::saveHyperspectralPanoramaChannel(
     // TODO:
 }
 
+// void HDF5MetaDescriptionV2::saveVChannel(
+//     HighFive::Group &g,
+//     const YAML::Node &n) const
+// {
+//     // TODO:
+// }
+
 
 YAML::Node HDF5MetaDescriptionV2::scanProject(const HighFive::Group &g) const 
 {

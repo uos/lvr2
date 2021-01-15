@@ -265,6 +265,7 @@ void HDF5Kernel::save(HighFive::Group &g,
           std::string datasetName,
           const Channel<T> &channel) const
 {
+    std::cout << "SAVING CHANNEL!" << std::endl;
     if(m_hdf5File && m_hdf5File->isValid())
     {
         std::vector<size_t > dims = {channel.numElements(), channel.width()};
@@ -279,6 +280,9 @@ void HDF5Kernel::save(HighFive::Group &g,
         const T* ptr = channel.dataPtr().get();
         dataset->write_raw(ptr);
         m_hdf5File->flush();
+
+        std::string sensor_type = "Channel";
+        hdf5util::setAttribute<std::string>(*dataset, "sensor_type", sensor_type);
     }
     else 
     {
