@@ -49,10 +49,14 @@ void ScanProjectIO<FeatureBase>::saveScanProject(
 template <typename FeatureBase>
 ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
 {
+    
     ScanProjectPtr ret;
 
     // Load description and meta data for scan project
     Description d = m_featureBase->m_description->scanProject();
+
+    std::cout << "[HDF5IO - ScanProjectIO - load]: Description" << std::endl;
+    std::cout << d << std::endl;
 
     if(!d.groupName)
     {

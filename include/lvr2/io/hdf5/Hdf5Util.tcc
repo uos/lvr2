@@ -25,30 +25,12 @@ void addArray(HighFive::Group& g,
     HighFive::DataSpace dataSpace(dim);
     HighFive::DataSetCreateProps properties;
 
-    // if(m_chunkSize)
-    // {
-    //     // We have to check explicitly if chunk size
-    //     // is < dimensionality to avoid errors from
-    //     // the HDF5 lib
-    //     for(size_t i = 0; i < chunkSizes.size(); i++)
-    //     {
-    //         if(chunkSizes[i] > dim[i])
-    //         {
-    //             chunkSizes[i] = dim[i];
-    //         }
-    //     }
-    //     properties.add(HighFive::Chunking(chunkSizes));
-    // }
-    // if(m_compress)
-    // {
-    //     //properties.add(HighFive::Shuffle());
-    //     properties.add(HighFive::Deflate(9));
-    // }
-    HighFive::DataSet dataset = g.createDataSet<T>(datasetName, dataSpace, properties);
-    const T* ptr = data.get();
-    dataset.write_raw(ptr);
-
-    //std::cout << timestamp << " Wrote " << datasetName << " to HDF5 file." << std::endl;
+    auto dataset = createDataset<T>(g, datasetName, dataSpace, properties);
+    if(dataset)
+    {
+        const T* ptr = data.get();
+        dataset->write_raw(ptr);
+    }
 }
 
 template<typename T>
@@ -58,7 +40,7 @@ void addArray(
     const size_t& length, 
     boost::shared_array<T>& data)
 {
-    std::vector<size_t> dim = {length, 1};
+    std::vector<size_t> dim = {length};
     addArray(g, datasetName, dim, data);
 }
 
@@ -71,9 +53,13 @@ void addVector(HighFive::Group& g,
     HighFive::DataSpace dataSpace(dim);
     HighFive::DataSetCreateProps properties;
 
-    HighFive::DataSet dataset = g.createDataSet<T>(datasetName, dataSpace, properties);
-    const T* ptr = data.data();
-    dataset.write_raw(ptr);
+    auto dataset = createDataset<T>(g, datasetName, dataSpace, properties);
+
+    if(dataset)
+    {
+        const T* ptr = data.data();
+        dataset->write_raw(ptr);
+    }
 }
 
 template<typename T>
@@ -90,12 +76,13 @@ boost::optional<T> getAtomic(
             HighFive::DataSet dataset = g.getDataSet(datasetName);
             std::vector<size_t> dims = dataset.getSpace().getDimensions();
             
-            if(dims[0] == 1)
+            if(dims.size() == 1 && dims[0] == 1)
             {
                 T data;
-                dataset.read(&data);
+                dataset.read(data);
                 ret = data;
             } else {
+                std::cout << "[Hdf5Util - getAtomic]: " << datasetName << ", size: " << dims.size() << ": " << dims[0] << std::endl;
                 throw std::runtime_error("[Hdf5Util - getAtomic]: try to load dataset of size > 1 as atomic.");
             }
         }
@@ -126,6 +113,37 @@ boost::shared_array<T> getArray(
         if (elementCount)
         {
             ret = boost::shared_array<T>(new T[elementCount]);
+
+            dataset.read(ret.get());
+        }
+    }
+
+    return ret;
+}
+
+template<typename T>
+boost::shared_array<T> getArray(
+    const HighFive::Group& g, 
+    const std::string& datasetName,
+    size_t& dim)
+{
+    boost::shared_array<T> ret;
+
+    if (g.exist(datasetName))
+    {
+        HighFive::DataSet dataset = g.getDataSet(datasetName);
+        std::vector<size_t> dims = dataset.getSpace().getDimensions();
+
+        if(dims.size() > 1)
+        {
+            return ret;
+        }
+
+        dim = dims[0];
+
+        if(dim)
+        {
+            ret = boost::shared_array<T>(new T[dim]);
 
             dataset.read(ret.get());
         }
@@ -192,30 +210,15 @@ void addMatrix(HighFive::Group& group,
         HighFive::DataSpace dataSpace(dims);
         HighFive::DataSetCreateProps properties;
 
-        // if(m_file_access->m_chunkSize)
-        // {
-        //     for(size_t i = 0; i < chunkSizes.size(); i++)
-        //     {
-        //         if(chunkSizes[i] > dims[i])
-        //         {
-        //             chunkSizes[i] = dims[i];
-        //         }
-        //     }
-        //     properties.add(HighFive::Chunking(chunkSizes));
-        // }
-        // if(m_file_access->m_compress)
-        // {
-        //     //properties.add(HighFive::Shuffle());
-        //     properties.add(HighFive::Deflate(9));
-        // }
-
         std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<_Scalar>(
             group, datasetName, dataSpace, properties
         );
 
-        const _Scalar* ptr = mat.data();
-        dataset->write_raw(ptr);
-        
+        if(dataset)
+        {
+            const _Scalar* ptr = mat.data();
+            dataset->write_raw(ptr);
+        }
     } 
     else 
     {
@@ -283,28 +286,50 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
             dataset = std::make_unique<HighFive::DataSet>(
                 g.createDataSet<T>(datasetName, dataSpace, properties));
         }
-        else if (dims_old[0] != dims_new[0] || dims_old[1] != dims_new[1])
-        {
+        else
+        { 
+            // check dimensionality
+            bool same_dims = true;
+            if (dims_old.size() != dims_new.size())
+            {
+                same_dims = false;
+            } else {
+                // same sized: check entries
+                for(size_t i=0; i<dims_old.size(); i++)
+                {
+                    if(dims_old[i] != dims_new[i])
+                    {
+                        same_dims = false;
+                        break;
+                    }
+                }
+            }
             // same datatype but different size -> resize
 
-            std::cout << "[Hdf5Util - createDataset] WARNING: size has changed. resizing dataset "
-                      << std::endl;
-
-            //
-            try
+            if(!same_dims)
             {
-                dataset->resize(dims_new);
-            }
-            catch (HighFive::DataSetException& ex)
-            {
-                std::cout << "[Hdf5Util - createDataset] WARNING: could not resize. Generating new "
-                             "space..."
-                          << std::endl;
-                int result = H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT);
+                std::cout << "[Hdf5Util - createDataset] WARNING: size has changed. resizing dataset "
+                      << datasetName << " from size " 
+                      << dims_old[0] << "x" << dims_old[1] << " to " 
+                      << dims_new[0] << "x" << dims_new[1] << std::endl;
 
-                dataset = std::make_unique<HighFive::DataSet>(
-                    g.createDataSet<T>(datasetName, dataSpace, properties));
+                //
+                try
+                {
+                    dataset->resize(dims_new);
+                }
+                catch (HighFive::DataSetException& ex)
+                {
+                    std::cout << "[Hdf5Util - createDataset] WARNING: could not resize. Generating new "
+                                "space..."
+                            << std::endl;
+                    int result = H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT);
+
+                    dataset = std::make_unique<HighFive::DataSet>(
+                        g.createDataSet<T>(datasetName, dataSpace, properties));
+                }
             }
+            
         }
     }
     else

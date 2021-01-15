@@ -136,26 +136,6 @@ void HDF5Kernel::saveArray(
 
         HighFive::DataSpace dataSpace(dim);
         HighFive::DataSetCreateProps properties;
-
-        // if(m_file_access->m_chunkSize)
-        // {
-        //     // We have to check explicitly if chunk size
-        //     // is < dimensionality to avoid errors from
-        //     // the HDF5 lib
-        //     for(size_t i = 0; i < chunkSizes.size(); i++)
-        //     {
-        //         if(chunkSizes[i] > dim[i])
-        //         {
-        //             chunkSizes[i] = dim[i];
-        //         }
-        //     }
-        //     properties.add(HighFive::Chunking(chunkSizes));
-        // }
-        // if(m_file_access->m_compress)
-        // {
-        //     //properties.add(HighFive::Shuffle());
-        //     properties.add(HighFive::Deflate(9));
-        // }
         
         std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
             g, datasetName, dataSpace, properties
@@ -206,22 +186,14 @@ bool HDF5Kernel::getChannel(const std::string group, const std::string name, boo
 
 
 template <typename T>
-bool HDF5Kernel::addChannel(const std::string group, const std::string name, const AttributeChannel<T>& channel)  const
+bool HDF5Kernel::addChannel(
+    const std::string group, const std::string name, 
+    const AttributeChannel<T>& channel)  const
 {
     if(m_hdf5File && m_hdf5File->isValid())
     {
         HighFive::DataSpace dataSpace({channel.numElements(), channel.width()});
         HighFive::DataSetCreateProps properties;
-
-        // if(m_file_access->m_chunkSize)
-        // {
-        //     properties.add(HighFive::Chunking({channel.numElements(), channel.width()}));
-        // }
-        // if(m_file_access->m_compress)
-        // {
-        //     //properties.add(HighFive::Shuffle());
-        //     properties.add(HighFive::Deflate(9));
-        // }
 
         // TODO check group for vertex / face attribute and set flag in hdf5 channel
         HighFive::Group g = hdf5util::getGroup(m_hdf5File, "channels");
@@ -230,7 +202,7 @@ bool HDF5Kernel::addChannel(const std::string group, const std::string name, con
                 g, name, dataSpace, properties);
 
         const T* ptr = channel.dataPtr().get();
-        dataset->write(ptr);
+        dataset->write_raw(ptr);
         m_hdf5File->flush();
         std::cout << timestamp << " Added attribute \"" << name << "\" to group \"" << group
                   << "\" to the given HDF5 file!" << std::endl;
@@ -284,8 +256,8 @@ void HDF5Kernel::save(std::string groupName,
           std::string datasetName,
           const Channel<T> &channel) const
 {
-     HighFive::Group g = hdf5util::getGroup(m_hdf5File, groupName);
-     save(g, datasetName, channel);
+    HighFive::Group g = hdf5util::getGroup(m_hdf5File, groupName);
+    save(g, datasetName, channel);
 }
 
 template <typename T>
@@ -299,32 +271,15 @@ void HDF5Kernel::save(HighFive::Group &g,
 
         HighFive::DataSpace dataSpace(dims);
         HighFive::DataSetCreateProps properties;
-
-        // if(m_file_access->m_chunkSize)
-        // {
-        //     for(size_t i = 0; i < chunkSizes.size(); i++)
-        //     {
-        //         if(chunkSizes[i] > dims[i])
-        //         {
-        //             chunkSizes[i] = dims[i];
-        //         }
-        //     }
-        //     properties.add(HighFive::Chunking(chunkSizes));
-        // }
-        // if(m_file_access->m_compress)
-        // {
-        //     //properties.add(HighFive::Shuffle());
-        //     properties.add(HighFive::Deflate(9));
-        // }
    
         std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
             g, datasetName, dataSpace, properties
         );
 
         const T* ptr = channel.dataPtr().get();
-        dataset->write(ptr);
+        dataset->write_raw(ptr);
         m_hdf5File->flush();
-    } 
+    }
     else 
     {
         throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");

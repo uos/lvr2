@@ -70,6 +70,12 @@ boost::shared_array<T> getArray(
     std::vector<size_t>& dim);
 
 template<typename T>
+boost::shared_array<T> getArray(
+    const HighFive::Group& g, 
+    const std::string& datasetName,
+    size_t& dim);
+
+template<typename T>
 boost::optional<std::vector<T> > getVector(
     const HighFive::Group& g, 
     const std::string& datasetName);
@@ -89,6 +95,10 @@ boost::optional<MatrixT> getMatrix(const HighFive::Group& g, const std::string& 
 
 std::vector<std::string> splitGroupNames(const std::string& groupName);
 
+std::pair<std::string, std::string> validateGroupDataset(
+    const std::string& groupName, 
+    const std::string& datasetName);
+
 void writeBaseStructure(std::shared_ptr<HighFive::File> hdf5_file);
 
 HighFive::Group getGroup(std::shared_ptr<HighFive::File> hdf5_file,
@@ -98,10 +108,10 @@ HighFive::Group getGroup(std::shared_ptr<HighFive::File> hdf5_file,
 HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create = true);
 
 
-bool exist(std::shared_ptr<HighFive::File> hdf5_file, const std::string& groupName);
+bool exist(const std::shared_ptr<HighFive::File>& hdf5_file, const std::string& groupName);
 
 
-bool exist(HighFive::Group& group, const std::string& groupName);
+bool exist(const HighFive::Group& group, const std::string& groupName);
 
 std::shared_ptr<HighFive::File> open(const std::string& filename);
 
@@ -113,6 +123,10 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
 
 template <typename T>
 void setAttribute(HighFive::Group& g, const std::string& attr_name, T& data);
+
+// For DataSet as well
+// template <typename T>
+// void setAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data);
 
 
 

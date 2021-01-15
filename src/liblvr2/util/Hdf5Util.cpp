@@ -76,6 +76,25 @@ std::vector<std::string> splitGroupNames(const std::string& groupName)
     return ret;
 }
 
+std::pair<std::string, std::string> validateGroupDataset(
+    const std::string& groupName, 
+    const std::string& datasetName)
+{
+    std::vector<std::string> datasetSplit = splitGroupNames(datasetName);
+    if(datasetSplit.size() > 1)
+    {
+        std::string group = groupName;
+        std::string container = datasetSplit.back();
+        for(size_t i=0; i<datasetSplit.size()-1; i++)
+        {
+            group += "/" + datasetSplit[i];
+        }
+        return {group, container};
+    } else {
+        return {groupName, datasetName};
+    }
+}
+
 void writeBaseStructure(std::shared_ptr<HighFive::File> hdf5_file)
 {
     int version = 1;
@@ -178,54 +197,27 @@ HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool 
     return cur_grp;
 }
 
-bool exist(std::shared_ptr<HighFive::File> hdf5_file, const std::string& groupName)
+bool exist(const std::shared_ptr<HighFive::File>& hdf5_file, const std::string& groupName)
 {
-    std::vector<std::string> groupNames = hdf5util::splitGroupNames(groupName);
-
-
-    try
-    {
-        HighFive::Group cur_grp = cur_grp = hdf5_file->getGroup("/");
-
-        for (size_t i = 0; i < groupNames.size(); i++)
-        {
-            if (cur_grp.exist(groupNames[i]))
-            {
-                if (i < groupNames.size() - 1)
-                {
-                    cur_grp = cur_grp.getGroup(groupNames[i]);
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-    catch (HighFive::Exception& e)
-    {
-        std::cout << "Error in exist (with group name '" << groupName << "': " << std::endl;
-        std::cout << e.what() << std::endl;
-        throw e;
-    }
-
-    return true;
+    HighFive::Group cur_grp = hdf5_file->getGroup("/");
+    bool ret = exist(cur_grp, groupName);
+    return ret;
 }
 
-bool exist(HighFive::Group& group, const std::string& groupName)
+bool exist(const HighFive::Group& group, const std::string& groupName)
 {
     std::vector<std::string> groupNames = hdf5util::splitGroupNames(groupName);
-    HighFive::Group cur_grp = group;
+    HighFive::Group group_iter = group;
 
     try
     {
         for (size_t i = 0; i < groupNames.size(); i++)
         {
-            if (cur_grp.exist(groupNames[i]))
+            if (group_iter.exist(groupNames[i]))
             {
-                if (i < groupNames.size() - 1)
+                if (i+1 < groupNames.size())
                 {
-                    cur_grp = cur_grp.getGroup(groupNames[i]);
+                    group_iter = group_iter.getGroup(groupNames[i]);
                 }
             }
             else
@@ -233,6 +225,8 @@ bool exist(HighFive::Group& group, const std::string& groupName)
                 return false;
             }
         }
+
+        return true;
     }
     catch (HighFive::Exception& e)
     {
@@ -241,7 +235,7 @@ bool exist(HighFive::Group& group, const std::string& groupName)
         throw e;
     }
 
-    return true;
+    return false;
 }
 
 std::shared_ptr<HighFive::File> open(const std::string& filename)

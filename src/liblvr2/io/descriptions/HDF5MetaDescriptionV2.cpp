@@ -5,299 +5,295 @@
 namespace lvr2
 {
 
-void HDF5MetaDescriptionV2::saveHyperspectralCamera(
+void HDF5MetaDescriptionV2::saveScanProject(
     HighFive::Group &g,
-    const YAML::Node& n) const
+    const YAML::Node &n) const 
 {
-
-}
-
-void HDF5MetaDescriptionV2::saveHyperspectralPanoramaChannel(
-    HighFive::Group &g,
-    const YAML::Node &n) const
-{
-
-}
-
-void HDF5MetaDescriptionV2::saveScan(
-    HighFive::Group &g,
-    const YAML::Node &n) const
-{
-    std::cout <<"[HDFMETA2] save SCAN " << std::endl;
-    YAML::Node config;
-    config = n["config"];
-    
-    vector<size_t> dim = {2, 1};
-
-    // Phi min/max
-    doubleArr phi(new double[2]);
-    phi[0] = 0.0;
-    phi[1] = 0.0;
-    if(config["phi"] && config["phi"].size() == 2)
-    {
-        phi[0] = config["phi"][0].as<double>();
-        phi[1] = config["phi"][1].as<double>();
+    ScanProject sp;
+    if(YAML::convert<ScanProject>::decode(n, sp))
+    {   
+        hdf5util::addAtomic<std::string>(g, "sensorType", ScanProject::sensorType);
+        // write data
+        hdf5util::addMatrix<double>(g, "poseEstimation", sp.pose);
+        std::cout << "Saving Coordinate System " << sp.coordinateSystem << std::endl;
+        hdf5util::addAtomic<std::string>(g, "coordinateSystem", sp.coordinateSystem);
+        hdf5util::addAtomic<std::string>(g, "sensorName", sp.sensorName);
     }
-    hdf5util::addArray<double>(g, "phi", dim, phi);
-
-    // Theta min/max
-    doubleArr theta(new double[2]);
-    theta[0] = 0.0;
-    theta[1] = 0.0;
-    if(config["theta"] && config["theta"].size() == 2)
-    {
-        theta[0] = config["theta"][0].as<double>();
-        theta[1] = config["theta"][1].as<double>();
-    }
-    hdf5util::addArray<double>(g, "theta", dim, theta);
-
-    // Horizontal and vertical resolution
-    doubleArr resolution(new double[2]);
-    resolution[0] = 0.0;
-    resolution[1] = 0.0;
-    if(config["h_res"])
-    {
-        resolution[0] = config["h_res"].as<double>();
-    }
-    if(config["v_res"])
-    {
-        resolution[1] = config["v_res"].as<double>();
-    }
-    hdf5util::addArray<double>(g, "resolution", dim, resolution);
-
-    // Pose estimation and registration
-    Transformd p_transform;
-    if(n["pose_estimate"])
-    {
-        p_transform = n["pose_estimate"].as<Transformd>();
-    }
-    hdf5util::addMatrix<double>(g, "poseEstimation", p_transform);
-
-    Transformd r_transform;
-    if(n["registration"])
-    {
-        r_transform = n["registration"].as<Transformd>();
-    }
-    hdf5util::addMatrix<double>(g, "registration", r_transform);
-
-    // Timestamps
-    doubleArr timestamps(new double[2]);
-    timestamps[0] = 0.0;
-    timestamps[1] = 0.0;
-    if(n["start_time"])
-    {
-        timestamps[0] = n["start_time"].as<double>();
-    }
-    if(n["end_time"])
-    {
-        timestamps[1] = n["end_time"].as<double>();
-    }
-    hdf5util::addArray<double>(g, "timestamps", dim, timestamps);
-
 }
 
 void HDF5MetaDescriptionV2::saveScanPosition(
     HighFive::Group &g,
     const YAML::Node &n) const
 {
-     // GPS position
-    doubleArr gps(new double[3]);
-    gps[0] = 0.0;
-    gps[1] = 0.0;
-    gps[2] = 0.0;
-    if(n["latitude"])
+    ScanPosition sp;
+    if(YAML::convert<ScanPosition>::decode(n, sp))
     {
-        gps[0] = n["latitude"].as<double>();
-    }
-    if(n["longitude"])
-    {
-        gps[1] = n["longitude"].as<double>();
-    }
-    if(n["altitude"])
-    {
-        gps[1] = n["altitude"].as<double>();
-    }
-    hdf5util::addArray<double>(g, "gpsPosition", 3, gps);
+        hdf5util::addAtomic<std::string>(g, "sensorType", ScanPosition::sensorType);
+        // Is ScanPosition
+        
+        // GPS
+        doubleArr gps(new double[3]);
+        gps[0] = sp.latitude;
+        gps[1] = sp.longitude;
+        gps[2] = sp.altitude;
+        hdf5util::addArray<double>(g, "gpsPosition", 3, gps);
 
-    // Pose estimation and registration
-    Transformd p_transform;
-    if(n["pose_estimate"])
-    {
-        p_transform = n["pose_estimate"].as<Transformd>();
-    }
-    hdf5util::addMatrix<double>(g, "poseEstimation", p_transform);
+        // Pose estimation and registration
+        hdf5util::addMatrix<double>(g, "poseEstimation", sp.pose_estimate);
+        hdf5util::addMatrix<double>(g, "registration", sp.registration);
 
-    Transformd r_transform;
-    if(n["registration"])
-    {
-        r_transform = n["registration"].as<Transformd>();
+        // Timestamp
+        hdf5util::addAtomic<double>(g, "timestamp", sp.timestamp);
     }
-    hdf5util::addMatrix<double>(g, "registration", r_transform);
-
-    // Timestamp
-    doubleArr ts(new double[1]);
-    ts[0] = 0.0;
-    if(n["timestamp"])
-    {
-        ts[0] = n["timestamp"].as<double>();
-    }
-    hdf5util::addArray<double>(g, "timestamp", 1, ts);
 }
 
-void HDF5MetaDescriptionV2::saveScanProject(
+void HDF5MetaDescriptionV2::saveScan(
     HighFive::Group &g,
-    const YAML::Node &n) const 
+    const YAML::Node &n) const
 {
-    std::cout << timestamp << "HDF5MetaDescriptionV2::saveScanProject() not implemented..." << std::endl;
+    Scan s;
+    if(YAML::convert<Scan>::decode(n, s))
+    {
+        hdf5util::addAtomic<std::string>(g, "sensorType", Scan::sensorType);
 
+        doubleArr phi(new double[2]);
+        phi[0] = s.phiMin;
+        phi[1] = s.phiMax;
+        hdf5util::addArray(g, "phi", 2, phi);
+
+        doubleArr theta(new double[2]);
+        theta[0] = s.thetaMin;
+        theta[1] = s.thetaMax;
+        hdf5util::addArray(g, "theta", 2, theta);
+
+        doubleArr resolution(new double[2]);
+        resolution[0] = s.hResolution;
+        resolution[1] = s.vResolution;
+        hdf5util::addArray(g, "resolution", 2, resolution);
+
+        doubleArr timestamps(new double[2]);
+        timestamps[0] = s.startTime;
+        timestamps[1] = s.endTime;
+        hdf5util::addArray(g, "timestamps", 2, timestamps);
+
+        hdf5util::addMatrix(g, "poseEstimation", s.poseEstimation);
+        hdf5util::addMatrix(g, "registration", s.registration);
+
+        hdf5util::addAtomic(g, "numPoints", s.numPoints);
+    }
 }
 
 void HDF5MetaDescriptionV2::saveScanCamera(
     HighFive::Group &g,
     const YAML::Node& n) const
 {
-    std::cout << timestamp << "HDF5MetaDescriptionV2::saveScanCamera() not implemented..." << std::endl;
+    ScanCamera sc;
+    if(YAML::convert<ScanCamera>::decode(n, sc))
+    {
+        hdf5util::addAtomic<std::string>(g, "sensorType", ScanCamera::sensorType);
+
+        // Intrinsic Parameters
+        doubleArr intrinsics(new double[4]);
+        intrinsics[0] = sc.camera.cx;
+        intrinsics[1] = sc.camera.cy;
+        intrinsics[2] = sc.camera.fx;
+        intrinsics[3] = sc.camera.fy;
+        hdf5util::addArray(g, "intrinsics", 4, intrinsics);
+
+        // Distortion parameter
+        hdf5util::addAtomic<std::string>(g, "distortionModel", sc.camera.distortionModel);
+        hdf5util::addVector(g, "distortionParameter", sc.camera.k);
+
+        uintArr res(new unsigned int[2]);
+        res[0] = sc.camera.width;
+        res[1] = sc.camera.height;
+        hdf5util::addArray(g, "resolution", 2, res);
+        hdf5util::addAtomic<std::string>(g, "sensorName", sc.sensorName);
+    }
 }
 
 void HDF5MetaDescriptionV2::saveScanImage(
     HighFive::Group &g,
     const YAML::Node &n) const
 {
-    std::cout << timestamp << "HDF5MetaDescriptionV2::saveScanImage() not implemented..." << std::endl;
+    ScanImage si;
+    if(YAML::convert<ScanImage>::decode(n, si))
+    {
+        hdf5util::addAtomic<std::string>(g, "sensorType", ScanImage::sensorType);
+        hdf5util::addMatrix(g, "extrinsics", si.extrinsics);
+        hdf5util::addMatrix(g, "extrinsicsEstimate", si.extrinsicsEstimate);
+        hdf5util::addAtomic<std::string>(g, "imageFile", si.imageFile.string());
+    }
 }
 
-YAML::Node HDF5MetaDescriptionV2::hyperspectralCamera(const HighFive::Group &g) const 
+void HDF5MetaDescriptionV2::saveHyperspectralCamera(
+    HighFive::Group &g,
+    const YAML::Node& n) const
 {
-    std::cout << timestamp << "HDF5MetaDescriptionV2::hyperspectralCamera() not implemented..." << std::endl;
-    YAML::Node node;
-    return node;
+    // TODO:
 }
 
-YAML::Node HDF5MetaDescriptionV2::hyperspectralPanoramaChannel(const HighFive::Group &g) const 
+void HDF5MetaDescriptionV2::saveHyperspectralPanoramaChannel(
+    HighFive::Group &g,
+    const YAML::Node &n) const
 {
-     std::cout << timestamp << "HDF5MetaDescriptionV2::hyperspectralPanoramaChannel() not implemented..." << std::endl;
-    YAML::Node node;
-    return node;
+    // TODO:
 }
 
-YAML::Node HDF5MetaDescriptionV2::scan(const HighFive::Group &g) const 
+
+YAML::Node HDF5MetaDescriptionV2::scanProject(const HighFive::Group &g) const 
 {
+    std::cout << "scanProject: CREATING YAML NODE" << std::endl;
     YAML::Node node;
 
-    // Get start and end time
-    std::vector<size_t> timesDim;
-    doubleArr times = hdf5util::getArray<double>(g, "timestamps", timesDim);
-    if(times && timesDim.size() == 2 && timesDim[0] == 2 && timesDim[1] == 1)
+    boost::optional<std::string> sensorTypeOpt = hdf5util::getAtomic<std::string>(g, "sensorType");
+
+    if(sensorTypeOpt && *sensorTypeOpt == ScanProject::sensorType)
     {
-        std::cout << timestamp << "YAML timestamp..." << std::endl;
-        node["start_time"] = times[0]; 
-        node["end_time"] = times[1];
+        ScanProject sp;
+
+        // sensorName
+        boost::optional<std::string> sensorNameOpt = hdf5util::getAtomic<std::string>(g, "sensorName");
+        if(sensorNameOpt){ sp.sensorName = *sensorNameOpt; }
+
+        // poseEstimation
+        boost::optional<Transformd> poseOpt = hdf5util::getMatrix<Transformd>(g, "poseEstimation");
+        if(poseOpt){ sp.pose = *poseOpt; }
+
+        // coordinateSystem
+        boost::optional<std::string> coordSysOpt = hdf5util::getAtomic<std::string>(g, "coordinateSystem");
+        if(coordSysOpt){ sp.coordinateSystem = *coordSysOpt; }
+
+        node = sp;
     }
 
-    // Get pose estimation and registration
-    boost::optional<Transformd> poseEstimate = 
-        hdf5util::getMatrix<Transformd>(g, "poseEstimation");
-    if(poseEstimate)
-    {
-        node["pose_estimate"] = *poseEstimate;
-    }
+    std::cout << "Finished." << std::endl;
 
-    boost::optional<Transformd> registration = 
-        hdf5util::getMatrix<Transformd>(g, "registration");
-    if(poseEstimate)
-    {
-        node["registration"] = *registration;
-    }
-
-    // Configuration parameters
-    YAML::Node config;
-    std::vector<size_t> resDim;
-    doubleArr phi = hdf5util::getArray<double>(g, "phi", resDim);
-    if(phi && resDim.size() == 2 && resDim[0] == 2 && resDim[1] == 1)
-    {
-        std::cout << timestamp << "YAML phi..." << std::endl;
-        config["phi"] = YAML::Load("[]");
-        config["phi"].push_back(phi[0]);
-        config["phi"].push_back(phi[1]);
-    }
-    resDim.clear();
-
-    doubleArr theta = hdf5util::getArray<double>(g, "theta", resDim);
-    if(theta && resDim.size() == 2 && resDim[0] == 2 && resDim[1] == 1)
-    {
-        std::cout << timestamp << "YAML theta..." << std::endl;
-        config["theta"] = YAML::Load("[]");
-        config["theta"].push_back(theta[0]);
-        config["theta"].push_back(theta[1]);
-    }
-    resDim.clear();
-
-    doubleArr res = hdf5util::getArray<double>(g, "resolution", resDim);
-    if(res && resDim.size() == 2 && resDim[0] == 2 && resDim[1] == 1)
-    {
-        std::cout << timestamp << "YAML resolution..." << std::endl;
-        config["v_res"] = theta[0];
-        config["h_res"] = theta[1];
-    }
-    resDim.clear();
-
-    vector<size_t> v = hdf5util::getDimensions<float>(g, "points");
-    if(v.size() == 2)
-    {
-        config["num_points"] = v[0];
-    }
-
-    node["config"] = config;
     return node;
 }
 
 YAML::Node HDF5MetaDescriptionV2::scanPosition(const HighFive::Group &g) const 
 {
+    std::cout << "scanPosition: CREATING YAML NODE" << std::endl;
     YAML::Node node;
 
-    // Get GPS information
-    std::vector<size_t> dim;
-    doubleArr gps = hdf5util::getArray<double>(g, "gpsPosition", dim);
-    if(gps && dim.size() == 2 && dim[0] == 3 && dim[1] == 1)
-    {
-        std::cout << timestamp << "YAML GPS..." << std::endl;
-        node["latitude"] = gps[0];
-        node["longitude"] = gps[1];
-        node["altitude"] = gps[2];
-    }
-    dim.clear();
+    boost::optional<std::string> sensorTypeOpt = hdf5util::getAtomic<std::string>(g, "sensorType");
 
-    // Get timestamp
-    doubleArr ts = hdf5util::getArray<double>(g, "gpsPosition", dim);
-    if(gps && dim.size() == 2 && dim[0] == 1 && dim[1] == 1)
+    if(sensorTypeOpt && *sensorTypeOpt == ScanPosition::sensorType)
     {
-        std::cout << timestamp << "YAML timestamp..." << std::endl;
-        node["timestamp"] = ts[0];
-    }
-    dim.clear();
+        ScanPosition sp;
 
-    // Get pose estimation and registration
-    boost::optional<Transformd> poseEstimate = 
-        hdf5util::getMatrix<Transformd>(g, "poseEstimation");
-    if(poseEstimate)
-    {
-        node["pose_estimate"] = *poseEstimate;
-    }
-    
-    boost::optional<Transformd> registration = 
-        hdf5util::getMatrix<Transformd>(g, "registration");
-    if(poseEstimate)
-    {
-        node["registration"] = *registration;
+        // Get GPS information
+        size_t dim;
+        doubleArr gps = hdf5util::getArray<double>(g, "gpsPosition", dim);
+        if(gps && dim == 3)
+        {
+            sp.latitude = gps[0];
+            sp.longitude = gps[1];
+            sp.altitude = gps[2];
+        }
+
+        // Get timestamp
+        boost::optional<double> ts_opt = hdf5util::getAtomic<double>(g, "timestamp");
+        if(ts_opt)
+        {
+            sp.timestamp = *ts_opt;
+        }
+
+        // Get pose estimation and registration
+        boost::optional<Transformd> poseEstimate = 
+            hdf5util::getMatrix<Transformd>(g, "poseEstimation");
+        if(poseEstimate)
+        {
+            sp.pose_estimate = *poseEstimate;
+        }
+        
+        boost::optional<Transformd> registration = 
+            hdf5util::getMatrix<Transformd>(g, "registration");
+        if(registration)
+        {
+            sp.registration = *registration;
+        }
+
+        node = sp;
     }
 
     return node;
 }
 
-YAML::Node HDF5MetaDescriptionV2::scanProject(const HighFive::Group &g) const 
+YAML::Node HDF5MetaDescriptionV2::scan(const HighFive::Group &g) const 
 {
-    std::cout << timestamp << "HDF5MetaDescriptionV2::scanProject() not implemented..." << std::endl;
+    std::cout << "scan: CREATING YAML NODE" << std::endl;
+    
     YAML::Node node;
+    boost::optional<std::string> sensorTypeOpt = hdf5util::getAtomic<std::string>(g, "sensorType");
+
+    if(sensorTypeOpt && *sensorTypeOpt == Scan::sensorType)
+    {
+        Scan s;
+
+        // Get start and end time
+        size_t dim;
+        doubleArr times = hdf5util::getArray<double>(g, "timestamps", dim);
+        if(times && dim == 2)
+        {
+            s.startTime = times[0];
+            s.endTime = times[1];
+        }
+
+        // Get pose estimation and registration
+        boost::optional<Transformd> poseEstimate = 
+            hdf5util::getMatrix<Transformd>(g, "poseEstimation");
+        if(poseEstimate)
+        {
+            s.poseEstimation = *poseEstimate;
+        }
+
+        boost::optional<Transformd> registration = 
+            hdf5util::getMatrix<Transformd>(g, "registration");
+        if(poseEstimate)
+        {
+            s.registration = *registration;
+        }
+
+        // Configuration parameters
+        
+        doubleArr phi = hdf5util::getArray<double>(g, "phi", dim);
+        if(phi && dim == 2)
+        {
+            s.phiMin = phi[0];
+            s.phiMax = phi[1];
+        } else {
+            std::cout << "WARNING: Could not load scan meta 'phi'" << std::endl; 
+        }
+        
+        doubleArr theta = hdf5util::getArray<double>(g, "theta", dim);
+        if(theta && dim == 2)
+        {
+            s.thetaMin = theta[0];
+            s.thetaMax = theta[1];
+        } else {
+            std::cout << "WARNING: Could not load scan meta 'theta'" << std::endl; 
+        }
+
+        doubleArr res = hdf5util::getArray<double>(g, "resolution", dim);
+        if(res && dim == 2)
+        {
+            s.hResolution = res[0];
+            s.vResolution = res[1];
+        }
+
+        // this function doesnt know anything about the "points" location
+        auto num_points = hdf5util::getAtomic<size_t>(g, "numPoints");
+        if(num_points)
+        {
+            s.numPoints = *num_points;
+        }
+
+
+        node = s;
+    }
+
     return node;
 }
 
@@ -311,6 +307,20 @@ YAML::Node HDF5MetaDescriptionV2::scanCamera(const HighFive::Group &g) const
 YAML::Node HDF5MetaDescriptionV2::scanImage(const HighFive::Group &g) const 
 {
     std::cout << timestamp << "HDF5MetaDescriptionV2::scanImage() not implemented..." << std::endl;
+    YAML::Node node;
+    return node;
+}
+
+YAML::Node HDF5MetaDescriptionV2::hyperspectralCamera(const HighFive::Group &g) const 
+{
+    std::cout << timestamp << "HDF5MetaDescriptionV2::hyperspectralCamera() not implemented..." << std::endl;
+    YAML::Node node;
+    return node;
+}
+
+YAML::Node HDF5MetaDescriptionV2::hyperspectralPanoramaChannel(const HighFive::Group &g) const 
+{
+     std::cout << timestamp << "HDF5MetaDescriptionV2::hyperspectralPanoramaChannel() not implemented..." << std::endl;
     YAML::Node node;
     return node;
 }

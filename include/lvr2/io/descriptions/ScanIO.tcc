@@ -61,7 +61,11 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     ScanPtr ret;
 
     // Get Description of Scan Location
+
+    
     Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
+    std::cout << "[IO: ScanIO - load]: Description" << std::endl;
+    std::cout << d << std::endl;
 
     if(!d.groupName)
     {
