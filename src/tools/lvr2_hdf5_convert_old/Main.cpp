@@ -249,57 +249,31 @@ bool compare(ScanProjectPtr sp1, ScanProjectPtr sp2)
     return true;
 }
 
-struct MyStruct {
-    char hello;
-    int world;
-};
-
 void writeTest()
 {
-    // std::string tmp = TypeName<int>::name;
-    // stringify<MyStruct>();
-
-    VariantChannel<float, int, bool> vc;
-    Channel<bool> c;
-    vc = c;
-
-    std::cout << Channel<float>::typeName() << std::endl;
-    std::cout << c.typeName() << std::endl;
-
-    std::cout << vc.typeName() << std::endl;
-
-    // std::cout << vc.typeString()  
-
-    // std::cout << "Int type string: " << tmp << std::endl;
-
-    return;
-
     std::string filename = "test";
 
     ScanProjectPtr sp = dummyScanProject();
 
     /// WRITE TO HDF5
-
     HDF5KernelPtr hdf5_kernel(new HDF5Kernel(filename + ".h5"));
     HDF5SchemaPtr hdf5_schema(new ScanProjectSchemaHDF5V2());
     descriptions::HDF5IO hdf5_io(hdf5_kernel, hdf5_schema);
     hdf5_io.saveScanProject(sp);
 
+
     std::cout << "--------------------------" << std::endl;
     std::cout << "LOAD SCANPROJECT" << std::endl;
-    // ScanProjectPtr sp_loaded = hdf5_io.loadScanProject();
+    ScanProjectPtr sp_loaded = hdf5_io.loadScanProject();
 
-    // if(compare(sp, sp_loaded))
-    // {
-    //     std::cout << "IO works correct!" << std::endl;
-    // } else {
-    //     std::cout << "Something is wrong!" << std::endl;
-    // }
-
+    if(compare(sp, sp_loaded))
+    {
+        std::cout << "IO works correct!" << std::endl;
+    } else {
+        std::cout << "Something is wrong!" << std::endl;
+    }
 
 }
-
-
 
 void loadTest()
 {

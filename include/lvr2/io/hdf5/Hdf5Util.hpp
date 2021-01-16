@@ -110,7 +110,6 @@ HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool 
 
 bool exist(const std::shared_ptr<HighFive::File>& hdf5_file, const std::string& groupName);
 
-
 bool exist(const HighFive::Group& group, const std::string& groupName);
 
 std::shared_ptr<HighFive::File> open(const std::string& filename);
@@ -133,7 +132,11 @@ bool checkAttribute(HighFive::Group& g, const std::string& attr_name, T& data);
 template <typename T>
 bool checkAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data);
 
+template <typename T>
+boost::optional<T> getAttribute(const HighFive::Group& g, const std::string& attr_name);
 
+template <typename T>
+boost::optional<T> getAttribute(const HighFive::DataSet& d, const std::string& attr_name);
 
 
 } // namespace hdf5util

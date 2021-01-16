@@ -16,6 +16,7 @@ public:
     virtual YAML::Node scanProject(const HighFive::Group& g) const override;
     virtual YAML::Node scanCamera(const HighFive::Group& g) const override;
     virtual YAML::Node scanImage(const HighFive::Group& g) const override;
+    virtual YAML::Node channel(const HighFive::DataSet& d) const override;
 
     virtual void saveHyperspectralCamera(
       HighFive::Group& g, 
@@ -44,6 +45,10 @@ public:
     virtual void saveScanImage(
       HighFive::Group& g, 
       const YAML::Node& n) const override;
+
+    virtual void saveChannel(
+      HighFive::DataSet &d,
+      const YAML::Node &n) const override;
 protected:
     
 };

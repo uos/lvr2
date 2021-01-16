@@ -23,11 +23,18 @@ struct convert<VChannelT>
         
         Node node;
 
+        std::cout << "Try to encode VChannel:" << std::endl;
+        std::cout << "-- size: " << vchannel.numElements() << "x" << vchannel.width() << std::endl;
+        std::cout << "-- type: " << vchannel.typeName() << std::endl;
+
         node["sensor_type"] = "Channel";
-        node["channel_type"] = vchannel.type();
+        node["channel_type"] = vchannel.typeName();
+        std::cout << "Now the size: " << std::endl;
         node["dims"] = Load("[]");
         node["dims"].push_back(vchannel.numElements());
         node["dims"].push_back(vchannel.width());
+
+        
 
         return node;
     }
@@ -39,11 +46,11 @@ struct convert<VChannelT>
             return false;
         }
 
-        if(node["channel_type"].as<int>() != vchannel.type())
+        if(node["channel_type"].as<std::string>() != vchannel.typeName())
         {
             return false;
         }
-       
+        
         return true;
     }
 

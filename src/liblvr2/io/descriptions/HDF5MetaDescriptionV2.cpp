@@ -126,6 +126,29 @@ void HDF5MetaDescriptionV2::saveScanImage(
     }
 }
 
+void HDF5MetaDescriptionV2::saveChannel(
+    HighFive::DataSet &d,
+    const YAML::Node &n) const
+{
+    std::string attr_name, attr_value;
+
+    attr_name = "sensor_type";
+    attr_value = n[attr_name].as<std::string>();
+    hdf5util::setAttribute(d, attr_name, attr_value);
+
+    attr_name = "channel_type";
+    attr_value = n[attr_name].as<std::string>();
+    hdf5util::setAttribute(d, attr_name, attr_value);
+
+    size_t num_elements = n["dims"][0].as<size_t>();
+    attr_name = "num_elements";
+    hdf5util::setAttribute(d, attr_name, num_elements);
+    
+    size_t width = n["dims"][1].as<size_t>();
+    attr_name = "width";
+    hdf5util::setAttribute(d, attr_name, width);
+}
+
 void HDF5MetaDescriptionV2::saveHyperspectralCamera(
     HighFive::Group &g,
     const YAML::Node& n) const
@@ -139,14 +162,6 @@ void HDF5MetaDescriptionV2::saveHyperspectralPanoramaChannel(
 {
     // TODO:
 }
-
-// void HDF5MetaDescriptionV2::saveVChannel(
-//     HighFive::Group &g,
-//     const YAML::Node &n) const
-// {
-//     // TODO:
-// }
-
 
 YAML::Node HDF5MetaDescriptionV2::scanProject(const HighFive::Group &g) const 
 {
@@ -297,8 +312,137 @@ YAML::Node HDF5MetaDescriptionV2::scan(const HighFive::Group &g) const
             s.numPoints = *num_points;
         }
 
-
         node = s;
+    }
+
+    return node;
+}
+
+YAML::Node HDF5MetaDescriptionV2::channel(const HighFive::DataSet& d) const
+{
+    YAML::Node node;
+    
+    boost::optional<std::string> sensorTypeOpt
+        = hdf5util::getAttribute<std::string>(d, "sensor_type");
+
+    if(sensorTypeOpt && *sensorTypeOpt == "Channel")
+    {
+        node["sensor_type"] = "Channel";
+
+        // get meta from attributes
+        std::cout << "Get Meta from dataset attributes" << std::endl;
+
+        boost::optional<std::string> channelTypeOpt 
+            = hdf5util::getAttribute<std::string>(d, "channel_type");
+
+        if(channelTypeOpt)
+        {
+            node["channel_type"] = *channelTypeOpt;
+        } else {
+            // from datasetinfo
+            std::cout << "TODO: get Meta (channel_type) from dataset info" << std::endl;
+        }
+
+        boost::optional<size_t> numElementsOpt
+            = hdf5util::getAttribute<size_t>(d, "num_elements");
+
+        if(numElementsOpt)
+        {
+            node["num_elements"] = *numElementsOpt;
+        } else {
+            // from datasetinfo
+            std::cout << "TODO: get Meta (num_elements) from dataset info" << std::endl;
+        }
+
+        boost::optional<size_t> widthOpt
+            = hdf5util::getAttribute<size_t>(d, "width");
+
+        if(widthOpt)
+        {
+            node["width"] = *widthOpt;
+        } else {
+            // from datasetinfo
+            std::cout << "TODO: get Meta width from dataset info" << std::endl;
+
+        }
+
+    } else {
+        // get meta from dataset itself
+        
+        HighFive::DataType dtype = d.getDataType();
+        HighFive::DataSpace dspace = d.getSpace();
+        
+        std::vector<size_t> dims = dspace.getDimensions();
+
+        if(dims.size() == 2)
+        {
+            node["num_elements"] = dims[0];
+            node["width"] = dims[1];
+            node["sensor_type"] = "Channel";
+
+            // Supported atomic types:
+            //
+            // char,
+            // unsigned char,
+            // short,
+            // unsigned short,
+            // int,
+            // long int,
+            // unsigned int,
+            // size_t,
+            // float,
+            // double,
+            // bool
+
+            if(HighFive::AtomicType<char>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<char>::typeName();
+            } else
+            if(HighFive::AtomicType<unsigned char>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<unsigned char>::typeName();
+            } else
+            if(HighFive::AtomicType<short>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<short>::typeName();
+            } else
+            if(HighFive::AtomicType<unsigned short>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<unsigned short>::typeName();
+            } else
+            if(HighFive::AtomicType<int>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<int>::typeName();
+            } else
+            if(HighFive::AtomicType<long int>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<long int>::typeName();
+            } else
+            if(HighFive::AtomicType<unsigned int>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<unsigned int>::typeName();
+            } else
+            if(HighFive::AtomicType<size_t>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<size_t>::typeName();
+            } else
+            if(HighFive::AtomicType<float>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<float>::typeName();
+            } else
+            if(HighFive::AtomicType<double>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<double>::typeName();
+            } else
+            if(HighFive::AtomicType<bool>().string() == dtype.string())
+            {
+                node["channel_type"] = Channel<bool>::typeName();
+            } else {
+                std::cout << "Cannot interpret HighFive datatype " << dtype.string() << std::endl;
+            }
+        }
+
+        
     }
 
     return node;

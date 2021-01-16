@@ -464,6 +464,36 @@ bool checkAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data)
     return true;
 }
 
+template <typename T>
+boost::optional<T> getAttribute(const HighFive::Group& g, const std::string& attr_name)
+{
+    boost::optional<T> ret;
+
+    if(g.hasAttribute(attr_name))
+    {
+        T data;
+        g.getAttribute(attr_name).read(data);
+        ret = data;
+    }
+
+    return ret;
+}
+
+template <typename T>
+boost::optional<T> getAttribute(const HighFive::DataSet& d, const std::string& attr_name)
+{
+    boost::optional<T> ret;
+
+    if(d.hasAttribute(attr_name))
+    {
+        T data;
+        d.getAttribute(attr_name).read(data);
+        ret = data;
+    }
+
+    return ret;
+}
+
 } // namespace hdf5util
 
 } // namespace lvr2
