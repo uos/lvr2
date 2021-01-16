@@ -21,6 +21,8 @@
 
 #include "lvr2/util/Synthetic.hpp"
 
+#include <boost/type_index.hpp>
+
 using namespace lvr2;
 
 ScanProjectPtr dummyScanProject()
@@ -247,13 +249,34 @@ bool compare(ScanProjectPtr sp1, ScanProjectPtr sp2)
     return true;
 }
 
+struct MyStruct {
+    char hello;
+    int world;
+};
+
 void writeTest()
 {
+    // std::string tmp = TypeName<int>::name;
+    // stringify<MyStruct>();
+
+    VariantChannel<float, int, bool> vc;
+    Channel<bool> c;
+    vc = c;
+
+    std::cout << Channel<float>::typeName() << std::endl;
+    std::cout << c.typeName() << std::endl;
+
+    std::cout << vc.typeName() << std::endl;
+
+    // std::cout << vc.typeString()  
+
+    // std::cout << "Int type string: " << tmp << std::endl;
+
+    return;
+
     std::string filename = "test";
 
-
     ScanProjectPtr sp = dummyScanProject();
-
 
     /// WRITE TO HDF5
 

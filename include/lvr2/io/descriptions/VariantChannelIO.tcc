@@ -2,9 +2,6 @@
 namespace lvr2 
 {
 
-// template<typename T, size_t I>
-// void bla();
-
 // Anker
 template<typename Derived, typename VChannelT, size_t I,
     typename std::enable_if<I == 0, void>::type* = nullptr>
@@ -27,8 +24,7 @@ void saveDynamic(
     const std::string& group,
     const std::string& name,
     const VChannelT& channel,
-    const ChannelIO<Derived>* io
-)
+    const ChannelIO<Derived>* io)
 {
     if(I == channel.type())
     {
@@ -57,8 +53,7 @@ void VariantChannelIO<Derived>::save(
     std::string datasetName,
     const VariantChannel<Tp...>& vchannel)
 {
-    // TODO
-
+    std::cout << "[VariantChannelIO - save] " << groupName << ", " << datasetName << std::endl;
     using VChannelT = VariantChannel<Tp...>;
 
     // creating meta node of variantchannel containing type and size
@@ -68,10 +63,6 @@ void VariantChannelIO<Derived>::save(
     m_featureBase->m_kernel->saveMetaYAML(groupName, datasetName, node);
     saveDynamic<Derived, VChannelT>(groupName, datasetName, vchannel, m_channel_io);
 }
-
-
-// template<typename VariantChannelT, size_t I>
-// void check(size_t bla);
 
 // anker
 template<typename Derived, typename VariantChannelT, size_t I,

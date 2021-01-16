@@ -53,9 +53,12 @@ using MultiChannelMap = VariantChannelMap<
         short,
         unsigned short,
         int,
+        long int,
         unsigned int,
+        size_t,
         float,
-        double
+        double,
+        bool
     >;
 
 } // namespace lvr2

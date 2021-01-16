@@ -7,13 +7,12 @@ void PointCloudIO<FeatureBase>::save(
     const std::string& name,
     PointBufferPtr pcl) const
 {
+    std::cout << "[PointCloudIO - save(group, dataset)]: " << group << ", " << name << std::endl;
     boost::filesystem::path p(name);
     if(p.extension() == "")
     {
         std::string groupandname = group + "/" + name;
         save(groupandname, pcl);
-
-        
     } else {
         m_featureBase->m_kernel->savePointBuffer(group, name, pcl);
     }
@@ -24,8 +23,10 @@ void PointCloudIO<FeatureBase>::save(
     const std::string& groupandname, 
     PointBufferPtr pcl) const
 {
+    std::cout << "[PointCloudIO - save(group/dataset)]: " << groupandname << std::endl;
     for(auto elem : *pcl)
     {
+        std::cout << "-- save " << elem.first << std::endl;
         m_vchannel_io->save(groupandname, elem.first, elem.second);
     }
 }
