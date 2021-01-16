@@ -8,7 +8,7 @@ namespace lvr2
 
 HDF5Kernel::HDF5Kernel(const std::string& rootFile) : FileKernel(rootFile)
 {
-    std::cout << "[HDF5Kernel - HDF5Kernel]: Open File" << std::endl;
+    // std::cout << "[HDF5Kernel - HDF5Kernel]: Open File" << std::endl;
     m_hdf5File = hdf5util::open(rootFile);
     m_metaDescription = new HDF5MetaDescriptionV2;
 }
@@ -26,7 +26,7 @@ void HDF5Kernel::savePointBuffer(
     const std::string &container,
     const PointBufferPtr &buffer) const
 {
-    std::cout <<  "[HDF5Kernel - savePointBuffer]: " << group  <<  ", "  << container << std::endl;
+    // std::cout <<  "[HDF5Kernel - savePointBuffer]: " << group  <<  ", "  << container << std::endl;
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
 
     std::string tmp = "PointBuffer";
@@ -183,7 +183,7 @@ void HDF5Kernel::saveMetaYAML(
     const std::string &metaName,
     const YAML::Node &node) const
 {
-    std::cout << "[HDF5Kernel - saveMetaYAML] " << group << ", " << metaName << std::endl;
+    // std::cout << "[HDF5Kernel - saveMetaYAML] " << group << ", " << metaName << std::endl;
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
 
     if(hg.isValid() && node["sensor_type"] )
@@ -217,8 +217,8 @@ void HDF5Kernel::saveMetaYAML(
             {
                 // https://support.hdfgroup.org/HDF5/doc1.6/UG/13_Attributes.html#:~:text=An%20HDF5%20attribute%20is%20a,%2C%20group%2C%20or%20named%20datatype.
 
-                std::cout << "Group or Dataset exists!" << std::endl;
-                std::cout << "Apply meta information as attributes" << std::endl;
+                // std::cout << "Group or Dataset exists!" << std::endl;
+                // std::cout << "Apply meta information as attributes" << std::endl;
 
                 HighFive::ObjectType h5type = hg.getObjectType(metaName);
 
@@ -232,25 +232,12 @@ void HDF5Kernel::saveMetaYAML(
                 }
 
             } else {
-                
                 std::cout << "TODO: write meta information to not existing dataset or group?" << std::endl;
                 // Suggestions
                 // - make new meta group
                 // ---- What if same named dataset is stored afterwards?
                 // - make new 
             }
-
-            size_t num_elements = node["dims"][0].as<size_t>();
-            size_t width = node["dims"][1].as<size_t>();
-            std::string type = node["channel_type"].as<std::string>();
-            std::cout << "TODO: Channel Meta: " << std::endl;
-            std::cout << "-- size: " << num_elements << "x" << width << std::endl;
-            std::cout << "-- type: " << type << std::endl;
-
-            // HighFive::DataSpace space({num_elements, width});
-            // HighFive::DataSetCreateProps properties;
-            // auto dataset = hdf5util::createDataset<float>(hg, metaName, space, properties);
-
 
             return;
         }
@@ -299,7 +286,6 @@ void HDF5Kernel::saveMetaYAML(
         }
         m_hdf5File->flush();
     }
-    
 }
 
 MeshBufferPtr HDF5Kernel::loadMeshBuffer(
@@ -455,11 +441,15 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
 }
 
 void HDF5Kernel::loadMetaYAML(
-    const std::string &group,
-    const std::string &container,
+    const std::string &group_,
+    const std::string &container_,
     YAML::Node& node) const
 {
-    std::cout << "[HDF5Kernel - loadMetaYAML]: Open Meta YAML '" << group << " , " << container << "'" << std::endl;
+    std::string group, container;
+    std::tie(group, container) = hdf5util::validateGroupDataset(group_, container_);
+
+    // std::cout << "[HDF5Kernel - loadMetaYAML]: Open Meta YAML '" << group << " , " << container << "'" << std::endl;
+    
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
 
     if(hg.isValid())
@@ -481,27 +471,31 @@ void HDF5Kernel::loadMetaYAML(
                     // std::cout << "Meta contains sensorType: " << *sensor_type_opt << std::endl;
                     std::string sensor_type = *sensor_type_opt;
 
-                    if(sensor_type == "ScanProject")
+                    if(sensor_type == ScanProject::sensorType)
                     {
                         node = m_metaDescription->scanProject(meta_group);
                     }
-                    else if(sensor_type == "ScanPosition")
+                    else if(sensor_type == ScanPosition::sensorType)
                     {
                         node = m_metaDescription->scanPosition(meta_group);
                     }
-                    else if(sensor_type == "Scan")
+                    else if(sensor_type == Scan::sensorType)
                     {
                         node = m_metaDescription->scan(meta_group);
                     }
-                    else if(sensor_type == "ScanCamera")
+                    else if(sensor_type == ScanCamera::sensorType)
                     {
                         node = m_metaDescription->scanCamera(meta_group);
                     }
-                    else if(sensor_type == "HyperspectralCamera")
+                    else if(sensor_type == ScanImage::sensorType)
+                    {
+                        node = m_metaDescription->scanImage(meta_group);
+                    }
+                    else if(sensor_type == HyperspectralCamera::sensorType)
                     {
                         node = m_metaDescription->hyperspectralCamera(meta_group);
                     }
-                    else if(sensor_type == "HyperspectralPanoramaChannel")
+                    else if(sensor_type == HyperspectralPanoramaChannel::sensorType)
                     {
                         node = m_metaDescription->hyperspectralPanoramaChannel(meta_group);
                     }
@@ -529,7 +523,6 @@ void HDF5Kernel::loadMetaYAML(
                     node = m_metaDescription->channel(meta_dataset);
                 }
             }
-            
         }
         else
         {
@@ -731,8 +724,6 @@ std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
 {
     std::unordered_map<std::string, YAML::Node> ret;
 
-    std::cout << "FIND METAS OF SENSOR TYPE " << sensor_type << std::endl;
-
     HighFive::Group h5Group = hdf5util::getGroup(m_hdf5File, group, false);
     for(std::string groupName : h5Group.listObjectNames())
     {
@@ -770,7 +761,6 @@ std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
                             = m_metaDescription->channel(metaDataset);
                         ret[groupName] = node;
                     }
-                    std::cout << "-- " << groupName << ": MetaDataset of type " << sensor_type << std::endl; 
                 }
             } else {
                 // Could be channel dataset without meta attributes: 

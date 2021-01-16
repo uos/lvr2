@@ -18,8 +18,8 @@ void ScanIO<FeatureBase>::save(
     // when possible
     Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
 
-    std::cout << "[ScanIO] Scan " << scanPosNo << "," << scanNo <<  " - Description: " << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanIO] Scan " << scanPosNo << "," << scanNo <<  " - Description: " << std::endl;
+    // std::cout << d << std::endl;
 
     if(d.metaName)
     {
@@ -64,8 +64,8 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
 
     
     Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
-    std::cout << "[IO: ScanIO - load]: Description" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[IO: ScanIO - load]: Description" << std::endl;
+    // std::cout << d << std::endl;
 
     if(!d.groupName)
     {

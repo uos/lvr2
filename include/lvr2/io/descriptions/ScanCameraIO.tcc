@@ -18,8 +18,8 @@ void ScanCameraIO<FeatureBase>::saveScanCamera(
     // TODO
     Description d = m_featureBase->m_description->scanCamera(scanPosNo, scanCamNo);
 
-    std::cout << "[ScanCameraIO] Cam " << scanPosNo << "," << scanCamNo <<  " - Description: " << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanCameraIO] Cam " << scanPosNo << "," << scanCamNo <<  " - Description: " << std::endl;
+    // std::cout << d << std::endl;
 
     if(d.metaName)
     {
@@ -28,10 +28,8 @@ void ScanCameraIO<FeatureBase>::saveScanCamera(
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
     }
 
-
     for(size_t scanImageNo = 0; scanImageNo < cameraPtr->images.size(); scanImageNo++)
     {
-        std::cout << "Saving image " << scanImageNo << std::endl;
         m_scanImageIO->saveScanImage(scanPosNo, scanCamNo, scanImageNo, cameraPtr->images[scanImageNo]);
     }
     
@@ -55,7 +53,6 @@ ScanCameraPtr ScanCameraIO<FeatureBase>::loadScanCamera(
         return ret;
     }
 
-
     if(d.metaName)
     {
         YAML::Node meta;
@@ -69,21 +66,17 @@ ScanCameraPtr ScanCameraIO<FeatureBase>::loadScanCamera(
     std::string dataSetName;
 
     size_t scanImageNo = 0;
-    do
+    while(true)
     {
-        Description scanImageDescr = m_featureBase->m_description->scanImage(scanPosNo, scanCamNo, scanImageNo);
-        std::tie(groupName, dataSetName) = getNames("", "", scanImageDescr);
-        if(m_featureBase->m_kernel->exists(groupName, dataSetName))
+        ScanImagePtr scanImage = m_scanImageIO->loadScanImage(scanPosNo, scanCamNo, scanImageNo);
+        if(scanImage)
         {
-            ScanImagePtr scanImage = m_scanImageIO->loadScanImage(scanPosNo, scanCamNo, scanImageNo);
             ret->images.push_back(scanImage);
-        }
-        else
-        {
+        } else {
             break;
         }
         scanImageNo++;
-    } while (true);
+    }
 
     return ret;
 }

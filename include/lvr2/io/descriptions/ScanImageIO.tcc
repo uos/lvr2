@@ -62,8 +62,8 @@ void  ScanImageIO<FeatureBase>::saveScanImage(
     // TODO
     Description d = m_featureBase->m_description->scanImage(scanPos, camNr, imgNr);
 
-    std::cout << "[ScanImageIO] Image " << scanPos << "," << camNr << "," << imgNr <<  " - Description: " << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanImageIO] Image " << scanPos << "," << camNr << "," << imgNr <<  " - Description: " << std::endl;
+    // std::cout << d << std::endl;
 
     if(d.metaName)
     {

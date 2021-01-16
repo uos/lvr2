@@ -138,6 +138,7 @@ boost::optional<T> getAttribute(const HighFive::Group& g, const std::string& att
 template <typename T>
 boost::optional<T> getAttribute(const HighFive::DataSet& d, const std::string& attr_name);
 
+boost::optional<std::string> highFiveTypeToLvr(std::string h5type);
 
 } // namespace hdf5util
 

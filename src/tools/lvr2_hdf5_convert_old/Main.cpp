@@ -53,15 +53,16 @@ ScanProjectPtr dummyScanProject()
             scan->numPoints = scan->points->numPoints();
         }
 
-        // for(size_t j=0; j<2; j++)
-        // {
-        //     ScanCameraPtr scan_cam(new ScanCamera);
-        //     for(size_t k=0; k<10; k++)
-        //     {
-        //         scan_cam->images.push_back(synthetic::genLVRImage());
-        //     }
-        //     scan_pos->cams.push_back(scan_cam);
-        // }
+        for(size_t j=0; j<2; j++)
+        {
+            ScanCameraPtr scan_cam(new ScanCamera);
+            scan_cam->camera.distortionModel = "opencv";
+            for(size_t k=0; k<10; k++)
+            {
+                scan_cam->images.push_back(synthetic::genLVRImage());
+            }
+            scan_pos->cams.push_back(scan_cam);
+        }
 
         ret->positions.push_back(scan_pos);
     }
@@ -261,7 +262,6 @@ void writeTest()
     descriptions::HDF5IO hdf5_io(hdf5_kernel, hdf5_schema);
     hdf5_io.saveScanProject(sp);
 
-
     std::cout << "--------------------------" << std::endl;
     std::cout << "LOAD SCANPROJECT" << std::endl;
     ScanProjectPtr sp_loaded = hdf5_io.loadScanProject();
@@ -272,13 +272,11 @@ void writeTest()
     } else {
         std::cout << "Something is wrong!" << std::endl;
     }
-
 }
 
 void loadTest()
 {
     std::string filename = "test";
-
 
     ScanProjectPtr sp = dummyScanProject();
 

@@ -1,4 +1,5 @@
 #include "lvr2/io/hdf5/Hdf5Util.hpp"
+#include "lvr2/types/Channel.hpp"
 
 namespace lvr2
 {
@@ -255,6 +256,60 @@ std::shared_ptr<HighFive::File> open(const std::string& filename)
     }
 
     return hdf5_file;
+}
+
+boost::optional<std::string> highFiveTypeToLvr(std::string h5type)
+{
+    boost::optional<std::string> ret;
+
+    if(HighFive::AtomicType<char>().string() == h5type)
+    {
+        ret = Channel<char>::typeName();
+    } else
+    if(HighFive::AtomicType<unsigned char>().string() == h5type)
+    {
+        ret = Channel<unsigned char>::typeName();
+    } else
+    if(HighFive::AtomicType<short>().string() == h5type)
+    {
+        ret = Channel<short>::typeName();
+    } else
+    if(HighFive::AtomicType<unsigned short>().string() == h5type)
+    {
+        ret = Channel<unsigned short>::typeName();
+    } else
+    if(HighFive::AtomicType<int>().string() == h5type)
+    {
+        ret = Channel<int>::typeName();
+    } else
+    if(HighFive::AtomicType<long int>().string() == h5type)
+    {
+        ret = Channel<long int>::typeName();
+    } else
+    if(HighFive::AtomicType<unsigned int>().string() == h5type)
+    {
+        ret = Channel<unsigned int>::typeName();
+    } else
+    if(HighFive::AtomicType<size_t>().string() == h5type)
+    {
+        ret = Channel<size_t>::typeName();
+    } else
+    if(HighFive::AtomicType<float>().string() == h5type)
+    {
+        ret = Channel<float>::typeName();
+    } else
+    if(HighFive::AtomicType<double>().string() == h5type)
+    {
+        ret = Channel<double>::typeName();
+    } else
+    if(HighFive::AtomicType<bool>().string() == h5type)
+    {
+        ret = Channel<bool>::typeName();
+    } else {
+        std::cout << "Cannot interpret HighFive datatype " << h5type << std::endl;
+    }
+
+    return ret;
 }
 
 } // namespace hdf5util

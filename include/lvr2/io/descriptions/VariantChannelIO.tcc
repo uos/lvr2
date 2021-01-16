@@ -53,7 +53,7 @@ void VariantChannelIO<Derived>::save(
     std::string datasetName,
     const VariantChannel<Tp...>& vchannel)
 {
-    std::cout << "[VariantChannelIO - save] " << groupName << ", " << datasetName << ", " << vchannel.typeName() << std::endl;
+    // std::cout << "[VariantChannelIO - save] " << groupName << ", " << datasetName << ", " << vchannel.typeName() << std::endl;
     using VChannelT = VariantChannel<Tp...>;
 
     // keep this order! We need Hdf5 to build the dataset first, then writing meta information
@@ -66,7 +66,6 @@ void VariantChannelIO<Derived>::save(
     } catch(YAML::TypedBadConversion<int> ex) {
         std::cout << ex.what() << std::endl;
     }
-    std::cout << "Meta information built!" << std::endl;
     m_featureBase->m_kernel->saveMetaYAML(groupName, datasetName, node);
 }
 
@@ -97,7 +96,7 @@ bool _dynamicLoad(
         return true;
     }
 
-    std::cout << "[VariantChannelIO] WARNING: data type " << dyn_type << " not implemented in PointBuffer." << std::endl;
+    std::cout << "[VariantChannelIO] WARNING: data type '" << dyn_type << "' not implemented in PointBuffer." << std::endl;
     return false;
 }
 
@@ -118,7 +117,7 @@ bool _dynamicLoad(
         {
             vchannel = *copt;
         } else {
-            std::cout << "[VariantChannelIO] WARNING: Could not reveive Channel from ChannelIO!" << std::endl;
+            std::cout << "[VariantChannelIO] WARNING: Could not receive Channel from ChannelIO!" << std::endl;
             return false;
         }
         
@@ -145,7 +144,7 @@ boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
     std::string datasetName)
 {
 
-    std::cout << "[VariantChannelIO - load] " << groupName << ", " << datasetName << std::endl;
+    // std::cout << "[VariantChannelIO - load] " << groupName << ", " << datasetName << std::endl;
 
     boost::optional<VariantChannelT> ret;
 
@@ -154,13 +153,13 @@ boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
 
     if(!node["sensor_type"])
     {
-        std::cout << "[VariantChannelIO - load] Could not find 'sensor_type' key in YAML" << std::endl;
+        std::cout << timestamp << "[VariantChannelIO - load] Could not find 'sensor_type' key in YAML" << std::endl;
         return ret;
     }
 
     if(node["sensor_type"].as<std::string>() != "Channel")
     {
-        std::cout << "[VariantChannelIO - load] sensor_type: '" << node["sensor_type"].as<std::string>() << "' != 'Channel'" << std::endl;
+        std::cout << timestamp << "[VariantChannelIO - load] sensor_type: '" << node["sensor_type"].as<std::string>() << "' != 'Channel'" << std::endl;
         return ret;
     }
 
