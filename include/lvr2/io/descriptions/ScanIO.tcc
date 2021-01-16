@@ -83,8 +83,8 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
         m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
         ret = std::make_shared<Scan>(meta.as<Scan>());
     } else {
-        std::cout << timestamp << " [ScanIO] No meta name specified. " << std::endl;
-        return ret;
+        // for schemas without meta information
+        ret.reset(new Scan);
     }
 
     if(d.dataSetName)
@@ -94,19 +94,6 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     } else {
         ret->points = m_pclIO->loadPointCloud(*d.groupName);
     }
-    
-
-    
-
-    /*
-    boost::shared_array<float> pointData;
-    std::vector<size_t> pointDim;
-    pointData = m_featureBase->m_kernel->loadFloatArray(groupName, scanName, pointDim);
-    std::cout <<"load PointBuffer" << groupName << " " << scanName << std::endl;
-    PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
-    ret->points = pb;
-    */
-    // Get Waveform data
 
     
     Description waveformDescr = m_featureBase->m_description->waveform(scanPosNo, scanNo);
