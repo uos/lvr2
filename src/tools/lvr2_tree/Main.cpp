@@ -23,7 +23,27 @@ void printHDF5(const HighFive::Group& g, int depth=0)
             HighFive::Group nextGroup = g.getGroup(groupName);
             printHDF5(nextGroup, depth+1);
         } else if(h5type == HighFive::ObjectType::Dataset) {
-            std::cout << std::string(depth, ' ') << groupName << " (Dataset)" << std::endl;
+            HighFive::DataSet ds = g.getDataSet(groupName);
+
+            std::cout << std::string(depth, ' ') << groupName << " (Dataset, ";
+            HighFive::DataType dtype = ds.getDataType();
+            auto lvrTypeName = lvr2::hdf5util::highFiveTypeToLvr(dtype.string());
+            
+            if(lvrTypeName)
+            {
+                std::cout << "type: " << *lvrTypeName;
+            } else {
+                std::cout << "type: unknown";
+            }
+            
+            
+            std::vector<size_t> dims = ds.getSpace().getDimensions();
+            std::cout << ", dims: ";
+            for(auto dim : dims)
+            {
+                std::cout << dim << " ";
+            }
+            std::cout << ")" << std::endl;
         } else {
             std::cout << std::string(depth, ' ') << groupName << " (Unknown)" << std::endl;
         }

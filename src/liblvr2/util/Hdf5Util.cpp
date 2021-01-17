@@ -305,8 +305,6 @@ boost::optional<std::string> highFiveTypeToLvr(std::string h5type)
     if(HighFive::AtomicType<bool>().string() == h5type)
     {
         ret = Channel<bool>::typeName();
-    } else {
-        std::cout << "Cannot interpret HighFive datatype " << h5type << std::endl;
     }
 
     return ret;
