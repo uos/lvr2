@@ -36,7 +36,6 @@ void printHDF5(const HighFive::Group& g, int depth=0)
                 std::cout << "type: unknown";
             }
             
-            
             std::vector<size_t> dims = ds.getSpace().getDimensions();
             std::cout << ", dims: ";
             for(auto dim : dims)
