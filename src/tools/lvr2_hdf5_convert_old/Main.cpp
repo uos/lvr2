@@ -300,21 +300,11 @@ void loadTest()
 
 int main(int argc, char** argv)
 {
-    // std::cout << "Input: " << argv[1] << std::endl;
-    // std::string input(argv[1]);
-
-    writeTest();
-    
-    
-    return 0;
     hdf5_convert_old::Options options(argc, argv);
 
     using OldIO = Hdf5Build<hdf5features::ScanProjectIO>;
 
     using NewIO = descriptions::HDF5IO;
-
-
-
 
     OldIO old_io;
     old_io.open(argv[1]);
@@ -325,7 +315,7 @@ int main(int argc, char** argv)
     {
         std::cout << "Loaded scan project!" << std::endl;
 
-        std::string filename = "test.h5";
+        std::string filename = "scan_project.h5";
         HDF5KernelPtr kernel(new HDF5Kernel(filename));
         HDF5SchemaPtr schema(new ScanProjectSchemaHDF5V2());
         NewIO io(kernel, schema);
