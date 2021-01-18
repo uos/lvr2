@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_DIRECTORY_POINTBUFFERIO_HPP
-#define LVR2_IO_DIRECTORY_POINTBUFFERIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_POINTBUFFERIO_HPP
+#define LVR2_IO_DESCRIPTIONS_POINTBUFFERIO_HPP
 
 #include <boost/optional.hpp>
 
@@ -148,4 +148,4 @@ struct FeatureConstruct<PointCloudIO, FeatureBase >
 
 #include "PointCloudIO.tcc"
 
-#endif // LVR2_IO_DIRECTORY_POINTBUFFERIO_HPP
+#endif // LVR2_IO_DESCRIPTIONS_POINTBUFFERIO_HPP

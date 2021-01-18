@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_IMAGEIO_HPP
-#define LVR2_IO_HDF5_IMAGEIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_IMAGEIO_HPP
+#define LVR2_IO_DESCRIPTIONS_IMAGEIO_HPP
 
 #include <boost/optional.hpp>
 #include <opencv2/core.hpp>
@@ -40,4 +40,4 @@ protected:
 
 #include "ImageIO.tcc"
 
-#endif // LVR2_IO_HDF5_IMAGEIO_HPP
+#endif // LVR2_IO_DESCRIPTIONS_IMAGEIO_HPP

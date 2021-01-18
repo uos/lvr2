@@ -1,6 +1,6 @@
 #pragma once
-#ifndef LVR2_IO_DIRECTORY_VARIANT_CHANNEL_IO_HPP
-#define LVR2_IO_DIRECTORY_VARIANT_CHANNEL_IO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_VCHANNELIO_HPP
+#define LVR2_IO_DESCRIPTIONS_VCHANNELIO_HPP
 
 #include "lvr2/io/descriptions/FeatureBase.hpp"
 #include "lvr2/types/VariantChannel.hpp"
@@ -89,4 +89,4 @@ struct FeatureConstruct<VariantChannelIO, FeatureBase> {
 
 #include "VariantChannelIO.tcc"
 
-#endif // LVR2_IO_DIRECTORY_VARIANT_CHANNEL_IO_HPP
+#endif // LVR2_IO_DESCRIPTIONS_VCHANNELIO_HPP

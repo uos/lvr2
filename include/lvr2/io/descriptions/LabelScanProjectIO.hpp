@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_LABELSCANPROJECTIO_HPP
-#define LVR2_IO_HDF5_LABELSCANPROJECTIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_LABELSCANPROJECTIO_HPP
+#define LVR2_IO_DESCRIPTIONS_LABELSCANPROJECTIO_HPP
 
 #include "lvr2/types/ScanTypes.hpp"
 
@@ -53,4 +53,4 @@ struct FeatureConstruct<LabelScanProjectIO, FeatureBase>
 
 #include "LabelScanProjectIO.tcc"
 
-#endif // LVR2_IO_HDF5_LABELSCANPROJECTIO_HPP
+#endif // LVR2_IO_DESCRIPTIONS_LABELSCANPROJECTIO_HPP

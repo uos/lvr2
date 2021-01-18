@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_SCANPOSITIONIO_HPP
-#define LVR2_IO_HDF5_SCANPOSITIONIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_SCANPOSITIONIO_HPP
+#define LVR2_IO_DESCRIPTIONS_SCANPOSITIONIO_HPP
 
 #include "lvr2/types/ScanTypes.hpp"
 
@@ -104,4 +104,4 @@ struct FeatureConstruct< ScanPositionIO, FeatureBase>
 
 #include "ScanPositionIO.tcc"
 
-#endif // LVR2_IO_HDF5_SCANPOSITIONIO_HPP
+#endif // LVR2_IO_DESCRIPTIONS_SCANPOSITIONIO_HPP

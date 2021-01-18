@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_WAVEFORMIO_HPP
-#define LVR2_IO_HDF5_WAVEFORMIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_WAVEFORMIO_HPP
+#define LVR2_IO_DESCRIPTIONS_WAVEFORMIO_HPP
 #include "ArrayIO.hpp"
 #include "MatrixIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"

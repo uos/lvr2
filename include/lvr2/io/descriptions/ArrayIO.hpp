@@ -1,5 +1,5 @@
-#ifndef LVR2_DESC_ARRAYIO_HPP
-#define LVR2_DESC_ARRAYIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_ARRAYIO_HPP
+#define LVR2_IO_DESCRIPTIONS_ARRAYIO_HPP
 
 #include "lvr2/io/descriptions/FeatureBase.hpp"
 #include <boost/shared_array.hpp>
@@ -34,4 +34,4 @@ protected:
 
 #include "ArrayIO.tcc"
 
-#endif
+#endif // LVR2_IO_DESCRIPTIONS_ARRAYIO_HPP
