@@ -47,7 +47,6 @@ void ScanProjectIO<FeatureBase>::saveScanProject(
 template <typename FeatureBase>
 ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
 {
-    
     ScanProjectPtr ret;
 
     // Load description and meta data for scan project
@@ -61,8 +60,9 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
         d.groupName = "";
     }
 
-    if(!m_featureBase->m_kernel->exists(*d.groupName))
+    if(*d.groupName != "" && !m_featureBase->m_kernel->exists(*d.groupName))
     {
+        std::cout << "[ScanProjectIO] Warning: '" << *d.groupName << "' does not exist." << std::endl; 
         return ret;
     }
 
@@ -84,13 +84,15 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
     // Get all sub scans
     size_t scanPosNo = 0;
     while(true)
-    {
+    {  
         // Get description for next scan
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
         if(!scanPos)
         {
             break;
         }
+
+        // std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
         ret->positions.push_back(scanPos);
         scanPosNo++;
     }

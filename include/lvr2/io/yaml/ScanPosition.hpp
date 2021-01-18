@@ -36,21 +36,55 @@ struct convert<lvr2::ScanPosition>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::ScanPosition& scanPos) {
-        
+    static bool decode(const Node& node, lvr2::ScanPosition& scanPos) 
+    {
+        if(!node["sensor_type"])
+        {
+            std::cout << "[YAML::convert<ScanPosition> - decode] 'sensor_type' Tag not found." << std::endl;
+            return false;
+        }    
+
         if(node["sensor_type"].as<std::string>() != lvr2::ScanPosition::sensorType)
         {
+            std::cout << "[YAML::convert<ScanPosition> - decode] Try to load " << node["sensor_type"].as<std::string>() << " as " << lvr2::ScanPosition::sensorType << std::endl;
             return false;
         }
-
-        scanPos.latitude = node["latitude"].as<double>();
-        scanPos.longitude = node["longitude"].as<double>();
-        scanPos.altitude = node["altitude"].as<double>();
         
-        scanPos.pose_estimate = node["pose_estimate"].as<lvr2::Transformd>();
-        scanPos.registration = node["registration"].as<lvr2::Transformd>();
-
-        scanPos.timestamp = node["timestamp"].as<double>();
+        if(node["latitude"])
+        {
+            scanPos.latitude = node["latitude"].as<double>();
+        }
+        
+        if(node["longitude"])
+        {
+            scanPos.longitude = node["longitude"].as<double>();
+        }
+        
+        if(node["altitude"])
+        {
+            scanPos.altitude = node["altitude"].as<double>();
+        }
+        
+        if(node["pose_estimate"])
+        {
+            scanPos.pose_estimate = node["pose_estimate"].as<lvr2::Transformd>();
+        } else {
+            scanPos.pose_estimate = lvr2::Transformd::Identity();
+        }
+        
+        if(node["registration"])
+        {
+            scanPos.registration = node["registration"].as<lvr2::Transformd>();
+        } else {
+            scanPos.registration = lvr2::Transformd::Identity();
+        }
+        
+        if(node["timestamp"])
+        {
+            scanPos.timestamp = node["timestamp"].as<double>();
+        } else {
+            scanPos.timestamp = -1.0;
+        }
 
         return true;
     }

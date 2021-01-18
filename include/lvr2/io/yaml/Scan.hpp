@@ -56,13 +56,14 @@ struct convert<lvr2::Scan>
 
         if(!node["sensor_type"])
         {
-            std::cout << "WARNING: Tried to convert YAML::Node -> lvr2::Scan. YAML::Node has no 'sensor_type' tag." << std::endl;
+            std::cout << "[YAML::convert<Scan> - decode] 'sensor_type' Tag not found." << std::endl;
             return false;
         }
 
         if(node["sensor_type"].as<std::string>() != lvr2::Scan::sensorType) 
         {
             // TODO: proper  warning or error?
+            std::cout << "[YAML::convert<Scan> - decode] Try to load " << node["sensor_type"].as<std::string>() << " as " << lvr2::Scan::sensorType << std::endl;
             return false;
         }
 

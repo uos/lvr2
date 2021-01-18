@@ -121,14 +121,10 @@ struct convert<lvr2::ScanCamera>
             }
         } else {
             std::cout << "Distortion model unknown" << std::endl;
-        }
-
-        
-       
+        }       
 
         return true;
     }
-
 };
 
 }  // namespace YAML
