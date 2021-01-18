@@ -64,10 +64,10 @@ void LVRScanProjectOpenDialog::reductionSelectionChanged(int index)
     switch(index)
     {
         case 0:
-            m_reductionPtr = ReductionAlgorithmPtr(new AllReductionAlgorithm());
+            m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
             break;
         case 1:
-            m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
+            m_reductionPtr = ReductionAlgorithmPtr(new AllReductionAlgorithm());
             break;
         case 2:
             m_reductionPtr = ReductionAlgorithmPtr(new OctreeReductionAlgorithm(0.1, 5));
@@ -163,14 +163,17 @@ void LVRScanProjectOpenDialog::openReductionDialog()
     switch(dialog->reductionName())
     {
         case 0:
-            m_ui->pushButtonReduction->setText("All Reduction");
+            m_ui->pushButtonReduction->setText("No Reduction");
             break;
         case 1:
-            m_ui->pushButtonReduction->setText("No Reduction");
+            m_ui->pushButtonReduction->setText("All Reduction");
             break;
         case 2:
             m_ui->pushButtonReduction->setText("Octree Reduction");
             break;   
+        case 3:
+            m_ui->pushButtonReduction->setText("Fixed Size");
+            break;
         default:
             break;     
     }
