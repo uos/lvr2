@@ -7,7 +7,9 @@
 #include <vtkActor.h>
 #include <vtkPolyDataMapper.h>
 #include <sstream>
-
+#include "LVRScanCamItem.hpp"
+#include "LVRScanImageItem.hpp"
+#include <QTextStream>
 namespace lvr2
 {
 
@@ -28,14 +30,25 @@ LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString n
         }
         addChild(modelItem);
     }
-    
+
+    for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
+    {
+        ScanCamBridgePtr camBridge(new LVRScanCamBridge(bridge->getScanPosition()->cams[0]));
+        QString camName;
+        QTextStream(&camName) << "cam_" << i;
+        LVRScanCamItem* camItem = new LVRScanCamItem(camBridge, camName);
+        addChild(camItem);
+    }
+
     LVRPoseItem* posItem = new LVRPoseItem(bridge->getPose());
     addChild(posItem);
 
     // Setup item properties
     setText(0, name);
+    int nr = name.toInt();
+    setData(0, Qt::UserRole, nr);
+    
     setCheckState(0, Qt::Checked);
-
 }
 
 LVRScanPositionItem::LVRScanPositionItem(const LVRScanPositionItem& item)

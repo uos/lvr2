@@ -1,12 +1,88 @@
-namespace lvr2 {
+namespace lvr2 
+{
 
 template<typename FeatureBase>
-FloatChannelOptionsal ChannelIO<FeatureBase>::loadFloatChannel(std::string groupName, std::string datasetName)
+template<typename T> 
+ChannelOptional<T> ChannelIO<FeatureBase>::load(
+    std::string group, std::string name) const
+{   
+    ChannelOptional<T> ret;
+    Channel<T> c;
+
+    if constexpr(std::is_same<T, float>::value ) {
+        if(load(group, name, c)){ret = c;}
+    } else if constexpr(std::is_same<T, unsigned char>::value ) {
+        if(load(group, name, c)){ret = c;}
+    } else if constexpr(std::is_same<T, double>::value ) {
+        if(load(group, name, c)){ret = c;}
+    } else if constexpr(std::is_same<T, int>::value ) {
+        if(load(group, name, c)){ret = c;}
+    } else if constexpr(std::is_same<T, uint16_t>::value ) {
+        if(load(group, name, c)){ret = c;}
+    } else {
+        // NOT IMPLEMENTED TYPE TO WRITE
+        std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
+    }
+
+    return ret;
+}
+
+template<typename FeatureBase>
+FloatChannelOptional ChannelIO<FeatureBase>::loadFloatChannel(
+    std::string groupName, std::string datasetName)
 {
-    FloatChannelOptional ret;
-    
+    return load<float>(groupName, datasetName);
+}
+
+template<typename FeatureBase>
+template<typename T>
+void ChannelIO<FeatureBase>::save(
+    std::string group,
+    std::string name,
+    const Channel<T>& channel) const
+{
+    if constexpr(std::is_same<T, float>::value ) {
+        _save(group, name, channel);
+    } else if constexpr(std::is_same<T, unsigned char>::value ) {
+        _save(group, name, channel);
+    } else if constexpr(std::is_same<T, double>::value ) {
+        _save(group, name, channel);
+    } else if constexpr(std::is_same<T, int>::value ) {
+        _save(group, name, channel);
+    } else if constexpr(std::is_same<T, uint16_t>::value ) {
+        _save(group, name, channel);
+    } else {
+        // NOT IMPLEMENTED TYPE TO WRITE
+        std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
+    }
+}
+
+template<typename FeatureBase>
+std::vector<size_t> ChannelIO<FeatureBase>::loadDimensions(
+    std::string groupName, std::string datasetName) const
+{
     std::vector<size_t> dims;
-    floatArr arr = m_featureBase->m_kernel->loadArray<T>(groupName, datasetName, dims);
+    YAML::Node node;
+    m_featureBase->m_kernel->loadMetaYAML(groupName, datasetName, node);
+    for(auto it = node["dims"].begin(); it != node["dims"].end(); ++it)
+    {
+        dims.push_back(it->as<size_t>());
+    }
+
+    return dims;
+}
+
+// PROTECTED
+
+
+
+template<typename FeatureBase>
+bool ChannelIO<FeatureBase>::load(  
+    std::string group, std::string name,
+    Channel<float>& channel) const
+{
+    std::vector<size_t> dims;
+    floatArr arr = m_featureBase->m_kernel->loadFloatArray(group, name, dims);
 
     // Check if load was successfull. Channels should always
     // have a dimensionality of [width x n]. So dim.size() 
@@ -15,91 +91,178 @@ FloatChannelOptionsal ChannelIO<FeatureBase>::loadFloatChannel(std::string group
     {
         if(dims.size() != 2)
         {
-            std::cout << timestamp << "ChannelIO.load(): Trying to load data with dim = " 
-                      << dims.size() << "." << std::endl;
-            std::cout << timestamp << "Should be 2." << std::endl;
-            return boost::none;
+            std::cout << timestamp << "[ChannelIO] Trying to load data with dim = " 
+                      << dims.size() << ". Should be 2." << std::endl;
+            return false;
         }
-        ret = Channel<T>(dims[1], dim[0], arr);
-        return ret;
-    }
+        channel = Channel<float>(dims[0], dims[1], arr);
+        return true;
+    } 
 
-    return boost::none;
+    return false;
 }
 
-
 template<typename FeatureBase>
-template<typename T>
-void ChannelIO<FeatureBase>::saveChannel(std::string groupName,
-        std::string datasetName,
-        const Channel<T>& channel)
+bool ChannelIO<FeatureBase>::load(  
+    std::string group, std::string name,
+    Channel<unsigned char>& channel) const
 {
-    std::vector<size_t> dims(2);
-    dims[0] = channel.width();
-    dims[1] = channel.numElements();
+    std::vector<size_t> dims;
+    ucharArr arr = m_featureBase->m_kernel->loadUCharArray(group, name, dims);
 
-    m_featureBase->kernel(groupName, datasetName, channel.dataPtr(), dims);
-}
-
-
-
-template<typename FeatureBase>
-template <typename T>
-bool ChannelIO<FeatureBase>::getChannel(const std::string group, const std::string name, boost::optional<AttributeChannel<T>>& channel)
-{
-    channel = load(group, name);
-    if(channel)
+    // Check if load was successfull. Channels should always
+    // have a dimensionality of [width x n]. So dim.size() 
+    // has to be 2.
+    if(arr != nullptr)
     {
+        if(dims.size() != 2)
+        {
+            std::cout << timestamp << "[ChannelIO] Trying to load data with dim = " 
+                      << dims.size() << ". Should be 2." << std::endl;
+            return false;
+        }
+        channel = Channel<unsigned char>(dims[0], dims[1], arr);
         return true;
     }
-    else
+
+    return false;
+}
+
+template<typename FeatureBase>
+bool ChannelIO<FeatureBase>::load(  
+    std::string group, std::string name,
+    Channel<double>& channel) const
+{
+    std::vector<size_t> dims;
+    doubleArr arr = m_featureBase->m_kernel->loadDoubleArray(group, name, dims);
+
+    // Check if load was successfull. Channels should always
+    // have a dimensionality of [width x n]. So dim.size() 
+    // has to be 2.
+    if(arr != nullptr)
     {
-        return false;
+        if(dims.size() != 2)
+        {
+            std::cout << timestamp << "[ChannelIO] Trying to load data with dim = " 
+                      << dims.size() << ". Should be 2." << std::endl;
+            return false;
+        }
+        channel = Channel<double>(dims[0], dims[1], arr);
+        return true;
     }
+
+    return false;
 }
 
 template<typename FeatureBase>
-template <typename T>
-bool ChannelIO<FeatureBase>::addChannel(const std::string group, const std::string name, const AttributeChannel<T>& channel)
+bool ChannelIO<FeatureBase>::load(  
+    std::string group, std::string name,
+    Channel<int>& channel) const
 {
-    save(group, name, channel);
-    return true;
+    std::vector<size_t> dims;
+    intArr arr = m_featureBase->m_kernel->loadIntArray(group, name, dims);
+
+    // Check if load was successfull. Channels should always
+    // have a dimensionality of [width x n]. So dim.size() 
+    // has to be 2.
+    if(arr != nullptr)
+    {
+        if(dims.size() != 2)
+        {
+            std::cout << timestamp << "[ChannelIO] Trying to load data with dim = " 
+                      << dims.size() << ". Should be 2." << std::endl;
+            return false;
+        }
+        channel = Channel<int>(dims[0], dims[1], arr);
+        return true;
+    }
+
+    return false;
 }
 
 template<typename FeatureBase>
-bool ChannelIO<FeatureBase>::getChannel(const std::string group, const std::string name, FloatChannelOptional& channel)
+bool ChannelIO<FeatureBase>::load(  
+    std::string group, std::string name,
+    Channel<uint16_t>& channel) const
 {
-    return getChannel<float>(group, name, channel);
+    std::vector<size_t> dims;
+    uint16Arr arr = m_featureBase->m_kernel->loadUInt16Array(group, name, dims);
+
+    // Check if load was successfull. Channels should always
+    // have a dimensionality of [width x n]. So dim.size() 
+    // has to be 2.
+    if(arr != nullptr)
+    {
+        if(dims.size() != 2)
+        {
+            std::cout << timestamp << "[ChannelIO] Trying to load data with dim = " 
+                      << dims.size() << ". Should be 2." << std::endl;
+            return false;
+        }
+        channel = Channel<uint16_t>(dims[0], dims[1], arr);
+        return true;
+    }
+
+    return false;
+}
+
+
+// SAVE
+template<typename FeatureBase>
+void ChannelIO<FeatureBase>::_save(  
+    std::string group, 
+    std::string name, 
+    const Channel<float>& channel) const
+{
+    std::vector<size_t> dims(2);
+    dims[0] = channel.numElements();
+    dims[1] = channel.width();
+    m_featureBase->m_kernel->saveFloatArray(group, name, dims, channel.dataPtr());
 }
 
 template<typename FeatureBase>
-bool ChannelIO<FeatureBase>::getChannel(const std::string group, const std::string name, IndexChannelOptional& channel)
+void ChannelIO<FeatureBase>::_save( std::string group,
+                std::string name,
+                const Channel<unsigned char>& channel) const
 {
-    return getChannel<unsigned int>(group, name, channel);
+    std::vector<size_t> dims(2);
+    dims[0] = channel.numElements();
+    dims[1] = channel.width();
+    m_featureBase->m_kernel->saveUCharArray(group, name, dims, channel.dataPtr());
 }
 
 template<typename FeatureBase>
-bool ChannelIO<FeatureBase>::getChannel(const std::string group, const std::string name, UCharChannelOptional& channel)
+void ChannelIO<FeatureBase>::_save( std::string group,
+            std::string name,
+            const Channel<double>& channel) const
 {
-    return getChannel<unsigned char>(group, name, channel);
+    std::vector<size_t> dims(2);
+    dims[0] = channel.numElements();
+    dims[1] = channel.width();
+    m_featureBase->m_kernel->saveDoubleArray(group, name, dims, channel.dataPtr());
 }
 
 template<typename FeatureBase>
-bool ChannelIO<FeatureBase>::addChannel(const std::string group, const std::string name, const FloatChannel& channel)
+void ChannelIO<FeatureBase>::_save( std::string group,
+            std::string name,
+            const Channel<int>& channel) const
 {
-    return addChannel<float>(group, name, channel);
+    std::vector<size_t> dims(2);
+    dims[0] = channel.numElements();
+    dims[1] = channel.width();
+    m_featureBase->m_kernel->saveIntArray(group, name, dims, channel.dataPtr());
 }
 
 template<typename FeatureBase>
-bool ChannelIO<FeatureBase>::addChannel(const std::string group, const std::string name, const IndexChannel& channel)
+void ChannelIO<FeatureBase>::_save( std::string group,
+            std::string name,
+            const Channel<uint16_t>& channel) const
 {
-    return addChannel<unsigned int>(group, name, channel);
+    std::vector<size_t> dims(2);
+    dims[0] = channel.numElements();
+    dims[1] = channel.width();
+    m_featureBase->m_kernel->saveUInt16Array(group, name, dims, channel.dataPtr());
 }
 
-template<typename FeatureBase>
-bool ChannelIO<FeatureBase>::addChannel(const std::string group, const std::string name, const UCharChannel& channel)
-{
-    return addChannel<unsigned char>(group, name, channel);
-}
 
 } // namespace lvr2

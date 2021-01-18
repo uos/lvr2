@@ -2,17 +2,24 @@
 namespace lvr2 {
 
 template<typename FeatureBase>
-void ImageIO<FeatureBase>::saveImage(std::string groupName,
+void ImageIO<FeatureBase>::save(std::string groupName,
     std::string datasetName,
-    const cv::Mat& img)
+    const cv::Mat& img) const
 {
     m_featureBase->m_kernel->saveImage(groupName, datasetName, img);
 }
 
+template<typename FeatureBase>
+void ImageIO<FeatureBase>::saveImage(std::string groupName,
+    std::string datasetName,
+    const cv::Mat& img) const
+{
+    save(groupName, datasetName, img);
+}
 
 template<typename FeatureBase>
 boost::optional<cv::Mat> ImageIO<FeatureBase>::loadImage(std::string groupName,
-    std::string datasetName)
+    std::string datasetName) const
 {
     return m_featureBase->m_kernel->loadImage(groupName, datasetName);
 }

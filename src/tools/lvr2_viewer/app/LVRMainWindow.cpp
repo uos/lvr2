@@ -180,6 +180,9 @@ LVRMainWindow::LVRMainWindow()
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
     m_actionOpenChunkedMesh = this->actionOpenChunkedMesh;
+    m_actionOpenScanProject = this->actionOpenScanProject;
+    m_actionOpenScanProjectDir = this->actionOpenScanProjectDir;
+    m_actionOpenScanProjectH5 = this->actionOpenScanProjectH5;
     m_actionExport = this->actionExport;
     m_actionQuit = this->actionQuit;
     // Toolbar item "Views"
@@ -354,6 +357,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(this->actionOpenScanProject, SIGNAL(triggered()), this, SLOT(openScanProject()));
+    QObject::connect(m_actionOpenScanProjectDir, SIGNAL(triggered()), this, SLOT(loadScanProjectDir()));
+    QObject::connect(m_actionOpenScanProjectH5, SIGNAL(triggered()), this, SLOT(loadScanProjectH5()));
+
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
     QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
     QObject::connect(this->actionOpen_SoilAssist, SIGNAL(triggered()), this, SLOT(openSoilAssist()));
@@ -1476,8 +1482,6 @@ void LVRMainWindow::loadChunkedMesh(const QStringList& filenames, std::vector<st
             QFileInfo info((*it));
             QString base = info.fileName();
 
-            std::cout << base.toStdString() << std::endl;
-
             if (info.suffix() == "h5")
             {
 //                std::vector<std::string> layers = {"mesh0", "mesh1"};
@@ -1512,6 +1516,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
             // check for h5
             QFileInfo info((*it));
             QString base = info.fileName();
+
 	    if(info.suffix() == "")
 	    {
                 //read intermediaformat
@@ -1681,39 +1686,60 @@ void LVRMainWindow::unloadPointCloudData()
 
 }
 
-void LVRMainWindow::loadScanProjectDir()
+void LVRMainWindow::loadScanProjectDir(bool lazy)
 {
-    // Commented out due to different type errors
+    QString filename = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", 
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    std::string tmp = filename.toStdString();
+    if (tmp != "") 
+    {
+        DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+        DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
+        DirectoryIO dirIO(dirKernel, hyperlibSchema);
 
-    // QString dirPath = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        // TODO: Lazy loading by ReductionAlgorithm.
+        ScanProjectPtr scanProject = dirIO.loadScanProject();
 
-    // DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib);
-    // //DirectorySchemaPtr slamSchemaPtr(new ScanProjectSchemaSLAM);
-    // DirectoryKernelPtr slamDirKernel(new DirectoryKernel(dirPath));
-    // DirectoryIO slamIO(slamDirKernel, hyperlibSchema);
-    // ScanProjectPtr slamProject = slamIO.loadScanProject();
-    
-    // std::vector<ScanPositionPtr> positions = slamProject->positions;
-    // std::vector<ScanPtr> scans = positions[0]->scans;
-    // std::cout << "test" << std::endl;
-
-
-    // std::cout << positions.size() << std::endl;
-
+        loadScanProject(scanProject, filename);
+    }
 }
 
 void LVRMainWindow::loadScanProjectH5()
 {
-    QMessageBox msgBox;
-    msgBox.setText("Hello World H5");
-    msgBox.exec();
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open scan project"), "", tr("Scan project (*.h5)"));
+    std::string tmp = filename.toStdString();
+
+    if (tmp != "")
+    {
+        HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
+        HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
+        descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
+        ScanProjectPtr scanProject = hdf5IO.loadScanProject();
+        loadScanProject(scanProject, filename);
+    }
 }
 
-void LVRMainWindow::loadScanProject()
+void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename)
 {
-    QMessageBox msgBox;
-    msgBox.setText("Hello World");
-    msgBox.exec();
+    this->checkBoxShowFocal->setChecked(false);
+
+    std::vector<ScanPositionPtr> positions = scanProject->positions;
+
+    ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
+    bridge->addActors(m_renderer);
+    LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+    QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
+
+    QFileInfo info((filename));
+    QString base = info.fileName();
+
+    root->setText(0, base);
+    root->setData(0,Qt::UserRole, filename);
+    root->addChild(item);
+    item->setExpanded(false);    
+    refreshView();
+    // TODO: Ball wegbekommen
+    // Code verstehen (LVRScanProjectBridge und LVRScanProjectItem)
 }
 
 
@@ -2128,6 +2154,57 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
     else if (treeWidgetItem->parent() && treeWidgetItem->parent()->type() == LVRScanDataItemType)
     {
         setModelVisibility(treeWidgetItem->parent(), column);
+    }
+    else if (treeWidgetItem->type() == LVRScanImageItemType)
+    {
+        if(treeWidgetItem->checkState(0))
+        {
+            QString filename = treeWidgetItem->parent()->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
+            std::string tmp = filename.toStdString();
+            QFileInfo info(filename);
+
+            int img_nr = treeWidgetItem->data(0, Qt::UserRole).toInt();
+            int cam_nr = treeWidgetItem->parent()->data(0, Qt::UserRole).toInt();
+            int scanpos_nr = treeWidgetItem->parent()->parent()->data(0, Qt::UserRole).toInt();
+            cv::Mat img;
+            if (info.suffix() == "h5")
+            {
+                HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
+                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
+                descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
+                Description d = hdf5Schema->scanImage(scanpos_nr, cam_nr, img_nr);
+                img = *hdf5Kernel->loadImage(*d.groupName, *d.dataSetName);
+            }
+            else
+            {
+                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+                DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
+                DirectoryIO dirIO(dirKernel, hyperlibSchema);
+                Description d = hyperlibSchema->scanImage(scanpos_nr, cam_nr, img_nr);
+                img = *dirKernel->loadImage(*d.groupName, *d.dataSetName);
+            }
+
+            #if (CV_VERSION_MAJOR >= 4)
+                cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+            #else
+                cv::cvtColor(img, img, CV_BGR2RGB);
+            #endif
+            //std::cout << filename.toStdString() << std::endl;
+            LVRScanImageItem *item = static_cast<LVRScanImageItem*>(treeWidgetItem);
+            //item->setVisibility(item->checkState(0));
+            item->setImage(img);
+            item->getScanImageBridge()->addActors(m_renderer);
+            refreshView();
+            updateView();
+        }
+        else
+        {
+            LVRScanImageItem *item = static_cast<LVRScanImageItem*>(treeWidgetItem);
+            item->getScanImageBridge()->removeActors(m_renderer);
+            std::cout << "Remove Actors" << std::endl;
+            refreshView();
+            updateView();
+        }
     }
 }
 
@@ -3259,15 +3336,27 @@ void LVRMainWindow::openIntermediaProject()
     labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
 
 }
+
 void LVRMainWindow::openScanProject()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-                tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
-    if(!QFile::exists(fileName))
-    {
-        return;
-    }
-    openHDF5(fileName.toStdString());
+    // QString fileName = QFileDialog::getOpenFileName(this,
+    //             tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
+    // if(!QFile::exists(fileName))
+    // {
+    //     return;
+    // }
+    // openHDF5(fileName.toStdString());
+
+    LVRScanProjectOpenDialog* dialog = new LVRScanProjectOpenDialog(this);
+    
+    // Display
+    dialog->setModal(true);
+    dialog->raise();
+    dialog->activateWindow();
+    dialog->exec();
+
+    delete dialog;
+
 }
  
 void LVRMainWindow::openHDF5(std::string fileName)

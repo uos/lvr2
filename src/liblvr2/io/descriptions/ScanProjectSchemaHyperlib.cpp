@@ -112,8 +112,8 @@ Description ScanProjectSchemaHyperlib::scan(const std::string &scanPositionPath,
         d.metaData = node;
     }
 
-    std::cout << "scan: " << scanPositionPath << " " << scanNo << std::endl;
-    std::cout << d.metaData << std::endl; 
+    // std::cout << "scan: " << scanPositionPath << " " << scanNo << std::endl;
+    // std::cout << d.metaData << std::endl; 
    
     d.metaName = metaPath.string();
     d.groupName = totalGroupPath.string();
@@ -161,7 +161,8 @@ Description ScanProjectSchemaHyperlib::waveform(const std::string &scanPositionP
     return d;
 }
 
-Description ScanProjectSchemaHyperlib::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
+Description ScanProjectSchemaHyperlib::scanCamera(
+    const size_t &scanPositionNo, const size_t &camNo) const
 {
     Description g = position(scanPositionNo);
     return scanCamera(*g.groupName, camNo);
@@ -205,7 +206,7 @@ Description ScanProjectSchemaHyperlib::scanCamera(const std::string &scanPositio
 }
 
 Description ScanProjectSchemaHyperlib::scanImage(
-    const size_t &scanPosNo, const size_t &scanNo,
+    const size_t &scanPosNo, 
     const size_t &scanCameraNo, const size_t &scanImageNo) const
 {
     // Scan images are not supported

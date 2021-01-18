@@ -44,6 +44,9 @@
 #include "lvr2/io/Progress.hpp"
 #include "DMCVecPointHandle.hpp"
 
+#include "metrics/MSRMetric.hpp"
+#include "metrics/DMCReconstructionMetric.hpp"
+
 #include "Octree.hpp"
 #include "DualOctree.hpp"
 #include "Location.hh"
@@ -96,6 +99,17 @@ public:
      */
     virtual void getMesh(BaseMesh<BaseVecT> &mesh);
 
+    /**
+     * @brief Returns the surface reconstruction of the given point set plus a (+depth) deeper version
+     *
+     * @param flatMesh the flat mesh starting point
+     * @param deepMesh the mesh that is delta levels deeper
+     */
+    virtual void getMesh(BaseMesh<BaseVecT> &flatMesh, BaseMesh<BaseVecT> &deepMesh, int delta);
+    
+    /**
+     * @brief This is deprecated and has to stay in here for historic reasons
+     */
     virtual void getMesh(
         BaseMesh<BaseVecT>& mesh,
         BoundingBox<BaseVecT>& bb,
@@ -127,11 +141,15 @@ protected:
      * @param childCenter  Centers of the children.
      * @param size         Actually voxelsize.
      * @param parentCenter Center of the parent node.
+     * @param reconstructionMetric the metric that will be used for in place comparison of reconstruction vs pointcloud
+     * @param delta difference between flat and deep octree
      */
     void buildTree(
         C_Octree<BaseVecT, BoxT, my_dummy> &parent,
         int levels,
-        bool dual);
+        bool dual,
+        DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric,
+        int deltas);
 
     /**
      * @brief Traverses the octree and insert for each leaf the getSurface-function into the thread pool.
@@ -274,6 +292,9 @@ protected:
 
     // Pointer to the new Octree
     C_Octree<BaseVecT, BoxT, my_dummy> *octree;
+
+    // Pointer to the deeper Octree
+    C_Octree<BaseVecT, BoxT, my_dummy> *deepOctree;
 
     // PointHandler
     unique_ptr<DMCPointHandle<BaseVecT>> m_pointHandler;

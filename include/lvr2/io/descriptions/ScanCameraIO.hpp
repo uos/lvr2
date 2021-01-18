@@ -13,7 +13,11 @@ template <typename FeatureBase>
 class ScanCameraIO
 {
   public:
-    void saveScanCamera(const size_t& scanPosNo, const size_t& scanCamNo, ScanCameraPtr& camera);
+    void saveScanCamera(
+        const size_t& scanPosNo, 
+        const size_t& scanCamNo, 
+        ScanCameraPtr cameraPtr) const;
+
     //void save(const std::string& group, const std::string& container, ScanCameraPtr& buffer);
     //ScanCameraPtr load(const std::string& group, const std::string& constainer);
     ScanCameraPtr loadScanCamera(const size_t& scanPosNo, const size_t& scanCamNo);
