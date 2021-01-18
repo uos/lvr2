@@ -97,6 +97,8 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
             break;
         }
 
+        // std::cout << "[ScanPositionIO - load] Loaded Scan " << scanNo << std::endl;
+
         ++scanNo;
     }
 
@@ -114,6 +116,9 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
         } else {
             break;
         }
+
+        // std::cout << "[ScanPositionIO - load] Loaded Camera " << camNo << std::endl;
+
         camNo++;
     }
 

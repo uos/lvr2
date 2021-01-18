@@ -39,11 +39,13 @@ struct convert<lvr2::ScanProject>
     {
         if(!node["sensor_type"])
         {
+            std::cout << "[YAML::convert<ScanProject> - decode] 'sensor_type' Tag not found." << std::endl;
             return false;
         }
 
         if(node["sensor_type"].as<std::string>() != lvr2::ScanProject::sensorType)
         {
+            std::cout << "[YAML::convert<ScanProject> - decode] Try to load " << node["sensor_type"].as<std::string>() << " as " << lvr2::ScanProject::sensorType << std::endl;
             return false;
         }
 
@@ -53,12 +55,12 @@ struct convert<lvr2::ScanProject>
         }  else {
             scanProj.pose  = lvr2::Transformd::Identity();
         }
-        
+      
         if(node["coordinate_system"])
         {
             scanProj.coordinateSystem = node["coordinate_system"].as<std::string>();
         }
-        
+              
         if(node["sensor_name"])
         {
             scanProj.sensorName = node["sensor_name"].as<std::string>();
