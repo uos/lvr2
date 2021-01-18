@@ -187,6 +187,39 @@ int main(int argc, char** argv)
 
     std::cout << "Finished reconstruction!" << std::endl;
 
+
+    std::cout << "Started smoothing..." << std::endl;
+    float smoothing_factor = 0.5;
+    float num_smoothings = 5;
+
+    //perform laplacian smoothing on the mesh
+    for(int i = 0; i < num_smoothings; i++)
+    {
+        for(auto vertexH : mesh.vertices())
+        {
+            auto n_vertices = mesh.getNeighboursOfVertex(vertexH);
+            auto& vertex = mesh.getVertexPosition(vertexH);
+            lvr2::BaseVector<int> avg_vec(0,0,0);
+
+            for(auto vH : n_vertices)
+            {
+                auto v = mesh.getVertexPosition(vH);
+                avg_vec += (v - vertex);
+            }
+
+            avg_vec /= n_vertices.size() + 1;
+            
+            lvr2::BaseVector<int> avg_vec_factorized((int)(static_cast<float>(avg_vec[0]) * smoothing_factor),
+                                                     (int)(static_cast<float>(avg_vec[1]) * smoothing_factor),
+                                                     (int)(static_cast<float>(avg_vec[2]) * smoothing_factor));
+
+            vertex += avg_vec_factorized;
+        }
+    }
+
+    std::cout << "Finished smooting!" << std::endl;
+
+
     // Convert halfedgemesh to an IO format
     lvr2::SimpleFinalizer<lvr2::BaseVector<int>> finalizer;
     auto buffer = finalizer.apply(mesh);
