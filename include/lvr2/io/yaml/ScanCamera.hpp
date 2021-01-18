@@ -112,8 +112,9 @@ struct convert<lvr2::ScanCamera>
             {
                 for(size_t i = 0; i < distortionNode.size(); i++)
                 {
-                    std::cout << i << std::endl;
-                    scanCam.camera.k.push_back(distortionNode[i].as<double>());
+                    std::stringstream s;
+                    s << "k" << i;
+                    scanCam.camera.k.push_back(distortionNode[s.str()].as<double>());
                 }
             }
         } else {

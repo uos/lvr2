@@ -37,7 +37,6 @@ ScanProjectPtr dummyScanProject()
         {
             ScanPtr scan(new Scan);
 
-
             scan->hResolution = 1.0;
             scan->vResolution = 0.2;
             scan->thetaMin = -M_PI;
@@ -51,17 +50,35 @@ ScanProjectPtr dummyScanProject()
             scan_pos->scans.push_back(scan);
 
             scan->numPoints = scan->points->numPoints();
+            scan->startTime = 0.0;
+            scan->endTime  = 100.0;
+            scan->poseEstimation = Transformd::Identity() * 2;
         }
 
         for(size_t j=0; j<2; j++)
         {
             ScanCameraPtr scan_cam(new ScanCamera);
             scan_cam->camera.distortionModel = "opencv";
+            scan_cam->camera.k.resize(10);
             for(size_t k=0; k<10; k++)
             {
-                scan_cam->images.push_back(synthetic::genLVRImage());
+                scan_cam->camera.k[k] = static_cast<double>(k);
             }
+            
+
+            for(size_t k=0; k<10; k++)
+            {
+                ScanImagePtr si = synthetic::genLVRImage();
+                si->extrinsics = Extrinsicsd::Identity() * static_cast<double>(k);
+                si->extrinsicsEstimate = Extrinsicsd::Identity() / static_cast<double>(k + 1);
+                si->imageFile = "test";
+                scan_cam->images.push_back(si);
+            }
+
+            scan_cam->sensorName = "Canon";
+
             scan_pos->cams.push_back(scan_cam);
+
         }
 
         ret->positions.push_back(scan_pos);
@@ -250,7 +267,7 @@ bool compare(ScanProjectPtr sp1, ScanProjectPtr sp2)
     return true;
 }
 
-void writeTest()
+void ioTest()
 {
     std::string filename = "test";
 
@@ -260,6 +277,8 @@ void writeTest()
     HDF5KernelPtr hdf5_kernel(new HDF5Kernel(filename + ".h5"));
     HDF5SchemaPtr hdf5_schema(new ScanProjectSchemaHDF5V2());
     descriptions::HDF5IO hdf5_io(hdf5_kernel, hdf5_schema);
+    std::cout << "--------------------------" << std::endl;
+    std::cout << "SAVE SCANPROJECT" << std::endl;
     hdf5_io.saveScanProject(sp);
 
     std::cout << "--------------------------" << std::endl;
@@ -274,32 +293,11 @@ void writeTest()
     }
 }
 
-void loadTest()
-{
-    std::string filename = "test";
-
-    ScanProjectPtr sp = dummyScanProject();
-
-
-    /// WRITE TO HDF5
-
-    HDF5KernelPtr hdf5_kernel(new HDF5Kernel(filename + ".h5"));
-    HDF5SchemaPtr hdf5_schema(new ScanProjectSchemaHDF5V2());
-    descriptions::HDF5IO hdf5_io(hdf5_kernel, hdf5_schema);
-    // hdf5_io.saveScanProject(sp);
-
-    std::cout << "--------------------------" << std::endl;
-    std::cout << "LOAD SCANPROJECT" << std::endl;
-    ScanProjectPtr sp_loaded = hdf5_io.loadScanProject();
-
-    // DirectoryKernelPtr dir_kernel(new DirectoryKernel(filename));
-    // DirectorySchemaPtr dir_schema(new ScanProjectSchemaRaw(filename));
-    // DirectoryIO dir_io(dir_kernel, dir_schema);
-    // dir_io.saveScanProject(sp);
-}
-
 int main(int argc, char** argv)
 {
+    // ioTest();
+    // return 0;
+
     hdf5_convert_old::Options options(argc, argv);
 
     using OldIO = Hdf5Build<hdf5features::ScanProjectIO>;

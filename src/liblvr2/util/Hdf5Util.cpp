@@ -59,7 +59,7 @@ void writeBaseStructure(std::shared_ptr<HighFive::File> hdf5_file)
     hdf5_file->createDataSet<int>("version", HighFive::DataSpace::From(version)).write(version);
     // HighFive::Group raw_data_group = hdf5_file->createGroup("raw");
 
-    // // Create string with current time
+    // Create string with current time
     // std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     // std::time_t t_now = std::chrono::system_clock::to_time_t(now);
     // std::string time(ctime(&t_now));

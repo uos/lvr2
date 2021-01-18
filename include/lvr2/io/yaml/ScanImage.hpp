@@ -62,6 +62,7 @@ struct convert<lvr2::ScanImage>
 
         if(node["extrinsics_estimate"])
         {
+            // NAN check?
             scanImage.extrinsicsEstimate = node["extrinsics_estimate"].as<lvr2::Extrinsicsd>();
         }
         else
@@ -79,6 +80,7 @@ struct convert<lvr2::ScanImage>
             scanImage.timestamp = -1.0;
         }
 
+        // std::cout << "Decoding ScanImage finished." << std::endl;
         // Makes no sense to read with and height here...
 
         return true;
