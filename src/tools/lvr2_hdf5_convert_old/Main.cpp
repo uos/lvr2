@@ -303,7 +303,6 @@ int main(int argc, char** argv)
     hdf5_convert_old::Options options(argc, argv);
 
     using OldIO = Hdf5Build<hdf5features::ScanProjectIO>;
-
     using NewIO = descriptions::HDF5IO;
 
     OldIO old_io;
@@ -314,19 +313,15 @@ int main(int argc, char** argv)
     if(sp)
     {
         std::cout << "Loaded scan project!" << std::endl;
-
         std::string filename = "scan_project.h5";
+        
         HDF5KernelPtr kernel(new HDF5Kernel(filename));
         HDF5SchemaPtr schema(new ScanProjectSchemaHDF5V2());
         NewIO io(kernel, schema);
         io.saveScanProject(sp);
-
-
     } else {
         std::cout << "Could not load scan project" << std::endl;
     }
-
-    
 
     return 0;
 }

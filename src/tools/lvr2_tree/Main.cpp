@@ -6,11 +6,6 @@
 
 namespace bfs = boost::filesystem;
 
-void printHDF5(const HighFive::DataSet& g, int depth=0)
-{
-    
-}
-
 void printHDF5(const HighFive::Group& g, int depth=0)
 {
     for(auto groupName : g.listObjectNames())

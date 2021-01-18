@@ -30,11 +30,6 @@ void addAtomic(HighFive::Group& g,
     const std::string datasetName,
     const T data);
 
-void addString(
-    HighFive::Group& g,
-    const std::string datasetName,
-    const std::string data);
-
 template<typename T>
 void addArray(
     HighFive::Group& g, 

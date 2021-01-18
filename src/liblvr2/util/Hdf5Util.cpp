@@ -7,22 +7,6 @@ namespace lvr2
 namespace hdf5util
 {
 
-void addString(
-    HighFive::Group& g,
-    const std::string datasetName,
-    const std::string data)
-{
-    const char* data_ptr = data.c_str();
-    size_t nchars = data.length();
-
-    std::vector<size_t> dim = {nchars};
-    HighFive::DataSpace dataSpace(dim);
-    HighFive::DataSetCreateProps properties;
-
-    auto dataset = createDataset<char>(g, datasetName, dataSpace, properties);
-    dataset->write_raw(data_ptr);
-}
-
 boost::optional<std::string> getString(
     const HighFive::Group& g,
     const std::string& datasetName)
