@@ -90,11 +90,94 @@ ScanProjectPtr dummyScanProject()
     return ret;
 }
 
+bool compare(ScanImagePtr si1, ScanImagePtr si2)
+{
+    if(!si1 && si2){return false;}
+    if(si1 && !si2){return false;}
+    if(!si1 && !si2){return true;}
+
+    if(!si1->extrinsics.isApprox(si2->extrinsics)){ 
+        std::cout << "ScanImage extriniscs differ: " << std::endl;
+        std::cout << si1->extrinsics << std::endl;
+        std::cout << " != " << std::endl;
+        std::cout << si2->extrinsics << std::endl;
+        return false; 
+    }
+
+    if(!si1->extrinsicsEstimate.isApprox(si2->extrinsicsEstimate)){ 
+        std::cout << "ScanImage extriniscsEstimate differ: " << std::endl;
+        std::cout << si1->extrinsicsEstimate << std::endl;
+        std::cout << " != " << std::endl;
+        std::cout << si2->extrinsicsEstimate << std::endl;
+        return false; 
+    }
+
+    if(si1->imageFile != si2->imageFile)
+    {
+        std::cout << "ScanImage imageFile differ: " << si1->imageFile << " != " << si2->imageFile << std::endl;
+        return false;
+    }
+
+    if(cv::countNonZero(si1->image != si2->image) != 0){
+        std::cout <<"ScanImage image data differ "  << std::endl;
+        cv::imshow("ScanImage 1", si1->image);
+        cv::imshow("ScanImage 2", si2->image);
+        cv::waitKey(0);
+        return false;
+    }
+
+    return true;
+}
+
 bool compare(ScanCameraPtr sc1, ScanCameraPtr sc2)
 {
     if(!sc1 && sc2){return false;}
     if(sc1 && !sc2){return false;}
     if(!sc1 && !sc2){return true;}
+
+    if(sc1->camera.cx != sc2->camera.cx)
+    {
+        std::cout << "ScanCamera cx differ: " << sc1->camera.cx << " != " << sc2->camera.cx << std::endl;
+        return false;
+    }
+
+    if(sc1->camera.cy != sc2->camera.cy)
+    {
+        std::cout << "ScanCamera cy differ: "  << sc1->camera.cy << " != " << sc2->camera.cy << std::endl;
+        return false;
+    }
+
+    if(sc1->camera.fx != sc2->camera.fx)
+    {
+        std::cout << "ScanCamera fx differ: " << sc1->camera.fx << " != " << sc2->camera.fx <<  std::endl;
+        return false;
+    }
+
+    if(sc1->camera.fy != sc2->camera.fy)
+    {
+        std::cout << "ScanCamera fy differ: " << sc1->camera.fy << " != " << sc2->camera.fy << std::endl;
+        return false;
+    }
+
+    if(sc1->sensorName != sc2->sensorName)
+    {
+        std::cout << "ScanCamera SensorName differ: " << sc1->sensorName << " != " << sc2->sensorName << std::endl;
+        return false;
+    }
+
+    if(sc1->images.size() != sc2->images.size())
+    {
+        std::cout << "ScanCamera number of images differ: " << sc1->images.size() << " != "  << sc2->images.size() << std::endl;
+        return false;
+    }
+
+    for(size_t i=0; i<sc1->images.size(); i++)
+    {
+        if(!compare(sc1->images[i], sc2->images[i]))
+        {
+            return false;
+        }
+    }
 
     return true;
 }
