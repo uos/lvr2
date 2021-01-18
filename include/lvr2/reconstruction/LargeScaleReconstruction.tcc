@@ -899,7 +899,7 @@ namespace lvr2
 
         timeInit = lvr2::timestamp.getCurrentTimeInMs();
 
-
+        // TODO: Setting up multithreading for MPI
 //        #pragma omp parallel sections
 //        {
 //            #pragma omp section
@@ -978,7 +978,7 @@ namespace lvr2
                 std::cout << lvr2::timestamp << "Send chunk to client " << dest << std::endl;
                 MPI_Send(&i, 1, MPI_INT, dest, 2, MPI_COMM_WORLD);
 
-                // Send all Data to client, tag = 0
+                // Send all Data to client
                 // TODO: Non-blocking
                 std::cout << lvr2::timestamp << "Num Points: " << numPoints << std::endl;
                 MPI_Send(&numPoints, 1, MPI_SIZE_T, dest, 3, MPI_COMM_WORLD);
@@ -1219,7 +1219,7 @@ namespace lvr2
             int h;
 
 
-            // Receive stuff
+            // Receive chunk information
             MPI_Recv(&numPoints, 1, MPI_SIZE_T, 0, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             floatArr points(new float[numPoints*3]);
             MPI_Recv(points.get(), numPoints*3, MPI_FLOAT, 0, 4, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -1246,7 +1246,7 @@ namespace lvr2
 
             if (!calcNorm)
             {
-              // receive normals if they are available from scheduler
+              // receive normals if they are available
               size_t numNormals;
               MPI_Recv(&numNormals, 1, MPI_SIZE_T, 0, 13, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
               floatArr normals(new float[numNormals]);

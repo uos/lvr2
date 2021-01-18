@@ -107,9 +107,12 @@ int main(int argc, char** argv)
             MPI_Finalize();
             return EXIT_SUCCESS;
         }
+        // Exits if only one Process was started
+        // (Programm has to be startet with ./mpirun
         if(mpi_size == 1)
         {
-            std::cout << "At least 1 Client required" << std::endl;
+
+            std::cout << "Error: At least 2 Processes needed to use MPI. Use mpirun to run multiple Processes." << std::endl;
             MPI_Finalize();
             return EXIT_SUCCESS;
         }
