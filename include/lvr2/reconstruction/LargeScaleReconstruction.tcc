@@ -885,6 +885,8 @@ namespace lvr2
         cmBB.expand(addCMBBMin);
         cmBB.expand(addCMBBMax);
 
+        // TODO: It breaks here
+
         chunkManager->setBoundingBox(cmBB);
         int numChunks_global = (cmBB.getXSize() / m_chunkSize) * (cmBB.getYSize() / m_chunkSize) * (cmBB.getZSize() / m_chunkSize);
         int numChunks_partial = partitionBoxes->size();
@@ -903,7 +905,7 @@ namespace lvr2
 //            #pragma omp section
 //            {
                 uint* partitionBoxesSkipped = mpiScheduler(partitionBoxes, bg, cbb, chunkManager);
-                timeCalc = lvr2::timestamp.getCurrentTimeInMs();
+//                timeCalc = lvr2::timestamp.getCurrentTimeInMs();
 //            }
 //            #pragma omp section
 //            {
