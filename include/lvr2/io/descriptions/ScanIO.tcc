@@ -137,6 +137,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     const size_t& scanNo, 
     ReductionAlgorithmPtr reduction) const
 {
+<<<<<<< HEAD
     ScanPtr ret;
 
     Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
@@ -204,19 +205,18 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
         std::tie(groupName, dataSetName) = getNames("", "", waveformDescr);
 
         if (m_featureBase->m_kernel->exists(groupName))
+=======
+    ScanPtr ret = loadScan(scanPosNo, scanNo);
+
+    if(ret)
+    {
+        if(ret->points)
+>>>>>>> develop
         {
-            std::cout << "[LabelIO] Loading Waveform" << std::endl;
-            WaveformPtr fwPtr = m_fullWaveformIO->loadFullWaveform(scanPosNo, scanNo);
-            ret->waveform = fwPtr;
-            //boost::shared_array<uint16_t> waveformData(new uint16_t[fwPtr->waveformSamples.size()]);
-            //std::memcpy(waveformData.get(), fwPtr->waveformSamples.data(), fwPtr->waveformSamples.size() * sizeof(uint16_t));
-            //Channel<uint16_t>::Ptr waveformChannel(new Channel<uint16_t>(fwPtr->waveformSamples.size() / fwPtr->maxBucketSize, static_cast<size_t>(fwPtr->maxBucketSize), waveformData));
-            //ret->points->addChannel<uint16_t>(waveformChannel, "waveform");
-        } else{
-            std::cout << "[LabelIO] No Waveform found" << groupName << std::endl;
+            reduction->setPointBuffer(ret->points);
+            ret->points = reduction->getReducedPoints();
         }
     }
-
 
     return ret;
 }
