@@ -37,21 +37,31 @@ struct convert<lvr2::ScanProject>
 
     static bool decode(const Node& node, lvr2::ScanProject& scanProj) 
     {
-        try
+        if(!node["sensor_type"])
         {
-            if(node["sensor_type"].as<std::string>() != lvr2::ScanProject::sensorType)
-            {
-                return false;
-            }
-
-            scanProj.pose = node["pose_estimate"].as<lvr2::Transformd>();
-            scanProj.coordinateSystem = node["coordinate_system"].as<std::string>();
-            scanProj.sensorName = node["sensor_name"].as<std::string>();
-        }
-        catch(YAML::BadSubscript& e)
-        {
-            std::cout << e.what() << std::endl;
             return false;
+        }
+
+        if(node["sensor_type"].as<std::string>() != lvr2::ScanProject::sensorType)
+        {
+            return false;
+        }
+
+        if(node["pose_estimate"])
+        {
+            scanProj.pose = node["pose_estimate"].as<lvr2::Transformd>();
+        }  else {
+            scanProj.pose  = lvr2::Transformd::Identity();
+        }
+        
+        if(node["coordinate_system"])
+        {
+            scanProj.coordinateSystem = node["coordinate_system"].as<std::string>();
+        }
+        
+        if(node["sensor_name"])
+        {
+            scanProj.sensorName = node["sensor_name"].as<std::string>();
         }
     
         return true;
