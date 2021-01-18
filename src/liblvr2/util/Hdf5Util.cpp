@@ -7,33 +7,6 @@ namespace lvr2
 namespace hdf5util
 {
 
-boost::optional<std::string> getString(
-    const HighFive::Group& g,
-    const std::string& datasetName)
-{
-    boost::optional<std::string> ret;
-
-    if(g.isValid())
-    {
-        if(g.exist(datasetName))
-        {
-            HighFive::DataSet dataset = g.getDataSet(datasetName);
-            std::vector<size_t> dim = dataset.getSpace().getDimensions();
-
-            char data_ptr[dim[0]];            
-            dataset.read(data_ptr);
-            std::string data(data_ptr);
-            ret = data;
-        }
-    }
-    else 
-    {
-        throw std::runtime_error("[Hdf5 - StringIO]: Hdf5 file not open.");
-    }
-
-    return ret;
-}
-
 std::vector<std::string> splitGroupNames(const std::string& groupName)
 {
     std::vector<std::string> ret;

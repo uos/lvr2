@@ -54,10 +54,6 @@ boost::optional<T> getAtomic(
     const HighFive::Group& g,
     const std::string datasetName);
 
-boost::optional<std::string> getString(
-    const HighFive::Group& g,
-    const std::string& datasetName);
-
 template<typename T>
 boost::shared_array<T> getArray(
     const HighFive::Group& g, 
