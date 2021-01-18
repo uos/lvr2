@@ -51,32 +51,81 @@ struct convert<lvr2::Scan>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::Scan& scan) {
-        
-        if(node["sensor_type"].as<std::string>() != lvr2::Scan::sensorType) 
+    static bool decode(const Node& node, lvr2::Scan& scan) 
+    {
+
+        if(!node["sensor_type"])
         {
+            std::cout << "WARNING: Tried to convert YAML::Node -> lvr2::Scan. YAML::Node has no 'sensor_type' tag." << std::endl;
             return false;
         }
 
-        scan.startTime = node["start_time"].as<double>();
-        scan.endTime = node["end_time"].as<double>();
-        scan.poseEstimation = node["pose_estimate"].as<lvr2::Transformd>();
-        scan.registration = node["registration"].as<lvr2::Transformd>();
+        if(node["sensor_type"].as<std::string>() != lvr2::Scan::sensorType) 
+        {
+            // TODO: proper  warning or error?
+            return false;
+        }
 
-        const Node& config = node["config"];
+        if(node["start_time"])
+        {
+            scan.startTime = node["start_time"].as<double>();
+        } else {
+            scan.startTime = -1.0;
+        }
 
+        if(node["end_time"])
+        {
+            scan.endTime = node["end_time"].as<double>();
+        } else {
+            scan.endTime = -1.0;
+        }
         
-        scan.thetaMin = config["theta"][0].as<double>();
-        scan.thetaMax = config["theta"][1].as<double>();
+        if(node["pose_estimate"])
+        {
+            scan.poseEstimation = node["pose_estimate"].as<lvr2::Transformd>();
+        } else {
+            scan.poseEstimation = lvr2::Transformd::Identity();
+        }
 
-        scan.phiMin = config["phi"][0].as<double>();
-        scan.phiMax = config["phi"][1].as<double>();
+        if(node["registration"])
+        {
+            scan.registration = node["registration"].as<lvr2::Transformd>();
+        } else {
+            scan.registration = lvr2::Transformd::Identity();
+        }
+        
+        
+        if(node["config"])
+        {
+            const Node& config = node["config"];
+        
+            if(config["theta"])
+            {
+                scan.thetaMin = config["theta"][0].as<double>();
+                scan.thetaMax = config["theta"][1].as<double>();
+            }
+            
+            if(config["phi"])
+            {
+                scan.phiMin = config["phi"][0].as<double>();
+                scan.phiMax = config["phi"][1].as<double>();
+            }
 
-        scan.vResolution = config["v_res"].as<double>();
-        scan.hResolution = config["h_res"].as<double>();
+            if(config["v_res"])
+            {
+                scan.vResolution = config["v_res"].as<double>();
+            }            
 
-        scan.numPoints = config["num_points"].as<size_t>();
-
+            if(config["h_res"])
+            {
+                scan.hResolution = config["h_res"].as<double>();
+            }
+            
+            if(config["num_points"])
+            {
+                scan.numPoints = config["num_points"].as<size_t>();
+            }   
+        }
 
         return true;
     }
