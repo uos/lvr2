@@ -1,6 +1,6 @@
 #pragma once
-#ifndef LVR2_IO_DESC_CHUNKIO_HPP
-#define LVR2_IO_DESC_CHUNKIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_CHANNELIO_HPP
+#define LVR2_IO_DESCRIPTIONS_CHANNELIO_HPP
 
 #include "ArrayIO.hpp"
 #include "MeshIO.hpp"
@@ -82,4 +82,4 @@ struct FeatureConstruct<ChunkIO, FeatureBase>
 
 #include "ChunkIO.tcc"
 
-#endif
+#endif // LVR2_IO_DESCRIPTIONS_CHANNELIO_HPP

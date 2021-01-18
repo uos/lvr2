@@ -23,7 +23,12 @@ public:
     HDF5Kernel() = delete;
     HDF5Kernel(const std::string& hdf5file);
     ~HDF5Kernel() {
-         delete m_metaDescription;}
+         delete m_metaDescription;
+         if(m_hdf5File)
+         {
+             m_hdf5File->flush();
+         }
+         }
 
     virtual void saveMeshBuffer(
         const std::string& group, 
@@ -259,10 +264,15 @@ public:
         const VariantChannel<Tp...>& vchannel
     ) const;
 
+    virtual std::unordered_map<std::string, YAML::Node> metas(
+        const std::string& group) const;
+
+    virtual std::unordered_map<std::string, YAML::Node> metas(
+        const std::string& group, const std::string& sensor_type
+    ) const;
+
     template<typename T>
     cv::Mat createMat(const std::vector<size_t>& dims) const;
-
-    void loadMetaData(const YAML::Node& node);
 
     std::shared_ptr<HighFive::File>  m_hdf5File;
 

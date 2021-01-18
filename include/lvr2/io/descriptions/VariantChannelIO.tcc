@@ -2,9 +2,6 @@
 namespace lvr2 
 {
 
-// template<typename T, size_t I>
-// void bla();
-
 // Anker
 template<typename Derived, typename VChannelT, size_t I,
     typename std::enable_if<I == 0, void>::type* = nullptr>
@@ -27,8 +24,7 @@ void saveDynamic(
     const std::string& group,
     const std::string& name,
     const VChannelT& channel,
-    const ChannelIO<Derived>* io
-)
+    const ChannelIO<Derived>* io)
 {
     if(I == channel.type())
     {
@@ -57,32 +53,34 @@ void VariantChannelIO<Derived>::save(
     std::string datasetName,
     const VariantChannel<Tp...>& vchannel)
 {
-    // TODO
-
+    // std::cout << "[VariantChannelIO - save] " << groupName << ", " << datasetName << ", " << vchannel.typeName() << std::endl;
     using VChannelT = VariantChannel<Tp...>;
 
+    // keep this order! We need Hdf5 to build the dataset first, then writing meta information
+    saveDynamic<Derived, VChannelT>(groupName, datasetName, vchannel, m_channel_io);
+    
     // creating meta node of variantchannel containing type and size
     YAML::Node node;
-    node = vchannel;
-
+    try {
+        node = vchannel;
+    } catch(YAML::TypedBadConversion<int> ex) {
+        std::cout << ex.what() << std::endl;
+    }
     m_featureBase->m_kernel->saveMetaYAML(groupName, datasetName, node);
-    saveDynamic<Derived, VChannelT>(groupName, datasetName, vchannel, m_channel_io);
 }
-
-
-// template<typename VariantChannelT, size_t I>
-// void check(size_t bla);
 
 // anker
 template<typename Derived, typename VariantChannelT, size_t I,
     typename std::enable_if<I == 0, void>::type* = nullptr>
 bool _dynamicLoad(
     std::string group, std::string name,
-    size_t dyn_type, 
+    std::string dyn_type, 
     VariantChannelT& vchannel,
     const ChannelIO<Derived>* io)
 {
-    if(dyn_type == I)
+    using DataT = typename VariantChannelT::template type_of_index<I>;
+
+    if(dyn_type == Channel<DataT>::typeName() )
     {
         using DataT = typename VariantChannelT::template type_of_index<I>;
 
@@ -98,7 +96,7 @@ bool _dynamicLoad(
         return true;
     }
 
-    std::cout << "[VariantChannelIO] WARNING: data type " << dyn_type << " not implemented in PointBuffer." << std::endl;
+    std::cout << "[VariantChannelIO] WARNING: data type '" << dyn_type << "' not implemented in PointBuffer." << std::endl;
     return false;
 }
 
@@ -106,20 +104,20 @@ template<typename Derived, typename VariantChannelT, size_t I,
     typename std::enable_if<I != 0, void>::type* = nullptr>
 bool _dynamicLoad(
     std::string group, std::string name,
-    size_t dyn_type, 
+    std::string dyn_type, 
     VariantChannelT& vchannel,
     const ChannelIO<Derived>* io)
 {
-    if(dyn_type == I)
+    using DataT = typename VariantChannelT::template type_of_index<I>;
+
+    if(dyn_type == Channel<DataT>::typeName() )
     {
-        using DataT = typename VariantChannelT::template type_of_index<I>;
-        
         ChannelOptional<DataT> copt = io->template load<DataT>(group, name);
         if(copt)
         {
             vchannel = *copt;
         } else {
-            std::cout << "[VariantChannelIO] WARNING: Could not reveive Channel from ChannelIO!" << std::endl;
+            std::cout << "[VariantChannelIO] WARNING: Could not receive Channel from ChannelIO!" << std::endl;
             return false;
         }
         
@@ -132,7 +130,7 @@ bool _dynamicLoad(
 template<typename Derived, typename VariantChannelT>
 bool dynamicLoad(
     std::string group, std::string name,
-    size_t dyn_type, 
+    std::string dyn_type, 
     VariantChannelT& vchannel,
     const ChannelIO<Derived>* io)
 {
@@ -145,6 +143,9 @@ boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
     std::string groupName,
     std::string datasetName)
 {
+
+    // std::cout << "[VariantChannelIO - load] " << groupName << ", " << datasetName << std::endl;
+
     boost::optional<VariantChannelT> ret;
 
     YAML::Node node;
@@ -152,15 +153,20 @@ boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
 
     if(!node["sensor_type"])
     {
+        std::cout << timestamp << "[VariantChannelIO - load] Could not find 'sensor_type' key in YAML" << std::endl;
         return ret;
     }
 
     if(node["sensor_type"].as<std::string>() != "Channel")
     {
+        std::cout << timestamp << "[VariantChannelIO - load] sensor_type: '" << node["sensor_type"].as<std::string>() << "' != 'Channel'" << std::endl;
         return ret;
     }
 
-    size_t data_type = node["channel_type"].as<size_t>();
+    std::string data_type = node["channel_type"].as<std::string>();
+
+
+    // size_t data_type = node["channel_type"].as<size_t>();
 
     // load channel with correct datatype
     VariantChannelT vchannel;

@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_SCANCAMERAIO_HPP
-#define LVR2_IO_HDF5_SCANCAMERAIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_SCANCAMERAIO_HPP
+#define LVR2_IO_DESCRIPTIONS_SCANCAMERAIO_HPP
 
 #include "ScanImageIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
@@ -56,4 +56,4 @@ struct FeatureConstruct<ScanCameraIO, FeatureBase>
 
 #include "ScanCameraIO.tcc"
 
-#endif // LVR2_IO_HDF5_SCANCAMERAIO_HPP
+#endif // LVR2_IO_DESCRIPTIONS_SCANCAMERAIO_HPP

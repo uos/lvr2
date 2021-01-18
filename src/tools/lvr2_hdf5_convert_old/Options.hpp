@@ -25,42 +25,70 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+/*
+ * Options.h
+ *
+ *  Created on: Aug 23 2012
+ *      Author: Thomas Wiemann
+ */
 
-#ifndef LVR2_TYPES_MULTICHANNELMAP
-#define LVR2_TYPES_MULTICHANNELMAP
+#ifndef OPTIONS_H_
+#define OPTIONS_H_
 
-#include "VariantChannelMap.hpp"
+#include <boost/program_options.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
 
-namespace lvr2 {
-    
-//enum MultiChannelMapTypes {
-//    CH_8U,
-//    CH_8S,
-//    CH_16U,
-//    CH_16S,
-//    CH_32U,
-//    CH_32S,
-//    CH_32F,
-//    CH_64F
-//};
+using std::cout;
+using std::endl;
+using std::ostream;
+using std::string;
+using std::vector;
 
-// Don't touch the order. (ROS point_fiel compatibility)
-// TODO In future these should be exchangeable.
-using MultiChannelMap = VariantChannelMap<
-        char,
-        unsigned char,
-        short,
-        unsigned short,
-        int,
-        long int,
-        unsigned int,
-        size_t,
-        float,
-        double,
-        bool
-    >;
+namespace hdf5_convert_old
+{
 
-} // namespace lvr2
+using namespace boost::program_options;
 
-#endif // LVR2_TYPES_MULTICHANNELMAP
+/**
+ * @brief A class to parse the program options for the reconstruction
+ * 		  executable.
+ */
+class Options
+{
+  public:
+    /**
+     * @brief 	Ctor. Parses the command parameters given to the main
+     * 		  	function of the program
+     */
+    Options(int argc, char** argv);
+    virtual ~Options();
+
+    string getInputDir() const { return m_variables["inputDir"].as<string>(); }
+    string getOutputDir() const { return m_variables["outputDir"].as<string>(); }
+    string getOutputFile() const { return m_variables["outputFile"].as<string>(); }
+   
+  private:
+    /// The internally used variable map
+    variables_map m_variables;
+
+    /// The internally used option description
+    options_description m_descr;
+
+    /// The internally used positional option desription
+    positional_options_description m_pdescr;
+};
+
+/// Overlaoeded outpur operator
+inline ostream& operator<<(ostream& os, const Options& o)
+{
+    cout << "##### Program options: " << endl;
+    //    cout << "##### Data directory \t\t: "  << o.getDataDir() << endl;
+
+    return os;
+}
+
+} // namespace hdf5tool2
+
+#endif /* OPTIONS_H_ */

@@ -25,42 +25,52 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+/*
+ * Options.cpp
+ *
+ *  Created on: Nov 21, 2010
+ *      Author: Thomas Wiemann
+ */
 
-#ifndef LVR2_TYPES_MULTICHANNELMAP
-#define LVR2_TYPES_MULTICHANNELMAP
+#include "Options.hpp"
 
-#include "VariantChannelMap.hpp"
+namespace hdf5_convert_old
+{
 
-namespace lvr2 {
+Options::Options(int argc, char** argv) : m_descr("Supported options")
+{
+
+    // Create option descriptions
+
+    m_descr.add_options()
+        ("help", "Produce help message")
+        ("inputDir", value<string>(), "Root of the raw data.")
+        ("outputDir", value<string>()->default_value("./"), "HDF5 file is written here.")
+        ("outputFile", value<string>()->default_value("data.h5"), "HDF5 file name.");
     
-//enum MultiChannelMapTypes {
-//    CH_8U,
-//    CH_8S,
-//    CH_16U,
-//    CH_16S,
-//    CH_32U,
-//    CH_32S,
-//    CH_32F,
-//    CH_64F
-//};
+    // Parse command line and generate variables map
+    positional_options_description p;
+    p.add("inputDir", 1);
+    store(command_line_parser(argc, argv).options(m_descr).positional(p).run(), m_variables);
+    notify(m_variables);
 
-// Don't touch the order. (ROS point_fiel compatibility)
-// TODO In future these should be exchangeable.
-using MultiChannelMap = VariantChannelMap<
-        char,
-        unsigned char,
-        short,
-        unsigned short,
-        int,
-        long int,
-        unsigned int,
-        size_t,
-        float,
-        double,
-        bool
-    >;
+    if (m_variables.count("help"))
+    {
+        ::std::cout << m_descr << ::std::endl;
+        exit(-1);
+    }
+    else if (!m_variables.count("inputDir"))
+    {
+        std::cout << "Error: You must specify an input directory." << std::endl;
+        std::cout << std::endl;
+        std::cout << m_descr << std::endl;
+        exit(-1);
+    }
+}
 
-} // namespace lvr2
+Options::~Options()
+{
+    // TODO Auto-generated destructor stub
+}
 
-#endif // LVR2_TYPES_MULTICHANNELMAP
+} // namespace scanproject_parser

@@ -9,10 +9,8 @@ void ScanProjectIO<FeatureBase>::save(
 {
     Description d = m_featureBase->m_description->scanProject();
 
-    std::cout << "[ScanProjectIO] ScanProject - Description: " << std::endl;
-    std::cout << d << std::endl;
-
-    
+    // std::cout << "[ScanProjectIO] ScanProject - Description: " << std::endl;
+    // std::cout << d << std::endl;
 
     if(!d.groupName)
     {
@@ -25,6 +23,8 @@ void ScanProjectIO<FeatureBase>::save(
     {
         YAML::Node node;
         node = *scanProject;
+        // std::cout << "[ScanProjectIO] saveMetaYAML, Group: "
+        //             << *d.groupName << ", metaName: " << *d.metaName << std::endl;
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
     }
 
@@ -47,10 +47,14 @@ void ScanProjectIO<FeatureBase>::saveScanProject(
 template <typename FeatureBase>
 ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
 {
+    
     ScanProjectPtr ret;
 
     // Load description and meta data for scan project
     Description d = m_featureBase->m_description->scanProject();
+
+    // std::cout << "[HDF5IO - ScanProjectIO - load]: Description" << std::endl;
+    // std::cout << d << std::endl;
 
     if(!d.groupName)
     {

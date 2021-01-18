@@ -28,6 +28,9 @@ struct convert<lvr2::ScanProject>
         Node node;
         
         node["sensor_type"] = lvr2::ScanProject::sensorType;
+        node["coordinate_system"] = scanProj.coordinateSystem;
+        node["pose_estimate"] = scanProj.pose;
+        node["sensor_name"] = scanProj.sensorName;
 
         return node;
     }
@@ -40,6 +43,10 @@ struct convert<lvr2::ScanProject>
             {
                 return false;
             }
+
+            scanProj.pose = node["pose_estimate"].as<lvr2::Transformd>();
+            scanProj.coordinateSystem = node["coordinate_system"].as<std::string>();
+            scanProj.sensorName = node["sensor_name"].as<std::string>();
         }
         catch(YAML::BadSubscript& e)
         {
