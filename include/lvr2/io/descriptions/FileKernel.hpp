@@ -14,6 +14,7 @@
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/util/Tuple.hpp"
 
 namespace lvr2
 {
@@ -21,6 +22,20 @@ namespace lvr2
 class FileKernel
 {
 public:
+    using ImplementedTypes = Tuple<
+        char,
+        unsigned char,
+        short,
+        unsigned short,
+        uint16_t,
+        int,
+        unsigned int,
+        long int,
+        unsigned long int, // size_t
+        float,
+        double,
+        bool
+    >;
     
     FileKernel() = delete;
     FileKernel(const std::string& res) : m_fileResourceName(res) {};
@@ -125,6 +140,14 @@ public:
         const std::string& container, 
         std::vector<size_t> &dims) const = 0;
 
+    // Shortcut
+    template<typename T>
+    boost::shared_array<T> loadArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const;
+
+    // Saving interface
     virtual void saveCharArray(
         const std::string& groupName, 
         const std::string& datasetName, 
@@ -197,6 +220,14 @@ public:
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<bool>& data) const = 0;
 
+    // shortcut
+    template<typename T>
+    void saveArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<T>& data) const;
+
     virtual bool exists(const std::string& group) const = 0;
     virtual bool exists(const std::string& group, const std::string& container) const = 0;
 
@@ -238,4 +269,6 @@ using FileKernelPtr = std::shared_ptr<FileKernel>;
 
 } // namespace lvr2
 
-#endif
+#include "FileKernel.tcc"
+
+#endif // FileKernel
