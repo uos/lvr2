@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_HYPERSPECTRALCAMERAIO_HPP
-#define LVR2_IO_HDF5_HYPERSPECTRALCAMERAIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_HYPERSPECTRALCAMERAIO_HPP
+#define LVR2_IO_DESCRIPTIONS_HYPERSPECTRALCAMERAIO_HPP
 
 #include "lvr2/io/descriptions/ArrayIO.hpp"
 #include "lvr2/io/descriptions/MatrixIO.hpp"

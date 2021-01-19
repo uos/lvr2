@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_POLYGONIO_HPP
-#define LVR2_IO_HDF5_POLYGONIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_POLYGONIO_HPP
+#define LVR2_IO_DESCRIPTIONS_POLYGONIO_HPP
 
 #include <boost/optional.hpp>
 
@@ -76,4 +76,4 @@ struct FeatureConstruct<PolygonIO, FeatureBase> {
 #include "PolygonIO.tcc"
 
 
-#endif // LVR2_IO_HDF5_POLYGONIO_HPP
+#endif // LVR2_IO_DESCRIPTIONS_POLYGONIO_HPP

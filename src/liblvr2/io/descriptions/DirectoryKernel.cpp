@@ -248,7 +248,7 @@ std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
 }
 
 std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
-    const std::string& group, const std::string& sensor_type)
+    const std::string& group, const std::string& sensor_type) const
 {
     std::unordered_map<std::string, YAML::Node> ret;
 
@@ -277,6 +277,7 @@ bool DirectoryKernel::isMeta(const std::string& path) const
 {
     boost::filesystem::path p(path);
 
+    // TODO: add other extensions
     if(p.extension() == ".yaml")
     {
         return true;

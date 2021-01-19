@@ -34,6 +34,7 @@
 #include <memory>
 #include <boost/optional.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/type_index.hpp>
 #include <iostream>
 
 namespace lvr2 {
@@ -62,6 +63,11 @@ public:
     size_t           numElements() const;
     const DataPtr    dataPtr() const;
     DataPtr          dataPtr();
+
+    static constexpr std::string typeName()
+    {
+        return boost::typeindex::type_id<T>().pretty_name();
+    }
 
     friend std::ostream& operator<<(std::ostream& os, const Channel<T>& ch)
     {

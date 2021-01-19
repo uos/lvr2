@@ -609,6 +609,8 @@ add_subdirectory(src/tools/lvr2_mesh_reducer)
 add_subdirectory(src/tools/lvr2_chunking_server)
 add_subdirectory(src/tools/lvr2_scanproject_parser)
 add_subdirectory(src/tools/lvr2_ground_level_extractor)
+add_subdirectory(src/tools/lvr2_hdf5_convert_old)
+add_subdirectory(src/tools/lvr2_tree)
 
 if(CURSES_FOUND AND embree_FOUND)
     add_subdirectory(src/tools/lvr2_ascii_viewer)

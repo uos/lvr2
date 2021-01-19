@@ -45,20 +45,15 @@ struct convert<lvr2::ScanCamera>
 
         if(scanCam.camera.distortionModel == "opencv")
         {
-            Node distortion;
+            Node distortion = Load("[]");
             for(size_t i = 0; i < scanCam.camera.k.size(); i++)
             {
-                std::stringstream s;
-                s << "k" << i;
-                distortion[s.str()] = scanCam.camera.k[i];
+                distortion.push_back(scanCam.camera.k[i]);
             }
-            node["distortion"] = distortion;
+            node["distortion_coefficients"] = distortion;
         } else {
             // unkown distortion model
         }
-
-
-        
 
         return node;
     }
@@ -86,19 +81,25 @@ struct convert<lvr2::ScanCamera>
             scanCam.camera.height = node["resolution"][1].as<unsigned>();
         }
 
-        std::string camera_model = node["camera_model"].as<std::string>();
-
-        if(camera_model == "pinhole")
+        if(node["camera_model"])
         {
-            // load pinhole parameters
-            Node pinholeNode = node["pinhole"];
-            scanCam.camera.cx = pinholeNode["cx"].as<double>();
-            scanCam.camera.cy = pinholeNode["cy"].as<double>();
-            scanCam.camera.fx = pinholeNode["fx"].as<double>();
-            scanCam.camera.fy = pinholeNode["fy"].as<double>();
-        } else {
-            std::cout << "Camera model unknown" << std::endl;
-        }
+            std::string camera_model = node["camera_model"].as<std::string>();
+            if(camera_model == "pinhole")
+            {
+                if(node["pinhole"])
+                {
+                    // load pinhole parameters
+                    Node pinholeNode = node["pinhole"];
+                    scanCam.camera.cx = pinholeNode["cx"].as<double>();
+                    scanCam.camera.cy = pinholeNode["cy"].as<double>();
+                    scanCam.camera.fx = pinholeNode["fx"].as<double>();
+                    scanCam.camera.fy = pinholeNode["fy"].as<double>();
+                }
+                
+            } else {
+                std::cout << "Camera model unknown" << std::endl;
+            }
+        }        
 
         // Check if we have distortion data in OpenCV format
 
@@ -106,26 +107,24 @@ struct convert<lvr2::ScanCamera>
 
         if(scanCam.camera.distortionModel == "opencv")
         {
-            Node distortionNode = node["distortion"];
+            Node distortionNode = node["distortion_coefficients"];
             scanCam.camera.k.clear();
             if(distortionNode)
             {
-                for(size_t i = 0; i < distortionNode.size(); i++)
+                YAML::const_iterator it = distortionNode.begin();
+                YAML::const_iterator it_end = distortionNode.end();
+
+                for(; it != it_end; it++)
                 {
-                    std::cout << i << std::endl;
-                    scanCam.camera.k.push_back(distortionNode[i].as<double>());
+                    scanCam.camera.k.push_back(it->as<double>());
                 }
             }
         } else {
             std::cout << "Distortion model unknown" << std::endl;
-        }
-
-        
-       
+        }       
 
         return true;
     }
-
 };
 
 }  // namespace YAML
