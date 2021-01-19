@@ -55,14 +55,14 @@ ScanImagePtr ScanImageIO<FeatureBase>::loadScanImage(
     return ret;
 }
 
-std::string shortestPath(std::string from, std::string to)
-{
-    boost::filesystem::path root(".");
-    boost::filesystem::path to_path(to);
-    boost::filesystem::path from_path(from);
-    boost::filesystem::path ret = (root / to_path).lexically_relative(root / from_path.parent_path());
-    return ret.string();
-}
+// std::string shortestPath(std::string from, std::string to)
+// {
+//     boost::filesystem::path root(".");
+//     boost::filesystem::path to_path(to);
+//     boost::filesystem::path from_path(from);
+//     boost::filesystem::path ret = (root / to_path).lexically_relative(root / from_path.parent_path());
+//     return ret.string();
+// }
 
 template <typename FeatureBase>
 void  ScanImageIO<FeatureBase>::saveScanImage(
