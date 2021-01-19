@@ -32,8 +32,6 @@ ChannelOptional<T> ChannelIO<FeatureBase>::load(
             if(deserialize<T>(&tmp_buffer[0], tmp_size))
             {
                 // found readable custom type
-
-                std::cout << "Reading possible!" << std::endl;
                 std::vector<size_t> dims;
                 ucharArr buffer = m_featureBase->m_kernel->loadUCharArray(group, name, dims);
                 
@@ -41,24 +39,23 @@ ChannelOptional<T> ChannelIO<FeatureBase>::load(
                 size_t Npoints = *reinterpret_cast<size_t*>(data_ptr);
                 data_ptr += sizeof(size_t);
 
-                std::cout << "Loading Dynamic Channel for " << Npoints << " points " << std::endl;
-
                 Channel<T> cd(Npoints, 1);
 
                 for(size_t i=0; i<Npoints; i++)
                 {
-                    std::cout << "Point " << i << std::endl;
                     const size_t elem_size = *reinterpret_cast<const size_t*>(data_ptr);
-                    std::cout << "  elem_size: " << elem_size << std::endl; 
                     data_ptr += sizeof(size_t);
-                    cd[i][0] = *deserialize<T>(data_ptr, elem_size);
+                    auto dataopt = deserialize<T>(data_ptr, elem_size);
+                    if(dataopt)
+                    {
+                        cd[i][0] = *dataopt;
+                    } else {
+                        // could not load object of type T
+                    }
                     data_ptr += elem_size;
                 }
 
                 ret = c;
-                
-
-
             } else {
                 std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
             }

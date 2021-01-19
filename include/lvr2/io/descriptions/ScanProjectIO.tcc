@@ -12,8 +12,6 @@ void ScanProjectIO<FeatureBase>::save(
     std::cout << "[ScanProjectIO] ScanProject - Description: " << std::endl;
     std::cout << d << std::endl;
 
-    
-
     if(!d.groupName)
     {
         std::cout << timestamp << "[ScanProjectIO] Description does not contain a group for the ScanProject" << std::endl;
