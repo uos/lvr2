@@ -24,48 +24,61 @@ ChannelOptional<T> ChannelIO<FeatureBase>::load(
 
         T tmp_obj;
         size_t tmp_size;
-        ucharArr tmp_buffer = serialize(tmp_obj, tmp_size);
+        ucharArr tmp_buffer = byteEncode(tmp_obj, tmp_size);
         
         if(tmp_buffer)
         {
-            // deserialize
-            if(deserialize<T>(&tmp_buffer[0], tmp_size))
+            if(byteDecode<T>(&tmp_buffer[0], tmp_size))
             {
-                // found readable custom type
-                std::vector<size_t> dims;
-                ucharArr buffer = m_featureBase->m_kernel->loadUCharArray(group, name, dims);
-                
-                unsigned char* data_ptr = &buffer[0];
-                size_t Npoints = *reinterpret_cast<size_t*>(data_ptr);
-                data_ptr += sizeof(size_t);
-
-                Channel<T> cd(Npoints, 1);
-
-                for(size_t i=0; i<Npoints; i++)
-                {
-                    const size_t elem_size = *reinterpret_cast<const size_t*>(data_ptr);
-                    data_ptr += sizeof(size_t);
-                    auto dataopt = deserialize<T>(data_ptr, elem_size);
-                    if(dataopt)
-                    {
-                        cd[i][0] = *dataopt;
-                    } else {
-                        // could not load object of type T
-                    }
-                    data_ptr += elem_size;
-                }
-
-                ret = c;
+                ret = loadCustom<T>(group, name);
             } else {
                 std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
             }
         } else {
             std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
         }
-
-        
     }
 
+    return ret;
+}
+
+template<typename FeatureBase>
+template<typename T>
+ChannelOptional<T> ChannelIO<FeatureBase>::loadCustom(
+    std::string group,
+    std::string name
+) const
+{
+    ChannelOptional<T> ret;
+    // deserialize
+    
+    // found readable custom type
+    std::vector<size_t> dims;
+    ucharArr buffer = m_featureBase->m_kernel->loadUCharArray(group, name, dims);
+    
+    unsigned char* data_ptr = &buffer[0];
+    size_t Npoints = *reinterpret_cast<size_t*>(data_ptr);
+    data_ptr += sizeof(size_t);
+
+    Channel<T> cd(Npoints, 1);
+
+    for(size_t i=0; i<Npoints; i++)
+    {
+        const size_t elem_size = *reinterpret_cast<const size_t*>(data_ptr);
+        data_ptr += sizeof(size_t);
+        auto dataopt = byteDecode<T>(data_ptr, elem_size);
+        if(dataopt)
+        {
+            cd[i][0] = *dataopt;
+        } else {
+            // could not load object of type T
+            return ret;
+        }
+        data_ptr += elem_size;
+    }
+
+    ret = cd;
+    
     return ret;
 }
 
@@ -99,64 +112,70 @@ void ChannelIO<FeatureBase>::save(
         {
             // could be dynamic channel
             // check if serialization is implemented for the specific type
-            size_t tmp_size;
-            T tmp_obj;
-            boost::shared_array<unsigned char> buffer = serialize(tmp_obj, tmp_size);
-            
-
-
-            if(buffer)
-            {
-                // saving is possible via uchar buffer
-
-
-                // Determine size of shared array
-                size_t total_size = sizeof(size_t);
-                for(size_t i = 0; i<channel.numElements(); i++)
-                {
-                    size_t buffer_size;
-                    buffer = serialize(channel[i][0], buffer_size);
-                    // +1 because of size_t per element
-                    total_size += buffer_size + sizeof(size_t);
-                }
-
-                boost::shared_array<unsigned char> data(new unsigned char[total_size]);
-                unsigned char* data_ptr = &data[0];
-                
-                size_t Npoints = channel.numElements();
-                unsigned char* Npointsc = reinterpret_cast<unsigned char*>(&Npoints);
-                memcpy(data_ptr, Npointsc, sizeof(size_t));
-                data_ptr += sizeof(size_t);
-
-                std::cout << "Write Meta: " << Npoints << " points" << std::endl;
-
-                // Filling shared_array with data
-                for(size_t i = 0; i<channel.numElements(); i++)
-                {
-                    size_t buffer_size;
-                    buffer = serialize(channel[i][0], buffer_size);
-                    unsigned char* bsize = reinterpret_cast<unsigned char*>(&buffer_size);
-            
-                    // write buffer size
-                    memcpy(data_ptr, bsize, sizeof(size_t));
-                    data_ptr += sizeof(size_t);
-                    // write buffer
-                    memcpy(data_ptr, &buffer[0], buffer_size);
-                    data_ptr += buffer_size;
-                }
-
-                std::vector<size_t> dims(2);
-                dims[0] = total_size;
-                dims[1] = 1;
-                m_featureBase->m_kernel->saveUCharArray(group, name, dims, data);
-            } else {
-                std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
-            }
+            saveCustom(group, name, channel);
         } else {
             // NOT IMPLEMENTED TYPE TO WRITE
             std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
         }
         
+    }
+}
+
+template<typename FeatureBase>
+template<typename T>
+void ChannelIO<FeatureBase>::saveCustom(
+    std::string group,
+    std::string name,
+    const Channel<T>& channel) const
+{
+    size_t tmp_size;
+    T tmp_obj;
+    boost::shared_array<unsigned char> buffer = byteEncode(tmp_obj, tmp_size);
+    
+    if(buffer)
+    {
+        // saving is possible via uchar buffer
+        // Determine size of shared array
+        size_t total_size = sizeof(size_t);
+        for(size_t i = 0; i<channel.numElements(); i++)
+        {
+            size_t buffer_size;
+            buffer = byteEncode(channel[i][0], buffer_size);
+            // +1 because of size_t per element
+            total_size += buffer_size + sizeof(size_t);
+        }
+
+        boost::shared_array<unsigned char> data(new unsigned char[total_size]);
+        unsigned char* data_ptr = &data[0];
+        
+        size_t Npoints = channel.numElements();
+        unsigned char* Npointsc = reinterpret_cast<unsigned char*>(&Npoints);
+        memcpy(data_ptr, Npointsc, sizeof(size_t));
+        data_ptr += sizeof(size_t);
+
+        std::cout << "Write Meta: " << Npoints << " points" << std::endl;
+
+        // Filling shared_array with data
+        for(size_t i = 0; i<channel.numElements(); i++)
+        {
+            size_t buffer_size;
+            buffer = byteEncode(channel[i][0], buffer_size);
+            unsigned char* bsize = reinterpret_cast<unsigned char*>(&buffer_size);
+    
+            // write buffer size
+            memcpy(data_ptr, bsize, sizeof(size_t));
+            data_ptr += sizeof(size_t);
+            // write buffer
+            memcpy(data_ptr, &buffer[0], buffer_size);
+            data_ptr += buffer_size;
+        }
+
+        std::vector<size_t> dims(2);
+        dims[0] = total_size;
+        dims[1] = 1;
+        m_featureBase->m_kernel->saveUCharArray(group, name, dims, data);
+    } else {
+        std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
     }
 }
 

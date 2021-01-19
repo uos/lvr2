@@ -63,6 +63,10 @@ using MultiChannelMap = VariantChannelMap<
         WaveformData
     >;
 
+using MultiChannel = typename MultiChannelMap::val_type;
+using MultiChannelOptional = boost::optional<MultiChannel>;
+
+
 } // namespace lvr2
 
 #endif // LVR2_TYPES_MULTICHANNELMAP

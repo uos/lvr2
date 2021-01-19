@@ -20,8 +20,20 @@ public:
         std::string group,
         std::string name) const;
 
+    template<typename T>
+    ChannelOptional<T> loadCustom(
+        std::string group,
+        std::string name
+    ) const;
+
     template<typename T> 
     void save(
+        std::string group,
+        std::string name,
+        const Channel<T>& channel) const;
+
+    template<typename T>
+    void saveCustom(
         std::string group,
         std::string name,
         const Channel<T>& channel) const;

@@ -5,7 +5,7 @@ namespace lvr2
 {
 
 template<>
-boost::shared_array<unsigned char> serialize(
+boost::shared_array<unsigned char> byteEncode(
     const WaveformData& data, size_t& bsize)
 {
     bsize = 0;
@@ -26,7 +26,7 @@ boost::shared_array<unsigned char> serialize(
 }
 
 template<>
-boost::optional<WaveformData> deserialize(
+boost::optional<WaveformData> byteDecode(
     const unsigned char* buffer, const size_t& bsize)
 {
     boost::optional<WaveformData> ret;
