@@ -122,7 +122,7 @@ struct RGBMaterial
 	int texture_index;
 };
 
-
+// fundamental types
 typedef boost::shared_array<char> charArr;
 typedef boost::shared_array<unsigned char> ucharArr;
 typedef boost::shared_array<short> shortArr;
@@ -131,14 +131,13 @@ typedef boost::shared_array<int> intArr;
 typedef boost::shared_array<unsigned int> uintArr;
 typedef boost::shared_array<long int> lintArr;
 typedef boost::shared_array<unsigned long int> ulintArr;
+typedef boost::shared_array<float> floatArr;
+typedef boost::shared_array<double> doubleArr;
+typedef boost::shared_array<bool> boolArr;
 
 
 typedef boost::shared_array<unsigned int> indexArray;
-typedef boost::shared_array<float> floatArr;
-typedef boost::shared_array<double> doubleArr;
-
 typedef boost::shared_array<uint16_t> uint16Arr;
-
 typedef boost::shared_array< color<unsigned char> > color3bArr;
 
 typedef boost::shared_array< coord<float> > coord3fArr;

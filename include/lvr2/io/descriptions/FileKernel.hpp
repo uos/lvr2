@@ -120,6 +120,65 @@ public:
         const std::string& container, 
         std::vector<size_t>& dims) const = 0;
 
+    virtual boolArr loadBoolArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const = 0;
+
+    virtual void saveCharArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<char>& data) const = 0;
+
+    virtual void saveUCharArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned char>& data) const = 0;
+
+    virtual void saveShortArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<short>& data) const = 0;
+
+    virtual void saveUShortArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned short>& data) const = 0;
+
+    virtual void saveUInt16Array(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<uint16_t>& data) const = 0;
+
+    virtual void saveIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<int>& data) const = 0;
+
+    virtual void saveUIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned int>& data) const = 0;
+
+    virtual void saveLIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<long int>& data) const = 0;
+
+    virtual void saveULIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned long int>& data) const = 0;
+
     virtual void saveFloatArray(
         const std::string& groupName, 
         const std::string& datasetName, 
@@ -132,23 +191,11 @@ public:
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<double>& data) const = 0;
 
-    virtual void saveUCharArray(
+    virtual void saveBoolArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned char>& data) const = 0;
-
-    virtual void saveIntArray(
-        const std::string& groupName, 
-        const std::string& datasetName, 
-        const std::vector<size_t>& dimensions, 
-        const boost::shared_array<int>& data) const = 0;
-
-    virtual void saveUInt16Array(
-        const std::string& groupName, 
-        const std::string& datasetName, 
-        const std::vector<size_t>& dimensions, 
-        const boost::shared_array<uint16_t>& data) const = 0;
+        const boost::shared_array<bool>& data) const = 0;
 
     virtual bool exists(const std::string& group) const = 0;
     virtual bool exists(const std::string& group, const std::string& container) const = 0;
