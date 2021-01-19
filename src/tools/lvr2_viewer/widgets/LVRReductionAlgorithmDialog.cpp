@@ -18,7 +18,7 @@ LVRReductionAlgorithmDialog::LVRReductionAlgorithmDialog(QWidget* parent):
 
     connectSignalsAndSlots();
     addReductionTypes();
-    updateVoxelValue(m_ui->horizontalSlider->value());
+    updateInputValue(m_ui->input1->value());
 }
 
 void LVRReductionAlgorithmDialog::connectSignalsAndSlots()
@@ -26,7 +26,7 @@ void LVRReductionAlgorithmDialog::connectSignalsAndSlots()
      // Add connections
     QObject::connect(m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptOpen()));
     QObject::connect(m_ui->comboBoxReduction, SIGNAL(currentIndexChanged(int)), this, SLOT(reductionSelectionChanged(int)));
-    QObject::connect(m_ui->horizontalSlider, SIGNAL(valueChanged(int)), this, SLOT(updateVoxelValue(int)));
+    QObject::connect(m_ui->input1, SIGNAL(valueChanged(int)), this, SLOT(updateInputValue(int)));
 }
 
 void LVRReductionAlgorithmDialog::acceptOpen()
@@ -44,7 +44,7 @@ void LVRReductionAlgorithmDialog::acceptOpen()
             m_reductionPtr = ReductionAlgorithmPtr(new OctreeReductionAlgorithm(m_voxelSize/100, 5));
             break;
         case 3:
-            m_reductionPtr = ReductionAlgorithmPtr(new FixedSizeReductionAlgorithm(m_voxelSize * m_voxelSize * m_voxelSize * m_voxelSize));
+            m_reductionPtr = ReductionAlgorithmPtr(new FixedSizeReductionAlgorithm(m_voxelSize));
             break;
         default:
             break;
@@ -64,30 +64,30 @@ void LVRReductionAlgorithmDialog::reductionSelectionChanged(int index)
     {
         case 0:
             m_reduction = 0;
-            changeVoxelState(false);
+            changeInputState(false);
             break;
         case 1:
             m_reduction = 1;
-            changeVoxelState(false);
+            changeInputState(false);
             break;
         case 2:
             m_reduction = 2;
-            changeVoxelState(true);
+            changeInputState(true);
             break;
         case 3:
             m_reduction = 3;
-            changeVoxelState(true);
+            changeInputState(true);
             break;
         default:
             break;
     }
 }
 
-void LVRReductionAlgorithmDialog::updateVoxelValue(int value)
+void LVRReductionAlgorithmDialog::updateInputValue(int value)
 {
     m_voxelSize = value;
-    m_ui->textEdit->setText(QString::number(value));
-    m_ui->textEdit->setAlignment(Qt::AlignCenter);
+    //m_ui->textEdit->setText(QString::number(value));
+    //m_ui->textEdit->setAlignment(Qt::AlignCenter);
 }
 
 
@@ -103,10 +103,10 @@ void LVRReductionAlgorithmDialog::addReductionTypes()
     b->addItem("Fixed Size");
 }
 
-void LVRReductionAlgorithmDialog::changeVoxelState(bool state)
+void LVRReductionAlgorithmDialog::changeInputState(bool state)
 {
-    m_ui->horizontalSlider->setEnabled(state);
-    m_ui->textEdit->setEnabled(state);
+    //m_ui->horizontalSlider->setEnabled(state);
+    m_ui->input1->setEnabled(state);
     m_ui->groupBoxVoxel->setEnabled(state);
 }
 

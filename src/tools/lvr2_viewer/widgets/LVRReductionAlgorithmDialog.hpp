@@ -70,8 +70,10 @@ public Q_SLOTS:
     /// Called when a diffent reduction was selected
     void reductionSelectionChanged(int index);
 
-    void updateVoxelValue(int value);
-    void changeVoxelState(bool state);
+    //void updateVoxelValue(int value);
+    void updateInputValue(int value);
+    //void changeVoxelState(bool state);
+    void changeInputState(bool state);
 
     //Called when OK is pressed
     void acceptOpen();
@@ -95,6 +97,8 @@ private:
     bool                            m_successful;
 
     double                          m_voxelSize;
+
+    int                             m_input;
 
     int                             m_reduction;
 };
