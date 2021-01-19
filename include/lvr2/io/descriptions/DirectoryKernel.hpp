@@ -57,17 +57,27 @@ public:
         const std::string& container,
         YAML::Node& node) const;
 
+    virtual charArr loadCharArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+
     virtual ucharArr loadUCharArray(
         const std::string& group, 
         const std::string& container, 
         std::vector<size_t> &dims) const;
 
-    virtual floatArr loadFloatArray(
+    virtual shortArr loadShortArray(
         const std::string& group, 
-        const std::string& container, 
-        std::vector<size_t> &dims) const;
+        const std::string& constainer, 
+        std::vector<size_t>& dims) const;
 
-    virtual doubleArr loadDoubleArray(
+    virtual ushortArr loadUShortArray(
+        const std::string& group, 
+        const std::string& constainer, 
+        std::vector<size_t>& dims) const;
+
+    virtual uint16Arr loadUInt16Array(
         const std::string& group, 
         const std::string& container, 
         std::vector<size_t> &dims) const;
@@ -76,8 +86,28 @@ public:
         const std::string& group, 
         const std::string& container, 
         std::vector<size_t> &dims) const;
+
+    virtual uintArr loadUIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+
+    virtual lintArr loadLIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+
+    virtual ulintArr loadULIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
     
-    virtual uint16Arr loadUInt16Array(
+    virtual floatArr loadFloatArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+
+    virtual doubleArr loadDoubleArray(
         const std::string& group, 
         const std::string& container, 
         std::vector<size_t> &dims) const;

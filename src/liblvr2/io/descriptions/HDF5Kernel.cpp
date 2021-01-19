@@ -535,12 +535,76 @@ void HDF5Kernel::loadMetaYAML(
     }
 }
 
+charArr HDF5Kernel::loadCharArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<char>(group, container, dims);
+}
+
 ucharArr HDF5Kernel::loadUCharArray(
     const std::string &group,
     const std::string &container,
     std::vector<size_t> &dims) const
 {
     return this->template loadArray<unsigned char>(group, container, dims);
+}
+
+shortArr HDF5Kernel::loadShortArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<short>(group, container, dims);
+}
+
+ushortArr HDF5Kernel::loadUShortArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<unsigned short>(group, container, dims);
+}
+
+uint16Arr HDF5Kernel::loadUInt16Array(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<uint16_t>(group, container, dims);
+}
+
+intArr HDF5Kernel::loadIntArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<int>(group, container, dims);
+}
+
+uintArr HDF5Kernel::loadUIntArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<unsigned int>(group, container, dims);
+}
+
+lintArr HDF5Kernel::loadLIntArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<long int>(group, container, dims);
+}
+
+ulintArr HDF5Kernel::loadULIntArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<unsigned long int>(group, container, dims);
 }
 
 floatArr HDF5Kernel::loadFloatArray(
@@ -559,22 +623,6 @@ doubleArr HDF5Kernel::loadDoubleArray(
     return this->template loadArray<double>(group, container, dims);
 }
 
-intArr HDF5Kernel::loadIntArray(
-    const std::string &group,
-    const std::string &container,
-    std::vector<size_t> &dims) const
-{
-    return this->template loadArray<int>(group, container, dims);
-}
-
-uint16Arr HDF5Kernel::loadUInt16Array(
-    const std::string &group,
-    const std::string &container,
-    std::vector<size_t> &dims) const
-{
-    return this->template loadArray<uint16_t>(group, container, dims);
-}
-
 void HDF5Kernel::saveFloatArray(
     const std::string &groupName,
     const std::string &datasetName,
@@ -591,6 +639,7 @@ void HDF5Kernel::saveDoubleArray(
 {
     this->template saveArray<double>(groupName, datasetName, dimensions, data);
 }
+
 void HDF5Kernel::saveIntArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,

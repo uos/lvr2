@@ -181,9 +181,49 @@ boost::filesystem::path DirectoryKernel::getAbsolutePath(const std::string &grou
     return ret;
 }
 
+charArr DirectoryKernel::loadCharArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<char>(group, container, dims);   
+}
+
 ucharArr DirectoryKernel::loadUCharArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
     return loadArray<unsigned char>(group, container, dims);   
+}
+
+shortArr DirectoryKernel::loadShortArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<short>(group, container, dims);   
+}
+
+ushortArr DirectoryKernel::loadUShortArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<unsigned short>(group, container, dims);   
+}
+
+uint16Arr DirectoryKernel::loadUInt16Array(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<uint16_t>(group, container, dims);   
+}
+
+intArr DirectoryKernel::loadIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<int>(group, container, dims);   
+}
+
+uintArr DirectoryKernel::loadUIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<unsigned int>(group, container, dims);   
+}
+
+lintArr DirectoryKernel::loadLIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<long int>(group, container, dims);   
+}
+
+ulintArr DirectoryKernel::loadULIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<unsigned long int>(group, container, dims);   
 }
 
 floatArr DirectoryKernel::loadFloatArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
@@ -194,16 +234,6 @@ floatArr DirectoryKernel::loadFloatArray(const std::string& group, const std::st
 doubleArr DirectoryKernel::loadDoubleArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
     return loadArray<double>(group, container, dims);   
-}
-
-intArr DirectoryKernel::loadIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
-{
-    return loadArray<int>(group, container, dims);   
-}
-
-uint16Arr DirectoryKernel::loadUInt16Array(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
-{
-    return loadArray<uint16_t>(group, container, dims);   
 }
 
 void DirectoryKernel::saveFloatArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<float>& data) const

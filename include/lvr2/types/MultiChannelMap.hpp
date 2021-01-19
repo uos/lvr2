@@ -54,9 +54,9 @@ using MultiChannelMap = VariantChannelMap<
         short,
         unsigned short,
         int,
-        long int,
         unsigned int,
-        size_t,
+        long int,
+        unsigned long int,
         float,
         double,
         bool,
@@ -65,7 +65,6 @@ using MultiChannelMap = VariantChannelMap<
 
 using MultiChannel = typename MultiChannelMap::val_type;
 using MultiChannelOptional = boost::optional<MultiChannel>;
-
 
 } // namespace lvr2
 

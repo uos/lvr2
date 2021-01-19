@@ -65,29 +65,59 @@ public:
         const std::string& container,
         YAML::Node& node) const = 0;
 
+    virtual charArr loadCharArray(
+        const std::string& group,
+        const std::string& container,
+        std::vector<size_t>& dims) const = 0;
+
     virtual ucharArr loadUCharArray(
         const std::string& group, 
-        const std::string& constainer, 
+        const std::string& container, 
         std::vector<size_t>& dims) const = 0;
 
-    virtual floatArr loadFloatArray(
+    virtual shortArr loadShortArray(
         const std::string& group, 
-        const std::string& constainer, 
+        const std::string& container, 
         std::vector<size_t>& dims) const = 0;
 
-    virtual doubleArr loadDoubleArray(
+    virtual ushortArr loadUShortArray(
         const std::string& group, 
-        const std::string& constainer, 
-        std::vector<size_t>& dims) const = 0;
-    
-    virtual intArr loadIntArray(
-        const std::string& group, 
-        const std::string& constainer, 
+        const std::string& container, 
         std::vector<size_t>& dims) const = 0;
 
     virtual uint16Arr loadUInt16Array(
         const std::string& group, 
-        const std::string& constainer, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+    
+    virtual intArr loadIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual uintArr loadUIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual lintArr loadLIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual ulintArr loadULIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual floatArr loadFloatArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual doubleArr loadDoubleArray(
+        const std::string& group, 
+        const std::string& container, 
         std::vector<size_t>& dims) const = 0;
 
     virtual void saveFloatArray(
