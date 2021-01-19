@@ -35,13 +35,16 @@ void LVRReductionAlgorithmDialog::acceptOpen()
     switch(m_reduction)
     {
         case 0:
-            m_reductionPtr = ReductionAlgorithmPtr(new AllReductionAlgorithm());
+            m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
             break;
         case 1:
-            m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
+            m_reductionPtr = ReductionAlgorithmPtr(new AllReductionAlgorithm());
             break;
         case 2:
             m_reductionPtr = ReductionAlgorithmPtr(new OctreeReductionAlgorithm(m_voxelSize/100, 5));
+            break;
+        case 3:
+            m_reductionPtr = ReductionAlgorithmPtr(new FixedSizeReductionAlgorithm(m_voxelSize * m_voxelSize * m_voxelSize * m_voxelSize));
             break;
         default:
             break;
@@ -71,6 +74,10 @@ void LVRReductionAlgorithmDialog::reductionSelectionChanged(int index)
             m_reduction = 2;
             changeVoxelState(true);
             break;
+        case 3:
+            m_reduction = 3;
+            changeVoxelState(true);
+            break;
         default:
             break;
     }
@@ -90,9 +97,10 @@ void LVRReductionAlgorithmDialog::addReductionTypes()
     QComboBox* b = m_ui->comboBoxReduction;
     b->clear();
 
-    b->addItem("All Reduction");
     b->addItem("No Reduction");
+    b->addItem("All Reduction");
     b->addItem("Octree Reduction");
+    b->addItem("Fixed Size");
 }
 
 void LVRReductionAlgorithmDialog::changeVoxelState(bool state)

@@ -29,7 +29,7 @@
 #define LVR2_REDUCTION_ALGORITHM_HPP
 
 #include "lvr2/io/PointBuffer.hpp"
-
+#include "lvr2/io/DataStruct.hpp"
 #include <memory>
 
 namespace lvr2
@@ -82,6 +82,34 @@ public:
      }
 };
 
+class FixedSizeReductionAlgorithm : public ReductionAlgorithm
+{
+public:
+     FixedSizeReductionAlgorithm(size_t numPoints) :
+          m_numPoints(numPoints) {};
+
+     virtual PointBufferPtr getReducedPoints()
+     {
+          if(m_numPoints >= m_pointBuffer->numPoints())
+          {
+               return m_pointBuffer;
+          }
+          size_t idx;
+          PointBufferPtr buff(new PointBuffer);
+          floatArr pointArray(new float[m_numPoints * 3]);
+          for(size_t i = 0; i < m_numPoints; i++) {
+               idx = 3 * i * (m_pointBuffer->numPoints() / m_numPoints);
+
+               pointArray[i*3] = m_pointBuffer->getPointArray()[idx];
+               pointArray[i*3+1] = m_pointBuffer->getPointArray()[idx+1];
+               pointArray[i*3+2] = m_pointBuffer->getPointArray()[idx+2];
+          }
+          buff->setPointArray(pointArray, m_numPoints);
+          return buff;
+     }
+private:
+     size_t     m_numPoints;
+};
 
 class NoReductionAlgorithm : public ReductionAlgorithm 
 {
