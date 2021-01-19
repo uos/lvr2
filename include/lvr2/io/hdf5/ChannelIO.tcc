@@ -27,7 +27,7 @@ ChannelOptional<T> ChannelIO<Derived>::load(
 {
     ChannelOptional<T> ret;
 
-    if constexpr ( hdf5util::H5AllowsType<T>::value == true )
+    if constexpr ( hdf5util::H5AllowedTypes::contains<T>())
     {
       
         if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
@@ -94,7 +94,7 @@ void ChannelIO<Derived>::save(HighFive::Group& g,
     const Channel<T>& channel,
     std::vector<hsize_t>& chunkSizes)
 {
-    if constexpr(hdf5util::H5AllowsType<T>::value)
+    if constexpr(hdf5util::H5AllowedTypes::contains<T>())
     {
         if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
         {

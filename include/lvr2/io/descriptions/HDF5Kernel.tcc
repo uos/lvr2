@@ -265,7 +265,7 @@ void HDF5Kernel::save(HighFive::Group &g,
           std::string datasetName,
           const Channel<T> &channel) const
 {
-    if constexpr(hdf5util::H5AllowsType<T>::value)
+    if constexpr(hdf5util::H5AllowedTypes::contains<T>())
     {
         if(m_hdf5File && m_hdf5File->isValid())
         {

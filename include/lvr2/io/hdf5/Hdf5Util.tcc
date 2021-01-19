@@ -263,7 +263,7 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
 {
     std::unique_ptr<HighFive::DataSet> dataset;
 
-    if constexpr (H5AllowsType<T>::value == true)
+    if constexpr (H5AllowedTypes::contains<T>())
     {
         if (g.exist(datasetName))
         {

@@ -19,13 +19,15 @@
 #include <string>
 #include <vector>
 
+#include "lvr2/util/Tuple.hpp"
+
 namespace lvr2
 {
 
 namespace hdf5util
 {
 
-using H5AllowedTypes = std::tuple<
+using H5AllowedTypes = Tuple<
         char,
         signed char,
         unsigned char,
@@ -42,15 +44,6 @@ using H5AllowedTypes = std::tuple<
         bool,
         std::string
     >;
-
-template <typename T, typename... Us>
-struct has_type;
-
-template <typename T, typename... Us>
-struct has_type<T, std::tuple<Us...>> : std::disjunction<std::is_same<T, Us>...> {};
-
-template<typename T>
-using H5AllowsType = has_type<T, H5AllowedTypes>;
 
 /**
  * @brief Adds a atomic as dataset to a group

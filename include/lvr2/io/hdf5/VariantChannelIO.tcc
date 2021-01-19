@@ -94,7 +94,7 @@ boost::optional<VariantChannelT> loadVChannel(
 {
     using VType = typename VariantChannelT::template type_of_index<R>;
 
-    if constexpr(hdf5util::H5AllowsType<VType>::value)
+    if constexpr(hdf5util::H5AllowedTypes::contains<VType>())
     {
         if(dtype == HighFive::AtomicType<VType>())
         {
