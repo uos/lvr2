@@ -35,6 +35,7 @@
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/io/Progress.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/algorithm/CleanupAlgorithms.hpp"
 
 /**
  * log(CHUNK_SIZE).
@@ -61,12 +62,12 @@ constexpr int SCALE = 100;
  */
 void print_usage(const std::string& prog_name)
 {
-    std::cout << prog_name << " <path-to_hdf5-map-file> <save-directory> <mesh-name>" << std::endl;
+    std::cout << prog_name << " <path-to_hdf5-map-file> <save-directory> <mesh-name> <fill-holes-bool[0,1] - [Default:0]>" << std::endl;
 }
 
 int main(int argc, char** argv)
 {   
-    if (argc != 4)
+    if (argc < 4)
     {
         print_usage(argv[0]);
         return 0;
@@ -77,9 +78,29 @@ int main(int argc, char** argv)
     std::string dst_dir_name(argv[2]);
     std::string mesh_name_h5(std::string(argv[3]) + std::string(".h5"));
     std::string mesh_name_ply(std::string(argv[3]) + std::string(".ply"));
+    
+
+    bool fillHoles = false;
+    if (argc == 5)
+    {
+        try 
+        {
+            if(std::stoi(argv[4]) == 1) fillHoles = true;
+            else if(std::stoi(argv[4]) != 0)
+            {
+                // requirements not met
+                throw std::exception();
+            }
+        } 
+        catch (const std::exception& e) 
+        {
+            print_usage(argv[0]);
+            return 0;
+        }     
+    }
+
 
     std::cout << "Open map file: " << src_name << std::endl;
-    
     // Read
     HighFive::File f(src_name, HighFive::File::ReadOnly); // TODO: Path and name as command line input
     HighFive::Group g = f.getGroup("/map");
@@ -187,9 +208,17 @@ int main(int argc, char** argv)
 
     std::cout << "Finished reconstruction!" << std::endl;
 
+    if(fillHoles) {
+        std::cout << "Start removing holes!" << std::endl;
+
+        naiveFillSmallHoles(mesh, 50, false);
+
+        std::cout << "Finished removing holes!" << std::endl;
+    }
+    
 
     std::cout << "Started smoothing..." << std::endl;
-    float smoothing_factor = 0.5;
+    float smoothing_factor = 0.8;
     float num_smoothings = 5;
 
     //perform laplacian smoothing on the mesh
@@ -218,7 +247,6 @@ int main(int argc, char** argv)
     }
 
     std::cout << "Finished smooting!" << std::endl;
-
 
     // Convert halfedgemesh to an IO format
     lvr2::SimpleFinalizer<lvr2::BaseVector<int>> finalizer;
