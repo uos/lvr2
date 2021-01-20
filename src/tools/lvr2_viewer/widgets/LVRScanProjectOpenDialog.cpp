@@ -140,7 +140,7 @@ void LVRScanProjectOpenDialog::updateAvailableSchemas()
 
 void LVRScanProjectOpenDialog::addReductionTypes()
 {
-    m_ui->pushButtonReduction->setText("No Reduction");
+    m_ui->pushButtonReduction->setText("Complete Point Buffer");
 }
 
 void LVRScanProjectOpenDialog::openReductionDialog()
@@ -163,16 +163,19 @@ void LVRScanProjectOpenDialog::openReductionDialog()
     switch(dialog->reductionName())
     {
         case 0:
-            m_ui->pushButtonReduction->setText("No Reduction");
+            m_ui->pushButtonReduction->setText("Complete Point Buffer");
             break;
         case 1:
-            m_ui->pushButtonReduction->setText("All Reduction");
+            m_ui->pushButtonReduction->setText("Empty Point Buffer");
             break;
         case 2:
             m_ui->pushButtonReduction->setText("Octree Reduction");
             break;   
         case 3:
             m_ui->pushButtonReduction->setText("Fixed Size");
+            break;
+        case 4:
+            m_ui->pushButtonReduction->setText("Percentage");
             break;
         default:
             break;     

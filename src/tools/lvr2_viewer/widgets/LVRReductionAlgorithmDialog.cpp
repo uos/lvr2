@@ -18,7 +18,7 @@ LVRReductionAlgorithmDialog::LVRReductionAlgorithmDialog(QWidget* parent):
 
     connectSignalsAndSlots();
     addReductionTypes();
-    updateInputValue(m_ui->input1->value());
+    resetParameters();
 }
 
 void LVRReductionAlgorithmDialog::connectSignalsAndSlots()
@@ -26,7 +26,6 @@ void LVRReductionAlgorithmDialog::connectSignalsAndSlots()
      // Add connections
     QObject::connect(m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptOpen()));
     QObject::connect(m_ui->comboBoxReduction, SIGNAL(currentIndexChanged(int)), this, SLOT(reductionSelectionChanged(int)));
-    QObject::connect(m_ui->input1, SIGNAL(valueChanged(int)), this, SLOT(updateInputValue(int)));
 }
 
 void LVRReductionAlgorithmDialog::acceptOpen()
@@ -41,10 +40,13 @@ void LVRReductionAlgorithmDialog::acceptOpen()
             m_reductionPtr = ReductionAlgorithmPtr(new AllReductionAlgorithm());
             break;
         case 2:
-            m_reductionPtr = ReductionAlgorithmPtr(new OctreeReductionAlgorithm(m_voxelSize/100, 5));
+            m_reductionPtr = ReductionAlgorithmPtr(new OctreeReductionAlgorithm(m_voxelSize/100, m_octreeMinPoints));
             break;
         case 3:
-            m_reductionPtr = ReductionAlgorithmPtr(new FixedSizeReductionAlgorithm(m_voxelSize));
+            m_reductionPtr = ReductionAlgorithmPtr(new FixedSizeReductionAlgorithm(m_fixedNumberPoints));
+            break;
+        case 4:
+            m_reductionPtr = ReductionAlgorithmPtr(new PercentageReductionAlgorithm((float)m_percentPoints / 100.0));
             break;
         default:
             break;
@@ -60,55 +62,132 @@ bool LVRReductionAlgorithmDialog::successful()
 
 void LVRReductionAlgorithmDialog::reductionSelectionChanged(int index)
 {
+    cleanFrame();
+    resetParameters();
     switch(index)
     {
         case 0:
+            // No reduction
             m_reduction = 0;
-            changeInputState(false);
+            addLabelToFrame(QString("Will load the complete point buffer"));
             break;
         case 1:
+            // All reduction
             m_reduction = 1;
-            changeInputState(false);
+            addLabelToFrame(QString("Will load an empty point buffer"));
             break;
         case 2:
-            m_reduction = 2;
-            changeInputState(true);
-            break;
+            {
+                m_reduction = 2;
+                addLabelToFrame(QString("Will perform an octree reduction\n"));
+                addLabelToFrame(QString("Voxel size (cm)"));
+                QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(m_ui->parameters_frame->layout());
+                QSpinBox* inputVoxelSize = new QSpinBox(m_ui->parameters_frame);
+                inputVoxelSize->setMaximum(999999999);
+                inputVoxelSize->setValue(m_voxelSize);
+                layout->insertWidget(m_ui->parameters_frame->layout()->count() - 1, inputVoxelSize);
+                QObject::connect(inputVoxelSize, SIGNAL(valueChanged(int)), this, SLOT(setVoxelSize(int)));
+
+                addLabelToFrame(QString("Min points"));
+                QSpinBox* inputMinPoints = new QSpinBox(m_ui->parameters_frame);
+                inputMinPoints->setMaximum(999999999);
+                inputMinPoints->setMinimum(1);
+                inputMinPoints->setValue(m_octreeMinPoints);
+                layout->insertWidget(m_ui->parameters_frame->layout()->count() - 1, inputMinPoints);
+                QObject::connect(inputMinPoints, SIGNAL(valueChanged(int)), this, SLOT(setOctreeMinPoints(int)));
+                break;
+            }
         case 3:
-            m_reduction = 3;
-            changeInputState(true);
-            break;
+            {
+                m_reduction = 3;
+                addLabelToFrame(QString("Will load a fixed number of points\n"));
+                addLabelToFrame(QString("Number of points"));
+                QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(m_ui->parameters_frame->layout());
+                QSpinBox* input = new QSpinBox(m_ui->parameters_frame);
+                input->setMaximum(999999999);
+                input->setValue(m_fixedNumberPoints);
+                layout->insertWidget(m_ui->parameters_frame->layout()->count() - 1, input);
+                QObject::connect(input, SIGNAL(valueChanged(int)), this, SLOT(setFixedNumberPoints(int)));
+                break;
+            }
+        case 4:
+            {
+                m_reduction = 4;
+                addLabelToFrame(QString("Will load a certain percentage of the point buffer\n"));
+                addLabelToFrame(QString("Percentage (%)"));
+                QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(m_ui->parameters_frame->layout());
+                QSpinBox* input = new QSpinBox(m_ui->parameters_frame);
+                input->setMaximum(100);
+                input->setValue(m_percentPoints);
+                layout->insertWidget(m_ui->parameters_frame->layout()->count() - 1, input);
+                QObject::connect(input, SIGNAL(valueChanged(int)), this, SLOT(setPercentPoints(int)));
+                break;
+            }
         default:
             break;
     }
 }
 
-void LVRReductionAlgorithmDialog::updateInputValue(int value)
-{
-    m_voxelSize = value;
-    //m_ui->textEdit->setText(QString::number(value));
-    //m_ui->textEdit->setAlignment(Qt::AlignCenter);
+void LVRReductionAlgorithmDialog::cleanFrame() {
+    if ( m_ui->parameters_frame->layout() != NULL )
+    {
+        if(m_ui->parameters_frame->layout()->count() > 1){
+            QLayoutItem* item;
+            while ( m_ui->parameters_frame->layout()->count() > 1 )
+            {
+                item = m_ui->parameters_frame->layout()->takeAt(0);
+                delete item->widget();
+                delete item;
+            }
+        }
+    }
+}
+
+void LVRReductionAlgorithmDialog::resetParameters() {
+    setFixedNumberPoints(10000);
+    setPercentPoints(10);
+    setVoxelSize(10);
+    setOctreeMinPoints(5);
 }
 
 
+void LVRReductionAlgorithmDialog::addLabelToFrame(QString labelText)
+{
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(m_ui->parameters_frame->layout());
+    QLabel* label = new QLabel(labelText, m_ui->parameters_frame);
+    layout->insertWidget(m_ui->parameters_frame->layout()->count() - 1, label);
+}
+
+void LVRReductionAlgorithmDialog::setVoxelSize(int value)
+{
+    m_voxelSize = value;
+}
+
+void LVRReductionAlgorithmDialog::setFixedNumberPoints(int value)
+{
+    m_fixedNumberPoints = value;
+}
+
+void LVRReductionAlgorithmDialog::setPercentPoints(int value)
+{
+    m_percentPoints = value;
+}
+
+void LVRReductionAlgorithmDialog::setOctreeMinPoints(int value)
+{
+    m_octreeMinPoints = value;
+}
 
 void LVRReductionAlgorithmDialog::addReductionTypes()
 {
     QComboBox* b = m_ui->comboBoxReduction;
     b->clear();
 
-    b->addItem("No Reduction");
-    b->addItem("All Reduction");
+    b->addItem("Complete Point Buffer");
+    b->addItem("Empty Point Buffer");
     b->addItem("Octree Reduction");
     b->addItem("Fixed Size");
+    b->addItem("Percentage");
 }
-
-void LVRReductionAlgorithmDialog::changeInputState(bool state)
-{
-    //m_ui->horizontalSlider->setEnabled(state);
-    m_ui->input1->setEnabled(state);
-    m_ui->groupBoxVoxel->setEnabled(state);
-}
-
 
 } // namespace lvr2

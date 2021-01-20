@@ -1,6 +1,8 @@
 #ifndef LVRREDUCTIONALGORITHMDIALOG_HPP
 #define LVRREDUCTIONALGORITHMDIALOG_HPP
 
+#include <string>
+
 #include "lvr2/io/descriptions/FileKernel.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchema.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
@@ -17,6 +19,12 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStringList>
+
+#include <QVBoxLayout>
+#include <QString>
+#include <QLabel>
+#include <QSpinBox>
+#include <QPushButton>
 
 #include <iostream>
 
@@ -70,19 +78,28 @@ public Q_SLOTS:
     /// Called when a diffent reduction was selected
     void reductionSelectionChanged(int index);
 
-    //void updateVoxelValue(int value);
-    void updateInputValue(int value);
-    //void changeVoxelState(bool state);
-    void changeInputState(bool state);
+    void setFixedNumberPoints(int value);
+
+    void setPercentPoints(int value);
+
+    void setVoxelSize(int value);
+
+    void setOctreeMinPoints(int value);
+
 
     //Called when OK is pressed
     void acceptOpen();
+
+    // remove widgets from parameters frame
+    void cleanFrame();
+
+    void resetParameters();
+    void addLabelToFrame(QString labelText);
 
 private:
 
     /// Connects signals and slots
     void connectSignalsAndSlots();
-
 
     void addReductionTypes();
 
@@ -98,7 +115,11 @@ private:
 
     double                          m_voxelSize;
 
-    int                             m_input;
+    int                             m_octreeMinPoints;
+
+    int                             m_fixedNumberPoints;
+
+    int                             m_percentPoints;
 
     int                             m_reduction;
 };

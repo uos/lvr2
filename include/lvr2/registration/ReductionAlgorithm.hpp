@@ -111,6 +111,25 @@ private:
      size_t     m_numPoints;
 };
 
+
+class PercentageReductionAlgorithm : public ReductionAlgorithm
+{
+public:
+     PercentageReductionAlgorithm(float percent) :
+          m_percent(percent) {};
+
+     virtual PointBufferPtr getReducedPoints()
+     {
+          // TODO: check that 0 < m_percent < 1
+          size_t numOfPoints = (size_t)(m_pointBuffer->numPoints() * m_percent);
+          ReductionAlgorithmPtr fixedSizeReduction(new FixedSizeReductionAlgorithm(numOfPoints));
+          fixedSizeReduction->setPointBuffer(m_pointBuffer);
+          return fixedSizeReduction->getReducedPoints();
+     }
+private:
+     float     m_percent;
+};
+
 class NoReductionAlgorithm : public ReductionAlgorithm 
 {
 public:

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>393</width>
-    <height>244</height>
+    <height>291</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>200</y>
+     <y>250</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -57,47 +57,36 @@
     </item>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBoxVoxel">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
+  <widget class="QFrame" name="parameters_frame">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>110</y>
+     <y>100</y>
      <width>371</width>
-     <height>71</height>
+     <height>141</height>
     </rect>
    </property>
-   <property name="title">
-    <string>Parameters </string>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
    </property>
-   <widget class="QSpinBox" name="input1">
-    <property name="geometry">
-     <rect>
-      <x>276</x>
-      <y>30</y>
-      <width>81</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <number>999999999</number>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label1">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>35</y>
-      <width>131</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Number of points</string>
-    </property>
-   </widget>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_3">
+    <item>
+     <spacer name="verticalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>118</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>
