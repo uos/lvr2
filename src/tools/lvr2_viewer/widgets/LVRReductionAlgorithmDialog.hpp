@@ -24,6 +24,7 @@
 #include <QString>
 #include <QLabel>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QPushButton>
 
 #include <iostream>
@@ -82,7 +83,7 @@ public Q_SLOTS:
 
     void setPercentPoints(int value);
 
-    void setVoxelSize(int value);
+    void setVoxelSize(double value);
 
     void setOctreeMinPoints(int value);
 

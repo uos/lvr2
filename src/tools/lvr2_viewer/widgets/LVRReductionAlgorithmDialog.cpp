@@ -9,7 +9,7 @@ LVRReductionAlgorithmDialog::LVRReductionAlgorithmDialog(QWidget* parent):
     QDialog(parent),
     m_reductionPtr(nullptr),
     m_successful(false),
-    m_voxelSize(10),
+    m_voxelSize(1000.0),
     m_reduction(0)
 {
     m_parent = parent;
@@ -40,7 +40,7 @@ void LVRReductionAlgorithmDialog::acceptOpen()
             m_reductionPtr = ReductionAlgorithmPtr(new AllReductionAlgorithm());
             break;
         case 2:
-            m_reductionPtr = ReductionAlgorithmPtr(new OctreeReductionAlgorithm(m_voxelSize/100, m_octreeMinPoints));
+            m_reductionPtr = ReductionAlgorithmPtr(new OctreeReductionAlgorithm(m_voxelSize, m_octreeMinPoints));
             break;
         case 3:
             m_reductionPtr = ReductionAlgorithmPtr(new FixedSizeReductionAlgorithm(m_fixedNumberPoints));
@@ -80,15 +80,15 @@ void LVRReductionAlgorithmDialog::reductionSelectionChanged(int index)
             {
                 m_reduction = 2;
                 addLabelToFrame(QString("Will perform an octree reduction\n"));
-                addLabelToFrame(QString("Voxel size (cm)"));
+                addLabelToFrame(QString("Voxel size"));
                 QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(m_ui->parameters_frame->layout());
-                QSpinBox* inputVoxelSize = new QSpinBox(m_ui->parameters_frame);
-                inputVoxelSize->setMaximum(999999999);
+                QDoubleSpinBox* inputVoxelSize = new QDoubleSpinBox(m_ui->parameters_frame);
+                inputVoxelSize->setMaximum(999999999.0);
                 inputVoxelSize->setValue(m_voxelSize);
                 layout->insertWidget(m_ui->parameters_frame->layout()->count() - 1, inputVoxelSize);
-                QObject::connect(inputVoxelSize, SIGNAL(valueChanged(int)), this, SLOT(setVoxelSize(int)));
+                QObject::connect(inputVoxelSize, SIGNAL(valueChanged(double)), this, SLOT(setVoxelSize(double)));
 
-                addLabelToFrame(QString("Min points"));
+                addLabelToFrame(QString("Min points per leaf"));
                 QSpinBox* inputMinPoints = new QSpinBox(m_ui->parameters_frame);
                 inputMinPoints->setMaximum(999999999);
                 inputMinPoints->setMinimum(1);
@@ -146,7 +146,7 @@ void LVRReductionAlgorithmDialog::cleanFrame() {
 void LVRReductionAlgorithmDialog::resetParameters() {
     setFixedNumberPoints(10000);
     setPercentPoints(10);
-    setVoxelSize(10);
+    setVoxelSize(0.1);
     setOctreeMinPoints(5);
 }
 
@@ -158,7 +158,7 @@ void LVRReductionAlgorithmDialog::addLabelToFrame(QString labelText)
     layout->insertWidget(m_ui->parameters_frame->layout()->count() - 1, label);
 }
 
-void LVRReductionAlgorithmDialog::setVoxelSize(int value)
+void LVRReductionAlgorithmDialog::setVoxelSize(double value)
 {
     m_voxelSize = value;
 }
