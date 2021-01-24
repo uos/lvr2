@@ -80,6 +80,11 @@ struct convert<lvr2::ScanImage>
             scanImage.timestamp = -1.0;
         }
 
+        if(node["image_file"])
+        {
+            scanImage.imageFile = node["image_file"].as<std::string>();
+        }
+
         // std::cout << "Decoding ScanImage finished." << std::endl;
         // Makes no sense to read with and height here...
 

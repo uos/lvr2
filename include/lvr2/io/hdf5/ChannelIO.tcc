@@ -27,26 +27,34 @@ ChannelOptional<T> ChannelIO<Derived>::load(
 {
     ChannelOptional<T> ret;
 
-    if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
+    if constexpr ( hdf5util::H5AllowsType<T>::value == true )
     {
-        if(g.exist(datasetName))
+      
+        if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
         {
-            HighFive::DataSet dataset = g.getDataSet(datasetName);
-            std::vector<size_t> dim = dataset.getSpace().getDimensions();
-            
-            size_t elementCount = 1;
-            for (auto e : dim)
-                elementCount *= e;
-
-            if(elementCount)
+            if(g.exist(datasetName))
             {
-                ret = Channel<T>(dim[0], dim[1]);
-                dataset.read(ret->dataPtr().get());
+                HighFive::DataSet dataset = g.getDataSet(datasetName);
+                std::vector<size_t> dim = dataset.getSpace().getDimensions();
+                
+                size_t elementCount = 1;
+                for (auto e : dim)
+                    elementCount *= e;
+
+                if(elementCount)
+                {
+                    ret = Channel<T>(dim[0], dim[1]);
+                    dataset.read(ret->dataPtr().get());
+                }
             }
+        } else {
+            throw std::runtime_error("[Hdf5 - ChannelIO]: Hdf5 file not open.");
         }
+      
     } else {
-        throw std::runtime_error("[Hdf5 - ChannelIO]: Hdf5 file not open.");
+        std::cout << "[ChannelIO]: Type not supported " << std::endl; 
     }
+
 
     return ret;
 }
@@ -86,39 +94,44 @@ void ChannelIO<Derived>::save(HighFive::Group& g,
     const Channel<T>& channel,
     std::vector<hsize_t>& chunkSizes)
 {
-    if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
+    if constexpr(hdf5util::H5AllowsType<T>::value)
     {
-        std::vector<size_t > dims = {channel.numElements(), channel.width()};
-
-        HighFive::DataSpace dataSpace(dims);
-        HighFive::DataSetCreateProps properties;
-
-        if(m_file_access->m_chunkSize)
+        if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
         {
-            for(size_t i = 0; i < chunkSizes.size(); i++)
+            std::vector<size_t > dims = {channel.numElements(), channel.width()};
+
+            HighFive::DataSpace dataSpace(dims);
+            HighFive::DataSetCreateProps properties;
+
+            if(m_file_access->m_chunkSize)
             {
-                if(chunkSizes[i] > dims[i])
+                for(size_t i = 0; i < chunkSizes.size(); i++)
                 {
-                    chunkSizes[i] = dims[i];
+                    if(chunkSizes[i] > dims[i])
+                    {
+                        chunkSizes[i] = dims[i];
+                    }
                 }
+                properties.add(HighFive::Chunking(chunkSizes));
             }
-            properties.add(HighFive::Chunking(chunkSizes));
-        }
-        if(m_file_access->m_compress)
-        {
-            //properties.add(HighFive::Shuffle());
-            properties.add(HighFive::Deflate(9));
-        }
-   
-        std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
-            g, datasetName, dataSpace, properties
-        );
+            if(m_file_access->m_compress)
+            {
+                //properties.add(HighFive::Shuffle());
+                properties.add(HighFive::Deflate(9));
+            }
+    
+            std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
+                g, datasetName, dataSpace, properties
+            );
 
-        const T* ptr = channel.dataPtr().get();
-        dataset->write(ptr);
-        m_file_access->m_hdf5_file->flush();
+            const T* ptr = channel.dataPtr().get();
+            dataset->write(ptr);
+            m_file_access->m_hdf5_file->flush();
+        } else {
+            throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
+        }
     } else {
-        throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
+        std::cout << "[Hdf5IO - ChannelIO - save]: Datatype not supported by Hdf5" << std::endl;
     }
 }
 

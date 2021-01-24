@@ -265,10 +265,11 @@ void HDF5Kernel::save(HighFive::Group &g,
           std::string datasetName,
           const Channel<T> &channel) const
 {
-    std::cout << "SAVING CHANNEL!" << std::endl;
-    if(m_hdf5File && m_hdf5File->isValid())
+    if constexpr(hdf5util::H5AllowsType<T>::value)
     {
-        std::vector<size_t > dims = {channel.numElements(), channel.width()};
+        if(m_hdf5File && m_hdf5File->isValid())
+        {
+            std::vector<size_t > dims = {channel.numElements(), channel.width()};
 
         HighFive::DataSpace dataSpace(dims);
         HighFive::DataSetCreateProps properties;
@@ -283,10 +284,13 @@ void HDF5Kernel::save(HighFive::Group &g,
 
         std::string sensor_type = "Channel";
         hdf5util::setAttribute<std::string>(*dataset, "sensor_type", sensor_type);
-    }
-    else 
-    {
-        throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
+        } 
+        else 
+        {
+            throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
+        }
+    } else {
+        std::cout << "[Hdf5IO - save]: Type not supported by Hdf5" << std::endl;
     }
 }
 

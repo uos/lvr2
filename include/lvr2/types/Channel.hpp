@@ -81,6 +81,39 @@ protected:
     DataPtr         m_data;
 };
 
+// TODO: 
+// CustomChannel is a flat Channel: Nx1 of CustomType
+// overload Channel operator[] to give direct access to second dimension 
+
+// template<typename T>
+// class DynamicChannel : public Channel<T> {
+// public:
+//     using base = Channel<T>;
+//     using DataPtr = typename base::DataPtr;
+
+//     DynamicChannel(size_t n)
+//     :base(n, 1)
+//     {
+
+//     }
+    
+//     DynamicChannel(size_t n, DataPtr ptr)
+//     :base(n,1,ptr)
+//     {
+
+//     }
+
+//     T& operator[](const unsigned& idx)
+//     {
+//         return base::operator[](idx)[0];
+//     }
+
+//     const T operator[](const unsigned& idx) const
+//     {
+//         return base::operator[](idx)[0];
+//     }
+// };
+
 template<typename T>
 using AttributeChannel = Channel<T>;
 

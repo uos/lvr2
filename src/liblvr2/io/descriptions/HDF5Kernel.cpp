@@ -535,12 +535,76 @@ void HDF5Kernel::loadMetaYAML(
     }
 }
 
+charArr HDF5Kernel::loadCharArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<char>(group, container, dims);
+}
+
 ucharArr HDF5Kernel::loadUCharArray(
     const std::string &group,
     const std::string &container,
     std::vector<size_t> &dims) const
 {
     return this->template loadArray<unsigned char>(group, container, dims);
+}
+
+shortArr HDF5Kernel::loadShortArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<short>(group, container, dims);
+}
+
+ushortArr HDF5Kernel::loadUShortArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<unsigned short>(group, container, dims);
+}
+
+uint16Arr HDF5Kernel::loadUInt16Array(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<uint16_t>(group, container, dims);
+}
+
+intArr HDF5Kernel::loadIntArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<int>(group, container, dims);
+}
+
+uintArr HDF5Kernel::loadUIntArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<unsigned int>(group, container, dims);
+}
+
+lintArr HDF5Kernel::loadLIntArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<long int>(group, container, dims);
+}
+
+ulintArr HDF5Kernel::loadULIntArray(
+    const std::string &group,
+    const std::string &container,
+    std::vector<size_t> &dims) const
+{
+    return this->template loadArray<unsigned long int>(group, container, dims);
 }
 
 floatArr HDF5Kernel::loadFloatArray(
@@ -559,20 +623,84 @@ doubleArr HDF5Kernel::loadDoubleArray(
     return this->template loadArray<double>(group, container, dims);
 }
 
-intArr HDF5Kernel::loadIntArray(
+boolArr HDF5Kernel::loadBoolArray(
     const std::string &group,
     const std::string &container,
     std::vector<size_t> &dims) const
 {
-    return this->template loadArray<int>(group, container, dims);
+    return this->template loadArray<bool>(group, container, dims);
 }
 
-uint16Arr HDF5Kernel::loadUInt16Array(
-    const std::string &group,
-    const std::string &container,
-    std::vector<size_t> &dims) const
+void HDF5Kernel::saveCharArray(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<char> &data) const
 {
-    return this->template loadArray<uint16_t>(group, container, dims);
+    this->template saveArray<char>(groupName, datasetName, dimensions, data);
+}
+
+void HDF5Kernel::saveUCharArray(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<unsigned char> &data) const
+{
+    this->template saveArray<unsigned char>(groupName, datasetName, dimensions, data);
+}
+
+void HDF5Kernel::saveShortArray(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<short> &data) const
+{
+    this->template saveArray<short>(groupName, datasetName, dimensions, data);
+}
+
+void HDF5Kernel::saveUShortArray(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<unsigned short> &data) const
+{
+    this->template saveArray<unsigned short>(groupName, datasetName, dimensions, data);
+}
+
+void HDF5Kernel::saveUInt16Array(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<uint16_t> &data) const
+{
+    this->template saveArray<uint16_t>(groupName, datasetName, dimensions, data);
+}
+
+void HDF5Kernel::saveIntArray(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<int> &data) const
+{
+    this->template saveArray<int>(groupName, datasetName, dimensions, data);
+}
+
+void HDF5Kernel::saveUIntArray(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<unsigned int> &data) const
+{
+    this->template saveArray<unsigned int>(groupName, datasetName, dimensions, data);
+}
+
+void HDF5Kernel::saveLIntArray(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<long int> &data) const
+{
+    this->template saveArray<long int>(groupName, datasetName, dimensions, data);
+}
+
+void HDF5Kernel::saveULIntArray(
+    const std::string &groupName, const std::string &datasetName,
+    const std::vector<size_t> &dimensions,
+    const boost::shared_array<unsigned long int> &data) const
+{
+    this->template saveArray<unsigned long int>(groupName, datasetName, dimensions, data);
 }
 
 void HDF5Kernel::saveFloatArray(
@@ -591,27 +719,13 @@ void HDF5Kernel::saveDoubleArray(
 {
     this->template saveArray<double>(groupName, datasetName, dimensions, data);
 }
-void HDF5Kernel::saveIntArray(
-    const std::string &groupName, const std::string &datasetName,
-    const std::vector<size_t> &dimensions,
-    const boost::shared_array<int> &data) const
-{
-    this->template saveArray<int>(groupName, datasetName, dimensions, data);
-}
-void HDF5Kernel::saveUInt16Array(
-    const std::string &groupName, const std::string &datasetName,
-    const std::vector<size_t> &dimensions,
-    const boost::shared_array<uint16_t> &data) const
-{
-    this->template saveArray<uint16_t>(groupName, datasetName, dimensions, data);
-}
 
-void HDF5Kernel::saveUCharArray(
+void HDF5Kernel::saveBoolArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<unsigned char> &data) const
+    const boost::shared_array<bool> &data) const
 {
-    this->template saveArray<unsigned char>(groupName, datasetName, dimensions, data);
+    this->template saveArray<bool>(groupName, datasetName, dimensions, data);
 }
 
 bool HDF5Kernel::exists(const std::string &group) const

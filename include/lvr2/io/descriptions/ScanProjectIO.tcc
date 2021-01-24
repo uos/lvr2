@@ -8,7 +8,7 @@ void ScanProjectIO<FeatureBase>::save(
     ScanProjectPtr scanProject) const
 {
     Description d = m_featureBase->m_description->scanProject();
-
+    
     // std::cout << "[ScanProjectIO] ScanProject - Description: " << std::endl;
     // std::cout << d << std::endl;
 

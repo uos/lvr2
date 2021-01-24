@@ -181,9 +181,49 @@ boost::filesystem::path DirectoryKernel::getAbsolutePath(const std::string &grou
     return ret;
 }
 
+charArr DirectoryKernel::loadCharArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<char>(group, container, dims);   
+}
+
 ucharArr DirectoryKernel::loadUCharArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
     return loadArray<unsigned char>(group, container, dims);   
+}
+
+shortArr DirectoryKernel::loadShortArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<short>(group, container, dims);   
+}
+
+ushortArr DirectoryKernel::loadUShortArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<unsigned short>(group, container, dims);   
+}
+
+uint16Arr DirectoryKernel::loadUInt16Array(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<uint16_t>(group, container, dims);   
+}
+
+intArr DirectoryKernel::loadIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<int>(group, container, dims);   
+}
+
+uintArr DirectoryKernel::loadUIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<unsigned int>(group, container, dims);   
+}
+
+lintArr DirectoryKernel::loadLIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<long int>(group, container, dims);   
+}
+
+ulintArr DirectoryKernel::loadULIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+{
+    return loadArray<unsigned long int>(group, container, dims);   
 }
 
 floatArr DirectoryKernel::loadFloatArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
@@ -196,14 +236,54 @@ doubleArr DirectoryKernel::loadDoubleArray(const std::string& group, const std::
     return loadArray<double>(group, container, dims);   
 }
 
-intArr DirectoryKernel::loadIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+boolArr DirectoryKernel::loadBoolArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<int>(group, container, dims);   
+    return loadArray<bool>(group, container, dims);   
 }
 
-uint16Arr DirectoryKernel::loadUInt16Array(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
+void DirectoryKernel::saveCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<char>& data) const
 {
-    return loadArray<uint16_t>(group, container, dims);   
+    saveArray<char>(groupName, datasetName, dimensions, data);
+}
+
+void DirectoryKernel::saveUCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned char>& data) const
+{
+    saveArray<unsigned char>(groupName, datasetName, dimensions, data);
+}
+
+void DirectoryKernel::saveShortArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<short>& data) const
+{
+    saveArray<short>(groupName, datasetName, dimensions, data);
+}
+
+void DirectoryKernel::saveUShortArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned short>& data) const
+{
+    saveArray<unsigned short>(groupName, datasetName, dimensions, data);
+}
+
+void DirectoryKernel::saveUInt16Array(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<uint16_t>& data) const
+{
+    saveArray<uint16_t>(groupName, datasetName, dimensions, data);
+}
+
+void DirectoryKernel::saveIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<int>& data) const
+{
+    saveArray<int>(groupName, datasetName, dimensions, data);
+}
+
+void DirectoryKernel::saveUIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned int>& data) const
+{
+    saveArray<unsigned int>(groupName, datasetName, dimensions, data);
+}
+
+void DirectoryKernel::saveLIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<long int>& data) const
+{
+    saveArray<long int>(groupName, datasetName, dimensions, data);
+}
+
+void DirectoryKernel::saveULIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned long int>& data) const
+{
+    saveArray<unsigned long int>(groupName, datasetName, dimensions, data);
 }
 
 void DirectoryKernel::saveFloatArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<float>& data) const
@@ -216,17 +296,9 @@ void DirectoryKernel::saveDoubleArray(const std::string& groupName, const std::s
     saveArray<double>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveUCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned char>& data) const
+void DirectoryKernel::saveBoolArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<bool>& data) const
 {
-    saveArray<unsigned char>(groupName, datasetName, dimensions, data);
-}
-void DirectoryKernel::saveIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<int>& data) const
-{
-    saveArray<int>(groupName, datasetName, dimensions, data);
-}
-void DirectoryKernel::saveUInt16Array(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<uint16_t>& data) const
-{
-    saveArray<uint16_t>(groupName, datasetName, dimensions, data);
+    saveArray<bool>(groupName, datasetName, dimensions, data);
 }
 
 std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(

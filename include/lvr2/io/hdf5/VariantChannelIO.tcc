@@ -92,15 +92,22 @@ boost::optional<VariantChannelT> loadVChannel(
     HighFive::Group& group,
     std::string name)
 {
-    if(dtype == HighFive::AtomicType<typename VariantChannelT::template type_of_index<R> >())
+    using VType = typename VariantChannelT::template type_of_index<R>;
+
+    if constexpr(hdf5util::H5AllowsType<VType>::value)
     {
-        boost::optional<VariantChannelT> ret;
-        auto loaded_channel = channel_io->template load<typename VariantChannelT::template type_of_index<R> >(group, name);
-        if(loaded_channel)
+        if(dtype == HighFive::AtomicType<VType>())
         {
-            ret = *loaded_channel;
+            boost::optional<VariantChannelT> ret;
+            auto loaded_channel = channel_io->template load<VType>(group, name);
+            if(loaded_channel)
+            {
+                ret = *loaded_channel;
+            }
+            return ret;
+        } else {
+            return loadVChannel<Derived, VariantChannelT, R-1>(dtype, channel_io, group, name);
         }
-        return ret;
     } else {
         return loadVChannel<Derived, VariantChannelT, R-1>(dtype, channel_io, group, name);
     }
