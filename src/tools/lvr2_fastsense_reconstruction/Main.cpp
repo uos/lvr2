@@ -46,6 +46,8 @@ constexpr int CHUNK_SHIFT = 6;
 /// Side length of the cube-shaped chunks (2^CHUNK_SHIFT).
 constexpr int CHUNK_SIZE = 1 << CHUNK_SHIFT;
 
+constexpr int MAP_RESOLUTION = 64;
+
 /// Scale for the boudingbox vectors
 constexpr int SCALE = 100;
 
@@ -62,11 +64,11 @@ constexpr int SCALE = 100;
  */
 void print_usage(const std::string& prog_name)
 {
-    std::cout << prog_name << " <path-to_hdf5-map-file> <save-directory> <mesh-name> <fill-holes-bool[0,1] - [Default:0]>" << std::endl;
+    std::cout << prog_name << " <path-to_hdf5-map-file> <save-directory> <mesh-name> <Params: [shc]* with s=smoothing, h=fill_holes, c=clean_contours>" << std::endl;
 }
 
 int main(int argc, char** argv)
-{   
+{
     if (argc < 4)
     {
         print_usage(argv[0]);
@@ -81,22 +83,27 @@ int main(int argc, char** argv)
     
 
     bool fillHoles = false;
+    bool smooth = false;
+    bool cleanContours = false;
     if (argc == 5)
     {
-        try 
+        std::string params(argv[4]);
+
+        for (char c : params)
         {
-            if(std::stoi(argv[4]) == 1) fillHoles = true;
-            else if(std::stoi(argv[4]) != 0)
+            if (c == 's')
             {
-                // requirements not met
-                throw std::exception();
+                smooth = true;
             }
-        } 
-        catch (const std::exception& e) 
-        {
-            print_usage(argv[0]);
-            return 0;
-        }     
+            if (c == 'h')
+            {
+                fillHoles = true;
+            }
+            if (c == 'c')
+            {
+                fillHoles = true;
+            }
+        }
     }
 
 
@@ -153,7 +160,7 @@ int main(int argc, char** argv)
 
     // Create the Grid for the reconstruction algorithm
     lvr2::BoundingBox<lvr2::BaseVector<int>> bb(min * SCALE, max * SCALE);
-    auto grid = std::make_shared<lvr2::HashGrid<lvr2::BaseVector<int>, lvr2::FastBox<lvr2::BaseVector<int>>>>(CHUNK_SIZE, bb);
+    auto grid = std::make_shared<lvr2::HashGrid<lvr2::BaseVector<int>, lvr2::FastBox<lvr2::BaseVector<int>>>>(MAP_RESOLUTION, bb);
 
     // Fill the grid with the valid TSDF values of the map
     for (auto tag : g.listObjectNames())
@@ -181,7 +188,7 @@ int main(int argc, char** argv)
             {
                 for (int k = 0; k < CHUNK_SIZE; k++)
                 {
-                    int tsdf_value = chunk_data[(CHUNK_SIZE * CHUNK_SIZE * i + CHUNK_SIZE * j + k) * 2];
+                    float tsdf_value = (float)chunk_data[(CHUNK_SIZE * CHUNK_SIZE * i + CHUNK_SIZE * j + k) * 2] / MAP_RESOLUTION;
                     int weight = chunk_data[(CHUNK_SIZE * CHUNK_SIZE * i + CHUNK_SIZE * j + k) * 2 + 1];
                     int x = CHUNK_SIZE * chunk_pos[0] + i;
                     int y = CHUNK_SIZE * chunk_pos[1] + j;
@@ -208,45 +215,53 @@ int main(int argc, char** argv)
 
     std::cout << "Finished reconstruction!" << std::endl;
 
-    if(fillHoles) {
+    if (cleanContours)
+    {
+        std::cout << "Start cleaning contours!" << std::endl;
+        cleanContours(mesh, 5, 0);
+        std::cout << "Finished cleaning contours!" << std::endl;
+    }
+
+    if(fillHoles)
+    {
         std::cout << "Start removing holes!" << std::endl;
-
-        naiveFillSmallHoles(mesh, 50, false);
-
+        naiveFillSmallHoles(mesh, 20, false);
         std::cout << "Finished removing holes!" << std::endl;
     }
     
-
-    std::cout << "Started smoothing..." << std::endl;
-    float smoothing_factor = 0.8;
-    float num_smoothings = 5;
-
-    //perform laplacian smoothing on the mesh
-    for(int i = 0; i < num_smoothings; i++)
+    if (smooth)
     {
-        for(auto vertexH : mesh.vertices())
+        std::cout << "Started smoothing..." << std::endl;
+        float smoothing_factor = 0.5;
+        float num_smoothings = 20;
+
+        //perform laplacian smoothing on the mesh
+        for(int i = 0; i < num_smoothings; i++)
         {
-            auto n_vertices = mesh.getNeighboursOfVertex(vertexH);
-            auto& vertex = mesh.getVertexPosition(vertexH);
-            lvr2::BaseVector<int> avg_vec(0,0,0);
-
-            for(auto vH : n_vertices)
+            for(auto vertexH : mesh.vertices())
             {
-                auto v = mesh.getVertexPosition(vH);
-                avg_vec += (v - vertex);
+                auto n_vertices = mesh.getNeighboursOfVertex(vertexH);
+                auto& vertex = mesh.getVertexPosition(vertexH);
+                lvr2::BaseVector<int> avg_vec(0,0,0);
+
+                for(auto vH : n_vertices)
+                {
+                    auto v = mesh.getVertexPosition(vH);
+                    avg_vec += (v - vertex);
+                }
+
+                avg_vec /= n_vertices.size();
+                
+                lvr2::BaseVector<int> avg_vec_factorized((int)(static_cast<float>(avg_vec[0]) * smoothing_factor),
+                                                        (int)(static_cast<float>(avg_vec[1]) * smoothing_factor),
+                                                        (int)(static_cast<float>(avg_vec[2]) * smoothing_factor));
+
+                vertex += avg_vec_factorized;
             }
-
-            avg_vec /= n_vertices.size() + 1;
-            
-            lvr2::BaseVector<int> avg_vec_factorized((int)(static_cast<float>(avg_vec[0]) * smoothing_factor),
-                                                     (int)(static_cast<float>(avg_vec[1]) * smoothing_factor),
-                                                     (int)(static_cast<float>(avg_vec[2]) * smoothing_factor));
-
-            vertex += avg_vec_factorized;
         }
-    }
 
-    std::cout << "Finished smooting!" << std::endl;
+        std::cout << "Finished smooting!" << std::endl;
+    }
 
     // Convert halfedgemesh to an IO format
     lvr2::SimpleFinalizer<lvr2::BaseVector<int>> finalizer;
