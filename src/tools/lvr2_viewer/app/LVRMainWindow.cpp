@@ -1726,8 +1726,6 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
     root->addChild(item);
     item->setExpanded(false);    
     refreshView();
-    // TODO: Ball wegbekommen
-    // Code verstehen (LVRScanProjectBridge und LVRScanProjectItem)
 }
 
 
