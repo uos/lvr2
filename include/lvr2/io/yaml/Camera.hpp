@@ -1,13 +1,12 @@
 
-#ifndef LVR2_IO_YAML_PINHOLECAMERAMODEL_IO_HPP
-#define LVR2_IO_YAML_PINHOLECAMERAMODEL_IO_HPP
+#ifndef LVR2_IO_YAML_CAMERA_HPP
+#define LVR2_IO_YAML_CAMERA_HPP
 
 #include <sstream>
 
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
-#include "MatrixIO.hpp"
-#include "lvr2/registration/CameraModels.hpp"
+#include "Matrix.hpp"
 
 namespace YAML {
 
@@ -19,36 +18,37 @@ namespace YAML {
 
 // WRITE SCAN PARTIALLY
 template<>
-struct convert<lvr2::ScanCamera> 
+struct convert<lvr2::Camera> 
 {
 
     /**
      * Encode Eigen matrix to yaml. 
      */
-    static Node encode(const lvr2::ScanCamera& scanCam) {
+    static Node encode(const lvr2::Camera& camera) {
         
         Node node;
-        node["sensor_type"] = lvr2::ScanCamera::sensorType;
-        node["sensor_name"] = scanCam.sensorName;
+        node["type"] = lvr2::Camera::type;
+        node["kind"] = lvr2::Channel<lvr2::Camera>::typeName();
+        node["name"] = camera.name;
         node["camera_model"] = "pinhole";
-        node["distortion_model"] = scanCam.camera.distortionModel;
+        node["distortion_model"] = camera.model.distortionModel;
         node["resolution"] = Load("[]");
-        node["resolution"].push_back(scanCam.camera.width);
-        node["resolution"].push_back(scanCam.camera.height);
+        node["resolution"].push_back(camera.model.width);
+        node["resolution"].push_back(camera.model.height);
         
         Node pinholeNode;
-        pinholeNode["cx"] = scanCam.camera.cx;
-        pinholeNode["cy"] = scanCam.camera.cy;
-        pinholeNode["fx"] = scanCam.camera.fx;
-        pinholeNode["fy"] = scanCam.camera.fy;
+        pinholeNode["cx"] = camera.model.cx;
+        pinholeNode["cy"] = camera.model.cy;
+        pinholeNode["fx"] = camera.model.fx;
+        pinholeNode["fy"] = camera.model.fy;
         node["pinhole"] = pinholeNode;
 
-        if(scanCam.camera.distortionModel == "opencv")
+        if(camera.model.distortionModel == "opencv")
         {
             Node distortion = Load("[]");
-            for(size_t i = 0; i < scanCam.camera.k.size(); i++)
+            for(size_t i = 0; i < camera.model.k.size(); i++)
             {
-                distortion.push_back(scanCam.camera.k[i]);
+                distortion.push_back(camera.model.k[i]);
             }
             node["distortion_coefficients"] = distortion;
         } else {
@@ -58,27 +58,28 @@ struct convert<lvr2::ScanCamera>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::ScanCamera& scanCam) 
+    static bool decode(const Node& node, lvr2::Camera& camera) 
     {
         // Check if we are reading camera information
-        if(node["sensor_type"].as<std::string>() != lvr2::ScanCamera::sensorType)
+        if(node["type"].as<std::string>() != lvr2::Camera::type)
         {
+            // TODO: error/warning message
             return false;
         }
 
-        if(node["sensor_name"])
+        if(node["name"])
         {
-            scanCam.sensorName = node["sensor_name"].as<std::string>();
+            camera.name = node["name"].as<std::string>();
         }
         else
         {
-            scanCam.sensorName = "noname";
+            camera.name = "noname";
         }
 
         if(node["resolution"] && node["resolution"].size() == 2)
         {
-            scanCam.camera.width = node["resolution"][0].as<unsigned>();
-            scanCam.camera.height = node["resolution"][1].as<unsigned>();
+            camera.model.width = node["resolution"][0].as<unsigned>();
+            camera.model.height = node["resolution"][1].as<unsigned>();
         }
 
         if(node["camera_model"])
@@ -90,10 +91,10 @@ struct convert<lvr2::ScanCamera>
                 {
                     // load pinhole parameters
                     Node pinholeNode = node["pinhole"];
-                    scanCam.camera.cx = pinholeNode["cx"].as<double>();
-                    scanCam.camera.cy = pinholeNode["cy"].as<double>();
-                    scanCam.camera.fx = pinholeNode["fx"].as<double>();
-                    scanCam.camera.fy = pinholeNode["fy"].as<double>();
+                    camera.model.cx = pinholeNode["cx"].as<double>();
+                    camera.model.cy = pinholeNode["cy"].as<double>();
+                    camera.model.fx = pinholeNode["fx"].as<double>();
+                    camera.model.fy = pinholeNode["fy"].as<double>();
                 }
                 
             } else {
@@ -103,12 +104,12 @@ struct convert<lvr2::ScanCamera>
 
         // Check if we have distortion data in OpenCV format
 
-        scanCam.camera.distortionModel = node["distortion_model"].as<std::string>();
+        camera.model.distortionModel = node["distortion_model"].as<std::string>();
 
-        if(scanCam.camera.distortionModel == "opencv")
+        if(camera.model.distortionModel == "opencv")
         {
             Node distortionNode = node["distortion_coefficients"];
-            scanCam.camera.k.clear();
+            camera.model.k.clear();
             if(distortionNode)
             {
                 YAML::const_iterator it = distortionNode.begin();
@@ -116,7 +117,7 @@ struct convert<lvr2::ScanCamera>
 
                 for(; it != it_end; it++)
                 {
-                    scanCam.camera.k.push_back(it->as<double>());
+                    camera.model.k.push_back(it->as<double>());
                 }
             }
         } else {

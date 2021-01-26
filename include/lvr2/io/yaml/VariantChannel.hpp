@@ -6,13 +6,12 @@
 
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
-#include "lvr2/io/yaml/MatrixIO.hpp"
-#include "lvr2/types/BaseBuffer.hpp"
+#include "lvr2/io/yaml/Matrix.hpp"
+#include "lvr2/types/MultiChannelMap.hpp"
 
 namespace YAML {
 
-using VChannelT = lvr2::BaseBuffer::val_type;
-
+using VChannelT = lvr2::MultiChannel;
 template<>
 struct convert<VChannelT> 
 {

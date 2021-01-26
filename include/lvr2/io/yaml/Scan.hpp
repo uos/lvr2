@@ -5,7 +5,7 @@
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/Timestamp.hpp"
-#include "MatrixIO.hpp"
+#include "Matrix.hpp"
 
 namespace YAML {  
 
@@ -25,12 +25,13 @@ struct convert<lvr2::Scan>
      */
     static Node encode(const lvr2::Scan& scan) {
         Node node;
-        node["sensor_type"] = lvr2::Scan::sensorType;
+        node["type"] = lvr2::Scan::type;
+        node["kind"] = boost::typeindex::type_id<lvr2::Scan>().pretty_name();
 
         node["start_time"]  = scan.startTime;
         node["end_time"] = scan.endTime;
 
-        node["pose_estimate"] = scan.poseEstimation;
+        node["pose_estimation"] = scan.poseEstimation;
         node["registration"] = scan.registration;
 
         Node config;
@@ -53,17 +54,16 @@ struct convert<lvr2::Scan>
 
     static bool decode(const Node& node, lvr2::Scan& scan) 
     {
-
-        if(!node["sensor_type"])
+        if(!node["type"])
         {
-            std::cout << "[YAML::convert<Scan> - decode] 'sensor_type' Tag not found." << std::endl;
+            std::cout << "[YAML::convert<Scan> - decode] 'type' Tag not found." << std::endl;
             return false;
         }
 
-        if(node["sensor_type"].as<std::string>() != lvr2::Scan::sensorType) 
+        if(node["type"].as<std::string>() != lvr2::Scan::type) 
         {
             // TODO: proper  warning or error?
-            std::cout << "[YAML::convert<Scan> - decode] Try to load " << node["sensor_type"].as<std::string>() << " as " << lvr2::Scan::sensorType << std::endl;
+            std::cout << "[YAML::convert<Scan> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::Scan::type << std::endl;
             return false;
         }
 

@@ -4,7 +4,7 @@
 
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
-#include "MatrixIO.hpp"
+#include "Matrix.hpp"
 
 namespace YAML {  
 
@@ -25,12 +25,10 @@ struct convert<lvr2::ScanPosition>
     static Node encode(const lvr2::ScanPosition& scanPos) {
         Node node;
         
-        node["sensor_type"] = lvr2::ScanPosition::sensorType;
-        node["latitude"] = scanPos.latitude;
-        node["longitude"] = scanPos.longitude;
-        node["altitude"] = scanPos.altitude;
-        node["pose_estimate"] = scanPos.pose_estimate;
-        node["registration"] = scanPos.registration;
+        node["type"] = lvr2::ScanPosition::type;
+        node["kind"] = boost::typeindex::type_id<lvr2::ScanPosition>().pretty_name();
+        node["pose_estimation"] = scanPos.pose_estimation;
+        node["transformation"] = scanPos.transformation;
         node["timestamp"] = scanPos.timestamp;
 
         return node;
@@ -38,45 +36,30 @@ struct convert<lvr2::ScanPosition>
 
     static bool decode(const Node& node, lvr2::ScanPosition& scanPos) 
     {
-        if(!node["sensor_type"])
+        if(!node["type"])
         {
-            std::cout << "[YAML::convert<ScanPosition> - decode] 'sensor_type' Tag not found." << std::endl;
+            std::cout << "[YAML::convert<ScanPosition> - decode] 'type' Tag not found." << std::endl;
             return false;
         }    
 
-        if(node["sensor_type"].as<std::string>() != lvr2::ScanPosition::sensorType)
+        if(node["type"].as<std::string>() != lvr2::ScanPosition::type)
         {
-            std::cout << "[YAML::convert<ScanPosition> - decode] Try to load " << node["sensor_type"].as<std::string>() << " as " << lvr2::ScanPosition::sensorType << std::endl;
+            std::cout << "[YAML::convert<ScanPosition> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::ScanPosition::type << std::endl;
             return false;
         }
         
-        if(node["latitude"])
+        if(node["pose_estimation"])
         {
-            scanPos.latitude = node["latitude"].as<double>();
-        }
-        
-        if(node["longitude"])
-        {
-            scanPos.longitude = node["longitude"].as<double>();
-        }
-        
-        if(node["altitude"])
-        {
-            scanPos.altitude = node["altitude"].as<double>();
-        }
-        
-        if(node["pose_estimate"])
-        {
-            scanPos.pose_estimate = node["pose_estimate"].as<lvr2::Transformd>();
+            scanPos.pose_estimation = node["pose_estimation"].as<lvr2::Transformd>();
         } else {
-            scanPos.pose_estimate = lvr2::Transformd::Identity();
+            scanPos.pose_estimation = lvr2::Transformd::Identity();
         }
         
-        if(node["registration"])
+        if(node["transformation"])
         {
-            scanPos.registration = node["registration"].as<lvr2::Transformd>();
+            scanPos.transformation = node["transformation"].as<lvr2::Transformd>();
         } else {
-            scanPos.registration = lvr2::Transformd::Identity();
+            scanPos.transformation = lvr2::Transformd::Identity();
         }
         
         if(node["timestamp"])

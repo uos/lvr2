@@ -2,7 +2,7 @@
 #ifndef LVR2_IO_YAML_HYPERSPECTRALPANORAMACHANNELMETA_IO_HPP
 #define LVR2_IO_YAML_HYPERSPECTRALPANORAMACHANNELMETA_IO_HPP
 
-#include "MatrixIO.hpp"
+#include "Matrix.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 #include <yaml-cpp/yaml.h>

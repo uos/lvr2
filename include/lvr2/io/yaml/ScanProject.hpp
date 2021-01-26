@@ -1,12 +1,12 @@
 
-#ifndef LVR2_IO_YAML_SCANPROJECTMETA_IO_HPP
-#define LVR2_IO_YAML_SCANPROJECTMETA_IO_HPP
+#ifndef LVR2_IO_YAML_SCANPROJECT_HPP
+#define LVR2_IO_YAML_SCANPROJECT_HPP
 
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/Timestamp.hpp"
 
-#include "MatrixIO.hpp"
+#include "Matrix.hpp"
 
 namespace YAML {  
 
@@ -27,43 +27,53 @@ struct convert<lvr2::ScanProject>
     static Node encode(const lvr2::ScanProject& scanProj) {
         Node node;
         
-        node["sensor_type"] = lvr2::ScanProject::sensorType;
+        node["type"] = lvr2::ScanProject::type;
+        node["kind"] = boost::typeindex::type_id<lvr2::ScanProject>().pretty_name();
+        node["crs"] =  scanProj.crs;
         node["coordinate_system"] = scanProj.coordinateSystem;
-        node["pose_estimate"] = scanProj.pose;
-        node["sensor_name"] = scanProj.sensorName;
+        node["unit"] = scanProj.unit;
+        node["transformation"] = scanProj.transformation;
+        node["name"] = scanProj.name;
 
         return node;
     }
 
     static bool decode(const Node& node, lvr2::ScanProject& scanProj) 
     {
-        if(!node["sensor_type"])
+        if(!node["type"])
         {
-            std::cout << "[YAML::convert<ScanProject> - decode] 'sensor_type' Tag not found." << std::endl;
+            std::cout << "[YAML::convert<ScanProject> - decode] 'type' Tag not found." << std::endl;
             return false;
         }
 
-        if(node["sensor_type"].as<std::string>() != lvr2::ScanProject::sensorType)
+        if(node["type"].as<std::string>() != lvr2::ScanProject::type)
         {
-            std::cout << "[YAML::convert<ScanProject> - decode] Try to load " << node["sensor_type"].as<std::string>() << " as " << lvr2::ScanProject::sensorType << std::endl;
+            std::cout << "[YAML::convert<ScanProject> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::ScanProject::type << std::endl;
             return false;
         }
 
-        if(node["pose_estimate"])
+        if(node["transformation"])
         {
-            scanProj.pose = node["pose_estimate"].as<lvr2::Transformd>();
+            scanProj.transformation = node["transformation"].as<lvr2::Transformd>();
         }  else {
-            scanProj.pose  = lvr2::Transformd::Identity();
+            scanProj.transformation  = lvr2::Transformd::Identity();
         }
       
         if(node["coordinate_system"])
         {
             scanProj.coordinateSystem = node["coordinate_system"].as<std::string>();
         }
-              
-        if(node["sensor_name"])
+
+        if(node["unit"])
         {
-            scanProj.sensorName = node["sensor_name"].as<std::string>();
+            scanProj.unit = node["unit"].as<std::string>();
+        } else {
+            scanProj.unit = "m";
+        }
+              
+        if(node["name"])
+        {
+            scanProj.name = node["name"].as<std::string>();
         }
     
         return true;
@@ -73,5 +83,5 @@ struct convert<lvr2::ScanProject>
 
 }  // namespace YAML
 
-#endif // LVR2_IO_YAML_SCANPROJECTMETA_IO_HPP
+#endif // LVR2_IO_YAML_SCANPROJECT_HPP
 

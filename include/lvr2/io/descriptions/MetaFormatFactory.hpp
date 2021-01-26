@@ -2,11 +2,17 @@
 #define METAFILEFACTORY_HPP
 
 #include "lvr2/io/Timestamp.hpp"
-#include "lvr2/io/yaml/MatrixIO.hpp"
-#include "lvr2/io/IOUtils.hpp"
-#include "lvr2/registration/TransformUtils.hpp"
 
 #include <yaml-cpp/yaml.h>
+#include "lvr2/io/yaml/Matrix.hpp"
+
+// TODO: remove this dep
+#include "lvr2/io/IOUtils.hpp"
+
+// TODO:  remove this dep
+#include "lvr2/registration/TransformUtils.hpp"
+
+
 #include <boost/filesystem.hpp>
 #include <fstream>
 

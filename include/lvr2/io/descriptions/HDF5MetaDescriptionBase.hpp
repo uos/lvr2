@@ -19,26 +19,24 @@ public:
     HDF5MetaDescriptionBase() = default;
     virtual ~HDF5MetaDescriptionBase() = default;
 
-    virtual YAML::Node hyperspectralCamera(const HighFive::Group& g) const = 0;
-    virtual YAML::Node hyperspectralPanoramaChannel(const HighFive::Group& g) const = 0;
+    // virtual YAML::Node hyperspectralCamera(const HighFive::Group& g) const = 0;
+    // virtual YAML::Node hyperspectralPanoramaChannel(const HighFive::Group& g) const = 0;
     virtual YAML::Node scan(const HighFive::Group& g) const = 0;
     virtual YAML::Node scanPosition(const HighFive::Group& g) const = 0;
     virtual YAML::Node scanProject(const HighFive::Group& g) const = 0;
-    virtual YAML::Node scanCamera(const HighFive::Group& g) const = 0;
-    virtual YAML::Node scanImage(const HighFive::Group& g) const = 0;
+    virtual YAML::Node lidar(const HighFive::Group& g) const = 0;
+    virtual YAML::Node camera(const HighFive::Group& g) const = 0;
+    virtual YAML::Node cameraImage(const HighFive::Group& g) const = 0;
+
     virtual YAML::Node channel(const HighFive::DataSet& d) const = 0;
 
-    virtual void saveHyperspectralCamera(
-      HighFive::Group& g, 
-      const YAML::Node& n) const = 0;
+    // virtual void saveHyperspectralCamera(
+    //   HighFive::Group& g, 
+    //   const YAML::Node& n) const = 0;
 
-    virtual void saveHyperspectralPanoramaChannel(
-      HighFive::Group& g, 
-      const YAML::Node& n) const = 0;
-
-    virtual void saveScan(
-      HighFive::Group& g, 
-      const YAML::Node& h) const = 0;
+    // virtual void saveHyperspectralPanoramaChannel(
+    //   HighFive::Group& g, 
+    //   const YAML::Node& n) const = 0;
 
     virtual void saveScanPosition(
       HighFive::Group& g, 
@@ -48,11 +46,20 @@ public:
       HighFive::Group& g, 
       const YAML::Node& n) const = 0;
 
-    virtual void saveScanCamera(
+    virtual void saveLIDAR(
+      HighFive::Group& g,
+      const YAML::Node& n
+    ) const = 0;
+
+    virtual void saveCamera(
       HighFive::Group& g, 
       const YAML::Node& n) const = 0;
 
-    virtual void saveScanImage(
+    virtual void saveScan(
+      HighFive::Group& g, 
+      const YAML::Node& h) const = 0;
+
+    virtual void saveCameraImage(
       HighFive::Group& g, 
       const YAML::Node& n) const = 0;
 
@@ -64,4 +71,4 @@ public:
 
 } // namespace lvr2
 
-#endif
+#endif // LVR2_IO_DESCRIPTIONS_HDF5METADESCRIPTION_BASE_HPP

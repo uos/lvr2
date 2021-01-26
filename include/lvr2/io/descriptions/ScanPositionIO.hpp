@@ -9,10 +9,11 @@
 
 // Dependencies
 #include "ArrayIO.hpp"
-#include "HyperspectralCameraIO.hpp"
+// #include "HyperspectralCameraIO.hpp"
 #include "MatrixIO.hpp"
-#include "ScanCameraIO.hpp"
-#include "ScanIO.hpp"
+#include "CameraIO.hpp"
+#include "LIDARIO.hpp"
+// #include "LIDARIO.hpp"
 
 namespace lvr2
 {
@@ -68,16 +69,11 @@ class ScanPositionIO
         ReductionAlgorithmPtr reduction) const;
    
   protected:
-    bool isScanPosition(const std::string& group) const;
-
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    
     // dependencies
-    ArrayIO<FeatureBase>* m_arrayIO = static_cast<ArrayIO<FeatureBase>*>(m_featureBase);
-    MatrixIO<FeatureBase>* m_matrixIO = static_cast<MatrixIO<FeatureBase>*>(m_featureBase);
-    ScanIO<FeatureBase>* m_scanIO = static_cast<ScanIO<FeatureBase>*>(m_featureBase);
-    ScanCameraIO<FeatureBase>* m_scanCameraIO = static_cast<ScanCameraIO<FeatureBase>*>(m_featureBase);
-    HyperspectralCameraIO<FeatureBase>* m_hyperspectralCameraIO =
-        static_cast<HyperspectralCameraIO<FeatureBase>*>(m_featureBase);
+    LIDARIO<FeatureBase>* m_lidarIO = static_cast<LIDARIO<FeatureBase>*>(m_featureBase);
+    CameraIO<FeatureBase>* m_cameraIO = static_cast<CameraIO<FeatureBase>*>(m_featureBase);
 
     static constexpr const char* ID = "ScanPositionIO";
     static constexpr const char* OBJID = "ScanPosition";
@@ -86,15 +82,11 @@ class ScanPositionIO
 template <typename FeatureBase>
 struct FeatureConstruct< ScanPositionIO, FeatureBase>
 {
-
     // DEPS
-    using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<MatrixIO, FeatureBase>::type;
-    using dep3 = typename FeatureConstruct<ScanIO, FeatureBase>::type;
-    using dep4 = typename FeatureConstruct<ScanCameraIO, FeatureBase>::type;
-    using dep5 = typename FeatureConstruct<HyperspectralCameraIO, FeatureBase>::type;
-    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>::template
-     Merge<dep4>::template Merge<dep5>;
+    using dep1 = typename FeatureConstruct<LIDARIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<CameraIO, FeatureBase>::type;
+    using deps = typename dep1::template Merge<dep2>;
+
 
     // add the feature itself
     using type = typename deps::template add_features<ScanPositionIO>::type;

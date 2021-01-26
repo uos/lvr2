@@ -152,9 +152,9 @@ PointBufferPtr genSpherePoints(
     return ret;
 }
 
-ScanImagePtr genLVRImage()
+CameraImagePtr genLVRImage()
 {
-    ScanImagePtr imgPtr(new ScanImage);
+    CameraImagePtr imgPtr(new CameraImage);
 
     cv::Mat img(500, 500, CV_8UC3, cv::Scalar(239,234,224));
 

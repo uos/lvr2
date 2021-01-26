@@ -1,4 +1,3 @@
-#include "lvr2/io/yaml/MatrixIO.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 
 namespace lvr2

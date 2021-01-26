@@ -37,8 +37,8 @@
 #include "lvr2/io/UosIO.hpp"
 #include "lvr2/io/ObjIO.hpp"
 #include "lvr2/io/LasIO.hpp"
-#include "lvr2/io/HDF5IO.hpp"
-#include "lvr2/io/WaveformIO.hpp"
+// #include "lvr2/io/HDF5IO.hpp"
+// #include "lvr2/io/WaveformIO.hpp"
 #include "lvr2/io/BoctreeIO.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DatIO.hpp"
@@ -65,7 +65,6 @@ CoordinateTransform<float> ModelFactory::m_transform;
 
 ModelPtr ModelFactory::readModel( std::string filename )
 {
-
     ModelPtr m(new Model);
 
     // Check extension
@@ -100,14 +99,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new DatIO;
     }
-    else if (extension ==".h5")
-    {
-        io = new HDF5IO;
-    }
-    else if (extension ==".lwf")
-    {
-	io = new WaveformIO;
-    }
+    // else if (extension ==".lwf")
+    // {
+	// io = new WaveformIO;
+    // }
 #ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
@@ -252,10 +247,6 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new STLIO;
     }
-    else if (extension == ".h5")
-    {
-        io = new HDF5IO;
-    }
 #ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
@@ -274,8 +265,6 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
         cout << timestamp << "File format " << extension
             << " is currently not supported." << endl;
     }
-
-
 
 }
 

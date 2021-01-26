@@ -38,14 +38,7 @@ void ScanProjectIO<FeatureBase>::save(
 }
 
 template <typename FeatureBase>
-void ScanProjectIO<FeatureBase>::saveScanProject(
-    ScanProjectPtr scanProject) const
-{
-    save(scanProject);
-}
-
-template <typename FeatureBase>
-ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
+ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
 {
     ScanProjectPtr ret;
 
@@ -76,7 +69,7 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
         // some schemes do not have meta descriptions: slam6d
         // create without meta information: generate meta afterwards
 
-        std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
+        // std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
         ret.reset(new ScanProject);
     }
 
@@ -98,6 +91,19 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
     }
 
     return ret;
+}
+
+template <typename FeatureBase>
+void ScanProjectIO<FeatureBase>::saveScanProject(
+    ScanProjectPtr scanProject) const
+{
+    save(scanProject);
+}
+
+template <typename FeatureBase>
+ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
+{
+    return load();
 }
 
 } // namespace lvr2

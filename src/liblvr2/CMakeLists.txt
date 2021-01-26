@@ -7,7 +7,7 @@ set(LVR2_SOURCES
     util/Hdf5Util.cpp
     util/Synthetic.cpp
     display/Renderable.cpp
-    display/GroundPlane.cpp
+    # display/GroundPlane.cpp
     display/MultiPointCloud.cpp
     display/StaticMesh.cpp
     display/Color.cpp
@@ -18,7 +18,7 @@ set(LVR2_SOURCES
     display/ColorMap.cpp
     display/GlTexture.cpp
     display/PointCorrespondences.cpp
-    display/Arrow.cpp
+    # display/Arrow.cpp
     display/TexturedMesh.cpp
     display/MeshCluster.cpp
     io/AsciiIO.cpp
@@ -35,13 +35,11 @@ set(LVR2_SOURCES
     io/Progress.cpp
     io/MeshBuffer.cpp
     io/LineReader.cpp
-    io/LabelBuffer.cpp
-#    io/KinectGrabber.cpp
     io/DatIO.cpp
     io/LasIO.cpp
     io/BaseIO.cpp
     io/GeoTIFFIO.cpp
-    io/HDF5IO.cpp
+    # io/HDF5IO.cpp
     io/Timestamp.cpp
     io/BoctreeIO.cpp
     io/GridIO.cpp
@@ -49,24 +47,20 @@ set(LVR2_SOURCES
     io/SoilAssistField.cpp
     io/SoilAssistSubField.cpp
     io/PointBuffer.cpp
-    io/WaveformBuffer.cpp
     io/Polygon.cpp
     io/ModelFactory.cpp
-    io/ScanDataManager.cpp
-    io/ScanDirectoryParser.cpp
-    io/ScanIOUtils.cpp
-    io/WaveformIO.cpp
+    # io/ScanDataManager.cpp
+    # io/ScanDirectoryParser.cpp
     io/descriptions/ScanProjectSchemaRaw.cpp
-    io/descriptions/ScanProjectSchemaSLAM.cpp
-    io/descriptions/ScanProjectSchemaHyperlib.cpp
-    io/descriptions/ScanProjectSchemaHDF5V2.cpp
-    io/descriptions/LabelScanProjectSchemaHDF5V2.cpp
+    # io/descriptions/ScanProjectSchemaSLAM.cpp
+    # io/descriptions/ScanProjectSchemaHyperlib.cpp
+    # io/descriptions/ScanProjectSchemaHDF5V2.cpp
+    # io/descriptions/LabelScanProjectSchemaHDF5V2.cpp
     io/descriptions/DirectoryKernel.cpp
     io/descriptions/MetaFormatFactory.cpp
     io/descriptions/ScanProjectSchema.cpp
-    io/descriptions/HDF5Kernel.cpp
-    io/descriptions/LabelHDF5IO.cpp
-    io/descriptions/HDF5MetaDescriptionV2.cpp
+    # io/descriptions/HDF5Kernel.cpp
+    # io/descriptions/HDF5MetaDescriptionV2.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
@@ -82,7 +76,7 @@ set(LVR2_SOURCES
     registration/GraphSLAM.cpp
     registration/TreeUtils.cpp
     registration/OctreeReduction.cpp
-    registration/RegistrationPipeline.cpp
+    # registration/RegistrationPipeline.cpp
     types/CustomChannelTypes.cpp
 )
 

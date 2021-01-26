@@ -1,13 +1,12 @@
 
-#ifndef LVR2_IO_YAML_MATRIX_IO_HPP
-#define LVR2_IO_YAML_MATRIX_IO_HPP
+#ifndef LVR2_IO_YAML_MATRIX_HPP
+#define LVR2_IO_YAML_MATRIX_HPP
 
 #include <Eigen/Dense>
 #include <yaml-cpp/yaml.h>
 
 namespace YAML
 {
-
 
 template <class Scalar_, int A_, int B_, int C_, int D_, int E_>
 struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> > 
@@ -151,7 +150,8 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
         return true;
     }
 };
+
 }  // namespace YAML
 
-#endif // LVR2_IO_YAML_MATRIX_IO_HPP
+#endif // LVR2_IO_YAML_MATRIX_HPP
 

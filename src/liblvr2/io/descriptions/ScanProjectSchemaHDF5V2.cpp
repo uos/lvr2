@@ -4,7 +4,6 @@
 #include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/yaml/MatrixIO.hpp"
-#include "lvr2/io/yaml/Waveform.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 #include <boost/filesystem.hpp>
@@ -70,48 +69,6 @@ Description ScanProjectSchemaHDF5V2::scan(const std::string& scanPositionPath, c
     d.dataSetName = "data";
     d.metaName = "meta";
 
-    return d;
-}
-
-Description ScanProjectSchemaHDF5V2::waveform(const size_t &scanPosNo, const size_t &scanNo) const
-{
-    // Get information about scan the associated scan position
-    Description d = position(scanPosNo);   
-    return waveform(*d.groupName, scanNo);
-}
-
-Description ScanProjectSchemaHDF5V2::waveform(const std::string &scanPositionPath, const size_t &scanNo) const
-{
-
-    Description d;
-    boost::filesystem::path groupPath(scanPositionPath);
-    boost::filesystem::path scansPath("scans");
-    boost::filesystem::path waveformPath("waveform");
-    boost::filesystem::path totalGroupPath = groupPath / scansPath / waveformPath;
-    d.groupName = totalGroupPath.string();
-
-    // Create dataset path
-    std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << scanNo;
-    d.dataSetName = sstr.str() + std::string(".lwf");
-
-    // Load meta data for scan
-    boost::filesystem::path metaPath(sstr.str() + ".yaml");
-    d.metaData = boost::none;
-    try
-    {
-        d.metaData = YAML::LoadFile((totalGroupPath / metaPath).string());
-    }
-    catch(YAML::BadFile& e)
-    {
-        // Nothing to do, meta node will contail default values
-        YAML::Node node;
-        node = Waveform();
-        d.metaData = node;
-    }
-   
-    d.metaName = metaPath.string();
-    d.groupName = totalGroupPath.string();
     return d;
 }
 

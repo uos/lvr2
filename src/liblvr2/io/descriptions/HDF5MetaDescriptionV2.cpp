@@ -12,11 +12,12 @@ void HDF5MetaDescriptionV2::saveScanProject(
     ScanProject sp;
     if(YAML::convert<ScanProject>::decode(n, sp))
     {   
-        hdf5util::addAtomic<std::string>(g, "sensorType", ScanProject::sensorType);
+        hdf5util::addAtomic<std::string>(g, "type", ScanProject::type);
+
         // write data
-        hdf5util::addMatrix<double>(g, "poseEstimation", sp.pose);
-        hdf5util::addAtomic<std::string>(g, "coordinateSystem", sp.coordinateSystem);
-        hdf5util::addAtomic<std::string>(g, "sensorName", sp.sensorName);
+        hdf5util::addMatrix<double>(g, "pose_estimation", sp.transformation);
+        hdf5util::addAtomic<std::string>(g, "coordinate_system", sp.coordinateSystem);
+        hdf5util::addAtomic<std::string>(g, "name", sp.name);
     }
 }
 
@@ -27,19 +28,12 @@ void HDF5MetaDescriptionV2::saveScanPosition(
     ScanPosition sp;
     if(YAML::convert<ScanPosition>::decode(n, sp))
     {
-        hdf5util::addAtomic<std::string>(g, "sensorType", ScanPosition::sensorType);
+        hdf5util::addAtomic<std::string>(g, "type", ScanPosition::type);
         // Is ScanPosition
-        
-        // GPS
-        doubleArr gps(new double[3]);
-        gps[0] = sp.latitude;
-        gps[1] = sp.longitude;
-        gps[2] = sp.altitude;
-        hdf5util::addArray<double>(g, "gpsPosition", 3, gps);
 
         // Pose estimation and registration
-        hdf5util::addMatrix<double>(g, "poseEstimation", sp.pose_estimate);
-        hdf5util::addMatrix<double>(g, "registration", sp.registration);
+        hdf5util::addMatrix<double>(g, "pose_estimation", sp.pose_estimation);
+        hdf5util::addMatrix<double>(g, "transformation", sp.transformation);
 
         // Timestamp
         hdf5util::addAtomic<double>(g, "timestamp", sp.timestamp);
@@ -53,7 +47,7 @@ void HDF5MetaDescriptionV2::saveScan(
     Scan s;
     if(YAML::convert<Scan>::decode(n, s))
     {
-        hdf5util::addAtomic<std::string>(g, "sensorType", Scan::sensorType);
+        hdf5util::addAtomic<std::string>(g, "type", Scan::type);
 
         doubleArr phi(new double[2]);
         phi[0] = s.phiMin;
@@ -82,14 +76,14 @@ void HDF5MetaDescriptionV2::saveScan(
     }
 }
 
-void HDF5MetaDescriptionV2::saveScanCamera(
+void HDF5MetaDescriptionV2::saveCamera(
     HighFive::Group &g,
     const YAML::Node& n) const
 {
-    ScanCamera sc;
-    if(YAML::convert<ScanCamera>::decode(n, sc))
+    Camera sc;
+    if(YAML::convert<Camera>::decode(n, sc))
     {
-        hdf5util::addAtomic<std::string>(g, "sensorType", ScanCamera::sensorType);
+        hdf5util::addAtomic<std::string>(g, "type", Camera::type);
 
         // Intrinsic Parameters
         doubleArr intrinsics(new double[4]);
@@ -111,14 +105,14 @@ void HDF5MetaDescriptionV2::saveScanCamera(
     }
 }
 
-void HDF5MetaDescriptionV2::saveScanImage(
+void HDF5MetaDescriptionV2::saveCameraImage(
     HighFive::Group &g,
     const YAML::Node &n) const
 {
-    ScanImage si;
-    if(YAML::convert<ScanImage>::decode(n, si))
+    CameraImage si;
+    if(YAML::convert<CameraImage>::decode(n, si))
     {
-        hdf5util::addAtomic<std::string>(g, "sensorType", ScanImage::sensorType);
+        hdf5util::addAtomic<std::string>(g, "type", CameraImage::type);
         hdf5util::addMatrix(g, "extrinsics", si.extrinsics);
         hdf5util::addMatrix(g, "extrinsicsEstimate", si.extrinsicsEstimate);
         hdf5util::addAtomic<std::string>(g, "imageFile", si.imageFile.string());
@@ -131,7 +125,7 @@ void HDF5MetaDescriptionV2::saveChannel(
 {
     std::string attr_name, attr_value;
 
-    attr_name = "sensor_type";
+    attr_name = "type";
     attr_value = n[attr_name].as<std::string>();
     hdf5util::setAttribute(d, attr_name, attr_value);
 
@@ -166,9 +160,9 @@ YAML::Node HDF5MetaDescriptionV2::scanProject(const HighFive::Group &g) const
 {
     YAML::Node node;
 
-    boost::optional<std::string> sensorTypeOpt = hdf5util::getAtomic<std::string>(g, "sensorType");
+    boost::optional<std::string> typeOpt = hdf5util::getAtomic<std::string>(g, "type");
 
-    if(sensorTypeOpt && *sensorTypeOpt == ScanProject::sensorType)
+    if(typeOpt && *typeOpt == ScanProject::type)
     {
         ScanProject sp;
 
@@ -194,9 +188,9 @@ YAML::Node HDF5MetaDescriptionV2::scanPosition(const HighFive::Group &g) const
 {
     YAML::Node node;
 
-    boost::optional<std::string> sensorTypeOpt = hdf5util::getAtomic<std::string>(g, "sensorType");
+    boost::optional<std::string> typeOpt = hdf5util::getAtomic<std::string>(g, "type");
 
-    if(sensorTypeOpt && *sensorTypeOpt == ScanPosition::sensorType)
+    if(typeOpt && *typeOpt == ScanPosition::type)
     {
         ScanPosition sp;
 
@@ -241,9 +235,9 @@ YAML::Node HDF5MetaDescriptionV2::scanPosition(const HighFive::Group &g) const
 YAML::Node HDF5MetaDescriptionV2::scan(const HighFive::Group &g) const 
 {   
     YAML::Node node;
-    boost::optional<std::string> sensorTypeOpt = hdf5util::getAtomic<std::string>(g, "sensorType");
+    boost::optional<std::string> typeOpt = hdf5util::getAtomic<std::string>(g, "type");
 
-    if(sensorTypeOpt && *sensorTypeOpt == Scan::sensorType)
+    if(typeOpt && *typeOpt == Scan::type)
     {
         Scan s;
 
@@ -315,12 +309,12 @@ YAML::Node HDF5MetaDescriptionV2::channel(const HighFive::DataSet& d) const
 {
     YAML::Node node;
     
-    boost::optional<std::string> sensorTypeOpt
-        = hdf5util::getAttribute<std::string>(d, "sensor_type");
+    boost::optional<std::string> typeOpt
+        = hdf5util::getAttribute<std::string>(d, "type");
 
-    if(sensorTypeOpt && *sensorTypeOpt == "Channel")
+    if(typeOpt && *typeOpt == "Channel")
     {
-        node["sensor_type"] = "Channel";
+        node["type"] = "Channel";
         boost::optional<std::string> channelTypeOpt 
             = hdf5util::getAttribute<std::string>(d, "channel_type");
 
@@ -395,7 +389,7 @@ YAML::Node HDF5MetaDescriptionV2::channel(const HighFive::DataSet& d) const
             if(lvrTypeName)
             {
                 // could convert datatype
-                node["sensor_type"] = "Channel";
+                node["type"] = "Channel";
                 node["channel_type"] = *lvrTypeName;
                 node["num_elements"] = dims[0];
                 node["width"] = dims[1];
@@ -406,21 +400,21 @@ YAML::Node HDF5MetaDescriptionV2::channel(const HighFive::DataSet& d) const
     return node;
 }
 
-YAML::Node HDF5MetaDescriptionV2::scanCamera(const HighFive::Group &g) const 
+YAML::Node HDF5MetaDescriptionV2::camera(const HighFive::Group &g) const 
 {
     YAML::Node node;
 
-    boost::optional<std::string> sensorTypeOpt 
-        = hdf5util::getAtomic<std::string>(g, "sensorType");
+    boost::optional<std::string> typeOpt 
+        = hdf5util::getAtomic<std::string>(g, "type");
 
-    if(!sensorTypeOpt)
+    if(!typeOpt)
     {
-        throw std::runtime_error("HDF5MetaDescriptionV2: Could not read sensorType from ScanCamera meta!");
+        throw std::runtime_error("HDF5MetaDescriptionV2: Could not read type from Camera meta!");
     }
 
-    if(*sensorTypeOpt == ScanCamera::sensorType)
+    if(*typeOpt == Camera::type)
     {
-        ScanCamera sc;
+        Camera sc;
 
         size_t dim;
         doubleArr intrinsics = hdf5util::getArray<double>(g, "intrinsics", dim);
@@ -460,28 +454,28 @@ YAML::Node HDF5MetaDescriptionV2::scanCamera(const HighFive::Group &g) const
 
         node = sc;
     } else {
-        std::cout << *sensorTypeOpt << " != "  << ScanCamera::sensorType << std::endl;
-        throw std::runtime_error("sensorType differs");
+        std::cout << *typeOpt << " != "  << Camera::type << std::endl;
+        throw std::runtime_error("type differs");
     }
 
     return node;
 }
 
-YAML::Node HDF5MetaDescriptionV2::scanImage(const HighFive::Group &g) const 
+YAML::Node HDF5MetaDescriptionV2::cameraImage(const HighFive::Group &g) const 
 {
     YAML::Node node;
 
-    boost::optional<std::string> sensorTypeOpt 
-        = hdf5util::getAtomic<std::string>(g, "sensorType");
+    boost::optional<std::string> typeOpt 
+        = hdf5util::getAtomic<std::string>(g, "type");
     
-    if(!sensorTypeOpt)
+    if(!typeOpt)
     {
-        throw std::runtime_error("HDF5MetaDescriptionV2: Could not read sensorType from meta group!");
+        throw std::runtime_error("HDF5MetaDescriptionV2: Could not read type from meta group!");
     }
 
-    if(*sensorTypeOpt == ScanImage::sensorType)
+    if(*typeOpt == CameraImage::type)
     {
-        ScanImage si;
+        CameraImage si;
         
         auto extrinsicsOpt = hdf5util::getMatrix<Extrinsicsd>(g, "extrinsics");
         if(extrinsicsOpt)
@@ -504,26 +498,26 @@ YAML::Node HDF5MetaDescriptionV2::scanImage(const HighFive::Group &g) const
         node = si;
 
     } else {
-        std::cout << *sensorTypeOpt << " != "  << ScanImage::sensorType << std::endl;
-        throw std::runtime_error("sensorType differs");
+        std::cout << *typeOpt << " != "  << CameraImage::type << std::endl;
+        throw std::runtime_error("type differs");
     }
 
     return node;
 }
 
-YAML::Node HDF5MetaDescriptionV2::hyperspectralCamera(const HighFive::Group &g) const 
-{
-    std::cout << timestamp << "HDF5MetaDescriptionV2::hyperspectralCamera() not implemented..." << std::endl;
-    YAML::Node node;
-    return node;
-}
+// YAML::Node HDF5MetaDescriptionV2::hyperspectralCamera(const HighFive::Group &g) const 
+// {
+//     std::cout << timestamp << "HDF5MetaDescriptionV2::hyperspectralCamera() not implemented..." << std::endl;
+//     YAML::Node node;
+//     return node;
+// }
 
-YAML::Node HDF5MetaDescriptionV2::hyperspectralPanoramaChannel(const HighFive::Group &g) const 
-{
-     std::cout << timestamp << "HDF5MetaDescriptionV2::hyperspectralPanoramaChannel() not implemented..." << std::endl;
-    YAML::Node node;
-    return node;
-}
+// YAML::Node HDF5MetaDescriptionV2::hyperspectralPanoramaChannel(const HighFive::Group &g) const 
+// {
+//      std::cout << timestamp << "HDF5MetaDescriptionV2::hyperspectralPanoramaChannel() not implemented..." << std::endl;
+//     YAML::Node node;
+//     return node;
+// }
 
 
 } // namespace lvr2
