@@ -233,6 +233,14 @@ LVRMainWindow::LVRMainWindow()
     m_actionSimple_Plane_Classification = this->actionSimple_Plane_Classification;
     m_actionFurniture_Recognition = this->actionFurniture_Recognition;
 
+
+    m_progressBar = new QProgressBar(this);    
+    m_progressBar->setRange(0, 0);
+    m_progressBar->setValue(0);
+    adjustLoading();
+    m_progressBar->hide();
+
+
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
     m_menuAbout = this->menuAbout;
@@ -1865,6 +1873,7 @@ void LVRMainWindow::changeReductionAlgorithm()
 
     LVRReductionAlgorithmDialog* dialog = new LVRReductionAlgorithmDialog(this);
     
+    showLoading();
     // Display
     dialog->setModal(true);
     dialog->raise();
@@ -1872,7 +1881,8 @@ void LVRMainWindow::changeReductionAlgorithm()
     dialog->exec();
 
     if(!dialog->successful())
-    {
+    {   
+        hideLoading();
         return;
     }
 
@@ -2003,9 +2013,9 @@ void LVRMainWindow::changeReductionAlgorithm()
         }
     }
     
-
     refreshView();
     delete dialog;
+    hideLoading();
 }
 
 
@@ -3663,6 +3673,8 @@ void LVRMainWindow::openScanProject()
 
     LVRScanProjectOpenDialog* dialog = new LVRScanProjectOpenDialog(this);
     
+    showLoading();
+
     // Display
     dialog->setModal(true);
     dialog->raise();
@@ -3674,6 +3686,7 @@ void LVRMainWindow::openScanProject()
 
     if(!dialog->successful())
     {
+        hideLoading();
         return;
     }
 
@@ -3703,8 +3716,9 @@ void LVRMainWindow::openScanProject()
             break;
         }
     }
+    
     loadScanProject(scanProject, QString::fromStdString(kernel->fileResource()), io);
-
+    hideLoading();
     delete dialog;
 }
  
@@ -3728,10 +3742,27 @@ void LVRMainWindow::openHDF5(std::string fileName)
     }
     this->treeWidget->getBridgePtr()->addActors(m_renderer);
     updateView();
-
-
-   
 }
+
+void LVRMainWindow::adjustLoading()
+{
+    m_progressBar->move(this->size().width()-m_progressBar->size().width(),this->size().height()-m_progressBar->size().height());
+}
+
+void LVRMainWindow::showLoading()
+{   
+    adjustLoading();
+    m_progressBar->raise();
+    m_progressBar->activateWindow();
+    m_progressBar->show();
+}
+
+void LVRMainWindow::hideLoading()
+{
+    m_progressBar->hide();
+}
+
+
 void LVRMainWindow::exportLabels()
 {
     std::cout << "Unused" << std::endl;
