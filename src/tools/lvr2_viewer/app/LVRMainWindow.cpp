@@ -67,6 +67,7 @@
 #include <vtkDefaultPass.h>
 #include <vtkCubeSource.h>
 #include <vtkAppendPolyData.h>
+#include <vtkSphereSource.h>
 
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
 #include "../vtkBridge/LVRChunkedMeshCuller.hpp"
@@ -153,12 +154,23 @@ LVRMainWindow::LVRMainWindow()
     m_actionSetViewToCamera = new QAction("Set view to camera", this);
 
     m_actionReductionAlgorithm = new QAction("Change ReductionAlgorithm", this);
+    m_actionShowCamPosition = new QAction("Show Camera Position", this);
+    m_actionShowCamTrajectory = new QAction("Show Camera Trajectory", this);
+    m_actionRemoveCamPosition = new QAction("Remove Camera Position", this);
 
     this->addAction(m_actionCopyModelItem);
     this->addAction(m_actionPasteModelItem);
 
     m_scanPositionContextMenu = new QMenu();
     m_scanPositionContextMenu->addAction(m_actionReductionAlgorithm);
+
+    m_scanImageContextMenu = new QMenu();
+    m_scanImageContextMenu->addAction(m_actionSetViewToCamera);
+    m_scanImageContextMenu->addAction(m_actionShowCamPosition);
+    m_scanImageContextMenu->addAction(m_actionRemoveCamPosition);
+
+    m_scanCamContextMenu = new QMenu();
+    m_scanCamContextMenu->addAction(m_actionShowCamTrajectory);
 
     m_labelTreeParentItemContextMenu = new QMenu();
     m_labelTreeParentItemContextMenu->addAction(m_actionAddLabelClass);
@@ -345,6 +357,19 @@ LVRMainWindow::~LVRMainWindow()
     {
         delete m_errorDialog;
     }
+    if (m_scanPositionContextMenu)
+    {
+        delete m_scanPositionContextMenu;
+    }
+    if (m_scanImageContextMenu)
+    {
+        delete m_scanImageContextMenu;
+    }
+    if (m_scanCamContextMenu)
+    {
+        delete m_scanCamContextMenu;
+    }
+
     delete m_incompatibilityBox;
 
     delete m_actionRenameModelItem;
@@ -358,6 +383,9 @@ LVRMainWindow::~LVRMainWindow()
     delete m_actionShowImage;
     delete m_actionSetViewToCamera;
     delete m_actionReductionAlgorithm;
+    delete m_actionShowCamPosition;
+    delete m_actionShowCamTrajectory;
+    delete m_actionRemoveCamPosition;
     
 }
 
@@ -403,7 +431,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionSetViewToCamera, SIGNAL(triggered()), this, SLOT(setViewToCamera()));
 
     QObject::connect(m_actionReductionAlgorithm, SIGNAL(triggered()), this, SLOT(changeReductionAlgorithm()));
-
+    QObject::connect(m_actionShowCamPosition, SIGNAL(triggered()), this, SLOT(showCamPosition()));
+    QObject::connect(m_actionShowCamTrajectory, SIGNAL(triggered()), this, SLOT(showCamTrajectory()));
+    QObject::connect(m_actionRemoveCamPosition, SIGNAL(triggered()), this, SLOT(removeCamPosition()));
 
     QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
 
@@ -570,6 +600,96 @@ void LVRMainWindow::showBackgroundDialog()
 #endif
 
     }
+}
+
+void LVRMainWindow::showCamTrajectory()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRScanCamItem* camItem = static_cast<LVRScanCamItem*>(items.first());
+        LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(camItem->parent());
+
+        Transformd trans1 = posItem->getScanPositionBridge()->getScanPosition()->registration;
+        
+        int i;
+        for(i = 0; i < camItem->childCount(); i++)
+        {
+            if (camItem->type() == LVRScanCamItemType)
+            {
+                if (camItem->child(i)->type() == LVRScanImageItemType)
+                {
+                    Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(camItem->child(i)->child(0)->child(1))->extrinsics();
+                    Transformd trans = static_cast<Transformd>(ext);
+                    Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
+                    vtkSmartPointer<vtkSphereSource> sphereSource1 = 
+                        vtkSmartPointer<vtkSphereSource>::New();
+                    //std::cout << pos(0) << " " << pos(1) << " " << pos(2) << std::endl;
+                    sphereSource1->SetCenter(pos(0), pos(1), pos(2));
+                    sphereSource1->SetRadius(0.1);
+                    sphereSource1->Update();
+
+                    vtkSmartPointer<vtkPolyDataMapper> mapper1 = 
+                        vtkSmartPointer<vtkPolyDataMapper>::New();
+                    mapper1->SetInputConnection(sphereSource1->GetOutputPort());
+  
+                    vtkSmartPointer<vtkActor> actor1 = 
+                        vtkSmartPointer<vtkActor>::New();
+                    actor1->SetMapper(mapper1);
+                    static_cast<LVRScanImageItem*>(camItem->child(i))->getScanImageBridge()->addPosActor(m_renderer, actor1);
+                    refreshView();
+                }
+            }
+        }
+    }
+}
+
+void LVRMainWindow::removeCamPosition()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRScanImageItem* imgItem = static_cast<LVRScanImageItem*>(items.first());
+        imgItem->getScanImageBridge()->removePosActor(m_renderer);
+    }
+    refreshView();
+}
+
+void LVRMainWindow::showCamPosition()
+{
+
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+        LVRScanImageItem* imgItem = static_cast<LVRScanImageItem*>(items.first());
+        LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(imgItem->parent()->parent());
+        Transformd trans1 = posItem->getScanPositionBridge()->getScanPosition()->registration;
+
+        Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(imgItem->child(0)->child(1))->extrinsics();
+        Transformd trans = static_cast<Transformd>(ext);
+        Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
+
+        vtkSmartPointer<vtkSphereSource> sphereSource1 = 
+            vtkSmartPointer<vtkSphereSource>::New();
+        std::cout << pos(0) << " " << pos(1) << " " << pos(2) << std::endl;
+        sphereSource1->SetCenter(pos(0), pos(1), pos(2));
+        sphereSource1->SetRadius(0.1);
+        sphereSource1->Update();
+  
+        vtkSmartPointer<vtkPolyDataMapper> mapper1 = 
+            vtkSmartPointer<vtkPolyDataMapper>::New();
+        mapper1->SetInputConnection(sphereSource1->GetOutputPort());
+  
+        vtkSmartPointer<vtkActor> actor1 = 
+            vtkSmartPointer<vtkActor>::New();
+        actor1->SetMapper(mapper1);
+        imgItem->getScanImageBridge()->addPosActor(m_renderer, actor1);
+    }
+    
+
+    refreshView();
+
 }
 
 void LVRMainWindow::setupQVTK()
@@ -1436,6 +1556,16 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
             QPoint globalPos = treeWidget->mapToGlobal(p);
             m_scanPositionContextMenu->exec(globalPos);
         }
+        if(item->type() == LVRScanImageItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            m_scanImageContextMenu->exec(globalPos);
+        }
+        if(item->type() == LVRScanCamItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            m_scanCamContextMenu->exec(globalPos);
+        }
     }
 }
 
@@ -1912,6 +2042,28 @@ void LVRMainWindow::setViewToCamera()
 
             cam->setCameraView();
 
+            refreshView();
+        }
+        if(item->type() == LVRScanImageItemType)
+        {
+            LVRScanImageItem* imgItem = static_cast<LVRScanImageItem*>(items.first());
+            imgItem->getScanImageBridge()->removePosActor(m_renderer);
+            LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(imgItem->parent()->parent());
+            Transformd trans1 = posItem->getScanPositionBridge()->getScanPosition()->registration;
+
+            Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(imgItem->child(0)->child(1))->extrinsics();
+            Transformd trans = static_cast<Transformd>(ext);
+            Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
+            vtkCamera* cam = m_renderer->GetActiveCamera();
+            //cam->SetModelTransformMatrix(trans1 * trans);
+            cam->SetPosition(pos(0),pos(1),pos(2));
+            std::cerr << "pos: " << pos(0) << " " << pos(1) << " " << pos(2) << std::endl;
+            Vector4<double> up = trans1 * trans * Vector4<double>(0,-1,0,0);
+            std::cerr << "up: " << up(0) << " " << up(1) << " " << up(2) << std::endl;
+            cam->SetViewUp(up(0),up(1),up(2));
+            Vector4<double> view = trans1 * trans * Vector4<double>(0,0,1,0);
+            std::cerr << "view: " << view(0) << " " << view(1) << " " << view(2) << std::endl;
+            cam->SetFocalPoint(view(0) + pos(0), view(1) + pos(1), view(2) + pos(2));
             refreshView();
         }
     }

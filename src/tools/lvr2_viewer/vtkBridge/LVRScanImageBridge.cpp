@@ -97,6 +97,17 @@ void LVRScanImageBridge::setVisibility(bool visible){
     std::cout << "setting visibility to " << visible << image->imageFile.string() <<std::endl;
 }
 
+void LVRScanImageBridge::addPosActor(vtkSmartPointer<vtkRenderer> renderer ,vtkSmartPointer<vtkActor> actor)
+{
+    renderer->AddActor(actor);
+    posActor = actor;
+}
+
+void LVRScanImageBridge::removePosActor(vtkSmartPointer<vtkRenderer> renderer)
+{
+    renderer->RemoveActor(posActor);
+    posActor = nullptr;
+}
 LVRScanImageBridge::~LVRScanImageBridge()
 {
     

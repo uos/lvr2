@@ -86,6 +86,10 @@ public:
      */
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
+    void        addPosActor(vtkSmartPointer<vtkRenderer> renderer ,vtkSmartPointer<vtkActor> actor);
+
+    void        removePosActor(vtkSmartPointer<vtkRenderer> renderer);
+
 
     void        setImage(const cv::Mat& img);
 
@@ -100,6 +104,7 @@ private:
     ScanImagePtr image;
     vtkSmartPointer<vtkImageData> imageData;
     vtkSmartPointer<vtkActor2D> imageActor;
+    vtkSmartPointer<vtkActor> posActor;
 };
 
 typedef boost::shared_ptr<LVRScanImageBridge> ScanImageBridgePtr;

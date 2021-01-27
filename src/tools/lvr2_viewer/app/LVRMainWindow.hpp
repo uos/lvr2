@@ -111,6 +111,7 @@
 #include "../widgets/LVRScanProjectOpenDialog.hpp"
 #include "../widgets/LVRReductionAlgorithmDialog.hpp"
 #include "../widgets/LVRScanImageItem.hpp"
+#include "../widgets/LVRScanCamItem.hpp"
 #include "../widgets/LVRExtrinsicsItem.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRLabelInteractor.hpp"
@@ -250,6 +251,9 @@ public Q_SLOTS:
     void exportSelectedModel();
     void buildIncompatibilityBox(string actionName, unsigned char allowedTypes);
     void showBackgroundDialog();
+    void removeCamPosition();
+    void showCamPosition();
+    void showCamTrajectory();
 
     /// Shows a Popup Dialog with Information about a Point
     void showPointInfoDialog();
@@ -322,6 +326,8 @@ private:
     QMenu*                                      m_treeParentItemContextMenu;
     QMenu*                                      m_treeChildItemContextMenu;
     QMenu*                                      m_scanPositionContextMenu;
+    QMenu*                                      m_scanImageContextMenu;
+    QMenu*                                      m_scanCamContextMenu;
 
     QMenu*                                      m_labelTreeParentItemContextMenu;
     QMenu*                                      m_labelTreeChildItemContextMenu;
@@ -404,6 +410,9 @@ private:
 
     QAction*                            m_actionShowImage;
     QAction*                            m_actionReductionAlgorithm;
+    QAction*                            m_actionShowCamPosition;
+    QAction*                            m_actionShowCamTrajectory;
+    QAction*                            m_actionRemoveCamPosition;
     QAction*                            m_actionSetViewToCamera;
     
     //Label
