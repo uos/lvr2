@@ -238,6 +238,9 @@ public Q_SLOTS:
     void toggleWireframe(bool checkboxState);
     void toogleEDL(bool checkboxstate);
 
+    void adjustLoading();
+    void showLoading();
+    void hideLoading();
     void refreshView();
     void updateView();
     void saveCamera();
@@ -412,6 +415,8 @@ private:
     QAction*                            m_actionAddNewInstance;
     QAction*                            m_actionRemoveInstance;
     QAction*                            m_actionShowWaveform;
+
+    QProgressBar*                       m_progressBar;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 
