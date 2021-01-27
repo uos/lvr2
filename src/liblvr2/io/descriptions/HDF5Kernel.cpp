@@ -478,88 +478,106 @@ void HDF5Kernel::loadMetaYAML(
     // std::cout << "[HDF5Kernel - loadMetaYAML]: Open Meta YAML '" << group << " , " << container << "'" << std::endl;
     
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
-
     if(hg.isValid())
     {
         if(hg.exist(container))
         {
             HighFive::ObjectType h5type = hg.getObjectType(container);
-
-            if(h5type == HighFive::ObjectType::Group)
+            
+            if(h5type == HighFive::ObjectType::Dataset)
             {
-                HighFive::Group meta_group = hdf5util::getGroup(hg, container, false);
-
-                // std::cout << "Loading '" << group + "/" + container << "/sensorType'" << std::endl;
-
-                boost::optional<std::string> sensor_type_opt = hdf5util::getAtomic<std::string>(meta_group, "sensorType");
-
-                if(sensor_type_opt)
-                {
-                    // std::cout << "Meta contains sensorType: " << *sensor_type_opt << std::endl;
-                    std::string sensor_type = *sensor_type_opt;
-
-                    if(sensor_type == ScanProject::sensorType)
-                    {
-                        node = m_metaDescription->scanProject(meta_group);
-                    }
-                    else if(sensor_type == ScanPosition::sensorType)
-                    {
-                        node = m_metaDescription->scanPosition(meta_group);
-                    }
-                    else if(sensor_type == Scan::sensorType)
-                    {
-                        node = m_metaDescription->scan(meta_group);
-                    }
-                    else if(sensor_type == ScanCamera::sensorType)
-                    {
-                        node = m_metaDescription->scanCamera(meta_group);
-                    }
-                    else if(sensor_type == ScanImage::sensorType)
-                    {
-                        node = m_metaDescription->scanImage(meta_group);
-                    }
-                    else if(sensor_type == HyperspectralCamera::sensorType)
-                    {
-                        node = m_metaDescription->hyperspectralCamera(meta_group);
-                    }
-                    else if(sensor_type == HyperspectralPanoramaChannel::sensorType)
-                    {
-                        node = m_metaDescription->hyperspectralPanoramaChannel(meta_group);
-                    }
-                    else 
-                    {
-                        std::cout << timestamp
-                                << "HDF5Kernel::LoadMetaYAML(): Warning: Sensor type '"
-                                << sensor_type << "' is not defined." << std::endl;
-                    }
-                }
-            } else if(h5type == HighFive::ObjectType::Dataset) {
-
-                HighFive::DataSet meta_dataset = hg.getDataSet(container);
-                
-                boost::optional<std::string> sensor_type_opt 
-                    = hdf5util::getAttribute<std::string>(meta_dataset, "sensor_type");
-
-                if(sensor_type_opt)
-                {
-                    if(*sensor_type_opt == "Channel")
-                    {
-                        node = m_metaDescription->channel(meta_dataset);
-                    }
-                } else {
-                    node = m_metaDescription->channel(meta_dataset);
-                }
+                HighFive::DataSet d = hg.getDataSet(container);
+                node = hdf5util::getAttributeMeta(d);
+            } 
+            else if(h5type == HighFive::ObjectType::Group)
+            {
+                HighFive::Group g = hg.getGroup(container);
+                node = hdf5util::getAttributeMeta(g);
             }
         }
-        else
-        {
-            std::cout << timestamp 
-                    << "HDF5Kernel::loadMetaYAML(): Warning: Sensor type field missing." 
-                    << std::endl;
-        }
-    } else {
-        throw std::runtime_error("[Hdf5Kernel - loadMetaYAML]: Hdf5 file not open.");
     }
+
+    // if(hg.isValid())
+    // {
+    //     if(hg.exist(container))
+    //     {
+    //         HighFive::ObjectType h5type = hg.getObjectType(container);
+
+    //         if(h5type == HighFive::ObjectType::Group)
+    //         {
+    //             HighFive::Group meta_group = hdf5util::getGroup(hg, container, false);
+
+    //             // std::cout << "Loading '" << group + "/" + container << "/sensorType'" << std::endl;
+
+    //             boost::optional<std::string> sensor_type_opt = hdf5util::getAtomic<std::string>(meta_group, "sensorType");
+
+    //             if(sensor_type_opt)
+    //             {
+    //                 // std::cout << "Meta contains sensorType: " << *sensor_type_opt << std::endl;
+    //                 std::string sensor_type = *sensor_type_opt;
+
+    //                 if(sensor_type == ScanProject::sensorType)
+    //                 {
+    //                     node = m_metaDescription->scanProject(meta_group);
+    //                 }
+    //                 else if(sensor_type == ScanPosition::sensorType)
+    //                 {
+    //                     node = m_metaDescription->scanPosition(meta_group);
+    //                 }
+    //                 else if(sensor_type == Scan::sensorType)
+    //                 {
+    //                     node = m_metaDescription->scan(meta_group);
+    //                 }
+    //                 else if(sensor_type == ScanCamera::sensorType)
+    //                 {
+    //                     node = m_metaDescription->scanCamera(meta_group);
+    //                 }
+    //                 else if(sensor_type == ScanImage::sensorType)
+    //                 {
+    //                     node = m_metaDescription->scanImage(meta_group);
+    //                 }
+    //                 else if(sensor_type == HyperspectralCamera::sensorType)
+    //                 {
+    //                     node = m_metaDescription->hyperspectralCamera(meta_group);
+    //                 }
+    //                 else if(sensor_type == HyperspectralPanoramaChannel::sensorType)
+    //                 {
+    //                     node = m_metaDescription->hyperspectralPanoramaChannel(meta_group);
+    //                 }
+    //                 else 
+    //                 {
+    //                     std::cout << timestamp
+    //                             << "HDF5Kernel::LoadMetaYAML(): Warning: Sensor type '"
+    //                             << sensor_type << "' is not defined." << std::endl;
+    //                 }
+    //             }
+    //         } else if(h5type == HighFive::ObjectType::Dataset) {
+
+    //             HighFive::DataSet meta_dataset = hg.getDataSet(container);
+                
+    //             boost::optional<std::string> sensor_type_opt 
+    //                 = hdf5util::getAttribute<std::string>(meta_dataset, "sensor_type");
+
+    //             if(sensor_type_opt)
+    //             {
+    //                 if(*sensor_type_opt == "Channel")
+    //                 {
+    //                     node = m_metaDescription->channel(meta_dataset);
+    //                 }
+    //             } else {
+    //                 node = m_metaDescription->channel(meta_dataset);
+    //             }
+    //         }
+    //     }
+    //     else
+    //     {
+    //         std::cout << timestamp 
+    //                 << "HDF5Kernel::loadMetaYAML(): Warning: Sensor type field missing." 
+    //                 << std::endl;
+    //     }
+    // } else {
+    //     throw std::runtime_error("[Hdf5Kernel - loadMetaYAML]: Hdf5 file not open.");
+    // }
 }
 
 charArr HDF5Kernel::loadCharArray(
