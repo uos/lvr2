@@ -2,20 +2,22 @@
 
 // #include "lvr2/io/descriptions/DirectoryIO.hpp"
 // #include "lvr2/io/descriptions/HDF5IO.hpp"
+// #include "lvr2/io/descriptions/HDF5Kernel.hpp"
+// #include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaSLAM.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 
 
 #include "lvr2/io/descriptions/ScanProjectSchemaRaw.hpp"
-// #include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 
-// #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 #include "lvr2/io/descriptions/DirectoryIO.hpp"
 #include "lvr2/io/descriptions/DirectoryKernel.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 
 // #include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 // #include "lvr2/io/hdf5/ScanProjectIO.hpp"
+
+#include "lvr2/io/hdf5/Hdf5Util.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -400,6 +402,344 @@ void ioTest()
     // }
 }
 
+template<typename HighFiveContainerT>
+void writeMeta(HighFiveContainerT g, YAML::Node meta, std::string prefix = "")
+{
+    
+    for(YAML::const_iterator it=meta.begin(); it != meta.end(); ++it) 
+    {   
+        std::string key = it->first.as<std::string>();
+        YAML::Node value = it->second;
+
+        // attributeName of hdf5
+        std::string attributeName = key;
+        
+        // add prefix to key
+        if(prefix != ""){ attributeName = prefix + "/" + attributeName; }
+
+        if(value.Type() == YAML::NodeType::Scalar)
+        {
+            // Write Scalar
+            // std::cout << attributeName << ": Scalar" << std::endl;
+
+            // get scalar type
+            long int lint;
+            double dbl;
+            bool bl;
+            std::string str;
+
+            if(YAML::convert<long int>::decode(value, lint))
+            {
+                hdf5util::setAttribute(g, attributeName, lint);
+            } 
+            else if(YAML::convert<double>::decode(value, dbl)) 
+            {
+                hdf5util::setAttribute(g, attributeName, dbl);
+            } 
+            else if(YAML::convert<bool>::decode(value, bl))
+            {
+                hdf5util::setAttribute(g, attributeName, bl);
+            } 
+            else if(YAML::convert<std::string>::decode(value, str))
+            {
+                hdf5util::setAttribute(g, attributeName, str);
+            }
+            else
+            {
+                std::cout << "ERROR: UNKNOWN TYPE of value " << value << std::endl;
+            }
+        } 
+        else if(value.Type() == YAML::NodeType::Sequence) 
+        {
+            // check the type with all elements
+            bool is_int = true;
+            bool is_double = true;
+            bool is_bool = true;
+            size_t nelements = 0;
+
+            for(auto it = value.begin(); it != value.end(); it++)
+            {
+                long int lint;
+                double dbl;
+                bool bl;
+                if(!YAML::convert<long int>::decode(*it, lint))
+                {
+                    is_int = false;
+                }
+
+                if(!YAML::convert<double>::decode(*it, dbl))
+                {
+                    is_double = false;
+                }
+
+                if(!YAML::convert<bool>::decode(*it, bl))
+                {
+                    is_bool = false;
+                }
+
+                nelements++;
+            }
+
+            if(is_int)
+            {
+                std::vector<long int> data;
+                for(auto it = value.begin(); it != value.end(); it++)
+                {
+                    data.push_back(it->as<long int>());
+                }
+                hdf5util::setAttributeVector(g, attributeName, data);
+            }
+            else if(is_double)
+            {
+                std::vector<double> data;
+                for(auto it = value.begin(); it != value.end(); it++)
+                {
+                    data.push_back(it->as<double>());
+                }
+                hdf5util::setAttributeVector(g, attributeName, data);
+            }
+            else if(is_bool)
+            {
+                // Bool vector is special
+                // https://stackoverflow.com/questions/51352045/void-value-not-ignored-as-it-ought-to-be-on-non-void-function
+                // need workaround
+
+                // hdf5 stores bool arrays in uint8 anyway
+                // std::vector<uint8_t> data;
+                // for(auto it = value.begin(); it != value.end(); it++)
+                // {
+                //     data.push_back(static_cast<uint8_t>(it->as<bool>()));
+                // }
+                // hdf5util::setAttributeVector(g, attributeName, data);
+
+                boost::shared_array<bool> data(new bool[nelements]);
+                size_t i = 0;
+                for(auto it = value.begin(); it != value.end(); it++, i++)
+                {
+                    data[i] = it->as<bool>();
+                }
+                hdf5util::setAttributeArray(g, attributeName, data, nelements);
+
+            } else {
+                std::cout << "Tried to write YAML list of unknown typed elements: " << *it << std::endl;
+            }
+        } 
+        else if(value.Type() == YAML::NodeType::Map) 
+        {
+            // check if Map is known type
+            if(YAML::isMatrix(value))
+            {
+                Eigen::MatrixXd mat;
+                if(YAML::convert<Eigen::MatrixXd>::decode(value, mat))
+                {
+                    hdf5util::setAttributeMatrix(g, attributeName, mat);
+                } else {
+                    std::cout << "ERROR matrix" << std::endl;
+                }
+            } else {
+                writeMeta(g, value, attributeName);
+            }
+        } 
+        else 
+        {
+            std::cout << attributeName << ": UNKNOWN -> Error" << std::endl;
+            std::cout << value << std::endl;
+        }
+    }
+}
+
+template<typename HighFiveContainerT>
+YAML::Node readMeta(HighFiveContainerT g)
+{
+    YAML::Node ret = YAML::Load("");
+
+    for(std::string attributeName : g.listAttributeNames())
+    {
+        std::vector<YAML::Node> yamlNodes;
+        std::vector<std::string> yamlNames = hdf5util::splitGroupNames(attributeName);
+
+        auto node_iter = ret;
+        yamlNodes.push_back(node_iter);
+        for(size_t i=0; i<yamlNames.size()-1; i++)
+        {
+            YAML::Node tmp = yamlNodes[i][yamlNames[i]];
+            yamlNodes.push_back(tmp);
+        }
+
+        YAML::Node back = yamlNodes.back();
+
+        HighFive::Attribute h5attr = g.getAttribute(attributeName);
+        std::vector<size_t> dims = h5attr.getSpace().getDimensions();
+        HighFive::DataType h5type = h5attr.getDataType();
+        if(dims.size() == 0)
+        {
+            // Bool problems
+            if(h5type == HighFive::AtomicType<bool>())
+            {
+                back[yamlNames.back()] = *hdf5util::getAttribute<bool>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<char>())
+            {
+                back[yamlNames.back()] = *hdf5util::getAttribute<char>(g, attributeName);
+            } 
+            else if(h5type == HighFive::AtomicType<unsigned char>())
+            {
+                back[yamlNames.back()] = *hdf5util::getAttribute<unsigned char>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<short>())
+            {
+                back[yamlNames.back()] = *hdf5util::getAttribute<short>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<unsigned short>())
+            {   
+                back[yamlNames.back()] = *hdf5util::getAttribute<unsigned short>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<int>())
+            {   
+                back[yamlNames.back()] = *hdf5util::getAttribute<int>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<unsigned int>())
+            {   
+                back[yamlNames.back()] = *hdf5util::getAttribute<unsigned int>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<long int>())
+            {   
+                back[yamlNames.back()] = *hdf5util::getAttribute<long int>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<unsigned long int>())
+            {   
+                back[yamlNames.back()] = *hdf5util::getAttribute<unsigned long int>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<float>())
+            {   
+                back[yamlNames.back()] = *hdf5util::getAttribute<float>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<double>())
+            {   
+                back[yamlNames.back()] = *hdf5util::getAttribute<double>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<bool>())
+            {   
+                back[yamlNames.back()] = *hdf5util::getAttribute<bool>(g, attributeName);
+            } 
+            else if(h5type == HighFive::AtomicType<std::string>()) 
+            {
+                back[yamlNames.back()] = *hdf5util::getAttribute<std::string>(g, attributeName);
+            } 
+            else {
+                std::cout << h5type.string() << ": type not implemented. " << std::endl;
+            }
+        }
+        else if(dims.size() == 1)
+        {
+            back[yamlNames.back()] = YAML::Load("[]");
+            // Sequence
+            if(h5type == HighFive::AtomicType<bool>())
+            {
+                std::vector<uint8_t> data = *hdf5util::getAttributeVector<uint8_t>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(static_cast<bool>(value));
+                }
+            }
+            else if(h5type == HighFive::AtomicType<char>())
+            {
+                std::vector<char> data = *hdf5util::getAttributeVector<char>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            } 
+            else if(h5type == HighFive::AtomicType<unsigned char>())
+            {
+                std::vector<unsigned char> data = *hdf5util::getAttributeVector<unsigned char>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<short>())
+            {
+                std::vector<short> data = *hdf5util::getAttributeVector<short>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<unsigned short>())
+            {   
+                std::vector<unsigned short> data = *hdf5util::getAttributeVector<unsigned short>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<int>())
+            {   
+                std::vector<int> data = *hdf5util::getAttributeVector<int>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<unsigned int>())
+            {   
+                std::vector<unsigned int> data = *hdf5util::getAttributeVector<unsigned int>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<long int>())
+            {   
+                std::vector<long int> data = *hdf5util::getAttributeVector<long int>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<unsigned long int>())
+            {   
+                std::vector<unsigned long int> data = *hdf5util::getAttributeVector<unsigned long int>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<float>())
+            {   
+                std::vector<float> data = *hdf5util::getAttributeVector<float>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<double>())
+            {   
+                std::vector<double> data = *hdf5util::getAttributeVector<double>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            } 
+            else {
+                std::cout << h5type.string() << ": type not implemented. " << std::endl;
+            }
+
+        }
+        else if(dims.size() == 2)
+        {
+            // Matrix
+            Eigen::MatrixXd mat = *hdf5util::getAttributeMatrix(g, attributeName);
+            back[yamlNames.back()] = mat;
+        }
+
+        ret = yamlNodes.front();
+    }
+
+    return ret;
+}
+
 int main(int argc, char** argv)
 {
     // ioTest();
@@ -428,31 +768,97 @@ int main(int argc, char** argv)
     //     std::cout << "Could not load scan project" << std::endl;
     // }
 
-    ScanProjectPtr sp = dummyScanProject();
+    // ScanProjectPtr sp = dummyScanProject();
 
-    std::cout << "ScanProject with positions: " << sp->positions.size()  << std::endl;
+    // std::cout << "ScanProject with positions: " << sp->positions.size()  << std::endl;
 
-    std::string outdir = "test";
-    DirectoryKernelPtr kernel(new DirectoryKernel(outdir));
-    DirectorySchemaPtr schema(new ScanProjectSchemaRaw(outdir));
-    DirectoryIO io(kernel, schema);
+    // std::string outdir = "test";
+    // DirectoryKernelPtr kernel(new DirectoryKernel(outdir));
+    // DirectorySchemaPtr schema(new ScanProjectSchemaRaw(outdir));
+    // DirectoryIO io(kernel, schema);
 
-    std::cout << "SAVE" <<  std::endl;
-    io.saveScanProject(sp);
+    // std::cout << "SAVE" <<  std::endl;
+    // io.saveScanProject(sp);
 
-    std::cout << "LOAD" << std::endl;
-    ScanProjectPtr sp_loaded =  io.loadScanProject();
+    // std::cout << "LOAD" << std::endl;
+    // ScanProjectPtr sp_loaded =  io.loadScanProject();
 
-    std::cout << "COMPARE" << std::endl;
-    if(compare(sp, sp_loaded))
-    {
-        std::cout << "success." << std::endl;
-    }  else {
-        std::cout << "wrong." << std::endl;
-    }
+    // std::cout << "COMPARE" << std::endl;
+    // if(compare(sp, sp_loaded))
+    // {
+    //     std::cout << "success." << std::endl;
+    // }  else {
+    //     std::cout << "wrong." << std::endl;
+    // }
 
+    std::string filename = "test.h5";
+    auto h5file = hdf5util::open(filename);
 
+    HighFive::Group g = hdf5util::getGroup(h5file, "scanpos0");
+    std::vector<size_t> dims = {2000, 3};
+    HighFive::DataSpace ds(dims);
 
+    HighFive::DataSetCreateProps properties;
+    auto d = hdf5util::createDataset<float>(g, "mydata", ds,  properties);
     
+    Transformd mytransform = Transformd::Identity();
+    mytransform(0,0) = 2.0;
+
+
+    YAML::Node meta;
+    meta["transform"] = mytransform;
+    meta["type"] = "ScanPosition";
+    meta["kind"] = "ScanPosition";
+
+    YAML::Node boollist = YAML::Load("[]");
+    boollist.push_back(true);
+    boollist.push_back(false);
+    boollist.push_back(false);
+    meta["boollist"] = boollist;
+
+    YAML::Node config;
+    config["pose"] = mytransform;
+    config["temp"] = 2.0;
+    config["bla"] = "hello";
+
+
+    YAML::Node distortion = YAML::Load("[]");
+    for(size_t i = 0; i < 10; i++)
+    {
+        distortion.push_back(static_cast<double>(i) / 2.0);
+    }
+    config["distortion"] = distortion;
+
+    YAML::Node config2;
+    config2["int0"] = 0; 
+    config2["int"] = static_cast<long unsigned int>(10);
+    config2["uint"] = static_cast<long int>(-10);
+    config2["name"] = "Alex";
+    config2["float"] = static_cast<float>(5.5);
+    config2["double"] = static_cast<double>(2.2);
+    config2["bool"] = false;
+
+    config["conf2"] = config2;
+    meta["config"] = config;
+
+    std::cout << "Write Meta to group" << std::endl;
+    hdf5util::setAttributeMeta(g, meta);
+    std::cout << "Write Meta to dataset" << std::endl;
+    hdf5util::setAttributeMeta(*d, meta);
+
+    std::cout << "------------" << std::endl;
+
+    std::cout << "Read Meta from group" << std::endl;
+    YAML::Node meta_loaded = hdf5util::getAttributeMeta(g);
+    std::cout << "Loaded:" << std::endl;
+    std::cout << meta_loaded << std::endl;
+
+    std::cout << "------------" << std::endl;
+    std::cout << "Read Meta from dataset" << std::endl;
+    YAML::Node meta_loaded2 = hdf5util::getAttributeMeta(*d);
+    std::cout << "Loaded: " << std::endl;
+    std::cout << meta_loaded2 << std::endl;
+    
+
     return 0;
 }

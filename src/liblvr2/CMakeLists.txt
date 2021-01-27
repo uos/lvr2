@@ -51,6 +51,7 @@ set(LVR2_SOURCES
     io/ModelFactory.cpp
     # io/ScanDataManager.cpp
     # io/ScanDirectoryParser.cpp
+    io/yaml/Matrix.cpp
     io/descriptions/ScanProjectSchemaRaw.cpp
     # io/descriptions/ScanProjectSchemaSLAM.cpp
     # io/descriptions/ScanProjectSchemaHyperlib.cpp

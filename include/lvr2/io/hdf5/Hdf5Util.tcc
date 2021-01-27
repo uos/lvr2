@@ -346,8 +346,11 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
     return std::move(dataset);
 }
 
-template <typename T>
-void setAttribute(HighFive::Group& g, const std::string& attr_name, T& data)
+template <typename HT, typename T>
+void setAttribute(
+    HT& g, 
+    const std::string& attr_name, 
+    const T& data)
 {
     bool use_existing_attribute = false;
     bool overwrite = false;
@@ -371,52 +374,193 @@ void setAttribute(HighFive::Group& g, const std::string& attr_name, T& data)
 
     if (!use_existing_attribute)
     {
-        g.createAttribute<T>(attr_name, data);
+        g.template createAttribute<T>(attr_name, data);
     }
     else if (overwrite)
     {
-        g.getAttribute(attr_name).write<T>(data);
+        g.getAttribute(attr_name).template write<T>(data);
     }
 }
 
-template <typename T>
-void setAttribute(
-    HighFive::DataSet& d,
-    const std::string& attr_name, 
-    T& data)
+template<typename HT, typename T>
+void setAttributeVector(
+    HT& g,
+    const std::string& attr_name,
+    const std::vector<T>& vec)
 {
-    bool use_existing_attribute = false;
-    bool overwrite = false;
+    std::vector<size_t> dims = {vec.size()};
+    HighFive::DataSpace ds(dims);
+    std::unique_ptr<HighFive::Attribute> h5att;
 
-    if (d.hasAttribute(attr_name))
+    if(g.hasAttribute(attr_name))
     {
-        // check if attribute is the same
-        HighFive::Attribute attr = d.getAttribute(attr_name);
-        if (attr.getDataType() == HighFive::AtomicType<T>())
-        {
-            T value;
-            attr.read(value);
+        h5att = std::make_unique<HighFive::Attribute>(
+            g.getAttribute(attr_name)
+        );
 
-            use_existing_attribute = true;
-            if (value != data)
+        bool reset = false;
+
+        if(h5att->getDataType() == HighFive::AtomicType<T>())
+        {
+            // Type is the same
+            std::vector<size_t> dims_old = h5att->getSpace().getDimensions();
+
+            if(dims_old.size() == dims.size())
             {
-                overwrite = true;
+                for(size_t i=0; i<dims.size(); i++)
+                {
+                    if(dims_old[i] != dims[i])
+                    {
+                        reset = true;
+                        break;
+                    }
+                }
+            } else {
+                reset = true;
             }
+        } else {
+            reset = true;
+        }
+
+        if(reset)
+        {
+            h5att.reset();
+            g.deleteAttribute(attr_name);
         }
     }
 
-    if (!use_existing_attribute)
+    if(!h5att)
     {
-        d.createAttribute<T>(attr_name, data);
+        h5att = std::make_unique<HighFive::Attribute>(
+            g.template createAttribute<T>(attr_name, ds)
+        );
     }
-    else if (overwrite)
-    {
-        d.getAttribute(attr_name).write<T>(data);
-    }
+
+    h5att->write(vec.data());
 }
 
-template <typename T>
-bool checkAttribute(HighFive::Group& g, const std::string& attr_name, T& data)
+template<typename HT, typename T>
+void setAttributeArray(
+    HT& g,
+    const std::string& attr_name,
+    boost::shared_array<T> data,
+    size_t size)
+{
+    std::vector<size_t> dims = {size};
+    HighFive::DataSpace ds(dims);
+    std::unique_ptr<HighFive::Attribute> h5att;
+
+    if(g.hasAttribute(attr_name))
+    {
+        h5att = std::make_unique<HighFive::Attribute>(
+            g.getAttribute(attr_name)
+        );
+
+        bool reset = false;
+
+        if(h5att->getDataType() == HighFive::AtomicType<T>())
+        {
+            // Type is the same
+            std::vector<size_t> dims_old = h5att->getSpace().getDimensions();
+
+            if(dims_old.size() == dims.size())
+            {
+                for(size_t i=0; i<dims.size(); i++)
+                {
+                    if(dims_old[i] != dims[i])
+                    {
+                        reset = true;
+                        break;
+                    }
+                }
+            } else {
+                reset = true;
+            }
+        } else {
+            reset = true;
+        }
+
+        if(reset)
+        {
+            h5att.reset();
+            g.deleteAttribute(attr_name);
+        }
+    }
+
+    if(!h5att)
+    {
+        h5att = std::make_unique<HighFive::Attribute>(
+            g.template createAttribute<T>(attr_name, ds)
+        );
+    }
+
+    // const T* data_raw = vec.data();
+    h5att->write(data.get());
+}
+
+template<typename HT>
+void setAttributeMatrix(
+    HT& g, 
+    const std::string& attr_name,
+    const Eigen::MatrixXd& mat)
+{
+    std::vector<size_t> dims = {
+        static_cast<size_t>(mat.cols()), 
+        static_cast<size_t>(mat.rows())};
+
+    HighFive::DataSpace ds(dims);
+
+    std::unique_ptr<HighFive::Attribute> h5att;
+
+    if(g.hasAttribute(attr_name))
+    {
+        h5att = std::make_unique<HighFive::Attribute>(
+            g.getAttribute(attr_name)
+        );
+
+        bool reset = false;
+
+        if(h5att->getDataType() == HighFive::AtomicType<double>())
+        {
+            // Type is the same
+            std::vector<size_t> dims_old = h5att->getSpace().getDimensions();
+
+            if(dims_old.size() == dims.size())
+            {
+                for(size_t i=0; i<dims.size(); i++)
+                {
+                    if(dims_old[i] != dims[i])
+                    {
+                        reset = true;
+                        break;
+                    }
+                }
+            } else {
+                reset = true;
+            }
+        } else {
+            reset = true;
+        }
+
+        if(reset)
+        {
+            h5att.reset();
+            g.deleteAttribute(attr_name);
+        }
+    }
+
+    if(!h5att)
+    {
+        h5att = std::make_unique<HighFive::Attribute>(
+            g.template createAttribute<double>(attr_name, ds)
+        );
+    }
+
+    h5att->write_raw(mat.data());
+}
+
+template <typename HT, typename T>
+bool checkAttribute(HT& g, const std::string& attr_name, T& data)
 {
     // check if attribute exists
     if (!g.hasAttribute(attr_name))
@@ -442,35 +586,8 @@ bool checkAttribute(HighFive::Group& g, const std::string& attr_name, T& data)
     return true;
 }
 
-template <typename T>
-bool checkAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data)
-{
-    // check if attribute exists
-    if (!d.hasAttribute(attr_name))
-    {
-        return false;
-    }
-
-    // check if attribute type is the same
-    HighFive::Attribute attr = d.getAttribute(attr_name);
-    if (attr.getDataType() != HighFive::AtomicType<T>())
-    {
-        return false;
-    }
-
-    // check if attribute value is the same
-    T value;
-    attr.read(value);
-    if (value != data)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T>
-boost::optional<T> getAttribute(const HighFive::Group& g, const std::string& attr_name)
+template <typename T, typename HT>
+boost::optional<T> getAttribute(const HT& g, const std::string& attr_name)
 {
     boost::optional<T> ret;
 
@@ -484,20 +601,412 @@ boost::optional<T> getAttribute(const HighFive::Group& g, const std::string& att
     return ret;
 }
 
-template <typename T>
-boost::optional<T> getAttribute(const HighFive::DataSet& d, const std::string& attr_name)
+template<typename T, typename HT>
+boost::optional<std::vector<T> > getAttributeVector(
+    const HT& g,
+    const std::string& attr_name)
 {
-    boost::optional<T> ret;
+    boost::optional<std::vector<T> > ret;
 
-    if(d.hasAttribute(attr_name))
+    if(g.hasAttribute(attr_name))
     {
-        T data;
-        d.getAttribute(attr_name).read(data);
+        HighFive::Attribute h5attr = g.getAttribute(attr_name);
+        if(h5attr.getDataType() != HighFive::AtomicType<T>())
+        {
+            return ret;
+        }
+
+        std::vector<size_t> dims = h5attr.getSpace().getDimensions();
+        
+        if(dims.size() != 1)
+        {
+            return ret;
+        }
+
+        std::vector<T> data(dims[0]);
+
+        h5attr.read(data.data());
+
         ret = data;
     }
 
     return ret;
 }
+
+template<typename HT>
+boost::optional<Eigen::MatrixXd> getAttributeMatrix(
+    const HT& g,
+    const std::string& attr_name)
+{
+    boost::optional<Eigen::MatrixXd> ret;
+
+    if(g.hasAttribute(attr_name))
+    {
+        HighFive::Attribute h5attr = g.getAttribute(attr_name);
+        if(h5attr.getDataType() != HighFive::AtomicType<double>())
+        {
+            return ret;
+        }
+
+        std::vector<size_t> dims = h5attr.getSpace().getDimensions();
+        
+        if(dims.size() != 2)
+        {
+            return ret;
+        }
+
+        Eigen::MatrixXd mat(dims[0], dims[1]);
+
+        h5attr.read(mat.data());
+
+        ret = mat;
+    }
+
+    return ret;
+}
+
+template<typename HT>
+void setAttributeMeta(
+    HT& g,
+    const YAML::Node& meta,
+    std::string prefix)
+{
+    for(YAML::const_iterator it=meta.begin(); it != meta.end(); ++it) 
+    {   
+        std::string key = it->first.as<std::string>();
+        YAML::Node value = it->second;
+
+        // attributeName of hdf5
+        std::string attributeName = key;
+        
+        // add prefix to key
+        if(prefix != ""){ attributeName = prefix + "/" + attributeName; }
+
+        if(value.Type() == YAML::NodeType::Scalar)
+        {
+            // Write Scalar
+            // std::cout << attributeName << ": Scalar" << std::endl;
+
+            // get scalar type
+            long int lint;
+            double dbl;
+            bool bl;
+            std::string str;
+
+            if(YAML::convert<long int>::decode(value, lint))
+            {
+                setAttribute(g, attributeName, lint);
+            } 
+            else if(YAML::convert<double>::decode(value, dbl)) 
+            {
+                setAttribute(g, attributeName, dbl);
+            } 
+            else if(YAML::convert<bool>::decode(value, bl))
+            {
+                setAttribute(g, attributeName, bl);
+            } 
+            else if(YAML::convert<std::string>::decode(value, str))
+            {
+                setAttribute(g, attributeName, str);
+            }
+            else
+            {
+                std::cout << "ERROR: UNKNOWN TYPE of value " << value << std::endl;
+            }
+        } 
+        else if(value.Type() == YAML::NodeType::Sequence) 
+        {
+            // check the type with all elements
+            bool is_int = true;
+            bool is_double = true;
+            bool is_bool = true;
+            size_t nelements = 0;
+
+            for(auto it = value.begin(); it != value.end(); it++)
+            {
+                long int lint;
+                double dbl;
+                bool bl;
+                if(!YAML::convert<long int>::decode(*it, lint))
+                {
+                    is_int = false;
+                }
+
+                if(!YAML::convert<double>::decode(*it, dbl))
+                {
+                    is_double = false;
+                }
+
+                if(!YAML::convert<bool>::decode(*it, bl))
+                {
+                    is_bool = false;
+                }
+
+                nelements++;
+            }
+
+            if(is_int)
+            {
+                std::vector<long int> data;
+                for(auto it = value.begin(); it != value.end(); it++)
+                {
+                    data.push_back(it->as<long int>());
+                }
+                setAttributeVector(g, attributeName, data);
+            }
+            else if(is_double)
+            {
+                std::vector<double> data;
+                for(auto it = value.begin(); it != value.end(); it++)
+                {
+                    data.push_back(it->as<double>());
+                }
+                setAttributeVector(g, attributeName, data);
+            }
+            else if(is_bool)
+            {
+                // Bool vector is special
+                // https://stackoverflow.com/questions/51352045/void-value-not-ignored-as-it-ought-to-be-on-non-void-function
+                // need workaround
+
+                // hdf5 stores bool arrays in uint8 anyway
+                // std::vector<uint8_t> data;
+                // for(auto it = value.begin(); it != value.end(); it++)
+                // {
+                //     data.push_back(static_cast<uint8_t>(it->as<bool>()));
+                // }
+                // hdf5util::setAttributeVector(g, attributeName, data);
+
+                boost::shared_array<bool> data(new bool[nelements]);
+                size_t i = 0;
+                for(auto it = value.begin(); it != value.end(); it++, i++)
+                {
+                    data[i] = it->as<bool>();
+                }
+                setAttributeArray(g, attributeName, data, nelements);
+
+            } else {
+                std::cout << "Tried to write YAML list of unknown typed elements: " << *it << std::endl;
+            }
+        } 
+        else if(value.Type() == YAML::NodeType::Map) 
+        {
+            // check if Map is known type
+            if(YAML::isMatrix(value))
+            {
+                Eigen::MatrixXd mat;
+                if(YAML::convert<Eigen::MatrixXd>::decode(value, mat))
+                {
+                    setAttributeMatrix(g, attributeName, mat);
+                } else {
+                    std::cout << "ERROR matrix" << std::endl;
+                }
+            } else {
+                // recursion
+                setAttributeMeta(g, value, attributeName);
+            }
+        } 
+        else 
+        {
+            std::cout << attributeName << ": UNKNOWN -> Error" << std::endl;
+            std::cout << value << std::endl;
+        }
+    }
+}
+
+template<typename HT>
+YAML::Node getAttributeMeta(
+    const HT& g)
+{
+    YAML::Node ret = YAML::Load("");
+
+    for(std::string attributeName : g.listAttributeNames())
+    {
+        std::vector<YAML::Node> yamlNodes;
+        std::vector<std::string> yamlNames = splitGroupNames(attributeName);
+
+        auto node_iter = ret;
+        yamlNodes.push_back(node_iter);
+        for(size_t i=0; i<yamlNames.size()-1; i++)
+        {
+            YAML::Node tmp = yamlNodes[i][yamlNames[i]];
+            yamlNodes.push_back(tmp);
+        }
+
+        YAML::Node back = yamlNodes.back();
+
+        HighFive::Attribute h5attr = g.getAttribute(attributeName);
+        std::vector<size_t> dims = h5attr.getSpace().getDimensions();
+        HighFive::DataType h5type = h5attr.getDataType();
+        if(dims.size() == 0)
+        {
+            // Bool problems
+            if(h5type == HighFive::AtomicType<bool>())
+            {
+                back[yamlNames.back()] = *getAttribute<bool>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<char>())
+            {
+                back[yamlNames.back()] = *getAttribute<char>(g, attributeName);
+            } 
+            else if(h5type == HighFive::AtomicType<unsigned char>())
+            {
+                back[yamlNames.back()] = *getAttribute<unsigned char>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<short>())
+            {
+                back[yamlNames.back()] = *getAttribute<short>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<unsigned short>())
+            {   
+                back[yamlNames.back()] = *getAttribute<unsigned short>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<int>())
+            {   
+                back[yamlNames.back()] = *getAttribute<int>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<unsigned int>())
+            {   
+                back[yamlNames.back()] = *getAttribute<unsigned int>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<long int>())
+            {   
+                back[yamlNames.back()] = *getAttribute<long int>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<unsigned long int>())
+            {   
+                back[yamlNames.back()] = *getAttribute<unsigned long int>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<float>())
+            {   
+                back[yamlNames.back()] = *getAttribute<float>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<double>())
+            {   
+                back[yamlNames.back()] = *getAttribute<double>(g, attributeName);
+            }
+            else if(h5type == HighFive::AtomicType<bool>())
+            {   
+                back[yamlNames.back()] = *getAttribute<bool>(g, attributeName);
+            } 
+            else if(h5type == HighFive::AtomicType<std::string>()) 
+            {
+                back[yamlNames.back()] = *getAttribute<std::string>(g, attributeName);
+            } 
+            else {
+                std::cout << h5type.string() << ": type not implemented. " << std::endl;
+            }
+        }
+        else if(dims.size() == 1)
+        {
+            back[yamlNames.back()] = YAML::Load("[]");
+            // Sequence
+            if(h5type == HighFive::AtomicType<bool>())
+            {
+                std::vector<uint8_t> data = *getAttributeVector<uint8_t>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(static_cast<bool>(value));
+                }
+            }
+            else if(h5type == HighFive::AtomicType<char>())
+            {
+                std::vector<char> data = *getAttributeVector<char>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            } 
+            else if(h5type == HighFive::AtomicType<unsigned char>())
+            {
+                std::vector<unsigned char> data = *getAttributeVector<unsigned char>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<short>())
+            {
+                std::vector<short> data = *getAttributeVector<short>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<unsigned short>())
+            {   
+                std::vector<unsigned short> data = *getAttributeVector<unsigned short>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<int>())
+            {   
+                std::vector<int> data = *getAttributeVector<int>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<unsigned int>())
+            {   
+                std::vector<unsigned int> data = *getAttributeVector<unsigned int>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<long int>())
+            {   
+                std::vector<long int> data = *getAttributeVector<long int>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<unsigned long int>())
+            {   
+                std::vector<unsigned long int> data = *getAttributeVector<unsigned long int>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<float>())
+            {   
+                std::vector<float> data = *getAttributeVector<float>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
+            else if(h5type == HighFive::AtomicType<double>())
+            {   
+                std::vector<double> data = *getAttributeVector<double>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            } 
+            else {
+                std::cout << h5type.string() << ": type not implemented. " << std::endl;
+            }
+
+        }
+        else if(dims.size() == 2)
+        {
+            // Matrix
+            Eigen::MatrixXd mat = *getAttributeMatrix(g, attributeName);
+            back[yamlNames.back()] = mat;
+        }
+
+        ret = yamlNodes.front();
+    }
+
+    return ret;
+}
+
 
 } // namespace hdf5util
 

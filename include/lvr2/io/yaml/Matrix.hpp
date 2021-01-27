@@ -8,6 +8,8 @@
 namespace YAML
 {
 
+bool isMatrix(const Node& node);
+
 template <class Scalar_, int A_, int B_, int C_, int D_, int E_>
 struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> > 
 {
@@ -19,6 +21,7 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
     static Node encode(const Eigen::Matrix<Scalar, A, B, C, D, E>& M) 
     {
         typedef typename Eigen::Matrix<Scalar, A, B, C, D, E>::Index IndexType;
+
         IndexType rows = M.rows();
         IndexType cols = M.cols();
 
@@ -41,6 +44,11 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
     {
         typedef typename Eigen::Matrix<Scalar, A, B, C, D, E>::Index IndexType;
         
+        if(!isMatrix(node))
+        {
+            return false;
+        }
+
         IndexType rows = node["rows"].as<IndexType>();
         IndexType cols = node["cols"].as<IndexType>();
 
@@ -67,6 +75,12 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
     {
 
         typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, B, C, D, E>::Index IndexType;
+
+        if(!isMatrix(node))
+        {
+            return false;
+        }
+
         IndexType rows = node["rows"].as<IndexType>();
         IndexType cols = node["cols"].as<IndexType>();
 
@@ -74,7 +88,7 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
 
         size_t expected_size = M.rows() * M.cols();
         if (!node["data"].IsSequence() || node["data"].size() != expected_size) {
-        return false;
+            return false;
         }
 
         YAML::const_iterator it = node["data"].begin();
@@ -97,6 +111,12 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
     static bool decode(const Node& node, Eigen::Matrix<Scalar, A, Eigen::Dynamic, C, D, E>& M) 
     {
         typedef typename Eigen::Matrix<Scalar, A, Eigen::Dynamic, C, D, E>::Index IndexType;
+
+        if(!isMatrix(node))
+        {
+            return false;
+        }
+
         IndexType rows = node["rows"].as<IndexType>();
         IndexType cols = node["cols"].as<IndexType>();
 
@@ -127,6 +147,12 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
     static bool decode(const Node& node, Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, C, D, E>& M) 
     {
         typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, C, D, E>::Index IndexType;
+
+        if(!isMatrix(node))
+        {
+            return false;
+        }
+
         IndexType rows = node["rows"].as<IndexType>();
         IndexType cols = node["cols"].as<IndexType>();
 

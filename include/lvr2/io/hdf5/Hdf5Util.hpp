@@ -9,6 +9,7 @@
 #include <H5Tpublic.h>
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
+#include "lvr2/io/yaml/Matrix.hpp"
 
 #include <chrono>
 #include <hdf5_hl.h>
@@ -260,19 +261,34 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
  * @param attr_name 
  * @param data 
  */
-template <typename T>
-void setAttribute(HighFive::Group& g, const std::string& attr_name, T& data);
+template <typename HT, typename T>
+void setAttribute(
+    HT& g,
+    const std::string& attr_name,
+    const T& data);
 
-/**
- * @brief Sets an atomic type as Dataset-Attribute
- * 
- * @tparam T 
- * @param d 
- * @param attr_name 
- * @param data 
- */
-template <typename T>
-void setAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data);
+template<typename HT, typename T>
+void setAttributeVector(
+    HT& g,
+    const std::string& attr_name,
+    const std::vector<T>& vec
+);
+
+template<typename HT, typename T>
+void setAttributeArray(
+    HT& g,
+    const std::string& attr_name,
+    boost::shared_array<T> data,
+    size_t size
+);
+
+template<typename HT>
+void setAttributeMatrix(
+    HT& g, 
+    const std::string& attr_name,
+    const Eigen::MatrixXd& mat);
+
+
 
 /**
  * @brief Checks if an Group-Attributes value equals a atomic
@@ -284,43 +300,32 @@ void setAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data);
  * @return true 
  * @return false 
  */
-template <typename T>
-bool checkAttribute(HighFive::Group& g, const std::string& attr_name, T& data);
-
-/**
- * @brief Checks if an Dataset-Attributes value equals a atomic
- * 
- * @tparam T 
- * @param d 
- * @param attr_name 
- * @param data 
- * @return true 
- * @return false 
- */
-template <typename T>
-bool checkAttribute(HighFive::DataSet& d, const std::string& attr_name, T& data);
+template <typename HT, typename T>
+bool checkAttribute(HT& g, const std::string& attr_name, T& data);
 
 /**
  * @brief Get a Group-Attributes value
  * 
+ * @tparam HT HighFive::Group or HighFive::Dataset
  * @tparam T 
  * @param g 
  * @param attr_name 
  * @return boost::optional<T> 
  */
-template <typename T>
-boost::optional<T> getAttribute(const HighFive::Group& g, const std::string& attr_name);
+template <typename T, typename HT>
+boost::optional<T> getAttribute(
+    const HT& g,
+    const std::string& attr_name);
 
-/**
- * @brief Get a Dataset-Attributes value
- * 
- * @tparam T 
- * @param d 
- * @param attr_name 
- * @return boost::optional<T> 
- */
-template <typename T>
-boost::optional<T> getAttribute(const HighFive::DataSet& d, const std::string& attr_name);
+template<typename T, typename HT>
+boost::optional<std::vector<T> > getAttributeVector(
+    const HT& g,
+    const std::string& attr_name);
+
+template<typename HT>
+boost::optional<Eigen::MatrixXd> getAttributeMatrix(
+    const HT& g,
+    const std::string& attr_name);
 
 /**
  * @brief Converts HighFive::DataType.string() to the corresponding lvr2 Channel Type.
@@ -329,6 +334,22 @@ boost::optional<T> getAttribute(const HighFive::DataSet& d, const std::string& a
  * @return boost::optional<std::string> 
  */
 boost::optional<std::string> highFiveTypeToLvr(std::string h5type);
+
+
+template<typename HT>
+void setAttributeMeta(
+    HT& g,
+    const YAML::Node& node,
+    std::string prefix=""
+);
+
+
+template<typename HT>
+YAML::Node getAttributeMeta(
+    const HT& g
+);
+
+
 
 } // namespace hdf5util
 

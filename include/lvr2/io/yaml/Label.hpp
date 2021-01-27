@@ -19,8 +19,6 @@ namespace YAML {
 template <>
 struct convert<lvr2::LabelInstance> 
 {
-
-
     static Node encode(const lvr2::LabelInstance& instance) {
         Node node;
         node["sensor_type"] = lvr2::LabelInstance::sensorType;
