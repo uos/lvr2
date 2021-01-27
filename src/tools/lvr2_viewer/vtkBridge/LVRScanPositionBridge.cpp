@@ -28,6 +28,20 @@ LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) : m_scanp
     m_pose.r = angles[0];
     m_pose.t = angles[1];
     m_pose.p = angles[2];
+
+    vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkSmartPointer<vtkCylinderSource>::New();
+    cylinderSource->SetCenter(m_pose.x, m_pose.y, m_pose.z);
+    cylinderSource->SetRadius(3);
+    cylinderSource->SetHeight(6);
+    cylinderSource->SetResolution(100);
+    
+    // Create a mapper and actor
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputConnection(cylinderSource->GetOutputPort());
+    m_cylinderActor = vtkSmartPointer<vtkActor>::New();
+    m_cylinderActor->SetMapper(mapper);
+    m_cylinderActor->GetProperty()->SetColor(250.0/255.0, 128.0/255.0, 114.0/255.0);
+
 }
 
 LVRScanPositionBridge::LVRScanPositionBridge(const LVRScanPositionBridge& b)
@@ -44,6 +58,7 @@ void LVRScanPositionBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
         if(model->validPointBridge())
         {
             renderer->AddActor(model->getPointBridge()->getPointCloudActor());
+            renderer->AddActor(m_cylinderActor);
         }
     }
 }
@@ -52,7 +67,10 @@ void LVRScanPositionBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
 {
     for(auto model : models)
     {
-        if(model->validPointBridge()) renderer->RemoveActor(model->getPointBridge()->getPointCloudActor());
+        if(model->validPointBridge()){
+            renderer->RemoveActor(model->getPointBridge()->getPointCloudActor());
+            renderer->RemoveActor(m_cylinderActor);
+        }
     }
 }
 

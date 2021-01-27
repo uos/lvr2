@@ -40,7 +40,11 @@
 
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
-
+#include <vtkCylinderSource.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkActor.h>
+#include <vtkProperty.h>
 #include <boost/shared_ptr.hpp>
 
 
@@ -92,7 +96,7 @@ public:
     void setVisibility(bool visible);
 
 private:
-
+    vtkSmartPointer<vtkActor> m_cylinderActor;
     std::vector<ModelBridgePtr> models;
     ScanPositionPtr m_scanposition;
     Pose m_pose;
