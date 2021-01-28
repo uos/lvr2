@@ -346,7 +346,7 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
     return std::move(dataset);
 }
 
-template <typename HT, typename T>
+template <typename T, typename HT>
 void setAttribute(
     HT& g, 
     const std::string& attr_name, 
@@ -382,7 +382,7 @@ void setAttribute(
     }
 }
 
-template<typename HT, typename T>
+template<typename T, typename HT>
 void setAttributeVector(
     HT& g,
     const std::string& attr_name,
@@ -439,7 +439,7 @@ void setAttributeVector(
     h5att->write(vec.data());
 }
 
-template<typename HT, typename T>
+template<typename T, typename HT>
 void setAttributeArray(
     HT& g,
     const std::string& attr_name,

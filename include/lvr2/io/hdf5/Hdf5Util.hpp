@@ -261,20 +261,20 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
  * @param attr_name 
  * @param data 
  */
-template <typename HT, typename T>
+template <typename T, typename HT>
 void setAttribute(
     HT& g,
     const std::string& attr_name,
     const T& data);
 
-template<typename HT, typename T>
+template<typename T, typename HT>
 void setAttributeVector(
     HT& g,
     const std::string& attr_name,
     const std::vector<T>& vec
 );
 
-template<typename HT, typename T>
+template<typename T, typename HT>
 void setAttributeArray(
     HT& g,
     const std::string& attr_name,

@@ -38,19 +38,38 @@ std::pair<std::string, std::string> validateGroupDataset(
     const std::string& groupName, 
     const std::string& datasetName)
 {
+    // std::cout << "Validate " << groupName << ", " << datasetName << std::endl;
+
+    std::vector<std::string> groupNameSplit = splitGroupNames(groupName);
     std::vector<std::string> datasetSplit = splitGroupNames(datasetName);
-    if(datasetSplit.size() > 1)
+    
+    std::vector<std::string> totalPath;
+
+    for(auto groupName : groupNameSplit)
     {
-        std::string group = groupName;
-        std::string container = datasetSplit.back();
-        for(size_t i=0; i<datasetSplit.size()-1; i++)
-        {
-            group += "/" + datasetSplit[i];
-        }
-        return {group, container};
-    } else {
-        return {groupName, datasetName};
+        totalPath.push_back(groupName);
     }
+
+    for(auto containerName : datasetSplit)
+    {
+        totalPath.push_back(containerName);
+    }
+
+    std::string groupPath = "";
+    if(totalPath.size() > 1)
+    {
+        groupPath = totalPath[0];
+        for(size_t i=1; i<totalPath.size()-1; i++)
+        {
+            groupPath += "/" + totalPath[i];
+        }
+    }
+    
+    std::string container = totalPath.back();
+
+    // std::cout << "To " << groupPath << ", " << container << std::endl;
+
+    return {groupPath, container};
 }
 
 void writeBaseStructure(std::shared_ptr<HighFive::File> hdf5_file)

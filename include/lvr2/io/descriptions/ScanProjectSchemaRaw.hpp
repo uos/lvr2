@@ -11,7 +11,7 @@
 namespace lvr2
 {
 
-class ScanProjectSchemaRaw : public DirectorySchema
+class ScanProjectSchemaRaw : public DirectorySchema, public HDF5Schema
 {
 public:
     ScanProjectSchemaRaw(std::string& rootDir) : DirectorySchema(rootDir) {};

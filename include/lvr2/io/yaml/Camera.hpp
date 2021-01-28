@@ -29,7 +29,11 @@ struct convert<lvr2::Camera>
         Node node;
         node["type"] = lvr2::Camera::type;
         node["kind"] = lvr2::Channel<lvr2::Camera>::typeName();
+        
         node["name"] = camera.name;
+        
+        node["transformation"] = camera.transformation;
+        
         node["camera_model"] = "pinhole";
         node["distortion_model"] = camera.model.distortionModel;
         node["resolution"] = Load("[]");
@@ -74,6 +78,11 @@ struct convert<lvr2::Camera>
         else
         {
             camera.name = "noname";
+        }
+
+        if(node["transformation"])
+        {
+            camera.transformation = node["transformation"].as<lvr2::Transformd>();
         }
 
         if(node["resolution"] && node["resolution"].size() == 2)

@@ -32,7 +32,7 @@ struct convert<lvr2::Scan>
         node["end_time"] = scan.endTime;
 
         node["pose_estimation"] = scan.poseEstimation;
-        node["registration"] = scan.registration;
+        node["transformation"] = scan.transformation;
 
         Node config;
         config["theta"] = Load("[]");
@@ -88,11 +88,11 @@ struct convert<lvr2::Scan>
             scan.poseEstimation = lvr2::Transformd::Identity();
         }
 
-        if(node["registration"])
+        if(node["transformation"])
         {
-            scan.registration = node["registration"].as<lvr2::Transformd>();
+            scan.transformation = node["transformation"].as<lvr2::Transformd>();
         } else {
-            scan.registration = lvr2::Transformd::Identity();
+            scan.transformation = lvr2::Transformd::Identity();
         }
         
         

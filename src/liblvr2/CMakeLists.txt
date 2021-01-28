@@ -28,7 +28,7 @@ set(LVR2_SOURCES
     io/AttributeMeshIOBase.cpp
     io/PPMIO.cpp
     io/PLYIO.cpp
-    io/IOUtils.cpp
+    # io/IOUtils.cpp
     io/STLIO.cpp
     io/UosIO.cpp
     io/PCDIO.cpp
@@ -60,7 +60,7 @@ set(LVR2_SOURCES
     io/descriptions/DirectoryKernel.cpp
     io/descriptions/MetaFormatFactory.cpp
     io/descriptions/ScanProjectSchema.cpp
-    # io/descriptions/HDF5Kernel.cpp
+    io/descriptions/HDF5Kernel.cpp
     # io/descriptions/HDF5MetaDescriptionV2.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
@@ -71,7 +71,7 @@ set(LVR2_SOURCES
     algorithm/ChunkHashGrid.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
-    registration/SLAMScanWrapper.cpp
+    # registration/SLAMScanWrapper.cpp
     registration/Metascan.cpp
     registration/SLAMAlign.cpp
     registration/GraphSLAM.cpp

@@ -12,9 +12,9 @@ namespace lvr2
 // }
 
 template <typename FeatureBase>
-void CameraIO<FeatureBase>::saveCamera(
-    const size_t& scanPosNo, 
-    const size_t& scanCamNo, 
+void CameraIO<FeatureBase>::save(
+    const size_t& scanPosNo,
+    const size_t& scanCamNo,
     CameraPtr cameraPtr) const
 {
     auto D = m_featureBase->m_description;
@@ -34,6 +34,15 @@ void CameraIO<FeatureBase>::saveCamera(
     {
         m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, cameraPtr->images[scanImageNo]);
     }
+}
+
+template <typename FeatureBase>
+void CameraIO<FeatureBase>::saveCamera(
+    const size_t& scanPosNo, 
+    const size_t& scanCamNo, 
+    CameraPtr cameraPtr) const
+{
+    save(scanPosNo, scanCamNo, cameraPtr);
 }
 
 template <typename FeatureBase>

@@ -6,8 +6,6 @@
 
 #include "lvr2/io/descriptions/ScanProjectSchemaRaw.hpp"
 
-
-
 namespace lvr2
 {
 
@@ -96,7 +94,7 @@ Description ScanProjectSchemaRaw::scan(
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanNo;
 
-    d.groupName = "scan_" + sstr.str();
+    d.groupName = sstr.str();
     d.metaName = "meta.yaml";
 
     if(d_parent.groupName)

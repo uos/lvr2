@@ -1,9 +1,9 @@
 #include "Options.hpp"
 
 // #include "lvr2/io/descriptions/DirectoryIO.hpp"
-// #include "lvr2/io/descriptions/HDF5IO.hpp"
-// #include "lvr2/io/descriptions/HDF5Kernel.hpp"
-// #include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
+#include "lvr2/io/descriptions/HDF5IO.hpp"
+#include "lvr2/io/descriptions/HDF5Kernel.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaSLAM.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 
@@ -48,9 +48,8 @@ ScanProjectPtr dummyScanProject()
                 scan->vResolution = 0.2;
                 scan->thetaMin = -M_PI;
                 scan->thetaMax = M_PI;
-                // scan->poseEstimation = lvr2::Transformd::Identity();
-
-                scan->registration = lvr2::Transformd::Identity();
+                scan->poseEstimation = lvr2::Transformd::Identity();
+                scan->transformation = lvr2::Transformd::Identity();
 
                 scan->points = synthetic::genSpherePoints(50, 50);
 
@@ -89,7 +88,6 @@ ScanProjectPtr dummyScanProject()
             scan_pos->cameras.push_back(scan_cam);
 
         }
-
         ret->positions.push_back(scan_pos);
     }
 
@@ -740,57 +738,8 @@ YAML::Node readMeta(HighFiveContainerT g)
     return ret;
 }
 
-int main(int argc, char** argv)
+void hdf5MetaTest()
 {
-    // ioTest();
-    // return 0;
-
-    // hdf5_convert_old::Options options(argc, argv);
-
-    // using OldIO = Hdf5Build<hdf5features::ScanProjectIO>;
-    // using NewIO = descriptions::HDF5IO;
-
-    // OldIO old_io;
-    // old_io.open(argv[1]);
-
-    // auto sp = old_io.ScanProjectIO::load();
-
-    // if(sp)
-    // {
-    //     std::cout << "Loaded scan project!" << std::endl;
-    //     std::string filename = "scan_project.h5";
-        
-    //     HDF5KernelPtr kernel(new HDF5Kernel(filename));
-    //     HDF5SchemaPtr schema(new ScanProjectSchemaHDF5V2());
-    //     NewIO io(kernel, schema);
-    //     io.saveScanProject(sp);
-    // } else {
-    //     std::cout << "Could not load scan project" << std::endl;
-    // }
-
-    // ScanProjectPtr sp = dummyScanProject();
-
-    // std::cout << "ScanProject with positions: " << sp->positions.size()  << std::endl;
-
-    // std::string outdir = "test";
-    // DirectoryKernelPtr kernel(new DirectoryKernel(outdir));
-    // DirectorySchemaPtr schema(new ScanProjectSchemaRaw(outdir));
-    // DirectoryIO io(kernel, schema);
-
-    // std::cout << "SAVE" <<  std::endl;
-    // io.saveScanProject(sp);
-
-    // std::cout << "LOAD" << std::endl;
-    // ScanProjectPtr sp_loaded =  io.loadScanProject();
-
-    // std::cout << "COMPARE" << std::endl;
-    // if(compare(sp, sp_loaded))
-    // {
-    //     std::cout << "success." << std::endl;
-    // }  else {
-    //     std::cout << "wrong." << std::endl;
-    // }
-
     std::string filename = "test.h5";
     auto h5file = hdf5util::open(filename);
 
@@ -858,6 +807,76 @@ int main(int argc, char** argv)
     YAML::Node meta_loaded2 = hdf5util::getAttributeMeta(*d);
     std::cout << "Loaded: " << std::endl;
     std::cout << meta_loaded2 << std::endl;
+}
+
+void hdf5IOTest()
+{
+    std::string filename = "scan_project.h5";
+    HDF5KernelPtr kernel(new HDF5Kernel(filename));
+    HDF5SchemaPtr schema(new ScanProjectSchemaRaw(filename));
+
+    descriptions::HDF5IO hdf5io(kernel, schema);
+
+    auto sp = dummyScanProject();
+    hdf5io.ScanProjectIO::save(sp);
+
+}
+
+int main(int argc, char** argv)
+{
+    hdf5IOTest();
+    return 0;
+
+    // ioTest();
+    // return 0;
+
+    // hdf5_convert_old::Options options(argc, argv);
+
+    // using OldIO = Hdf5Build<hdf5features::ScanProjectIO>;
+    // using NewIO = descriptions::HDF5IO;
+
+    // OldIO old_io;
+    // old_io.open(argv[1]);
+
+    // auto sp = old_io.ScanProjectIO::load();
+
+    // if(sp)
+    // {
+    //     std::cout << "Loaded scan project!" << std::endl;
+    //     std::string filename = "scan_project.h5";
+        
+    //     HDF5KernelPtr kernel(new HDF5Kernel(filename));
+    //     HDF5SchemaPtr schema(new ScanProjectSchemaHDF5V2());
+    //     NewIO io(kernel, schema);
+    //     io.saveScanProject(sp);
+    // } else {
+    //     std::cout << "Could not load scan project" << std::endl;
+    // }
+
+    // ScanProjectPtr sp = dummyScanProject();
+
+    // std::cout << "ScanProject with positions: " << sp->positions.size()  << std::endl;
+
+    // std::string outdir = "test";
+    // DirectoryKernelPtr kernel(new DirectoryKernel(outdir));
+    // DirectorySchemaPtr schema(new ScanProjectSchemaRaw(outdir));
+    // DirectoryIO io(kernel, schema);
+
+    // std::cout << "SAVE" <<  std::endl;
+    // io.saveScanProject(sp);
+
+    // std::cout << "LOAD" << std::endl;
+    // ScanProjectPtr sp_loaded =  io.loadScanProject();
+
+    // std::cout << "COMPARE" << std::endl;
+    // if(compare(sp, sp_loaded))
+    // {
+    //     std::cout << "success." << std::endl;
+    // }  else {
+    //     std::cout << "wrong." << std::endl;
+    // }
+
+    
     
 
     return 0;

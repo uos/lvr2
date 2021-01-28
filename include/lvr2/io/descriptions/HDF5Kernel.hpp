@@ -10,7 +10,7 @@
 #include "lvr2/io/descriptions/FileKernel.hpp"
 #include "lvr2/io/hdf5/Hdf5Util.hpp"
 #include "lvr2/types/VariantChannel.hpp"
-#include "lvr2/io/descriptions/HDF5MetaDescriptionV2.hpp"
+// #include "lvr2/io/descriptions/HDF5MetaDescriptionV2.hpp"
 
 #include <type_traits>
 #include <tuple>
@@ -23,7 +23,7 @@ public:
     HDF5Kernel() = delete;
     HDF5Kernel(const std::string& hdf5file);
     ~HDF5Kernel() {
-         delete m_metaDescription;
+        //  delete m_metaDescription;
          if(m_hdf5File)
          {
              m_hdf5File->flush();
@@ -357,7 +357,7 @@ public:
 
     std::shared_ptr<HighFive::File>  m_hdf5File;
 
-    HDF5MetaDescriptionBase* m_metaDescription;
+    // HDF5MetaDescriptionBase* m_metaDescription;
    
 };
 

@@ -15,13 +15,7 @@ void ScanPositionIO< FeatureBase>::save(
     // std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
     // std::cout << d << std::endl;
 
-    // Save meta information
-    if(d.metaName)
-    {
-        YAML::Node node;
-        node = *scanPositionPtr;
-        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
-    }
+    
     
     // Save all lidar sensors
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
@@ -41,6 +35,15 @@ void ScanPositionIO< FeatureBase>::save(
     // {
     //     m_hyperspectralCameraIO->saveHyperspectralCamera(scanPosNo, scanPositionPtr->hyperspectralCamera);
     // }
+
+    std::cout << "[ScanPositionIO - save] Write Meta." << std::endl;
+    // Save meta information
+    if(d.metaName)
+    {
+        YAML::Node node;
+        node = *scanPositionPtr;
+        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+    }
 }
 
 template <typename  FeatureBase>

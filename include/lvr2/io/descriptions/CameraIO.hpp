@@ -13,6 +13,12 @@ template <typename FeatureBase>
 class CameraIO
 {
   public:
+
+    void save(
+        const size_t& scanPosNo,
+        const size_t& scanCamNo,
+        CameraPtr cameraPtr) const;
+
     void saveCamera(
         const size_t& scanPosNo, 
         const size_t& scanCamNo, 

@@ -18,6 +18,14 @@ void ScanProjectIO<FeatureBase>::save(
         d.groupName = "";
     }
 
+    // std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
+    // Iterate over all positions and save
+    for (size_t i = 0; i < scanProject->positions.size(); i++)
+    {
+        // std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
+        m_scanPositionIO->saveScanPosition(i, scanProject->positions[i]);
+    }
+
     // Default scan project yaml
     if(d.metaName)
     {
@@ -26,14 +34,6 @@ void ScanProjectIO<FeatureBase>::save(
         // std::cout << "[ScanProjectIO] saveMetaYAML, Group: "
         //             << *d.groupName << ", metaName: " << *d.metaName << std::endl;
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
-    }
-
-    // std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
-    // Iterate over all positions and save
-    for (size_t i = 0; i < scanProject->positions.size(); i++)
-    {
-        // std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
-        m_scanPositionIO->saveScanPosition(i, scanProject->positions[i]);
     }
 }
 

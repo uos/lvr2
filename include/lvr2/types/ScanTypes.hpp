@@ -57,12 +57,16 @@ struct SensorType {
     static constexpr char           type[] = "Sensor";
     // Optional name of this sensor: e.g. RieglVZ-400i
     std::string name;
+    // Fixed transformation to upper frame (ScanPosition)
 };
 
 struct SensorDataType {
     static constexpr char           type[] = "SensorData";
 };
 
+struct Transformable {
+    Transformd transformation;
+};
 
 /*****************************************************************************
  * @brief   Struct to represent a scan project consisting
@@ -73,7 +77,7 @@ struct SensorDataType {
  *          the corresponding data is not available for this 
  *          scan position number.
  *****************************************************************************/
-struct ScanProject : ScanProjectType
+struct ScanProject : ScanProjectType, Transformable
 {
     //// META BEGIN
 
@@ -82,7 +86,8 @@ struct ScanProject : ScanProjectType
 
     // and a 4x4 transformation matrix that will be applied to all data in the project to convert it from the local (project specific) 
     // coordinate into the geo-coordinate system
-    Transformd                      transformation;
+    // transformation lies in "Transformable base class"
+    // Transformd                      transformation;
 
     // optional name of ScanProject
     std::string                     name;
@@ -103,7 +108,7 @@ struct ScanProject : ScanProjectType
     //// HIERARCHY END
 };
 
-struct ScanPosition : public ScanPositionType
+struct ScanPosition : public ScanPositionType, Transformable
 {
     /// META BEGIN
 
@@ -139,10 +144,9 @@ struct ScanPosition : public ScanPositionType
  ****************************************************************************/
 
 // Flag Struct
-struct LIDAR : public SensorType
+struct LIDAR : public SensorType, Transformable
 {
     //// META BEGIN
-    Transformd transformation;
     //// META END
 
     //// HIERARCHY BEGIN
@@ -159,7 +163,7 @@ struct LIDAR : public SensorType
  *          (extrinsic matrix) with respect to the laser scanner
  * 
  ****************************************************************************/
-struct Camera : public SensorType
+struct Camera : public SensorType, Transformable
 {
     /// Pinhole camera model
     PinholeModeld                     model;
@@ -171,12 +175,18 @@ struct Camera : public SensorType
 /*****************************************************************************
  * @brief Struct to represent a scan within a scan project
  ****************************************************************************/
-struct Scan : public SensorDataType
+struct Scan : public SensorDataType, Transformable
 {
     //// META BEGIN
 
-    /// Registration of this scan in project coordinates
-    Transformd                       registration;
+    /// Dynamic transformation of this sensor data
+    /// Example 1:
+    /// per scan position we have an old Sick Scanner rotating 
+    /// around. Thus, this scanner acquires different scans at
+    /// one fixed scan position but with dynamic transformations
+    /// of each scan
+    /// Variable "transform is placed in Transformable"
+    // Transformd                       transform;
 
     /// Pose estimation of this scan in project coordinates
     Transformd                       poseEstimation;
