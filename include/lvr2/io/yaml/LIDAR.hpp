@@ -38,16 +38,17 @@ struct convert<lvr2::LIDAR>
             return false;
         }
 
-        if(!node["kind"])
-        {
-            std::cout << "[YAML::convert<LIDAR> - decode] 'kind' Tag not found." << std::endl;
-            return false;
-        }
 
-        if(node["kind"].as<std::string>() != lvr2::LIDAR::type) 
+        if(!node["kind"]) // optional kind
         {
-            std::cout << "[YAML::convert<LIDAR> - decode] Try to load " << node["kind"].as<std::string>() << " as " << lvr2::LIDAR::kind << std::endl;
-            return false;
+            std::cout << "[YAML::convert<LIDAR> - decode] WARNING: 'kind' Tag not found. Assuming this meta to be of kind " << lvr2::LIDAR::kind << std::endl;
+            // return false;
+        } else {
+            if(node["kind"].as<std::string>() != lvr2::LIDAR::kind) 
+            {
+                std::cout << "[YAML::convert<LIDAR> - decode] Try to load " << node["kind"].as<std::string>() << " as " << lvr2::LIDAR::kind << std::endl;
+                return false;
+            }
         }
 
         if(node["transformation"])

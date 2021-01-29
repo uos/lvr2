@@ -74,7 +74,7 @@ ScanProjectPtr dummyScanProject()
             scan_cam->model.cy = 50.5;
             scan_cam->model.fx = 120.99;
             scan_cam->model.fy = 90.72;
-            
+
             for(size_t k=0; k<10; k++)
             {
                 scan_cam->model.k[k] = static_cast<double>(k) / 4.0;
@@ -103,50 +103,68 @@ ScanProjectPtr dummyScanProject()
     return ret;
 }
 
-// bool compare(CameraImagePtr si1, CameraImagePtr si2)
-// {
-//     if(!si1 && si2){return false;}
-//     if(si1 && !si2){return false;}
-//     if(!si1 && !si2){return true;}
+bool compare(CameraImagePtr si1, CameraImagePtr si2)
+{
+    if(!si1 && si2){return false;}
+    if(si1 && !si2){return false;}
+    if(!si1 && !si2){return true;}
 
-//     if(!si1->extrinsics.isApprox(si2->extrinsics)){ 
-//         std::cout << "ScanImage extriniscs differ: " << std::endl;
-//         std::cout << si1->extrinsics << std::endl;
-//         std::cout << " != " << std::endl;
-//         std::cout << si2->extrinsics << std::endl;
-//         return false; 
-//     }
+    if(!si1->transformation.isApprox(si2->transformation)){ 
+        std::cout << "ScanImage transformation differ: " << std::endl;
+        std::cout << si1->transformation << std::endl;
+        std::cout << " != " << std::endl;
+        std::cout << si2->transformation << std::endl;
+        return false; 
+    }
 
-//     if(!si1->extrinsicsEstimate.isApprox(si2->extrinsicsEstimate)){ 
-//         std::cout << "ScanImage extriniscsEstimate differ: " << std::endl;
-//         std::cout << si1->extrinsicsEstimate << std::endl;
-//         std::cout << " != " << std::endl;
-//         std::cout << si2->extrinsicsEstimate << std::endl;
-//         return false; 
-//     }
+    if(!si1->extrinsicsEstimation.isApprox(si2->extrinsicsEstimation)){ 
+        std::cout << "ScanImage extrinsicsEstimation differ: " << std::endl;
+        std::cout << si1->extrinsicsEstimation << std::endl;
+        std::cout << " != " << std::endl;
+        std::cout << si2->extrinsicsEstimation << std::endl;
+        return false; 
+    }
 
-//     if(si1->imageFile != si2->imageFile)
-//     {
-//         std::cout << "ScanImage imageFile differ: " << si1->imageFile << " != " << si2->imageFile << std::endl;
-//         return false;
-//     }
+    if(si1->image.rows != si2->image.rows)
+    {
+        std::cout << "Image rows differs" << std::endl;
+        std::cout << si1->image.rows << " != " <<  si2->image.rows << std::endl;
+        return false;
+    }
 
-//     // if(cv::countNonZero(si1->image != si2->image) != 0){
-//     //     std::cout <<"ScanImage image data differ "  << std::endl;
-//     //     cv::imshow("ScanImage 1", si1->image);
-//     //     cv::imshow("ScanImage 2", si2->image);
-//     //     cv::waitKey(0);
-//     //     return false;
-//     // }
+    if(si1->image.cols != si2->image.cols)
+    {
+        std::cout << "Image cols differs" << std::endl;
+        std::cout << si1->image.cols << " != " <<  si2->image.cols << std::endl;
+        return false;
+    }
 
-//     return true;
-// }
+
+    
+    // if(cv::countNonZero(si1->image != si2->image) != 0){
+    //     std::cout <<"ScanImage image data differ "  << std::endl;
+    //     cv::imshow("ScanImage 1", si1->image);
+    //     cv::imshow("ScanImage 2", si2->image);
+    //     cv::waitKey(0);
+    //     return false;
+    // }
+
+    return true;
+}
 
 bool compare(CameraPtr sc1, CameraPtr sc2)
 {
     if(!sc1 && sc2){return false;}
     if(sc1 && !sc2){return false;}
     if(!sc1 && !sc2){return true;}
+
+    if(!sc1->transformation.isApprox(sc2->transformation)){ 
+        std::cout << "Camera transformation differ: " << std::endl;
+        std::cout << sc1->transformation << std::endl;
+        std::cout << " != " << std::endl;
+        std::cout << sc2->transformation << std::endl;
+        return false; 
+    }
 
     if(sc1->model.cx != sc2->model.cx)
     {
@@ -184,13 +202,13 @@ bool compare(CameraPtr sc1, CameraPtr sc2)
         return false;
     }
 
-    // for(size_t i=0; i<sc1->images.size(); i++)
-    // {
-    //     if(!compare(sc1->images[i], sc2->images[i]))
-    //     {
-    //         return false;
-    //     }
-    // }
+    for(size_t i=0; i<sc1->images.size(); i++)
+    {
+        if(!compare(sc1->images[i], sc2->images[i]))
+        {
+            return false;
+        }
+    }
 
     return true;
 }
@@ -238,51 +256,87 @@ bool compare(PointBufferPtr p1, PointBufferPtr p2)
     return true;
 }
 
-// bool compare(ScanPtr s1, ScanPtr s2)
-// {
-//     if(!s1 && s2){return false;}
-//     if(s1 && !s2){return false;}
-//     if(!s1 && !s2){return true;}
-    
-//     if(s1->positionNumber != s2->positionNumber){
-//         std::cout << "Scan: positionNumber differs: " << s1->positionNumber << " <-> " << s2->positionNumber << std::endl;
-//         return false;}
-//     if(s1->startTime != s2->startTime){
-//         std::cout << "Scan: startTime differs: " << s1->startTime << " <-> " << s2->startTime << std::endl;
-//         return false;}
-//     if(s1->endTime != s2->endTime){
-//         std::cout << "Scan: endTime differs: " << s1->endTime << " <-> " << s2->endTime << std::endl;
-//         return false;}
-//     if(s1->numPoints != s2->numPoints){
-//         std::cout << "Scan: numPoints differs: " << s1->numPoints << " <-> " << s2->numPoints << std::endl;
-//         return false;}
-//     if(s1->phiMin != s2->phiMin){
-//         std::cout << "Scan: phiMin differs: " << s1->phiMin << " <-> " << s2->phiMin << std::endl;
-//         return false;}
-//     if(s1->phiMax != s2->phiMax){
-//         std::cout << "Scan: phiMax differs: " << s1->phiMax << " <-> " << s2->phiMax << std::endl;
-//         return false;}
-//     if(s1->thetaMin != s2->thetaMin){
-//         std::cout << "Scan: thetaMin differs: " << s1->thetaMin << " <-> " << s2->thetaMin << std::endl;
-//         return false;}
-//     if(s1->thetaMax != s2->thetaMax){
-//         std::cout << "Scan: thetaMax differs: " << s1->thetaMax << " <-> " << s2->thetaMax << std::endl;
-//         return false;}
-    
-//     if(s1->vResolution != s2->vResolution){
-//         std::cout << "Scan: vResolution differs: " << s1->vResolution << " <-> " << s2->vResolution << std::endl;
-//         return false;}
-    
-//     if(s1->hResolution != s2->hResolution){
-//         std::cout << "Scan: hResolution differs: " << s1->hResolution << " <-> " << s2->hResolution << std::endl;
-//         return false;}
+bool compare(ScanPtr s1, ScanPtr s2)
+{
+    if(!s1 && s2){return false;}
+    if(s1 && !s2){return false;}
+    if(!s1 && !s2){return true;}
 
-//     if(!compare(s1->points, s2->points)){
-//         std::cout << "scan points differ" << std::endl;
-//         return false;}
+    if(!s1->transformation.isApprox(s2->transformation)){ 
+        std::cout << "Scan transformation differ: " << std::endl;
+        std::cout << s1->transformation << std::endl;
+        std::cout << " != " << std::endl;
+        std::cout << s2->transformation << std::endl;
+        return false; 
+    }
+    
+    if(s1->startTime != s2->startTime){
+        std::cout << "Scan: startTime differs: " << s1->startTime << " <-> " << s2->startTime << std::endl;
+        return false;}
+    if(s1->endTime != s2->endTime){
+        std::cout << "Scan: endTime differs: " << s1->endTime << " <-> " << s2->endTime << std::endl;
+        return false;}
+    if(s1->numPoints != s2->numPoints){
+        std::cout << "Scan: numPoints differs: " << s1->numPoints << " <-> " << s2->numPoints << std::endl;
+        return false;}
+    if(s1->phiMin != s2->phiMin){
+        std::cout << "Scan: phiMin differs: " << s1->phiMin << " <-> " << s2->phiMin << std::endl;
+        return false;}
+    if(s1->phiMax != s2->phiMax){
+        std::cout << "Scan: phiMax differs: " << s1->phiMax << " <-> " << s2->phiMax << std::endl;
+        return false;}
+    if(s1->thetaMin != s2->thetaMin){
+        std::cout << "Scan: thetaMin differs: " << s1->thetaMin << " <-> " << s2->thetaMin << std::endl;
+        return false;}
+    if(s1->thetaMax != s2->thetaMax){
+        std::cout << "Scan: thetaMax differs: " << s1->thetaMax << " <-> " << s2->thetaMax << std::endl;
+        return false;}
+    
+    if(s1->vResolution != s2->vResolution){
+        std::cout << "Scan: vResolution differs: " << s1->vResolution << " <-> " << s2->vResolution << std::endl;
+        return false;}
+    
+    if(s1->hResolution != s2->hResolution){
+        std::cout << "Scan: hResolution differs: " << s1->hResolution << " <-> " << s2->hResolution << std::endl;
+        return false;}
 
-//     return true;
-// }
+    if(!compare(s1->points, s2->points)){
+        std::cout << "scan points differ" << std::endl;
+        return false;}
+
+    return true;
+}
+
+bool compare(LIDARPtr l1, LIDARPtr l2)
+{
+    if(!l1 && l2){return false;}
+    if(l1 && !l2){return false;}
+    if(!l1 && !l2){return true;}
+
+    if(!l1->transformation.isApprox(l2->transformation)){ 
+        std::cout << "LIDAR transformation differ: " << std::endl;
+        std::cout << l1->transformation << std::endl;
+        std::cout << " != " << std::endl;
+        std::cout << l2->transformation << std::endl;
+        return false; 
+    }
+
+    if(l1->scans.size() != l2->scans.size())
+    {
+        std::cout << "LIDAR nscans mismatch: " <<  l1->scans.size() << " != " << l2->scans.size() << std::endl;
+        return false;
+    }
+
+    for(size_t i = 0; i<l1->scans.size(); i++)
+    {
+        if(!compare(l1->scans[i], l2->scans[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 bool compare(ScanPositionPtr sp1, ScanPositionPtr sp2)
 {
@@ -317,13 +371,13 @@ bool compare(ScanPositionPtr sp1, ScanPositionPtr sp2)
     }
 
     // scans
-    // for(size_t i=0; i<sp1->scans.size(); i++)
-    // {
-    //     if(!compare(sp1->scans[i], sp2->scans[i]))
-    //     {
-    //         return false;
-    //     }
-    // }
+    for(size_t i=0; i<sp1->lidars.size(); i++)
+    {
+        if(!compare(sp1->lidars[i], sp2->lidars[i]))
+        {
+            return false;
+        }
+    }
 
     // cams
     for(size_t i=0; i<sp1->cameras.size(); i++)
@@ -405,415 +459,6 @@ void ioTest()
     // }
 }
 
-template<typename HighFiveContainerT>
-void writeMeta(HighFiveContainerT g, YAML::Node meta, std::string prefix = "")
-{
-    
-    for(YAML::const_iterator it=meta.begin(); it != meta.end(); ++it) 
-    {   
-        std::string key = it->first.as<std::string>();
-        YAML::Node value = it->second;
-
-        // attributeName of hdf5
-        std::string attributeName = key;
-        
-        // add prefix to key
-        if(prefix != ""){ attributeName = prefix + "/" + attributeName; }
-
-        if(value.Type() == YAML::NodeType::Scalar)
-        {
-            // Write Scalar
-            // std::cout << attributeName << ": Scalar" << std::endl;
-
-            // get scalar type
-            long int lint;
-            double dbl;
-            bool bl;
-            std::string str;
-
-            if(YAML::convert<long int>::decode(value, lint))
-            {
-                hdf5util::setAttribute(g, attributeName, lint);
-            } 
-            else if(YAML::convert<double>::decode(value, dbl)) 
-            {
-                hdf5util::setAttribute(g, attributeName, dbl);
-            } 
-            else if(YAML::convert<bool>::decode(value, bl))
-            {
-                hdf5util::setAttribute(g, attributeName, bl);
-            } 
-            else if(YAML::convert<std::string>::decode(value, str))
-            {
-                hdf5util::setAttribute(g, attributeName, str);
-            }
-            else
-            {
-                std::cout << "ERROR: UNKNOWN TYPE of value " << value << std::endl;
-            }
-        } 
-        else if(value.Type() == YAML::NodeType::Sequence) 
-        {
-            // check the type with all elements
-            bool is_int = true;
-            bool is_double = true;
-            bool is_bool = true;
-            size_t nelements = 0;
-
-            for(auto it = value.begin(); it != value.end(); it++)
-            {
-                long int lint;
-                double dbl;
-                bool bl;
-                if(!YAML::convert<long int>::decode(*it, lint))
-                {
-                    is_int = false;
-                }
-
-                if(!YAML::convert<double>::decode(*it, dbl))
-                {
-                    is_double = false;
-                }
-
-                if(!YAML::convert<bool>::decode(*it, bl))
-                {
-                    is_bool = false;
-                }
-
-                nelements++;
-            }
-
-            if(is_int)
-            {
-                std::vector<long int> data;
-                for(auto it = value.begin(); it != value.end(); it++)
-                {
-                    data.push_back(it->as<long int>());
-                }
-                hdf5util::setAttributeVector(g, attributeName, data);
-            }
-            else if(is_double)
-            {
-                std::vector<double> data;
-                for(auto it = value.begin(); it != value.end(); it++)
-                {
-                    data.push_back(it->as<double>());
-                }
-                hdf5util::setAttributeVector(g, attributeName, data);
-            }
-            else if(is_bool)
-            {
-                // Bool vector is special
-                // https://stackoverflow.com/questions/51352045/void-value-not-ignored-as-it-ought-to-be-on-non-void-function
-                // need workaround
-
-                // hdf5 stores bool arrays in uint8 anyway
-                // std::vector<uint8_t> data;
-                // for(auto it = value.begin(); it != value.end(); it++)
-                // {
-                //     data.push_back(static_cast<uint8_t>(it->as<bool>()));
-                // }
-                // hdf5util::setAttributeVector(g, attributeName, data);
-
-                boost::shared_array<bool> data(new bool[nelements]);
-                size_t i = 0;
-                for(auto it = value.begin(); it != value.end(); it++, i++)
-                {
-                    data[i] = it->as<bool>();
-                }
-                hdf5util::setAttributeArray(g, attributeName, data, nelements);
-
-            } else {
-                std::cout << "Tried to write YAML list of unknown typed elements: " << *it << std::endl;
-            }
-        } 
-        else if(value.Type() == YAML::NodeType::Map) 
-        {
-            // check if Map is known type
-            if(YAML::isMatrix(value))
-            {
-                Eigen::MatrixXd mat;
-                if(YAML::convert<Eigen::MatrixXd>::decode(value, mat))
-                {
-                    hdf5util::setAttributeMatrix(g, attributeName, mat);
-                } else {
-                    std::cout << "ERROR matrix" << std::endl;
-                }
-            } else {
-                writeMeta(g, value, attributeName);
-            }
-        } 
-        else 
-        {
-            std::cout << attributeName << ": UNKNOWN -> Error" << std::endl;
-            std::cout << value << std::endl;
-        }
-    }
-}
-
-template<typename HighFiveContainerT>
-YAML::Node readMeta(HighFiveContainerT g)
-{
-    YAML::Node ret = YAML::Load("");
-
-    for(std::string attributeName : g.listAttributeNames())
-    {
-        std::vector<YAML::Node> yamlNodes;
-        std::vector<std::string> yamlNames = hdf5util::splitGroupNames(attributeName);
-
-        auto node_iter = ret;
-        yamlNodes.push_back(node_iter);
-        for(size_t i=0; i<yamlNames.size()-1; i++)
-        {
-            YAML::Node tmp = yamlNodes[i][yamlNames[i]];
-            yamlNodes.push_back(tmp);
-        }
-
-        YAML::Node back = yamlNodes.back();
-
-        HighFive::Attribute h5attr = g.getAttribute(attributeName);
-        std::vector<size_t> dims = h5attr.getSpace().getDimensions();
-        HighFive::DataType h5type = h5attr.getDataType();
-        if(dims.size() == 0)
-        {
-            // Bool problems
-            if(h5type == HighFive::AtomicType<bool>())
-            {
-                back[yamlNames.back()] = *hdf5util::getAttribute<bool>(g, attributeName);
-            }
-            else if(h5type == HighFive::AtomicType<char>())
-            {
-                back[yamlNames.back()] = *hdf5util::getAttribute<char>(g, attributeName);
-            } 
-            else if(h5type == HighFive::AtomicType<unsigned char>())
-            {
-                back[yamlNames.back()] = *hdf5util::getAttribute<unsigned char>(g, attributeName);
-            }
-            else if(h5type == HighFive::AtomicType<short>())
-            {
-                back[yamlNames.back()] = *hdf5util::getAttribute<short>(g, attributeName);
-            }
-            else if(h5type == HighFive::AtomicType<unsigned short>())
-            {   
-                back[yamlNames.back()] = *hdf5util::getAttribute<unsigned short>(g, attributeName);
-            }
-            else if(h5type == HighFive::AtomicType<int>())
-            {   
-                back[yamlNames.back()] = *hdf5util::getAttribute<int>(g, attributeName);
-            }
-            else if(h5type == HighFive::AtomicType<unsigned int>())
-            {   
-                back[yamlNames.back()] = *hdf5util::getAttribute<unsigned int>(g, attributeName);
-            }
-            else if(h5type == HighFive::AtomicType<long int>())
-            {   
-                back[yamlNames.back()] = *hdf5util::getAttribute<long int>(g, attributeName);
-            }
-            else if(h5type == HighFive::AtomicType<unsigned long int>())
-            {   
-                back[yamlNames.back()] = *hdf5util::getAttribute<unsigned long int>(g, attributeName);
-            }
-            else if(h5type == HighFive::AtomicType<float>())
-            {   
-                back[yamlNames.back()] = *hdf5util::getAttribute<float>(g, attributeName);
-            }
-            else if(h5type == HighFive::AtomicType<double>())
-            {   
-                back[yamlNames.back()] = *hdf5util::getAttribute<double>(g, attributeName);
-            }
-            else if(h5type == HighFive::AtomicType<bool>())
-            {   
-                back[yamlNames.back()] = *hdf5util::getAttribute<bool>(g, attributeName);
-            } 
-            else if(h5type == HighFive::AtomicType<std::string>()) 
-            {
-                back[yamlNames.back()] = *hdf5util::getAttribute<std::string>(g, attributeName);
-            } 
-            else {
-                std::cout << h5type.string() << ": type not implemented. " << std::endl;
-            }
-        }
-        else if(dims.size() == 1)
-        {
-            back[yamlNames.back()] = YAML::Load("[]");
-            // Sequence
-            if(h5type == HighFive::AtomicType<bool>())
-            {
-                std::vector<uint8_t> data = *hdf5util::getAttributeVector<uint8_t>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(static_cast<bool>(value));
-                }
-            }
-            else if(h5type == HighFive::AtomicType<char>())
-            {
-                std::vector<char> data = *hdf5util::getAttributeVector<char>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(value);
-                }
-            } 
-            else if(h5type == HighFive::AtomicType<unsigned char>())
-            {
-                std::vector<unsigned char> data = *hdf5util::getAttributeVector<unsigned char>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(value);
-                }
-            }
-            else if(h5type == HighFive::AtomicType<short>())
-            {
-                std::vector<short> data = *hdf5util::getAttributeVector<short>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(value);
-                }
-            }
-            else if(h5type == HighFive::AtomicType<unsigned short>())
-            {   
-                std::vector<unsigned short> data = *hdf5util::getAttributeVector<unsigned short>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(value);
-                }
-            }
-            else if(h5type == HighFive::AtomicType<int>())
-            {   
-                std::vector<int> data = *hdf5util::getAttributeVector<int>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(value);
-                }
-            }
-            else if(h5type == HighFive::AtomicType<unsigned int>())
-            {   
-                std::vector<unsigned int> data = *hdf5util::getAttributeVector<unsigned int>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(value);
-                }
-            }
-            else if(h5type == HighFive::AtomicType<long int>())
-            {   
-                std::vector<long int> data = *hdf5util::getAttributeVector<long int>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(value);
-                }
-            }
-            else if(h5type == HighFive::AtomicType<unsigned long int>())
-            {   
-                std::vector<unsigned long int> data = *hdf5util::getAttributeVector<unsigned long int>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(value);
-                }
-            }
-            else if(h5type == HighFive::AtomicType<float>())
-            {   
-                std::vector<float> data = *hdf5util::getAttributeVector<float>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(value);
-                }
-            }
-            else if(h5type == HighFive::AtomicType<double>())
-            {   
-                std::vector<double> data = *hdf5util::getAttributeVector<double>(g, attributeName);
-                for(auto value : data)
-                {
-                    back[yamlNames.back()].push_back(value);
-                }
-            } 
-            else {
-                std::cout << h5type.string() << ": type not implemented. " << std::endl;
-            }
-
-        }
-        else if(dims.size() == 2)
-        {
-            // Matrix
-            Eigen::MatrixXd mat = *hdf5util::getAttributeMatrix(g, attributeName);
-            back[yamlNames.back()] = mat;
-        }
-
-        ret = yamlNodes.front();
-    }
-
-    return ret;
-}
-
-void hdf5MetaTest()
-{
-    std::string filename = "test.h5";
-    auto h5file = hdf5util::open(filename);
-
-    HighFive::Group g = hdf5util::getGroup(h5file, "scanpos0");
-    std::vector<size_t> dims = {2000, 3};
-    HighFive::DataSpace ds(dims);
-
-    HighFive::DataSetCreateProps properties;
-    auto d = hdf5util::createDataset<float>(g, "mydata", ds,  properties);
-    
-    Transformd mytransform = Transformd::Identity();
-    mytransform(0,0) = 2.0;
-
-
-    YAML::Node meta;
-    meta["transform"] = mytransform;
-    meta["type"] = "ScanPosition";
-    meta["kind"] = "ScanPosition";
-
-    YAML::Node boollist = YAML::Load("[]");
-    boollist.push_back(true);
-    boollist.push_back(false);
-    boollist.push_back(false);
-    meta["boollist"] = boollist;
-
-    YAML::Node config;
-    config["pose"] = mytransform;
-    config["temp"] = 2.0;
-    config["bla"] = "hello";
-
-
-    YAML::Node distortion = YAML::Load("[]");
-    for(size_t i = 0; i < 10; i++)
-    {
-        distortion.push_back(static_cast<double>(i) / 2.0);
-    }
-    config["distortion"] = distortion;
-
-    YAML::Node config2;
-    config2["int0"] = 0; 
-    config2["int"] = static_cast<long unsigned int>(10);
-    config2["uint"] = static_cast<long int>(-10);
-    config2["name"] = "Alex";
-    config2["float"] = static_cast<float>(5.5);
-    config2["double"] = static_cast<double>(2.2);
-    config2["bool"] = false;
-
-    config["conf2"] = config2;
-    meta["config"] = config;
-
-    std::cout << "Write Meta to group" << std::endl;
-    hdf5util::setAttributeMeta(g, meta);
-    std::cout << "Write Meta to dataset" << std::endl;
-    hdf5util::setAttributeMeta(*d, meta);
-
-    std::cout << "------------" << std::endl;
-
-    std::cout << "Read Meta from group" << std::endl;
-    YAML::Node meta_loaded = hdf5util::getAttributeMeta(g);
-    std::cout << "Loaded:" << std::endl;
-    std::cout << meta_loaded << std::endl;
-
-    std::cout << "------------" << std::endl;
-    std::cout << "Read Meta from dataset" << std::endl;
-    YAML::Node meta_loaded2 = hdf5util::getAttributeMeta(*d);
-    std::cout << "Loaded: " << std::endl;
-    std::cout << meta_loaded2 << std::endl;
-}
-
 void hdf5IOTest()
 {
     std::string filename = "scan_project.h5";
@@ -825,12 +470,51 @@ void hdf5IOTest()
     auto sp = dummyScanProject();
     hdf5io.ScanProjectIO::save(sp);
 
+    auto sp_loaded = hdf5io.ScanProjectIO::load();
+    if(sp_loaded)
+    {
+        std::cout << "Loaded scan project!" << std::endl;
+        if(compare(sp, sp_loaded))
+        {
+            std::cout <<  "IO: success" << std::endl;
+        }  else {
+            std::cout << "IO: fail" << std::endl; 
+        }
+    }
+
 }
+
+// void metaHdf5Test()
+// {
+//     std::string filename = "scan_project_test.h5";
+
+//     auto h5file = hdf5util::open(filename);
+    
+//     // std::string metaQuery = "raw/00000000/lidar_00000000/meta.yaml";
+//     std::string metaGroup = "00000000";
+
+//     HighFive::Group g = hdf5util::getGroup(h5file, metaGroup, true);
+    
+//     YAML::Node meta;
+//     Camera c;
+//     meta = c;
+//     hdf5util::setAttributeMeta(g, meta);
+
+//     // YAML::Node meta = hdf5util::getAttributeMeta(g);
+//     // std::cout << meta <<  std::endl;
+
+//     YAML::Node meta_loaded = hdf5util::getAttributeMeta(g);
+//     std::cout << meta_loaded << std::endl;
+// }
 
 int main(int argc, char** argv)
 {
     hdf5IOTest();
     return 0;
+
+    // metaHdf5Test();
+
+    // return  0;
 
     // ioTest();
     // return 0;

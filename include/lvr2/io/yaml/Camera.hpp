@@ -85,16 +85,15 @@ struct convert<lvr2::Camera>
         if(!node["kind"])
         {
             std::cout << lvr2::timestamp << "[YAML::convert<Camera> - decode] "
-                     << "Sensor has no key 'kind'" << std::endl;
-            return false; 
-        }
-
-        if(node["kind"].as<std::string>() != lvr2::Camera::kind)
-        {
-            std::cout << lvr2::timestamp << "[YAML::convert<Camera> - decode] " 
-                        << "Nodes kind '" << node["kind"].as<std::string>()
-                        << "' is not '" <<  lvr2::Camera::kind << "'" << std::endl; 
-            return false;
+                     << "WARNING: Sensor has no key 'kind'. Assuming this sensor to by of kind "  << lvr2::Camera::kind << std::endl;
+        } else {
+            if(node["kind"].as<std::string>() != lvr2::Camera::kind)
+            {
+                std::cout << lvr2::timestamp << "[YAML::convert<Camera> - decode] " 
+                            << "Nodes kind '" << node["kind"].as<std::string>()
+                            << "' is not '" <<  lvr2::Camera::kind << "'" << std::endl; 
+                return false;
+            }
         }
 
         if(node["name"])

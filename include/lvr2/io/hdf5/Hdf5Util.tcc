@@ -818,15 +818,15 @@ template<typename HT>
 YAML::Node getAttributeMeta(
     const HT& g)
 {
-    YAML::Node ret = YAML::Load("");
+    YAML::Node ret(YAML::NodeType::Map);
 
     for(std::string attributeName : g.listAttributeNames())
     {
         std::vector<YAML::Node> yamlNodes;
         std::vector<std::string> yamlNames = splitGroupNames(attributeName);
 
-        auto node_iter = ret;
-        yamlNodes.push_back(node_iter);
+        // auto node_iter = ret;
+        yamlNodes.push_back(ret);
         for(size_t i=0; i<yamlNames.size()-1; i++)
         {
             YAML::Node tmp = yamlNodes[i][yamlNames[i]];
@@ -885,10 +885,6 @@ YAML::Node getAttributeMeta(
             {   
                 back[yamlNames.back()] = *getAttribute<double>(g, attributeName);
             }
-            else if(h5type == HighFive::AtomicType<bool>())
-            {   
-                back[yamlNames.back()] = *getAttribute<bool>(g, attributeName);
-            } 
             else if(h5type == HighFive::AtomicType<std::string>()) 
             {
                 back[yamlNames.back()] = *getAttribute<std::string>(g, attributeName);

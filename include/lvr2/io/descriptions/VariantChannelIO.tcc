@@ -151,23 +151,16 @@ boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
     YAML::Node node;
     m_featureBase->m_kernel->loadMetaYAML(groupName, datasetName, node);
 
-    if(!node["sensor_type"])
+    lvr2::MultiChannel mc;
+    if(!YAML::convert<lvr2::MultiChannel>::decode(node, mc))
     {
-        std::cout << timestamp << "[VariantChannelIO - load] Could not find 'sensor_type' key in YAML" << std::endl;
+        // fail
+        std::cout << timestamp << "[VariantChannelIO - load] Tried to load Meta information that does not suit to VariantChannel types" << std::endl;
         return ret;
     }
 
-    if(node["sensor_type"].as<std::string>() != "Channel")
-    {
-        std::cout << timestamp << "[VariantChannelIO - load] sensor_type: '" << node["sensor_type"].as<std::string>() << "' != 'Channel'" << std::endl;
-        return ret;
-    }
-
-    std::string data_type = node["channel_type"].as<std::string>();
-
-
-    // size_t data_type = node["channel_type"].as<size_t>();
-
+    std::string data_type = node["data_type"].as<std::string>();
+    
     // load channel with correct datatype
     VariantChannelT vchannel;
     if(dynamicLoad<Derived, VariantChannelT>(

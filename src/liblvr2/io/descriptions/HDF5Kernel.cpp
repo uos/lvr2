@@ -182,15 +182,8 @@ void HDF5Kernel::saveMetaYAML(
     const YAML::Node &node) const
 {
     // std::cout << "[HDF5Kernel - saveMetaYAML] " << group << ", " << metaName << std::endl;
-    std::string group = group_;
-    std::string container = metaName;
-
-    if(metaName == "meta.yaml" || metaName == "")
-    {
-        container = "";
-    }
-
-    std::tie(group, container) = hdf5util::validateGroupDataset(group, container);
+    std::string group, container;
+    std::tie(group, container) = hdf5util::validateGroupDataset(group_, metaName);
 
     // std::cout << "[HDF5Kernel - saveMetaYAML] checking " << group << ", " << container << std::endl;
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
@@ -337,7 +330,13 @@ void HDF5Kernel::loadMetaYAML(
     std::string group, container;
     std::tie(group, container) = hdf5util::validateGroupDataset(group_, container_);
 
-    // std::cout << "[HDF5Kernel - loadMetaYAML]: Open Meta YAML '" << group << " , " << container << "'" << std::endl;
+    // if(container == "meta.yaml")
+    // {
+    //     container = "";
+    //     std::tie(group, container) = hdf5util::validateGroupDataset(group, container);
+    // }
+
+    std::cout << "[HDF5Kernel - loadMetaYAML]: Open Meta YAML '" << group << " , " << container << "'" << std::endl;
     
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
     if(hg.isValid())
