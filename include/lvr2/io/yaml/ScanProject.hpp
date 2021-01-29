@@ -28,7 +28,7 @@ struct convert<lvr2::ScanProject>
         Node node;
         
         node["type"] = lvr2::ScanProject::type;
-        node["kind"] = boost::typeindex::type_id<lvr2::ScanProject>().pretty_name();
+        // node["kind"] = boost::typeindex::type_id<lvr2::ScanProject>().pretty_name();
         node["crs"] =  scanProj.crs;
         node["coordinate_system"] = scanProj.coordinateSystem;
         node["unit"] = scanProj.unit;

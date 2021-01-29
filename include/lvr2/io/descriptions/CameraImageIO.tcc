@@ -9,11 +9,11 @@ void CameraImageIO<FeatureBase>::save(
     const size_t& imgNr,
     CameraImagePtr imgPtr) const
 {
-    std::cout << "Saving Image " << imgNr << std::endl;
-
     auto D = m_featureBase->m_description;
     Description d = D->cameraImage(
         D->camera( D->position(scanPosNr), camNr), imgNr);
+
+    m_imageIO->save(*d.groupName, *d.dataSetName, imgPtr->image);
 
     if(d.metaName)
     {
@@ -21,8 +21,6 @@ void CameraImageIO<FeatureBase>::save(
         node = *imgPtr;
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
     }
-
-    m_imageIO->save(*d.groupName, *d.dataSetName, imgPtr->image);
 }
 
 template <typename FeatureBase>

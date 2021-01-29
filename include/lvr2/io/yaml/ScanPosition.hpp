@@ -26,8 +26,8 @@ struct convert<lvr2::ScanPosition>
         Node node;
         
         node["type"] = lvr2::ScanPosition::type;
-        node["kind"] = boost::typeindex::type_id<lvr2::ScanPosition>().pretty_name();
-        node["pose_estimation"] = scanPos.pose_estimation;
+        // node["kind"] = boost::typeindex::type_id<lvr2::ScanPosition>().pretty_name();
+        node["pose_estimation"] = scanPos.poseEstimation;
         node["transformation"] = scanPos.transformation;
         node["timestamp"] = scanPos.timestamp;
 
@@ -50,9 +50,9 @@ struct convert<lvr2::ScanPosition>
         
         if(node["pose_estimation"])
         {
-            scanPos.pose_estimation = node["pose_estimation"].as<lvr2::Transformd>();
+            scanPos.poseEstimation = node["pose_estimation"].as<lvr2::Transformd>();
         } else {
-            scanPos.pose_estimation = lvr2::Transformd::Identity();
+            scanPos.poseEstimation = lvr2::Transformd::Identity();
         }
         
         if(node["transformation"])

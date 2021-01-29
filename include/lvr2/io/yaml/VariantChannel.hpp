@@ -22,23 +22,34 @@ struct convert<VChannelT>
         
         Node node;
 
-        node["sensor_type"] = "Channel";
-        node["channel_type"] = vchannel.typeName();
-        node["dims"] = Load("[]");
-        node["dims"].push_back(vchannel.numElements());
-        node["dims"].push_back(vchannel.width());
+        std::string kind = "basic";
+
+        node["type"] = "Channel";
+        node["data_type"] = vchannel.typeName();
+
+        node["kind"] = kind;
+        
+        if(kind == "custom")
+        {
+            // for custom 
+            node["stored_type"] = lvr2::Channel<unsigned char>::typeName();
+        }
+
+        node["shape"] = Load("[]");
+        node["shape"].push_back(vchannel.numElements());
+        node["shape"].push_back(vchannel.width());
 
         return node;
     }
 
     static bool decode(const Node& node, VChannelT& vchannel) 
     {
-        if(node["sensor_type"].as<std::string>() != "Channel")
+        if(node["type"].as<std::string>() != "Channel")
         {
             return false;
         }
 
-        if(node["channel_type"].as<std::string>() != vchannel.typeName())
+        if(node["data_type"].as<std::string>() != vchannel.typeName())
         {
             return false;
         }

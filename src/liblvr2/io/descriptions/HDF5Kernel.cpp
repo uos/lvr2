@@ -8,9 +8,7 @@ namespace lvr2
 
 HDF5Kernel::HDF5Kernel(const std::string& rootFile) : FileKernel(rootFile)
 {
-    // std::cout << "[HDF5Kernel - HDF5Kernel]: Open File" << std::endl;
     m_hdf5File = hdf5util::open(rootFile);
-    // m_metaDescription = new HDF5MetaDescriptionV2;
 }
 
 void HDF5Kernel::saveMeshBuffer(
@@ -194,12 +192,12 @@ void HDF5Kernel::saveMetaYAML(
 
     std::tie(group, container) = hdf5util::validateGroupDataset(group, container);
 
-    std::cout << "[HDF5Kernel - saveMetaYAML] checking " << group << ", " << container << std::endl;
+    // std::cout << "[HDF5Kernel - saveMetaYAML] checking " << group << ", " << container << std::endl;
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
     
     if(hg.isValid())
     {
-        std::cout << "[HDF5Kernel - saveMetaYAML] Save META to " << group << ", " << container << std::endl;
+        // std::cout << "[HDF5Kernel - saveMetaYAML] Save META to " << group << ", " << container << std::endl;
         if(hg.exist(container))
         {
             HighFive::ObjectType h5type = hg.getObjectType(container);

@@ -26,7 +26,7 @@ void ScanPositionIO< FeatureBase>::save(
     // Save all scan camera sensors
     for(size_t i = 0; i < scanPositionPtr->cameras.size(); i++)
     {
-        std::cout << " [ScanPositionIO]: Writing camera " << i << std::endl;
+        // std::cout << " [ScanPositionIO]: Writing camera " << i << std::endl;
         m_cameraIO->saveCamera(scanPosNo, i, scanPositionPtr->cameras[i]);
     }
     
@@ -36,7 +36,7 @@ void ScanPositionIO< FeatureBase>::save(
     //     m_hyperspectralCameraIO->saveHyperspectralCamera(scanPosNo, scanPositionPtr->hyperspectralCamera);
     // }
 
-    std::cout << "[ScanPositionIO - save] Write Meta." << std::endl;
+    // std::cout << "[ScanPositionIO - save] Write Meta." << std::endl;
     // Save meta information
     if(d.metaName)
     {

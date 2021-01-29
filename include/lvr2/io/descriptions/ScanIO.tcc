@@ -17,8 +17,8 @@ void ScanIO<FeatureBase>::save(
     Description lidar_descr = Dgen->lidar(pos_descr, sensorNo);    
     Description d = Dgen->scan(lidar_descr, scanNo);
 
-    std::cout << "[ScanIO] Scan " << scanPosNo << "," << scanNo <<  " - Description: " << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanIO] Scan " << scanPosNo << "," << scanNo <<  " - Description: " << std::endl;
+    // std::cout << d << std::endl;
 
     if(d.metaName)
     {

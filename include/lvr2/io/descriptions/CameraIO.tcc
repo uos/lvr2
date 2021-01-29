@@ -23,16 +23,17 @@ void CameraIO<FeatureBase>::save(
         D->position(scanPosNo),
         scanCamNo);
 
+    for(size_t scanImageNo = 0; scanImageNo < cameraPtr->images.size(); scanImageNo++)
+    {
+        m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, cameraPtr->images[scanImageNo]);
+    }
+
+    // writing meta
     if(d.metaName)
     {
         YAML::Node node;
         node = *cameraPtr;
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
-    }
-
-    for(size_t scanImageNo = 0; scanImageNo < cameraPtr->images.size(); scanImageNo++)
-    {
-        m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, cameraPtr->images[scanImageNo]);
     }
 }
 

@@ -1,6 +1,6 @@
 
-#ifndef LVR2_IO_YAML_SCANIMAGE_IO_HPP
-#define LVR2_IO_YAML_SCANIMAGE_IO_HPP
+#ifndef LVR2_IO_YAML_CAMERAIMAGE_IO_HPP
+#define LVR2_IO_YAML_CAMERAIMAGE_IO_HPP
 
 #include <sstream>
 
@@ -20,8 +20,8 @@ struct convert<lvr2::CameraImage>
         Node node;
 
         node["type"] = lvr2::CameraImage::type;
-        node["kind"] = 
-        node["extrinsics"] = cameraImage.extrinsics;
+        node["kind"] = lvr2::CameraImage::kind;
+        node["transformation"] = cameraImage.transformation;
         node["extrinsics_estimation"] = cameraImage.extrinsicsEstimation;
         node["width"] = cameraImage.image.cols;
         node["height"] = cameraImage.image.rows;
@@ -49,13 +49,13 @@ struct convert<lvr2::CameraImage>
         
     
         // Get fields
-        if(node["extrinsics"])
+        if(node["transformation"])
         {
-            scanImage.extrinsics = node["extrinsics"].as<lvr2::Extrinsicsd>();
+            scanImage.transformation = node["transformation"].as<lvr2::Transformd>();
         }
         else
         {
-            scanImage.extrinsics = lvr2::Extrinsicsd::Identity();
+            scanImage.transformation = lvr2::Transformd::Identity();
         }
 
         if(node["extrinsics_estimation"])
@@ -85,5 +85,5 @@ struct convert<lvr2::CameraImage>
 
 }  // namespace YAML
 
-#endif // LVR2_IO_YAML_PINHOLECAMERAMODEL_IO_HPP
+#endif // LVR2_IO_YAML_CAMERAIMAGE_IO_HPP
 

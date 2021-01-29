@@ -65,6 +65,11 @@ struct SensorDataType {
 };
 
 struct Transformable {
+    /// Transformation to the upper frame:
+    /// ScanProject: to World (GPS)
+    /// ScanPosition: to ScanProject
+    /// Sensor: to ScanPosition
+    /// SensorData: to Sensor
     Transformd transformation;
 };
 
@@ -108,15 +113,15 @@ struct ScanProject : ScanProjectType, Transformable
     //// HIERARCHY END
 };
 
-struct ScanPosition : public ScanPositionType, Transformable
+struct ScanPosition : ScanPositionType, Transformable
 {
     /// META BEGIN
 
     /// Estimated pose relativ to upper coordinate system
-    Transformd                      pose_estimation;
+    Transformd                      poseEstimation;
 
     /// Final registered position in project coordinates (relative to upper coordinate system: e.g. ScanProject)
-    Transformd                      transformation;
+    // Transformd                      transformation;
 
     /// Timestamp when this position was created
     double                          timestamp = 0.0;
@@ -127,10 +132,10 @@ struct ScanPosition : public ScanPositionType, Transformable
     // Sensors applied to a ScanPosition
 
     // 1. LIDARs
-    std::vector<LIDARPtr>            lidars;
+    std::vector<LIDARPtr>               lidars;
 
     /// 2. Cameras
-    std::vector<CameraPtr>      cameras;
+    std::vector<CameraPtr>              cameras;
 
     //// HIERARCHY END
 };
@@ -144,9 +149,11 @@ struct ScanPosition : public ScanPositionType, Transformable
  ****************************************************************************/
 
 // Flag Struct
-struct LIDAR : public SensorType, Transformable
+struct LIDAR : SensorType, Transformable
 {
     //// META BEGIN
+    // TODO: check boost type_info
+    static constexpr char           kind[] = "LIDAR";
     //// META END
 
     //// HIERARCHY BEGIN
@@ -163,21 +170,27 @@ struct LIDAR : public SensorType, Transformable
  *          (extrinsic matrix) with respect to the laser scanner
  * 
  ****************************************************************************/
-struct Camera : public SensorType, Transformable
+struct Camera : SensorType, Transformable
 {
+    //// META BEGIN
+    // TODO: check boost::typeindex<>::pretty_name (contains lvr2 as namespace: "lvr2::Camera")
+    static constexpr char           kind[] = "Camera";
     /// Pinhole camera model
     PinholeModeld                     model;
-
+    //// META END
+    //// HIERARCHY BEGIN
     /// Pointer to a set of images taken at a scan position
     std::vector<CameraImagePtr>       images;
+    //// HIERARCHY END
 };
 
 /*****************************************************************************
  * @brief Struct to represent a scan within a scan project
  ****************************************************************************/
-struct Scan : public SensorDataType, Transformable
+struct Scan : SensorDataType, Transformable
 {
     //// META BEGIN
+    static constexpr char           kind[] = "Scan";
 
     /// Dynamic transformation of this sensor data
     /// Example 1:
@@ -233,13 +246,14 @@ struct Scan : public SensorDataType, Transformable
  * 
  *****************************************************************************/
 
-struct CameraImage : public SensorDataType
+struct CameraImage : SensorDataType, Transformable
 {
+    static constexpr char           kind[] = "CameraImage";
     /// Extrinsics estimate
     Extrinsicsd                     extrinsicsEstimation;
 
-    /// Extrinsics 
-    Extrinsicsd                     extrinsics;
+    // /// Extrinsics : Is not transformation. See Transformable
+    // Extrinsicsd                     extrinsics;
 
     /// OpenCV representation
     cv::Mat                         image;

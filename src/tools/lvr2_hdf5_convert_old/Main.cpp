@@ -70,15 +70,20 @@ ScanProjectPtr dummyScanProject()
             CameraPtr scan_cam(new Camera);
             scan_cam->model.distortionModel = "opencv";
             scan_cam->model.k.resize(10);
+            scan_cam->model.cx = 100.2;
+            scan_cam->model.cy = 50.5;
+            scan_cam->model.fx = 120.99;
+            scan_cam->model.fy = 90.72;
+            
             for(size_t k=0; k<10; k++)
             {
-                scan_cam->model.k[k] = static_cast<double>(k);
+                scan_cam->model.k[k] = static_cast<double>(k) / 4.0;
             }
             
             for(size_t k=0; k<10; k++)
             {
                 CameraImagePtr si = synthetic::genLVRImage();
-                si->extrinsics = Extrinsicsd::Identity() * static_cast<double>(k);
+                si->transformation = Transformd::Identity() * static_cast<double>(k);
                 si->extrinsicsEstimation = Extrinsicsd::Identity() / static_cast<double>(k + 1);
                 scan_cam->images.push_back(si);
             }
@@ -295,8 +300,8 @@ bool compare(ScanPositionPtr sp1, ScanPositionPtr sp2)
         return false; 
     }
     // pose
-    if(!sp1->pose_estimation.isApprox(sp2->pose_estimation)){ 
-        std::cout <<  "ScanPosition pose_estimation differs" << std::endl;
+    if(!sp1->poseEstimation.isApprox(sp2->poseEstimation)){ 
+        std::cout <<  "ScanPosition poseEstimation differs" << std::endl;
         return false; 
     }
     if(!sp1->transformation.isApprox(sp2->transformation)){ 
