@@ -95,6 +95,9 @@ public:
     void setModels(std::vector<ModelBridgePtr> models);
     void setVisibility(bool visible);
 
+    void showScanPosition(vtkSmartPointer<vtkRenderer> renderer);
+    void hideScanPosition(vtkSmartPointer<vtkRenderer> renderer);
+
 private:
     vtkSmartPointer<vtkActor> m_cylinderActor;
     std::vector<ModelBridgePtr> models;

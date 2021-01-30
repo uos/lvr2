@@ -257,6 +257,8 @@ public Q_SLOTS:
     void removeCamPosition();
     void showCamPosition();
     void showCamTrajectory();
+    void showScanPosition();
+    void hideScanPosition();
 
     /// Shows a Popup Dialog with Information about a Point
     void showPointInfoDialog();
@@ -413,6 +415,8 @@ private:
 
     QAction*                            m_actionShowImage;
     QAction*                            m_actionReductionAlgorithm;
+    QAction*                            m_actionShowScanPosition;
+    QAction*                            m_actionHideScanPosition;
     QAction*                            m_actionShowCamPosition;
     QAction*                            m_actionShowCamTrajectory;
     QAction*                            m_actionRemoveCamPosition;

@@ -7,7 +7,15 @@ namespace lvr2
 
 LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) : m_scanposition(position)
 {
-
+    Eigen::Vector3d pos;
+    Eigen::Vector3d angles;
+    matrixToPose(m_scanposition->registration, pos, angles);
+    m_pose.x = pos[0];
+    m_pose.y = pos[1];
+    m_pose.z = pos[2];
+    m_pose.r = angles[0];
+    m_pose.t = angles[1];
+    m_pose.p = angles[2];
     for(auto scan : position->scans)
     {
             ModelPtr model(new Model);
@@ -17,11 +25,62 @@ LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) : m_scanp
             model->m_pointCloud = scan->points;
             }
             ModelBridgePtr modelBridge(new LVRModelBridge(model));
+            modelBridge->setPose(m_pose);
             models.push_back(modelBridge);
     }        
+}
+
+LVRScanPositionBridge::LVRScanPositionBridge(const LVRScanPositionBridge& b)
+{
+    m_scanposition = b.m_scanposition;
+    models = b.models;
+    m_pose = b.m_pose;
+}
+
+void LVRScanPositionBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
+{
+    for(auto model : models)
+    {
+        if(model->validPointBridge())
+        {
+            renderer->AddActor(model->getPointBridge()->getPointCloudActor());
+        }
+    }
+}
+
+void LVRScanPositionBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
+{
+    for(auto model : models)
+    {
+        if(model->validPointBridge()){
+            renderer->RemoveActor(model->getPointBridge()->getPointCloudActor());
+        }
+    }
+}
+
+void LVRScanPositionBridge::setModels(std::vector<ModelBridgePtr> newModels)
+{
+    models = newModels;
+}
+
+void LVRScanPositionBridge::setVisibility(bool visible)
+{
+    for(auto model : models)
+    {
+        model->setVisibility(visible);
+    }
+}
+
+
+void LVRScanPositionBridge::showScanPosition(vtkSmartPointer<vtkRenderer> renderer)
+{
+    if(m_cylinderActor != nullptr)
+    {
+        return;
+    }
     Eigen::Vector3d pos;
     Eigen::Vector3d angles;
-    matrixToPose(position->registration, pos, angles);
+    matrixToPose(m_scanposition->registration, pos, angles);
     m_pose.x = pos[0];
     m_pose.y = pos[1];
     m_pose.z = pos[2];
@@ -41,52 +100,14 @@ LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) : m_scanp
     m_cylinderActor = vtkSmartPointer<vtkActor>::New();
     m_cylinderActor->SetMapper(mapper);
     m_cylinderActor->GetProperty()->SetColor(250.0/255.0, 128.0/255.0, 114.0/255.0);
-
+    renderer->AddActor(m_cylinderActor);
 }
 
-LVRScanPositionBridge::LVRScanPositionBridge(const LVRScanPositionBridge& b)
+void LVRScanPositionBridge::hideScanPosition(vtkSmartPointer<vtkRenderer> renderer)
 {
-    m_scanposition = b.m_scanposition;
-    models = b.models;
-    m_pose = b.m_pose;
+    renderer->RemoveActor(m_cylinderActor);
+    m_cylinderActor = nullptr;
 }
-
-void LVRScanPositionBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
-{
-    for(auto model : models)
-    {
-        if(model->validPointBridge())
-        {
-            renderer->AddActor(model->getPointBridge()->getPointCloudActor());
-            renderer->AddActor(m_cylinderActor);
-        }
-    }
-}
-
-void LVRScanPositionBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
-{
-    for(auto model : models)
-    {
-        if(model->validPointBridge()){
-            renderer->RemoveActor(model->getPointBridge()->getPointCloudActor());
-            renderer->RemoveActor(m_cylinderActor);
-        }
-    }
-}
-
-void LVRScanPositionBridge::setModels(std::vector<ModelBridgePtr> newModels)
-{
-    models = newModels;
-}
-
-void LVRScanPositionBridge::setVisibility(bool visible)
-{
-    for(auto model : models)
-    {
-        model->setVisibility(visible);
-    }
-}
-
 
 Pose LVRScanPositionBridge::getPose()
 {

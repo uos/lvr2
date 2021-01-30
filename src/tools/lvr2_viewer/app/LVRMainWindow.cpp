@@ -154,6 +154,8 @@ LVRMainWindow::LVRMainWindow()
     m_actionSetViewToCamera = new QAction("Set view to camera", this);
 
     m_actionReductionAlgorithm = new QAction("Change ReductionAlgorithm", this);
+    m_actionShowScanPosition = new QAction("Show position of scanner");
+    m_actionHideScanPosition = new QAction("Hide position of scanner");
     m_actionShowCamPosition = new QAction("Show Camera Position", this);
     m_actionShowCamTrajectory = new QAction("Show Camera Trajectory", this);
     m_actionRemoveCamPosition = new QAction("Remove Camera Position", this);
@@ -163,6 +165,8 @@ LVRMainWindow::LVRMainWindow()
 
     m_scanPositionContextMenu = new QMenu();
     m_scanPositionContextMenu->addAction(m_actionReductionAlgorithm);
+    m_scanPositionContextMenu->addAction(m_actionShowScanPosition);
+    m_scanPositionContextMenu->addAction(m_actionHideScanPosition);
 
     m_scanImageContextMenu = new QMenu();
     m_scanImageContextMenu->addAction(m_actionSetViewToCamera);
@@ -394,6 +398,8 @@ LVRMainWindow::~LVRMainWindow()
     delete m_actionShowCamPosition;
     delete m_actionShowCamTrajectory;
     delete m_actionRemoveCamPosition;
+    delete m_actionShowScanPosition;
+    delete m_actionHideScanPosition;
     
 }
 
@@ -442,6 +448,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowCamPosition, SIGNAL(triggered()), this, SLOT(showCamPosition()));
     QObject::connect(m_actionShowCamTrajectory, SIGNAL(triggered()), this, SLOT(showCamTrajectory()));
     QObject::connect(m_actionRemoveCamPosition, SIGNAL(triggered()), this, SLOT(removeCamPosition()));
+
+    QObject::connect(m_actionShowScanPosition, SIGNAL(triggered()), this, SLOT(showScanPosition()));
+    QObject::connect(m_actionHideScanPosition, SIGNAL(triggered()), this, SLOT(hideScanPosition()));
 
     QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
 
@@ -609,6 +618,30 @@ void LVRMainWindow::showBackgroundDialog()
 
     }
 }
+
+
+void LVRMainWindow::showScanPosition()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(items.first());
+        posItem->getScanPositionBridge()->showScanPosition(m_renderer);
+    }
+    refreshView();
+}
+
+void LVRMainWindow::hideScanPosition()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(items.first());
+        posItem->getScanPositionBridge()->hideScanPosition(m_renderer);
+    }    
+    refreshView();
+}
+
 
 void LVRMainWindow::showCamTrajectory()
 {
