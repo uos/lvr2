@@ -45,6 +45,8 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkActor.h>
 #include <vtkProperty.h>
+#include <vtkTransform.h>
+#include <vtkTransformPolyDataFilter.h>
 #include <boost/shared_ptr.hpp>
 
 
@@ -95,14 +97,16 @@ public:
     void setModels(std::vector<ModelBridgePtr> models);
     void setVisibility(bool visible);
 
-    void showScanPosition(vtkSmartPointer<vtkRenderer> renderer);
-    void hideScanPosition(vtkSmartPointer<vtkRenderer> renderer);
+    void showScannerPosition(vtkSmartPointer<vtkRenderer> renderer);
+    void hideScannerPosition(vtkSmartPointer<vtkRenderer> renderer);
+    bool scannerPositionIsVisible();
 
 private:
-    vtkSmartPointer<vtkActor> m_cylinderActor;
+    vtkSmartPointer<vtkActor>   m_cylinderActor;
+    bool                        m_scannerPositionIsVisible;
     std::vector<ModelBridgePtr> models;
-    ScanPositionPtr m_scanposition;
-    Pose m_pose;
+    ScanPositionPtr             m_scanposition;
+    Pose                        m_pose;
 
 };
 

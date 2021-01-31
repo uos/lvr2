@@ -154,8 +154,8 @@ LVRMainWindow::LVRMainWindow()
     m_actionSetViewToCamera = new QAction("Set view to camera", this);
 
     m_actionReductionAlgorithm = new QAction("Change ReductionAlgorithm", this);
-    m_actionShowScanPosition = new QAction("Show position of scanner");
-    m_actionHideScanPosition = new QAction("Hide position of scanner");
+    m_actionShowScannerPosition = new QAction("Show scanner position(s)");
+    m_actionHideScannerPosition = new QAction("Hide scanner position(s)");
     m_actionShowCamPosition = new QAction("Show Camera Position", this);
     m_actionShowCamTrajectory = new QAction("Show Camera Trajectory", this);
     m_actionRemoveCamPosition = new QAction("Remove Camera Position", this);
@@ -165,8 +165,8 @@ LVRMainWindow::LVRMainWindow()
 
     m_scanPositionContextMenu = new QMenu();
     m_scanPositionContextMenu->addAction(m_actionReductionAlgorithm);
-    m_scanPositionContextMenu->addAction(m_actionShowScanPosition);
-    m_scanPositionContextMenu->addAction(m_actionHideScanPosition);
+    m_scanPositionContextMenu->addAction(m_actionShowScannerPosition);
+    m_scanPositionContextMenu->addAction(m_actionHideScannerPosition);
 
     m_scanImageContextMenu = new QMenu();
     m_scanImageContextMenu->addAction(m_actionSetViewToCamera);
@@ -398,8 +398,8 @@ LVRMainWindow::~LVRMainWindow()
     delete m_actionShowCamPosition;
     delete m_actionShowCamTrajectory;
     delete m_actionRemoveCamPosition;
-    delete m_actionShowScanPosition;
-    delete m_actionHideScanPosition;
+    delete m_actionShowScannerPosition;
+    delete m_actionHideScannerPosition;
     
 }
 
@@ -449,8 +449,8 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowCamTrajectory, SIGNAL(triggered()), this, SLOT(showCamTrajectory()));
     QObject::connect(m_actionRemoveCamPosition, SIGNAL(triggered()), this, SLOT(removeCamPosition()));
 
-    QObject::connect(m_actionShowScanPosition, SIGNAL(triggered()), this, SLOT(showScanPosition()));
-    QObject::connect(m_actionHideScanPosition, SIGNAL(triggered()), this, SLOT(hideScanPosition()));
+    QObject::connect(m_actionShowScannerPosition, SIGNAL(triggered()), this, SLOT(showScannerPosition()));
+    QObject::connect(m_actionHideScannerPosition, SIGNAL(triggered()), this, SLOT(hideScannerPosition()));
 
     QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
 
@@ -620,25 +620,54 @@ void LVRMainWindow::showBackgroundDialog()
 }
 
 
-void LVRMainWindow::showScanPosition()
+void LVRMainWindow::showScannerPosition()
 {
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
-    {
-        LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(items.first());
-        posItem->getScanPositionBridge()->showScanPosition(m_renderer);
+    if (items.size() > 0)
+    {        
+        LVRScanPositionItem* posItem;
+        QTreeWidgetItem* item = items.first();
+        if (item->type() == LVRScanPositionItemType)
+        {
+            posItem = static_cast<LVRScanPositionItem*>(item);
+            posItem->getScanPositionBridge()->showScannerPosition(m_renderer);
+        } 
+        else if (item->type() == LVRScanProjectItemType)
+        {
+            LVRScanPositionItem* posItem;
+            for( int i = 0; i < item->childCount(); ++i)
+            {
+                posItem = static_cast<LVRScanPositionItem*>(item->child(i));
+                posItem->getScanPositionBridge()->showScannerPosition(m_renderer);
+            }
+        }
     }
     refreshView();
+
 }
 
-void LVRMainWindow::hideScanPosition()
+void LVRMainWindow::hideScannerPosition()
 {
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-    if(items.size() > 0)
-    {
-        LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(items.first());
-        posItem->getScanPositionBridge()->hideScanPosition(m_renderer);
-    }    
+    if (items.size() > 0)
+    {        
+        LVRScanPositionItem* posItem;
+        QTreeWidgetItem* item = items.first();
+        if (item->type() == LVRScanPositionItemType)
+        {
+            posItem = static_cast<LVRScanPositionItem*>(item);
+            posItem->getScanPositionBridge()->hideScannerPosition(m_renderer);
+        } 
+        else if (item->type() == LVRScanProjectItemType)
+        {
+            LVRScanPositionItem* posItem;
+            for( int i = 0; i < item->childCount(); ++i)
+            {
+                posItem = static_cast<LVRScanPositionItem*>(item->child(i));
+                posItem->getScanPositionBridge()->hideScannerPosition(m_renderer);
+            }
+        }
+    }
     refreshView();
 }
 
@@ -1971,8 +2000,7 @@ void LVRMainWindow::changeReductionAlgorithm()
             posItem->getScanPositionBridge()->setModels(models);
 
         }
-
-        if(item->type() == LVRScanPositionItemType)
+        else if(item->type() == LVRScanPositionItemType)
         {
             std::cout << "ScanPosition " << item->data(0, Qt::UserRole).toInt() << std::endl;
 
@@ -2002,15 +2030,20 @@ void LVRMainWindow::changeReductionAlgorithm()
                 auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
                 scanPos = dirIO->loadScanPosition(scanpos_nr, reduction);
             }
-
+            
             posItem->getScanPositionBridge()->removeActors(m_renderer);
             ScanPositionBridgePtr newBridge(new LVRScanPositionBridge(scanPos));
             newBridge->addActors(m_renderer);
+            if(posItem->getScanPositionBridge()->scannerPositionIsVisible()) {
+                posItem->getScanPositionBridge()->hideScannerPosition(m_renderer);
+                newBridge->showScannerPosition(m_renderer);
+            }
             posItem->setBridge(newBridge);
 
         }
-        if(item->type() == LVRScanProjectItemType)
+        else if(item->type() == LVRScanProjectItemType)
         {
+            hideScannerPosition();
             std::cout << "ScanProject " << item->data(0, Qt::UserRole).toInt() << std::endl;
 
             LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item);
