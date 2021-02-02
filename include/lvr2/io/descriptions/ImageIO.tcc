@@ -10,6 +10,13 @@ void ImageIO<FeatureBase>::save(std::string groupName,
 }
 
 template<typename FeatureBase>
+boost::optional<cv::Mat> ImageIO<FeatureBase>::load(std::string groupName,
+    std::string datasetName) const
+{
+    return m_featureBase->m_kernel->loadImage(groupName, datasetName);
+}
+
+template<typename FeatureBase>
 void ImageIO<FeatureBase>::saveImage(std::string groupName,
     std::string datasetName,
     const cv::Mat& img) const
@@ -21,7 +28,7 @@ template<typename FeatureBase>
 boost::optional<cv::Mat> ImageIO<FeatureBase>::loadImage(std::string groupName,
     std::string datasetName) const
 {
-    return m_featureBase->m_kernel->loadImage(groupName, datasetName);
+    return load(groupName, datasetName);
 }
 
 } // namespace lvr2

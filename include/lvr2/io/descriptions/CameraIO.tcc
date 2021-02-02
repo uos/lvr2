@@ -3,14 +3,6 @@
 namespace lvr2
 {
 
-// template <typename FeatureBase>
-// void CameraIO<FeatureBase>::save(
-//     const std::string& group, 
-//     const std::string& container, CameraPtr& buffer)
-// {
-//     // TODO
-// }
-
 template <typename FeatureBase>
 void CameraIO<FeatureBase>::save(
     const size_t& scanPosNo,
@@ -38,17 +30,9 @@ void CameraIO<FeatureBase>::save(
 }
 
 template <typename FeatureBase>
-void CameraIO<FeatureBase>::saveCamera(
+CameraPtr CameraIO<FeatureBase>::load(
     const size_t& scanPosNo, 
-    const size_t& scanCamNo, 
-    CameraPtr cameraPtr) const
-{
-    save(scanPosNo, scanCamNo, cameraPtr);
-}
-
-template <typename FeatureBase>
-CameraPtr CameraIO<FeatureBase>::loadCamera(
-    const size_t& scanPosNo, const size_t& scanCamNo)
+    const size_t& scanCamNo) const
 {
     CameraPtr ret;
 
@@ -91,6 +75,22 @@ CameraPtr CameraIO<FeatureBase>::loadCamera(
     }
 
     return ret;
+}
+
+template <typename FeatureBase>
+void CameraIO<FeatureBase>::saveCamera(
+    const size_t& scanPosNo, 
+    const size_t& scanCamNo, 
+    CameraPtr cameraPtr) const
+{
+    save(scanPosNo, scanCamNo, cameraPtr);
+}
+
+template <typename FeatureBase>
+CameraPtr CameraIO<FeatureBase>::loadCamera(
+    const size_t& scanPosNo, const size_t& scanCamNo) const
+{
+    return load(scanPosNo, scanCamNo);
 }
 
 } // namespace lvr2

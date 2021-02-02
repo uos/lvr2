@@ -28,27 +28,11 @@ void PointCloudIO<FeatureBase>::save(
     }
 }
 
-template<typename FeatureBase>
-void PointCloudIO<FeatureBase>::savePointCloud(
-    const std::string& group, 
-    const std::string& name, 
-    PointBufferPtr pcl) const
-{
-    save(group, name, pcl);
-}
 
 template<typename FeatureBase>
-void PointCloudIO<FeatureBase>::savePointCloud(
-    const std::string& groupandname,
-    PointBufferPtr pcl) const
-{
-    save(groupandname, pcl);
-}
-
-template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
+PointBufferPtr PointCloudIO<FeatureBase>::load(
     const std::string& group, 
-    const std::string& name)
+    const std::string& name) const
 {
     boost::filesystem::path p(name);
     if(p.extension() == "") {
@@ -60,24 +44,8 @@ PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
 }
 
 template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud( 
-    const std::string& group,
-    const std::string& container, 
-    ReductionAlgorithmPtr reduction)
-{
-    if(reduction)
-    {
-        PointBufferPtr buffer = loadPointCloud(group, container);
-        reduction->setPointBuffer(buffer);
-        return reduction->getReducedPoints();
-    } else {
-        return loadPointCloud(group, container);
-    }
-}
-
-template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
-    const std::string& group)
+PointBufferPtr PointCloudIO<FeatureBase>::load(
+    const std::string& group) const
 {
     // std::cout << "[IO: PointCloudIO - load]: " << group << std::endl;
     PointBufferPtr ret;
@@ -103,11 +71,60 @@ PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
 }
 
 template<typename FeatureBase>
-bool PointCloudIO<FeatureBase>::isPointCloud(
-    const std::string& group, const std::string& name)
+PointBufferPtr PointCloudIO<FeatureBase>::load( 
+    const std::string& group,
+    const std::string& container, 
+    ReductionAlgorithmPtr reduction) const
 {
-    // TODO: better not read anything for isPointCloud check
-    return static_cast<bool>(loadPointCloud(group, name));
+    if(reduction)
+    {
+        PointBufferPtr buffer = loadPointCloud(group, container);
+        reduction->setPointBuffer(buffer);
+        return reduction->getReducedPoints();
+    } else {
+        return loadPointCloud(group, container);
+    }
+}
+
+template<typename FeatureBase>
+void PointCloudIO<FeatureBase>::savePointCloud(
+    const std::string& group, 
+    const std::string& name, 
+    PointBufferPtr pcl) const
+{
+    save(group, name, pcl);
+}
+
+template<typename FeatureBase>
+void PointCloudIO<FeatureBase>::savePointCloud(
+    const std::string& groupandname,
+    PointBufferPtr pcl) const
+{
+    save(groupandname, pcl);
+}
+
+template<typename FeatureBase>
+PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
+    const std::string& group, 
+    const std::string& name) const
+{
+    return load(group, name);
+}
+
+template<typename FeatureBase>
+PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
+    const std::string& group) const
+{
+    return load(group);
+}
+
+template<typename FeatureBase>
+PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud( 
+    const std::string& group,
+    const std::string& container, 
+    ReductionAlgorithmPtr reduction) const
+{
+    return load(group, container, reduction);
 }
 
 } // namespace lvr2 

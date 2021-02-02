@@ -19,6 +19,11 @@ public:
         const cv::Mat& img
     ) const;
 
+    boost::optional<cv::Mat> load(
+        std::string groupName,
+        std::string datasetName
+    ) const;
+
     void saveImage( 
         std::string groupName,
         std::string datasetName,
