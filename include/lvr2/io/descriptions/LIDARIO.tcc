@@ -12,7 +12,7 @@ void LIDARIO<FeatureBase>::save(
     auto D = m_featureBase->m_description;
     Description d = D->lidar(D->position(scanPosNr), lidarNr);
 
-    // std::cout << "SAVE LIDAR" << std::endl;
+    // std::cout << "[LIDARIO] LIDAR - Description: " << std::endl;
     // std::cout << d << std::endl;
     
     if(d.metaName)
@@ -22,11 +22,15 @@ void LIDARIO<FeatureBase>::save(
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
     }
 
+    // std::cout << "[LIDARIO] Meta written. " << std::endl;
+
     // Save all scans of lidar
     for(size_t scanNr = 0; scanNr < lidar->scans.size(); scanNr++)
     {
         m_scanIO->save(scanPosNr, lidarNr, scanNr, lidar->scans[scanNr]);
     }
+
+    // std::cout << "[LIDARIO] Scans written. " << std::endl;
 }
 
 template <typename FeatureBase>

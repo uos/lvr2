@@ -25,7 +25,15 @@
 
 #include <boost/type_index.hpp>
 
+
+#include <unordered_map>
+#include <unordered_set>
+
+#include "Hdf5ReaderOld.hpp"
+
 using namespace lvr2;
+
+
 
 ScanProjectPtr dummyScanProject()
 {
@@ -60,7 +68,6 @@ ScanProjectPtr dummyScanProject()
 
                 lidar->scans.push_back(scan);
             }
-
             
             scan_pos->lidars.push_back(lidar);
         }
@@ -139,8 +146,6 @@ bool compare(CameraImagePtr si1, CameraImagePtr si2)
         return false;
     }
 
-
-    
     // if(cv::countNonZero(si1->image != si2->image) != 0){
     //     std::cout <<"ScanImage image data differ "  << std::endl;
     //     cv::imshow("ScanImage 1", si1->image);
@@ -256,6 +261,16 @@ bool compare(PointBufferPtr p1, PointBufferPtr p2)
     return true;
 }
 
+bool equal(const float& a, const float& b)
+{
+    return abs(a - b) < std::numeric_limits<float>::epsilon();
+}
+
+bool equal(const double& a, const double& b)
+{
+    return abs(a - b) < std::numeric_limits<double>::epsilon();
+}
+
 bool compare(ScanPtr s1, ScanPtr s2)
 {
     if(!s1 && s2){return false;}
@@ -269,7 +284,7 @@ bool compare(ScanPtr s1, ScanPtr s2)
         std::cout << s2->transformation << std::endl;
         return false; 
     }
-    
+
     if(s1->startTime != s2->startTime){
         std::cout << "Scan: startTime differs: " << s1->startTime << " <-> " << s2->startTime << std::endl;
         return false;}
@@ -279,16 +294,16 @@ bool compare(ScanPtr s1, ScanPtr s2)
     if(s1->numPoints != s2->numPoints){
         std::cout << "Scan: numPoints differs: " << s1->numPoints << " <-> " << s2->numPoints << std::endl;
         return false;}
-    if(s1->phiMin != s2->phiMin){
+    if(!equal(s1->phiMin, s2->phiMin) ){
         std::cout << "Scan: phiMin differs: " << s1->phiMin << " <-> " << s2->phiMin << std::endl;
         return false;}
-    if(s1->phiMax != s2->phiMax){
+    if(!equal(s1->phiMax, s2->phiMax) ){
         std::cout << "Scan: phiMax differs: " << s1->phiMax << " <-> " << s2->phiMax << std::endl;
         return false;}
-    if(s1->thetaMin != s2->thetaMin){
+    if(!equal(s1->thetaMin, s2->thetaMin) ){
         std::cout << "Scan: thetaMin differs: " << s1->thetaMin << " <-> " << s2->thetaMin << std::endl;
         return false;}
-    if(s1->thetaMax != s2->thetaMax){
+    if(!equal(s1->thetaMax, s2->thetaMax) ){
         std::cout << "Scan: thetaMax differs: " << s1->thetaMax << " <-> " << s2->thetaMax << std::endl;
         return false;}
     
@@ -468,7 +483,7 @@ void hdf5IOTest()
     descriptions::HDF5IO hdf5io(kernel, schema);
 
     auto sp = dummyScanProject();
-    hdf5io.ScanProjectIO::save(sp);
+    hdf5io.save(sp);
 
     auto sp_loaded = hdf5io.ScanProjectIO::load();
     if(sp_loaded)
@@ -481,8 +496,8 @@ void hdf5IOTest()
             std::cout << "IO: fail" << std::endl; 
         }
     }
-
 }
+
 
 // void metaHdf5Test()
 // {
@@ -509,8 +524,36 @@ void hdf5IOTest()
 
 int main(int argc, char** argv)
 {
-    hdf5IOTest();
+    if(argc > 1)
+    {
+        std::string infilename = argv[1];
+        std::cout << "Load file from '" << infilename << "' with old Hdf5 format." << std::endl;
+        auto sp = loadOldHDF5(infilename);
+
+        // std::cout << sp->positions[1]->transformation << std::endl;
+
+        // YAML::Node node;
+        // node = sp->positions[1]->transformation;
+        // std::cout << node << std::endl;
+
+        // Eigen::MatrixXd mat;
+        // YAML::convert<Eigen::MatrixXd>::decode(node, mat);
+        // std::cout << mat << std::endl;
+
+        std::string outfilename = "scan_project.h5";
+        HDF5KernelPtr kernel(new HDF5Kernel(outfilename));
+        HDF5SchemaPtr schema(new ScanProjectSchemaRaw(outfilename));
+
+        descriptions::HDF5IO hdf5io(kernel, schema);
+
+        std::cout << "Write to '" << outfilename << "' with new Hdf5 format." << std::endl;
+        hdf5io.save(sp);
+
+    }
+
+    // hdf5IOTest();
     return 0;
+
 
     // metaHdf5Test();
 

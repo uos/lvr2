@@ -23,12 +23,18 @@ void ScanPositionIO< FeatureBase>::save(
         m_lidarIO->save(scanPosNo, i, scanPositionPtr->lidars[i]);
     }
 
+    // std::cout << "[ScanPositionIO] LIDARs written. " << std::endl;
+
     // Save all scan camera sensors
     for(size_t i = 0; i < scanPositionPtr->cameras.size(); i++)
     {
         // std::cout << " [ScanPositionIO]: Writing camera " << i << std::endl;
         m_cameraIO->saveCamera(scanPosNo, i, scanPositionPtr->cameras[i]);
     }
+
+    // std::cout << "[ScanPositionIO] Cameras written. " << std::endl;
+
+    
     
     // Save hyperspectral data
     // if (scanPositionPtr->hyperspectralCamera)
@@ -44,6 +50,8 @@ void ScanPositionIO< FeatureBase>::save(
         node = *scanPositionPtr;
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
     }
+
+    // std::cout << "[ScanPositionIO] Meta written. " << std::endl;
 }
 
 

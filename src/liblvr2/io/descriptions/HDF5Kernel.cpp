@@ -199,7 +199,7 @@ void HDF5Kernel::saveMetaYAML(
             {
                 HighFive::Group attgroup = hg.getGroup(container);
                 hdf5util::setAttributeMeta(attgroup, node);
-            } 
+            }
             else if(h5type == HighFive::ObjectType::Dataset) 
             {
                 HighFive::DataSet attds = hg.getDataSet(container);

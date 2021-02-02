@@ -5,6 +5,7 @@
 set(LVR2_HDF5_CONVERT_OLD_SOURCES
     Main.cpp
     Options.cpp
+    src/Hdf5ReaderOld.cpp
 )
 
 #####################################################################################
@@ -19,6 +20,7 @@ set(LVR2_HDF5_CONVERT_OLD_DEPENDENCIES
 	${LVR2_LIB_DEPENDENCIES}
 )
 
+include_directories(include)
 
 #####################################################################################
 # Add executable

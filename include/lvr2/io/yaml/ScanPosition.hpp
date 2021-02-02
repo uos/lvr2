@@ -30,7 +30,6 @@ struct convert<lvr2::ScanPosition>
         node["pose_estimation"] = scanPos.poseEstimation;
         node["transformation"] = scanPos.transformation;
         node["timestamp"] = scanPos.timestamp;
-
         return node;
     }
 

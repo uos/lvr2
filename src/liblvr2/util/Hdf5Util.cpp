@@ -174,6 +174,26 @@ HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool 
     return cur_grp;
 }
 
+HighFiveSplit split(HighFive::Group g)
+{
+    HighFiveSplit ret;
+
+    for(std::string key : g.listObjectNames())
+    {
+        HighFive::ObjectType obj_type = g.getObjectType(key);
+        if(obj_type == HighFive::ObjectType::Group)
+        {
+            ret.groups.push_back(key);
+        } 
+        else if(obj_type == HighFive::ObjectType::Dataset) 
+        {
+            ret.datasets.push_back(key);
+        }
+    }
+
+    return ret;
+}
+
 bool exist(const std::shared_ptr<HighFive::File>& hdf5_file, const std::string& groupName)
 {
     HighFive::Group cur_grp = hdf5_file->getGroup("/");
@@ -215,7 +235,7 @@ bool exist(const HighFive::Group& group, const std::string& groupName)
     return false;
 }
 
-std::shared_ptr<HighFive::File> open(const std::string& filename)
+std::shared_ptr<HighFive::File> open(const std::string& filename, unsigned int flag)
 {
     std::shared_ptr<HighFive::File> hdf5_file;
     boost::filesystem::path path(filename);
@@ -223,12 +243,12 @@ std::shared_ptr<HighFive::File> open(const std::string& filename)
     if (!boost::filesystem::exists(path))
     {
         hdf5_file.reset(
-            new HighFive::File(filename, HighFive::File::ReadWrite | HighFive::File::Create));
+            new HighFive::File(filename, flag | HighFive::File::Create));
         hdf5util::writeBaseStructure(hdf5_file);
     }
     else
     {
-        hdf5_file.reset(new HighFive::File(filename, HighFive::File::ReadWrite));
+        hdf5_file.reset(new HighFive::File(filename, flag));
     }
 
     return hdf5_file;

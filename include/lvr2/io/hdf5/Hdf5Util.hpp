@@ -199,6 +199,21 @@ HighFive::Group getGroup(std::shared_ptr<HighFive::File> hdf5_file,
  */
 HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create = true);
 
+
+struct HighFiveSplit
+{
+    std::vector<std::string> groups;
+    std::vector<std::string> datasets;
+};
+
+/**
+ * @brief Split objects of HDF5 Group into Groups/Datasets
+ * 
+ * @param g 
+ * @return HighFiveSplit 
+ */
+HighFiveSplit split(HighFive::Group g);
+
 /**
  * @brief Checks if a certain group name exists in a file
  * 
@@ -226,7 +241,8 @@ bool exist(const HighFive::Group& group, const std::string& groupName);
  * @param filename   Path to Hdf5 file
  * @return std::shared_ptr<HighFive::File> shared_ptr of HighFive::File object 
  */
-std::shared_ptr<HighFive::File> open(const std::string& filename);
+std::shared_ptr<HighFive::File> open(const std::string& filename, 
+    unsigned int flag = HighFive::File::ReadWrite);
 
 /**
  * @brief Create a Hdf5 Dataset savely. 
@@ -339,7 +355,7 @@ boost::optional<std::string> highFiveTypeToLvr(std::string h5type);
 template<typename HT>
 void setAttributeMeta(
     HT& g,
-    const YAML::Node& node,
+    YAML::Node node,
     std::string prefix=""
 );
 

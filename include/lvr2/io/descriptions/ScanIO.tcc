@@ -27,6 +27,8 @@ void ScanIO<FeatureBase>::save(
         m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
     }
 
+    // std::cout << "Meta Finished." << std::endl;
+
     if(!d.dataSetName)
     {
         // Scan is not a dataset: handle as group of channels
@@ -35,6 +37,8 @@ void ScanIO<FeatureBase>::save(
         // Scan is a dataset: write data
         m_pclIO->savePointCloud(*d.groupName, *d.dataSetName, scanPtr->points);
     }
+
+    // std::cout << "Finished." << std::endl;
 }
 
 template <typename FeatureBase>

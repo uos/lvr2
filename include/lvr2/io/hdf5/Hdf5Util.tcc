@@ -668,10 +668,10 @@ boost::optional<Eigen::MatrixXd> getAttributeMatrix(
 template<typename HT>
 void setAttributeMeta(
     HT& g,
-    const YAML::Node& meta,
+    YAML::Node meta,
     std::string prefix)
 {
-    for(YAML::const_iterator it=meta.begin(); it != meta.end(); ++it) 
+    for(auto it = meta.begin(); it != meta.end(); ++it) 
     {   
         std::string key = it->first.as<std::string>();
         YAML::Node value = it->second;
@@ -713,31 +713,40 @@ void setAttributeMeta(
             {
                 std::cout << "ERROR: UNKNOWN TYPE of value " << value << std::endl;
             }
+
+            // std::cout << attributeName << ": written." << std::endl;
         } 
         else if(value.Type() == YAML::NodeType::Sequence) 
         {
+            // std::cout << attributeName << ": Sequence" << std::endl;
             // check the type with all elements
             bool is_int = true;
             bool is_double = true;
             bool is_bool = true;
             size_t nelements = 0;
 
-            for(auto it = value.begin(); it != value.end(); it++)
+            for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
             {
                 long int lint;
                 double dbl;
                 bool bl;
-                if(!YAML::convert<long int>::decode(*it, lint))
+
+                // std::cout << "Id: " << nelements << std::endl;
+
+                // std::cout << "Integer check" << std::endl;
+                if(!YAML::convert<long int>::decode(*seq_it, lint))
                 {
                     is_int = false;
                 }
 
-                if(!YAML::convert<double>::decode(*it, dbl))
+                // std::cout << "Double check" << std::endl;
+                if(!YAML::convert<double>::decode(*seq_it, dbl))
                 {
                     is_double = false;
                 }
 
-                if(!YAML::convert<bool>::decode(*it, bl))
+                // std::cout << "Bool check" << std::endl;
+                if(!YAML::convert<bool>::decode(*seq_it, bl))
                 {
                     is_bool = false;
                 }
@@ -745,21 +754,23 @@ void setAttributeMeta(
                 nelements++;
             }
 
+            // std::cout << "N: " << nelements << std::endl;
+
             if(is_int)
             {
                 std::vector<long int> data;
-                for(auto it = value.begin(); it != value.end(); it++)
+                for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
                 {
-                    data.push_back(it->as<long int>());
+                    data.push_back(seq_it->as<long int>());
                 }
                 setAttributeVector(g, attributeName, data);
             }
             else if(is_double)
             {
                 std::vector<double> data;
-                for(auto it = value.begin(); it != value.end(); it++)
+                for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
                 {
-                    data.push_back(it->as<double>());
+                    data.push_back(seq_it->as<double>());
                 }
                 setAttributeVector(g, attributeName, data);
             }
@@ -771,29 +782,33 @@ void setAttributeMeta(
 
                 // hdf5 stores bool arrays in uint8 anyway
                 // std::vector<uint8_t> data;
-                // for(auto it = value.begin(); it != value.end(); it++)
+                // for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
                 // {
-                //     data.push_back(static_cast<uint8_t>(it->as<bool>()));
+                //     data.push_back(static_cast<uint8_t>(seq_it->as<bool>()));
                 // }
                 // hdf5util::setAttributeVector(g, attributeName, data);
 
                 boost::shared_array<bool> data(new bool[nelements]);
                 size_t i = 0;
-                for(auto it = value.begin(); it != value.end(); it++, i++)
+                for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++, i++)
                 {
-                    data[i] = it->as<bool>();
+                    data[i] = seq_it->as<bool>();
                 }
                 setAttributeArray(g, attributeName, data, nelements);
 
             } else {
                 std::cout << "Tried to write YAML list of unknown typed elements: " << *it << std::endl;
             }
+
+            // std::cout << attributeName << ": written." << std::endl;
         } 
         else if(value.Type() == YAML::NodeType::Map) 
         {
             // check if Map is known type
             if(YAML::isMatrix(value))
             {
+                // std::cout << attributeName << ": Matrix" << std::endl;
+                // std::cout << value << std::endl;
                 Eigen::MatrixXd mat;
                 if(YAML::convert<Eigen::MatrixXd>::decode(value, mat))
                 {
@@ -801,6 +816,8 @@ void setAttributeMeta(
                 } else {
                     std::cout << "ERROR matrix" << std::endl;
                 }
+
+                // std::cout << attributeName << ": written." << std::endl;
             } else {
                 // recursion
                 setAttributeMeta(g, value, attributeName);
