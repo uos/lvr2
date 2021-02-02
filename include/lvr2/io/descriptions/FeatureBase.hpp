@@ -121,7 +121,7 @@ public:
     //     #pragma message("using Tp::save... needs c++17 at least or a newer compiler")
     // #endif
 
-    // using Features<FeatureBase<Features...> >::save...;
+    using Features<FeatureBase<Features...> >::save...;
 
     FeatureBase(
         const FileKernelPtr inKernel, 

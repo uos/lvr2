@@ -56,6 +56,13 @@ class ScanPositionIO
         ScanPositionPtr scanPositionPtr
         ) const;
 
+    ScanPositionPtr load(
+        const size_t& scanPosNo) const;
+
+    ScanPositionPtr load(
+        const size_t& scanPosNo, 
+        ReductionAlgorithmPtr reduction) const;
+
     void saveScanPosition(
         const size_t& scanPosNo,
         ScanPositionPtr scanPositionPtr
