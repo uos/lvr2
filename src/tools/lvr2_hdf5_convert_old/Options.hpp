@@ -25,64 +25,70 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+ * Options.h
+ *
+ *  Created on: Aug 23 2012
+ *      Author: Thomas Wiemann
+ */
 
-namespace lvr2 {
+#ifndef OPTIONS_H_
+#define OPTIONS_H_
 
-template<typename... T>
-size_t VariantChannel<T...>::numElements() const
+#include <boost/program_options.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
+
+using std::cout;
+using std::endl;
+using std::ostream;
+using std::string;
+using std::vector;
+
+namespace hdf5_convert_old
 {
-    return boost::apply_visitor(NumElementsVisitor(), *this);
-}
 
-template<typename... T>
-size_t VariantChannel<T...>::width() const
+using namespace boost::program_options;
+
+/**
+ * @brief A class to parse the program options for the reconstruction
+ * 		  executable.
+ */
+class Options
 {
-    return boost::apply_visitor(WidthVisitor(), *this);
-}
+  public:
+    /**
+     * @brief 	Ctor. Parses the command parameters given to the main
+     * 		  	function of the program
+     */
+    Options(int argc, char** argv);
+    virtual ~Options();
 
-template<typename... T>
-std::string VariantChannel<T...>::typeName() const
+    string getInputDir() const { return m_variables["inputDir"].as<string>(); }
+    string getOutputDir() const { return m_variables["outputDir"].as<string>(); }
+    string getOutputFile() const { return m_variables["outputFile"].as<string>(); }
+   
+  private:
+    /// The internally used variable map
+    variables_map m_variables;
+
+    /// The internally used option description
+    options_description m_descr;
+
+    /// The internally used positional option desription
+    positional_options_description m_pdescr;
+};
+
+/// Overlaoeded outpur operator
+inline ostream& operator<<(ostream& os, const Options& o)
 {
-    return boost::apply_visitor(TypeNameVisitor(), *this);
+    cout << "##### Program options: " << endl;
+    //    cout << "##### Data directory \t\t: "  << o.getDataDir() << endl;
+
+    return os;
 }
 
-template<typename... T>
-template<typename U>
-boost::shared_array<U> VariantChannel<T...>::dataPtr() const
-{
-    return boost::apply_visitor(DataPtrVisitor<U>(), *this);
-}
+} // namespace hdf5tool2
 
-template<typename... T>
-int VariantChannel<T...>::type() const
-{
-    return this->which();
-}
-
-template<typename... T>
-template<typename U>
-bool VariantChannel<T...>::is_type() const {
-    return this->which() == index_of_type<U>::value;
-}
-
-template<typename... T>
-template<typename U>
-Channel<U> VariantChannel<T...>::extract() const
-{
-    return boost::get<Channel<U> >(*this);
-}
-
-template<typename... T>
-template<typename U>
-Channel<U>& VariantChannel<T...>::extract()
-{
-    return boost::get<Channel<U> >(*this);
-}
-
-template<typename... T>
-VariantChannel<T...> VariantChannel<T...>::clone() const
-{
-    return boost::apply_visitor(CloneVisitor(), *this);
-}
-
-}
+#endif /* OPTIONS_H_ */

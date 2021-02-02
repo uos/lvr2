@@ -12,8 +12,6 @@ void PointCloudIO<FeatureBase>::save(
     {
         std::string groupandname = group + "/" + name;
         save(groupandname, pcl);
-
-        
     } else {
         m_featureBase->m_kernel->savePointBuffer(group, name, pcl);
     }
@@ -81,28 +79,23 @@ template<typename FeatureBase>
 PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
     const std::string& group)
 {
+    // std::cout << "[IO: PointCloudIO - load]: " << group << std::endl;
     PointBufferPtr ret;
 
     using VChannelT = typename PointBuffer::val_type;
 
     // load all channel in group
-    for(auto meta : m_featureBase->m_kernel->metas(group) ) 
+    for(auto meta : m_featureBase->m_kernel->metas(group, "Channel") )
     {
-        if(meta.second["sensor_type"])
+        boost::optional<VChannelT> copt = m_vchannel_io->template loadVariantChannel<VChannelT>(group, meta.first);
+        if(copt)
         {
-            if(meta.second["sensor_type"].template as<std::string>() == "Channel")
-            {   
-                boost::optional<VChannelT> copt = m_vchannel_io->template loadVariantChannel<VChannelT>(group, meta.first);
-                
-                if(copt)
-                {
-                    if(!ret)
-                    {
-                        ret.reset(new PointBuffer);
-                    }
-                    (*ret)[meta.first] = *copt;
-                }
+            if(!ret)
+            {
+                ret.reset(new PointBuffer);
             }
+            // add channel
+            (*ret)[meta.first] = *copt;
         }
     }
 

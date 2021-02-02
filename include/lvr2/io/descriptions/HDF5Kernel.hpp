@@ -23,7 +23,12 @@ public:
     HDF5Kernel() = delete;
     HDF5Kernel(const std::string& hdf5file);
     ~HDF5Kernel() {
-         delete m_metaDescription;}
+         delete m_metaDescription;
+         if(m_hdf5File)
+         {
+             m_hdf5File->flush();
+         }
+         }
 
     virtual void saveMeshBuffer(
         const std::string& group, 
@@ -62,10 +67,50 @@ public:
         const std::string& container,
         YAML::Node& node) const;
 
+    virtual charArr loadCharArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+
     virtual ucharArr loadUCharArray(
         const std::string& group, 
         const std::string& container, 
         std::vector<size_t> &dims) const;
+
+    virtual shortArr loadShortArray(
+        const std::string& group, 
+        const std::string& constainer, 
+        std::vector<size_t>& dims) const;
+
+    virtual ushortArr loadUShortArray(
+        const std::string& group, 
+        const std::string& constainer, 
+        std::vector<size_t>& dims) const;
+
+    virtual uint16Arr loadUInt16Array(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+
+    virtual intArr loadIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const;
+
+    virtual uintArr loadUIntArray(
+        const std::string& group, 
+        const std::string& constainer, 
+        std::vector<size_t>& dims) const;
+
+    virtual lintArr loadLIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const;
+
+    virtual ulintArr loadULIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const;
 
     virtual floatArr loadFloatArray(
         const std::string& group, 
@@ -77,15 +122,64 @@ public:
         const std::string& container, 
         std::vector<size_t> &dims) const;
 
-    virtual intArr loadIntArray(
+    virtual boolArr loadBoolArray(
         const std::string& group, 
         const std::string& container, 
         std::vector<size_t> &dims) const;
-        
-    virtual uint16Arr loadUInt16Array(
-        const std::string& group, 
-        const std::string& container, 
-        std::vector<size_t> &dims) const;
+
+    virtual void saveCharArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<char>& data) const;
+
+    virtual void saveUCharArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned char>& data) const;
+
+    virtual void saveShortArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<short>& data) const;
+
+    virtual void saveUShortArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned short>& data) const;
+
+    virtual void saveUInt16Array(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<uint16_t>& data) const;
+
+    virtual void saveIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<int>& data) const;
+
+    virtual void saveUIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned int>& data) const;
+
+    virtual void saveLIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<long int>& data) const;
+
+    virtual void saveULIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned long int>& data) const;
 
     virtual void saveFloatArray(
         const std::string& groupName, 
@@ -94,24 +188,16 @@ public:
         const boost::shared_array<float>& data) const;
 
     virtual void saveDoubleArray(
-        const std::string& groupName, const std::string& datasetName, 
+        const std::string& groupName, 
+        const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<double>& data) const;
 
-    virtual void saveUCharArray(
-        const std::string& groupName, const std::string& datasetName, 
+    virtual void saveBoolArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned char>& data) const;
-
-    virtual void saveIntArray(
-        const std::string& groupName, const std::string& datasetName, 
-        const std::vector<size_t>& dimensions, 
-        const boost::shared_array<int>& data) const;
-
-    virtual void saveUInt16Array(
-        const std::string& groupName, const std::string& datasetName, 
-        const std::vector<size_t>& dimensions, 
-        const boost::shared_array<uint16_t>& data) const;
+        const boost::shared_array<bool>& data) const;
 
     virtual bool exists(const std::string& group) const;
     virtual bool exists(const std::string& group, const std::string& container) const;
@@ -259,10 +345,15 @@ public:
         const VariantChannel<Tp...>& vchannel
     ) const;
 
+    virtual std::unordered_map<std::string, YAML::Node> metas(
+        const std::string& group) const;
+
+    virtual std::unordered_map<std::string, YAML::Node> metas(
+        const std::string& group, const std::string& sensor_type
+    ) const;
+
     template<typename T>
     cv::Mat createMat(const std::vector<size_t>& dims) const;
-
-    void loadMetaData(const YAML::Node& node);
 
     std::shared_ptr<HighFive::File>  m_hdf5File;
 

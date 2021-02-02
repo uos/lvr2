@@ -14,6 +14,7 @@
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/util/Tuple.hpp"
 
 namespace lvr2
 {
@@ -21,6 +22,20 @@ namespace lvr2
 class FileKernel
 {
 public:
+    using ImplementedTypes = Tuple<
+        char,
+        unsigned char,
+        short,
+        unsigned short,
+        uint16_t,
+        int,
+        unsigned int,
+        long int,
+        unsigned long int, // size_t
+        float,
+        double,
+        bool
+    >;
     
     FileKernel() = delete;
     FileKernel(const std::string& res) : m_fileResourceName(res) {};
@@ -65,30 +80,127 @@ public:
         const std::string& container,
         YAML::Node& node) const = 0;
 
+    virtual charArr loadCharArray(
+        const std::string& group,
+        const std::string& container,
+        std::vector<size_t>& dims) const = 0;
+
     virtual ucharArr loadUCharArray(
         const std::string& group, 
-        const std::string& constainer, 
+        const std::string& container, 
         std::vector<size_t>& dims) const = 0;
 
-    virtual floatArr loadFloatArray(
+    virtual shortArr loadShortArray(
         const std::string& group, 
-        const std::string& constainer, 
+        const std::string& container, 
         std::vector<size_t>& dims) const = 0;
 
-    virtual doubleArr loadDoubleArray(
+    virtual ushortArr loadUShortArray(
         const std::string& group, 
-        const std::string& constainer, 
-        std::vector<size_t>& dims) const = 0;
-    
-    virtual intArr loadIntArray(
-        const std::string& group, 
-        const std::string& constainer, 
+        const std::string& container, 
         std::vector<size_t>& dims) const = 0;
 
     virtual uint16Arr loadUInt16Array(
         const std::string& group, 
-        const std::string& constainer, 
+        const std::string& container, 
         std::vector<size_t>& dims) const = 0;
+    
+    virtual intArr loadIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual uintArr loadUIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual lintArr loadLIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual ulintArr loadULIntArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual floatArr loadFloatArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual doubleArr loadDoubleArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const = 0;
+
+    virtual boolArr loadBoolArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t> &dims) const = 0;
+
+    // Shortcut
+    template<typename T>
+    boost::shared_array<T> loadArray(
+        const std::string& group, 
+        const std::string& container, 
+        std::vector<size_t>& dims) const;
+
+    // Saving interface
+    virtual void saveCharArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<char>& data) const = 0;
+
+    virtual void saveUCharArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned char>& data) const = 0;
+
+    virtual void saveShortArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<short>& data) const = 0;
+
+    virtual void saveUShortArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned short>& data) const = 0;
+
+    virtual void saveUInt16Array(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<uint16_t>& data) const = 0;
+
+    virtual void saveIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<int>& data) const = 0;
+
+    virtual void saveUIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned int>& data) const = 0;
+
+    virtual void saveLIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<long int>& data) const = 0;
+
+    virtual void saveULIntArray(
+        const std::string& groupName, 
+        const std::string& datasetName, 
+        const std::vector<size_t>& dimensions, 
+        const boost::shared_array<unsigned long int>& data) const = 0;
 
     virtual void saveFloatArray(
         const std::string& groupName, 
@@ -102,23 +214,19 @@ public:
         const std::vector<size_t>& dimensions, 
         const boost::shared_array<double>& data) const = 0;
 
-    virtual void saveUCharArray(
+    virtual void saveBoolArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned char>& data) const = 0;
+        const boost::shared_array<bool>& data) const = 0;
 
-    virtual void saveIntArray(
+    // shortcut
+    template<typename T>
+    void saveArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<int>& data) const = 0;
-
-    virtual void saveUInt16Array(
-        const std::string& groupName, 
-        const std::string& datasetName, 
-        const std::vector<size_t>& dimensions, 
-        const boost::shared_array<uint16_t>& data) const = 0;
+        const boost::shared_array<T>& data) const;
 
     virtual bool exists(const std::string& group) const = 0;
     virtual bool exists(const std::string& group, const std::string& container) const = 0;
@@ -161,4 +269,6 @@ using FileKernelPtr = std::shared_ptr<FileKernel>;
 
 } // namespace lvr2
 
-#endif
+#include "FileKernel.tcc"
+
+#endif // FileKernel

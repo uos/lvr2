@@ -12,8 +12,8 @@ void ScanPositionIO< FeatureBase>::save(
 {
     Description d = m_featureBase->m_description->position(scanPosNo);
   
-    std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
+    // std::cout << d << std::endl;
 
     // Save meta information
     if(d.metaName)
@@ -63,8 +63,8 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
         return ret;
     }
 
-    std::cout << "[ScanPositionIO] load() with Description:" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanPositionIO] load() with Description:" << std::endl;
+    // std::cout << d << std::endl;
 
     // Setup defaults
     if(d.metaName)
@@ -97,6 +97,8 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
             break;
         }
 
+        // std::cout << "[ScanPositionIO - load] Loaded Scan " << scanNo << std::endl;
+
         ++scanNo;
     }
 
@@ -105,29 +107,20 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
 
     // Get all scan cameras
     size_t camNo = 0;
-    do
+    while(true)
     {
-        // Get description for next scan
-        Description camDescr = m_featureBase->m_description->scanCamera(scanPosNo, camNo);
-
-        std::string groupName;
-        std::string dataSetName;
-        std::tie(groupName, dataSetName) = getNames("", "", camDescr);
-
-        // Check if file exists. If not, exit.
-        if(m_featureBase->m_kernel->exists(groupName))
+        ScanCameraPtr cam = m_scanCameraIO->loadScanCamera(scanPosNo, camNo);
+        if(cam)
         {
-            std::cout << timestamp << "ScanPositionIO: Loading camera " 
-                      << groupName << "/" << dataSetName << std::endl;
-            ScanCameraPtr cam = m_scanCameraIO->loadScanCamera(scanPosNo, camNo);
             ret->cams.push_back(cam);
-        }
-        else
-        {
+        } else {
             break;
         }
-        ++camNo;
-    } while (true);
+
+        // std::cout << "[ScanPositionIO - load] Loaded Camera " << camNo << std::endl;
+
+        camNo++;
+    }
 
     // Get hyperspectral data
     Description hyperDescr = m_featureBase->m_description->hyperspectralCamera(scanPosNo);

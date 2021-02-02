@@ -17,9 +17,9 @@ struct convert<lvr2::ScanImage>
     /**
      * Encode Eigen matrix to yaml. 
      */
-    static Node encode(const lvr2::ScanImage& scanImage) {
-        
+    static Node encode(const lvr2::ScanImage& scanImage) { 
         Node node;
+
         node["sensor_type"] = lvr2::ScanImage::sensorType;
         node["extrinsics"] = scanImage.extrinsics;
         node["extrinsics_estimate"] = scanImage.extrinsicsEstimate;
@@ -33,11 +33,23 @@ struct convert<lvr2::ScanImage>
 
     static bool decode(const Node& node, lvr2::ScanImage& scanImage) 
     {
-        if(node["sensor_type"].as<std::string>() != lvr2::ScanImage::sensorType)
+
+        if(node["sensor_type"])
         {
+            if(node["sensor_type"].as<std::string>() != lvr2::ScanImage::sensorType)
+            {
+                std::cout << lvr2::timestamp << "[YAML::convert<ScanImage> - decode] " 
+                            << "Nodes sensor_type '" << node["sensor_type"].as<std::string>()
+                            << "' is not '" <<  lvr2::ScanImage::sensorType << "'" << std::endl; 
+                return false;
+            } 
+        } else {
+            std::cout << lvr2::timestamp << "[YAML::convert<ScanImage> - decode] "
+                     << "ScanImage meta has no 'sensor_type'" << std::endl; 
+
             return false;
         }
-        
+    
         // Get fields
         if(node["extrinsics"])
         {
@@ -50,7 +62,8 @@ struct convert<lvr2::ScanImage>
 
         if(node["extrinsics_estimate"])
         {
-            scanImage.extrinsicsEstimate = node["extrinsics"].as<lvr2::Extrinsicsd>();
+            // NAN check?
+            scanImage.extrinsicsEstimate = node["extrinsics_estimate"].as<lvr2::Extrinsicsd>();
         }
         else
         {
@@ -67,8 +80,14 @@ struct convert<lvr2::ScanImage>
             scanImage.timestamp = -1.0;
         }
 
+        if(node["image_file"])
+        {
+            scanImage.imageFile = node["image_file"].as<std::string>();
+        }
+
+        // std::cout << "Decoding ScanImage finished." << std::endl;
         // Makes no sense to read with and height here...
-       
+
         return true;
     }
 

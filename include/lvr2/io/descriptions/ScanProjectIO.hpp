@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_HDF5_SCANPROJECTIO_HPP
-#define LVR2_IO_HDF5_SCANPROJECTIO_HPP
+#ifndef LVR2_IO_DESCRIPTIONS_SCANPROJECTIO_HPP
+#define LVR2_IO_DESCRIPTIONS_SCANPROJECTIO_HPP
 
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
@@ -87,4 +87,4 @@ struct FeatureConstruct<ScanProjectIO, FeatureBase>
 
 #include "ScanProjectIO.tcc"
 
-#endif // LVR2_IO_HDF5_SCANPROJECTIO_HPP
+#endif // LVR2_IO_DESCRIPTIONS_SCANPROJECTIO_HPP

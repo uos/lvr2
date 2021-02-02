@@ -26,6 +26,7 @@ public:
     virtual YAML::Node scanProject(const HighFive::Group& g) const = 0;
     virtual YAML::Node scanCamera(const HighFive::Group& g) const = 0;
     virtual YAML::Node scanImage(const HighFive::Group& g) const = 0;
+    virtual YAML::Node channel(const HighFive::DataSet& d) const = 0;
 
     virtual void saveHyperspectralCamera(
       HighFive::Group& g, 
@@ -54,6 +55,10 @@ public:
     virtual void saveScanImage(
       HighFive::Group& g, 
       const YAML::Node& n) const = 0;
+
+    virtual void saveChannel(
+      HighFive::DataSet &d,
+      const YAML::Node &n) const = 0;
 
 };
 

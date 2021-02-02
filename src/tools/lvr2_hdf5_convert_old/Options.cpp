@@ -25,64 +25,52 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+ * Options.cpp
+ *
+ *  Created on: Nov 21, 2010
+ *      Author: Thomas Wiemann
+ */
 
-namespace lvr2 {
+#include "Options.hpp"
 
-template<typename... T>
-size_t VariantChannel<T...>::numElements() const
+namespace hdf5_convert_old
 {
-    return boost::apply_visitor(NumElementsVisitor(), *this);
-}
 
-template<typename... T>
-size_t VariantChannel<T...>::width() const
+Options::Options(int argc, char** argv) : m_descr("Supported options")
 {
-    return boost::apply_visitor(WidthVisitor(), *this);
+
+    // Create option descriptions
+
+    m_descr.add_options()
+        ("help", "Produce help message")
+        ("inputDir", value<string>(), "Root of the raw data.")
+        ("outputDir", value<string>()->default_value("./"), "HDF5 file is written here.")
+        ("outputFile", value<string>()->default_value("data.h5"), "HDF5 file name.");
+    
+    // Parse command line and generate variables map
+    positional_options_description p;
+    p.add("inputDir", 1);
+    store(command_line_parser(argc, argv).options(m_descr).positional(p).run(), m_variables);
+    notify(m_variables);
+
+    if (m_variables.count("help"))
+    {
+        ::std::cout << m_descr << ::std::endl;
+        exit(-1);
+    }
+    else if (!m_variables.count("inputDir"))
+    {
+        std::cout << "Error: You must specify an input directory." << std::endl;
+        std::cout << std::endl;
+        std::cout << m_descr << std::endl;
+        exit(-1);
+    }
 }
 
-template<typename... T>
-std::string VariantChannel<T...>::typeName() const
+Options::~Options()
 {
-    return boost::apply_visitor(TypeNameVisitor(), *this);
+    // TODO Auto-generated destructor stub
 }
 
-template<typename... T>
-template<typename U>
-boost::shared_array<U> VariantChannel<T...>::dataPtr() const
-{
-    return boost::apply_visitor(DataPtrVisitor<U>(), *this);
-}
-
-template<typename... T>
-int VariantChannel<T...>::type() const
-{
-    return this->which();
-}
-
-template<typename... T>
-template<typename U>
-bool VariantChannel<T...>::is_type() const {
-    return this->which() == index_of_type<U>::value;
-}
-
-template<typename... T>
-template<typename U>
-Channel<U> VariantChannel<T...>::extract() const
-{
-    return boost::get<Channel<U> >(*this);
-}
-
-template<typename... T>
-template<typename U>
-Channel<U>& VariantChannel<T...>::extract()
-{
-    return boost::get<Channel<U> >(*this);
-}
-
-template<typename... T>
-VariantChannel<T...> VariantChannel<T...>::clone() const
-{
-    return boost::apply_visitor(CloneVisitor(), *this);
-}
-
-}
+} // namespace scanproject_parser

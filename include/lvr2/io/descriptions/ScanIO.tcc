@@ -18,8 +18,8 @@ void ScanIO<FeatureBase>::save(
     // when possible
     Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
 
-    std::cout << "[ScanIO] Scan " << scanPosNo << "," << scanNo <<  " - Description: " << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanIO] Scan " << scanPosNo << "," << scanNo <<  " - Description: " << std::endl;
+    // std::cout << d << std::endl;
 
     if(d.metaName)
     {
@@ -61,7 +61,11 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     ScanPtr ret;
 
     // Get Description of Scan Location
+
+    
     Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
+    // std::cout << "[IO: ScanIO - load]: Description" << std::endl;
+    // std::cout << d << std::endl;
 
     if(!d.groupName)
     {
@@ -79,8 +83,8 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
         m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
         ret = std::make_shared<Scan>(meta.as<Scan>());
     } else {
-        std::cout << timestamp << " [ScanIO] No meta name specified. " << std::endl;
-        return ret;
+        // for schemas without meta information
+        ret.reset(new Scan);
     }
 
     if(d.dataSetName)
@@ -90,19 +94,6 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     } else {
         ret->points = m_pclIO->loadPointCloud(*d.groupName);
     }
-    
-
-    
-
-    /*
-    boost::shared_array<float> pointData;
-    std::vector<size_t> pointDim;
-    pointData = m_featureBase->m_kernel->loadFloatArray(groupName, scanName, pointDim);
-    std::cout <<"load PointBuffer" << groupName << " " << scanName << std::endl;
-    PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
-    ret->points = pb;
-    */
-    // Get Waveform data
 
     
     Description waveformDescr = m_featureBase->m_description->waveform(scanPosNo, scanNo);
@@ -146,86 +137,16 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     const size_t& scanNo, 
     ReductionAlgorithmPtr reduction) const
 {
-    ScanPtr ret;
+    ScanPtr ret = loadScan(scanPosNo, scanNo);
 
-    Description d = m_featureBase->m_description->scan(scanPosNo, scanNo);
-
-    // Init default values
-    std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << scanNo;
-    std::string scanName = sstr.str() + ".ply";
-    std::string metaName = sstr.str() + ".yaml";
-    std::string groupName = "";
-
-    if(d.groupName)
+    if(ret)
     {
-        groupName = *d.groupName;
-    }
-
-    if(d.dataSetName)
-    {
-        scanName = *d.dataSetName;
-    }
-
-    if(d.metaName)
-    {
-        if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
+        if(ret->points)
         {
-            return ret;
-        }
-        metaName = *d.metaName;
-    }
-
-    // Important! First load meta data as YAML cpp seems to 
-    // create a new scan object before calling decode() !!!
-    // Cf. https://stackoverflow.com/questions/50807707/yaml-cpp-encoding-decoding-pointers
-    if(d.metaData)
-    {
-        ret = std::make_shared<Scan>((*d.metaData).as<Scan>());
-    }
-    else
-    {
-        std::cout << timestamp << "ScanIO::load(): Warning: No meta data found for "
-                  << groupName << "/" << scanName << "." << std::endl;
-        return ret;
-    }
-    //std::cout << ret->poseEstimation << std::endl;
-    //std::cout << ret->registration << std::endl;
-
-    // Load actual data
-    if(d.dataSetName)
-    {
-        ret->points = m_pclIO->loadPointCloud(groupName, scanName, reduction);
-    }
-    /*
-    boost::shared_array<float> pointData;
-    std::vector<size_t> pointDim;
-    pointData = m_featureBase->m_kernel->loadFloatArray(groupName, scanName, pointDim);
-    std::cout <<"load PointBuffer" << groupName << " " << scanName << std::endl;
-    PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
-    ret->points = pb;
-    */
-    // Get Waveform data
-    Description waveformDescr = m_featureBase->m_description->waveform(scanPosNo, scanNo);
-    if(waveformDescr.dataSetName)
-    {
-        std::string dataSetName;
-        std::tie(groupName, dataSetName) = getNames("", "", waveformDescr);
-
-        if (m_featureBase->m_kernel->exists(groupName))
-        {
-            std::cout << "[LabelIO] Loading Waveform" << std::endl;
-            WaveformPtr fwPtr = m_fullWaveformIO->loadFullWaveform(scanPosNo, scanNo);
-            ret->waveform = fwPtr;
-            //boost::shared_array<uint16_t> waveformData(new uint16_t[fwPtr->waveformSamples.size()]);
-            //std::memcpy(waveformData.get(), fwPtr->waveformSamples.data(), fwPtr->waveformSamples.size() * sizeof(uint16_t));
-            //Channel<uint16_t>::Ptr waveformChannel(new Channel<uint16_t>(fwPtr->waveformSamples.size() / fwPtr->maxBucketSize, static_cast<size_t>(fwPtr->maxBucketSize), waveformData));
-            //ret->points->addChannel<uint16_t>(waveformChannel, "waveform");
-        } else{
-            std::cout << "[LabelIO] No Waveform found" << groupName << std::endl;
+            reduction->setPointBuffer(ret->points);
+            ret->points = reduction->getReducedPoints();
         }
     }
-
 
     return ret;
 }
