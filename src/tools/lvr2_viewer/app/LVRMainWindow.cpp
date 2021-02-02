@@ -158,6 +158,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionHideScannerPosition = new QAction("Hide scanner position(s)");
     m_actionShowCamPosition = new QAction("Show Camera Position", this);
     m_actionShowCamTrajectory = new QAction("Show Camera Trajectory", this);
+    m_actionRemoveCamTrajectory = new QAction("Remove Camera Trajectory", this);
     m_actionRemoveCamPosition = new QAction("Remove Camera Position", this);
 
     this->addAction(m_actionCopyModelItem);
@@ -175,6 +176,7 @@ LVRMainWindow::LVRMainWindow()
 
     m_scanCamContextMenu = new QMenu();
     m_scanCamContextMenu->addAction(m_actionShowCamTrajectory);
+    m_scanCamContextMenu->addAction(m_actionRemoveCamTrajectory);
 
     m_labelTreeParentItemContextMenu = new QMenu();
     m_labelTreeParentItemContextMenu->addAction(m_actionAddLabelClass);
@@ -397,6 +399,7 @@ LVRMainWindow::~LVRMainWindow()
     delete m_actionReductionAlgorithm;
     delete m_actionShowCamPosition;
     delete m_actionShowCamTrajectory;
+    delete m_actionRemoveCamTrajectory;
     delete m_actionRemoveCamPosition;
     delete m_actionShowScannerPosition;
     delete m_actionHideScannerPosition;
@@ -447,6 +450,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionReductionAlgorithm, SIGNAL(triggered()), this, SLOT(changeReductionAlgorithm()));
     QObject::connect(m_actionShowCamPosition, SIGNAL(triggered()), this, SLOT(showCamPosition()));
     QObject::connect(m_actionShowCamTrajectory, SIGNAL(triggered()), this, SLOT(showCamTrajectory()));
+    QObject::connect(m_actionRemoveCamTrajectory, SIGNAL(triggered()), this, SLOT(removeCamTrajectory()));
     QObject::connect(m_actionRemoveCamPosition, SIGNAL(triggered()), this, SLOT(removeCamPosition()));
 
     QObject::connect(m_actionShowScannerPosition, SIGNAL(triggered()), this, SLOT(showScannerPosition()));
@@ -671,6 +675,28 @@ void LVRMainWindow::hideScannerPosition()
     refreshView();
 }
 
+void LVRMainWindow::removeCamTrajectory()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRScanCamItem* camItem = static_cast<LVRScanCamItem*>(items.first());
+
+        int i;
+        for(i = 0; i < camItem->childCount(); i++)
+        {
+            if (camItem->type() == LVRScanCamItemType)
+            {
+                if (camItem->child(i)->type() == LVRScanImageItemType)
+                {
+                    LVRScanImageItem* imgItem = static_cast<LVRScanImageItem*>(camItem->child(i));
+                    imgItem->getScanImageBridge()->removePosActor(m_renderer);
+                }
+            }
+        }
+        refreshView();
+    }
+}
 
 void LVRMainWindow::showCamTrajectory()
 {
@@ -692,6 +718,10 @@ void LVRMainWindow::showCamTrajectory()
                     Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(camItem->child(i)->child(0)->child(1))->extrinsics();
                     Transformd trans = static_cast<Transformd>(ext);
                     Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
+                    Vector4<double> view = trans1 * trans * Vector4<double>(0,0,1,0);
+                    Vector4<double> up = trans1 * trans * Vector4<double>(0,-1,0,0);
+                    Vector4<double> side = trans1 * trans * Vector4<double>(-1, 0,0,0);
+
                     vtkSmartPointer<vtkSphereSource> sphereSource1 = 
                         vtkSmartPointer<vtkSphereSource>::New();
                     //std::cout << pos(0) << " " << pos(1) << " " << pos(2) << std::endl;
@@ -706,11 +736,26 @@ void LVRMainWindow::showCamTrajectory()
                     vtkSmartPointer<vtkActor> actor1 = 
                         vtkSmartPointer<vtkActor>::New();
                     actor1->SetMapper(mapper1);
-                    static_cast<LVRScanImageItem*>(camItem->child(i))->getScanImageBridge()->addPosActor(m_renderer, actor1);
-                    refreshView();
+                    Vec start(pos(0), pos(1), pos(2));
+                    Vec end(pos(0) + 0.5 * view(0), pos(1) + 0.5 * view(1), pos(2) + 0.5 * view(2));
+                    LVRVtkArrow* arrow = new LVRVtkArrow(start, end);
+                    arrow->setTmpColor(0, 0, 1);
+       
+                    Vec endUp(pos(0) + 0.5 * up(0), pos(1) + 0.5 * up(1), pos(2) + 0.5 * up(2));
+                    LVRVtkArrow* arrowUp = new LVRVtkArrow(start, endUp);
+                    arrowUp->setTmpColor(0, 1, 0);
+                    
+                    Vec endSide(pos(0) + 0.5 * side(0), pos(1) + 0.5 * side(1), pos(2) + 0.5 * side(2));
+                    LVRVtkArrow* arrowSide = new LVRVtkArrow(start, endSide);
+                    arrowSide->setTmpColor(1, 0, 0);
+                    
+                    std::vector<LVRVtkArrow*> arrows = {arrow, arrowUp, arrowSide};
+                    static_cast<LVRScanImageItem*>(camItem->child(i))->getScanImageBridge()->addPosActor(m_renderer, actor1, arrows);
+
                 }
             }
         }
+        refreshView();
     }
 }
 
@@ -739,6 +784,9 @@ void LVRMainWindow::showCamPosition()
         Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(imgItem->child(0)->child(1))->extrinsics();
         Transformd trans = static_cast<Transformd>(ext);
         Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
+        Vector4<double> view = trans1 * trans * Vector4<double>(0,0,1,0);
+        Vector4<double> up = trans1 * trans * Vector4<double>(0,-1,0,0);
+        Vector4<double> side = trans1 * trans * Vector4<double>(-1, 0,0,0);
 
         vtkSmartPointer<vtkSphereSource> sphereSource1 = 
             vtkSmartPointer<vtkSphereSource>::New();
@@ -754,7 +802,21 @@ void LVRMainWindow::showCamPosition()
         vtkSmartPointer<vtkActor> actor1 = 
             vtkSmartPointer<vtkActor>::New();
         actor1->SetMapper(mapper1);
-        imgItem->getScanImageBridge()->addPosActor(m_renderer, actor1);
+        Vec start(pos(0), pos(1), pos(2));
+        Vec end(pos(0) + 0.5 * view(0), pos(1) + 0.5 * view(1), pos(2) + 0.5 * view(2));
+        LVRVtkArrow* arrow = new LVRVtkArrow(start, end);
+        arrow->setTmpColor(0, 0, 1);
+
+        Vec endUp(pos(0) + 0.5 * up(0), pos(1) + 0.5 * up(1), pos(2) + 0.5 * up(2));
+        LVRVtkArrow* arrowUp = new LVRVtkArrow(start, endUp);
+        arrowUp->setTmpColor(0, 1, 0);
+
+        Vec endSide(pos(0) + 0.5 * side(0), pos(1) + 0.5 * side(1), pos(2) + 0.5 * side(2));
+        LVRVtkArrow* arrowSide = new LVRVtkArrow(start, endSide);
+        arrowSide->setTmpColor(1, 0, 0);
+        
+        std::vector<LVRVtkArrow*> arrows = {arrow, arrowUp, arrowSide};
+        imgItem->getScanImageBridge()->addPosActor(m_renderer, actor1, arrows);
     }
     
 

@@ -257,6 +257,7 @@ public Q_SLOTS:
     void removeCamPosition();
     void showCamPosition();
     void showCamTrajectory();
+    void removeCamTrajectory();
     void showScannerPosition();
     void hideScannerPosition();
 
@@ -419,6 +420,7 @@ private:
     QAction*                            m_actionHideScannerPosition;
     QAction*                            m_actionShowCamPosition;
     QAction*                            m_actionShowCamTrajectory;
+    QAction*                            m_actionRemoveCamTrajectory;
     QAction*                            m_actionRemoveCamPosition;
     QAction*                            m_actionSetViewToCamera;
     
