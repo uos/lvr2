@@ -97,7 +97,7 @@ public:
     void setModels(std::vector<ModelBridgePtr> models);
     void setVisibility(bool visible);
 
-    void showScannerPosition(vtkSmartPointer<vtkRenderer> renderer);
+    void showScannerPosition(vtkSmartPointer<vtkRenderer> renderer, int scaleFactor);
     void hideScannerPosition(vtkSmartPointer<vtkRenderer> renderer);
     bool scannerPositionIsVisible();
 

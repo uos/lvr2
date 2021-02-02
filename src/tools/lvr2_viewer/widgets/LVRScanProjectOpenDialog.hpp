@@ -11,6 +11,7 @@
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 #include "LVRReductionAlgorithmDialog.hpp"
+#include "../vtkBridge/LVRScanProjectBridge.hpp"
 
 
 #include "ui_LVRScanProjectOpenDialogUI.h"
@@ -82,6 +83,12 @@ public:
      */
     ReductionAlgorithmPtr reductionPtr() {return m_reductionPtr;}
 
+        /**
+     * @brief Returns ProjectType
+     * 
+     * @return ProjectType
+     */
+    ProjectScale projectScale() {return m_projectScale;}
 
     /**
      *  @brief Return whether the dialog was finished with OK
@@ -100,6 +107,9 @@ public Q_SLOTS:
     /// Called when a diffent reduction was selected
     void reductionSelectionChanged(int index);
 
+    /// Called when a diffent reduction was selected
+    void projectScaleSelectionChanged(int index);
+
     //Called when OK is pressed
     void acceptOpen();
 
@@ -111,6 +121,8 @@ private:
     /// Updates the list of available schemas
     /// depending on selected scan project type
     void updateAvailableSchemas();
+
+    void initAvailableScales();
 
     void addReductionTypes();
 
@@ -138,6 +150,8 @@ private:
     ProjectType                     m_projectType;
 
     ReductionAlgorithmPtr           m_reductionPtr;
+
+    ProjectScale                    m_projectScale;
 
     bool                            m_successful;
 };

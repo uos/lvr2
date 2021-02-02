@@ -165,7 +165,7 @@ public Q_SLOTS:
     void comboBoxIndexChanged(int index);
     void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
-    void loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io = nullptr);
+    void loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io = nullptr, ProjectScale scale = cm);
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();
     void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
