@@ -47,6 +47,10 @@
 namespace lvr2
 {
 
+enum ProjectScale
+{
+    mm = 1, cm = 10, m = 1000
+};
 
 /**
  * @brief   Main class for conversion of LVR ScanProjects instances to vtk actors. This class
@@ -61,7 +65,7 @@ public:
      * @brief       Constructor. Parses the model information and generates vtk actor
      *              instances for the given data.
      */
-    LVRScanProjectBridge(ScanProjectPtr project);
+    LVRScanProjectBridge(ScanProjectPtr project, ProjectScale scale = cm);
 
     LVRScanProjectBridge(const LVRScanProjectBridge& b);
     LVRScanProjectBridge(ModelBridgePtr project);
@@ -87,10 +91,13 @@ public:
 
     std::vector<ScanPositionBridgePtr> getScanPositions();
 
+    ProjectScale getScale();
+
 private:
 
     std::vector<ScanPositionBridgePtr> m_scanPositions;
     ScanProjectPtr m_scanproject;
+    ProjectScale m_scale;
 
 };
 
