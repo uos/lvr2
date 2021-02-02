@@ -10,6 +10,7 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     m_schema(nullptr),
     m_kernel(nullptr),
     m_projectType(NONE),
+    m_projectScale(cm),
     m_reductionPtr(nullptr),
     m_successful(false)
 {
@@ -17,7 +18,8 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     m_ui = new LVRScanProjectOpenDialogUI;
     m_ui->setupUi(this);
     m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
-
+    
+    initAvailableScales();
     connectSignalsAndSlots();
     addReductionTypes();    
 }
@@ -28,6 +30,7 @@ void LVRScanProjectOpenDialog::connectSignalsAndSlots()
     QObject::connect(m_ui->toolButtonPath, SIGNAL(pressed()), this, SLOT(openPathDialog()));    
     QObject::connect(m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptOpen()));
     QObject::connect(m_ui->comboBoxSchema, SIGNAL(currentIndexChanged(int)), this, SLOT(schemaSelectionChanged(int)));
+    QObject::connect(m_ui->comboBoxScale, SIGNAL(currentIndexChanged(int)), this, SLOT(projectScaleSelectionChanged(int)));
     QObject::connect(m_ui->pushButtonReduction, SIGNAL(pressed()), this, SLOT(openReductionDialog()));
 }
 
@@ -77,6 +80,24 @@ void LVRScanProjectOpenDialog::reductionSelectionChanged(int index)
     }
 }
 
+void LVRScanProjectOpenDialog::projectScaleSelectionChanged(int index)
+{
+    switch(index)
+    {
+        case 0:
+            m_projectScale = mm;
+            break;
+        case 1:
+            m_projectScale = cm;
+            break;
+        case 2:
+            m_projectScale = m;
+            break;
+        default:
+            break;
+    }
+}
+
 void LVRScanProjectOpenDialog::updateDirectorySchema(int index)
 {
     switch(index)
@@ -97,6 +118,17 @@ void LVRScanProjectOpenDialog::updateHDF5Schema(int index)
             m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5V2());
             break;
     }
+}
+
+void LVRScanProjectOpenDialog::initAvailableScales()
+{
+    // Clear all schema entries in combo box
+    QComboBox* b = m_ui->comboBoxScale;
+    b->clear();
+    b->addItem("mm");
+    b->addItem("cm");
+    b->addItem("m");
+    b->setCurrentIndex(1);
 }
 
 void LVRScanProjectOpenDialog::updateAvailableSchemas()

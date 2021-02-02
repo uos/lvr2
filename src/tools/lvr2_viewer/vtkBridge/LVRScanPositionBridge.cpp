@@ -74,7 +74,7 @@ void LVRScanPositionBridge::setVisibility(bool visible)
 }
 
 
-void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> renderer)
+void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> renderer, int scaleFactor)
 {
     if(m_cylinderActor != nullptr)
     {
@@ -82,30 +82,36 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     }
     vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkSmartPointer<vtkCylinderSource>::New();
     //cylinderSource->SetCenter(m_pose.x, m_pose.y, m_pose.z+0.15);
-    double startPoint[3], endpoint[3];
+
+    double radius = 0.015 * scaleFactor;
+    double height = 0.03 * scaleFactor;
+
+    double startPoint[3];
     startPoint[0] = m_pose.x;
     startPoint[1] = m_pose.y;
-    startPoint[2] = m_pose.z;
+    startPoint[2] = m_pose.z + (height / 2);
 
-    cylinderSource->SetRadius(0.15);
-    cylinderSource->SetHeight(0.3);
+    cylinderSource->SetRadius(radius);
+    cylinderSource->SetHeight(height);
     cylinderSource->SetResolution(100);
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
     transform->Translate(startPoint);   // translate to starting point
-    transform->RotateX(-90.0);          // align cylinder to x axis
+    transform->RotateX(90.0 + m_pose.p);           // align cylinder to x axis
 
     // Transform the polydata
     vtkSmartPointer<vtkTransformPolyDataFilter> transformPD = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     transformPD->SetTransform(transform);
     transformPD->SetInputConnection(cylinderSource->GetOutputPort());
 
+    vtkSmartPointer<vtkTransform> transformTires = vtkSmartPointer<vtkTransform>::New();
+    transformTires->Translate(startPoint);
+    transformTires->RotateX(90.0 + m_pose.r);
     // Create a mapper and actor
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(transformPD->GetOutputPort());
     m_cylinderActor = vtkSmartPointer<vtkActor>::New();
     m_cylinderActor->SetMapper(mapper);
     m_cylinderActor->GetProperty()->SetColor(250.0/255.0, 128.0/255.0, 114.0/255.0);
-    
     
     renderer->AddActor(m_cylinderActor);
 

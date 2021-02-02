@@ -626,19 +626,22 @@ void LVRMainWindow::showScannerPosition()
     if (items.size() > 0)
     {        
         LVRScanPositionItem* posItem;
+        LVRScanProjectItem* projItem;
         QTreeWidgetItem* item = items.first();
         if (item->type() == LVRScanPositionItemType)
-        {
+        {   
+            projItem = static_cast<LVRScanProjectItem*>(item->parent());
             posItem = static_cast<LVRScanPositionItem*>(item);
-            posItem->getScanPositionBridge()->showScannerPosition(m_renderer);
+            posItem->getScanPositionBridge()->showScannerPosition(m_renderer, (int)projItem->getScanProjectBridge()->getScale());
         } 
         else if (item->type() == LVRScanProjectItemType)
         {
+            projItem = static_cast<LVRScanProjectItem*>(item);
             LVRScanPositionItem* posItem;
             for( int i = 0; i < item->childCount(); ++i)
             {
                 posItem = static_cast<LVRScanPositionItem*>(item->child(i));
-                posItem->getScanPositionBridge()->showScannerPosition(m_renderer);
+                posItem->getScanPositionBridge()->showScannerPosition(m_renderer, (int)projItem->getScanProjectBridge()->getScale());
             }
         }
     }
@@ -1907,13 +1910,13 @@ void LVRMainWindow::unloadPointCloudData()
 
 }
 
-void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io)
+void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io, ProjectScale scale)
 {
     this->checkBoxShowFocal->setChecked(false);
 
     std::vector<ScanPositionPtr> positions = scanProject->positions;
 
-    ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
+    ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject, scale));
     bridge->addActors(m_renderer);
     LVRScanProjectItem* item = new LVRScanProjectItem(bridge, io, "ScanProject");
     QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
@@ -2036,7 +2039,7 @@ void LVRMainWindow::changeReductionAlgorithm()
             newBridge->addActors(m_renderer);
             if(posItem->getScanPositionBridge()->scannerPositionIsVisible()) {
                 posItem->getScanPositionBridge()->hideScannerPosition(m_renderer);
-                newBridge->showScannerPosition(m_renderer);
+                newBridge->showScannerPosition(m_renderer, (int)projItem->getScanProjectBridge()->getScale());
             }
             posItem->setBridge(newBridge);
 
@@ -3729,14 +3732,6 @@ void LVRMainWindow::openIntermediaProject()
 
 void LVRMainWindow::openScanProject()
 {
-    // QString fileName = QFileDialog::getOpenFileName(this,
-    //             tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
-    // if(!QFile::exists(fileName))
-    // {
-    //     return;
-    // }
-    // openHDF5(fileName.toStdString());
-
     LVRScanProjectOpenDialog* dialog = new LVRScanProjectOpenDialog(this);
     
     showLoading();
@@ -3758,6 +3753,7 @@ void LVRMainWindow::openScanProject()
 
     LVRScanProjectOpenDialog::ProjectType projectType = dialog->projectType();
     ReductionAlgorithmPtr reduction = dialog->reductionPtr();
+    ProjectScale scale = dialog->projectScale();
 
     ScanProjectPtr scanProject;
     std::shared_ptr<FeatureBuild<ScanProjectIO>> io;
@@ -3783,7 +3779,7 @@ void LVRMainWindow::openScanProject()
         }
     }
     
-    loadScanProject(scanProject, QString::fromStdString(kernel->fileResource()), io);
+    loadScanProject(scanProject, QString::fromStdString(kernel->fileResource()), io, scale);
     hideLoading();
     delete dialog;
 }
