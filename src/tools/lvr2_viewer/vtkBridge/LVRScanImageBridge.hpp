@@ -40,6 +40,7 @@
 
 #include "LVRPointBufferBridge.hpp"
 #include "LVRMeshBufferBridge.hpp"
+#include "LVRVtkArrow.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
@@ -86,7 +87,7 @@ public:
      */
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
-    void        addPosActor(vtkSmartPointer<vtkRenderer> renderer ,vtkSmartPointer<vtkActor> actor);
+    void        addPosActor(vtkSmartPointer<vtkRenderer> renderer ,vtkSmartPointer<vtkActor> actor, std::vector<LVRVtkArrow*> arrows);
 
     void        removePosActor(vtkSmartPointer<vtkRenderer> renderer);
 
@@ -105,6 +106,7 @@ private:
     vtkSmartPointer<vtkImageData> imageData;
     vtkSmartPointer<vtkActor2D> imageActor;
     vtkSmartPointer<vtkActor> posActor;
+    std::vector<LVRVtkArrow*> m_arrows;
 };
 
 typedef boost::shared_ptr<LVRScanImageBridge> ScanImageBridgePtr;
