@@ -83,7 +83,7 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkSmartPointer<vtkCylinderSource>::New();
     //cylinderSource->SetCenter(m_pose.x, m_pose.y, m_pose.z+0.15);
 
-    double radius = 0.015 * scaleFactor;
+    double radius = 0.0075 * scaleFactor;
     double height = 0.03 * scaleFactor;
 
     double startPoint[3];
