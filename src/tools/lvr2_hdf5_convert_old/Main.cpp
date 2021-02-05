@@ -155,7 +155,9 @@ bool hdf5IOTest()
 
 void unitTest()
 {
-    std::cout << "Hdf5-IO Test" << std::endl;
+    LOG(Logger::INFO) << "Hdf5-IO Test" << std::endl;
+    
+    LOG.tab();
     bool hdf5_success = true;
     for(size_t i=0; i<10; i++)
     {
@@ -163,15 +165,19 @@ void unitTest()
             hdf5_success = false;
             break;
         }
+        LOG(Logger::DEBUG) << i << " success." << std::endl;
     }
+    LOG.deltab();
     if(hdf5_success)
     {
-        std::cout << "Hdf5-IO success." << std::endl;
+        LOG(Logger::HIGHLIGHT) << "Hdf5-IO success." << std::endl;
     } else {
-        std::cout << "TODO: Fix Hdf5-IO" << std::endl;
+        LOG(Logger::ERROR) << "TODO: Fix Hdf5-IO" << std::endl;
     }
     
-    std::cout << "Directory-IO Test" << std::endl;
+    std::cout << std::endl;
+    LOG(Logger::INFO) << "Directory-IO Test" << std::endl;
+    LOG.tab();
     bool dir_success = true;
     for(size_t i=0; i<10; i++)
     {
@@ -179,16 +185,16 @@ void unitTest()
             dir_success = false;
             break;
         }
+        LOG(Logger::DEBUG) << i << " success." << std::endl;
     }
+    LOG.deltab();
 
     if(dir_success) {
-        std::cout << "Directory-IO Success." << std::endl;
+        LOG(Logger::HIGHLIGHT) << "Directory-IO success." << std::endl;
     } else {
-        std::cout << "TODO: Fix Directory-IO" << std::endl;
+        LOG(Logger::ERROR) << "TODO: Fix Directory-IO" << std::endl;
     }
 }
-
-// static Logger<LoggingLevel::DEBUG> LOG;
 
 void loggerTest()
 {
@@ -238,7 +244,9 @@ void loggerTest()
 
 int main(int argc, char** argv)
 {
-    loggerTest();
+    LOG.setLoggerLevel(Logger::DEBUG);
+    unitTest();
+    // loggerTest();
     // std::cout << "\t" << "Bla" << Logger() << std::endl;
 
     return 0;
