@@ -3,7 +3,7 @@
 // #include "lvr2/io/descriptions/DirectoryIO.hpp"
 #include "lvr2/io/descriptions/HDF5IO.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaHDF5.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaSLAM.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 
@@ -451,9 +451,7 @@ bool compare(ScanProjectPtr sp1, ScanProjectPtr sp2)
 void ioTest()
 {
     // std::string filename = "test";
-
     // ScanProjectPtr sp = dummyScanProject();
-
     // /// WRITE TO HDF5
     // HDF5KernelPtr hdf5_kernel(new HDF5Kernel(filename + ".h5"));
     // HDF5SchemaPtr hdf5_schema(new ScanProjectSchemaHDF5V2());
@@ -478,24 +476,22 @@ void hdf5IOTest()
 {
     std::string filename = "scan_project.h5";
     HDF5KernelPtr kernel(new HDF5Kernel(filename));
-    HDF5SchemaPtr schema(new ScanProjectSchemaRaw(filename));
+    HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
 
     descriptions::HDF5IO hdf5io(kernel, schema);
 
     auto sp = dummyScanProject();
     hdf5io.save(sp);
 
-    auto sp_loaded = hdf5io.ScanProjectIO::load();
-    if(sp_loaded)
-    {
-        std::cout << "Loaded scan project!" << std::endl;
-        if(compare(sp, sp_loaded))
-        {
-            std::cout <<  "IO: success" << std::endl;
-        }  else {
-            std::cout << "IO: fail" << std::endl; 
-        }
-    }
+    
+
+    // std::string dirname = "scan_project_directory";
+
+    // DirectoryKernelPtr kernel2(new DirectoryKernel(dirname));
+    // DirectorySchemaPtr schema2(new ScanProjectSchemaRaw(dirname));
+
+    // DirectoryIO dirio(kernel2, schema2);
+    // dirio.save(sp);
 }
 
 
@@ -524,6 +520,8 @@ void hdf5IOTest()
 
 int main(int argc, char** argv)
 {
+    hdf5IOTest();
+
     if(argc > 1)
     {
         std::string infilename = argv[1];

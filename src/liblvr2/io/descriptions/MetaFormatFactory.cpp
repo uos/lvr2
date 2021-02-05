@@ -1,4 +1,5 @@
 #include "lvr2/io/descriptions/MetaFormatFactory.hpp"
+#include "lvr2/io/IOUtils.hpp"
 
 namespace lvr2
 {
@@ -48,6 +49,20 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             // std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesOutPath << std::endl;
             writeFrame(transform, framesOutPath);
         }
+
+        // Or transformation. If present, write frames file
+        if (node["transformation"])
+        {
+            Transformf transform = node["transformation"].as<Transformf>();
+            //Construct .pose file path and save
+            boost::filesystem::path outfilePath(outfile);
+            boost::filesystem::path dir = outfilePath.parent_path();
+            boost::filesystem::path framesPath(outfilePath.stem().string() + ".frames");
+            boost::filesystem::path framesOutPath = p.parent_path() / framesPath;
+            // std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesOutPath << std::endl;
+            writeFrame(transform, framesOutPath);
+        }
+
     } else if(p.extension().string() == "") {
         // no extension specified: HDF5-Schemas
         // use yaml

@@ -28,7 +28,7 @@ set(LVR2_SOURCES
     io/AttributeMeshIOBase.cpp
     io/PPMIO.cpp
     io/PLYIO.cpp
-    # io/IOUtils.cpp
+    io/IOUtils.cpp
     io/STLIO.cpp
     io/UosIO.cpp
     io/PCDIO.cpp
@@ -55,7 +55,7 @@ set(LVR2_SOURCES
     io/descriptions/ScanProjectSchemaRaw.cpp
     # io/descriptions/ScanProjectSchemaSLAM.cpp
     # io/descriptions/ScanProjectSchemaHyperlib.cpp
-    # io/descriptions/ScanProjectSchemaHDF5V2.cpp
+    io/descriptions/ScanProjectSchemaHDF5.cpp
     # io/descriptions/LabelScanProjectSchemaHDF5V2.cpp
     io/descriptions/DirectoryKernel.cpp
     io/descriptions/MetaFormatFactory.cpp

@@ -583,7 +583,7 @@ void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
                 }
 
                 // transform points?
-                scan->registration = registration;
+                scan->transformation = registration;
                 scan->poseEstimation = pose_estimate;
 
                 scans.push_back(scan);
