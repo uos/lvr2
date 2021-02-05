@@ -907,7 +907,7 @@ YAML::Node getAttributeMeta(
                 back[yamlNames.back()] = *getAttribute<std::string>(g, attributeName);
             } 
             else {
-                std::cout << h5type.string() << ": type not implemented. " << std::endl;
+                // std::cout << h5type.string() << ": type not implemented. " << std::endl;
             }
         }
         else if(dims.size() == 1)

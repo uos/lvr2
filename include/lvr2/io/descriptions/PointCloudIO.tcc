@@ -34,6 +34,7 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
     const std::string& group, 
     const std::string& name) const
 {
+    // std::cout << "[IO: PointCloudIO - load]: " << group << ", " << name << std::endl;
     boost::filesystem::path p(name);
     if(p.extension() == "") {
         // no extension: assuming to store each channel

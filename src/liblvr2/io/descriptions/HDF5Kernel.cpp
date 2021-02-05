@@ -318,7 +318,6 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
         throw std::runtime_error("[Hdf5 - ImageIO]: Hdf5 file not open.");
     }
     
-
     return ret;
 }
 
@@ -330,13 +329,7 @@ void HDF5Kernel::loadMetaYAML(
     std::string group, container;
     std::tie(group, container) = hdf5util::validateGroupDataset(group_, container_);
 
-    // if(container == "meta.yaml")
-    // {
-    //     container = "";
-    //     std::tie(group, container) = hdf5util::validateGroupDataset(group, container);
-    // }
-
-    std::cout << "[HDF5Kernel - loadMetaYAML]: Open Meta YAML '" << group << " , " << container << "'" << std::endl;
+    // std::cout << "[HDF5Kernel - loadMetaYAML]: Open Meta YAML '" << group << " , " << container << "'" << std::endl;
     
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
     if(hg.isValid())

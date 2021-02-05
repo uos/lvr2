@@ -61,6 +61,9 @@ ScanPtr ScanIO<FeatureBase>::load(
         return ret;
     }
 
+    // std::cout << "[ScanIO - load] Description:" << std::endl;
+    // std::cout << d << std::endl;
+
     if(d.metaName)
     {
         if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
@@ -83,6 +86,8 @@ ScanPtr ScanIO<FeatureBase>::load(
     } else {
         ret->points = m_pclIO->loadPointCloud(*d.groupName);
     }
+
+    // std::cout << "Loaded: " << ret->points->numPoints() << std::endl;
 
     return ret;
 }

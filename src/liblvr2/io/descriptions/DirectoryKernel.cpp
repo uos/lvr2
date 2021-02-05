@@ -320,7 +320,7 @@ std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
 }
 
 std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
-    const std::string& group, const std::string& sensor_type) const
+    const std::string& group, const std::string& type) const
 {
     std::unordered_map<std::string, YAML::Node> ret;
 
@@ -332,9 +332,9 @@ std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
             YAML::Node meta = loadMetaInformation(
                 entry.path().string());
 
-            if(meta["sensor_type"])
+            if(meta["type"])
             {
-                if(meta["sensor_type"].as<std::string>() == sensor_type)
+                if(meta["type"].as<std::string>() == type)
                 {
                     ret[entry.path().stem().string()] = meta;
                 }

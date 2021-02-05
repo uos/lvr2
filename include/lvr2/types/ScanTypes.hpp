@@ -262,10 +262,6 @@ struct CameraImage : SensorDataType, Transformable
     double                          timestamp;
 };
 
-
-
-
-
 // /*****************************************************************************
 //  * @brief   Struct to represent a scan project with marker showing if a scan
 //  *          pose has been changed
@@ -332,7 +328,6 @@ struct CameraImage : SensorDataType, Transformable
 // {
 //     /// Sensor type flag
 //     static constexpr char                          sensorType[] = "HyperspectralPanorama";
-
 //     /// OpenCV representation
 //     std::vector<HyperspectralPanoramaChannelPtr>   channels;
 // };

@@ -6,6 +6,7 @@ set(LVR2_HDF5_CONVERT_OLD_SOURCES
     Main.cpp
     Options.cpp
     src/Hdf5ReaderOld.cpp
+    src/ScanTypesCompare.cpp
 )
 
 #####################################################################################

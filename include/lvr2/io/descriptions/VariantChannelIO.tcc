@@ -159,6 +159,7 @@ boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
         return ret;
     }
 
+    // std::string data_type = mc.typeName();
     std::string data_type = node["data_type"].as<std::string>();
     
     // load channel with correct datatype
