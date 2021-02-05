@@ -1,3 +1,5 @@
+#include "Logging.hpp"
+
 #include "Options.hpp"
 
 // #include "lvr2/io/descriptions/DirectoryIO.hpp"
@@ -31,6 +33,7 @@
 
 #include "Hdf5ReaderOld.hpp"
 #include "ScanTypesCompare.hpp"
+
 
 using namespace lvr2;
 
@@ -150,29 +153,6 @@ bool hdf5IOTest()
     return equal(sp, sp_loaded);
 }
 
-// void metaHdf5Test()
-// {
-//     std::string filename = "scan_project_test.h5";
-
-//     auto h5file = hdf5util::open(filename);
-    
-//     // std::string metaQuery = "raw/00000000/lidar_00000000/meta.yaml";
-//     std::string metaGroup = "00000000";
-
-//     HighFive::Group g = hdf5util::getGroup(h5file, metaGroup, true);
-    
-//     YAML::Node meta;
-//     Camera c;
-//     meta = c;
-//     hdf5util::setAttributeMeta(g, meta);
-
-//     // YAML::Node meta = hdf5util::getAttributeMeta(g);
-//     // std::cout << meta <<  std::endl;
-
-//     YAML::Node meta_loaded = hdf5util::getAttributeMeta(g);
-//     std::cout << meta_loaded << std::endl;
-// }
-
 void unitTest()
 {
     std::cout << "Hdf5-IO Test" << std::endl;
@@ -208,13 +188,60 @@ void unitTest()
     }
 }
 
+// static Logger<LoggingLevel::DEBUG> LOG;
+
+void loggerTest()
+{
+    using namespace lvr2;
+
+    // Logger<LoggingLevel::DEBUG> log;
+
+    LOG << "Hallo" << std::endl;
+
+    LOG.setLoggerLevel(lvr2::Logger::DEBUG);
+
+    LOG(lvr2::Logger::ERROR) << "TEEEST" << std::endl;
+    LOG.tab();
+
+    for(size_t i=0; i<2; i++)
+    {
+        LOG(lvr2::Logger::WARNING) << "i: " << i << std::endl;
+        // lvr2::cout(lvr2::Logger::WARNING) << "i: " << i << std::endl;
+        LOG.tab();
+        for(size_t j=0; j<2; j++)
+        {
+            LOG(lvr2::Logger::INFO) << "j: " << j << std::endl;
+
+            LOG.tab();
+            for(size_t k=0; k<2; k++)
+            {
+                LOG(lvr2::Logger::DEBUG) << "k: " << k << std::endl;
+            
+                Transformd T = Transformd::Identity();
+                LOG(lvr2::Logger::DEBUG) << T << std::endl << std::endl;
+
+                MultiChannelMap m;
+                m["hallo"] = Channel<float>(3,3);
+                LOG(lvr2::Logger::DEBUG) << m << std::endl;
+            }
+            LOG.deltab();
+        }
+        LOG.deltab();
+    }
+    LOG.deltab();
+
+    LOG(Logger::Level::HIGHLIGHT) << "Finished" << std::endl;
+
+
+
+}
+
 int main(int argc, char** argv)
 {
-    unitTest();
+    loggerTest();
+    // std::cout << "\t" << "Bla" << Logger() << std::endl;
 
     return 0;
-    
-    
     
     if(argc > 1)
     {

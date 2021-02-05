@@ -80,7 +80,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const VariantChannel<T...>& ch)
     {
-        os << "type: " << ch.type() << ", " << static_cast <const base &>(ch);
+        os << "type: " << ch.typeName() << ", " << static_cast <const base &>(ch);
         return os;
     }
 
