@@ -15,9 +15,10 @@ LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) :
     m_pose.x = pos[0];
     m_pose.y = pos[1];
     m_pose.z = pos[2];
-    m_pose.r = angles[0];
-    m_pose.t = angles[1];
-    m_pose.p = angles[2];
+    m_pose.r = -angles[0] * 180 / PI;
+    m_pose.t = -angles[1] * 180 / PI;
+    m_pose.p = -angles[2] * 180 / PI;
+    std::cerr << "Pose " << pos[0] << " " << pos[1] << " " << pos[2] << " " << angles[0] << " " << angles[1] << " " << angles[2] << std::endl;
     for(auto scan : position->scans)
     {
             ModelPtr model(new Model);
