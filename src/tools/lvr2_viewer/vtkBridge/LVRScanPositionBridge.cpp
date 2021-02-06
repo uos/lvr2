@@ -84,8 +84,8 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkSmartPointer<vtkCylinderSource>::New();
     //cylinderSource->SetCenter(m_pose.x, m_pose.y, m_pose.z+0.15);
 
-    double radius = 0.0075 * scaleFactor;
-    double height = 0.03 * scaleFactor;
+    double radius = 0.0075 * static_cast<double>(scaleFactor);
+    double height = 0.03 * static_cast<double>(scaleFactor);
 
     double startPoint[3];
     startPoint[0] = m_pose.x;
@@ -96,17 +96,20 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     cylinderSource->SetHeight(height);
     cylinderSource->SetResolution(100);
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
-    transform->Translate(startPoint);   // translate to starting point
-    transform->RotateX(90.0 + m_pose.p);           // align cylinder to x axis
+    transform->PostMultiply();
+    transform->RotateX(m_pose.r + 90.0);
+    transform->RotateY(m_pose.t);
+    transform->RotateZ(m_pose.p);
+    transform->Translate(m_pose.x, m_pose.y, m_pose.z + (height / 2));
 
     // Transform the polydata
     vtkSmartPointer<vtkTransformPolyDataFilter> transformPD = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     transformPD->SetTransform(transform);
     transformPD->SetInputConnection(cylinderSource->GetOutputPort());
 
-    vtkSmartPointer<vtkTransform> transformTires = vtkSmartPointer<vtkTransform>::New();
-    transformTires->Translate(startPoint);
-    transformTires->RotateX(90.0 + m_pose.r);
+    // vtkSmartPointer<vtkTransform> transformTires = vtkSmartPointer<vtkTransform>::New();
+    // transformTires->Translate(startPoint);
+    // transformTires->RotateX(90.0 + m_pose.r);
     // Create a mapper and actor
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(transformPD->GetOutputPort());
