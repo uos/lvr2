@@ -10,7 +10,7 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     m_schema(nullptr),
     m_kernel(nullptr),
     m_projectType(NONE),
-    m_projectScale(cm),
+    m_projectScale(m),
     m_reductionPtr(nullptr),
     m_successful(false)
 {
@@ -128,7 +128,7 @@ void LVRScanProjectOpenDialog::initAvailableScales()
     b->addItem("mm");
     b->addItem("cm");
     b->addItem("m");
-    b->setCurrentIndex(1);
+    b->setCurrentIndex(2);
 }
 
 void LVRScanProjectOpenDialog::updateAvailableSchemas()
