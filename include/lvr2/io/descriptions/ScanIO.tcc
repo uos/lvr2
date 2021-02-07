@@ -143,8 +143,16 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     {
         if(ret->points)
         {
-            reduction->setPointBuffer(ret->points);
-            ret->points = reduction->getReducedPoints();
+            AllReductionAlgorithm* test = dynamic_cast<AllReductionAlgorithm*> (reduction.get()); 
+            if(test != nullptr)
+            {        
+                ret->points =  reduction->getReducedPoints();
+            } 
+            else 
+            {
+                reduction->setPointBuffer(ret->points);
+                ret->points = reduction->getReducedPoints();
+            }
         }
     }
 
