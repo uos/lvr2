@@ -239,9 +239,8 @@ public Q_SLOTS:
     void toggleWireframe(bool checkboxState);
     void toogleEDL(bool checkboxstate);
 
-    void adjustLoading();
-    void showLoading();
-    void hideLoading();
+    void initLoading();
+    void showLoading(bool state);
     void refreshView();
     void updateView();
     void saveCamera();
@@ -299,6 +298,7 @@ Q_SIGNALS:
     void labelAdded(QTreeWidgetItem*);
     void hidePoints(int, bool);
     void labelLoaded(int, std::vector<int>);
+    void showLoadingLabel();
 
 private:
     void setupQVTK();
@@ -431,7 +431,7 @@ private:
     QAction*                            m_actionRemoveInstance;
     QAction*                            m_actionShowWaveform;
 
-    QProgressBar*                       m_progressBar;
+    QLabel*                       m_loadingLabel;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 

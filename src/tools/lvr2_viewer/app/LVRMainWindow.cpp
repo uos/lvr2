@@ -192,7 +192,6 @@ LVRMainWindow::LVRMainWindow()
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
     m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
     m_treeParentItemContextMenu->addAction(m_actionCopyModelItem);
-    
 
     m_treeChildItemContextMenu = new QMenu;
     m_treeChildItemContextMenu->addAction(m_actionExportModelTransformed);
@@ -238,14 +237,6 @@ LVRMainWindow::LVRMainWindow()
     // Toolbar item "Classification"
     m_actionSimple_Plane_Classification = this->actionSimple_Plane_Classification;
     m_actionFurniture_Recognition = this->actionFurniture_Recognition;
-
-
-    m_progressBar = new QProgressBar(this);    
-    m_progressBar->setRange(0, 0);
-    m_progressBar->setValue(0);
-    adjustLoading();
-    m_progressBar->hide();
-
 
     // Toolbar item "About"
     // TODO: Replace "About"-QMenu with "About"-QAction
@@ -320,8 +311,9 @@ LVRMainWindow::LVRMainWindow()
      actionRenderEDM->setEnabled(false);
 #endif
 
+    m_loadingLabel = new QLabel(this); 
+    initLoading();
     connectSignalsAndSlots();
-
 }
 
 LVRMainWindow::~LVRMainWindow()
@@ -427,6 +419,7 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(labelTreeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showLabelTreeContextMenu(const QPoint&)));
 
+    QObject::connect(this, SIGNAL(showLoadingLabel()), m_loadingLabel, SLOT(show()));
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
     QObject::connect(this->actionShow_LabelDock, SIGNAL(toggled(bool)), this, SLOT(toggleLabelDock(bool)));
@@ -1989,18 +1982,16 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
     root->setText(0, base);
     root->setData(0,Qt::UserRole, filename);
     root->addChild(item);
-    item->setExpanded(false);    
+    item->setExpanded(false); 
+    showLoading(false);
     refreshView();
 }
-
 
 void LVRMainWindow::changeReductionAlgorithm()
 {
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
-
     LVRReductionAlgorithmDialog* dialog = new LVRReductionAlgorithmDialog(this);
-    
-    showLoading();
+    showLoading(true);
     // Display
     dialog->setModal(true);
     dialog->raise();
@@ -2009,16 +2000,14 @@ void LVRMainWindow::changeReductionAlgorithm()
 
     if(!dialog->successful())
     {   
-        hideLoading();
+        showLoading(false);
         return;
     }
 
     ReductionAlgorithmPtr reduction = dialog->reductionPtr();
-
      if(items.size() > 0)
     {
         QTreeWidgetItem* item = items.first();
-
         if(item->type() == LVRModelItemType)
         {
             std::cout << "Scan " << item->data(0, Qt::UserRole).toInt() << std::endl;
@@ -2143,10 +2132,9 @@ void LVRMainWindow::changeReductionAlgorithm()
 
         }
     }
-    
+    showLoading(false);
     refreshView();
     delete dialog;
-    hideLoading();
 }
 
 
@@ -3795,9 +3783,7 @@ void LVRMainWindow::openIntermediaProject()
 void LVRMainWindow::openScanProject()
 {
     LVRScanProjectOpenDialog* dialog = new LVRScanProjectOpenDialog(this);
-    
-    showLoading();
-
+    showLoading(true);
     // Display
     dialog->setModal(true);
     dialog->raise();
@@ -3806,10 +3792,11 @@ void LVRMainWindow::openScanProject()
 
     ScanProjectSchemaPtr schema = dialog->schema();
     FileKernelPtr kernel = dialog->kernel();
+    
 
     if(!dialog->successful())
     {
-        hideLoading();
+        showLoading(false);
         return;
     }
 
@@ -3842,7 +3829,6 @@ void LVRMainWindow::openScanProject()
     }
     
     loadScanProject(scanProject, QString::fromStdString(kernel->fileResource()), io, scale);
-    hideLoading();
     delete dialog;
 }
  
@@ -3868,23 +3854,21 @@ void LVRMainWindow::openHDF5(std::string fileName)
     updateView();
 }
 
-void LVRMainWindow::adjustLoading()
+void LVRMainWindow::initLoading()
 {
-    m_progressBar->move(this->size().width()-m_progressBar->size().width(),this->size().height()-m_progressBar->size().height());
+    m_loadingLabel->setText("Loading...");
+    m_loadingLabel->setAlignment(Qt::AlignCenter);
+    m_loadingLabel->setStyleSheet("background-color: rgba(0,0,0,75%); color: white; font-weight: bold;");
+    m_loadingLabel->move(this->width()-m_loadingLabel->width(),this->height()-m_loadingLabel->height());
+    showLoading(false);
 }
 
-void LVRMainWindow::showLoading()
-{   
-    adjustLoading();
-    m_progressBar->raise();
-    m_progressBar->activateWindow();
-    m_progressBar->show();
+void LVRMainWindow::showLoading(bool state)
+{
+    state ? m_loadingLabel->show() : m_loadingLabel->hide();
 }
 
-void LVRMainWindow::hideLoading()
-{
-    m_progressBar->hide();
-}
+
 
 
 void LVRMainWindow::exportLabels()
