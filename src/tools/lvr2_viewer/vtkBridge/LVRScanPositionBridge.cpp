@@ -1,6 +1,7 @@
 #include "LVRScanPositionBridge.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
 
+
 namespace lvr2
 {
 
@@ -18,7 +19,6 @@ LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) :
     m_pose.r = -angles[0] * 180 / PI;
     m_pose.t = -angles[1] * 180 / PI;
     m_pose.p = -angles[2] * 180 / PI;
-    std::cerr << "Pose " << pos[0] << " " << pos[1] << " " << pos[2] << " " << angles[0] << " " << angles[1] << " " << angles[2] << std::endl;
     for(auto scan : position->scans)
     {
             ModelPtr model(new Model);
@@ -111,6 +111,9 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     // transformTires->Translate(startPoint);
     // transformTires->RotateX(90.0 + m_pose.r);
     // Create a mapper and actor
+
+    
+
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(transformPD->GetOutputPort());
     m_cylinderActor = vtkSmartPointer<vtkActor>::New();
@@ -118,6 +121,44 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     m_cylinderActor->GetProperty()->SetColor(250.0/255.0, 128.0/255.0, 114.0/255.0);
     
     renderer->AddActor(m_cylinderActor);
+
+
+
+    double startD[] = {0, 0, 0, 1};
+    double endD[] = {0, 1, 0, 1};
+    double endSideD[] = {1, 0, 0, 1};
+    double endUpD[] = {0, 0, -1, 1};
+    
+    transform->MultiplyPoint(startD, startD);
+    transform->MultiplyPoint(endD, endD);
+    transform->MultiplyPoint(endSideD, endSideD);
+    transform->MultiplyPoint(endUpD, endUpD);
+
+    Vec start(startD[0], startD[1], startD[2]);
+    Vec end(endD[0], endD[1], endD[2]);
+    Vec endSide(endSideD[0], endSideD[1], endSideD[2]);
+    Vec endUp(endUpD[0], endUpD[1], endUpD[2]);
+
+
+    LVRVtkArrow* arrowSide = new LVRVtkArrow(start, endSide);
+    arrowSide->setTmpColor(1, 0, 0);
+
+
+    LVRVtkArrow* arrowUp = new LVRVtkArrow(start, endUp);
+    arrowUp->setTmpColor(0, 1, 0);
+
+
+    LVRVtkArrow* arrow = new LVRVtkArrow(start, end);
+    arrow->setTmpColor(0, 0, 1);
+
+
+    renderer->AddActor(arrow->getArrowActor());
+    renderer->AddActor(arrowUp->getArrowActor());
+    renderer->AddActor(arrowSide->getArrowActor());
+
+    m_arrows.push_back(arrow);
+    m_arrows.push_back(arrowUp);
+    m_arrows.push_back(arrowSide);    
 
     m_scannerPositionIsVisible = true;
 }
@@ -127,6 +168,14 @@ void LVRScanPositionBridge::hideScannerPosition(vtkSmartPointer<vtkRenderer> ren
     renderer->RemoveActor(m_cylinderActor);
     m_cylinderActor = nullptr;
     m_scannerPositionIsVisible = false;
+    for (auto arrow : m_arrows)
+    {
+        renderer->RemoveActor(arrow->getArrowActor());
+        renderer->RemoveActor(arrow->getStartActor());
+        renderer->RemoveActor(arrow->getEndActor());
+        delete arrow;
+    }
+    m_arrows.clear();
 }
 bool LVRScanPositionBridge::scannerPositionIsVisible()
 {

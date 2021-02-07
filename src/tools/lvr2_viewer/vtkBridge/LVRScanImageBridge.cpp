@@ -123,7 +123,9 @@ void LVRScanImageBridge::removePosActor(vtkSmartPointer<vtkRenderer> renderer)
         renderer->RemoveActor(arrow->getArrowActor());
         renderer->RemoveActor(arrow->getStartActor());
         renderer->RemoveActor(arrow->getEndActor());
+        delete arrow;
     }
+    m_arrows.clear();
 
 }
 LVRScanImageBridge::~LVRScanImageBridge()

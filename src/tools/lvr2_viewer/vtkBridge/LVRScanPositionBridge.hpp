@@ -48,6 +48,7 @@
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <boost/shared_ptr.hpp>
+#include "LVRVtkArrow.hpp"
 
 
 namespace lvr2
@@ -107,6 +108,7 @@ private:
     std::vector<ModelBridgePtr> models;
     ScanPositionPtr             m_scanposition;
     Pose                        m_pose;
+    std::vector<LVRVtkArrow*>   m_arrows;
 
 };
 

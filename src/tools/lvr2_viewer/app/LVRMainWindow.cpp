@@ -722,8 +722,8 @@ void LVRMainWindow::showCamTrajectory()
                     Transformd trans = static_cast<Transformd>(ext);
                     Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
                     Vector4<double> view = trans1 * trans * Vector4<double>(0,0,1,0);
-                    Vector4<double> up = trans1 * trans * Vector4<double>(0,-1,0,0);
-                    Vector4<double> side = trans1 * trans * Vector4<double>(-1, 0,0,0);
+                    Vector4<double> up = trans1 * trans * Vector4<double>(0,1,0,0);
+                    Vector4<double> side = trans1 * trans * Vector4<double>(1, 0,0,0);
 
                     vtkSmartPointer<vtkSphereSource> sphereSource1 = 
                         vtkSmartPointer<vtkSphereSource>::New();
