@@ -65,7 +65,7 @@ public:
      * @brief       Constructor. Parses the model information and generates vtk actor
      *              instances for the given data.
      */
-    LVRScanProjectBridge(ScanProjectPtr project, ProjectScale scale = cm);
+    LVRScanProjectBridge(ScanProjectPtr project, ProjectScale scale = m);
 
     LVRScanProjectBridge(const LVRScanProjectBridge& b);
     LVRScanProjectBridge(ModelBridgePtr project);

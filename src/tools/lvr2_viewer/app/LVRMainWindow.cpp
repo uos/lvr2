@@ -2127,7 +2127,7 @@ void LVRMainWindow::changeReductionAlgorithm()
             }
 
             projItem->getScanProjectBridge()->removeActors(m_renderer);
-            ScanProjectBridgePtr newBridge(new LVRScanProjectBridge(scanProj));
+            ScanProjectBridgePtr newBridge(new LVRScanProjectBridge(scanProj, projItem->getScanProjectBridge()->getScale()));
             newBridge->addActors(m_renderer);
             projItem->setBridge(newBridge);
 
