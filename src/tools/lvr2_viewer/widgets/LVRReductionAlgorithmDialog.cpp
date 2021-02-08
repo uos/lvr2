@@ -15,6 +15,7 @@ LVRReductionAlgorithmDialog::LVRReductionAlgorithmDialog(QWidget* parent):
     m_parent = parent;
     m_ui = new LVRReductionAlgorithmDialogUI;
     m_ui->setupUi(this);
+    this->setFixedSize(this->size().width(), this->size().height());
 
     connectSignalsAndSlots();
     addReductionTypes();

@@ -1987,16 +1987,11 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
     refreshView();
 }
 
-void LVRMainWindow::resizeEvent(QResizeEvent* event)
-{
-    QMainWindow::resizeEvent(event);
-    resizeLoading();
-}
-
 void LVRMainWindow::changeReductionAlgorithm()
 {
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     LVRReductionAlgorithmDialog* dialog = new LVRReductionAlgorithmDialog(this);
+    resizeLoading();
     showLoading(true);
     // Display
     dialog->setModal(true);
@@ -3789,6 +3784,7 @@ void LVRMainWindow::openIntermediaProject()
 void LVRMainWindow::openScanProject()
 {
     LVRScanProjectOpenDialog* dialog = new LVRScanProjectOpenDialog(this);
+    resizeLoading();
     showLoading(true);
     // Display
     dialog->setModal(true);
@@ -3809,7 +3805,7 @@ void LVRMainWindow::openScanProject()
     LVRScanProjectOpenDialog::ProjectType projectType = dialog->projectType();
     ReductionAlgorithmPtr reduction = dialog->reductionPtr();
     ProjectScale scale = dialog->projectScale();
-
+    
     ScanProjectPtr scanProject;
     std::shared_ptr<FeatureBuild<ScanProjectIO>> io;
     switch(projectType)

@@ -17,6 +17,7 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     m_parent = parent;
     m_ui = new LVRScanProjectOpenDialogUI;
     m_ui->setupUi(this);
+    this->setFixedSize(this->size().width(), this->size().height());
     m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
     
     initAvailableScales();
