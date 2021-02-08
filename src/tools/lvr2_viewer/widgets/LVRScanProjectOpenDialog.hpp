@@ -99,7 +99,11 @@ public Q_SLOTS:
     /// Shows the QFileDialog
     void openPathDialog();
 
+    /// Called to open the reduction algorithm dialog
     void openReductionDialog();
+
+    /// Called when a diffent project type was selected
+    void projectTypeSelectionChanged(int index);
 
     /// Called when a diffent schema was selected
     void schemaSelectionChanged(int index);

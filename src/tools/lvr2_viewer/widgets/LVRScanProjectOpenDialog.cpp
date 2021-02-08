@@ -32,6 +32,7 @@ void LVRScanProjectOpenDialog::connectSignalsAndSlots()
     QObject::connect(m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptOpen()));
     QObject::connect(m_ui->comboBoxSchema, SIGNAL(currentIndexChanged(int)), this, SLOT(schemaSelectionChanged(int)));
     QObject::connect(m_ui->comboBoxScale, SIGNAL(currentIndexChanged(int)), this, SLOT(projectScaleSelectionChanged(int)));
+    QObject::connect(m_ui->comboBoxProjectType, SIGNAL(currentIndexChanged(int)), this, SLOT(projectTypeSelectionChanged(int)));
     QObject::connect(m_ui->pushButtonReduction, SIGNAL(pressed()), this, SLOT(openReductionDialog()));
 }
 
@@ -43,6 +44,14 @@ void LVRScanProjectOpenDialog::acceptOpen()
 bool LVRScanProjectOpenDialog::successful()
 {
     return m_successful;
+}
+
+void LVRScanProjectOpenDialog::projectTypeSelectionChanged(int index)
+{
+    m_ui->lineEditPath->clear();
+    m_ui->toolButtonPath->setDown(false);
+    m_projectType = NONE;
+    updateAvailableSchemas();
 }
 
 void LVRScanProjectOpenDialog::schemaSelectionChanged(int index)
