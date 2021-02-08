@@ -241,6 +241,8 @@ public Q_SLOTS:
 
     void initLoading();
     void showLoading(bool state);
+    void resizeEvent(QResizeEvent* event);
+    void resizeLoading();
     void refreshView();
     void updateView();
     void saveCamera();

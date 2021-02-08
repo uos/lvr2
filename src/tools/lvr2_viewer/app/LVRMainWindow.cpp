@@ -1987,6 +1987,12 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
     refreshView();
 }
 
+void LVRMainWindow::resizeEvent(QResizeEvent* event)
+{
+    QMainWindow::resizeEvent(event);
+    resizeLoading();
+}
+
 void LVRMainWindow::changeReductionAlgorithm()
 {
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
@@ -3861,6 +3867,11 @@ void LVRMainWindow::initLoading()
     m_loadingLabel->setStyleSheet("background-color: rgba(0,0,0,75%); color: white; font-weight: bold;");
     m_loadingLabel->move(this->width()-m_loadingLabel->width(),this->height()-m_loadingLabel->height());
     showLoading(false);
+}
+
+void LVRMainWindow::resizeLoading()
+{
+    m_loadingLabel->move(this->width()-m_loadingLabel->width(),this->height()-m_loadingLabel->height());
 }
 
 void LVRMainWindow::showLoading(bool state)
