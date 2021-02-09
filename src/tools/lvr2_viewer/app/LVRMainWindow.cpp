@@ -678,6 +678,7 @@ void LVRMainWindow::removeCamTrajectory()
     {
         LVRScanCamItem* camItem = static_cast<LVRScanCamItem*>(items.first());
 
+        //go through all the children of the scancam and remove actors
         int i;
         for(i = 0; i < camItem->childCount(); i++)
         {
@@ -699,11 +700,14 @@ void LVRMainWindow::showCamTrajectory()
     QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
     if(items.size() > 0)
     {
+        //get cam and ScanPosition item
         LVRScanCamItem* camItem = static_cast<LVRScanCamItem*>(items.first());
         LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(camItem->parent());
 
+        //get registration matrix from ScanPosition
         Transformd trans1 = posItem->getScanPositionBridge()->getScanPosition()->registration;
         
+        //for each cam item, show cam Position
         int i;
         for(i = 0; i < camItem->childCount(); i++)
         {
@@ -711,16 +715,19 @@ void LVRMainWindow::showCamTrajectory()
             {
                 if (camItem->child(i)->type() == LVRScanImageItemType)
                 {
+                    //get extrinsics for the camera
                     Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(camItem->child(i)->child(0)->child(1))->extrinsics();
                     Transformd trans = static_cast<Transformd>(ext);
+
+                    //calculate position and orientation vectors for the camera
                     Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
                     Vector4<double> view = trans1 * trans * Vector4<double>(0,0,1,0);
                     Vector4<double> up = trans1 * trans * Vector4<double>(0,1,0,0);
                     Vector4<double> side = trans1 * trans * Vector4<double>(1, 0,0,0);
 
+                    //create sphere to represent camerra
                     vtkSmartPointer<vtkSphereSource> sphereSource1 = 
                         vtkSmartPointer<vtkSphereSource>::New();
-                    //std::cout << pos(0) << " " << pos(1) << " " << pos(2) << std::endl;
                     sphereSource1->SetCenter(pos(0), pos(1), pos(2));
                     sphereSource1->SetRadius(0.1);
                     sphereSource1->Update();
@@ -732,6 +739,8 @@ void LVRMainWindow::showCamTrajectory()
                     vtkSmartPointer<vtkActor> actor1 = 
                         vtkSmartPointer<vtkActor>::New();
                     actor1->SetMapper(mapper1);
+
+                    //create arrows for orientation of the camera
                     Vec start(pos(0), pos(1), pos(2));
                     Vec end(pos(0) + 0.5 * view(0), pos(1) + 0.5 * view(1), pos(2) + 0.5 * view(2));
                     LVRVtkArrow* arrow = new LVRVtkArrow(start, end);
@@ -745,6 +754,7 @@ void LVRMainWindow::showCamTrajectory()
                     LVRVtkArrow* arrowSide = new LVRVtkArrow(start, endSide);
                     arrowSide->setTmpColor(1, 0, 0);
                     
+                    //add sphere actor and aarow actors to the ScanImageBridge and renderer
                     std::vector<LVRVtkArrow*> arrows = {arrow, arrowUp, arrowSide};
                     static_cast<LVRScanImageItem*>(camItem->child(i))->getScanImageBridge()->addPosActor(m_renderer, actor1, arrows);
 
@@ -773,17 +783,22 @@ void LVRMainWindow::showCamPosition()
 
     if(items.size() > 0)
     {
+        //get image and position item
         LVRScanImageItem* imgItem = static_cast<LVRScanImageItem*>(items.first());
         LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(imgItem->parent()->parent());
+        
+        //get registration of scanPosition and extrinsics of camera
         Transformd trans1 = posItem->getScanPositionBridge()->getScanPosition()->registration;
-
         Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(imgItem->child(0)->child(1))->extrinsics();
         Transformd trans = static_cast<Transformd>(ext);
+
+        //calculate position and orientation vectors for the camera
         Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
         Vector4<double> view = trans1 * trans * Vector4<double>(0,0,1,0);
         Vector4<double> up = trans1 * trans * Vector4<double>(0,-1,0,0);
         Vector4<double> side = trans1 * trans * Vector4<double>(-1, 0,0,0);
 
+        //create sphere to represent camera
         vtkSmartPointer<vtkSphereSource> sphereSource1 = 
             vtkSmartPointer<vtkSphereSource>::New();
         std::cout << pos(0) << " " << pos(1) << " " << pos(2) << std::endl;
@@ -798,6 +813,8 @@ void LVRMainWindow::showCamPosition()
         vtkSmartPointer<vtkActor> actor1 = 
             vtkSmartPointer<vtkActor>::New();
         actor1->SetMapper(mapper1);
+
+        //construct arrows to represent orientation of the camera
         Vec start(pos(0), pos(1), pos(2));
         Vec end(pos(0) + 0.5 * view(0), pos(1) + 0.5 * view(1), pos(2) + 0.5 * view(2));
         LVRVtkArrow* arrow = new LVRVtkArrow(start, end);
@@ -811,6 +828,7 @@ void LVRMainWindow::showCamPosition()
         LVRVtkArrow* arrowSide = new LVRVtkArrow(start, endSide);
         arrowSide->setTmpColor(1, 0, 0);
         
+        //add sphere actor and arrow acotrs to ScanImageBridge and renderer 
         std::vector<LVRVtkArrow*> arrows = {arrow, arrowUp, arrowSide};
         imgItem->getScanImageBridge()->addPosActor(m_renderer, actor1, arrows);
     }
@@ -1993,39 +2011,42 @@ void LVRMainWindow::changeReductionAlgorithm()
     LVRReductionAlgorithmDialog* dialog = new LVRReductionAlgorithmDialog(this);
     resizeLoading();
     showLoading(true);
-    // Display
+    // Display dialog
     dialog->setModal(true);
     dialog->raise();
     dialog->activateWindow();
     dialog->exec();
 
+    //check if dialog was successful
     if(!dialog->successful())
     {   
         showLoading(false);
         return;
     }
 
+    //check for item type and load accordingly
     ReductionAlgorithmPtr reduction = dialog->reductionPtr();
-     if(items.size() > 0)
+    if(items.size() > 0)
     {
         QTreeWidgetItem* item = items.first();
         if(item->type() == LVRModelItemType)
         {
-            std::cout << "Scan " << item->data(0, Qt::UserRole).toInt() << std::endl;
-
+            //get ModelItem and ScanProjectItem
             LVRModelItem* modelItem = static_cast<LVRModelItem*>(item);
             LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item->parent()->parent());
 
-            
+            //get diirectory/file name
             QString filename = modelItem->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
             std::string tmp = filename.toStdString();
             QFileInfo info(filename);
 
             ScanPtr scan;
 
+            //get relevant numbers for loading scan
             int scanpos_nr = modelItem->parent()->data(0, Qt::UserRole).toInt();
             int scan_nr = modelItem->data(0, Qt::UserRole).toInt();
             
+            //load scan with IO from ScanProjectItem
             std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
             if (io == nullptr)
             {
@@ -2043,12 +2064,14 @@ void LVRMainWindow::changeReductionAlgorithm()
                 scan = dirIO->loadScan(scanpos_nr, scan_nr, reduction);
             }
 
+            //create new model and change replace old model in ModelItem
             ModelPtr model(new Model(scan->points));
             modelItem->getModelBridge()->removeActors(m_renderer);
             ModelBridgePtr newBridge(new LVRModelBridge(model));
             newBridge->addActors(m_renderer);
             modelItem->setBridge(newBridge);
 
+            //replace ModelBridge in ScanPositionBridge 
             LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(modelItem->parent());
             std::vector<ModelBridgePtr> models = posItem->getScanPositionBridge()->getModels();
             models[scan_nr] = newBridge;
@@ -2057,18 +2080,21 @@ void LVRMainWindow::changeReductionAlgorithm()
         }
         else if(item->type() == LVRScanPositionItemType)
         {
-            std::cout << "ScanPosition " << item->data(0, Qt::UserRole).toInt() << std::endl;
-
+            //get ModelItem and ScanProjectItem
             LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(item);
             LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item->parent());
+
+            //get diirectory/file name
             QString filename = posItem->parent()->parent()->data(0, Qt::UserRole).toString();
             std::string tmp = filename.toStdString();
             QFileInfo info(filename);
 
             ScanPositionPtr scanPos;
 
+            //get number of scanposition
             int scanpos_nr = posItem->data(0, Qt::UserRole).toInt();
             
+            //load ScanPosition from IO of ScanProjectItem
             std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
             if (io == nullptr)
             {
@@ -2086,14 +2112,20 @@ void LVRMainWindow::changeReductionAlgorithm()
                 scanPos = dirIO->loadScanPosition(scanpos_nr, reduction);
             }
             
+            //replace ScanPositionBridge in ScanPositionItem
             posItem->getScanPositionBridge()->removeActors(m_renderer);
             ScanPositionBridgePtr newBridge(new LVRScanPositionBridge(scanPos));
             newBridge->addActors(m_renderer);
-            if(posItem->getScanPositionBridge()->scannerPositionIsVisible()) {
+            if(posItem->getScanPositionBridge()->scannerPositionIsVisible()) 
+            {
                 posItem->getScanPositionBridge()->hideScannerPosition(m_renderer);
                 newBridge->showScannerPosition(m_renderer, (int)projItem->getScanProjectBridge()->getScale());
             }
             posItem->setBridge(newBridge);
+
+            std::vector<ScanPositionBridgePtr> positions = projItem->getScanProjectBridge()->getScanPositions();
+            positions[scanpos_nr] = newBridge;
+            projItem->getScanProjectBridge()->setScanPositions(positions);
 
         }
         else if(item->type() == LVRScanProjectItemType)
@@ -2174,23 +2206,32 @@ void LVRMainWindow::setViewToCamera()
         }
         if(item->type() == LVRScanImageItemType)
         {
+            //get image and scanposition item
             LVRScanImageItem* imgItem = static_cast<LVRScanImageItem*>(items.first());
-            imgItem->getScanImageBridge()->removePosActor(m_renderer);
             LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(imgItem->parent()->parent());
+
+            //remove pos actor of the image so that it doesnt block the view 
+            imgItem->getScanImageBridge()->removePosActor(m_renderer);
+
+            //get transformation matrix from scanposition
             Transformd trans1 = posItem->getScanPositionBridge()->getScanPosition()->registration;
 
+            //get extrinsics of the camera and cast it to transformation matrix
             Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(imgItem->child(0)->child(1))->extrinsics();
             Transformd trans = static_cast<Transformd>(ext);
+
+            //calculate cumulative transformation matrix
             Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
+
+            //get vtkcamera and set its position and orientation to the ScanCamera
             vtkCamera* cam = m_renderer->GetActiveCamera();
-            //cam->SetModelTransformMatrix(trans1 * trans);
+            
             cam->SetPosition(pos(0),pos(1),pos(2));
-            std::cerr << "pos: " << pos(0) << " " << pos(1) << " " << pos(2) << std::endl;
+
             Vector4<double> up = trans1 * trans * Vector4<double>(0,-1,0,0);
-            std::cerr << "up: " << up(0) << " " << up(1) << " " << up(2) << std::endl;
             cam->SetViewUp(up(0),up(1),up(2));
+
             Vector4<double> view = trans1 * trans * Vector4<double>(0,0,1,0);
-            std::cerr << "view: " << view(0) << " " << view(1) << " " << view(2) << std::endl;
             cam->SetFocalPoint(view(0) + pos(0), view(1) + pos(1), view(2) + pos(2));
             refreshView();
         }
@@ -3538,10 +3579,13 @@ void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
 {
     if (item->type() == LVRExtrinsicsItemType)
     {
+        //Show extrinsics matrix on double click in separate window
         QMessageBox msgBox;
         LVRExtrinsicsItem* ext = static_cast<LVRExtrinsicsItem*>(item); 
         QString mat;
         QString num;
+
+        //print with fitting format
         for (int i = 0; i < 16; i++)
         {
             if(i % 4 == 0)
@@ -3569,30 +3613,39 @@ void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
     }
     else if (item->type() == LVRScanImageItemType)
     {
+        //get ScanProjectItem and file/directory name of the ScanProject
+        LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item->parent()->parent()->parent());
         QString filename = item->parent()->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
         std::string tmp = filename.toStdString();
         QFileInfo info(filename);
 
+        //get relevant numbers for loading the scanimage
         int img_nr = item->data(0, Qt::UserRole).toInt();
         int cam_nr = item->parent()->data(0, Qt::UserRole).toInt();
         int scanpos_nr = item->parent()->parent()->data(0, Qt::UserRole).toInt();
+
         cv::Mat img;
+
+        //laod image with IO from the ScanProjectItem
+        std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+        if (io == nullptr)
+        {
+            std::cerr << "No IOPtr" << std::endl;
+            return;
+        }
         if (info.suffix() == "h5")
         {
-            HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
-            HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
-            descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-            Description d = hdf5Schema->scanImage(scanpos_nr, cam_nr, img_nr);
-            img = *hdf5Kernel->loadImage(*d.groupName, *d.dataSetName);
+            auto hdf5IO = std::dynamic_pointer_cast<descriptions::HDF5IO>(io);
+            Description d = hdf5IO->m_description->scanImage(scanpos_nr, cam_nr, img_nr);
+            img = *hdf5IO->loadImage(*d.groupName, *d.dataSetName);
         }
         else
         {
-            DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
-            DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
-            DirectoryIO dirIO(dirKernel, hyperlibSchema);
-            Description d = hyperlibSchema->scanImage(scanpos_nr, cam_nr, img_nr);
-            img = *dirKernel->loadImage(*d.groupName, *d.dataSetName);
+            auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+            Description d = dirIO->m_description->scanImage(scanpos_nr, cam_nr, img_nr);
+            img = *dirIO->loadImage(*d.groupName, *d.dataSetName);
         }
+        
 
         #if (CV_VERSION_MAJOR >= 4)
             cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
@@ -3600,6 +3653,7 @@ void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
             cv::cvtColor(img, img, CV_BGR2RGB);
         #endif
 
+        //create new window with pixmap from image
         QImage image(img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
         QPixmap pixMap = QPixmap::fromImage(image);
         QLabel* label = new QLabel(); 

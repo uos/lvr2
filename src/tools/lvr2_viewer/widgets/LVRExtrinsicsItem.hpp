@@ -13,8 +13,20 @@ namespace lvr2
 class LVRExtrinsicsItem : public QTreeWidgetItem
 {
 public:
+
+    /**
+     *  @brief          Constructor. Constructs an Extrinsicsitem from the given extrinsics
+     */
     LVRExtrinsicsItem(Extrinsicsd extrinsics);
+
+    /**
+     *  @brief          Destructor.
+     */
     virtual ~LVRExtrinsicsItem() = default;
+    
+    /**
+     *  @brief          returns the stored extrinsics
+     */
     Extrinsicsd extrinsics();
 
 protected:

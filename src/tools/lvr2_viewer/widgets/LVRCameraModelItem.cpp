@@ -13,25 +13,24 @@ LVRCameraModelItem::LVRCameraModelItem(ScanCamera& cam) :
     setIcon(0, icon);
     setText(0, "CamModel");
 
-
-    m_fxItem = new QTreeWidgetItem(this);
-    m_cxItem = new QTreeWidgetItem(this);
-    m_fyItem = new QTreeWidgetItem(this);
-    m_cyItem = new QTreeWidgetItem(this);
-    m_distortionItem = new QTreeWidgetItem(this);
+    //create items for camera parameters
+    m_fxItem = std::make_shared<QTreeWidgetItem>(this);
+    m_cxItem = std::make_shared<QTreeWidgetItem>(this);
+    m_fyItem = std::make_shared<QTreeWidgetItem>(this);
+    m_cyItem = std::make_shared<QTreeWidgetItem>(this);
+    m_distortionItem = std::make_shared<QTreeWidgetItem>(this);
     
-
-
-    addChild(m_fxItem);
-    addChild(m_cxItem);
-    addChild(m_fyItem);
-    addChild(m_cyItem);
-    addChild(m_distortionItem);
+    //add created items as children
+    addChild(m_fxItem.get());
+    addChild(m_cxItem.get());
+    addChild(m_fyItem.get());
+    addChild(m_cyItem.get());
+    addChild(m_distortionItem.get());
     
     for (int i = 0; i < 4; i++)
     {
-        m_distortionCoef[i] = new QTreeWidgetItem(this);
-        m_distortionItem->addChild(m_distortionCoef[i]);
+        m_distortionCoef[i] = std::make_shared<QTreeWidgetItem>(this);
+        m_distortionItem->addChild(m_distortionCoef[i].get());
     }
 
     setModel(m_model);
@@ -42,6 +41,7 @@ void LVRCameraModelItem::setModel(PinholeModeld& model)
     m_model = model;
     QString num;
 
+    //fill child items with text
     m_fxItem->setText(0, "fx:");
     m_fxItem->setText(1, num.setNum(m_model.fx,'f'));
 

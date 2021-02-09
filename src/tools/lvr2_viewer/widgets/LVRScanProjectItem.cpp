@@ -61,11 +61,14 @@ bool LVRScanProjectItem::isEnabled()
 
 void LVRScanProjectItem::setBridge(ScanProjectBridgePtr bridge)
 {
+    //delete children of item
     m_scanProjectBridge = bridge;
     for(int i = 0; i < bridge->getScanProject()->positions.size(); i++)
     {
         delete child(0);
     }
+
+    //create new child item for each position
     for(int i = 0; i < bridge->getScanProject()->positions.size(); i++)
     {
         std::stringstream pos;
@@ -73,7 +76,6 @@ void LVRScanProjectItem::setBridge(ScanProjectBridgePtr bridge)
         std::string posName = pos.str();
         LVRScanPositionItem* scanPosItem = new LVRScanPositionItem(bridge->getScanPositions()[i], QString::fromStdString(posName));
         addChild(scanPosItem);
-
     }
 }
 

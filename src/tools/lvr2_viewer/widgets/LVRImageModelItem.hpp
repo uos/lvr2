@@ -14,12 +14,19 @@ namespace lvr2
 class LVRImageModelItem : public QTreeWidgetItem
 {
 public:
+    /**
+     *  @brief          Constructor. Constructs an ImageModelItem from the ScanImage.
+     */
     LVRImageModelItem(ScanImage& img);
+
+    /**
+     *  @brief          Destructor.
+     */
     virtual ~LVRImageModelItem() = default;
 
 protected:
-    LVRExtrinsicsItem* m_extrinsics;
-    QTreeWidgetItem* m_timestamp;
+    std::shared_ptr<LVRExtrinsicsItem> m_extrinsics;
+    std::shared_ptr<QTreeWidgetItem> m_timestamp;
 
 };
 

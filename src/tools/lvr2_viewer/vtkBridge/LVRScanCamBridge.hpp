@@ -64,6 +64,10 @@ public:
      */
     LVRScanCamBridge(ScanCameraPtr camera);
 
+    /**
+     *  @brief      Copy constructor
+     */
+
     LVRScanCamBridge(const LVRScanCamBridge& b);
 
     /**
@@ -71,26 +75,12 @@ public:
      */
     virtual ~LVRScanCamBridge();
 
-    /**
-     * @brief       Adds the generated actors to the given renderer
-     */
-    void         addActors(vtkSmartPointer<vtkRenderer> renderer);
 
-    /**
-     * @brief       Removes the generated actors from the given renderer
-     */
-    void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
-
-
-
-    void		setVisibility(bool visible);
-
-
-    // Declare model item classes as friends to have fast access to data chunks
+    // Declare cam item class as friend to have fast access to data chunks
     friend class LVRScanCamItem;
 
 private:
-    ScanCameraPtr cam;
+    ScanCameraPtr m_cam;
 };
 
 typedef boost::shared_ptr<LVRScanCamBridge> ScanCamBridgePtr;

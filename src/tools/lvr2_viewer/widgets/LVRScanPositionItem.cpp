@@ -16,6 +16,7 @@ namespace lvr2
 LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString name) :
     QTreeWidgetItem(LVRScanPositionItemType), m_scanPositionBridge(bridge), m_name(name)
 {
+    //add child items for each scan
     for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
     {
         std::stringstream pos;
@@ -31,6 +32,7 @@ LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString n
         addChild(modelItem);
     }
 
+    //add child items for each cam
     for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
     {
         ScanCamBridgePtr camBridge(new LVRScanCamBridge(bridge->getScanPosition()->cams[0]));
@@ -40,6 +42,7 @@ LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString n
         addChild(camItem);
     }
 
+    //add pose item as child
     LVRPoseItem* posItem = new LVRPoseItem(bridge->getPose());
     addChild(posItem);
 
@@ -81,6 +84,7 @@ bool LVRScanPositionItem::isEnabled()
 
 void LVRScanPositionItem::setBridge(ScanPositionBridgePtr bridge)
 {
+    //delete children of this item
     m_scanPositionBridge = bridge;
     for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
     {
@@ -91,6 +95,8 @@ void LVRScanPositionItem::setBridge(ScanPositionBridgePtr bridge)
         delete child(0);
     }
     delete child(0);
+
+    //create new items for scans
     for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
     {
         std::stringstream pos;
@@ -106,6 +112,7 @@ void LVRScanPositionItem::setBridge(ScanPositionBridgePtr bridge)
         addChild(modelItem);
     }
 
+    //create new items for cams
     for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
     {
         ScanCamBridgePtr camBridge(new LVRScanCamBridge(bridge->getScanPosition()->cams[0]));
@@ -115,6 +122,7 @@ void LVRScanPositionItem::setBridge(ScanPositionBridgePtr bridge)
         addChild(camItem);
     }
 
+    //create new pose item
     LVRPoseItem* posItem = new LVRPoseItem(bridge->getPose());
     addChild(posItem);
 }

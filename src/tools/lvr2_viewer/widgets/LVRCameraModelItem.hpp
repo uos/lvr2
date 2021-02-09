@@ -12,18 +12,29 @@ namespace lvr2
 class LVRCameraModelItem : public QTreeWidgetItem
 {
 public:
+    /**
+     *  @brief          Constructor. Constructs an item with the cameramodel for the given ScanCamera
+     */
     LVRCameraModelItem(ScanCamera& cam);
+    
+    /**
+     *  @brief          Destructor.
+     */
     virtual ~LVRCameraModelItem() = default;
+
+    /**
+     *  @brief          Set the internal model to the given model
+     */
     void setModel(PinholeModeld& model);
 
 protected:
     PinholeModeld m_model;
-    QTreeWidgetItem* m_fxItem;
-    QTreeWidgetItem* m_cxItem;
-    QTreeWidgetItem* m_fyItem;
-    QTreeWidgetItem* m_cyItem;
-    QTreeWidgetItem* m_distortionItem;
-    QTreeWidgetItem* m_distortionCoef[4];
+    std::shared_ptr<QTreeWidgetItem> m_fxItem;
+    std::shared_ptr<QTreeWidgetItem> m_cxItem;
+    std::shared_ptr<QTreeWidgetItem> m_fyItem;
+    std::shared_ptr<QTreeWidgetItem> m_cyItem;
+    std::shared_ptr<QTreeWidgetItem> m_distortionItem;
+    std::shared_ptr<QTreeWidgetItem> m_distortionCoef[4];
 
 };
 

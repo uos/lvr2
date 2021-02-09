@@ -13,12 +13,15 @@ LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) :
     Eigen::Vector3d pos;
     Eigen::Vector3d angles;
     matrixToPose(m_scanposition->registration, pos, angles);
+    //calculate rotation for the models according to the scanposition pose
     m_pose.x = pos[0];
     m_pose.y = pos[1];
     m_pose.z = pos[2];
     m_pose.r = -angles[0] * 180 / PI;
     m_pose.t = -angles[1] * 180 / PI;
     m_pose.p = -angles[2] * 180 / PI;
+    
+    //add all the scans in the scanposition to the models
     for(auto scan : position->scans)
     {
             ModelPtr model(new Model);
@@ -84,14 +87,11 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     vtkSmartPointer<vtkCylinderSource> cylinderSource = vtkSmartPointer<vtkCylinderSource>::New();
     //cylinderSource->SetCenter(m_pose.x, m_pose.y, m_pose.z+0.15);
 
+    //calculate size of cylinder from scale of the project (30 cm high, 15 cm diameter)
     double radius = 75 / static_cast<double>(scaleFactor);
     double height = 300 / static_cast<double>(scaleFactor);
 
-    double startPoint[3];
-    startPoint[0] = m_pose.x;
-    startPoint[1] = m_pose.y;
-    startPoint[2] = m_pose.z + (height / 2);
-
+    //create cylinder and orient it according to the pose
     cylinderSource->SetRadius(radius);
     cylinderSource->SetHeight(height);
     cylinderSource->SetResolution(100);
@@ -107,12 +107,6 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     transformPD->SetTransform(transform);
     transformPD->SetInputConnection(cylinderSource->GetOutputPort());
 
-    // vtkSmartPointer<vtkTransform> transformTires = vtkSmartPointer<vtkTransform>::New();
-    // transformTires->Translate(startPoint);
-    // transformTires->RotateX(90.0 + m_pose.r);
-    // Create a mapper and actor
-
-    
 
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(transformPD->GetOutputPort());
@@ -123,7 +117,7 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     renderer->AddActor(m_cylinderActor);
 
 
-
+    //calculate coordinates and vectors for position and orientation of the scanner
     double startD[] = {0, 0, 0, 1};
     double endD[] = {0, 1, 0, 1};
     double endSideD[] = {1, 0, 0, 1};
@@ -139,7 +133,7 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     Vec endSide(endSideD[0], endSideD[1], endSideD[2]);
     Vec endUp(endUpD[0], endUpD[1], endUpD[2]);
 
-
+    //create arrows for the orientation
     LVRVtkArrow* arrowSide = new LVRVtkArrow(start, endSide);
     arrowSide->setTmpColor(1, 0, 0);
 
@@ -151,11 +145,12 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
     LVRVtkArrow* arrow = new LVRVtkArrow(start, end);
     arrow->setTmpColor(0, 0, 1);
 
-
+    //add arrows to the renderer
     renderer->AddActor(arrow->getArrowActor());
     renderer->AddActor(arrowUp->getArrowActor());
     renderer->AddActor(arrowSide->getArrowActor());
 
+    //store arrows in the member variable
     m_arrows.push_back(arrow);
     m_arrows.push_back(arrowUp);
     m_arrows.push_back(arrowSide);    
@@ -165,6 +160,7 @@ void LVRScanPositionBridge::showScannerPosition(vtkSmartPointer<vtkRenderer> ren
 
 void LVRScanPositionBridge::hideScannerPosition(vtkSmartPointer<vtkRenderer> renderer)
 {
+    //remove scanner and arrow actors from the renderer and delete the actors 
     renderer->RemoveActor(m_cylinderActor);
     m_cylinderActor = nullptr;
     m_scannerPositionIsVisible = false;

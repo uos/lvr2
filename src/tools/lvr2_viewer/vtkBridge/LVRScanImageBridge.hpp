@@ -70,6 +70,9 @@ public:
      */
     LVRScanImageBridge(ScanImagePtr img);
 
+    /**
+     *  @brief      Copy constructor.
+     */
     LVRScanImageBridge(const LVRScanImageBridge& b);
 
     /**
@@ -87,14 +90,23 @@ public:
      */
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
+
+    /**
+     *  @brief          Adds the given position actors to the imagebridge and renderer
+     *  @param actor    Actor representing the position of the camera when taking the scanimage
+     *  @param arrow    Arrows representing a coordinate system for the camera
+     */
     void        addPosActor(vtkSmartPointer<vtkRenderer> renderer ,vtkSmartPointer<vtkActor> actor, std::vector<LVRVtkArrow*> arrows);
 
+    /**
+     *  @brief           Remove the position actors from the renderer
+     */
     void        removePosActor(vtkSmartPointer<vtkRenderer> renderer);
 
-
+    /**
+     *  @brief          Sets the image stored in the ImageBridge to the given image
+     */
     void        setImage(const cv::Mat& img);
-
-    void		setVisibility(bool visible);
 
 
     // Declare scanImage item classes as friends to have fast access to data chunks

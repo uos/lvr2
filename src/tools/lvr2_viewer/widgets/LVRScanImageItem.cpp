@@ -93,18 +93,8 @@ void LVRScanImageItem::setImage(const cv::Mat& img)
     m_scanImageBridge->setImage(img);
 }
 
-void LVRScanImageItem::setVisibility(bool visible)
-{
-	m_scanImageBridge->setVisibility(visible);
-}
 
-void LVRScanImageItem::setScanImageVisibility(int column, bool globalValue)
-{
-	if(checkState(column) == globalValue || globalValue == true)
-	{
-	    setVisibility(checkState(column));
-	}
-}
+
 
 LVRScanImageItem::~LVRScanImageItem()
 {

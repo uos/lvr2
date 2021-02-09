@@ -34,8 +34,7 @@ using Ui::LVRReductionAlgorithmDialogUI;
 namespace lvr2
 {
 /**
- * @brief   Custom dialog that allows to open a scan project
- *          (directory or HDF5) and select a suitable schema.
+ * @brief   Custom dialog that allows to choose a ReductionAlgorithm
  */
 class LVRReductionAlgorithmDialog : public QDialog
 {
@@ -43,18 +42,18 @@ class LVRReductionAlgorithmDialog : public QDialog
 
 public:
     /**
-     * @brief Construct a new LVRScanProjectOpenDialog object
+     * @brief Construct a new LVRReductionAlgorithmDialog object
      */
     LVRReductionAlgorithmDialog() = delete;
 
     /**
-     * @brief Construct a new LVRScanProjectOpenDialog object
+     * @brief Construct a new LVRReductionAlgorithmDialog object
      * @param parent    Parent widget
      */
     LVRReductionAlgorithmDialog(QWidget* parent);
 
     /**
-     * @brief Destroy the LVRScanProjectOpenDialog object
+     * @brief Destroy the LVRSReductionAlgorithmDialog object
      */
     virtual ~LVRReductionAlgorithmDialog() = default;
 

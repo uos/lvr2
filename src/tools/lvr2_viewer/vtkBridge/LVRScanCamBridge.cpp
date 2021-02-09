@@ -46,31 +46,12 @@ class LVRMeshBufferBridge;
 
 LVRScanCamBridge::LVRScanCamBridge(ScanCameraPtr camera)
 {
-    cam = camera;
+    m_cam = camera;
 }
 
 LVRScanCamBridge::LVRScanCamBridge(const LVRScanCamBridge& b)
 {
-
-}
-
-
-void LVRScanCamBridge::addActors(vtkSmartPointer<vtkRenderer> renderer)
-{
-    //TODO IMPLEMENT ME
-    std::cout << "ScanCam addActors()" << std::endl;
-}
-
-void LVRScanCamBridge::removeActors(vtkSmartPointer<vtkRenderer> renderer)
-{
-    //TODO IMPLEMENT ME
-    std::cout << "ScanCam removeActors()" << std::endl;
-}
-
-void LVRScanCamBridge::setVisibility(bool visible)
-{
-    //TODO IMPLEMENT ME
-    std::cout << "ScanCam setVisibility()" << std::endl;
+    m_cam = b.m_cam;
 }
 
 

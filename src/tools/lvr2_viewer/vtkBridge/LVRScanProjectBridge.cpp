@@ -84,6 +84,11 @@ std::vector<ScanPositionBridgePtr> LVRScanProjectBridge::getScanPositions()
     return m_scanPositions; 
 }
 
+void LVRScanProjectBridge::setScanPositions(std::vector<ScanPositionBridgePtr> scanPositions)
+{
+    m_scanPositions = scanPositions;
+}
+
 ProjectScale LVRScanProjectBridge::getScale()
 {
     return m_scale;

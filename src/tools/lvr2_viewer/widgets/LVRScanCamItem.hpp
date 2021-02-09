@@ -48,17 +48,39 @@ namespace lvr2
 class LVRScanCamItem : public QTreeWidgetItem
 {
 public:
+    /**
+     *  @brief          Constructs an item for a ScanCamera
+     *  @param bridge   bridge for the new item
+     *  @param name     name for the new item
+     */
     LVRScanCamItem(ScanCamBridgePtr bridge, QString name = "");
+
+    /**
+     *  @brief          Copy constructor for ScanCamItem
+     */
     LVRScanCamItem(const LVRScanCamItem& item);
+
+    /**
+     *  @brief          Destructor.
+     */
     virtual ~LVRScanCamItem();
 
+    /**
+     *  @brief          Getter for the item name
+     */
     QString         getName();
+
+    /**
+     *  @brief          Setter for the item name
+     *  @param name     name to set
+     */
     void            setName(QString name);
+
+    /**
+     *  @brief          returns whether the item is enabled (checked)
+     */
     bool            isEnabled();
 
-
-public Q_SLOTS:
-	void			setVisibility(bool visible);
 
 protected:
     ScanCamBridgePtr  m_scanCamBridge;

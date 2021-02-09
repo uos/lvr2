@@ -89,7 +89,16 @@ public:
 
     ScanProjectPtr getScanProject();
 
+
+    /**
+     *  @brief      returns the scanpositions stored in the bridge
+     */ 
     std::vector<ScanPositionBridgePtr> getScanPositions();
+
+    /**
+     *  @brief      set the ScanPositions to the given vector
+     */
+    void setScanPositions(std::vector<ScanPositionBridgePtr> scanPositions);
 
     ProjectScale getScale();
 
