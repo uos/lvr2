@@ -27,47 +27,53 @@ struct convert<lvr2::HyperspectralCamera>
     {
         Node node;
 
-        node["sensor_type"] = lvr2::HyperspectralCamera::sensorType;
+        node["type"] = lvr2::HyperspectralCamera::type;
+        node["kind"] = lvr2::HyperspectralCamera::kind;
 
-        node["focalLength"] = camera.focalLength;
-        node["offsetAngle"] = camera.offsetAngle;
+        node["transformation"] = camera.transformation;
+        
+        node["camera_model"] = "cylindric";
 
-        node["extrinsics"] = camera.extrinsics;
-        node["extrinsicsEstimate"] = camera.extrinsicsEstimate;
 
-        node["principal"] = Load("[]");
-        node["principal"].push_back(camera.principal[0]);
-        node["principal"].push_back(camera.principal[1]);
-        node["principal"].push_back(camera.principal[2]);
 
-        node["distortion"] = Load("[]");
-        node["distortion"].push_back(camera.principal[0]);
-        node["distortion"].push_back(camera.principal[1]);
-        node["distortion"].push_back(camera.principal[2]);
+        if(camera.model)
+        {
+            Node model_node;
+
+            model_node["focal_length"] = camera.model->focalLength;
+            model_node["offset_angle"] = camera.model->offsetAngle;
+
+            Node principal_node = Load("[]");
+            principal_node.push_back(camera.model->principal(0));
+            principal_node.push_back(camera.model->principal(1));
+            principal_node.push_back(camera.model->principal(2));
+            model_node["principal"] = principal_node;
+
+            Node distortion_node = Load("[]");
+            distortion_node.push_back(camera.model->distortion(0));
+            distortion_node.push_back(camera.model->distortion(1));
+            distortion_node.push_back(camera.model->distortion(2));
+            model_node["distortion"] = principal_node;
+
+            node["model"] = model_node;
+        }
 
         return node;
     }
 
     static bool decode(const Node& node, lvr2::HyperspectralCamera& camera)
     {
-
-        if (node["sensor_type"].as<std::string>() != lvr2::HyperspectralCamera::sensorType)
+        if (node["type"].as<std::string>() != lvr2::HyperspectralCamera::type)
         {
+            // different hierarchy level
             return false;
         }
 
-        camera.focalLength = node["focalLength"].as<double>();
-        camera.offsetAngle = node["offsetAngle"].as<double>();
-        camera.extrinsics = node["extrinsics"].as<lvr2::Extrinsicsd>();
-        camera.extrinsicsEstimate = node["extrinsicsEstimate"].as<lvr2::Extrinsicsd>();
-
-        camera.principal[0] = node["principal"][0].as<double>();
-        camera.principal[1] = node["principal"][1].as<double>();
-        camera.principal[2] = node["principal"][1].as<double>();
-
-        camera.distortion[0] = node["distortion"][0].as<double>();
-        camera.distortion[1] = node["distortion"][1].as<double>();
-        camera.distortion[2] = node["distortion"][1].as<double>();
+        if(node["kind"].as<std::string>() != lvr2::HyperspectralCamera::kind)
+        {
+            // different sensor type
+            return false;
+        }
 
         return true;
     }

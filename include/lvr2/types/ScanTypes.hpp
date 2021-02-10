@@ -23,8 +23,13 @@ namespace lvr2
 // Groups
 struct ScanProjectType;
 struct ScanPositionType;
+
 struct SensorType;
+// Abstract Sensor?
+using SensorPtr = std::shared_ptr<SensorType>;
 struct SensorDataType;
+using SensorDataPtr = std::shared_ptr<SensorDataType>;
+
 // Container types
 struct ScanProject;
 struct ScanPosition;
@@ -40,6 +45,7 @@ struct CameraImage; // Camera has N CameraImages
 // shared ptr typedefs
 using ScanProjectPtr = std::shared_ptr<ScanProject>;
 using ScanPositionPtr = std::shared_ptr<ScanPosition>;
+
 using LIDARPtr  = std::shared_ptr<LIDAR>;
 using CameraPtr = std::shared_ptr<Camera>;
 using ScanPtr = std::shared_ptr<Scan>;
@@ -262,6 +268,116 @@ struct CameraImage : SensorDataType, Transformable
     double                          timestamp;
 };
 
+
+
+/*****************************************************************************
+ * @brief   Struct to hold a camera hyperspectral panorama
+ *          together with a timestamp
+ * 
+ *****************************************************************************/
+
+struct HyperspectralPanoramaChannel : SensorDataType
+{
+    static constexpr char           kind[]  =  "HyperspectralPanoramaChannel";
+
+    /// Timestamp 
+    double                          timestamp;
+
+    /// OpenCV representation
+    cv::Mat                         channel;
+};
+
+using HyperspectralPanoramaChannelPtr = std::shared_ptr<HyperspectralPanoramaChannel>;
+using HyperspectralPanoramaChannelOptional = boost::optional<HyperspectralPanoramaChannel>;
+
+/*****************************************************************************
+ * @brief   Struct to hold a camera hyperspectral panorama
+ *          together with a timestamp
+ * 
+ *****************************************************************************/
+
+struct HyperspectralPanorama : SensorDataType, Transformable
+{
+    /// Sensor type flag
+    static constexpr char                          kind[] = "HyperspectralPanorama";
+    /// OpenCV representation
+    std::vector<HyperspectralPanoramaChannelPtr>   channels;
+};
+
+using HyperspectralPanoramaPtr = std::shared_ptr<HyperspectralPanorama>;
+using HyperspectralPanoramaOptional = boost::optional<HyperspectralPanorama>;
+
+/*****************************************************************************
+ * @brief   Struct to hold a hyperspectral camera model
+ *          together with intrinsic, extrinsic and further parameters
+ * 
+ *****************************************************************************/
+
+struct HyperspectralCameraModel
+{
+    /// Sensor type flag
+    static constexpr char           kind[] = "HyperspectralCameraModel";
+
+    /// Focal length
+    double                          focalLength;
+
+    /// Offset angle
+    double                          offsetAngle;
+
+    /// Principal x, y, z
+    Vector3d                        principal;
+
+    /// Distortion
+    Vector3d                        distortion;
+};
+
+using HyperspectralCameraModelPtr = std::shared_ptr<HyperspectralCameraModel>;
+
+// /*****************************************************************************
+//  * @brief   Struct to hold a hyperspectral camera
+//  *          together with it's camera model and panoramas
+//  * 
+//  *****************************************************************************/
+
+struct HyperspectralCamera : SensorType, Transformable
+{
+    /// Sensor type flag
+    static constexpr char                    kind[] = "HyperspectralCamera";
+
+    /// Camera model
+    HyperspectralCameraModelPtr              model;
+
+    /// Extrinsics estimate
+    Extrinsicsd                              extrinsicsEstimation;
+
+    /// OpenCV representation
+    std::vector<HyperspectralPanoramaPtr>    panoramas;
+};
+
+using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
+
+/*****************************************************************************
+ * @brief   Represents a scan position consisting of a scan and
+ *          images taken at this position
+ * 
+ ****************************************************************************/
+
+
+
+
+
+// TODO: HowTo represent Labels?
+// Labels at 
+// - points
+// - images (Rect, pixelwise)
+// - faces
+
+
+
+
+
+
+
 // /*****************************************************************************
 //  * @brief   Struct to represent a scan project with marker showing if a scan
 //  *          pose has been changed
@@ -294,123 +410,6 @@ struct CameraImage : SensorDataType, Transformable
 // using LabeledScanProjectEditMarkPtr = std::shared_ptr<LabeledScanProjectEditMark>;
 
 
-/*****************************************************************************
- * @brief   Struct to hold a camera hyperspectral panorama
- *          together with a timestamp
- * 
- *****************************************************************************/
-
-// struct HyperspectralPanoramaChannel
-// {
-//     /// Sensor type flag
-//     static constexpr char           sensorType[] = "HyperspectralPanoramaChannel";
-
-//     /// Timestamp 
-//     double                          timestamp;
-
-//     /// Path to stored image
-//     boost::filesystem::path         channelFile;
-
-//     /// OpenCV representation
-//     cv::Mat                         channel;
-// };
-
-// using HyperspectralPanoramaChannelPtr = std::shared_ptr<HyperspectralPanoramaChannel>;
-// using HyperspectralPanoramaChannelOptional = boost::optional<HyperspectralPanoramaChannel>;
-
-// /*****************************************************************************
-//  * @brief   Struct to hold a camera hyperspectral panorama
-//  *          together with a timestamp
-//  * 
-//  *****************************************************************************/
-
-// struct HyperspectralPanorama
-// {
-//     /// Sensor type flag
-//     static constexpr char                          sensorType[] = "HyperspectralPanorama";
-//     /// OpenCV representation
-//     std::vector<HyperspectralPanoramaChannelPtr>   channels;
-// };
-
-// using HyperspectralPanoramaPtr = std::shared_ptr<HyperspectralPanorama>;
-// using HyperspectralPanoramaOptional = boost::optional<HyperspectralPanorama>;
-
-
-/*****************************************************************************
- * @brief   Struct to hold a hyperspectral camera model
- *          together with intrinsic, extrinsic and further parameters
- * 
- *****************************************************************************/
-
-// struct HyperspectralCameraModel
-// {
-//     /// Sensor type flag
-//     static constexpr char           sensorType[] = "HyperspectralCameraModel";
-
-//     /// Extrinsics 
-//     Extrinsicsd                     extrinsics;
-
-//     /// Extrinsics estimate
-//     Extrinsicsd                     extrinsicsEstimate;
-
-//     /// Focal length
-//     double                          focalLength;
-
-//     /// Offset angle
-//     double                          offsetAngle;
-
-//     /// Principal x, y, z
-//     Vector3d                        principal;
-
-//     /// Distortion
-//     Vector3d                        distortion;
-// };
-
-// using HyperspectralCameraModelPtr = std::shared_ptr<HyperspectralCameraModel>;
-
-// /*****************************************************************************
-//  * @brief   Struct to hold a hyperspectral camera
-//  *          together with it's camera model and panoramas
-//  * 
-//  *****************************************************************************/
-
-// struct HyperspectralCamera
-// {
-//     /// Sensor type flag
-//     static constexpr char                    sensorType[] = "HyperspectralCamera";
-
-//     /// Camera model
-//     // HyperspectralCameraModelPtr              cameraModel;
-
-//     /// Extrinsics 
-//     Extrinsicsd                              extrinsics;
-
-//     /// Extrinsics estimate
-//     Extrinsicsd                              extrinsicsEstimate;
-
-//     /// Focal length
-//     double                                   focalLength;
-
-//     /// Offset angle
-//     double                                   offsetAngle;
-
-//     /// Principal x, y, z
-//     Vector3d                                 principal;
-
-//     /// Distortion
-//     Vector3d                                 distortion;
-
-//     /// OpenCV representation
-//     std::vector<HyperspectralPanoramaPtr>    panoramas;
-// };
-
-// using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
-
-/*****************************************************************************
- * @brief   Represents a scan position consisting of a scan and
- *          images taken at this position
- * 
- ****************************************************************************/
 
 } // namespace lvr2
 

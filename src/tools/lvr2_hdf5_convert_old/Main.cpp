@@ -27,13 +27,11 @@
 
 #include <boost/type_index.hpp>
 
-
 #include <unordered_map>
 #include <unordered_set>
 
 #include "Hdf5ReaderOld.hpp"
 #include "ScanTypesCompare.hpp"
-
 
 using namespace lvr2;
 
@@ -237,9 +235,6 @@ void loggerTest()
     LOG.deltab();
 
     LOG(Logger::Level::HIGHLIGHT) << "Finished" << std::endl;
-
-
-
 }
 
 int main(int argc, char** argv)
