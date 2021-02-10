@@ -4,7 +4,7 @@
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/registration/CameraModels.hpp"
+#include "lvr2/types/CameraModels.hpp"
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
@@ -14,7 +14,8 @@
 
 #include <memory>
 #include <vector>
-#include<string>
+#include <string>
+
 namespace lvr2
 {
 
@@ -182,7 +183,7 @@ struct Camera : SensorType, Transformable
     // TODO: check boost::typeindex<>::pretty_name (contains lvr2 as namespace: "lvr2::Camera")
     static constexpr char           kind[] = "Camera";
     /// Pinhole camera model
-    PinholeModeld                     model;
+    PinholeModel                      model;
     //// META END
     //// HIERARCHY BEGIN
     /// Pointer to a set of images taken at a scan position
