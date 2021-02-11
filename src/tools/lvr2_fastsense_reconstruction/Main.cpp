@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 
     bool fillHoles = false;
     bool smooth = false;
-    bool cleanContours = false;
+    bool contours = false;
     if (argc == 5)
     {
         std::string params(argv[4]);
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
             }
             if (c == 'c')
             {
-                fillHoles = true;
+                contours = true;
             }
         }
     }
@@ -215,7 +215,7 @@ int main(int argc, char** argv)
 
     std::cout << "Finished reconstruction!" << std::endl;
 
-    if (cleanContours)
+    if (contours)
     {
         std::cout << "Start cleaning contours!" << std::endl;
         cleanContours(mesh, 5, 0);
