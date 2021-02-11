@@ -80,7 +80,7 @@ struct Transformable {
     /// ScanPosition: to ScanProject
     /// Sensor: to ScanPosition
     /// SensorData: to Sensor
-    Transformd transformation;
+    Transformd transformation = Transformd::Identity();
 };
 
 /*****************************************************************************
@@ -283,6 +283,7 @@ struct CameraImage : SensorDataType, Transformable
  * 
  *****************************************************************************/
 
+// Not a lvr channel
 struct HyperspectralPanoramaChannel : SensorDataType
 {
     static constexpr char           kind[]  =  "HyperspectralPanoramaChannel";
@@ -291,7 +292,7 @@ struct HyperspectralPanoramaChannel : SensorDataType
     double                          timestamp;
 
     /// wavelength
-    double                          wavelength;
+    // double                          wavelength;
 
     /// wavelength inverval?
     // double                          wavelength[2];

@@ -145,4 +145,46 @@ Description ScanProjectSchemaHDF5::hyperspectralCamera(
     return d;
 }
 
+Description ScanProjectSchemaHDF5::hyperspectralPanorama(
+    const Description& d_parent,
+    const size_t& panoNo) const
+{
+    Description d;
+
+    std::stringstream sstr;
+    sstr << std::setfill('0') << std::setw(8) << panoNo;
+
+    d.groupName = sstr.str();
+    d.metaName = "";
+
+    if(d_parent.groupName)
+    {
+        d.groupName = *d_parent.groupName + "/" + *d.groupName;
+    }
+
+    return d;
+}
+
+Description ScanProjectSchemaHDF5::hyperspectralPanoramaChannel(
+    const Description& d_parent,
+    const size_t& channelNo
+) const
+{
+    Description d;
+
+    std::stringstream sstr;
+    sstr << std::setfill('0') << std::setw(8) << channelNo;
+   
+    d.groupName = "";
+    d.metaName = sstr.str();
+    d.dataSetName = sstr.str();
+
+    if(d_parent.groupName)
+    {
+        d.groupName = *d_parent.groupName + "/" + *d.groupName;
+    }
+
+    return d;
+}
+
 } // namespace lvr2

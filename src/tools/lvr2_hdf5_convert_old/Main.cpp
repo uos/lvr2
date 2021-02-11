@@ -128,6 +128,29 @@ ScanProjectPtr dummyScanProject()
             h_cam->model.distortion[1] = 1.0;
             h_cam->model.distortion[2] = 0.5;
 
+            for(size_t k=0; k<3; k++)
+            {
+                HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
+
+                pano->resolution[0] = 200;
+                pano->resolution[1] = 200;
+                pano->wavelength[0] = 100.0;
+                pano->wavelength[1] = 900.25;
+
+
+                for(size_t l=0; l<100; l++)
+                {
+                    HyperspectralPanoramaChannelPtr hchannel(new HyperspectralPanoramaChannel);
+
+                    CameraImagePtr si = synthetic::genLVRImage();
+                    hchannel->channel = si->image;
+                    hchannel->timestamp = 0.0;
+                    pano->channels.push_back(hchannel);
+                }
+
+                h_cam->panoramas.push_back(pano);
+            }
+
             scan_pos->hyperspectral_cameras.push_back(h_cam);
         }
 
@@ -140,6 +163,7 @@ ScanProjectPtr dummyScanProject()
 
     return ret;
 }
+
 
 bool directoryIOTest()
 {

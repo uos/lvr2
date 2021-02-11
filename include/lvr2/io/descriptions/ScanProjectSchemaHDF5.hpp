@@ -42,6 +42,15 @@ public:
     virtual Description hyperspectralCamera(
         const Description& d_parent,
         const size_t& camNo) const;
+
+    virtual Description hyperspectralPanorama(
+        const Description& hcam_descr,
+        const size_t& panoNo) const;
+
+    virtual Description hyperspectralPanoramaChannel(
+        const Description& hpano_descr,
+        const size_t& channelNo
+    ) const;
 };
 
 } // namespace lvr2

@@ -42,7 +42,7 @@ LIDARPtr LIDARIO<FeatureBase>::load(
 
     auto D = m_featureBase->m_description;
     Description d = D->lidar(D->position(scanPosNr), lidarNr);
-    
+
     // check if group exists
     if(!m_featureBase->m_kernel->exists(*d.groupName))
     {

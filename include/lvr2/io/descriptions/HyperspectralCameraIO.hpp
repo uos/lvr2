@@ -3,9 +3,8 @@
 #ifndef LVR2_IO_DESCRIPTIONS_HYPERSPECTRALCAMERAIO_HPP
 #define LVR2_IO_DESCRIPTIONS_HYPERSPECTRALCAMERAIO_HPP
 
-#include "lvr2/io/descriptions/ArrayIO.hpp"
-#include "lvr2/io/descriptions/MatrixIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "HyperspectralPanoramaIO.hpp"
 
 namespace lvr2
 {
@@ -27,6 +26,9 @@ protected:
     FeatureBase *m_featureBase = static_cast<FeatureBase*>(this);
 
     // dependencies
+    HyperspectralPanoramaIO<FeatureBase>* m_hyperspectralPanoramaIO = static_cast<HyperspectralPanoramaIO<FeatureBase>*>(m_featureBase);
+
+    // dependencies
     static constexpr const char *ID = "HyperspectralCameraIO";
     static constexpr const char *OBJID = "HyperspectralCamera";
 };
@@ -38,16 +40,14 @@ protected:
  * - Sets type variable
  *
  */
-// template <typename FeatureBase>
-// struct FeatureConstruct<HyperspectralCameraIO, FeatureBase>
-// {
-//     // DEPS
-//     using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase>::type;
-//     using dep2 = typename FeatureConstruct<MatrixIO, FeatureBase>::type;
-//     using deps = typename dep1::template Merge<dep2>;
-//     // ADD THE FEATURE ITSELF
-//     using type = typename deps::template add_features<HyperspectralCameraIO>::type;
-// };
+template <typename FeatureBase>
+struct FeatureConstruct<HyperspectralCameraIO, FeatureBase>
+{
+    // DEPS
+    using deps = typename FeatureConstruct<HyperspectralPanoramaIO, FeatureBase>::type;
+    // ADD THE FEATURE ITSELF
+    using type = typename deps::template add_features<HyperspectralCameraIO>::type;
+};
 
 } // namespace lvr2
 

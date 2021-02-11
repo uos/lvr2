@@ -63,6 +63,16 @@ public:
         const Description& scanpos_descr,
         const size_t& camNo) const = 0;
 
+    virtual Description hyperspectralPanorama(
+        const Description& hcam_descr,
+        const size_t& panoNo
+    ) const = 0;
+
+    virtual Description hyperspectralPanoramaChannel(
+        const Description& hpano_descr,
+        const size_t& channelNo
+    ) const = 0;
+
     // virtual Description hyperspectralCamera(const size_t& position) const
     // {
     //     /// TODO: IMPLEMENT ME!!!

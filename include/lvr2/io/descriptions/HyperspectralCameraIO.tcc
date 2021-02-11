@@ -25,6 +25,12 @@ void HyperspectralCameraIO<Derived>::save(
         d.groupName = "";
     }
 
+    
+    for(size_t i=0; i<hcam->panoramas.size(); i++)
+    {
+        m_hyperspectralPanoramaIO->save(scanPosNo, hCamNo, i, hcam->panoramas[i]);
+    }
+
 
     // Save Meta
     if(d.metaName)
@@ -48,7 +54,6 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(
     // std::cout << "[HypersprectralCameraIO - load]" << std::endl;
     // std::cout << d << std::endl;
 
-
     if(!d.groupName)
     {
         return ret;
@@ -69,18 +74,18 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(
     }
 
     // Load SensorData
-    // size_t hImageNo = 0;
-    // while(true)
-    // {
-    //     CameraImagePtr scanImage = m_cameraImageIO->load(scanPosNo, scanCamNo, scanImageNo);
-    //     if(scanImage)
-    //     {
-    //         ret->images.push_back(scanImage);
-    //     } else {
-    //         break;
-    //     }
-    //     hImageNo++;
-    // }
+    size_t hImageNo = 0;
+    while(true)
+    {
+        HyperspectralPanoramaPtr pano = m_hyperspectralPanoramaIO->load(scanPosNo, hCamNo, hImageNo);
+        if(pano)
+        {
+            ret->panoramas.push_back(pano);
+        } else {
+            break;
+        }
+        hImageNo++;
+    }
 
     return ret;
 }
