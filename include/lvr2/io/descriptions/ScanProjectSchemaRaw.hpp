@@ -38,6 +38,11 @@ public:
     virtual Description cameraImage(
         const Description& d_parent, 
         const size_t& cameraImageNo) const;
+
+    virtual Description hyperspectralCamera(
+        const Description& d_parent, 
+        const size_t& camNo) const;
+        
 };
 
 } // namespace lvr2

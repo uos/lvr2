@@ -125,4 +125,24 @@ Description ScanProjectSchemaHDF5::cameraImage(
     return d; 
 }
 
+Description ScanProjectSchemaHDF5::hyperspectralCamera(
+    const Description& d_parent,
+    const size_t &camNo) const
+{
+    Description d;
+
+    std::stringstream sstr;
+    sstr << std::setfill('0') << std::setw(8) << camNo;
+
+    d.groupName = "hypercam_" + sstr.str();
+    d.metaName = "";
+
+    if(d_parent.groupName)
+    {
+        d.groupName = *d_parent.groupName + "/" + *d.groupName;
+    }
+
+    return d;
+}
+
 } // namespace lvr2

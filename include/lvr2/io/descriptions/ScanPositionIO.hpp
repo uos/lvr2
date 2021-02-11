@@ -9,8 +9,9 @@
 
 // Dependencies
 #include "ArrayIO.hpp"
-// #include "HyperspectralCameraIO.hpp"
-#include "MatrixIO.hpp"
+
+// SensorIOs
+#include "HyperspectralCameraIO.hpp"
 #include "CameraIO.hpp"
 #include "LIDARIO.hpp"
 // #include "LIDARIO.hpp"
@@ -81,6 +82,7 @@ class ScanPositionIO
     // dependencies
     LIDARIO<FeatureBase>* m_lidarIO = static_cast<LIDARIO<FeatureBase>*>(m_featureBase);
     CameraIO<FeatureBase>* m_cameraIO = static_cast<CameraIO<FeatureBase>*>(m_featureBase);
+    HyperspectralCameraIO<FeatureBase>* m_hyperspectralCameraIO = static_cast<HyperspectralCameraIO<FeatureBase>*>(m_featureBase);
 
     static constexpr const char* ID = "ScanPositionIO";
     static constexpr const char* OBJID = "ScanPosition";
@@ -92,8 +94,8 @@ struct FeatureConstruct< ScanPositionIO, FeatureBase>
     // DEPS
     using dep1 = typename FeatureConstruct<LIDARIO, FeatureBase>::type;
     using dep2 = typename FeatureConstruct<CameraIO, FeatureBase>::type;
-    using deps = typename dep1::template Merge<dep2>;
-
+    using dep3 = typename FeatureConstruct<HyperspectralCameraIO, FeatureBase>::type;
+    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
 
     // add the feature itself
     using type = typename deps::template add_features<ScanPositionIO>::type;

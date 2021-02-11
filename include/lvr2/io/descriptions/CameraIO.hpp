@@ -12,8 +12,7 @@ namespace lvr2
 template <typename FeatureBase>
 class CameraIO
 {
-  public:
-
+public:
     void save(
         const size_t& scanPosNo,
         const size_t& scanCamNo,
@@ -32,7 +31,7 @@ class CameraIO
         const size_t& scanPosNo, 
         const size_t& scanCamNo) const;
 
-  protected:
+protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
     // dependencies
@@ -52,7 +51,6 @@ class CameraIO
 template <typename FeatureBase>
 struct FeatureConstruct<CameraIO, FeatureBase>
 {
-
     // DEPS
     using deps = typename FeatureConstruct<CameraImageIO, FeatureBase>::type;
 

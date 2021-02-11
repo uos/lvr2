@@ -1,387 +1,469 @@
-#include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/io/yaml/HyperspectralCamera.hpp"
 
 namespace lvr2
 {
 
 template <typename Derived>
-void HyperspectralCameraIO<Derived>::saveHyperspectralCamera(
-    const size_t& scanPosNo, const HyperspectralCameraPtr &buffer)
+void HyperspectralCameraIO<Derived>::save(
+    const size_t& scanPosNo,
+    const size_t& hCamNo,
+    HyperspectralCameraPtr hcam) const
 {
-    Description d = m_featureBase->m_description->position(scanPosNo);
     
-    // Setup default string for scan position
-    std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << scanPosNo;
-    std::string groupName = sstr.str();
 
-    // Override if descriptions contains a position string
-    if(d.groupName)
+    auto d_gen = m_featureBase->m_description;
+
+
+    Description d = d_gen->position(scanPosNo);
+    d = d_gen->hyperspectralCamera(d, hCamNo);
+
+    // std::cout << "[HypersprectralCameraIO - save]" << std::endl;
+    // std::cout << d << std::endl;
+
+    if(!d.groupName)
     {
-        groupName = *d.groupName;
+        d.groupName = "";
     }
-    saveHyperspectralCamera(groupName, buffer);
-}
 
-template <typename Derived>
-void HyperspectralCameraIO<Derived>::saveHyperspectralCamera(
-    std::string& group,
-    const HyperspectralCameraPtr& hyperspectralCameraPtr)
-{
-    std::string id(HyperspectralCameraIO<Derived>::ID);
-    std::string obj(HyperspectralCameraIO<Derived>::OBJID);
-  
-    //  hdf5util::setAttribute(group, "IO", id);
-    //  hdf5util::setAttribute(group, "CLASS", obj);
 
-    // saving estimated and registered pose
-    m_matrixIO->saveMatrix(group, "extrinsics", hyperspectralCameraPtr->extrinsics);
-    m_matrixIO->saveMatrix(group, "extrinsicsEstimate", hyperspectralCameraPtr->extrinsicsEstimate);
-
-    std::vector<size_t> dim = {1, 1};
- 
-    // saving focalLength
-    doubleArr focalLength(new double[1]);
-    focalLength[0] = hyperspectralCameraPtr->focalLength;
-    m_arrayIO->saveDoubleArray(group, "focalLength", dim, focalLength);
-
-    // saving offsetAngle
-    doubleArr offsetAngle(new double[1]);
-    offsetAngle[0] = hyperspectralCameraPtr->offsetAngle;
-    m_arrayIO->saveDoubleArray(group, "offsetAngle", dim, offsetAngle);
-
-    dim = {3, 1};
-  
-    doubleArr principal(new double[3]);
-    principal[0] = hyperspectralCameraPtr->principal[0];
-    principal[1] = hyperspectralCameraPtr->principal[1];
-    principal[2] = hyperspectralCameraPtr->principal[2];
-    m_arrayIO->saveDoubleArray(group, "principal", dim, principal);
-
-    doubleArr distortion(new double[3]);
-    distortion[0] = hyperspectralCameraPtr->distortion[0];
-    distortion[1] = hyperspectralCameraPtr->distortion[1];
-    distortion[2] = hyperspectralCameraPtr->distortion[2];
-    m_arrayIO->saveDoubleArray(group, "distortion", dim, distortion);
-
-    for (int i = 0; i < hyperspectralCameraPtr->panoramas.size(); i++)
+    // Save Meta
+    if(d.metaName)
     {
-        HyperspectralPanoramaPtr panoramaPtr = hyperspectralCameraPtr->panoramas[i];
-
-        ucharArr data(new unsigned char[hyperspectralCameraPtr->panoramas[i]->channels.size() *
-                                        panoramaPtr->channels[0]->channel.rows *
-                                        panoramaPtr->channels[0]->channel.cols]);
-
-        std::memcpy(data.get(),
-                    panoramaPtr->channels[0]->channel.data,
-                    panoramaPtr->channels[0]->channel.rows *
-                        panoramaPtr->channels[0]->channel.cols * sizeof(unsigned char));
-
-        std::vector<size_t> dim = {hyperspectralCameraPtr->panoramas[i]->channels.size(),
-                                   static_cast<size_t>(panoramaPtr->channels[0]->channel.rows),
-                                   static_cast<size_t>(panoramaPtr->channels[0]->channel.cols)};
-
-        for (int j = 1; j < hyperspectralCameraPtr->panoramas[i]->channels.size(); j++)
-        {
-            std::memcpy(data.get() + j * panoramaPtr->channels[j]->channel.rows *
-                                         panoramaPtr->channels[j]->channel.cols,
-                        panoramaPtr->channels[j]->channel.data,
-                        panoramaPtr->channels[j]->channel.rows *
-                            panoramaPtr->channels[j]->channel.cols * sizeof(unsigned char));
-        }
-
-        // generate group of panorama
-        char buffer[sizeof(int) * 5];
-        sprintf(buffer, "%08d", i);
-
-        boost::filesystem::path nrpath(buffer);
-
-        std::string panoramaGroup = (boost::filesystem::path(group) / nrpath).string();
-        //HighFive::Group panoramaGroup = hdf5util::getGroup(group, nr_str);
-
-
-        // save panorama
-        m_arrayIO->saveUCharArray(panoramaGroup, "frames", dim, data);
-
-        // save timestamps
-        doubleArr timestamps(new double[hyperspectralCameraPtr->panoramas[i]->channels.size()]);
-        size_t pos = 0;
-        for (auto channel : hyperspectralCameraPtr->panoramas[i]->channels)
-        {
-            timestamps[pos++] = channel->timestamp;
-        }
-        dim = {pos, 1, 1};
-        m_arrayIO->saveDoubleArray(panoramaGroup, "timestamps", dim, timestamps);
+        YAML::Node meta;
+        meta = *hcam;
+        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, meta);
     }
 }
 
 template <typename Derived>
-HyperspectralCameraPtr HyperspectralCameraIO<Derived>::loadHyperspectralCamera(const size_t& scanPosNo)
+HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(
+        const size_t& scanPosNo,
+        const size_t& hCamNo) const
 {
-    HyperspectralCameraPtr ret(new HyperspectralCamera);
-    
-    Description d = m_featureBase->m_description->hyperspectralCamera(scanPosNo);
-    
-    // Default path
-    std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << scanPosNo;
+    HyperspectralCameraPtr ret;
 
-    std::string groupName = "raw/" + sstr.str() + "/spectral/data";
+    Description d_parent = m_featureBase->m_description->position(scanPosNo); 
+    Description d = m_featureBase->m_description->hyperspectralCamera(d_parent, hCamNo);
 
-    boost::optional<lvr2::Extrinsicsd> extrinsics = boost::none;
-    boost::optional<lvr2::Extrinsicsd> extrinsicsEstimate = boost::none;
-    boost::optional<double> focalLength = boost::none;
-    boost::optional<double> offsetAngle = boost::none;
-    boost::optional<lvr2::Vector3d> principal = boost::none;
-    boost::optional<lvr2::Vector3d> distortion = boost::none;
-   
-    // Override defaults with scan project structure
-    // definitions if valid
-    if(d.groupName)
+    // std::cout << "[HypersprectralCameraIO - load]" << std::endl;
+    // std::cout << d << std::endl;
+
+
+    if(!d.groupName)
     {
-        groupName = *d.groupName;
+        return ret;
     }
 
-    // Try to load meta data from project description
-    if(d.metaData)
+    if(!m_featureBase->m_kernel->exists(*d.groupName))
     {
-        if((*d.metaData)["extrinsics"])
-        {
-            try
-            {
-                // Load extrinsics from meta data 
-                extrinsics = (*d.metaData)["extrinsics"].as<lvr2::Extrinsicsd>();
-            }
-            catch(const YAML::BadConversion& e)
-            {
-                std::cout << timestamp << e.what() << std::endl;
-            }
-        }
-
-        if((*d.metaData)["extrinsicsEstimate"])
-        {
-            try
-            {
-                // Load extrinsics from meta data 
-                extrinsicsEstimate = (*d.metaData)["extrinsicsEstimate"].as<lvr2::Extrinsicsd>();
-            }
-            catch(const YAML::BadConversion& e)
-            {
-                std::cout << timestamp << e.what() << std::endl;
-            }
-        }
-
-        if((*d.metaData)["focalLength"])
-        {
-            try
-            {
-                focalLength = (*d.metaData)["focalLength"].as<double>();
-            }
-            catch(const YAML::BadConversion& e)
-            {
-                std::cout << timestamp << e.what() << std::endl;
-            }
-        }
-
-        if((*d.metaData)["offsetAngle"])
-        {
-            try
-            {
-                offsetAngle = (*d.metaData)["offsetAngle"].as<double>();
-            }
-            catch(const YAML::BadConversion& e)
-            {
-                std::cout << timestamp << e.what() << std::endl;
-            }
-        }
-
-        if((*d.metaData)["principal"])
-        {
-            try
-            {
-                principal = (*d.metaData)["principal"].as<Vector3d>();
-            }
-            catch(const YAML::BadConversion& e)
-            {
-                std::cout << timestamp << e.what() << std::endl;
-            }
-        }
-
-        if((*d.metaData)["distortion"])
-        {
-            try
-            {
-                distortion = (*d.metaData)["distortion"].as<Vector3d>();
-            }
-            catch(const YAML::BadConversion& e)
-            {
-                std::cout << timestamp << e.what() << std::endl;
-            }
-        }
+        return ret;
     }
 
-    // Check if meta data fields were loaded correctly. If not
-    // try to load them via current file access kernel.
-    if (!extrinsics)
+    if(d.metaName)
     {
-        Extrinsicsd e = m_matrixIO->template loadMatrix<Extrinsicsd>(groupName, "extrinsics");
-        extrinsics = e;
-    }
-    ret->extrinsics = *extrinsics;
-    
-
-    // read extrinsicsEstimate
-    if(!extrinsicsEstimate)
-    {
-        Extrinsicsd e = m_matrixIO-> template loadMatrix<Extrinsicsd>(groupName, "extrinsicsEstimate");
-        extrinsicsEstimate = e;
-    }
-    ret->extrinsicsEstimate = *extrinsicsEstimate;
-    
-
-    if(!focalLength)
-    {
-        std::vector<size_t> dimension = {1};
-        doubleArr focalLength = m_arrayIO->loadDoubleArray(groupName, "focalLength", dimension);
-
-        if (dimension.size() != 1)
-        {
-            std::cout << timestamp << "HyperspectralCameraIO: Wrong focalLength dimension: " << dimension.size() << std::endl;
-            std::cout << timestamp << "FocalLength will not be loaded." << std::endl;
-        }
-        else
-        {
-            ret->focalLength = focalLength[0];
-        }
-    }
-    else
-    {
-        ret->focalLength = focalLength.get();
-    }
-    
-       
-    if(!offsetAngle)
-    {
-        std::vector<size_t> dimension = {1};
-        doubleArr offsetAngle = m_arrayIO->loadDoubleArray(groupName, "offsetAngle", dimension);
-
-        if (dimension.size() != 1)
-        {
-            std::cout << timestamp << "HyperspectralCameraIO: Wrong offsetAngle dimension: " << dimension.size() << std::endl;
-            std::cout << timestamp << "OffsetAngle will not be loaded." << std::endl;
-        }
-        else
-        {
-            ret->offsetAngle = offsetAngle[0];
-        }
-    }
-    else
-    {
-        ret->offsetAngle = offsetAngle.get();
-    }
-    
-
-    if (!principal)
-    {   
-        std::vector<size_t> dimension = {3, 1};
-        doubleArr principal = m_arrayIO->loadDoubleArray(groupName, "principal", dimension);
-
-        if (dimension.size() != 3)
-        {
-            std::cout << timestamp << "HyperspectralCameraIO: Wrong principal dimension: " << dimension.size() << std::endl;
-            std::cout << timestamp << "Principal point will not be loaded." << std::endl;
-        }
-        else
-        {
-            Vector3d p = {principal[0], principal[1], principal[2]};
-            ret->principal = p;
-        }
-    }
-    else
-    {
-        ret->principal = principal.get();
+        YAML::Node meta;
+        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        ret = std::make_shared<HyperspectralCamera>(meta.as<HyperspectralCamera>());
+    } else {
+        ret.reset(new HyperspectralCamera);
     }
 
-    if (!distortion)
-    {
-        std::vector<size_t> dimension = {3, 1};
-        doubleArr distortion = m_arrayIO->loadDoubleArray(groupName, "distortion", dimension);
-
-        if (dimension.size() != 3)
-        {
-            std::cout << timestamp << "HyperspectralCameraIO: Wrong distortion dimension: " << dimension.size() << std::endl;
-            std::cout << timestamp << "Distortion point will not be loaded." << std::endl;
-        }
-        else
-        {
-            Vector3d d = {distortion[0], distortion[1], distortion[2]};
-            ret->distortion = d;
-        }
-    }
-    else
-    {
-        ret->distortion = distortion.get();
-    }
-    
-    // Iterate over all panoramas
-    std::vector<std::string> positionGroups;
-    m_featureBase->m_kernel->subGroupNames(groupName, std::regex("\\d{8}"), positionGroups);
-
-    for (std::string positionGroup : positionGroups)
-    {
-        Description td = m_featureBase->m_description->hyperSpectralTimestamps(positionGroup);
-        Description fd = m_featureBase->m_description->hyperSpectralFrames(positionGroup);
-        
-        ucharArr data;
-        doubleArr timestamps;
-        std::vector<size_t> dim; // Uff, initialisierung???
-        if(fd.dataSetName)
-        {
-            data = m_arrayIO->loadUCharArray(positionGroup, *fd.dataSetName, dim);
-        }
-        
-        std::vector<size_t> timeDim;
-        if(td.dataSetName)
-        {   
-            timestamps = m_arrayIO->loadDoubleArray(positionGroup, *td.dataSetName, timeDim);
-        }
-
-        HyperspectralPanoramaPtr panoramaPtr(new HyperspectralPanorama);
-        if(data && timestamps)
-        {
-            for (int i = 0; i < dim[0]; i++)
-            {
-                // img size ist dim[1] * dim[2]
-
-                cv::Mat img = cv::Mat(dim[1], dim[2], CV_8UC1);
-                std::memcpy(
-                    img.data, data.get() + i * dim[1] * dim[2], dim[1] * dim[2] * sizeof(uchar));
-
-                HyperspectralPanoramaChannelPtr channelPtr(new HyperspectralPanoramaChannel);
-                channelPtr->channel = img;
-                channelPtr->timestamp = timestamps[i];
-                panoramaPtr->channels.push_back(channelPtr);
-            }
-        }
-        else
-        {
-            if(!data)
-            {
-                std::cout << timestamp 
-                          << "HypersprectralCameraIO::load() Warning: No image data found: " 
-                          << *fd.dataSetName << std::endl;
-            }
-            if(!timestamps)
-            {
-                std::cout << timestamp 
-                          << "HypersprectralCameraIO::load() Warning: No timestamps found: " 
-                          << *td.dataSetName << std::endl;
-            }
-        }
-        ret->panoramas.push_back(panoramaPtr);
-    }
+    // Load SensorData
+    // size_t hImageNo = 0;
+    // while(true)
+    // {
+    //     CameraImagePtr scanImage = m_cameraImageIO->load(scanPosNo, scanCamNo, scanImageNo);
+    //     if(scanImage)
+    //     {
+    //         ret->images.push_back(scanImage);
+    //     } else {
+    //         break;
+    //     }
+    //     hImageNo++;
+    // }
 
     return ret;
 }
+
+// template <typename Derived>
+// void HyperspectralCameraIO<Derived>::saveHyperspectralCamera(
+//     const size_t& scanPosNo, const HyperspectralCameraPtr &buffer)
+// {
+//     Description d = m_featureBase->m_description->position(scanPosNo);
+    
+//     // Setup default string for scan position
+//     std::stringstream sstr;
+//     sstr << std::setfill('0') << std::setw(8) << scanPosNo;
+//     std::string groupName = sstr.str();
+
+//     // Override if descriptions contains a position string
+//     if(d.groupName)
+//     {
+//         groupName = *d.groupName;
+//     }
+//     saveHyperspectralCamera(groupName, buffer);
+// }
+
+// template <typename Derived>
+// void HyperspectralCameraIO<Derived>::saveHyperspectralCamera(
+//     std::string& group,
+//     const HyperspectralCameraPtr& hyperspectralCameraPtr)
+// {
+//     std::string id(HyperspectralCameraIO<Derived>::ID);
+//     std::string obj(HyperspectralCameraIO<Derived>::OBJID);
+  
+//     //  hdf5util::setAttribute(group, "IO", id);
+//     //  hdf5util::setAttribute(group, "CLASS", obj);
+
+//     // saving estimated and registered pose
+//     m_matrixIO->saveMatrix(group, "extrinsics", hyperspectralCameraPtr->extrinsics);
+//     m_matrixIO->saveMatrix(group, "extrinsicsEstimate", hyperspectralCameraPtr->extrinsicsEstimate);
+
+//     std::vector<size_t> dim = {1, 1};
+ 
+//     // saving focalLength
+//     doubleArr focalLength(new double[1]);
+//     focalLength[0] = hyperspectralCameraPtr->focalLength;
+//     m_arrayIO->saveDoubleArray(group, "focalLength", dim, focalLength);
+
+//     // saving offsetAngle
+//     doubleArr offsetAngle(new double[1]);
+//     offsetAngle[0] = hyperspectralCameraPtr->offsetAngle;
+//     m_arrayIO->saveDoubleArray(group, "offsetAngle", dim, offsetAngle);
+
+//     dim = {3, 1};
+  
+//     doubleArr principal(new double[3]);
+//     principal[0] = hyperspectralCameraPtr->principal[0];
+//     principal[1] = hyperspectralCameraPtr->principal[1];
+//     principal[2] = hyperspectralCameraPtr->principal[2];
+//     m_arrayIO->saveDoubleArray(group, "principal", dim, principal);
+
+//     doubleArr distortion(new double[3]);
+//     distortion[0] = hyperspectralCameraPtr->distortion[0];
+//     distortion[1] = hyperspectralCameraPtr->distortion[1];
+//     distortion[2] = hyperspectralCameraPtr->distortion[2];
+//     m_arrayIO->saveDoubleArray(group, "distortion", dim, distortion);
+
+//     for (int i = 0; i < hyperspectralCameraPtr->panoramas.size(); i++)
+//     {
+//         HyperspectralPanoramaPtr panoramaPtr = hyperspectralCameraPtr->panoramas[i];
+
+//         ucharArr data(new unsigned char[hyperspectralCameraPtr->panoramas[i]->channels.size() *
+//                                         panoramaPtr->channels[0]->channel.rows *
+//                                         panoramaPtr->channels[0]->channel.cols]);
+
+//         std::memcpy(data.get(),
+//                     panoramaPtr->channels[0]->channel.data,
+//                     panoramaPtr->channels[0]->channel.rows *
+//                         panoramaPtr->channels[0]->channel.cols * sizeof(unsigned char));
+
+//         std::vector<size_t> dim = {hyperspectralCameraPtr->panoramas[i]->channels.size(),
+//                                    static_cast<size_t>(panoramaPtr->channels[0]->channel.rows),
+//                                    static_cast<size_t>(panoramaPtr->channels[0]->channel.cols)};
+
+//         for (int j = 1; j < hyperspectralCameraPtr->panoramas[i]->channels.size(); j++)
+//         {
+//             std::memcpy(data.get() + j * panoramaPtr->channels[j]->channel.rows *
+//                                          panoramaPtr->channels[j]->channel.cols,
+//                         panoramaPtr->channels[j]->channel.data,
+//                         panoramaPtr->channels[j]->channel.rows *
+//                             panoramaPtr->channels[j]->channel.cols * sizeof(unsigned char));
+//         }
+
+//         // generate group of panorama
+//         char buffer[sizeof(int) * 5];
+//         sprintf(buffer, "%08d", i);
+
+//         boost::filesystem::path nrpath(buffer);
+
+//         std::string panoramaGroup = (boost::filesystem::path(group) / nrpath).string();
+//         //HighFive::Group panoramaGroup = hdf5util::getGroup(group, nr_str);
+
+
+//         // save panorama
+//         m_arrayIO->saveUCharArray(panoramaGroup, "frames", dim, data);
+
+//         // save timestamps
+//         doubleArr timestamps(new double[hyperspectralCameraPtr->panoramas[i]->channels.size()]);
+//         size_t pos = 0;
+//         for (auto channel : hyperspectralCameraPtr->panoramas[i]->channels)
+//         {
+//             timestamps[pos++] = channel->timestamp;
+//         }
+//         dim = {pos, 1, 1};
+//         m_arrayIO->saveDoubleArray(panoramaGroup, "timestamps", dim, timestamps);
+//     }
+// }
+
+// template <typename Derived>
+// HyperspectralCameraPtr HyperspectralCameraIO<Derived>::loadHyperspectralCamera(const size_t& scanPosNo)
+// {
+//     HyperspectralCameraPtr ret(new HyperspectralCamera);
+    
+//     Description d = m_featureBase->m_description->hyperspectralCamera(scanPosNo);
+    
+//     // Default path
+//     std::stringstream sstr;
+//     sstr << std::setfill('0') << std::setw(8) << scanPosNo;
+
+//     std::string groupName = "raw/" + sstr.str() + "/spectral/data";
+
+//     boost::optional<lvr2::Extrinsicsd> extrinsics = boost::none;
+//     boost::optional<lvr2::Extrinsicsd> extrinsicsEstimate = boost::none;
+//     boost::optional<double> focalLength = boost::none;
+//     boost::optional<double> offsetAngle = boost::none;
+//     boost::optional<lvr2::Vector3d> principal = boost::none;
+//     boost::optional<lvr2::Vector3d> distortion = boost::none;
+   
+//     // Override defaults with scan project structure
+//     // definitions if valid
+//     if(d.groupName)
+//     {
+//         groupName = *d.groupName;
+//     }
+
+//     // Try to load meta data from project description
+//     if(d.metaData)
+//     {
+//         if((*d.metaData)["extrinsics"])
+//         {
+//             try
+//             {
+//                 // Load extrinsics from meta data 
+//                 extrinsics = (*d.metaData)["extrinsics"].as<lvr2::Extrinsicsd>();
+//             }
+//             catch(const YAML::BadConversion& e)
+//             {
+//                 std::cout << timestamp << e.what() << std::endl;
+//             }
+//         }
+
+//         if((*d.metaData)["extrinsicsEstimate"])
+//         {
+//             try
+//             {
+//                 // Load extrinsics from meta data 
+//                 extrinsicsEstimate = (*d.metaData)["extrinsicsEstimate"].as<lvr2::Extrinsicsd>();
+//             }
+//             catch(const YAML::BadConversion& e)
+//             {
+//                 std::cout << timestamp << e.what() << std::endl;
+//             }
+//         }
+
+//         if((*d.metaData)["focalLength"])
+//         {
+//             try
+//             {
+//                 focalLength = (*d.metaData)["focalLength"].as<double>();
+//             }
+//             catch(const YAML::BadConversion& e)
+//             {
+//                 std::cout << timestamp << e.what() << std::endl;
+//             }
+//         }
+
+//         if((*d.metaData)["offsetAngle"])
+//         {
+//             try
+//             {
+//                 offsetAngle = (*d.metaData)["offsetAngle"].as<double>();
+//             }
+//             catch(const YAML::BadConversion& e)
+//             {
+//                 std::cout << timestamp << e.what() << std::endl;
+//             }
+//         }
+
+//         if((*d.metaData)["principal"])
+//         {
+//             try
+//             {
+//                 principal = (*d.metaData)["principal"].as<Vector3d>();
+//             }
+//             catch(const YAML::BadConversion& e)
+//             {
+//                 std::cout << timestamp << e.what() << std::endl;
+//             }
+//         }
+
+//         if((*d.metaData)["distortion"])
+//         {
+//             try
+//             {
+//                 distortion = (*d.metaData)["distortion"].as<Vector3d>();
+//             }
+//             catch(const YAML::BadConversion& e)
+//             {
+//                 std::cout << timestamp << e.what() << std::endl;
+//             }
+//         }
+//     }
+
+//     // Check if meta data fields were loaded correctly. If not
+//     // try to load them via current file access kernel.
+//     if (!extrinsics)
+//     {
+//         Extrinsicsd e = m_matrixIO->template loadMatrix<Extrinsicsd>(groupName, "extrinsics");
+//         extrinsics = e;
+//     }
+//     ret->extrinsics = *extrinsics;
+    
+
+//     // read extrinsicsEstimate
+//     if(!extrinsicsEstimate)
+//     {
+//         Extrinsicsd e = m_matrixIO-> template loadMatrix<Extrinsicsd>(groupName, "extrinsicsEstimate");
+//         extrinsicsEstimate = e;
+//     }
+//     ret->extrinsicsEstimate = *extrinsicsEstimate;
+    
+
+//     if(!focalLength)
+//     {
+//         std::vector<size_t> dimension = {1};
+//         doubleArr focalLength = m_arrayIO->loadDoubleArray(groupName, "focalLength", dimension);
+
+//         if (dimension.size() != 1)
+//         {
+//             std::cout << timestamp << "HyperspectralCameraIO: Wrong focalLength dimension: " << dimension.size() << std::endl;
+//             std::cout << timestamp << "FocalLength will not be loaded." << std::endl;
+//         }
+//         else
+//         {
+//             ret->focalLength = focalLength[0];
+//         }
+//     }
+//     else
+//     {
+//         ret->focalLength = focalLength.get();
+//     }
+    
+       
+//     if(!offsetAngle)
+//     {
+//         std::vector<size_t> dimension = {1};
+//         doubleArr offsetAngle = m_arrayIO->loadDoubleArray(groupName, "offsetAngle", dimension);
+
+//         if (dimension.size() != 1)
+//         {
+//             std::cout << timestamp << "HyperspectralCameraIO: Wrong offsetAngle dimension: " << dimension.size() << std::endl;
+//             std::cout << timestamp << "OffsetAngle will not be loaded." << std::endl;
+//         }
+//         else
+//         {
+//             ret->offsetAngle = offsetAngle[0];
+//         }
+//     }
+//     else
+//     {
+//         ret->offsetAngle = offsetAngle.get();
+//     }
+    
+
+//     if (!principal)
+//     {   
+//         std::vector<size_t> dimension = {3, 1};
+//         doubleArr principal = m_arrayIO->loadDoubleArray(groupName, "principal", dimension);
+
+//         if (dimension.size() != 3)
+//         {
+//             std::cout << timestamp << "HyperspectralCameraIO: Wrong principal dimension: " << dimension.size() << std::endl;
+//             std::cout << timestamp << "Principal point will not be loaded." << std::endl;
+//         }
+//         else
+//         {
+//             Vector3d p = {principal[0], principal[1], principal[2]};
+//             ret->principal = p;
+//         }
+//     }
+//     else
+//     {
+//         ret->principal = principal.get();
+//     }
+
+//     if (!distortion)
+//     {
+//         std::vector<size_t> dimension = {3, 1};
+//         doubleArr distortion = m_arrayIO->loadDoubleArray(groupName, "distortion", dimension);
+
+//         if (dimension.size() != 3)
+//         {
+//             std::cout << timestamp << "HyperspectralCameraIO: Wrong distortion dimension: " << dimension.size() << std::endl;
+//             std::cout << timestamp << "Distortion point will not be loaded." << std::endl;
+//         }
+//         else
+//         {
+//             Vector3d d = {distortion[0], distortion[1], distortion[2]};
+//             ret->distortion = d;
+//         }
+//     }
+//     else
+//     {
+//         ret->distortion = distortion.get();
+//     }
+    
+//     // Iterate over all panoramas
+//     std::vector<std::string> positionGroups;
+//     m_featureBase->m_kernel->subGroupNames(groupName, std::regex("\\d{8}"), positionGroups);
+
+//     for (std::string positionGroup : positionGroups)
+//     {
+//         Description td = m_featureBase->m_description->hyperSpectralTimestamps(positionGroup);
+//         Description fd = m_featureBase->m_description->hyperSpectralFrames(positionGroup);
+        
+//         ucharArr data;
+//         doubleArr timestamps;
+//         std::vector<size_t> dim; // Uff, initialisierung???
+//         if(fd.dataSetName)
+//         {
+//             data = m_arrayIO->loadUCharArray(positionGroup, *fd.dataSetName, dim);
+//         }
+        
+//         std::vector<size_t> timeDim;
+//         if(td.dataSetName)
+//         {   
+//             timestamps = m_arrayIO->loadDoubleArray(positionGroup, *td.dataSetName, timeDim);
+//         }
+
+//         HyperspectralPanoramaPtr panoramaPtr(new HyperspectralPanorama);
+//         if(data && timestamps)
+//         {
+//             for (int i = 0; i < dim[0]; i++)
+//             {
+//                 // img size ist dim[1] * dim[2]
+
+//                 cv::Mat img = cv::Mat(dim[1], dim[2], CV_8UC1);
+//                 std::memcpy(
+//                     img.data, data.get() + i * dim[1] * dim[2], dim[1] * dim[2] * sizeof(uchar));
+
+//                 HyperspectralPanoramaChannelPtr channelPtr(new HyperspectralPanoramaChannel);
+//                 channelPtr->channel = img;
+//                 channelPtr->timestamp = timestamps[i];
+//                 panoramaPtr->channels.push_back(channelPtr);
+//             }
+//         }
+//         else
+//         {
+//             if(!data)
+//             {
+//                 std::cout << timestamp 
+//                           << "HypersprectralCameraIO::load() Warning: No image data found: " 
+//                           << *fd.dataSetName << std::endl;
+//             }
+//             if(!timestamps)
+//             {
+//                 std::cout << timestamp 
+//                           << "HypersprectralCameraIO::load() Warning: No timestamps found: " 
+//                           << *td.dataSetName << std::endl;
+//             }
+//         }
+//         ret->panoramas.push_back(panoramaPtr);
+//     }
+
+//     return ret;
+// }
 
 
 

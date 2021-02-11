@@ -14,22 +14,21 @@ template <typename FeatureBase>
 class HyperspectralCameraIO
 {
 public:
-  void saveHyperspectralCamera(const size_t& scanPosNo, const HyperspectralCameraPtr &buffer);
-  void saveHyperspectralCamera(std::string &group, const HyperspectralCameraPtr &buffer);
+    void save(
+        const size_t& scanPosNo, 
+        const size_t& hCamNo, 
+        HyperspectralCameraPtr hcam) const;
 
-  HyperspectralCameraPtr loadHyperspectralCamera(const size_t& scanPosNo);
-  
+    HyperspectralCameraPtr load(
+        const size_t& scanPosNo,
+        const size_t& hCamNo) const;
+
 protected:
-  bool isHyperspectralCamera(std::string &path);
+    FeatureBase *m_featureBase = static_cast<FeatureBase*>(this);
 
-  FeatureBase *m_featureBase = static_cast<FeatureBase *>(this);
-
-  // dependencies
-  ArrayIO<FeatureBase> *m_arrayIO = static_cast<ArrayIO<FeatureBase> *>(m_featureBase);
-  MatrixIO<FeatureBase> *m_matrixIO = static_cast<MatrixIO<FeatureBase> *>(m_featureBase);
-
-  static constexpr const char *ID = "HyperspectralCameraIO";
-  static constexpr const char *OBJID = "HyperspectralCamera";
+    // dependencies
+    static constexpr const char *ID = "HyperspectralCameraIO";
+    static constexpr const char *OBJID = "HyperspectralCamera";
 };
 
 /**
@@ -39,18 +38,16 @@ protected:
  * - Sets type variable
  *
  */
-template <typename FeatureBase>
-struct FeatureConstruct<HyperspectralCameraIO, FeatureBase>
-{
-
-    // DEPS
-    using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<MatrixIO, FeatureBase>::type;
-    using deps = typename dep1::template Merge<dep2>;
-
-    // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<HyperspectralCameraIO>::type;
-};
+// template <typename FeatureBase>
+// struct FeatureConstruct<HyperspectralCameraIO, FeatureBase>
+// {
+//     // DEPS
+//     using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase>::type;
+//     using dep2 = typename FeatureConstruct<MatrixIO, FeatureBase>::type;
+//     using deps = typename dep1::template Merge<dep2>;
+//     // ADD THE FEATURE ITSELF
+//     using type = typename deps::template add_features<HyperspectralCameraIO>::type;
+// };
 
 } // namespace lvr2
 

@@ -19,8 +19,8 @@
 // #include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 // #include "lvr2/io/hdf5/ScanProjectIO.hpp"
 
-#include "lvr2/io/hdf5/Hdf5Util.hpp"
 
+#include "lvr2/io/hdf5/Hdf5Util.hpp"
 #include <boost/filesystem.hpp>
 
 #include "lvr2/util/Synthetic.hpp"
@@ -108,8 +108,29 @@ ScanProjectPtr dummyScanProject()
 
             scan_cam->name = "Canon";
             scan_pos->cameras.push_back(scan_cam);
-
         }
+
+        for(size_t j=0; j<2; j++)
+        {
+            HyperspectralCameraPtr h_cam(new HyperspectralCamera);
+
+            h_cam->transformation = Transformd::Identity();
+            h_cam->transformation(1,3) = -static_cast<double>(j);
+
+            h_cam->model.principal(0) =  5.5;
+            h_cam->model.principal(1) = 4.4;
+
+            h_cam->model.focalLength(0) = 10.1;
+            h_cam->model.focalLength(1) = 10.2;
+
+            h_cam->model.distortion.resize(3);
+            h_cam->model.distortion[0] = 2.0;
+            h_cam->model.distortion[1] = 1.0;
+            h_cam->model.distortion[2] = 0.5;
+
+            scan_pos->hyperspectral_cameras.push_back(h_cam);
+        }
+
         ret->positions.push_back(scan_pos);
     }
 
@@ -128,9 +149,13 @@ bool directoryIOTest()
     DirectorySchemaPtr schema2(new ScanProjectSchemaRaw(dirname));
     DirectoryIO dirio(kernel2, schema2);
 
-
+    LOG(lvr2::Logger::DEBUG) << "Create Dummy Scanproject..." << std::endl;
     auto sp = dummyScanProject();
+    
+    LOG(lvr2::Logger::DEBUG) << "Save Scanproject to directory..." << std::endl;
     dirio.save(sp);
+
+    LOG(lvr2::Logger::DEBUG) << "Load Scanproject from directory..." << std::endl;
     auto sp_loaded = dirio.ScanProjectIO::load();
 
     return equal(sp, sp_loaded);
@@ -240,7 +265,16 @@ void loggerTest()
 int main(int argc, char** argv)
 {
     LOG.setLoggerLevel(Logger::DEBUG);
-    unitTest();
+
+    LOG(lvr2::Logger::INFO) << "Directory IO" << std::endl;
+    directoryIOTest();
+    LOG(lvr2::Logger::HIGHLIGHT) << "Directory IO success" << std::endl;
+
+    LOG(lvr2::Logger::INFO) << "Hdf5 IO" << std::endl;
+    hdf5IOTest();
+    LOG(lvr2::Logger::HIGHLIGHT) << "Hdf5 IO success" << std::endl;
+
+    // unitTest();
     // loggerTest();
     // std::cout << "\t" << "Bla" << Logger() << std::endl;
 

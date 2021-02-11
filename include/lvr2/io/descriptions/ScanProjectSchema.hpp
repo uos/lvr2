@@ -59,6 +59,9 @@ public:
         const Description& camera_descr, 
         const size_t& cameraImageNo) const = 0;
 
+    virtual Description hyperspectralCamera(
+        const Description& scanpos_descr,
+        const size_t& camNo) const = 0;
 
     // virtual Description hyperspectralCamera(const size_t& position) const
     // {

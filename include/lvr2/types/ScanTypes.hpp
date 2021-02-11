@@ -37,6 +37,7 @@ struct ScanPosition;
 // Sensor types
 struct LIDAR;
 struct Camera;
+struct HyperspectralCamera;
 
 // Sensor recording types
 struct Scan; // LIDAR has N Scans
@@ -49,6 +50,8 @@ using ScanPositionPtr = std::shared_ptr<ScanPosition>;
 
 using LIDARPtr  = std::shared_ptr<LIDAR>;
 using CameraPtr = std::shared_ptr<Camera>;
+using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
+
 using ScanPtr = std::shared_ptr<Scan>;
 using CameraImagePtr = std::shared_ptr<CameraImage>;
 
@@ -125,13 +128,13 @@ struct ScanPosition : ScanPositionType, Transformable
     /// META BEGIN
 
     /// Estimated pose relativ to upper coordinate system
-    Transformd                      poseEstimation;
+    Transformd                         poseEstimation;
 
     /// Final registered position in project coordinates (relative to upper coordinate system: e.g. ScanProject)
     // Transformd                      transformation;
 
     /// Timestamp when this position was created
-    double                          timestamp = 0.0;
+    double                             timestamp = 0.0;
 
     //// META END
 
@@ -143,6 +146,9 @@ struct ScanPosition : ScanPositionType, Transformable
 
     /// 2. Cameras
     std::vector<CameraPtr>              cameras;
+
+    /// 3. Hyperspectral Cameras
+    std::vector<HyperspectralCameraPtr> hyperspectral_cameras;
 
     //// HIERARCHY END
 };
@@ -181,7 +187,7 @@ struct Camera : SensorType, Transformable
 {
     //// META BEGIN
     // TODO: check boost::typeindex<>::pretty_name (contains lvr2 as namespace: "lvr2::Camera")
-    static constexpr char           kind[] = "Camera";
+    static constexpr char             kind[] = "Camera";
     /// Pinhole camera model
     PinholeModel                      model;
     //// META END
@@ -284,6 +290,12 @@ struct HyperspectralPanoramaChannel : SensorDataType
     /// Timestamp 
     double                          timestamp;
 
+    /// wavelength
+    double                          wavelength;
+
+    /// wavelength inverval?
+    // double                          wavelength[2];
+
     /// OpenCV representation
     cv::Mat                         channel;
 };
@@ -301,6 +313,15 @@ struct HyperspectralPanorama : SensorDataType, Transformable
 {
     /// Sensor type flag
     static constexpr char                          kind[] = "HyperspectralPanorama";
+
+    /// preview generated from channels (optional: check if preview.empty())
+    // cv::Mat                                        preview;
+
+    /// minimum and maximum wavelength
+    double                                         wavelength[2];
+    /// resolution in x and y
+    size_t                                         resolution[2];
+
     /// OpenCV representation
     std::vector<HyperspectralPanoramaChannelPtr>   channels;
 };
@@ -314,26 +335,6 @@ using HyperspectralPanoramaOptional = boost::optional<HyperspectralPanorama>;
  * 
  *****************************************************************************/
 
-struct HyperspectralCameraModel
-{
-    /// Sensor type flag
-    static constexpr char           kind[] = "HyperspectralCameraModel";
-
-    /// Focal length
-    double                          focalLength;
-
-    /// Offset angle
-    double                          offsetAngle;
-
-    /// Principal x, y, z
-    Vector3d                        principal;
-
-    /// Distortion
-    Vector3d                        distortion;
-};
-
-using HyperspectralCameraModelPtr = std::shared_ptr<HyperspectralCameraModel>;
-
 // /*****************************************************************************
 //  * @brief   Struct to hold a hyperspectral camera
 //  *          together with it's camera model and panoramas
@@ -346,7 +347,7 @@ struct HyperspectralCamera : SensorType, Transformable
     static constexpr char                    kind[] = "HyperspectralCamera";
 
     /// Camera model
-    HyperspectralCameraModelPtr              model;
+    CylindricalModel                         model;
 
     /// Extrinsics estimate
     Extrinsicsd                              extrinsicsEstimation;
@@ -355,7 +356,6 @@ struct HyperspectralCamera : SensorType, Transformable
     std::vector<HyperspectralPanoramaPtr>    panoramas;
 };
 
-using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
 
 /*****************************************************************************
  * @brief   Represents a scan position consisting of a scan and

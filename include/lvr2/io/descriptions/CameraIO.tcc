@@ -58,9 +58,6 @@ CameraPtr CameraIO<FeatureBase>::load(
         ret.reset(new Camera);
     }
 
-    std::string groupName;
-    std::string dataSetName;
-
     size_t scanImageNo = 0;
     while(true)
     {

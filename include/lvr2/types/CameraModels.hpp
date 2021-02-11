@@ -19,6 +19,7 @@ namespace lvr2 {
  */
 struct CameraModel 
 {
+    static constexpr char           type[] = "CameraModel";
     // /**
     //  * @brief Project point from camera coordinate system (3D) onto image coordinate system (2D)
     //  * 
@@ -30,11 +31,12 @@ struct CameraModel
     //     Eigen::Vector2d pixel;
     //     return pixel;
     // }
-
 };
 
 struct PinholeModel : CameraModel
 {
+    static constexpr char           kind[] = "PinholeModel";
+
     double fx = 0;
     double fy = 0;
     double cx = 0;
@@ -43,56 +45,25 @@ struct PinholeModel : CameraModel
     unsigned height = 0;
     std::vector<double> k;
     std::string distortionModel = "unknown";
-
-    // virtual Eigen::Vector2d projectPoint(const Eigen::Vector3d& P) const override 
-    // {
-    //     /**
-    //      * [fx 0 cx]   [Px]
-    //      * [0 fy cy] * [Py]
-    //      * [0 0  1]    [Pz]
-    //      * 
-    //      * Px * fx + Pz * cx
-    //      * Py * fy + Pz * cy
-    //      * Pz
-    //      * 
-    //      * Px/Pz * fx + cx
-    //      * Py/Pz * fy + cy
-    //      */
-
-    //     Eigen::Vector2d pixel;
-    //     pixel(0) = fx * P(0)/P(2) + cx;
-    //     pixel(1) = fy * P(1)/P(2) + cy;
-    //     return pixel;
-    // }
 };
 
 using PinholeModelPtr = std::shared_ptr<PinholeModel>;
 
-struct CylindricalModel : CameraModel {
-    /// Focal length
-    double                          focalLength;
+struct CylindricalModel : CameraModel 
+{
+    static constexpr char           kind[] = "CylindricalModel";
 
-    /// Offset angle
-    double                          offsetAngle;
+    /// Principal x, y
+    Vector2d                        principal;
 
-    /// Principal x, y, z
-    Vector3d                        principal;
+    /// Focal Length fx, fy
+    Vector2d                        focalLength;
+
+    /// FoV
+    Vector2d                        fov;
 
     /// Distortion
-    Vector3d                        distortion;
-
-    // Eigen::Vector2d projectPoints(const Eigen::Vector3d& P) const override
-    // {
-    //     Eigen::Vector2d pixel;
-
-    //     // x from angle: TODO
-
-
-    //     // y axis like pinhole
-    //     pixel(1) = focalLength * P(1)/P(2) + principal(1);
-
-    //     return pixel;
-    // }   
+    std::vector<double>             distortion;
 };
 
 using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;
@@ -108,7 +79,7 @@ struct SphericalModel : CameraModel {
     Vector3d                        principal;
 
     /// Distortion
-    Vector3d                        distortion;
+    std::vector<double>             distortion;
 };
 
 using SphericalModelPtr = std::shared_ptr<SphericalModel>;
