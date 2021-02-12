@@ -25,6 +25,15 @@ public:
         std::string group,
         std::string name,
         const Channel<T>& channel) const;
+
+    template<typename T>
+    void save(
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
+        const size_t& scanNo,
+        const std::string& channelName,
+        const Channel<T>& channel
+    ) const;
     
     std::vector<size_t> loadDimensions(std::string groupName, std::string datasetName) const;
 

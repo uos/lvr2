@@ -6,7 +6,9 @@
 namespace lvr2
 {
 
-HDF5Kernel::HDF5Kernel(const std::string& rootFile) : FileKernel(rootFile)
+HDF5Kernel::HDF5Kernel(const std::string& rootFile, HDF5KernelConfig config) 
+:FileKernel(rootFile)
+,m_config(config)
 {
     m_hdf5File = hdf5util::open(rootFile);
 }
@@ -16,7 +18,7 @@ void HDF5Kernel::saveMeshBuffer(
     const std::string &container,
     const MeshBufferPtr &buffer) const
 {
-
+    std::cout << "[HDF5Kernel - saveMeshBuffer] not implemented!" << std::endl; 
 }
 
 void HDF5Kernel::savePointBuffer(
@@ -61,47 +63,55 @@ void HDF5Kernel::saveImage(
             }
         }
 
-        int w = img.cols;
-        int h = img.rows;
-        const char* interlace = "INTERLACE_PIXEL";
+        size_t w = img.cols;
+        size_t h = img.rows;
+        size_t c = img.channels();
+
+        std::vector<size_t> dims = {h, w};
+        std::vector<hsize_t> chunkSizes = {h, w};
+
+        if(c > 1)
+        {
+            dims.push_back(c);
+            chunkSizes.push_back(c);
+        }
+
+        HighFive::DataSpace space(dims);
+        HighFive::DataSetCreateProps properties;
+
+        if(m_config.compressionLevel > 0)
+        {
+            properties.add(HighFive::Chunking(chunkSizes));
+            properties.add(HighFive::Deflate(m_config.compressionLevel));
+        }
+        
 
         // TODO: need to remove dataset if exists because of H5IMmake_image_8bit. do it better
-        
-        if(img.type() == CV_8U) 
+        if(img.type() == CV_8U)
         {
-            if(group.exist(datasetName))
-            {
-                H5Ldelete(group.getId(), datasetName.data(), H5P_DEFAULT);
-            }
-            H5IMmake_image_8bit(group.getId(), datasetName.c_str(), w, h, img.data);
-        } 
+            auto ds = hdf5util::createDataset<uint8_t>(group, datasetName, space, properties);
+            ds->write_raw(img.data);
+
+            // HDFCompass cannot show this. But it is the correct way to store it
+            // - H5IMmake_image_8bit(group.getId(), datasetName.c_str(), w, h, img.data)
+            //     stores the same attributes
+            hdf5util::setAttribute<std::string>(*ds, "CLASS", "IMAGE");
+            hdf5util::setAttribute<std::string>(*ds, "IMAGE_VERSION", "1.2");
+            hdf5util::setAttribute<std::string>(*ds, "IMAGE_SUBCLASS", "IMAGE_INDEXED");
+        }
         else if(img.type() == CV_8UC3) 
         {
-            if(group.exist(datasetName))
-            {
-                H5Ldelete(group.getId(), datasetName.data(), H5P_DEFAULT);
-            }
-            // bgr -> rgb?
-            H5IMmake_image_24bit(group.getId(), datasetName.c_str(), w, h, interlace, img.data);
+            auto ds = hdf5util::createDataset<uint8_t>(group, datasetName, space, properties);
+            ds->write_raw(img.data);
+
+            hdf5util::setAttribute<std::string>(*ds, "CLASS", "IMAGE");
+            hdf5util::setAttribute<std::string>(*ds, "IMAGE_VERSION", "1.2");
+            hdf5util::setAttribute<std::string>(*ds, "IMAGE_SUBCLASS", "IMAGE_TRUECOLOR");
+            hdf5util::setAttribute<std::string>(*ds, "INTERLACE_MODE", "INTERLACE_PIXEL");
         } 
         else 
         {
-            // std::cout << "[Hdf5IO - ImageIO] WARNING: OpenCV type not implemented -> " 
-            //     << img.type() << ". Saving image as data blob." << std::endl;
 
-            // Couldnt write as H5Image, write as blob
-
-            std::vector<size_t> dims = {static_cast<size_t>(img.rows), static_cast<size_t>(img.cols)};
-            std::vector<hsize_t> chunkSizes = {static_cast<hsize_t>(img.rows), static_cast<hsize_t>(img.cols)};
-
-            if(img.channels() > 1)
-            {
-                dims.push_back(img.channels());
-                chunkSizes.push_back(img.channels());
-            }
-
-            HighFive::DataSpace dataSpace(dims);
-            HighFive::DataSetCreateProps properties;
 
             // Single Channel Type
             const int SCTYPE = img.type() % 8;
@@ -109,58 +119,58 @@ void HDF5Kernel::saveImage(
             if(SCTYPE == CV_8U) 
             {
                 std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<unsigned char>(
-                    group, datasetName, dataSpace, properties
+                    group, datasetName, space, properties
                 );
                 const unsigned char* ptr = reinterpret_cast<unsigned char*>(img.data);
-                dataset->write(ptr);
+                dataset->write_raw(ptr);
             } 
             else if(SCTYPE == CV_8S) 
             {
                 std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<char>(
-                    group, datasetName, dataSpace, properties
+                    group, datasetName, space, properties
                 );
                 const char* ptr = reinterpret_cast<char*>(img.data);
-                dataset->write(ptr);
+                dataset->write_raw(ptr);
             } 
             else if(SCTYPE == CV_16U) 
             {
                 std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<unsigned short>(
-                    group, datasetName, dataSpace, properties
+                    group, datasetName, space, properties
                 );
                 const unsigned short* ptr = reinterpret_cast<unsigned short*>(img.data);
-                dataset->write(ptr);
+                dataset->write_raw(ptr);
             } 
             else if(SCTYPE == CV_16S) 
             {
                 std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<short>(
-                    group, datasetName, dataSpace, properties
+                    group, datasetName, space, properties
                 );
                 const short* ptr = reinterpret_cast<short*>(img.data);
-                dataset->write(ptr);
+                dataset->write_raw(ptr);
             } 
             else if(SCTYPE == CV_32S) 
             {
                 std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<int>(
-                    group, datasetName, dataSpace, properties
+                    group, datasetName, space, properties
                 );
                 const int* ptr = reinterpret_cast<int*>(img.data);
-                dataset->write(ptr);
+                dataset->write_raw(ptr);
             } 
             else if(SCTYPE == CV_32F) 
             {
                 std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<float>(
-                    group, datasetName, dataSpace, properties
+                    group, datasetName, space, properties
                 );
                 const float* ptr = reinterpret_cast<float*>(img.data);
-                dataset->write(ptr);
+                dataset->write_raw(ptr);
             } 
             else if(SCTYPE == CV_64F) 
             {
                 std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<double>(
-                    group, datasetName, dataSpace, properties
+                    group, datasetName, space, properties
                 );
                 const double* ptr = reinterpret_cast<double*>(img.data);
-                dataset->write(ptr);
+                dataset->write_raw(ptr);
             } 
             else 
             {

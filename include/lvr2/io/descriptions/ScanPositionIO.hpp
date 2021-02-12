@@ -8,8 +8,6 @@
 #include <boost/optional.hpp>
 
 // Dependencies
-#include "ArrayIO.hpp"
-
 // SensorIOs
 #include "HyperspectralCameraIO.hpp"
 #include "CameraIO.hpp"

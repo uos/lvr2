@@ -63,6 +63,24 @@ void ChannelIO<FeatureBase>::save(
 
 template<typename FeatureBase>
 template<typename T>
+void ChannelIO<FeatureBase>::save(
+    const size_t& scanPosNo,
+    const size_t& lidarNo,
+    const size_t& scanNo,
+    const std::string& channelName,
+    const Channel<T>& channel
+) const
+{
+    auto Dgen = m_featureBase->m_description;
+    Description d = Dgen->position(scanPosNo);
+    d = Dgen->lidar(d, lidarNo);
+    d = Dgen->scan(d, scanNo);
+    
+
+}
+
+template<typename FeatureBase>
+template<typename T>
 void ChannelIO<FeatureBase>::saveCustom(
     std::string group,
     std::string name,

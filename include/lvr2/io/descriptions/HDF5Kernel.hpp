@@ -13,19 +13,31 @@
 
 namespace lvr2
 {
+
+
+/**
+ * @brief HDF5Kernel configurations.
+ * 
+ * Consists of parameters that influence the general way of storing
+ * 
+ */
+struct HDF5KernelConfig {
+    /// The higher the compressionLevel the lower the memory consumption but higher runtime
+    unsigned int compressionLevel = 9;
+};
+
 class HDF5Kernel : public FileKernel
 {
 public:
 
     HDF5Kernel() = delete;
-    HDF5Kernel(const std::string& hdf5file);
+    HDF5Kernel(const std::string& hdf5file, HDF5KernelConfig config = HDF5KernelConfig());
     ~HDF5Kernel() {
-        //  delete m_metaDescription;
          if(m_hdf5File)
          {
              m_hdf5File->flush();
          }
-         }
+    }
 
     virtual void saveMeshBuffer(
         const std::string& group, 
@@ -354,8 +366,7 @@ public:
 
     std::shared_ptr<HighFive::File>  m_hdf5File;
 
-    // HDF5MetaDescriptionBase* m_metaDescription;
-   
+    HDF5KernelConfig m_config;
 };
 
 using HDF5KernelPtr = std::shared_ptr<HDF5Kernel>;

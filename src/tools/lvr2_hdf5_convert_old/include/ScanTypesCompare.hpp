@@ -21,6 +21,35 @@ bool equal(ScanPositionPtr sp1, ScanPositionPtr sp2);
 
 bool equal(ScanProjectPtr sp1, ScanProjectPtr sp2);
 
+template<typename T>
+bool equal(const Channel<T>& c1, const Channel<T>& c2)
+{
+    
+    if(c1.numElements() != c2.numElements())
+    {
+        return false;
+    }
+
+    if(c1.width() != c2.width())
+    {
+        return false;
+    }
+
+    for(size_t i = 0; i < c1.numElements(); i++)
+    {
+        for(size_t j = 0; j < c1.width(); j++)
+        {
+            if(c1[i][j] != c2[i][j])
+            {
+                std::cout << "Entry differs: " << c1[i][j] << " != " << c2[i][j] << std::endl;
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 } // namespace lvr2
 
 #endif // LVR2_SCAN_TYPES_COMPARE_HPP

@@ -128,28 +128,28 @@ ScanProjectPtr dummyScanProject()
             h_cam->model.distortion[1] = 1.0;
             h_cam->model.distortion[2] = 0.5;
 
-            for(size_t k=0; k<3; k++)
-            {
-                HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
+            // for(size_t k=0; k<3; k++)
+            // {
+            //     HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
 
-                pano->resolution[0] = 200;
-                pano->resolution[1] = 200;
-                pano->wavelength[0] = 100.0;
-                pano->wavelength[1] = 900.25;
+            //     pano->resolution[0] = 200;
+            //     pano->resolution[1] = 200;
+            //     pano->wavelength[0] = 100.0;
+            //     pano->wavelength[1] = 900.25;
 
 
-                for(size_t l=0; l<100; l++)
-                {
-                    HyperspectralPanoramaChannelPtr hchannel(new HyperspectralPanoramaChannel);
+            //     // for(size_t l=0; l<100; l++)
+            //     // {
+            //     //     HyperspectralPanoramaChannelPtr hchannel(new HyperspectralPanoramaChannel);
 
-                    CameraImagePtr si = synthetic::genLVRImage();
-                    hchannel->channel = si->image;
-                    hchannel->timestamp = 0.0;
-                    pano->channels.push_back(hchannel);
-                }
+            //     //     CameraImagePtr si = synthetic::genLVRImage();
+            //     //     hchannel->channel = si->image;
+            //     //     hchannel->timestamp = 0.0;
+            //     //     pano->channels.push_back(hchannel);
+            //     // }
 
-                h_cam->panoramas.push_back(pano);
-            }
+            //     h_cam->panoramas.push_back(pano);
+            // }
 
             scan_pos->hyperspectral_cameras.push_back(h_cam);
         }
@@ -181,6 +181,13 @@ bool directoryIOTest()
 
     LOG(lvr2::Logger::DEBUG) << "Load Scanproject from directory..." << std::endl;
     auto sp_loaded = dirio.ScanProjectIO::load();
+
+
+    // Or load partially
+    // auto hpchannel = dirio.HyperspectralPanoramaChannelIO::load(0, 0, 0, 0);
+
+    // std::cout << "Loaded channel of size: " << hpchannel->channel.size() << std::endl;
+
 
     return equal(sp, sp_loaded);
 }
@@ -286,8 +293,92 @@ void loggerTest()
     LOG(Logger::Level::HIGHLIGHT) << "Finished" << std::endl;
 }
 
+
+
+void debugTest()
+{
+    std::string dirname = "bla_bla";
+
+    DirectoryKernelPtr kernel2(new DirectoryKernel(dirname));
+    DirectorySchemaPtr schema2(new ScanProjectSchemaRaw(dirname));
+    DirectoryIO dirio(kernel2, schema2);
+
+    LOG(lvr2::Logger::DEBUG) << "Create Dummy Scanproject..." << std::endl;
+    
+    // PointBufferPtr sphere = lvr2::synthetic::genSpherePoints();
+    // auto vchannel = *sphere["points"];
+    
+    Channel<float> bla(1000, 3);
+    for(size_t i=0; i<1000; i++)
+    {
+        bla[i][0] = i/10.0;
+        bla[i][1] = i;
+        bla[i][2] = 0.5;
+    }
+
+    dirio.ChannelIO::save("test", "channel.bin", bla);
+    auto bla_loaded_ = dirio.ChannelIO::load<float>("test", "channel");
+
+    if(bla_loaded_)
+    {
+        std::cout << "Loaded"  << std::endl;
+        Channel<float> bla_loaded = *bla_loaded_;
+
+        if(equal(bla, bla_loaded))
+        {
+            std::cout << "and equal" << std::endl;
+        }
+        
+    }
+
+}
+
+void compressionTest()
+{
+    // cv::Mat big_image(5000, 3000, CV_8UC3, cv::Scalar(0));
+
+    cv::Mat big_image = lvr2::synthetic::genLVRImage()->image;
+
+    cv::resize(big_image, big_image, cv::Size(5000, 3000));
+
+    int src_type = big_image.type();
+
+    cv::Mat small_image;
+    cv::resize(big_image, small_image, cv::Size(1000, 500));
+    cv::imshow("Source Image", small_image);
+
+
+    big_image.convertTo(big_image, CV_32FC3);
+
+    std::string filename = "big_image.h5";
+    HDF5KernelPtr kernel(new HDF5Kernel(filename));
+    HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
+
+    descriptions::HDF5IO hdf5io(kernel, schema);
+
+    hdf5io.ImageIO::save("image_group", "image_data", big_image);
+
+
+    cv::Mat big_image_loaded = *hdf5io.ImageIO::load("image_group", "image_data");
+
+    big_image_loaded.convertTo(big_image_loaded, src_type);
+
+    cv::Mat small_image_loaded;
+    cv::resize(big_image_loaded, small_image_loaded, cv::Size(1000, 500));
+    
+    cv::imshow("small_image_loaded", small_image_loaded);
+    cv::waitKey(0);
+
+}
+
 int main(int argc, char** argv)
 {
+    compressionTest();
+    return 0;
+    // LOG.setLoggerLevel(Logger::DEBUG);
+    // debugTest();
+    // return 0;
+
     LOG.setLoggerLevel(Logger::DEBUG);
 
     LOG(lvr2::Logger::INFO) << "Directory IO" << std::endl;
@@ -328,6 +419,8 @@ int main(int argc, char** argv)
 
         std::cout << "Write to '" << outfilename << "' with new Hdf5 format." << std::endl;
         hdf5io.save(sp);
+
+        
 
     }
 
