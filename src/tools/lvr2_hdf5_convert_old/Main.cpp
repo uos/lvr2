@@ -128,28 +128,27 @@ ScanProjectPtr dummyScanProject()
             h_cam->model.distortion[1] = 1.0;
             h_cam->model.distortion[2] = 0.5;
 
-            // for(size_t k=0; k<3; k++)
-            // {
-            //     HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
+            for(size_t k=0; k<3; k++)
+            {
+                HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
 
-            //     pano->resolution[0] = 200;
-            //     pano->resolution[1] = 200;
-            //     pano->wavelength[0] = 100.0;
-            //     pano->wavelength[1] = 900.25;
+                pano->resolution[0] = 200;
+                pano->resolution[1] = 200;
+                pano->wavelength[0] = 100.0;
+                pano->wavelength[1] = 900.25;
 
+                for(size_t l=0; l<100; l++)
+                {
+                    HyperspectralPanoramaChannelPtr hchannel(new HyperspectralPanoramaChannel);
 
-            //     // for(size_t l=0; l<100; l++)
-            //     // {
-            //     //     HyperspectralPanoramaChannelPtr hchannel(new HyperspectralPanoramaChannel);
+                    CameraImagePtr si = synthetic::genLVRImage();
+                    hchannel->channel = si->image.clone();
+                    hchannel->timestamp = 0.0;
+                    pano->channels.push_back(hchannel);
+                }
 
-            //     //     CameraImagePtr si = synthetic::genLVRImage();
-            //     //     hchannel->channel = si->image;
-            //     //     hchannel->timestamp = 0.0;
-            //     //     pano->channels.push_back(hchannel);
-            //     // }
-
-            //     h_cam->panoramas.push_back(pano);
-            // }
+                h_cam->panoramas.push_back(pano);
+            }
 
             scan_pos->hyperspectral_cameras.push_back(h_cam);
         }
@@ -203,6 +202,10 @@ bool hdf5IOTest()
     auto sp = dummyScanProject();
     hdf5io.save(sp);
     auto sp_loaded = hdf5io.ScanProjectIO::load();
+
+    cv::imshow("Spectral Panorama 0", sp_loaded->positions[0]->hyperspectral_cameras[0]->panoramas[0]->channels[0]->channel);
+
+    cv::waitKey(0);
 
     return equal(sp, sp_loaded);
 }
@@ -373,8 +376,11 @@ void compressionTest()
 
 int main(int argc, char** argv)
 {
-    compressionTest();
+    directoryIOTest();
+    hdf5IOTest();
     return 0;
+    // compressionTest();
+    // return 0;
     // LOG.setLoggerLevel(Logger::DEBUG);
     // debugTest();
     // return 0;

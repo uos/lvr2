@@ -84,101 +84,96 @@ void HDF5Kernel::saveImage(
             properties.add(HighFive::Chunking(chunkSizes));
             properties.add(HighFive::Deflate(m_config.compressionLevel));
         }
-        
 
-        // TODO: need to remove dataset if exists because of H5IMmake_image_8bit. do it better
-        if(img.type() == CV_8U)
+        // Single Channel Type
+        const int SCTYPE = img.type() % 8;
+
+
+        std::unique_ptr<HighFive::DataSet> dataset;
+
+        if(SCTYPE == CV_8U) 
         {
-            auto ds = hdf5util::createDataset<uint8_t>(group, datasetName, space, properties);
-            ds->write_raw(img.data);
-
-            // HDFCompass cannot show this. But it is the correct way to store it
-            // - H5IMmake_image_8bit(group.getId(), datasetName.c_str(), w, h, img.data)
-            //     stores the same attributes
-            hdf5util::setAttribute<std::string>(*ds, "CLASS", "IMAGE");
-            hdf5util::setAttribute<std::string>(*ds, "IMAGE_VERSION", "1.2");
-            hdf5util::setAttribute<std::string>(*ds, "IMAGE_SUBCLASS", "IMAGE_INDEXED");
-        }
-        else if(img.type() == CV_8UC3) 
-        {
-            auto ds = hdf5util::createDataset<uint8_t>(group, datasetName, space, properties);
-            ds->write_raw(img.data);
-
-            hdf5util::setAttribute<std::string>(*ds, "CLASS", "IMAGE");
-            hdf5util::setAttribute<std::string>(*ds, "IMAGE_VERSION", "1.2");
-            hdf5util::setAttribute<std::string>(*ds, "IMAGE_SUBCLASS", "IMAGE_TRUECOLOR");
-            hdf5util::setAttribute<std::string>(*ds, "INTERLACE_MODE", "INTERLACE_PIXEL");
+            dataset = hdf5util::createDataset<unsigned char>(
+                group, datasetName, space, properties
+            );
+            const unsigned char* ptr = reinterpret_cast<unsigned char*>(img.data);
+            dataset->write_raw(ptr);
         } 
-        else 
+        else if(SCTYPE == CV_8S) 
         {
-
-
-            // Single Channel Type
-            const int SCTYPE = img.type() % 8;
-
-            if(SCTYPE == CV_8U) 
-            {
-                std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<unsigned char>(
-                    group, datasetName, space, properties
-                );
-                const unsigned char* ptr = reinterpret_cast<unsigned char*>(img.data);
-                dataset->write_raw(ptr);
-            } 
-            else if(SCTYPE == CV_8S) 
-            {
-                std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<char>(
-                    group, datasetName, space, properties
-                );
-                const char* ptr = reinterpret_cast<char*>(img.data);
-                dataset->write_raw(ptr);
-            } 
-            else if(SCTYPE == CV_16U) 
-            {
-                std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<unsigned short>(
-                    group, datasetName, space, properties
-                );
-                const unsigned short* ptr = reinterpret_cast<unsigned short*>(img.data);
-                dataset->write_raw(ptr);
-            } 
-            else if(SCTYPE == CV_16S) 
-            {
-                std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<short>(
-                    group, datasetName, space, properties
-                );
-                const short* ptr = reinterpret_cast<short*>(img.data);
-                dataset->write_raw(ptr);
-            } 
-            else if(SCTYPE == CV_32S) 
-            {
-                std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<int>(
-                    group, datasetName, space, properties
-                );
-                const int* ptr = reinterpret_cast<int*>(img.data);
-                dataset->write_raw(ptr);
-            } 
-            else if(SCTYPE == CV_32F) 
-            {
-                std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<float>(
-                    group, datasetName, space, properties
-                );
-                const float* ptr = reinterpret_cast<float*>(img.data);
-                dataset->write_raw(ptr);
-            } 
-            else if(SCTYPE == CV_64F) 
-            {
-                std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<double>(
-                    group, datasetName, space, properties
-                );
-                const double* ptr = reinterpret_cast<double*>(img.data);
-                dataset->write_raw(ptr);
-            } 
-            else 
-            {
-                std::cout << timestamp << "HDF5Kernel:SaveImage: Warning: unknown opencv type " << img.type() << std::endl;
-            }
+            dataset = hdf5util::createDataset<char>(
+                group, datasetName, space, properties
+            );
+            const char* ptr = reinterpret_cast<char*>(img.data);
+            dataset->write_raw(ptr);
+        } 
+        else if(SCTYPE == CV_16U) 
+        {
+            dataset = hdf5util::createDataset<unsigned short>(
+                group, datasetName, space, properties
+            );
+            const unsigned short* ptr = reinterpret_cast<unsigned short*>(img.data);
+            dataset->write_raw(ptr);
+        } 
+        else if(SCTYPE == CV_16S) 
+        {
+            dataset = hdf5util::createDataset<short>(
+                group, datasetName, space, properties
+            );
+            const short* ptr = reinterpret_cast<short*>(img.data);
+            dataset->write_raw(ptr);
+        } 
+        else if(SCTYPE == CV_32S) 
+        {
+            dataset = hdf5util::createDataset<int>(
+                group, datasetName, space, properties
+            );
+            const int* ptr = reinterpret_cast<int*>(img.data);
+            dataset->write_raw(ptr);
+        } 
+        else if(SCTYPE == CV_32F) 
+        {
+            dataset = hdf5util::createDataset<float>(
+                group, datasetName, space, properties
+            );
+            const float* ptr = reinterpret_cast<float*>(img.data);
+            dataset->write_raw(ptr);
+        } 
+        else if(SCTYPE == CV_64F) 
+        {
+            dataset = hdf5util::createDataset<double>(
+                group, datasetName, space, properties
+            );
+            const double* ptr = reinterpret_cast<double*>(img.data);
+            dataset->write_raw(ptr);
+        } else 
+        {
+            std::cout << timestamp << "HDF5Kernel:SaveImage: Warning: unknown opencv type " << img.type() << std::endl;
         }
+
+        if(dataset)
+        {
+            // Add additional attributes for specific images such that it can be displayed in HDF file viewer
+            if(img.type() == CV_8U)
+            {
+                // HDFCompass cannot show this. But it is the correct way to store it
+                // - H5IMmake_image_8bit(group.getId(), datasetName.c_str(), w, h, img.data)
+                //     stores the same attributes
+                hdf5util::setAttribute<std::string>(*dataset, "CLASS", "IMAGE");
+                hdf5util::setAttribute<std::string>(*dataset, "IMAGE_VERSION", "1.2");
+                hdf5util::setAttribute<std::string>(*dataset, "IMAGE_SUBCLASS", "IMAGE_INDEXED");
+            }
+            else if(img.type() == CV_8UC3) 
+            {
+
+                hdf5util::setAttribute<std::string>(*dataset, "CLASS", "IMAGE");
+                hdf5util::setAttribute<std::string>(*dataset, "IMAGE_VERSION", "1.2");
+                hdf5util::setAttribute<std::string>(*dataset, "IMAGE_SUBCLASS", "IMAGE_TRUECOLOR");
+                hdf5util::setAttribute<std::string>(*dataset, "INTERLACE_MODE", "INTERLACE_PIXEL");
+            } 
+        }
+        
         m_hdf5File->flush();
-    
     } 
     else 
     {
@@ -267,58 +262,33 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
         HighFive::Group group = hdf5util::getGroup(m_hdf5File, groupName);
         if(group.exist(datasetName))
         {
-            if(H5IMis_image(group.getId(), datasetName.c_str()))
-            {
-                long long unsigned int w, h, planes;
-                long long int npals;
-                char interlace[256];
+            HighFive::DataSet dataset = group.getDataSet(datasetName);
+            std::vector<size_t> dims = dataset.getSpace().getDimensions();
+            HighFive::DataType dtype = dataset.getDataType();
 
-                int err = H5IMget_image_info(group.getId(), datasetName.c_str(), &w, &h, &planes, interlace, &npals);
-
-                if(planes == 1) {
-                    // 1 channel image
-                    ret = cv::Mat(h, w, CV_8U);
-                    H5IMread_image(group.getId(), datasetName.c_str(), ret->data);
-                } else if(planes == 3) {
-                    // 3 channel image
-                    ret = cv::Mat(h, w, CV_8UC3);
-                    H5IMread_image(group.getId(), datasetName.c_str(), ret->data);
-                } else {
-                    // ERROR
-                }
+            if(dtype == HighFive::AtomicType<unsigned char>()){
+                ret = createMat<unsigned char>(dims);
+                dataset.read(reinterpret_cast<unsigned char*>(ret->data));
+            } else if(dtype == HighFive::AtomicType<char>()) {
+                ret = createMat<char>(dims);
+                dataset.read(reinterpret_cast<char*>(ret->data));
+            } else if(dtype == HighFive::AtomicType<unsigned short>()) {
+                ret = createMat<unsigned short>(dims);
+                dataset.read(reinterpret_cast<unsigned short*>(ret->data));
+            } else if(dtype == HighFive::AtomicType<short>()) {
+                ret = createMat<short>(dims);
+                dataset.read(reinterpret_cast<short*>(ret->data));
+            } else if(dtype == HighFive::AtomicType<int>()) {
+                ret = createMat<int>(dims);
+                dataset.read(reinterpret_cast<int*>(ret->data));
+            } else if(dtype == HighFive::AtomicType<float>()) {
+                ret = createMat<float>(dims);
+                dataset.read(reinterpret_cast<float*>(ret->data));
+            } else if(dtype == HighFive::AtomicType<double>()) {
+                ret = createMat<double>(dims);
+                dataset.read(reinterpret_cast<double*>(ret->data));
             } else {
-                // data blob
-                // std::cout << "[Hdf5 - ImageIO] WARNING: Dataset is not formatted as image. Reading data as blob." << std::endl;
-                // Data is not an image, load as blob
-
-                HighFive::DataSet dataset = group.getDataSet(datasetName);
-                std::vector<size_t> dims = dataset.getSpace().getDimensions();
-                HighFive::DataType dtype = dataset.getDataType();
-
-                if(dtype == HighFive::AtomicType<unsigned char>()){
-                    ret = createMat<unsigned char>(dims);
-                    dataset.read(reinterpret_cast<unsigned char*>(ret->data));
-                } else if(dtype == HighFive::AtomicType<char>()) {
-                    ret = createMat<char>(dims);
-                    dataset.read(reinterpret_cast<char*>(ret->data));
-                } else if(dtype == HighFive::AtomicType<unsigned short>()) {
-                    ret = createMat<unsigned short>(dims);
-                    dataset.read(reinterpret_cast<unsigned short*>(ret->data));
-                } else if(dtype == HighFive::AtomicType<short>()) {
-                    ret = createMat<short>(dims);
-                    dataset.read(reinterpret_cast<short*>(ret->data));
-                } else if(dtype == HighFive::AtomicType<int>()) {
-                    ret = createMat<int>(dims);
-                    dataset.read(reinterpret_cast<int*>(ret->data));
-                } else if(dtype == HighFive::AtomicType<float>()) {
-                    ret = createMat<float>(dims);
-                    dataset.read(reinterpret_cast<float*>(ret->data));
-                } else if(dtype == HighFive::AtomicType<double>()) {
-                    ret = createMat<double>(dims);
-                    dataset.read(reinterpret_cast<double*>(ret->data));
-                } else {
-                    std::cout << timestamp << "HDF5Kernel::loadImage(): Warning: Could'nt load blob. Datatype unkown." << std::endl;
-                }
+                std::cout << timestamp << "HDF5Kernel::loadImage(): Warning: Could'nt load blob. Datatype unkown." << std::endl;
             }
         }
 
