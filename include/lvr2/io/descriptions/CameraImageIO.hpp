@@ -52,7 +52,7 @@ protected:
 /**
  *
  * @brief FeatureConstruct Specialization for hdf5features::ScanImageIO
- * - Constructs dependencies (ArrayIO, MatrixIO)
+ * - Constructs dependencies (ImageIO)
  * - Sets type variable
  *
  */

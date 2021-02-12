@@ -44,7 +44,7 @@ protected:
 /**
  *
  * @brief FeatureConstruct Specialization for hdf5features::ScanCameraIO
- * - Constructs dependencies (ArrayIO, MatrixIO)
+ * - Constructs dependencies (CameraImageIO)
  * - Sets type variable
  *
  */

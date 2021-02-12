@@ -35,8 +35,8 @@ protected:
 
 /**
  *
- * @brief FeatureConstruct Specialization for ScanCameraIO
- * - Constructs dependencies (ArrayIO, MatrixIO)
+ * @brief FeatureConstruct Specialization for HyperspectralCameraIO
+ * - Constructs dependencies (HyperspectralPanoramaIO)
  * - Sets type variable
  *
  */
