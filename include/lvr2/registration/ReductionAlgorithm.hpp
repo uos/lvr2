@@ -91,11 +91,16 @@ public:
 class FixedSizeReductionAlgorithm : public ReductionAlgorithm
 {
 public:
+     /**
+      * @param numPoints Number of points the original point buffer
+      *                  gets reduced to
+      */
      FixedSizeReductionAlgorithm(size_t numPoints) :
           m_numPoints(numPoints) {};
 
      virtual PointBufferPtr getReducedPoints()
      {
+          // return original point buffer if it has fewer/equal number of points
           if(m_numPoints >= m_pointBuffer->numPoints())
           {
                return m_pointBuffer;
@@ -104,8 +109,8 @@ public:
           PointBufferPtr buff(new PointBuffer);
           floatArr pointArray(new float[m_numPoints * 3]);
           for(size_t i = 0; i < m_numPoints; i++) {
+               // num_dimension * i * space between points
                idx = 3 * i * (m_pointBuffer->numPoints() / m_numPoints);
-               
                // x
                pointArray[i*3] = m_pointBuffer->getPointArray()[idx];
                // y
@@ -138,6 +143,10 @@ private:
      float     m_percent;
 };
 
+/**
+ * @brief ReductionAlgorithm implementation that returns
+ *        complete point buffer without any reduction
+ */
 class NoReductionAlgorithm : public ReductionAlgorithm 
 {
 public:
