@@ -74,29 +74,9 @@ void LVRScanProjectOpenDialog::schemaSelectionChanged(int index)
     }
 }
 
-void LVRScanProjectOpenDialog::reductionSelectionChanged(int index)
-{
-    switch(index)
-    {
-        case 0:
-            // load all point buffer
-            m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
-            break;
-        case 1:
-            // load an empty point buffer
-            m_reductionPtr = ReductionAlgorithmPtr(new AllReductionAlgorithm());
-            break;
-        case 2:
-            // perform an octree reduction
-            m_reductionPtr = ReductionAlgorithmPtr(new OctreeReductionAlgorithm(0.1, 5));
-            break;
-        default:
-            break;
-    }
-}
-
 void LVRScanProjectOpenDialog::projectScaleSelectionChanged(int index)
 {
+    // project scale will affect how big the scanner position cylinder will be rendered
     switch(index)
     {
         case 0:
@@ -137,18 +117,20 @@ void LVRScanProjectOpenDialog::updateHDF5Schema(int index)
 
 void LVRScanProjectOpenDialog::initAvailableScales()
 {
-    // Clear all schema entries in combo box
+    // Clear all items in combo box
     QComboBox* b = m_ui->comboBoxScale;
     b->clear();
+    // add available items to combobox
     b->addItem("mm");
     b->addItem("cm");
     b->addItem("m");
+    // set meters as default
     b->setCurrentIndex(2);
 }
 
 void LVRScanProjectOpenDialog::updateAvailableSchemas()
 {
-    // Clear all schema entries in combo box
+    // Clear all schema items in combo box
     QComboBox* b = m_ui->comboBoxSchema;
     b->clear();
 
@@ -187,6 +169,7 @@ void LVRScanProjectOpenDialog::updateAvailableSchemas()
 
 void LVRScanProjectOpenDialog::addReductionTypes()
 {
+    // displays the default reduction type when dialog is opened
     m_ui->pushButtonReduction->setText("Complete Point Buffer");
 }
 
@@ -213,7 +196,7 @@ void LVRScanProjectOpenDialog::openReductionDialog()
             m_ui->pushButtonReduction->setText("Complete Point Buffer");
             break;
         case 1:
-            m_ui->pushButtonReduction->setText("Empty Point Buffer");
+            m_ui->pushButtonReduction->setText("Meta Only");
             break;
         case 2:
             m_ui->pushButtonReduction->setText("Octree Reduction");
