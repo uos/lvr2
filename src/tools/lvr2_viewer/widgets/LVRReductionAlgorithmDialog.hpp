@@ -78,20 +78,24 @@ public Q_SLOTS:
     /// Called when a diffent reduction was selected
     void reductionSelectionChanged(int index);
 
+    /// Called when number of fixed points is changed (FixedReduction)
     void setFixedNumberPoints(int value);
 
+    /// Called when percent is changed (PercentageReduction)
     void setPercentPoints(int value);
 
+    /// Called when voxel size is changed (OctreeReduction)
     void setVoxelSize(double value);
 
+    /// Called when min num of points per leaf is changed (OctreeReduction)
     void setOctreeMinPoints(int value);
 
-
-    //Called when OK is pressed
+    /// Called when OK is pressed
     void acceptOpen();
 
-    // remove widgets from parameters frame
+    /// remove widgets from parameters frame
     void cleanFrame();
+
 
     void resetParameters();
     void addLabelToFrame(QString labelText);
@@ -101,14 +105,16 @@ private:
     /// Connects signals and slots
     void connectSignalsAndSlots();
 
+    /// Add items to reduction combo box
     void addReductionTypes();
 
     /// Pointer to the UI
-    LVRReductionAlgorithmDialogUI*     m_ui;
+    LVRReductionAlgorithmDialogUI*  m_ui;
 
     /// Parent widget
     QWidget*                        m_parent;
 
+    /// Pointer to the selected reduction algorithm
     ReductionAlgorithmPtr           m_reductionPtr;
 
     bool                            m_successful;
