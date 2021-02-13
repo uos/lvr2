@@ -109,9 +109,6 @@ public Q_SLOTS:
     void schemaSelectionChanged(int index);
 
     /// Called when a diffent reduction was selected
-    void reductionSelectionChanged(int index);
-
-    /// Called when a diffent reduction was selected
     void projectScaleSelectionChanged(int index);
 
     //Called when OK is pressed
@@ -126,9 +123,8 @@ private:
     /// depending on selected scan project type
     void updateAvailableSchemas();
 
+    /// adds scales to combobox and sets default selection
     void initAvailableScales();
-
-    void addReductionTypes();
 
     /// Sets the current (directory) schema based
     /// on the selected list index in the combo box
@@ -153,8 +149,11 @@ private:
     /// Current scan project type
     ProjectType                     m_projectType;
 
+    /// Current reduction type algorithm
     ReductionAlgorithmPtr           m_reductionPtr;
 
+    /// Current project scale which affects
+    /// scaling of scanner position cylinder
     ProjectScale                    m_projectScale;
 
     bool                            m_successful;
