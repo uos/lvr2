@@ -22,7 +22,9 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     
     initAvailableScales();
     connectSignalsAndSlots();
-    addReductionTypes();    
+
+    // displays the default reduction type when dialog is opened
+    m_ui->pushButtonReduction->setText("Complete Point Buffer");
 }
 
 void LVRScanProjectOpenDialog::connectSignalsAndSlots()
@@ -165,12 +167,6 @@ void LVRScanProjectOpenDialog::updateAvailableSchemas()
             b->addItem("None");      
     }
     m_ui->pushButtonReduction->setEnabled(true);
-}
-
-void LVRScanProjectOpenDialog::addReductionTypes()
-{
-    // displays the default reduction type when dialog is opened
-    m_ui->pushButtonReduction->setText("Complete Point Buffer");
 }
 
 void LVRScanProjectOpenDialog::openReductionDialog()
