@@ -48,6 +48,8 @@ bool LVRScanProjectOpenDialog::successful()
 
 void LVRScanProjectOpenDialog::projectTypeSelectionChanged(int index)
 {
+    // clear dialog because all previously made selections
+    // may be invalid with the change of the project type
     m_ui->lineEditPath->clear();
     m_ui->toolButtonPath->setDown(false);
     m_projectType = NONE;
@@ -77,12 +79,15 @@ void LVRScanProjectOpenDialog::reductionSelectionChanged(int index)
     switch(index)
     {
         case 0:
+            // load all point buffer
             m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
             break;
         case 1:
+            // load an empty point buffer
             m_reductionPtr = ReductionAlgorithmPtr(new AllReductionAlgorithm());
             break;
         case 2:
+            // perform an octree reduction
             m_reductionPtr = ReductionAlgorithmPtr(new OctreeReductionAlgorithm(0.1, 5));
             break;
         default:
