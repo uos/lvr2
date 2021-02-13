@@ -125,15 +125,25 @@ private:
      size_t     m_numPoints;
 };
 
-
+/**
+ * @brief ReductionAlgorithm implementation that returns a specified
+ *        percentage from the original point buffer with an evenly 
+ *        spaced selection
+ */
 class PercentageReductionAlgorithm : public ReductionAlgorithm
 {
 public:
+     /**
+      * @param percent percentage to which the original point buffer
+      *                gets reduced
+      */
      PercentageReductionAlgorithm(float percent) :
           m_percent(percent) {};
 
      virtual PointBufferPtr getReducedPoints()
      {
+          // calculate the number of points and use FixedSize reduction
+          // since it already implements evenly spaced selection
           size_t numOfPoints = (size_t)(m_pointBuffer->numPoints() * m_percent);
           ReductionAlgorithmPtr fixedSizeReduction(new FixedSizeReductionAlgorithm(numOfPoints));
           fixedSizeReduction->setPointBuffer(m_pointBuffer);
