@@ -8,15 +8,16 @@ void ScanProjectIO<FeatureBase>::save(
     ScanProjectPtr scanProject) const
 {
     Description d = m_featureBase->m_description->scanProject();
-    
-    // std::cout << "[ScanProjectIO] ScanProject - Description: " << std::endl;
-    // std::cout << d << std::endl;
 
-    if(!d.groupName)
-    {
-        std::cout << timestamp << "[ScanProjectIO] Description does not contain a group for the ScanProject" << std::endl;
-        d.groupName = "";
-    }
+
+    std::cout << "[ScanProjectIO - save]: Description" << std::endl;
+    std::cout << d << std::endl;
+
+    // if(!d.dataRoot)
+    // {
+    //     std::cout << timestamp << "[ScanProjectIO] Description does not contain a data root for the ScanProject" << std::endl;
+    //     d.dataRoot = "";
+    // }
 
     // std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
     // Iterate over all positions and save
@@ -27,13 +28,13 @@ void ScanProjectIO<FeatureBase>::save(
     }
 
     // Default scan project yaml
-    if(d.metaName)
+    if(d.meta)
     {
         YAML::Node node;
         node = *scanProject;
         // std::cout << "[ScanProjectIO] saveMetaYAML, Group: "
         //             << *d.groupName << ", metaName: " << *d.metaName << std::endl;
-        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 }
 
@@ -48,21 +49,21 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
     // std::cout << "[HDF5IO - ScanProjectIO - load]: Description" << std::endl;
     // std::cout << d << std::endl;
 
-    if(!d.groupName)
+    if(!d.dataRoot)
     {
-        d.groupName = "";
+        d.dataRoot = "";
     }
 
-    if(*d.groupName != "" && !m_featureBase->m_kernel->exists(*d.groupName))
+    if(*d.dataRoot != "" && !m_featureBase->m_kernel->exists(*d.dataRoot))
     {
-        std::cout << "[ScanProjectIO] Warning: '" << *d.groupName << "' does not exist." << std::endl; 
+        std::cout << "[ScanProjectIO] Warning: '" << *d.dataRoot << "' does not exist." << std::endl; 
         return ret;
     }
 
-    if(d.metaName)
+    if(d.meta)
     {
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<ScanProject>(meta.as<ScanProject>());
     } else {
         // what to do here?
@@ -74,21 +75,21 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
     }
 
 
-    // Get all sub scans
-    size_t scanPosNo = 0;
-    while(true)
-    {  
-        // Get description for next scan
-        ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
-        if(!scanPos)
-        {
-            break;
-        }
+    // // Get all sub scans
+    // size_t scanPosNo = 0;
+    // while(true)
+    // {  
+    //     // Get description for next scan
+    //     ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
+    //     if(!scanPos)
+    //     {
+    //         break;
+    //     }
 
-        // std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
-        ret->positions.push_back(scanPos);
-        scanPosNo++;
-    }
+    //     // std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
+    //     ret->positions.push_back(scanPos);
+    //     scanPosNo++;
+    // }
 
     return ret;
 }

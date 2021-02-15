@@ -4,57 +4,61 @@ namespace lvr2
 
 template <typename FeatureBase>
 void CameraImageIO<FeatureBase>::save(
-    const size_t& scanPosNr,
-    const size_t& camNr,
-    const size_t& imgNr,
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const size_t& imgNo,
     CameraImagePtr imgPtr) const
 {
-    auto D = m_featureBase->m_description;
-    Description d = D->cameraImage(
-        D->camera( D->position(scanPosNr), camNr), imgNr);
+    auto Dgen = m_featureBase->m_description;
+    Description d = Dgen->cameraImage(scanPosNo, camNo, imgNo);
 
-    m_imageIO->save(*d.groupName, *d.dataSetName, imgPtr->image);
+    std::cout << "[CameraImageIO - save] Description:" << std::endl;
+    std::cout << d << std::endl;
 
-    if(d.metaName)
+
+    // save data
+    m_imageIO->save(*d.dataRoot, *d.data, imgPtr->image);
+
+    // save meta
+    if(d.meta)
     {
         YAML::Node node;
         node = *imgPtr;
-        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 }
 
 template <typename FeatureBase>
 CameraImagePtr CameraImageIO<FeatureBase>::load(
-    const size_t& scanPosNr,
-    const size_t& camNr,
-    const size_t& imgNr) const
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const size_t& imgNo) const
 {
     CameraImagePtr ret;
 
     auto Dgen = m_featureBase->m_description;
-    Description d_pos = Dgen->position(scanPosNr);
-    Description d_cam = Dgen->camera(d_pos, camNr);
-    Description d = Dgen->cameraImage(d_cam, imgNr);
+    Description d = Dgen->cameraImage(scanPosNo, camNo, imgNo);
 
-    if(!d.groupName)
+
+    if(!d.dataRoot)
     {
         return ret;
     }
 
-    if(!m_featureBase->m_kernel->exists(*d.groupName))
+    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
     
-    if(d.metaName)
+    if(d.meta)
     {
-        if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
+        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
         {
             return ret;
         }
         
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<CameraImage>(meta.as<CameraImage>());
     } else {
         ret.reset(new CameraImage);
@@ -62,7 +66,7 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
     
     // loading
     // should data be loaded ?
-    boost::optional<cv::Mat> opt_img = m_imageIO->loadImage(*d.groupName, *d.dataSetName);
+    boost::optional<cv::Mat> opt_img = m_imageIO->loadImage(*d.dataRoot, *d.data);
     if(opt_img)
     {
         ret->image = *opt_img;

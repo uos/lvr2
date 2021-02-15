@@ -12,205 +12,189 @@ namespace lvr2
 Description ScanProjectSchemaRaw::scanProject() const
 {
     Description d;
-    d.groupName = "raw";
-    d.metaName = "meta.yaml";
+
+    d.dataRoot = "raw";
+
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
+
     return d;
 }
 
-Description ScanProjectSchemaRaw::position(const size_t &scanPosNo) const
+Description ScanProjectSchemaRaw::position(
+    const size_t &scanPosNo) const
 {
-    Description d_parent = scanProject();
-
-    Description d;
-    
-    // Save scan file name
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanPosNo;
+
+    Description dp = scanProject();
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
     
-    d.metaName = "meta.yaml";
-
-    // Load meta data
-    boost::filesystem::path positionPath(sstr.str());
-
-    // append positionPath to parent path if necessary
-    if(d_parent.groupName)
-    {
-        positionPath = boost::filesystem::path(*d_parent.groupName) / positionPath;
-    }
-
-    boost::filesystem::path metaPath(*d.metaName);
-    d.groupName = (positionPath).string();
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
     
     return d;
 }
 
 Description ScanProjectSchemaRaw::lidar(
-    const Description& d_parent, 
-    const size_t &lidarNo) const
+    const size_t& scanPosNo, 
+    const size_t& lidarNo) const
 {
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << lidarNo;
+    
+
+    Description dp = position(scanPosNo);
 
     Description d;
-    d.groupName = "lidar_" + sstr.str();
-    d.metaName = "meta.yaml";
-    
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" +  *d.groupName;
-    }
+    d.dataRoot = *dp.dataRoot + "/lidar_" + sstr.str();
 
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
 
     return d;
 }
 
 Description ScanProjectSchemaRaw::camera(
-    const Description& d_parent,
-    const size_t &camNo) const
+    const size_t& scanPosNo,
+    const size_t& camNo) const
 {
-    Description d;
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << camNo;
 
-    d.groupName = "cam_" + sstr.str();
-    d.metaName = "meta.yaml";
+    Description dp = position(scanPosNo);
 
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/cam_" + sstr.str();
 
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
+    
     return d;
 }
 
 
 Description ScanProjectSchemaRaw::scan(
-    const Description& d_parent,
-    const size_t &scanNo) const
+    const size_t& scanPosNo,
+    const size_t& lidarNo,
+    const size_t& scanNo) const
 {
-    Description d;
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanNo;
 
-    d.groupName = sstr.str();
-    d.metaName = "meta.yaml";
+    Description dp = lidar(scanPosNo, lidarNo);
 
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
 
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
+    
     return d;
 }
 
-Description ScanProjectSchemaRaw::channel(
-    const Description& d_parent,
-    const std::string& channel_name) const
+Description ScanProjectSchemaRaw::scanChannel(
+    const size_t& scanPosNo,
+    const size_t& lidarNo,
+    const size_t& scanNo,
+    const std::string& channelName) const
 {
     Description d;
 
-    if(channel_name == "points" 
-    || channel_name == "normals" 
-    || channel_name == "colors")
+    Description dp = scan(scanPosNo, lidarNo, scanNo);
+
+    if(channelName == "points" || channelName == "normals" || channelName == "colors")
     {
-        d.groupName = "points.ply";
-        d.dataSetName = channel_name;
+        d.dataRoot = *dp.dataRoot + "/points.ply";
+        d.data = channelName;
     } else {
-        d.dataSetName = channel_name;
+        d.dataRoot = *dp.dataRoot;
+        d.data = channelName;
     }
 
-    d.metaName = channel_name + ".yaml";
-
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    d.metaRoot = *dp.dataRoot;
+    d.meta = channelName + ".yaml";
 
     return d;
 }
 
 Description ScanProjectSchemaRaw::cameraImage(
-    const Description& d_parent, 
-    const size_t &cameraImageNo) const
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const size_t& cameraImageNo) const
 {
-    Description d;
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << cameraImageNo;
-   
-    d.groupName = sstr.str();
-    d.metaName = "meta.yaml";
-    d.dataSetName = "image.png";
 
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    Description dp = camera(scanPosNo, camNo);
 
-    return d; 
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+    d.data = "image.png";
+
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
+
+    return d;
 }
 
 Description ScanProjectSchemaRaw::hyperspectralCamera(
-    const Description& d_parent,
-    const size_t &camNo) const
+    const size_t& scanPosNo,
+    const size_t& camNo) const
 {
-    Description d;
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << camNo;
 
-    d.groupName = "hypercam_" + sstr.str();
-    d.metaName = "meta.yaml";
+    Description dp = position(scanPosNo);
 
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    Description d;
+    d.dataRoot =  *dp.dataRoot + "/hypercam_" + sstr.str();
+
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
 
     return d;
 }
 
 Description ScanProjectSchemaRaw::hyperspectralPanorama(
-    const Description& d_parent,
+    const size_t& scanPosNo,
+    const size_t& camNo,
     const size_t& panoNo) const
 {
-    Description d;
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << panoNo;
 
-    d.groupName = sstr.str();
-    d.metaName = "meta.yaml";
+    Description dp = hyperspectralCamera(scanPosNo, camNo);
 
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    Description d;
+    d.dataRoot =  *dp.dataRoot + "/" + sstr.str();
+
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
 
     return d;
 }
 
 Description ScanProjectSchemaRaw::hyperspectralPanoramaChannel(
-    const Description& d_parent,
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const size_t& panoNo,
     const size_t& channelNo
 ) const
 {
-    Description d;
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << channelNo;
-   
-    d.groupName = sstr.str();
-    d.metaName = "meta.yaml";
-    d.dataSetName = "image.png";
 
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    Description dp = hyperspectralPanorama(scanPosNo, camNo, panoNo);
 
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+    d.data = "image.png";
+    
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
+    
     return d;
 }
 

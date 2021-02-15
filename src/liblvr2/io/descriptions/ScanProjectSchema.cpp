@@ -6,44 +6,27 @@ namespace lvr2
 std::ostream& operator<<(std::ostream& os, const Description& desc)
 {
     os << "LVR Description: \n";
-    if(desc.groupName)
+    if(desc.dataRoot)
     {
-        os << "-- groupName: " << *desc.groupName << "\n";
+        os << "-- dataRoot: " << *desc.dataRoot << "\n";
     }
 
-    if(desc.dataSetName)
+    if(desc.data)
     {
-        os << "-- dataSetName: " << *desc.dataSetName << "\n";
+        os << "-- data: " << *desc.data << "\n";
     }
 
-    if(desc.metaName)
+    if(desc.metaRoot)
     {
-        os << "-- metaName: " << *desc.metaName << "\n";
+        os << "-- metaRoot: " << *desc.metaRoot << "\n";
+    }
+
+    if(desc.meta)
+    {
+        os << "-- meta: " << *desc.meta << "\n";
     }
     
     return os;
-}
-
-
-std::pair<std::string, std::string> getNames(
-    const std::string& defaultGroup, 
-    const std::string& defaultContainer, 
-    const Description& d)
-{
-    std::string returnGroup = defaultGroup;
-    std::string returnContainer = defaultContainer;
-
-    if(d.groupName)
-    {
-        returnGroup = *d.groupName;
-    }
-
-    if(d.dataSetName)
-    {
-        returnContainer = *d.dataSetName;
-    }
-
-    return std::make_pair(returnGroup, returnContainer);
 }
 
 } // namespace lvr2

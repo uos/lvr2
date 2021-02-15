@@ -12,8 +12,8 @@ void ScanPositionIO< FeatureBase>::save(
 {
     Description d = m_featureBase->m_description->position(scanPosNo);
   
-    // std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
-    // std::cout << d << std::endl;
+    std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
+    std::cout << d << std::endl;
 
     // Save all lidar sensors
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
@@ -40,11 +40,11 @@ void ScanPositionIO< FeatureBase>::save(
 
     // std::cout << "[ScanPositionIO - save] Write Meta." << std::endl;
     // Save meta information
-    if(d.metaName)
+    if(d.meta)
     {
         YAML::Node node;
         node = *scanPositionPtr;
-        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 
     // std::cout << "[ScanPositionIO] Meta written. " << std::endl;
@@ -59,32 +59,47 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::load(
 
     Description d = m_featureBase->m_description->position(scanPosNo);
 
-    if(!m_featureBase->m_kernel->exists(*d.groupName))
+    // Check if specified scan position exists
+    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
 
+
+    //// META
+
+    // if(!d.dataRoot)
+    // {
+    //     d.dataRoot = "";
+    // }
+
+    // if(!d.metaRoot)
+    // {
+    //     d.metaRoot = "";
+    // }
+
+
     // std::cout << "[ScanPositionIO - load] Description:" << std::endl;
     // std::cout << d << std::endl;
 
-    // Setup defaults
-    if(d.metaName)
+    if(d.meta)
     {
-        if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
+        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
         {
             std::cout << timestamp << " [ScanPositionIO]: Specified meta file not found. " << std::endl;
             return ret;
         } 
 
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
-        
     } else {
         // no meta name specified but scan position is there: 
         ret.reset(new ScanPosition);
     }
-    
+
+    //// DATA
+
     // Get all lidar sensors
     size_t lidarNo = 0;
     while(true)
@@ -102,9 +117,6 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::load(
 
         ++lidarNo;
     }
-
-    // TODO: make below lines same as above ones
-    // let the features decide if data is available
 
     // Get all scan cameras
     size_t camNo = 0;

@@ -9,23 +9,25 @@ void CameraIO<FeatureBase>::save(
     const size_t& scanCamNo,
     CameraPtr cameraPtr) const
 {
-    auto D = m_featureBase->m_description;
+    auto Dgen = m_featureBase->m_description;
 
-    Description d = D->camera(
-        D->position(scanPosNo),
-        scanCamNo);
+    Description d = Dgen->camera(scanPosNo, scanCamNo);
 
+    std::cout << "[CameraIO - save] Description:" << std::endl;
+    std::cout << d << std::endl;
+
+    // writing data
     for(size_t scanImageNo = 0; scanImageNo < cameraPtr->images.size(); scanImageNo++)
     {
         m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, cameraPtr->images[scanImageNo]);
     }
 
     // writing meta
-    if(d.metaName)
+    if(d.meta)
     {
         YAML::Node node;
         node = *cameraPtr;
-        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 }
 
@@ -36,27 +38,38 @@ CameraPtr CameraIO<FeatureBase>::load(
 {
     CameraPtr ret;
 
-    Description d_parent = m_featureBase->m_description->position(scanPosNo); 
-    Description d = m_featureBase->m_description->camera(d_parent, scanCamNo);
+    auto Dgen = m_featureBase->m_description;
+    Description d = Dgen->camera(scanPosNo, scanCamNo);
 
-    if(!d.groupName)
+    if(!d.dataRoot)
     {
         return ret;
     }
 
-    if(!m_featureBase->m_kernel->exists(*d.groupName))
+    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
 
-    if(d.metaName)
+    /// META
+
+    if(d.meta)
     {
+        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
+        {
+            std::cout << "[CameraIO - load] Specified meta file does not exist!" << std::endl;
+            return ret;
+        }
+
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<Camera>(meta.as<Camera>());
     } else {
         ret.reset(new Camera);
     }
+
+
+    /// DATA
 
     size_t scanImageNo = 0;
     while(true)

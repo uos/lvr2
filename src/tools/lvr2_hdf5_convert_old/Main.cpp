@@ -5,7 +5,7 @@
 // #include "lvr2/io/descriptions/DirectoryIO.hpp"
 #include "lvr2/io/descriptions/HDF5IO.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaHDF5.hpp"
+// #include "lvr2/io/descriptions/ScanProjectSchemaHDF5.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaSLAM.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 
@@ -79,79 +79,79 @@ ScanProjectPtr dummyScanProject()
             scan_pos->lidars.push_back(lidar);
         }
 
-        for(size_t j=0; j<2; j++)
-        {
-            CameraPtr scan_cam(new Camera);
-            scan_cam->transformation = Transformd::Identity();
-            scan_cam->transformation(1,3) = -static_cast<double>(j);
-            scan_cam->model.distortionModel = "opencv";
-            scan_cam->model.k.resize(10);
-            scan_cam->model.cx = 100.2;
-            scan_cam->model.cy = 50.5;
-            scan_cam->model.fx = 120.99;
-            scan_cam->model.fy = 90.72;
+        // for(size_t j=0; j<2; j++)
+        // {
+        //     CameraPtr scan_cam(new Camera);
+        //     scan_cam->transformation = Transformd::Identity();
+        //     scan_cam->transformation(1,3) = -static_cast<double>(j);
+        //     scan_cam->model.distortionModel = "opencv";
+        //     scan_cam->model.k.resize(10);
+        //     scan_cam->model.cx = 100.2;
+        //     scan_cam->model.cy = 50.5;
+        //     scan_cam->model.fx = 120.99;
+        //     scan_cam->model.fy = 90.72;
 
-            for(size_t k=0; k<10; k++)
-            {
-                scan_cam->model.k[k] = static_cast<double>(k) / 4.0;
-            }
+        //     for(size_t k=0; k<10; k++)
+        //     {
+        //         scan_cam->model.k[k] = static_cast<double>(k) / 4.0;
+        //     }
             
-            for(size_t k=0; k<10; k++)
-            {
-                CameraImagePtr si = synthetic::genLVRImage();
-                si->timestamp = 0.0;
-                si->transformation = Transformd::Identity();
-                si->transformation(2,3) = -static_cast<double>(k);
-                si->extrinsicsEstimation = Extrinsicsd::Identity() / static_cast<double>(k + 1);
-                scan_cam->images.push_back(si);
-            }
+        //     for(size_t k=0; k<7; k++)
+        //     {
+        //         CameraImagePtr si = synthetic::genLVRImage();
+        //         si->timestamp = 0.0;
+        //         si->transformation = Transformd::Identity();
+        //         si->transformation(2,3) = -static_cast<double>(k);
+        //         si->extrinsicsEstimation = Extrinsicsd::Identity() / static_cast<double>(k + 1);
+        //         scan_cam->images.push_back(si);
+        //     }
 
-            scan_cam->name = "Canon";
-            scan_pos->cameras.push_back(scan_cam);
-        }
+        //     scan_cam->name = "Canon";
+        //     scan_pos->cameras.push_back(scan_cam);
+        // }
 
-        for(size_t j=0; j<2; j++)
-        {
-            HyperspectralCameraPtr h_cam(new HyperspectralCamera);
+        // for(size_t j=0; j<2; j++)
+        // {
+        //     HyperspectralCameraPtr h_cam(new HyperspectralCamera);
 
-            h_cam->transformation = Transformd::Identity();
-            h_cam->transformation(1,3) = -static_cast<double>(j);
+        //     h_cam->transformation = Transformd::Identity();
+        //     h_cam->transformation(1,3) = -static_cast<double>(j);
 
-            h_cam->model.principal(0) =  5.5;
-            h_cam->model.principal(1) = 4.4;
+        //     h_cam->model.principal(0) =  5.5;
+        //     h_cam->model.principal(1) = 4.4;
 
-            h_cam->model.focalLength(0) = 10.1;
-            h_cam->model.focalLength(1) = 10.2;
+        //     h_cam->model.focalLength(0) = 10.1;
+        //     h_cam->model.focalLength(1) = 10.2;
 
-            h_cam->model.distortion.resize(3);
-            h_cam->model.distortion[0] = 2.0;
-            h_cam->model.distortion[1] = 1.0;
-            h_cam->model.distortion[2] = 0.5;
+        //     h_cam->model.distortion.resize(3);
+        //     h_cam->model.distortion[0] = 2.0;
+        //     h_cam->model.distortion[1] = 1.0;
+        //     h_cam->model.distortion[2] = 0.5;
 
-            for(size_t k=0; k<3; k++)
-            {
-                HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
+        //     for(size_t k=0; k<3; k++)
+        //     {
+        //         HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
 
-                pano->resolution[0] = 200;
-                pano->resolution[1] = 200;
-                pano->wavelength[0] = 100.0;
-                pano->wavelength[1] = 900.25;
+        //         pano->resolution[0] = 200;
+        //         pano->resolution[1] = 200;
+        //         pano->wavelength[0] = 100.0;
+        //         pano->wavelength[1] = 900.25;
 
-                for(size_t l=0; l<100; l++)
-                {
-                    HyperspectralPanoramaChannelPtr hchannel(new HyperspectralPanoramaChannel);
+        //         for(size_t l=0; l<7; l++)
+        //         {
+        //             HyperspectralPanoramaChannelPtr hchannel(new HyperspectralPanoramaChannel);
 
-                    CameraImagePtr si = synthetic::genLVRImage();
-                    hchannel->channel = si->image.clone();
-                    hchannel->timestamp = 0.0;
-                    pano->channels.push_back(hchannel);
-                }
+        //             CameraImagePtr si = synthetic::genLVRImage();
+        //             hchannel->channel = si->image.clone();
+        //             hchannel->timestamp = 0.0;
+        //             pano->channels.push_back(hchannel);
+        //         }
 
-                h_cam->panoramas.push_back(pano);
-            }
+        //         h_cam->panoramas.push_back(pano);
+        //     }
 
-            scan_pos->hyperspectral_cameras.push_back(h_cam);
-        }
+        //     scan_pos->hyperspectral_cameras.push_back(h_cam);
+        // }
 
         ret->positions.push_back(scan_pos);
     }
@@ -191,63 +191,63 @@ bool directoryIOTest()
     return equal(sp, sp_loaded);
 }
 
-bool hdf5IOTest()
-{
-    std::string filename = "scan_project.h5";
-    HDF5KernelPtr kernel(new HDF5Kernel(filename));
-    HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
+// bool hdf5IOTest()
+// {
+//     std::string filename = "scan_project.h5";
+//     HDF5KernelPtr kernel(new HDF5Kernel(filename));
+//     HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
 
-    descriptions::HDF5IO hdf5io(kernel, schema);
+//     descriptions::HDF5IO hdf5io(kernel, schema);
 
-    auto sp = dummyScanProject();
-    hdf5io.save(sp);
-    auto sp_loaded = hdf5io.ScanProjectIO::load();
+//     auto sp = dummyScanProject();
+//     hdf5io.save(sp);
+//     auto sp_loaded = hdf5io.ScanProjectIO::load();
 
-    return equal(sp, sp_loaded);
-}
+//     return equal(sp, sp_loaded);
+// }
 
-void unitTest()
-{
-    LOG(Logger::INFO) << "Hdf5-IO Test" << std::endl;
+// void unitTest()
+// {
+//     LOG(Logger::INFO) << "Hdf5-IO Test" << std::endl;
     
-    LOG.tab();
-    bool hdf5_success = true;
-    for(size_t i=0; i<10; i++)
-    {
-        if(!hdf5IOTest()) {
-            hdf5_success = false;
-            break;
-        }
-        LOG(Logger::DEBUG) << i << " success." << std::endl;
-    }
-    LOG.deltab();
-    if(hdf5_success)
-    {
-        LOG(Logger::HIGHLIGHT) << "Hdf5-IO success." << std::endl;
-    } else {
-        LOG(Logger::ERROR) << "TODO: Fix Hdf5-IO" << std::endl;
-    }
+//     LOG.tab();
+//     bool hdf5_success = true;
+//     for(size_t i=0; i<10; i++)
+//     {
+//         if(!hdf5IOTest()) {
+//             hdf5_success = false;
+//             break;
+//         }
+//         LOG(Logger::DEBUG) << i << " success." << std::endl;
+//     }
+//     LOG.deltab();
+//     if(hdf5_success)
+//     {
+//         LOG(Logger::HIGHLIGHT) << "Hdf5-IO success." << std::endl;
+//     } else {
+//         LOG(Logger::ERROR) << "TODO: Fix Hdf5-IO" << std::endl;
+//     }
     
-    std::cout << std::endl;
-    LOG(Logger::INFO) << "Directory-IO Test" << std::endl;
-    LOG.tab();
-    bool dir_success = true;
-    for(size_t i=0; i<10; i++)
-    {
-        if(!directoryIOTest()) {
-            dir_success = false;
-            break;
-        }
-        LOG(Logger::DEBUG) << i << " success." << std::endl;
-    }
-    LOG.deltab();
+//     std::cout << std::endl;
+//     LOG(Logger::INFO) << "Directory-IO Test" << std::endl;
+//     LOG.tab();
+//     bool dir_success = true;
+//     for(size_t i=0; i<10; i++)
+//     {
+//         if(!directoryIOTest()) {
+//             dir_success = false;
+//             break;
+//         }
+//         LOG(Logger::DEBUG) << i << " success." << std::endl;
+//     }
+//     LOG.deltab();
 
-    if(dir_success) {
-        LOG(Logger::HIGHLIGHT) << "Directory-IO success." << std::endl;
-    } else {
-        LOG(Logger::ERROR) << "TODO: Fix Directory-IO" << std::endl;
-    }
-}
+//     if(dir_success) {
+//         LOG(Logger::HIGHLIGHT) << "Directory-IO success." << std::endl;
+//     } else {
+//         LOG(Logger::ERROR) << "TODO: Fix Directory-IO" << std::endl;
+//     }
+// }
 
 void loggerTest()
 {
@@ -293,7 +293,6 @@ void loggerTest()
 }
 
 
-
 void debugTest()
 {
     std::string dirname = "bla_bla";
@@ -311,7 +310,7 @@ void debugTest()
 
     size_t npoints = points->numPoints();
 
-    points->erase("points");
+    // points->erase("points");
 
     Channel<float> normals(npoints, 3);
 
@@ -332,52 +331,51 @@ void debugTest()
     size_t scanNo = 0;
     dirio.PointCloudIO::save(posNo, lidarNo, scanNo, points);
 
-
     // dirio.PointCloudIO::load(posNo, lidarNo, scanNo);
-
-
 }
 
-void compressionTest()
-{
-    // cv::Mat big_image(5000, 3000, CV_8UC3, cv::Scalar(0));
+// void compressionTest()
+// {
+//     // cv::Mat big_image(5000, 3000, CV_8UC3, cv::Scalar(0));
 
-    cv::Mat big_image = lvr2::synthetic::genLVRImage()->image;
+//     cv::Mat big_image = lvr2::synthetic::genLVRImage()->image;
 
-    cv::resize(big_image, big_image, cv::Size(5000, 3000));
+//     cv::resize(big_image, big_image, cv::Size(5000, 3000));
 
-    int src_type = big_image.type();
+//     int src_type = big_image.type();
 
-    cv::Mat small_image;
-    cv::resize(big_image, small_image, cv::Size(1000, 500));
-    cv::imshow("Source Image", small_image);
-
-
-    big_image.convertTo(big_image, CV_32FC3);
-
-    std::string filename = "big_image.h5";
-    HDF5KernelPtr kernel(new HDF5Kernel(filename));
-    HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
-
-    descriptions::HDF5IO hdf5io(kernel, schema);
-
-    hdf5io.ImageIO::save("image_group", "image_data", big_image);
+//     cv::Mat small_image;
+//     cv::resize(big_image, small_image, cv::Size(1000, 500));
+//     cv::imshow("Source Image", small_image);
 
 
-    cv::Mat big_image_loaded = *hdf5io.ImageIO::load("image_group", "image_data");
+//     big_image.convertTo(big_image, CV_32FC3);
 
-    big_image_loaded.convertTo(big_image_loaded, src_type);
+//     std::string filename = "big_image.h5";
+//     HDF5KernelPtr kernel(new HDF5Kernel(filename));
+//     HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
 
-    cv::Mat small_image_loaded;
-    cv::resize(big_image_loaded, small_image_loaded, cv::Size(1000, 500));
+//     descriptions::HDF5IO hdf5io(kernel, schema);
+
+//     hdf5io.ImageIO::save("image_group", "image_data", big_image);
+
+
+//     cv::Mat big_image_loaded = *hdf5io.ImageIO::load("image_group", "image_data");
+
+//     big_image_loaded.convertTo(big_image_loaded, src_type);
+
+//     cv::Mat small_image_loaded;
+//     cv::resize(big_image_loaded, small_image_loaded, cv::Size(1000, 500));
     
-    cv::imshow("small_image_loaded", small_image_loaded);
-    cv::waitKey(0);
+//     cv::imshow("small_image_loaded", small_image_loaded);
+//     cv::waitKey(0);
 
-}
+// }
 
 int main(int argc, char** argv)
 {
+
+    // directoryIOTest();
     debugTest();
     return 0;
     // directoryIOTest();
@@ -400,44 +398,44 @@ int main(int argc, char** argv)
     // LOG(lvr2::Logger::HIGHLIGHT) << "Hdf5 IO success" << std::endl;
 
 
-    LOG.setLoggerLevel(Logger::DEBUG);
-    unitTest();
-    // loggerTest();
-    // std::cout << "\t" << "Bla" << Logger() << std::endl;
+    // LOG.setLoggerLevel(Logger::DEBUG);
+    // unitTest();
+    // // loggerTest();
+    // // std::cout << "\t" << "Bla" << Logger() << std::endl;
 
-    return 0;
+    // return 0;
     
-    if(argc > 1)
-    {
-        std::string infilename = argv[1];
-        std::cout << "Load file from '" << infilename << "' with old Hdf5 format." << std::endl;
-        auto sp = loadOldHDF5(infilename);
+    // if(argc > 1)
+    // {
+    //     std::string infilename = argv[1];
+    //     std::cout << "Load file from '" << infilename << "' with old Hdf5 format." << std::endl;
+    //     auto sp = loadOldHDF5(infilename);
 
-        // std::cout << sp->positions[1]->transformation << std::endl;
+    //     // std::cout << sp->positions[1]->transformation << std::endl;
 
-        // YAML::Node node;
-        // node = sp->positions[1]->transformation;
-        // std::cout << node << std::endl;
+    //     // YAML::Node node;
+    //     // node = sp->positions[1]->transformation;
+    //     // std::cout << node << std::endl;
 
-        // Eigen::MatrixXd mat;
-        // YAML::convert<Eigen::MatrixXd>::decode(node, mat);
-        // std::cout << mat << std::endl;
+    //     // Eigen::MatrixXd mat;
+    //     // YAML::convert<Eigen::MatrixXd>::decode(node, mat);
+    //     // std::cout << mat << std::endl;
 
-        std::string outfilename = "scan_project.h5";
-        HDF5KernelPtr kernel(new HDF5Kernel(outfilename));
-        HDF5SchemaPtr schema(new ScanProjectSchemaRaw(outfilename));
+    //     std::string outfilename = "scan_project.h5";
+    //     HDF5KernelPtr kernel(new HDF5Kernel(outfilename));
+    //     HDF5SchemaPtr schema(new ScanProjectSchemaRaw(outfilename));
 
-        descriptions::HDF5IO hdf5io(kernel, schema);
+    //     descriptions::HDF5IO hdf5io(kernel, schema);
 
-        std::cout << "Write to '" << outfilename << "' with new Hdf5 format." << std::endl;
-        hdf5io.save(sp);
+    //     std::cout << "Write to '" << outfilename << "' with new Hdf5 format." << std::endl;
+    //     hdf5io.save(sp);
 
         
 
-    }
+    // }
 
-    // hdf5IOTest();
-    return 0;
+    // // hdf5IOTest();
+    // return 0;
 
 
     // metaHdf5Test();

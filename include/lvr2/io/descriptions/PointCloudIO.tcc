@@ -22,6 +22,7 @@ void PointCloudIO<FeatureBase>::save(
     const std::string& groupandname, 
     PointBufferPtr pcl) const
 {
+    std::cout << "Store each channel individually" << std::endl;
     for(auto elem : *pcl)
     {
         m_vchannel_io->save(groupandname, elem.first, elem.second);
@@ -35,109 +36,48 @@ void PointCloudIO<FeatureBase>::save(
     const size_t& scanNo,
     PointBufferPtr pcl) const
 {
-    // save 
+    std::cout <<  "SSAAAAVFE " << std::endl;
+
     auto Dgen = m_featureBase->m_description;
-    Description d = Dgen->position(posNo);
-    d = Dgen->lidar(d, lidarNo);
-    d = Dgen->scan(d, scanNo);
-    
-    if(d.dataSetName)
+
+    std::unordered_map<std::string, PointBufferPtr> container_map;
+
+    // DATA
+    for(auto elem : *pcl)
     {
-        // dataSetName given. Store as data as one dataset (e.g. PLY file or group of channels for hdf5)
-        std::cout << "Store PCL as dataset: " << *d.dataSetName << std::endl;
-    
-    
-    } else {
-        // dataSetName not specified: try to get per channel storage description
-        
-        std::cout << "Store PCL per channel NEW: " << std::endl;
-
-        
-
-        // example of container_map:
-        // points.ply maps to [normals, points, colors]
-        // *.bin maps to rest 
-        std::unordered_map<std::string, std::vector<std::string> > container_map;
-        
-        for (auto elem : *pcl)
+        Description d = Dgen->scanChannel(posNo, lidarNo, scanNo, elem.first);
+        boost::filesystem::path proot(*d.dataRoot);
+        if(proot.extension() != "")
         {
-            Description d_channel = Dgen->channel(d, elem.first);
-            
-            // boost::filesystem::path pg(*d_channel.groupName);
-            // boost::filesystem::path pds(*d_channel.dataSetName);
-            
-
-            std::cout << "Channel Description: " << std::endl;
-            std::cout << d_channel << std::endl;
-
-            // std::string container = *d_channel.groupName + "/" + *d_channel.dataSetName;
-
-            // if(container_map.find(container) == container_map.end()) {
-            //     container_map[container] = {elem.first};
-            // } else {
-            //     container_map[container].push_back(elem.first);
-            // }
-        }
-
-        // std::cout << "Container Map: " << std::endl;
-        // for(auto elem : container_map)
-        // {
-
-        //     boost::filesystem::path container_path(elem.first);
-
-        //     std::cout << "Saving ";
-        //     for(auto channel_name : elem.second)
-        //     {
-        //         std::cout << channel_name << " ";
-        //     }
-        //     std::cout << " to " << container_path << std::endl;
-
-
-        //     // we have a path with a potential extension
-        //     // like
-        //     // 000/000/points.ply
-        //     // or
-        //     // 000/000/points
-        //     // 000/000/normals
-
-        //     // how to get information about the file holding multiple datasets?
-        //     // you could also zip then:
-        //     // 000/000/points.zip
-
-
-
-        //     Description d_channel = Dgen->channel(d, elem.second[0]);
-
-
-
-        //     if(elem.second.size() > 1)
-        //     {
-        //         PointBufferPtr channel_group(new PointBuffer);
-        //         for(auto channel_name : elem.second)
-        //         {
-        //             (*channel_group)[channel_name] = (*pcl)[channel_name];
-        //         }
-        //         save(*d_channel.groupName, *d_channel.dataSetName, channel_group);
-        //         // store meta information per channel
-        //     } else {
-        //         // store single channel
-        //         m_vchannel_io->save(*d_channel.groupName, elem.second[0], (*pcl)[elem.second[0]]);
-        //     }
-        // }
-
-        // // Store Keys of map to better restore data
-        // for(auto elem : *pcl)
-        // {
-        //     Description d_channel_meta = Dgen->channel(d, elem.first);
-        //     if(d_channel_meta.metaName)
-        //     {
-        //         YAML::Node meta;
-        //         meta = elem.second;
-        //         meta["channel_name"] = elem.first;
-        //         m_featureBase->m_kernel->saveMetaYAML(*d_channel_meta.groupName, *d_channel_meta.metaName, meta);
-        //     }
-        // }
+            if(container_map.find(proot.string()) == container_map.end())
+            {
+                container_map[proot.string()] = PointBufferPtr(new PointBuffer);
+            }
+            (*container_map[proot.string()])[elem.first] = elem.second;
+        } else {
+            m_vchannel_io->save(*d.dataRoot, *d.data, elem.second);
+        }        
     }
+
+    // found file format in dataRoot, example: ply, obj, zip. Need to store grouped
+    for(auto elem : container_map)
+    {
+        m_featureBase->savePointCloud("", elem.first, elem.second);
+    }
+
+    // META
+    for(auto elem : *pcl)
+    {
+        Description d = Dgen->scanChannel(posNo, lidarNo, scanNo, elem.first);
+        
+        if(d.meta)
+        {
+            YAML::Node meta;
+            meta = elem.second;
+            m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, meta);
+        }
+    }
+
 }
 
 template<typename FeatureBase>
@@ -206,23 +146,23 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
 {
     PointBufferPtr ret;
 
-    auto Dgen = m_featureBase->m_description;
-    Description d = Dgen->position(posNo);
-    d = Dgen->lidar(d, lidarNo);
-    d = Dgen->scan(d, scanNo);
+    // auto Dgen = m_featureBase->m_description;
+    // Description d = Dgen->position(posNo);
+    // d = Dgen->lidar(d, lidarNo);
+    // d = Dgen->scan(d, scanNo);
 
-    if(d.dataSetName)
-    {
-        // load pointbuffer from dataset
-    } else {
-        // parse group for channel/pcl like objects and group them together
+    // if(d.dataSetName)
+    // {
+    //     // load pointbuffer from dataset
+    // } else {
+    //     // parse group for channel/pcl like objects and group them together
     
-        Description d_channel = Dgen->channel(d, "test");
-        for(auto meta : m_featureBase->m_kernel->metas(*d_channel.groupName, "Channel") )
-        {
-            std::cout << "Meta: " << meta.first << std::endl;
-        }
-    }
+    //     Description d_channel = Dgen->channel(d, "test");
+    //     for(auto meta : m_featureBase->m_kernel->metas(*d_channel.groupName, "Channel") )
+    //     {
+    //         std::cout << "Meta: " << meta.first << std::endl;
+    //     }
+    // }
 
     return ret;
 }

@@ -18,43 +18,50 @@ public:
 
     ~ScanProjectSchemaRaw() = default;
 
+    
     virtual Description scanProject() const;
 
     virtual Description position(
         const size_t& scanPosNo) const;
 
     virtual Description lidar(
-        const Description& d_parent,
+        const size_t& scanPosNo,
         const size_t& lidarNo) const;
-
-    virtual Description camera(
-        const Description& d_parent, 
-        const size_t& camNo) const;
     
     virtual Description scan(
-        const Description& d_parent, 
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
         const size_t& scanNo) const;
 
-    virtual Description channel(
-        const Description& scan_descr,
-        const std::string& channel_name) const;
+    virtual Description scanChannel(
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
+        const size_t& scanNo,
+        const std::string& channelName) const;
+
+    virtual Description camera(
+        const size_t& scanPosNo,
+        const size_t& camNo) const;
  
     virtual Description cameraImage(
-        const Description& d_parent, 
+        const size_t& scanPosNo,
+        const size_t& camNo,
         const size_t& cameraImageNo) const;
 
     virtual Description hyperspectralCamera(
-        const Description& d_parent, 
+        const size_t& scanPosNo,
         const size_t& camNo) const;
 
     virtual Description hyperspectralPanorama(
-        const Description& hcam_descr,
+        const size_t& scanPosNo,
+        const size_t& camNo,
         const size_t& panoNo) const;
 
     virtual Description hyperspectralPanoramaChannel(
-        const Description& hpano_descr,
-        const size_t& channelNo
-    ) const;
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const size_t& panoNo,
+        const size_t& channelNo) const;
         
 };
 

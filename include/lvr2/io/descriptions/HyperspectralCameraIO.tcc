@@ -9,32 +9,31 @@ void HyperspectralCameraIO<Derived>::save(
     const size_t& hCamNo,
     HyperspectralCameraPtr hcam) const
 {
-    auto d_gen = m_featureBase->m_description;
+    auto Dgen = m_featureBase->m_description;
 
-    Description d = d_gen->position(scanPosNo);
-    d = d_gen->hyperspectralCamera(d, hCamNo);
+    Description d =  Dgen->hyperspectralCamera(scanPosNo, hCamNo);
 
     // std::cout << "[HypersprectralCameraIO - save]" << std::endl;
     // std::cout << d << std::endl;
 
-    if(!d.groupName)
+    if(!d.dataRoot)
     {
-        d.groupName = "";
+        d.dataRoot = "";
     }
 
     
-    for(size_t i=0; i<hcam->panoramas.size(); i++)
+    for(size_t i=0; i < hcam->panoramas.size(); i++)
     {
         m_hyperspectralPanoramaIO->save(scanPosNo, hCamNo, i, hcam->panoramas[i]);
     }
 
 
     // Save Meta
-    if(d.metaName)
+    if(d.meta)
     {
         YAML::Node meta;
         meta = *hcam;
-        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, meta);
+        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, meta);
     }
 }
 
@@ -51,20 +50,25 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(
     // std::cout << "[HypersprectralCameraIO - load]" << std::endl;
     // std::cout << d << std::endl;
 
-    if(!d.groupName)
+    if(!d.dataRoot)
     {
         return ret;
     }
 
-    if(!m_featureBase->m_kernel->exists(*d.groupName))
+    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
 
-    if(d.metaName)
+    // LOAD META
+    if(d.meta)
     {
+        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
+        {
+            return ret;
+        }
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<HyperspectralCamera>(meta.as<HyperspectralCamera>());
     } else {
         ret.reset(new HyperspectralCamera);

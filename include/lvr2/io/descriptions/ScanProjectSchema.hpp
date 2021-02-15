@@ -12,24 +12,31 @@ namespace lvr2
 {
 
 using StringOptional = boost::optional<std::string>;
-using NodeOptional = boost::optional<YAML::Node>;
+
+// struct Description
+// {
+//     // path to relative to project root: is built recursively
+//     StringOptional groupName;
+//     // if group contains data (relative to group)
+//     StringOptional dataSetName;
+//     // if group contains meta (relative to group)
+//     StringOptional metaName;
+// };
+
 
 struct Description
 {
-    // path to relative to project root: is built recursively
-    StringOptional groupName;
-    // if group contains data (relative to group)
-    StringOptional dataSetName;
-    // if group contains meta (relative to group)
-    StringOptional metaName;
+    // data or group location
+    StringOptional dataRoot;
+    StringOptional data;
+
+    StringOptional metaRoot;
+    StringOptional meta;
 };
 
 std::ostream& operator<<(std::ostream& os, const Description& desc);
 
-std::pair<std::string, std::string> getNames(
-    const std::string& defaultGroup, 
-    const std::string& defaultContainer, 
-    const Description& d);
+
 
 class ScanProjectSchema
 {
@@ -44,65 +51,43 @@ public:
         const size_t& scanPosNo) const = 0;
 
     virtual Description lidar(
-        const Description& scanpos_descr,
+        const size_t& scanPosNo,
         const size_t& lidarNo) const = 0;
-    
+
     virtual Description scan(
-        const Description& lidar_descr, 
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
         const size_t& scanNo) const = 0;
 
-    virtual Description channel(
-        const Description& scan_descr,
-        const std::string& channel_name
-    ) const = 0;
+    virtual Description scanChannel(
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
+        const size_t& scanNo,
+        const std::string& channelName) const = 0;
 
     virtual Description camera(
-        const Description& scanpos_descr, 
+        const size_t& scanPosNo,
         const size_t& camNo) const = 0;
  
     virtual Description cameraImage(
-        const Description& camera_descr, 
+        const size_t& scanPosNo,
+        const size_t& camNo,
         const size_t& cameraImageNo) const = 0;
 
     virtual Description hyperspectralCamera(
-        const Description& scanpos_descr,
+        const size_t& scanPosNo,
         const size_t& camNo) const = 0;
 
     virtual Description hyperspectralPanorama(
-        const Description& hcam_descr,
-        const size_t& panoNo
-    ) const = 0;
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const size_t& panoNo) const = 0;
 
     virtual Description hyperspectralPanoramaChannel(
-        const Description& hpano_descr,
-        const size_t& channelNo
-    ) const = 0;
-
-    // virtual Description hyperspectralCamera(const size_t& position) const
-    // {
-    //     /// TODO: IMPLEMENT ME!!!
-    //     return Description();
-    // }
-    
-    // virtual Description hyperSpectralTimestamps(const std::string& group) const
-    // {
-    //     Description d;
-    //     // Timestamps should be in the same group as the 
-    //     d.groupName = group;
-    //     d.dataSetName = "timestamps";
-    //     d.metaData = boost::none; 
-    // }
-
-    // virtual Description hyperSpectralFrames(const std::string& group) const
-    // {
-    //     Description d;
-    //     // Timestamps should be in the same group as the 
-    //     d.groupName = group;
-    //     d.dataSetName = "frames";
-    //     d.metaData = boost::none; 
-    // }
-// protected:
-    
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const size_t& panoNo,
+        const size_t& channelNo) const = 0;
 };
 
 /// Marker interface for HDF5 schemas

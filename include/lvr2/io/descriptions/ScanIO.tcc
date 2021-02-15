@@ -13,32 +13,25 @@ void ScanIO<FeatureBase>::save(
     ScanPtr scanPtr) const
 {
     auto Dgen = m_featureBase->m_description;
-    Description pos_descr = Dgen->position(scanPosNo);
-    Description lidar_descr = Dgen->lidar(pos_descr, sensorNo);    
-    Description d = Dgen->scan(lidar_descr, scanNo);
+    Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
 
-    // std::cout << "[ScanIO] Scan " << scanPosNo << "," << scanNo <<  " - Description: " << std::endl;
-    // std::cout << d << std::endl;
+    //// DATA
+    if(!d.data)
+    {
+        // Scan is not a dataset: handle as group of channels
+        m_pclIO->save(scanPosNo, sensorNo, scanNo, scanPtr->points);
+    } else {
+        // Scan is a dataset: write data
+        m_pclIO->save(*d.dataRoot, *d.data, scanPtr->points);
+    }
 
-    if(d.metaName)
+    //// META
+    if(d.meta)
     {
         YAML::Node node;
         node = *scanPtr;
-        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
-
-    // std::cout << "Meta Finished." << std::endl;
-
-    if(!d.dataSetName)
-    {
-        // Scan is not a dataset: handle as group of channels
-        m_pclIO->savePointCloud(*d.groupName, scanPtr->points);
-    } else {
-        // Scan is a dataset: write data
-        m_pclIO->savePointCloud(*d.groupName, *d.dataSetName, scanPtr->points);
-    }
-
-    // std::cout << "Finished." << std::endl;
 }
 
 template <typename FeatureBase>
@@ -52,40 +45,48 @@ ScanPtr ScanIO<FeatureBase>::load(
     // Get Description of Scan Location
 
     auto Dgen = m_featureBase->m_description;
-    Description pos_descr = Dgen->position(scanPosNo);
-    Description lidar_descr = Dgen->lidar(pos_descr, sensorNo);    
-    Description d = Dgen->scan(lidar_descr, scanNo);
+    Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
 
-    if(!d.groupName)
+    if(!d.dataRoot)
     {
         return ret;
     }
 
-    // std::cout << "[ScanIO - load] Description:" << std::endl;
-    // std::cout << d << std::endl;
-
-    if(d.metaName)
+    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
     {
-        if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
+        return ret;
+    }
+
+
+    std::cout << "[ScanIO - load] Description:" << std::endl;
+    std::cout << d << std::endl;
+
+    /// META
+
+    if(d.meta)
+    {
+        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
         {
             return ret;
         }
 
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<Scan>(meta.as<Scan>());
     } else {
         // for schemas without meta information
         ret.reset(new Scan);
     }
 
-    if(d.dataSetName)
-    {
-        // Load actual data
-        ret->points = m_pclIO->loadPointCloud(*d.groupName, *d.dataSetName);
-    } else {
-        ret->points = m_pclIO->loadPointCloud(*d.groupName);
-    }
+
+    /// DATA
+    // if(d.data)
+    // {
+    //     // Load actual data
+    //     ret->points = m_pclIO->load(*d.dataRoot, *d.data);
+    // } else {
+    //     ret->points = m_pclIO->load(*d.dataRoot);
+    // }
 
     // std::cout << "Loaded: " << ret->points->numPoints() << std::endl;
 

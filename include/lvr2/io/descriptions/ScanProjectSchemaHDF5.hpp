@@ -18,44 +18,49 @@ public:
 
     ~ScanProjectSchemaHDF5() = default;
 
-    virtual Description scanProject() const;
+    virtual StringOptional scanProjectData() const;
 
-    virtual Description position(
+    virtual StringOptional positionData(
         const size_t& scanPosNo) const;
 
-    virtual Description lidar(
-        const Description& d_parent,
+    virtual StringOptional lidarData(
+        const size_t& scanPosNo,
         const size_t& lidarNo) const;
-
-    virtual Description camera(
-        const Description& d_parent, 
-        const size_t& camNo) const;
     
-    virtual Description scan(
-        const Description& d_parent, 
+    virtual StringOptional scanData(
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
         const size_t& scanNo) const;
 
-    virtual Description channel(
-        const Description& scan_descr,
-        const std::string& channel_name
-    ) const;
+    virtual StringOptional scanChannelData(
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
+        const size_t& scanNo,
+        const std::string& channelName) const;
+
+    virtual StringOptional cameraData(
+        const size_t& scanPosNo,
+        const size_t& camNo) const;
  
-    virtual Description cameraImage(
-        const Description& d_parent, 
+    virtual StringOptional cameraImageData(
+        const size_t& scanPosNo,
+        const size_t& camNo,
         const size_t& cameraImageNo) const;
 
-    virtual Description hyperspectralCamera(
-        const Description& d_parent,
+    virtual StringOptional hyperspectralCameraData(
+        const size_t& scanPosNo,
         const size_t& camNo) const;
 
-    virtual Description hyperspectralPanorama(
-        const Description& hcam_descr,
+    virtual StringOptional hyperspectralPanoramaData(
+        const size_t& scanPosNo,
+        const size_t& camNo,
         const size_t& panoNo) const;
 
-    virtual Description hyperspectralPanoramaChannel(
-        const Description& hpano_descr,
-        const size_t& channelNo
-    ) const;
+    virtual StringOptional hyperspectralPanoramaChannelData(
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const size_t& panoNo,
+        const size_t& channelNo) const;
 };
 
 } // namespace lvr2

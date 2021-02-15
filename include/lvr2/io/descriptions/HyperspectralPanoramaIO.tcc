@@ -10,33 +10,28 @@ void HyperspectralPanoramaIO<Derived>::save(
     HyperspectralPanoramaPtr pano) const
 {
     auto Dgen = m_featureBase->m_description;
-    Description d = Dgen->position(scanPosNo);
-    d = Dgen->hyperspectralCamera(d, hCamNo);
-    d = Dgen->hyperspectralPanorama(d, hPanoNo);
+    Description d = Dgen->hyperspectralPanorama(scanPosNo, hCamNo, hPanoNo);
 
     // std::cout << "[HyperspectralPanoramaIO - save]" << std::endl;
     // std::cout << d << std::endl;
 
-    if(!d.groupName)
+    if(!d.dataRoot)
     {
-        d.groupName = "";
+        d.dataRoot = "";
     }
-
 
     for(size_t i=0; i<pano->channels.size(); i++)
     {
         m_hyperspectralPanoramaChannelIO->save(scanPosNo, hCamNo, hPanoNo, i, pano->channels[i]);
     }
 
-    if(d.metaName)
+    if(d.meta)
     {
         YAML::Node node;
         node = *pano;
-        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
-
     // store hyperspectral channels
-
 }
 
 template <typename Derived>
@@ -48,39 +43,40 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
     HyperspectralPanoramaPtr ret;
 
     auto Dgen = m_featureBase->m_description;
-    Description d = Dgen->position(scanPosNo);
-    d = Dgen->hyperspectralCamera(d, hCamNo);
-    d = Dgen->hyperspectralPanorama(d, hPanoNo);
+    Description d = Dgen->hyperspectralPanorama(scanPosNo, hCamNo, hPanoNo);
 
     // std::cout << "[HyperspectralPanoramaIO - load]" << std::endl;
     // std::cout << d << std::endl;
 
-    if(!d.groupName)
-    {
-        d.groupName = "";
-    }
-
-    // check if group exists
-    if(!m_featureBase->m_kernel->exists(*d.groupName))
+    if(!d.dataRoot)
     {
         return ret;
     }
 
-    if(d.metaName)
+    // check if group exists
+    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
     {
-        if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
+        return ret;
+    }
+
+    /// META
+    if(d.meta)
+    {
+        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
         {
             return ret;
         } 
 
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<HyperspectralPanorama>(meta.as<HyperspectralPanorama>());
     } else {
         
         // no meta name specified but scan position is there: 
         ret.reset(new HyperspectralPanorama);
     }
+
+    /// DATA
 
     // Load Hyperspectral Channels
     size_t channelNo = 0;

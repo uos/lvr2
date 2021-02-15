@@ -11,28 +11,25 @@ void HyperspectralPanoramaChannelIO<Derived>::save(
     HyperspectralPanoramaChannelPtr hchannel) const
 {
     auto Dgen = m_featureBase->m_description;
-    Description d = Dgen->position(scanPosNo);
-    d = Dgen->hyperspectralCamera(d, hCamNo);
-    d = Dgen->hyperspectralPanorama(d, hPanoNo);
-    d = Dgen->hyperspectralPanoramaChannel(d, channelId);
+    Description d = Dgen->hyperspectralPanoramaChannel(scanPosNo, hCamNo, hPanoNo, channelId);
 
     // std::cout << "[HyperspectralPanoramaChannelIO - save]" << std::endl;
     // std::cout << d << std::endl;
 
-    if(!d.groupName)
+    if(!d.dataRoot)
     {
-        d.groupName = "";
+        d.dataRoot = "";
     }
 
     // save image
-    m_imageIO->save(*d.groupName, *d.dataSetName, hchannel->channel);
+    m_imageIO->save(*d.dataRoot, *d.data, hchannel->channel);
 
     // save meta
-    if(d.metaName)
+    if(d.meta)
     {
         YAML::Node node;
         node = *hchannel;
-        m_featureBase->m_kernel->saveMetaYAML(*d.groupName, *d.metaName, node);
+        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 }
 
@@ -46,34 +43,33 @@ HyperspectralPanoramaChannelPtr HyperspectralPanoramaChannelIO<Derived>::load(
     HyperspectralPanoramaChannelPtr ret;
 
     auto Dgen = m_featureBase->m_description;
-    Description d = Dgen->position(scanPosNo);
-    d = Dgen->hyperspectralCamera(d, hCamNo);
-    d = Dgen->hyperspectralPanorama(d, hPanoNo);
-    d = Dgen->hyperspectralPanoramaChannel(d, channelId);
+
+    Description d = Dgen->hyperspectralPanoramaChannel(scanPosNo, hCamNo, hPanoNo, channelId);
 
     // std::cout << "[HyperspectralPanoramaChannelIO - load]" << std::endl;
     // std::cout << d << std::endl;
 
-    if(!d.groupName)
+    if(!d.dataRoot)
     {
-        d.groupName = "";
+        d.dataRoot = "";
     }
 
     // check if group exists
-    if(!m_featureBase->m_kernel->exists(*d.groupName))
+    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
 
-    if(d.metaName)
+    /// META
+    if(d.meta)
     {
-        if(!m_featureBase->m_kernel->exists(*d.groupName, *d.metaName))
+        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
         {
             return ret;
         } 
 
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.groupName, *d.metaName, meta);
+        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<HyperspectralPanoramaChannel>(meta.as<HyperspectralPanoramaChannel>());
     } else {
         
@@ -81,7 +77,8 @@ HyperspectralPanoramaChannelPtr HyperspectralPanoramaChannelIO<Derived>::load(
         ret.reset(new HyperspectralPanoramaChannel);
     }
     
-    ret->channel = *m_imageIO->load(*d.groupName, *d.dataSetName);
+    /// DATA
+    ret->channel = *m_imageIO->load(*d.dataRoot, *d.data);
 
     return ret;
 }
