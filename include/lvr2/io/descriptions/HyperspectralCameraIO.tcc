@@ -9,10 +9,7 @@ void HyperspectralCameraIO<Derived>::save(
     const size_t& hCamNo,
     HyperspectralCameraPtr hcam) const
 {
-    
-
     auto d_gen = m_featureBase->m_description;
-
 
     Description d = d_gen->position(scanPosNo);
     d = d_gen->hyperspectralCamera(d, hCamNo);

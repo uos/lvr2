@@ -51,8 +51,8 @@ HyperspectralPanoramaChannelPtr HyperspectralPanoramaChannelIO<Derived>::load(
     d = Dgen->hyperspectralPanorama(d, hPanoNo);
     d = Dgen->hyperspectralPanoramaChannel(d, channelId);
 
-    std::cout << "[HyperspectralPanoramaChannelIO - load]" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[HyperspectralPanoramaChannelIO - load]" << std::endl;
+    // std::cout << d << std::endl;
 
     if(!d.groupName)
     {

@@ -203,9 +203,9 @@ bool hdf5IOTest()
     hdf5io.save(sp);
     auto sp_loaded = hdf5io.ScanProjectIO::load();
 
-    cv::imshow("Spectral Panorama 0", sp_loaded->positions[0]->hyperspectral_cameras[0]->panoramas[0]->channels[0]->channel);
+    // cv::imshow("Spectral Panorama 0", sp_loaded->positions[0]->hyperspectral_cameras[0]->panoramas[0]->channels[0]->channel);
 
-    cv::waitKey(0);
+    // cv::waitKey(0);
 
     return equal(sp, sp_loaded);
 }
@@ -376,26 +376,28 @@ void compressionTest()
 
 int main(int argc, char** argv)
 {
-    directoryIOTest();
-    hdf5IOTest();
-    return 0;
-    // compressionTest();
+    // directoryIOTest();
+    // hdf5IOTest();
     // return 0;
+    // // compressionTest();
+    // // return 0;
+    // // LOG.setLoggerLevel(Logger::DEBUG);
+    // // debugTest();
+    // // return 0;
+
     // LOG.setLoggerLevel(Logger::DEBUG);
-    // debugTest();
-    // return 0;
+
+    // LOG(lvr2::Logger::INFO) << "Directory IO" << std::endl;
+    // directoryIOTest();
+    // LOG(lvr2::Logger::HIGHLIGHT) << "Directory IO success" << std::endl;
+
+    // LOG(lvr2::Logger::INFO) << "Hdf5 IO" << std::endl;
+    // hdf5IOTest();
+    // LOG(lvr2::Logger::HIGHLIGHT) << "Hdf5 IO success" << std::endl;
+
 
     LOG.setLoggerLevel(Logger::DEBUG);
-
-    LOG(lvr2::Logger::INFO) << "Directory IO" << std::endl;
-    directoryIOTest();
-    LOG(lvr2::Logger::HIGHLIGHT) << "Directory IO success" << std::endl;
-
-    LOG(lvr2::Logger::INFO) << "Hdf5 IO" << std::endl;
-    hdf5IOTest();
-    LOG(lvr2::Logger::HIGHLIGHT) << "Hdf5 IO success" << std::endl;
-
-    // unitTest();
+    unitTest();
     // loggerTest();
     // std::cout << "\t" << "Bla" << Logger() << std::endl;
 

@@ -128,7 +128,7 @@ struct ScanPosition : ScanPositionType, Transformable
     /// META BEGIN
 
     /// Estimated pose relativ to upper coordinate system
-    Transformd                         poseEstimation;
+    Transformd                         poseEstimation = Transformd::Identity();
 
     /// Final registered position in project coordinates (relative to upper coordinate system: e.g. ScanProject)
     // Transformd                      transformation;
@@ -215,7 +215,7 @@ struct Scan : SensorDataType, Transformable
     // Transformd                       transform;
 
     /// Pose estimation of this scan in project coordinates
-    Transformd                       poseEstimation;
+    Transformd                       poseEstimation = Transformd::Identity();
 
     /// Min horizontal scan angle
     double                           thetaMin;
@@ -263,7 +263,7 @@ struct CameraImage : SensorDataType, Transformable
 {
     static constexpr char           kind[] = "CameraImage";
     /// Extrinsics estimate
-    Extrinsicsd                     extrinsicsEstimation;
+    Extrinsicsd                     extrinsicsEstimation = Extrinsicsd::Identity();
 
     // /// Extrinsics : Is not transformation. See Transformable
     // Extrinsicsd                     extrinsics;
@@ -351,7 +351,7 @@ struct HyperspectralCamera : SensorType, Transformable
     CylindricalModel                         model;
 
     /// Extrinsics estimate
-    Extrinsicsd                              extrinsicsEstimation;
+    Extrinsicsd                              extrinsicsEstimation = Extrinsicsd::Identity();
 
     /// OpenCV representation
     std::vector<HyperspectralPanoramaPtr>    panoramas;

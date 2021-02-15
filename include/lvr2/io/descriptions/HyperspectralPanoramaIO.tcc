@@ -14,8 +14,8 @@ void HyperspectralPanoramaIO<Derived>::save(
     d = Dgen->hyperspectralCamera(d, hCamNo);
     d = Dgen->hyperspectralPanorama(d, hPanoNo);
 
-    std::cout << "[HyperspectralPanoramaIO - save]" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[HyperspectralPanoramaIO - save]" << std::endl;
+    // std::cout << d << std::endl;
 
     if(!d.groupName)
     {
@@ -52,8 +52,8 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
     d = Dgen->hyperspectralCamera(d, hCamNo);
     d = Dgen->hyperspectralPanorama(d, hPanoNo);
 
-    std::cout << "[HyperspectralPanoramaIO - load]" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[HyperspectralPanoramaIO - load]" << std::endl;
+    // std::cout << d << std::endl;
 
     if(!d.groupName)
     {
