@@ -105,6 +105,32 @@ Description ScanProjectSchemaRaw::scan(
     return d;
 }
 
+Description ScanProjectSchemaRaw::channel(
+    const Description& d_parent,
+    const std::string& channel_name) const
+{
+    Description d;
+
+    if(channel_name == "points" 
+    || channel_name == "normals" 
+    || channel_name == "colors")
+    {
+        d.groupName = "points.ply";
+        d.dataSetName = channel_name;
+    } else {
+        d.dataSetName = channel_name;
+    }
+
+    d.metaName = channel_name + ".yaml";
+
+    if(d_parent.groupName)
+    {
+        d.groupName = *d_parent.groupName + "/" + *d.groupName;
+    }
+
+    return d;
+}
+
 Description ScanProjectSchemaRaw::cameraImage(
     const Description& d_parent, 
     const size_t &cameraImageNo) const

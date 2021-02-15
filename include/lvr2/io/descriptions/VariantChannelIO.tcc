@@ -50,23 +50,42 @@ template<typename Derived>
 template<typename ...Tp>
 void VariantChannelIO<Derived>::save(
     std::string groupName,
-    std::string datasetName,
+    std::string channelName,
     const VariantChannel<Tp...>& vchannel)
 {
+
+    Description d;
+    auto Dgen = m_featureBase->m_description;
+    d = Dgen->channel(d, channelName);
+
+    if(d.groupName)
+    {
+        groupName += "/" + *d.groupName;
+    }
+
+    std::cout << "[VariantChannelIO - save] " << vchannel.typeName() << std::endl;
+    std::cout << d << std::endl;
+
     // std::cout << "[VariantChannelIO - save] " << groupName << ", " << datasetName << ", " << vchannel.typeName() << std::endl;
     using VChannelT = VariantChannel<Tp...>;
 
     // keep this order! We need Hdf5 to build the dataset first, then writing meta information
-    saveDynamic<Derived, VChannelT>(groupName, datasetName, vchannel, m_channel_io);
+    saveDynamic<Derived, VChannelT>(groupName, *d.dataSetName, vchannel, m_channel_io);
     
     // creating meta node of variantchannel containing type and size
-    YAML::Node node;
-    try {
-        node = vchannel;
-    } catch(YAML::TypedBadConversion<int> ex) {
-        std::cout << ex.what() << std::endl;
+    
+    if(d.metaName)
+    {
+        YAML::Node node;
+        try {
+            node = vchannel;
+        } catch(YAML::TypedBadConversion<int> ex) {
+            std::cout << ex.what() << std::endl;
+        }
+        m_featureBase->m_kernel->saveMetaYAML(groupName, *d.metaName, node);
     }
-    m_featureBase->m_kernel->saveMetaYAML(groupName, datasetName, node);
+    
+    
 }
 
 // anker

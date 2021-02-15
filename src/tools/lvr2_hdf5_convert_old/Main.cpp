@@ -203,10 +203,6 @@ bool hdf5IOTest()
     hdf5io.save(sp);
     auto sp_loaded = hdf5io.ScanProjectIO::load();
 
-    // cv::imshow("Spectral Panorama 0", sp_loaded->positions[0]->hyperspectral_cameras[0]->panoramas[0]->channels[0]->channel);
-
-    // cv::waitKey(0);
-
     return equal(sp, sp_loaded);
 }
 
@@ -308,31 +304,37 @@ void debugTest()
 
     LOG(lvr2::Logger::DEBUG) << "Create Dummy Scanproject..." << std::endl;
     
-    // PointBufferPtr sphere = lvr2::synthetic::genSpherePoints();
-    // auto vchannel = *sphere["points"];
+    // auto sp = dummyScanProject();
+
+
+    PointBufferPtr points = lvr2::synthetic::genSpherePoints();
+
+    size_t npoints = points->numPoints();
+
+    points->erase("points");
+
+    Channel<float> normals(npoints, 3);
+
+    for(size_t i=0; i<npoints; i++)
+    {
+        normals[i][0] = 1.0;
+        normals[i][1] = 0.0;
+        normals[i][2] = 0.0;
+    }
+
+    Channel<double> some_other_data(npoints, 3);
     
-    Channel<float> bla(1000, 3);
-    for(size_t i=0; i<1000; i++)
-    {
-        bla[i][0] = i/10.0;
-        bla[i][1] = i;
-        bla[i][2] = 0.5;
-    }
+    points->add("normals", normals);
+    points->add("some_other_data", some_other_data);
+    
+    size_t posNo = 0;
+    size_t lidarNo = 0;
+    size_t scanNo = 0;
+    dirio.PointCloudIO::save(posNo, lidarNo, scanNo, points);
 
-    dirio.ChannelIO::save("test", "channel.bin", bla);
-    auto bla_loaded_ = dirio.ChannelIO::load<float>("test", "channel");
 
-    if(bla_loaded_)
-    {
-        std::cout << "Loaded"  << std::endl;
-        Channel<float> bla_loaded = *bla_loaded_;
+    // dirio.PointCloudIO::load(posNo, lidarNo, scanNo);
 
-        if(equal(bla, bla_loaded))
-        {
-            std::cout << "and equal" << std::endl;
-        }
-        
-    }
 
 }
 
@@ -376,6 +378,8 @@ void compressionTest()
 
 int main(int argc, char** argv)
 {
+    debugTest();
+    return 0;
     // directoryIOTest();
     // hdf5IOTest();
     // return 0;

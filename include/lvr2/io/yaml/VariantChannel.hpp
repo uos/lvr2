@@ -3,6 +3,7 @@
 #define LVR2_IO_YAML_VARIANT_CHANNEL_HPP
 
 #include <yaml-cpp/yaml.h>
+#include <utility>
 
 #include "Matrix.hpp"
 #include "lvr2/io/Timestamp.hpp"
@@ -68,6 +69,30 @@ struct convert<lvr2::MultiChannel>
     }
 
 };
+
+// template<>
+// struct convert< std::pair<std::string, lvr2::MultiChannel> > 
+// {
+//     /**
+//      * Encode Eigen matrix to yaml. 
+//      */
+//     static Node encode(const std::pair<std::string, lvr2::MultiChannel>& vit) {
+        
+//         Node node;
+//         // node["name"] = vit.first;
+//         return node;
+//     }
+
+//     static bool decode(const Node& node, std::pair<std::string, lvr2::MultiChannel>& vit) 
+//     {
+        
+
+//         return true;
+//     }
+
+// };
+
+
 
 }  // namespace YAML
 

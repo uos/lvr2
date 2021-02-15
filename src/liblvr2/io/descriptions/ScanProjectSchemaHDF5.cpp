@@ -104,6 +104,23 @@ Description ScanProjectSchemaHDF5::scan(
     return d;
 }
 
+Description ScanProjectSchemaHDF5::channel(
+    const Description& d_parent,
+    const std::string& channel_name) const
+{
+    Description d;
+
+    d.dataSetName = channel_name;
+    d.metaName = channel_name;
+
+    if(d_parent.groupName)
+    {
+        d.groupName = *d_parent.groupName;
+    }
+
+    return d;
+}
+
 Description ScanProjectSchemaHDF5::cameraImage(
     const Description& d_parent, 
     const size_t &cameraImageNo) const

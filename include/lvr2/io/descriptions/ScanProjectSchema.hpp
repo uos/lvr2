@@ -51,6 +51,11 @@ public:
         const Description& lidar_descr, 
         const size_t& scanNo) const = 0;
 
+    virtual Description channel(
+        const Description& scan_descr,
+        const std::string& channel_name
+    ) const = 0;
+
     virtual Description camera(
         const Description& scanpos_descr, 
         const size_t& camNo) const = 0;

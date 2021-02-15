@@ -216,43 +216,62 @@ protected:
 
         boost::filesystem::path p = getAbsolutePath(group, container);
 
-        std::string filename = p.string();
-
         if(p.extension() == "")
         {
-            filename += ".data";
+            p += ".data";
         }
 
-        std::ifstream in(filename, std::ios::in | std::ios::binary);
-        if (!in.good())
+        if(!boost::filesystem::exists(p))
         {
+            // return empty pointer if path not exist:
+            // should not happen. the check needs to be done from above module
+            return boost::shared_array<T>(nullptr);;
+        }
+
+        std::string filename = p.string();
+
+        if(p.extension() == ".data")
+        {
+
+            std::ifstream in(filename, std::ios::in | std::ios::binary);
+            if (!in.good())
+            {
+                return boost::shared_array<T>(nullptr);
+            }
+
+            //read Dimensions size
+            size_t dimSize;
+            size_t totalArraySize = 0;
+            in.read(reinterpret_cast<char *>(&dimSize), sizeof(dimSize));
+
+            for(int i = 0; i < dimSize; i++)
+            {
+                size_t tmp;
+                in.read(reinterpret_cast<char *>(&tmp), sizeof(tmp));
+                if(totalArraySize == 0)
+                {
+                    totalArraySize = tmp;
+                } else{
+                    totalArraySize *= tmp;
+                }
+                dims.push_back(tmp);
+            }
+            
+            T* rawData = new T[totalArraySize];
+
+            in.read(reinterpret_cast<char *>(rawData), totalArraySize * sizeof(T));
+            boost::shared_array<T> ret(rawData);
+            return ret;
+
+        } else {
+
+            // has some unknown extension
+            PointBufferPtr points = loadPointBuffer(group, container);
+
+            std::cout << "Loaded " << points->numPoints() << " Points" << std::endl;
+
             return boost::shared_array<T>(nullptr);
         }
-
-        //read Dimensions size
-        size_t dimSize;
-        size_t totalArraySize = 0;
-        in.read(reinterpret_cast<char *>(&dimSize), sizeof(dimSize));
-
-        for(int i = 0; i < dimSize; i++)
-        {
-            size_t tmp;
-            in.read(reinterpret_cast<char *>(&tmp), sizeof(tmp));
-            if(totalArraySize == 0)
-            {
-                totalArraySize = tmp;
-            } else{
-                totalArraySize *= tmp;
-            }
-            dims.push_back(tmp);
-        }
-        
-        // std::cout << "DimSize " << dims[0] << "  " <<dims[1] << std::endl;
-        T* rawData = new T[totalArraySize];
-
-        in.read(reinterpret_cast<char *>(rawData), totalArraySize * sizeof(T));
-        boost::shared_array<T> ret(rawData);
-        return ret;
     }
 
     template <typename T>
@@ -260,6 +279,10 @@ protected:
         const std::string &group, const std::string &container, 
         const std::vector<size_t> &dims, const boost::shared_array<T>& data) const
     {
+        std::cout << "SAVE ARRAY TO " << group << "; " << container << std::endl;
+
+        
+
         if (dims.size() > 0)
         {
             size_t length = dims[0];
@@ -282,27 +305,34 @@ protected:
             }
 
             std::string filename = p.string();
-            if(p.extension() == "")
+            if(p.extension() != "")
             {
+                std::cout << "Found extrension: " << p.extension() << std::endl;
+                // find out how to handle it
+                PointBufferPtr buffer(new PointBuffer);
+                (*buffer)["points"] = Channel<T>(dims[0], dims[1], data);
+                savePointBuffer(group, container, buffer);
+            } else {
                 filename += ".data";
-            }
-
-            std::ofstream fout_data(filename, std::ios::out | std::ios::binary);
+                std::ofstream fout_data(filename, std::ios::out | std::ios::binary);
             
-            // dims
-            size_t ndims = dims.size();
-            fout_data.write(reinterpret_cast<const char *>(&ndims), sizeof(size_t));
+                // dims
+                size_t ndims = dims.size();
+                fout_data.write(reinterpret_cast<const char *>(&ndims), sizeof(size_t));
 
-            for(size_t i=0; i<ndims; i++)
-            {
-                fout_data.write(reinterpret_cast<const char *>(&dims[i]), sizeof(size_t));
+                for(size_t i=0; i<ndims; i++)
+                {
+                    fout_data.write(reinterpret_cast<const char *>(&dims[i]), sizeof(size_t));
+                }
+
+                // data
+                fout_data.write(reinterpret_cast<const char *>(&data[0]), sizeof(T) * length);
+
+
+                fout_data.close();
             }
 
-            // data
-            fout_data.write(reinterpret_cast<const char *>(&data[0]), sizeof(T) * length);
-
-
-            fout_data.close();
+            
         }
     }
 

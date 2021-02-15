@@ -34,6 +34,11 @@ public:
     virtual Description scan(
         const Description& d_parent, 
         const size_t& scanNo) const;
+
+    virtual Description channel(
+        const Description& scan_descr,
+        const std::string& channel_name
+    ) const;
  
     virtual Description cameraImage(
         const Description& d_parent, 

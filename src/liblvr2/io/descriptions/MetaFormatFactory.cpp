@@ -1,5 +1,6 @@
 #include "lvr2/io/descriptions/MetaFormatFactory.hpp"
 #include "lvr2/io/IOUtils.hpp"
+#include "lvr2/io/yaml/Util.hpp"
 
 namespace lvr2
 {
@@ -8,10 +9,15 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
 {
     boost::filesystem::path p(outfile);
 
+
+    if(p.extension() == "")
+    {
+        p += ".yaml";
+    }
+
     if (p.extension() == ".yaml")
     {
-        // std::cout << timestamp << "SaveMetaInformation(YAML): " << outfile << std::endl;
-        std::ofstream out(outfile.c_str());
+        std::ofstream out(p.string().c_str());
         out << node;
         out.close();
     }
@@ -62,13 +68,6 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             // std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesOutPath << std::endl;
             writeFrame(transform, framesOutPath);
         }
-
-    } else if(p.extension().string() == "") {
-        // no extension specified: HDF5-Schemas
-        // use yaml
-        std::ofstream out(outfile + ".yaml");
-        out << node;
-        out.close();
     } else {
         std::cout << timestamp << " [MetaFormatFactory] Meta extension " << p.extension() << " unknown. " << std::endl; 
     }
