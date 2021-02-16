@@ -195,6 +195,8 @@ public:
     virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const;
     virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const;
 
+    virtual std::vector<std::string> listDatasets(const std::string& group) const;
+
     // TODO: metas with "sensor_type" filter
     virtual std::unordered_map<std::string, YAML::Node> metas(
         const std::string& group) const;
@@ -264,12 +266,8 @@ protected:
             return ret;
 
         } else {
-
             // has some unknown extension
             PointBufferPtr points = loadPointBuffer(group, container);
-
-            std::cout << "Loaded " << points->numPoints() << " Points" << std::endl;
-
             return boost::shared_array<T>(nullptr);
         }
     }
@@ -279,10 +277,6 @@ protected:
         const std::string &group, const std::string &container, 
         const std::vector<size_t> &dims, const boost::shared_array<T>& data) const
     {
-        std::cout << "SAVE ARRAY TO " << group << "; " << container << std::endl;
-
-        
-
         if (dims.size() > 0)
         {
             size_t length = dims[0];
@@ -307,9 +301,11 @@ protected:
             std::string filename = p.string();
             if(p.extension() != "")
             {
-                std::cout << "Found extrension: " << p.extension() << std::endl;
                 // find out how to handle it
                 PointBufferPtr buffer(new PointBuffer);
+                // careful: here is some implicit 
+                // we cannot know the name of the channel
+                std::cout << "[DirectoryKernel - WARNING] try to write an array to an file as a pointbuffer. assuming the data to be 'points'" << std::endl;
                 (*buffer)["points"] = Channel<T>(dims[0], dims[1], data);
                 savePointBuffer(group, container, buffer);
             } else {

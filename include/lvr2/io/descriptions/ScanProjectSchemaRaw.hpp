@@ -39,6 +39,9 @@ public:
         const size_t& scanNo,
         const std::string& channelName) const;
 
+    // virtual std::string scanChannelInv(
+    //     const std::string& d_data) const;
+
     virtual Description camera(
         const size_t& scanPosNo,
         const size_t& camNo) const;

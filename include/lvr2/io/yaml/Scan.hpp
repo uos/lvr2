@@ -49,6 +49,17 @@ struct convert<lvr2::Scan>
         config["num_points"] = scan.numPoints;
         node["config"] = config;
 
+
+        if(scan.points)
+        {
+            node["channels"] = Load("[]");
+            for(auto elem : *scan.points)
+            {
+                node["channels"].push_back(elem.first);
+            }
+        }
+        
+
         return node;
     }
 

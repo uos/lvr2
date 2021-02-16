@@ -107,17 +107,39 @@ Description ScanProjectSchemaRaw::scanChannel(
     if(channelName == "points" || channelName == "normals" || channelName == "colors")
     {
         d.dataRoot = *dp.dataRoot + "/points.ply";
-        d.data = channelName;
     } else {
         d.dataRoot = *dp.dataRoot;
-        d.data = channelName;
     }
 
+    d.data = channelName;
     d.metaRoot = *dp.dataRoot;
     d.meta = channelName + ".yaml";
 
+    // Description d;
+
+    // Description dp = scan(scanPosNo, lidarNo, scanNo);
+
+    // if(channelName == "points" || channelName == "normals" || channelName == "colors")
+    // {
+    //     d.dataRoot = *dp.dataRoot;
+    //     d.data = channelName + ".ply";
+    // } else {
+    //     d.dataRoot = *dp.dataRoot;
+    //     d.data = channelName;
+    // }
+
+    
+    // d.metaRoot = *dp.dataRoot;
+    // d.meta = channelName + ".yaml";
+
     return d;
 }
+
+// std::string ScanProjectSchemaRaw::scanChannelInv(
+//     std::string d_data) const
+// {
+
+// }
 
 Description ScanProjectSchemaRaw::cameraImage(
     const size_t& scanPosNo,

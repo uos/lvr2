@@ -19,6 +19,8 @@
 namespace lvr2
 {
 
+bool isMetaFile(const std::string& filename);
+
 void saveMetaInformation(const std::string &outfile, const YAML::Node &node);
 YAML::Node loadMetaInformation(const std::string &in);
 

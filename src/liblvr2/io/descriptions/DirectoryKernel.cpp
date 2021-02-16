@@ -84,15 +84,16 @@ PointBufferPtr DirectoryKernel::loadPointBuffer(
     const std::string &group,
     const std::string &container) const
 {
+    PointBufferPtr ret;
+
     boost::filesystem::path p = getAbsolutePath(group, container);
-    // std::cout << timestamp << "Directory Kernel::loadPointBuffer(): " << p.string() << std::endl;
     ModelPtr model = ModelFactory::readModel(p.string());
     if (model)
     {
-        // std::cout << model->m_pointCloud << std::endl;
-        // std::cout << "Model Count " <<  model->m_pointCloud->numPoints() << std::endl;
-        return model->m_pointCloud;
+        ret = model->m_pointCloud;
     }
+    
+    return ret;
 }
 
 boost::optional<cv::Mat> DirectoryKernel::loadImage(
@@ -178,6 +179,32 @@ boost::filesystem::path DirectoryKernel::getAbsolutePath(const std::string &grou
     boost::filesystem::path namePath(name);
     boost::filesystem::path rootPath(m_fileResourceName);
     boost::filesystem::path ret = rootPath / groupPath / namePath;
+    return ret;
+}
+
+std::vector<std::string> DirectoryKernel::listDatasets(const std::string& group) const
+{
+    // using namespace boost::filesystem;
+    namespace bfs = boost::filesystem;
+
+    std::vector<std::string> ret;
+    bfs::path pg = getAbsolutePath(group, "");
+
+    if(bfs::exists(pg))
+    {
+        bfs::directory_iterator end_itr;
+        for(bfs::directory_iterator itr(pg); itr != end_itr; ++itr)
+        {
+            if (bfs::is_regular_file(itr->path())) 
+            {
+                if(!isMeta(itr->path().filename().string()))
+                {
+                    ret.push_back(itr->path().filename().string());
+                }
+            }
+        }
+    }       
+
     return ret;
 }
 

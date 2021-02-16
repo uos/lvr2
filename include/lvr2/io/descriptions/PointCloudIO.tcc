@@ -29,56 +29,57 @@ void PointCloudIO<FeatureBase>::save(
     }
 }
 
-template<typename FeatureBase>
-void PointCloudIO<FeatureBase>::save(
-    const size_t& posNo,
-    const size_t& lidarNo,
-    const size_t& scanNo,
-    PointBufferPtr pcl) const
-{
-    std::cout <<  "SSAAAAVFE " << std::endl;
+// template<typename FeatureBase>
+// void PointCloudIO<FeatureBase>::save(
+//     const size_t& posNo,
+//     const size_t& lidarNo,
+//     const size_t& scanNo,
+//     PointBufferPtr pcl) const
+// {
+//     std::cout <<  "SSAAAAVFE " << std::endl;
 
-    auto Dgen = m_featureBase->m_description;
+//     auto Dgen = m_featureBase->m_description;
 
-    std::unordered_map<std::string, PointBufferPtr> container_map;
+//     std::unordered_map<std::string, PointBufferPtr> container_map;
 
-    // DATA
-    for(auto elem : *pcl)
-    {
-        Description d = Dgen->scanChannel(posNo, lidarNo, scanNo, elem.first);
-        boost::filesystem::path proot(*d.dataRoot);
-        if(proot.extension() != "")
-        {
-            if(container_map.find(proot.string()) == container_map.end())
-            {
-                container_map[proot.string()] = PointBufferPtr(new PointBuffer);
-            }
-            (*container_map[proot.string()])[elem.first] = elem.second;
-        } else {
-            m_vchannel_io->save(*d.dataRoot, *d.data, elem.second);
-        }        
-    }
+//     // DATA
+//     for(auto elem : *pcl)
+//     {
+//         Description d = Dgen->scanChannel(posNo, lidarNo, scanNo, elem.first);
+//         boost::filesystem::path proot(*d.dataRoot);
+//         if(proot.extension() != "")
+//         {
+//             if(container_map.find(proot.string()) == container_map.end())
+//             {
+//                 container_map[proot.string()] = PointBufferPtr(new PointBuffer);
+//             }
+//             (*container_map[proot.string()])[elem.first] = elem.second;
+//         } else {
+//             m_vchannel_io->save(*d.dataRoot, *d.data, elem.second);
+//         }        
+//     }
 
-    // found file format in dataRoot, example: ply, obj, zip. Need to store grouped
-    for(auto elem : container_map)
-    {
-        m_featureBase->savePointCloud("", elem.first, elem.second);
-    }
+//     // found file format in dataRoot, example: ply, obj, zip. Need to store grouped
+//     for(auto elem : container_map)
+//     {
+//         m_featureBase->savePointCloud("", elem.first, elem.second);
+//     }
 
-    // META
-    for(auto elem : *pcl)
-    {
-        Description d = Dgen->scanChannel(posNo, lidarNo, scanNo, elem.first);
+//     // META
+//     for(auto elem : *pcl)
+//     {
+//         Description d = Dgen->scanChannel(posNo, lidarNo, scanNo, elem.first);
         
-        if(d.meta)
-        {
-            YAML::Node meta;
-            meta = elem.second;
-            m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, meta);
-        }
-    }
+//         if(d.meta)
+//         {
+//             YAML::Node meta;
+//             meta = elem.second;
+//             meta["channel_name"] = elem.first;
+//             m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, meta);
+//         }
+//     }
 
-}
+// }
 
 template<typename FeatureBase>
 PointBufferPtr PointCloudIO<FeatureBase>::load(
@@ -138,34 +139,92 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
     }
 }
 
-template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::load(
-    const size_t& posNo, 
-    const size_t& lidarNo,
-    const size_t& scanNo) const
-{
-    PointBufferPtr ret;
+// template<typename FeatureBase>
+// std::unordered_map<std::string, YAML::Node> PointCloudIO<FeatureBase>::loadMeta(
+//     const size_t& posNo, 
+//     const size_t& lidarNo,
+//     const size_t& scanNo) const
+// {
 
-    // auto Dgen = m_featureBase->m_description;
-    // Description d = Dgen->position(posNo);
-    // d = Dgen->lidar(d, lidarNo);
-    // d = Dgen->scan(d, scanNo);
+// }
 
-    // if(d.dataSetName)
-    // {
-    //     // load pointbuffer from dataset
-    // } else {
-    //     // parse group for channel/pcl like objects and group them together
+// template<typename FeatureBase>
+// PointBufferPtr PointCloudIO<FeatureBase>::load(
+//     const size_t& posNo, 
+//     const size_t& lidarNo,
+//     const size_t& scanNo) const
+// {
+//     std::cout << "[PointCloudIO - load] " << std::endl;
+
+//     PointBufferPtr ret;
+
+//     auto Dgen = m_featureBase->m_description;
+//     Description d = Dgen->scan(posNo, lidarNo, scanNo);
+
+
+//     std::vector<std::string> known_channel_names;
+//     if(d.meta)
+//     {
+//         YAML::Node scan_meta;
+//         m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, scan_meta);
+//     }
+
     
-    //     Description d_channel = Dgen->channel(d, "test");
-    //     for(auto meta : m_featureBase->m_kernel->metas(*d_channel.groupName, "Channel") )
-    //     {
-    //         std::cout << "Meta: " << meta.first << std::endl;
-    //     }
-    // }
+//     if(d.data)
+//     {
+//         // scan contains data: load them
+//     } else {
+//         // scan is a group load each channel individually
+//         Description d_channel = Dgen->scanChannel(posNo, lidarNo, scanNo, "test");
+//         std::cout << "Load channel from " << *d_channel.dataRoot << std::endl;
 
-    return ret;
-}
+//         if(d_channel.meta)
+//         {
+//             // there should lie some metas
+//             std::string metaGroup = *d_channel.metaRoot;
+//             std::string metaFile = *d_channel.meta;
+//             std::tie(metaGroup, metaFile) = hdf5util::validateGroupDataset(metaGroup, metaFile);
+//             std::cout << "Channel Located in group " << metaGroup << " at " << metaFile << std::endl;
+
+//             // channelName -> meta
+//             std::unordered_map<std::string, YAML::Node> meta_map;
+
+//             for(auto meta : m_featureBase->m_kernel->metas(metaGroup, "Channel"))
+//             {
+//                 std::cout << "found channel meta at file " << meta.first << std::endl;
+//                 std::cout << meta.second << std::endl;
+
+//                 if(meta.second["channel_name"])
+//                 {
+//                     meta_map[meta.second["channel_name"].template as<std::string>()] = meta.second;
+//                 } else {
+//                     // assuming the name to be the channel name
+//                     meta_map[meta.first] = meta.second;
+//                 }
+//             }
+//         }
+//     }
+    
+    
+//     // Description d = Dgen->position(posNo);
+//     // d = Dgen->lidar(d, lidarNo);
+//     // d = Dgen->scan(d, scanNo);
+
+//     // if(d.dataSetName)
+//     // {
+//     //     // load pointbuffer from dataset
+//     // } else {
+//     //     // parse group for channel/pcl like objects and group them together
+    
+//     //     Description d_channel = Dgen->channel(d, "test");
+//     //     for(auto meta : m_featureBase->m_kernel->metas(*d_channel.groupName, "Channel") )
+//     //     {
+//     //         std::cout << "Meta: " << meta.first << std::endl;
+//     //     }
+//     // }
+
+//     return ret;
+// }
 
 template<typename FeatureBase>
 void PointCloudIO<FeatureBase>::savePointCloud(

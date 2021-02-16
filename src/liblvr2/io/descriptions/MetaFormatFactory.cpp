@@ -2,13 +2,21 @@
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/yaml/Util.hpp"
 
+#include <unordered_set>
+
 namespace lvr2
 {
+
+bool isMetaFile(const std::string& filename)
+{
+    boost::filesystem::path p(filename);
+    std::unordered_set<std::string> metaExtensions = {".yaml", ".slam6d", ".frames" };
+    return metaExtensions.find(p.extension().string()) != metaExtensions.end();
+}
 
 void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
 {
     boost::filesystem::path p(outfile);
-
 
     if(p.extension() == "")
     {
@@ -76,6 +84,13 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
 YAML::Node loadMetaInformation(const std::string &in)
 {
     boost::filesystem::path inPath(in);
+
+
+    if(inPath.extension() == "")
+    {
+        inPath += ".yaml";
+    }
+
     if (inPath.extension() == ".yaml")
     {
         YAML::Node n;
@@ -134,26 +149,6 @@ YAML::Node loadMetaInformation(const std::string &in)
                       << "LoadMetaInformation(SLAM6D): Warning: No pose file found." << std::endl;
         }
         return node;
-    } else if(inPath.extension().string() == "") {
-        // no extension specified: HDF5 Schemas
-        // try yaml extension
-
-        boost::filesystem::path inPath_corrected(inPath.string() + ".yaml");
-
-
-        YAML::Node n;
-        if (boost::filesystem::exists(inPath_corrected))
-        {
-            // std::cout << timestamp
-            //           << "LoadMetaInformation(YAML): Loading " << inPath_corrected << std::endl;
-            n = YAML::LoadFile( inPath_corrected.string());
-        }
-        else
-        {
-            std::cout << timestamp
-                      << "LoadMetaInformation(YAML): Unable to find yaml file: " << inPath_corrected << std::endl;
-        }
-        return n;
     } else {
         std::cout << "Kernel Panic: Meta extension " << inPath.extension() << " unknown. " << std::endl; 
     }

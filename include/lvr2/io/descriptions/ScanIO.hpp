@@ -30,6 +30,12 @@ class ScanIO
         const size_t& scanNo
     ) const;
 
+    std::unordered_map<std::string, YAML::Node> loadChannelMetas(
+        const size_t& scanPosNo, 
+        const size_t& sensorNo,
+        const size_t& scanNo
+    ) const;
+
     void saveScan(
             const size_t& scanPosNo, 
             const size_t& sensorNo,
@@ -56,6 +62,9 @@ class ScanIO
 
     // dependencies
     PointCloudIO<FeatureBase>* m_pclIO = static_cast<PointCloudIO<FeatureBase>*>(m_featureBase);
+    VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_featureBase);
+
+
 
     static constexpr const char* ID = "ScanIO";
     static constexpr const char* OBJID = "Scan";

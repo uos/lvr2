@@ -234,6 +234,8 @@ public:
     virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const = 0;
     virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const = 0;
 
+    virtual std::vector<std::string> listDatasets(const std::string& group) const = 0;
+
     // TODO: make pure virtual
     virtual std::unordered_map<std::string, YAML::Node> metas(
         const std::string& group) const

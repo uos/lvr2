@@ -321,6 +321,7 @@ void debugTest()
         normals[i][2] = 0.0;
     }
 
+
     Channel<double> some_other_data(npoints, 3);
     
     points->add("normals", normals);
@@ -329,7 +330,15 @@ void debugTest()
     size_t posNo = 0;
     size_t lidarNo = 0;
     size_t scanNo = 0;
-    dirio.PointCloudIO::save(posNo, lidarNo, scanNo, points);
+
+    ScanPtr scan(new Scan);
+    scan->points = points;
+    
+    dirio.ScanIO::save(posNo, lidarNo, scanNo, scan);
+
+    dirio.ScanIO::load(posNo, lidarNo, scanNo);
+
+    // dirio.PointCloudIO::save(posNo, lidarNo, scanNo, points);
 
     // dirio.PointCloudIO::load(posNo, lidarNo, scanNo);
 }

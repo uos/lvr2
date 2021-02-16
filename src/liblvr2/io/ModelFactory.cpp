@@ -65,7 +65,7 @@ CoordinateTransform<float> ModelFactory::m_transform;
 
 ModelPtr ModelFactory::readModel( std::string filename )
 {
-    ModelPtr m(new Model);
+    ModelPtr m;
 
     // Check extension
     boost::filesystem::path selectedFile( filename );

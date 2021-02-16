@@ -46,7 +46,6 @@ template<typename FeatureBase>
 class PointCloudIO 
 {
 public:
-
     void save(
         const std::string& group, 
         const std::string& name, 
@@ -55,12 +54,6 @@ public:
 
     void save(
         const std::string& groupandname, 
-        PointBufferPtr pcl) const;
-
-    void save(
-        const size_t& posNo,
-        const size_t& lidarNo,
-        const size_t& scanNo,
         PointBufferPtr pcl) const;
 
     PointBufferPtr load(
@@ -74,11 +67,6 @@ public:
         const std::string& group,
         const std::string& container, 
         ReductionAlgorithmPtr reduction) const;
-
-    PointBufferPtr load(
-        const size_t& posNo, 
-        const size_t& lidarNo,
-        const size_t& scanNo) const;
 
     /**
      * @brief Save a point buffer at the position defined by \ref group and \ref container
