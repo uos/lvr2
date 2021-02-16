@@ -13,8 +13,8 @@ void CameraIO<FeatureBase>::save(
 
     Description d = Dgen->camera(scanPosNo, scanCamNo);
 
-    std::cout << "[CameraIO - save] Description:" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[CameraIO - save] Description:" << std::endl;
+    // std::cout << d << std::endl;
 
     // writing data
     for(size_t scanImageNo = 0; scanImageNo < cameraPtr->images.size(); scanImageNo++)

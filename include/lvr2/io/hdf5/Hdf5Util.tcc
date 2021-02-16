@@ -435,8 +435,7 @@ void setAttributeVector(
             g.template createAttribute<T>(attr_name, ds)
         );
     }
-
-    h5att->write(vec.data());
+    h5att->write(vec);
 }
 
 template<typename T, typename HT>
@@ -494,7 +493,6 @@ void setAttributeArray(
         );
     }
 
-    // const T* data_raw = vec.data();
     h5att->write(data.get());
 }
 
@@ -624,9 +622,7 @@ boost::optional<std::vector<T> > getAttributeVector(
         }
 
         std::vector<T> data(dims[0]);
-
-        h5attr.read(data.data());
-
+        h5attr.read(data);
         ret = data;
     }
 
@@ -723,6 +719,8 @@ void setAttributeMeta(
             bool is_int = true;
             bool is_double = true;
             bool is_bool = true;
+            bool is_string = true;
+
             size_t nelements = 0;
 
             for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
@@ -730,6 +728,7 @@ void setAttributeMeta(
                 long int lint;
                 double dbl;
                 bool bl;
+                std::string str;
 
                 // std::cout << "Id: " << nelements << std::endl;
 
@@ -751,11 +750,13 @@ void setAttributeMeta(
                     is_bool = false;
                 }
 
+                if(!YAML::convert<std::string>::decode(*seq_it, str))
+                {
+                    is_string = false;
+                }
+
                 nelements++;
             }
-
-            // std::cout << "N: " << nelements << std::endl;
-
             if(is_int)
             {
                 std::vector<long int> data;
@@ -795,12 +796,24 @@ void setAttributeMeta(
                     data[i] = seq_it->as<bool>();
                 }
                 setAttributeArray(g, attributeName, data, nelements);
-
-            } else {
-                std::cout << "Tried to write YAML list of unknown typed elements: " << *it << std::endl;
+            } 
+            else if(is_string) 
+            {
+                std::vector<std::string> data;
+                for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
+                {
+                    data.push_back(seq_it->as<std::string>());
+                }
+                setAttributeVector(g, attributeName, data);
+            } 
+            else 
+            {
+                std::cout << "Tried to write YAML list of unknown typed elements: " << value << std::endl;
             }
 
-            // std::cout << attributeName << ": written." << std::endl;
+            // TODO: check list of strings
+            
+
         } 
         else if(value.Type() == YAML::NodeType::Map) 
         {
@@ -1001,9 +1014,17 @@ YAML::Node getAttributeMeta(
                 {
                     back[yamlNames.back()].push_back(value);
                 }
-            } 
+            }
+            else if(h5type == HighFive::AtomicType<std::string>())
+            {
+                std::vector<std::string> data = *getAttributeVector<std::string>(g, attributeName);
+                for(auto value : data)
+                {
+                    back[yamlNames.back()].push_back(value);
+                }
+            }
             else {
-                std::cout << h5type.string() << ": type not implemented. " << std::endl;
+                std::cout << h5type.string() << ": type not supported for YAML lists. " << std::endl;
             }
 
         }

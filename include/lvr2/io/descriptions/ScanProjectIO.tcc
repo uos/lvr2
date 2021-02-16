@@ -10,8 +10,8 @@ void ScanProjectIO<FeatureBase>::save(
     Description d = m_featureBase->m_description->scanProject();
 
 
-    std::cout << "[ScanProjectIO - save]: Description" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanProjectIO - save]: Description" << std::endl;
+    // std::cout << d << std::endl;
 
     // if(!d.dataRoot)
     // {
@@ -75,21 +75,21 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
     }
 
 
-    // // Get all sub scans
-    // size_t scanPosNo = 0;
-    // while(true)
-    // {  
-    //     // Get description for next scan
-    //     ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
-    //     if(!scanPos)
-    //     {
-    //         break;
-    //     }
+    // Get all sub scans
+    size_t scanPosNo = 0;
+    while(true)
+    {  
+        // Get description for next scan
+        ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
+        if(!scanPos)
+        {
+            break;
+        }
 
-    //     // std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
-    //     ret->positions.push_back(scanPos);
-    //     scanPosNo++;
-    // }
+        // std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
+        ret->positions.push_back(scanPos);
+        scanPosNo++;
+    }
 
     return ret;
 }

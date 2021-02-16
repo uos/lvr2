@@ -12,8 +12,8 @@ void ScanPositionIO< FeatureBase>::save(
 {
     Description d = m_featureBase->m_description->position(scanPosNo);
   
-    std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
+    // std::cout << d << std::endl;
 
     // Save all lidar sensors
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
@@ -59,28 +59,14 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::load(
 
     Description d = m_featureBase->m_description->position(scanPosNo);
 
+    // std::cout << "[ScanPositionIO - load]"  << std::endl;
+    // std::cout << d <<  std::endl;
+
     // Check if specified scan position exists
     if(!m_featureBase->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
-
-
-    //// META
-
-    // if(!d.dataRoot)
-    // {
-    //     d.dataRoot = "";
-    // }
-
-    // if(!d.metaRoot)
-    // {
-    //     d.metaRoot = "";
-    // }
-
-
-    // std::cout << "[ScanPositionIO - load] Description:" << std::endl;
-    // std::cout << d << std::endl;
 
     if(d.meta)
     {

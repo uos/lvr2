@@ -53,17 +53,7 @@ void VariantChannelIO<Derived>::save(
     std::string channelName,
     const VariantChannel<Tp...>& vchannel)
 {
-
-    // Description d;
-    // auto Dgen = m_featureBase->m_description;
-    // d = Dgen->channel(d, channelName);
-
-    // if(d.groupName)
-    // {
-    //     groupName += "/" + *d.groupName;
-    // }
-
-    std::cout << "[VariantChannelIO - save] " << vchannel.typeName() << std::endl;
+    // std::cout << "[VariantChannelIO - save] " << groupName << "; " << channelName << "; " << vchannel.typeName() << std::endl;
     // std::cout << d << std::endl;
 
     // std::cout << "[VariantChannelIO - save] " << groupName << ", " << datasetName << ", " << vchannel.typeName() << std::endl;
@@ -74,8 +64,6 @@ void VariantChannelIO<Derived>::save(
     
     // creating meta node of variantchannel containing type and size
     
-    // if(d.metaName)
-    // {
     // YAML::Node node;
     // try {
     //     node = vchannel;
@@ -83,9 +71,6 @@ void VariantChannelIO<Derived>::save(
     //     std::cout << ex.what() << std::endl;
     // }
     // m_featureBase->m_kernel->saveMetaYAML(groupName, channelName, node);
-    // }
-    
-    
 }
 
 // anker

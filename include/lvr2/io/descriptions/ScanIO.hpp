@@ -24,6 +24,12 @@ class ScanIO
             ScanPtr buffer
         ) const;
 
+    YAML::Node loadMeta(
+        const size_t& scanPosNo, 
+        const size_t& sensorNo,
+        const size_t& scanNo
+    ) const;
+
     ScanPtr load(
         const size_t& scanPosNo, 
         const size_t& sensorNo,

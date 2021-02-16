@@ -12,194 +12,173 @@ namespace lvr2
 Description ScanProjectSchemaHDF5::scanProject() const
 {
     Description d;
-    d.groupName = "raw";
-    d.metaName = "";
+    d.dataRoot = "raw";
+    d.metaRoot = d.dataRoot;
+    d.meta = "";
     return d;
 }
 
-Description ScanProjectSchemaHDF5::position(const size_t &scanPosNo) const
+Description ScanProjectSchemaHDF5::position(
+    const size_t& scanPosNo) const
 {
-    Description d_parent = scanProject();
+    Description dp = scanProject();
 
     Description d;
-    
     // Save scan file name
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanPosNo;
     
-    d.metaName = "";
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+    d.metaRoot = d.dataRoot;
+    d.meta = "";
 
-    // Load meta data
-    boost::filesystem::path positionPath(sstr.str());
-
-    // append positionPath to parent path if necessary
-    if(d_parent.groupName)
-    {
-        positionPath = boost::filesystem::path(*d_parent.groupName) / positionPath;
-    }
-
-    boost::filesystem::path metaPath(*d.metaName);
-    d.groupName = (positionPath).string();
     
     return d;
 }
 
 Description ScanProjectSchemaHDF5::lidar(
-    const Description& d_parent, 
-    const size_t &lidarNo) const
+    const size_t& scanPosNo, 
+    const size_t& lidarNo) const
 {
+    Description dp = position(scanPosNo);
+
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << lidarNo;
 
     Description d;
-    d.groupName = "lidar_" + sstr.str();
-    d.metaName = "";
-
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" +  *d.groupName;
-    }
+    d.dataRoot = *dp.dataRoot + "/lidar_" + sstr.str();
+    d.metaRoot = d.dataRoot;
+    d.meta = "";
 
     return d;
 }
 
 Description ScanProjectSchemaHDF5::camera(
-    const Description& d_parent,
-    const size_t &camNo) const
+    const size_t& scanPosNo,
+    const size_t& camNo) const
 {
-    Description d;
+    Description dp = position(scanPosNo);
 
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << camNo;
 
-    d.groupName = "cam_" + sstr.str();
-    d.metaName = "";
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/cam_" + sstr.str();
+    d.metaRoot = d.dataRoot;
+    d.meta = "";
 
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
 
     return d;
 }
 
 
 Description ScanProjectSchemaHDF5::scan(
-    const Description& d_parent,
-    const size_t &scanNo) const
+    const size_t& scanPosNo,
+    const size_t& lidarNo,
+    const size_t& scanNo) const
 {
-    Description d;
+    Description dp = lidar(scanPosNo, lidarNo);
 
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanNo;
 
-    d.groupName = sstr.str();
-    d.metaName = "";
+    Description d;
 
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+    d.metaRoot = d.dataRoot;
+    d.meta = "";
 
     return d;
 }
 
-Description ScanProjectSchemaHDF5::channel(
-    const Description& d_parent,
+Description ScanProjectSchemaHDF5::scanChannel(
+    const size_t& scanPosNo,
+    const size_t& lidarNo,
+    const size_t& scanNo,
     const std::string& channel_name) const
 {
+    Description dp = scan(scanPosNo, lidarNo, scanNo);
+    
     Description d;
 
-    d.dataSetName = channel_name;
-    d.metaName = channel_name;
-
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName;
-    }
+    d.dataRoot = dp.dataRoot;
+    d.data = channel_name;
+    d.metaRoot = dp.metaRoot;
+    d.meta = channel_name;
 
     return d;
 }
 
 Description ScanProjectSchemaHDF5::cameraImage(
-    const Description& d_parent, 
-    const size_t &cameraImageNo) const
+    const size_t& scanPosNo,
+    const size_t& camNo, 
+    const size_t& cameraImageNo) const
 {
-    Description d;
+    Description dp = camera(scanPosNo, camNo);
 
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << cameraImageNo;
    
-    d.groupName = "";
-    d.metaName = sstr.str();
-    d.dataSetName = sstr.str();
-
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    Description d;
+    d.dataRoot = dp.dataRoot;
+    d.data = sstr.str();
+    d.metaRoot = dp.metaRoot;
+    d.meta = sstr.str();
 
     return d; 
 }
 
 Description ScanProjectSchemaHDF5::hyperspectralCamera(
-    const Description& d_parent,
-    const size_t &camNo) const
+    const size_t& scanPosNo,
+    const size_t& camNo) const
 {
-    Description d;
+    Description dp = position(scanPosNo);
 
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << camNo;
 
-    d.groupName = "hypercam_" + sstr.str();
-    d.metaName = "";
-
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/" + "hypercam_" + sstr.str();
+    d.metaRoot = d.dataRoot;
+    d.meta = "";
 
     return d;
 }
 
 Description ScanProjectSchemaHDF5::hyperspectralPanorama(
-    const Description& d_parent,
+    const size_t& scanPosNo,
+    const size_t& camNo,
     const size_t& panoNo) const
 {
-    Description d;
+    Description dp = hyperspectralCamera(scanPosNo, camNo);
 
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << panoNo;
 
-    d.groupName = sstr.str();
-    d.metaName = "";
-
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+    d.metaRoot = d.dataRoot;
+    d.meta = "";
 
     return d;
 }
 
 Description ScanProjectSchemaHDF5::hyperspectralPanoramaChannel(
-    const Description& d_parent,
-    const size_t& channelNo
-) const
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const size_t& panoNo,
+    const size_t& channelNo) const
 {
-    Description d;
+    Description dp = hyperspectralPanorama(scanPosNo, camNo, panoNo);
 
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << channelNo;
    
-    d.groupName = "";
-    d.metaName = sstr.str();
-    d.dataSetName = sstr.str();
-
-    if(d_parent.groupName)
-    {
-        d.groupName = *d_parent.groupName + "/" + *d.groupName;
-    }
+    Description d;
+    d.dataRoot = dp.dataRoot;
+    d.metaRoot = dp.metaRoot;
+    d.meta = sstr.str();
+    d.data = sstr.str();
 
     return d;
 }

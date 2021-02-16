@@ -618,6 +618,24 @@ bool HDF5Kernel::addChannel(const std::string group, const std::string name, con
 }
 
 
+std::vector<std::string> HDF5Kernel::listDatasets(const std::string& group) const
+{
+    std::vector<std::string> ret;
+
+    HighFive::Group h5Group = hdf5util::getGroup(m_hdf5File, group, false);
+
+    for(std::string groupName : h5Group.listObjectNames())
+    {
+        HighFive::ObjectType h5type = h5Group.getObjectType(groupName);
+        if(h5type == HighFive::ObjectType::Dataset)
+        {
+            ret.push_back(groupName);
+        }
+    }
+
+    return ret;
+}
+
 std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
     const std::string& group) const
 {

@@ -15,6 +15,10 @@ void ScanIO<FeatureBase>::save(
     auto Dgen = m_featureBase->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
 
+    // std::cout << "[ScanIO - save]" << std::endl;
+    // std::cout << d << std::endl;
+
+
     //// DATA
     if(scanPtr->points)
     {
@@ -48,10 +52,9 @@ void ScanIO<FeatureBase>::save(
             for(auto elem : *scanPtr->points)
             {
                 Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
-                
                 boost::filesystem::path proot(*dc.dataRoot);
-                std::cout << "Description of " <<  elem.first << std::endl;
-                std::cout << dc << std::endl;
+                // std::cout << "Description of " <<  elem.first << std::endl;
+                // std::cout << dc << std::endl;
 
                 if(proot.extension() != "")
                 {
@@ -72,17 +75,26 @@ void ScanIO<FeatureBase>::save(
                     // Data
                     m_vchannel_io->save(group, dataset, elem.second);
                 }
+            }
 
-                // DATA of exceptional "one_file_multi_channel". there we need to call the 
-                // kernel directly, because we are now at file level
-                for(auto ex_elem : one_file_multi_channel)
-                {
-                    std::string group, name;
-                    std::tie(group, name) = hdf5util::validateGroupDataset("", ex_elem.first);
-                    m_featureBase->m_kernel->savePointBuffer(group, name, ex_elem.second);
-                }
+            // DATA of exceptional "one_file_multi_channel". there we need to call the 
+            // kernel directly, because we are now at file level
+            for(auto ex_elem : one_file_multi_channel)
+            {
+                std::string group, name;
+                std::tie(group, name) = hdf5util::validateGroupDataset("", ex_elem.first);
 
-                // Meta
+                // std::cout << "Save Channel Group to file: " << ex_elem.first << std::endl;
+                // std::cout << *ex_elem.second << std::endl;
+
+                m_featureBase->m_kernel->savePointBuffer(group, name, ex_elem.second);
+            }
+
+            // META
+            // save meta for each channel
+            for(auto elem : *scanPtr->points)
+            {
+                Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
                 if(dc.meta)
                 {
                     YAML::Node meta;
@@ -95,12 +107,37 @@ void ScanIO<FeatureBase>::save(
     }
 
     //// META
+    
     if(d.meta)
     {
         YAML::Node node;
         node = *scanPtr;
         m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
+    
+}
+
+template <typename FeatureBase>
+YAML::Node ScanIO<FeatureBase>::loadMeta(
+    const size_t& scanPosNo, 
+    const size_t& sensorNo,
+    const size_t& scanNo) const
+{
+    auto Dgen = m_featureBase->m_description;
+    Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
+
+    YAML::Node ret;
+
+    if(d.meta)
+    {
+        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
+        {
+            return ret;
+        }
+        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, ret);
+    }
+
+    return ret;
 }
 
 template <typename FeatureBase>
@@ -127,13 +164,10 @@ ScanPtr ScanIO<FeatureBase>::load(
     }
 
 
-    std::cout << "[ScanIO - load] Description:" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanIO - load] Description:" << std::endl;
+    // std::cout << d << std::endl;
 
     /// META
-
-    
-
     if(d.meta)
     {
         if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
@@ -258,12 +292,11 @@ ScanPtr ScanIO<FeatureBase>::load(
                         //    - this should not happen. binary channels must have an meta file
 
                         throw std::runtime_error("[ScanIO - Panic. Something orrured that should not happen]");
-
                     }
                 }
             }
         }
-    }
+    }   
 
     return ret;
 }
@@ -285,6 +318,7 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
     {
         YAML::Node meta;
         m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
+
         if(meta["channels"])
         {
 
@@ -299,12 +333,13 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
                     YAML::Node cmeta;
                     m_featureBase->m_kernel->loadMetaYAML(*dc.metaRoot, *dc.meta, cmeta);
 
+
                     if(cmeta["channel_name"])
                     {
-                        // std::cout << "Channel Name: " << cmeta["channel_name"].as<std::string>() << std::endl;
                         channel_name = cmeta["channel_name"].as<std::string>();
                     }
 
+                    // std::cout << "First Hint found: " << channel_name << std::endl;
                     channel_metas[channel_name] = cmeta;
                 }
             }

@@ -138,7 +138,13 @@ void PLYIO::save( string filename )
     /* Check if we have vertex information. */
     if ( !( m_vertices || m_points ) )
     {
-        std::cout << timestamp << "Neither vertices nor points to write." << std::endl;
+        std::cout << timestamp << "Neither vertices nor points to write. " << filename << std::endl;
+        
+        if(m_model->m_pointCloud)
+        {
+            std::cout << *m_model->m_pointCloud << std::endl;
+        }
+        
         if ( !ply_close( oply ) )
         {
             std::cerr << timestamp << "Could not close file." << std::endl;

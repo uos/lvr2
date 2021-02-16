@@ -12,8 +12,8 @@ void CameraImageIO<FeatureBase>::save(
     auto Dgen = m_featureBase->m_description;
     Description d = Dgen->cameraImage(scanPosNo, camNo, imgNo);
 
-    std::cout << "[CameraImageIO - save] Description:" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[CameraImageIO - save] Description:" << std::endl;
+    // std::cout << d << std::endl;
 
 
     // save data
@@ -38,7 +38,6 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
 
     auto Dgen = m_featureBase->m_description;
     Description d = Dgen->cameraImage(scanPosNo, camNo, imgNo);
-
 
     if(!d.dataRoot)
     {

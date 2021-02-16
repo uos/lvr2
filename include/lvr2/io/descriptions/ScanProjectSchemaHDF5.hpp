@@ -18,45 +18,45 @@ public:
 
     ~ScanProjectSchemaHDF5() = default;
 
-    virtual StringOptional scanProjectData() const;
+    virtual Description scanProject() const;
 
-    virtual StringOptional positionData(
+    virtual Description position(
         const size_t& scanPosNo) const;
 
-    virtual StringOptional lidarData(
+    virtual Description lidar(
         const size_t& scanPosNo,
         const size_t& lidarNo) const;
     
-    virtual StringOptional scanData(
+    virtual Description scan(
         const size_t& scanPosNo,
         const size_t& lidarNo,
         const size_t& scanNo) const;
 
-    virtual StringOptional scanChannelData(
+    virtual Description scanChannel(
         const size_t& scanPosNo,
         const size_t& lidarNo,
         const size_t& scanNo,
         const std::string& channelName) const;
 
-    virtual StringOptional cameraData(
+    virtual Description camera(
         const size_t& scanPosNo,
         const size_t& camNo) const;
  
-    virtual StringOptional cameraImageData(
+    virtual Description cameraImage(
         const size_t& scanPosNo,
         const size_t& camNo,
         const size_t& cameraImageNo) const;
 
-    virtual StringOptional hyperspectralCameraData(
+    virtual Description hyperspectralCamera(
         const size_t& scanPosNo,
         const size_t& camNo) const;
 
-    virtual StringOptional hyperspectralPanoramaData(
+    virtual Description hyperspectralPanorama(
         const size_t& scanPosNo,
         const size_t& camNo,
         const size_t& panoNo) const;
 
-    virtual StringOptional hyperspectralPanoramaChannelData(
+    virtual Description hyperspectralPanoramaChannel(
         const size_t& scanPosNo,
         const size_t& camNo,
         const size_t& panoNo,

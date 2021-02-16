@@ -325,7 +325,7 @@ bool equal(ScanProjectPtr sp1, ScanProjectPtr sp2)
 
     if(sp1->positions.size() != sp2->positions.size())
     {
-        std::cout << "ScanProject Npositions differ"  << std::endl;
+        std::cout << "ScanProject Npositions differ: "  << sp1->positions.size() << " != " << sp2->positions.size() << std::endl;
         return false;
     }
 

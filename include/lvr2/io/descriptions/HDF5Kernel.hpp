@@ -214,12 +214,7 @@ public:
     virtual void subGroupNames(const std::string& group, std::vector<string>& subGroupNames) const;
     virtual void subGroupNames(const std::string& group, const std::regex& filter, std::vector<string>& subGroupNames) const;
 
-    virtual std::vector<std::string> listDatasets(const std::string& group) const
-    {
-        std::vector<std::string> ret;
-
-        return ret;
-    }
+    virtual std::vector<std::string> listDatasets(const std::string& group) const;
 
     template<typename T>
     boost::shared_array<T> loadArray(

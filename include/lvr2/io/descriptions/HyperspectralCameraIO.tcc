@@ -44,8 +44,8 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(
 {
     HyperspectralCameraPtr ret;
 
-    Description d_parent = m_featureBase->m_description->position(scanPosNo); 
-    Description d = m_featureBase->m_description->hyperspectralCamera(d_parent, hCamNo);
+    auto Dgen = m_featureBase->m_description;
+    Description d = Dgen->hyperspectralCamera(scanPosNo, hCamNo);
 
     // std::cout << "[HypersprectralCameraIO - load]" << std::endl;
     // std::cout << d << std::endl;

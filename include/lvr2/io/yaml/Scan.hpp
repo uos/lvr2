@@ -26,7 +26,7 @@ struct convert<lvr2::Scan>
     static Node encode(const lvr2::Scan& scan) {
         Node node;
         node["type"] = lvr2::Scan::type;
-        node["kind"] = boost::typeindex::type_id<lvr2::Scan>().pretty_name();
+        node["kind"] = lvr2::Scan::kind;
 
         node["start_time"]  = scan.startTime;
         node["end_time"] = scan.endTime;

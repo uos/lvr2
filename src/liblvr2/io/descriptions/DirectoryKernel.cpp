@@ -374,15 +374,7 @@ std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
 
 bool DirectoryKernel::isMeta(const std::string& path) const
 {
-    boost::filesystem::path p(path);
-
-    // TODO: add other extensions
-    if(p.extension() == ".yaml")
-    {
-        return true;
-    }
-
-    return false;
+    return isMetaFile(path);
 }
 
 } // namespace lvr2
