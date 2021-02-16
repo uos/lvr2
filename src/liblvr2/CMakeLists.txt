@@ -53,7 +53,7 @@ set(LVR2_SOURCES
     # io/ScanDirectoryParser.cpp
     io/yaml/Matrix.cpp
     io/descriptions/ScanProjectSchemaRaw.cpp
-    io/descriptions/ScanProjectSchema3DTK.cpp
+    io/descriptions/ScanProjectSchemaSlam6D.cpp
     # io/descriptions/ScanProjectSchemaSLAM.cpp
     # io/descriptions/ScanProjectSchemaHyperlib.cpp
     io/descriptions/ScanProjectSchemaHDF5.cpp

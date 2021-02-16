@@ -4,12 +4,12 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/yaml.hpp"
 
-#include "lvr2/io/descriptions/ScanProjectSchema3DTK.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaSlam6D.hpp"
 
 namespace lvr2
 {
 
-Description ScanProjectSchema3DTK::scanProject() const
+Description ScanProjectSchemaSlam6D::scanProject() const
 {
     Description d;
 
@@ -21,7 +21,7 @@ Description ScanProjectSchema3DTK::scanProject() const
     return d;
 }
 
-Description ScanProjectSchema3DTK::position(
+Description ScanProjectSchemaSlam6D::position(
     const size_t &scanPosNo) const
 {
     std::stringstream sstr;
@@ -38,7 +38,7 @@ Description ScanProjectSchema3DTK::position(
     return d;
 }
 
-Description ScanProjectSchema3DTK::lidar(
+Description ScanProjectSchemaSlam6D::lidar(
     const size_t& scanPosNo, 
     const size_t& lidarNo) const
 {
@@ -53,7 +53,7 @@ Description ScanProjectSchema3DTK::lidar(
     return d;
 }
 
-Description ScanProjectSchema3DTK::camera(
+Description ScanProjectSchemaSlam6D::camera(
     const size_t& scanPosNo,
     const size_t& camNo) const
 {
@@ -63,7 +63,7 @@ Description ScanProjectSchema3DTK::camera(
 }
 
 
-Description ScanProjectSchema3DTK::scan(
+Description ScanProjectSchemaSlam6D::scan(
     const size_t& scanPosNo,
     const size_t& lidarNo,
     const size_t& scanNo) const
@@ -83,7 +83,7 @@ Description ScanProjectSchema3DTK::scan(
     return d;
 }
 
-Description ScanProjectSchema3DTK::scanChannel(
+Description ScanProjectSchemaSlam6D::scanChannel(
     const size_t& scanPosNo,
     const size_t& lidarNo,
     const size_t& scanNo,
@@ -95,7 +95,7 @@ Description ScanProjectSchema3DTK::scanChannel(
 }
 
 
-Description ScanProjectSchema3DTK::cameraImage(
+Description ScanProjectSchemaSlam6D::cameraImage(
     const size_t& scanPosNo,
     const size_t& camNo,
     const size_t& cameraImageNo) const
@@ -105,7 +105,7 @@ Description ScanProjectSchema3DTK::cameraImage(
     return d;
 }
 
-Description ScanProjectSchema3DTK::hyperspectralCamera(
+Description ScanProjectSchemaSlam6D::hyperspectralCamera(
     const size_t& scanPosNo,
     const size_t& camNo) const
 {
@@ -114,7 +114,7 @@ Description ScanProjectSchema3DTK::hyperspectralCamera(
     return d;
 }
 
-Description ScanProjectSchema3DTK::hyperspectralPanorama(
+Description ScanProjectSchemaSlam6D::hyperspectralPanorama(
     const size_t& scanPosNo,
     const size_t& camNo,
     const size_t& panoNo) const
@@ -124,7 +124,7 @@ Description ScanProjectSchema3DTK::hyperspectralPanorama(
     return d;
 }
 
-Description ScanProjectSchema3DTK::hyperspectralPanoramaChannel(
+Description ScanProjectSchemaSlam6D::hyperspectralPanoramaChannel(
     const size_t& scanPosNo,
     const size_t& camNo,
     const size_t& panoNo,

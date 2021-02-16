@@ -6,7 +6,7 @@
 #include "lvr2/io/descriptions/HDF5IO.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchemaHDF5.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchema3DTK.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchemaSlam6D.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 
 
@@ -217,7 +217,7 @@ bool slam6dIOTest()
     std::string dirname = "slam6d_directory";
 
     DirectoryKernelPtr kernel2(new DirectoryKernel(dirname));
-    DirectorySchemaPtr schema2(new ScanProjectSchema3DTK(dirname));
+    DirectorySchemaPtr schema2(new ScanProjectSchemaSlam6D(dirname));
     DirectoryIO dirio(kernel2, schema2);
 
     LOG(lvr2::Logger::DEBUG) << "Create Dummy Scanproject..." << std::endl;

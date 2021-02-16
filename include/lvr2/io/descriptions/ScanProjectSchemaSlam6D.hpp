@@ -1,5 +1,5 @@
-#ifndef SCANPROJECTSCHEMA_3DTK_HPP_
-#define SCANPROJECTSCHEMA_3DTK_HPP_
+#ifndef SCANPROJECTSCHEMA_SLAM6D_HPP_
+#define SCANPROJECTSCHEMA_SLAM6D_HPP_
 
 #include <string>
 
@@ -11,12 +11,12 @@
 namespace lvr2
 {
 
-class ScanProjectSchema3DTK : public DirectorySchema
+class ScanProjectSchemaSlam6D : public DirectorySchema
 {
 public:
-    ScanProjectSchema3DTK(std::string& rootDir) : DirectorySchema(rootDir) {};
+    ScanProjectSchemaSlam6D(std::string& rootDir) : DirectorySchema(rootDir) {};
 
-    ~ScanProjectSchema3DTK() = default;
+    ~ScanProjectSchemaSlam6D() = default;
 
     virtual Description scanProject() const;
 
@@ -65,4 +65,4 @@ public:
 
 } // namespace lvr2
 
-#endif // SCANPROJECTSCHEMA_3DTK_HPP_
+#endif // SCANPROJECTSCHEMA_SLAM6D_HPP_
