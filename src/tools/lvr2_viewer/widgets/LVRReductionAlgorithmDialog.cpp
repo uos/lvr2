@@ -1,7 +1,5 @@
 #include "LVRReductionAlgorithmDialog.hpp"
 
-
-
 namespace lvr2
 {
 
@@ -24,7 +22,6 @@ LVRReductionAlgorithmDialog::LVRReductionAlgorithmDialog(QWidget* parent):
 
 void LVRReductionAlgorithmDialog::connectSignalsAndSlots()
 {
-     // Add connections
     QObject::connect(m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptOpen()));
     QObject::connect(m_ui->comboBoxReduction, SIGNAL(currentIndexChanged(int)), this, SLOT(reductionSelectionChanged(int)));
 }
@@ -57,14 +54,12 @@ void LVRReductionAlgorithmDialog::acceptOpen()
         default:
             break;
     }
-
 }
 
 bool LVRReductionAlgorithmDialog::successful()
 {
     return m_successful;
 }
-
 
 void LVRReductionAlgorithmDialog::reductionSelectionChanged(int index)
 {

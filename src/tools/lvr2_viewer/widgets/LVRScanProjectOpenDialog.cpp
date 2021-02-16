@@ -1,7 +1,5 @@
 #include "LVRScanProjectOpenDialog.hpp"
 
-
-
 namespace lvr2
 {
 
@@ -20,16 +18,15 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     this->setFixedSize(this->size().width(), this->size().height());
     m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
     
-    initAvailableScales();
-    connectSignalsAndSlots();
-
     // displays the default reduction type when dialog is opened
     m_ui->pushButtonReduction->setText("Complete Point Buffer");
+
+    initAvailableScales();
+    connectSignalsAndSlots();
 }
 
 void LVRScanProjectOpenDialog::connectSignalsAndSlots()
 {
-     // Add connections
     QObject::connect(m_ui->toolButtonPath, SIGNAL(pressed()), this, SLOT(openPathDialog()));    
     QObject::connect(m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptOpen()));
     QObject::connect(m_ui->comboBoxSchema, SIGNAL(currentIndexChanged(int)), this, SLOT(schemaSelectionChanged(int)));
@@ -173,7 +170,7 @@ void LVRScanProjectOpenDialog::openReductionDialog()
 {
     LVRReductionAlgorithmDialog* dialog = new LVRReductionAlgorithmDialog(this);
     
-    // Display
+    // Reduction Dialog
     dialog->setModal(true);
     dialog->raise();
     dialog->activateWindow();
@@ -206,7 +203,6 @@ void LVRScanProjectOpenDialog::openReductionDialog()
         default:
             break;     
     }
-    
 }
 
 void LVRScanProjectOpenDialog::openPathDialog()

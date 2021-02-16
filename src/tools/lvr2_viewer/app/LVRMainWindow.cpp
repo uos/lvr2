@@ -1980,7 +1980,6 @@ void LVRMainWindow::unloadPointCloudData()
             }
         }
     }
-
 }
 
 void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io, ProjectScale scale)

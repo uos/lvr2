@@ -13,7 +13,6 @@
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 
-
 #include "ui_LVRReductionAlgorithmDialogUI.h"
 
 #include <QMessageBox>
@@ -57,7 +56,6 @@ public:
      */
     virtual ~LVRReductionAlgorithmDialog() = default;
 
-
     /**
      * @brief Returns ReductionPtr
      * 
@@ -93,11 +91,13 @@ public Q_SLOTS:
     /// Called when OK is pressed
     void acceptOpen();
 
-    /// remove widgets from parameters frame
+    /// Remove widgets from parameters frame
     void cleanFrame();
 
-
+    /// Resets dialog ui parameters
     void resetParameters();
+
+    /// Adds a label as a tooltip to the frame
     void addLabelToFrame(QString labelText);
 
 private:
@@ -117,16 +117,22 @@ private:
     /// Pointer to the selected reduction algorithm
     ReductionAlgorithmPtr           m_reductionPtr;
 
+    /// States that the dialog was submitted successfully  
     bool                            m_successful;
 
+    /// Size of the voxels used in the octree reduction
     double                          m_voxelSize;
 
+    /// Size of the min points per leaf in the octree reduction
     int                             m_octreeMinPoints;
 
+    /// Fixed amount of points in reduction
     int                             m_fixedNumberPoints;
 
+    /// Percentage of points used in reduction
     int                             m_percentPoints;
 
+    /// Current reduction type
     int                             m_reduction;
 };
 

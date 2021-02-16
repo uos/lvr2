@@ -13,7 +13,6 @@
 #include "LVRReductionAlgorithmDialog.hpp"
 #include "../vtkBridge/LVRScanProjectBridge.hpp"
 
-
 #include "ui_LVRScanProjectOpenDialogUI.h"
 
 #include <QMessageBox>
@@ -63,11 +62,9 @@ public:
      */
     FileKernelPtr kernel() {return m_kernel;}
 
-
     /// Used to represent the type
     /// of the currently selected scan project
     enum ProjectType{NONE, DIR, HDF5};
-
 
     /**
      * @brief Returns ProjectType
@@ -111,7 +108,7 @@ public Q_SLOTS:
     /// Called when a diffent reduction was selected
     void projectScaleSelectionChanged(int index);
 
-    //Called when OK is pressed
+    /// Called when OK is pressed
     void acceptOpen();
 
 private:
@@ -156,6 +153,7 @@ private:
     /// scaling of scanner position cylinder
     ProjectScale                    m_projectScale;
 
+    /// States that the dialog was submitted successfully
     bool                            m_successful;
 };
 
