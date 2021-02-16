@@ -18,7 +18,8 @@ void HyperspectralCameraIO<Derived>::save(
 
     if(!d.dataRoot)
     {
-        d.dataRoot = "";
+        // someone doesnt want to save hyperspectral cameras
+        return;
     }
 
     
@@ -63,12 +64,11 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(
     // LOAD META
     if(d.meta)
     {
-        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
+        YAML::Node meta;
+        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
-        YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<HyperspectralCamera>(meta.as<HyperspectralCamera>());
     } else {
         ret.reset(new HyperspectralCamera);

@@ -6,7 +6,7 @@
 #include "lvr2/io/descriptions/HDF5IO.hpp"
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 #include "lvr2/io/descriptions/ScanProjectSchemaHDF5.hpp"
-// #include "lvr2/io/descriptions/ScanProjectSchemaSLAM.hpp"
+#include "lvr2/io/descriptions/ScanProjectSchema3DTK.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 
 
@@ -175,7 +175,6 @@ ScanProjectPtr dummyScanProject()
     return ret;
 }
 
-
 bool directoryIOTest()
 {
     std::string dirname = "scan_project_directory";
@@ -208,6 +207,27 @@ bool hdf5IOTest()
     hdf5io.save(sp);
 
     auto sp_loaded = hdf5io.ScanProjectIO::load();
+    return equal(sp, sp_loaded);
+}
+
+bool slam6dIOTest()
+{
+    std::string dirname = "slam6d_directory";
+
+    DirectoryKernelPtr kernel2(new DirectoryKernel(dirname));
+    DirectorySchemaPtr schema2(new ScanProjectSchema3DTK(dirname));
+    DirectoryIO dirio(kernel2, schema2);
+
+    LOG(lvr2::Logger::DEBUG) << "Create Dummy Scanproject..." << std::endl;
+    auto sp = dummyScanProject();
+    
+    LOG(lvr2::Logger::DEBUG) << "Save Scanproject to directory..." << std::endl;
+    dirio.save(sp);
+
+    // return true;
+    LOG(lvr2::Logger::DEBUG) << "Load Scanproject from directory..." << std::endl;
+    auto sp_loaded = dirio.ScanProjectIO::load();
+
     return equal(sp, sp_loaded);
 }
 
@@ -385,12 +405,29 @@ void debugTest()
 
 int main(int argc, char** argv)
 {
+    LOG.setLoggerLevel(lvr2::Logger::DEBUG);
+    
+    
+    
+    // YAML::Node node;
+    // node["bla"] = "bla";
+
+    // std::cout << node.Type() << std::endl;
+
+    // std::cout << YAML::NodeType::Undefined << std::endl;
+    // std::cout << YAML::NodeType::Null << std::endl;
+    // std::cout << YAML::NodeType::Scalar << std::endl;
+    // std::cout << YAML::NodeType::Sequence << std::endl;
+    // std::cout << YAML::NodeType::Map << std::endl;
+    
+    
     // hdf5IOTest();
     // directoryIOTest();
     // debugTest();
     // return 0;
-    directoryIOTest();
-    // hdf5IOTest();
+    // directoryIOTest();
+    // slam6dIOTest();
+    hdf5IOTest();
     return 0;
     // // compressionTest();
     // // return 0;

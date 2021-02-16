@@ -10,8 +10,8 @@ void ScanProjectIO<FeatureBase>::save(
     Description d = m_featureBase->m_description->scanProject();
 
 
-    // std::cout << "[ScanProjectIO - save]: Description" << std::endl;
-    // std::cout << d << std::endl;
+    std::cout << "[ScanProjectIO - save]: Description" << std::endl;
+    std::cout << d << std::endl;
 
     // if(!d.dataRoot)
     // {

@@ -13,6 +13,12 @@ void CameraIO<FeatureBase>::save(
 
     Description d = Dgen->camera(scanPosNo, scanCamNo);
 
+    if(!d.dataRoot)
+    {
+        // someone doesnt want to save cameras
+        return;
+    }
+
     // std::cout << "[CameraIO - save] Description:" << std::endl;
     // std::cout << d << std::endl;
 
@@ -55,14 +61,11 @@ CameraPtr CameraIO<FeatureBase>::load(
 
     if(d.meta)
     {
-        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
+        YAML::Node meta;
+        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
-            std::cout << "[CameraIO - load] Specified meta file does not exist!" << std::endl;
             return ret;
         }
-
-        YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<Camera>(meta.as<Camera>());
     } else {
         ret.reset(new Camera);

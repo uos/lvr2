@@ -50,14 +50,12 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
     }
     
     if(d.meta)
-    {
-        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
+    {   
+        YAML::Node meta;
+        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
-        
-        YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<CameraImage>(meta.as<CameraImage>());
     } else {
         ret.reset(new CameraImage);

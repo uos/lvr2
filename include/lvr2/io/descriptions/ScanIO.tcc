@@ -18,6 +18,10 @@ void ScanIO<FeatureBase>::save(
     // std::cout << "[ScanIO - save]" << std::endl;
     // std::cout << d << std::endl;
 
+    if(!d.dataRoot)
+    {
+        return;
+    }
 
     //// DATA
     if(scanPtr->points)
@@ -107,7 +111,6 @@ void ScanIO<FeatureBase>::save(
     }
 
     //// META
-    
     if(d.meta)
     {
         YAML::Node node;
@@ -163,19 +166,17 @@ ScanPtr ScanIO<FeatureBase>::load(
         return ret;
     }
 
-
     // std::cout << "[ScanIO - load] Description:" << std::endl;
     // std::cout << d << std::endl;
 
     /// META
     if(d.meta)
     {
-        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
+        YAML::Node meta;
+        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
-        YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<Scan>(meta.as<Scan>());
     } else {
         // for schemas without meta information

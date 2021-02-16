@@ -15,6 +15,12 @@ void ScanPositionIO< FeatureBase>::save(
     // std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
     // std::cout << d << std::endl;
 
+    if(!d.dataRoot)
+    {
+        // dataRoot has to be specified!
+        return;
+    }
+
     // Save all lidar sensors
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
     {
@@ -37,6 +43,8 @@ void ScanPositionIO< FeatureBase>::save(
     {
         m_hyperspectralCameraIO->save(scanPosNo, i, scanPositionPtr->hyperspectral_cameras[i]);
     }
+
+    // std::cout << "[ScanPositionIO] Hyper written. " << std::endl;
 
     // std::cout << "[ScanPositionIO - save] Write Meta." << std::endl;
     // Save meta information
@@ -62,6 +70,11 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::load(
     // std::cout << "[ScanPositionIO - load]"  << std::endl;
     // std::cout << d <<  std::endl;
 
+    if(!d.dataRoot)
+    {
+        return ret;
+    }
+
     // Check if specified scan position exists
     if(!m_featureBase->m_kernel->exists(*d.dataRoot))
     {
@@ -70,14 +83,12 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::load(
 
     if(d.meta)
     {
-        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
-        {
-            std::cout << timestamp << " [ScanPositionIO]: Specified meta file not found. " << std::endl;
-            return ret;
-        } 
-
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
+        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        {
+            return ret;
+        }
+
         ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
     } else {
         // no meta name specified but scan position is there: 
@@ -85,13 +96,15 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::load(
     }
 
     //// DATA
+    // std::cout << "[ScanPositionIO - load] Load SENSORS " << std::endl;
 
     // Get all lidar sensors
     size_t lidarNo = 0;
     while(true)
     {
+        // std::cout << "[ScanPositionIO - load] Load LIDAR " << lidarNo << std::endl;
         LIDARPtr lidar = m_lidarIO->load(scanPosNo, lidarNo);
-        
+
         if(lidar)
         {
             ret->lidars.push_back(lidar);
@@ -99,7 +112,7 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::load(
             break;
         }
 
-        // std::cout << "[ScanPositionIO - load] Loaded Scan " << scanNo << std::endl;
+        // std::cout << "[ScanPositionIO - load] Loaded LIDAR " << lidarNo << std::endl;
 
         ++lidarNo;
     }
@@ -132,6 +145,8 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::load(
         } else {
             break;
         }
+
+        // std::cout << "[ScanPositionIO - load] Loaded HyperCamera " << hCamNo << std::endl;
 
         hCamNo++;
     }

@@ -301,7 +301,7 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
     return ret;
 }
 
-void HDF5Kernel::loadMetaYAML(
+bool HDF5Kernel::loadMetaYAML(
     const std::string &group_,
     const std::string &container_,
     YAML::Node& node) const
@@ -309,9 +309,7 @@ void HDF5Kernel::loadMetaYAML(
     std::string group, container;
     std::tie(group, container) = hdf5util::validateGroupDataset(group_, container_);
 
-    // std::cout << "[HDF5Kernel - loadMetaYAML]: Open Meta YAML '" << group << " , " << container << "'" << std::endl;
-    
-    HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
+    HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group, false);
     if(hg.isValid())
     {
         if(hg.exist(container))
@@ -328,8 +326,14 @@ void HDF5Kernel::loadMetaYAML(
                 HighFive::Group g = hg.getGroup(container);
                 node = hdf5util::getAttributeMeta(g);
             }
+        } else {
+            return false;
         }
+    } else {
+        return false;
     }
+
+    return node.Type() != YAML::NodeType::Null && node.Type() != YAML::NodeType::Undefined;
 }
 
 charArr HDF5Kernel::loadCharArray(

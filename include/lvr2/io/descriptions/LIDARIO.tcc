@@ -36,6 +36,11 @@ LIDARPtr LIDARIO<FeatureBase>::load(
     auto Dgen = m_featureBase->m_description;
     Description d = Dgen->lidar(scanPosNo, lidarNo);
 
+    if(!d.dataRoot)
+    {
+        return ret;
+    }
+
     // check if group exists
     if(!m_featureBase->m_kernel->exists(*d.dataRoot))
     {
@@ -51,14 +56,11 @@ LIDARPtr LIDARIO<FeatureBase>::load(
 
     if(d.meta)
     {
-        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
-        {
-            std::cout << timestamp << " [LIDARIO]: Specified meta file not found. " << std::endl;
-            return ret;
-        } 
-
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
+        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        {
+            return ret;
+        }
         ret = std::make_shared<LIDAR>(meta.as<LIDAR>());
     } else {
         // no meta name specified but scan position is there: 
@@ -72,6 +74,7 @@ LIDARPtr LIDARIO<FeatureBase>::load(
     size_t scanNo = 0;
     while(true)
     {
+        // std::cout << "[LIDARIO - load] Load Scan " << scanNo << std::endl;
         ScanPtr scan = m_scanIO->load(scanPosNo, lidarNo, scanNo);
         if(scan)
         {

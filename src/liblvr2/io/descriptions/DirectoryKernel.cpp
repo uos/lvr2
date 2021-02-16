@@ -116,7 +116,7 @@ boost::optional<cv::Mat> DirectoryKernel::loadImage(
     return opt;
 }
 
-void DirectoryKernel::loadMetaYAML(
+bool DirectoryKernel::loadMetaYAML(
     const std::string &group,
     const std::string &container,
     YAML::Node& n) const
@@ -125,6 +125,8 @@ void DirectoryKernel::loadMetaYAML(
     // std::cout << timestamp << "Directory Kernel::loadMetaYAML: " << p.string() << std::endl;
     YAML::Node node = loadMetaInformation(p.string());
     n = node;
+
+    return n.Type() != YAML::NodeType::Null && n.Type() != YAML::NodeType::Undefined;
 }
 
 bool DirectoryKernel::exists(const std::string &group) const

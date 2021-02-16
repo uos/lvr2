@@ -75,7 +75,7 @@ public:
     /// That we don't return the YAML node is on purpose
     /// to use the initial structure to look for the
     /// fields that should be loaded!
-    virtual void loadMetaYAML(
+    virtual bool loadMetaYAML(
         const std::string& group,
         const std::string& container,
         YAML::Node& node) const = 0;

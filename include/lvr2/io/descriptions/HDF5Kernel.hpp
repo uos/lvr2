@@ -71,7 +71,7 @@ public:
         const std::string& group,
         const std::string& container) const;
 
-    virtual void loadMetaYAML(
+    virtual bool loadMetaYAML(
         const std::string& group,
         const std::string& container,
         YAML::Node& node) const;

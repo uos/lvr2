@@ -1,6 +1,8 @@
 #include "lvr2/io/descriptions/MetaFormatFactory.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/yaml/Util.hpp"
+#include "lvr2/io/yaml/ScanPosition.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 #include <unordered_set>
 
@@ -34,9 +36,9 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
         // Try to get pose estimation from yaml node
         // and write it to pose file in the directory
         // encoded in the pseudo meta path
-        if (node["pose_estimate"])
+        if (node["pose_estimation"])
         {
-            Transformf transform = node["pose_estimate"].as<Transformf>();
+            Transformf transform = node["pose_estimation"].as<Transformf>();
             BaseVector<float> position;
             BaseVector<float> angles;
             getPoseFromMatrix(position, angles, transform);
@@ -85,7 +87,6 @@ YAML::Node loadMetaInformation(const std::string &in)
 {
     boost::filesystem::path inPath(in);
 
-
     if(inPath.extension() == "")
     {
         inPath += ".yaml";
@@ -109,12 +110,26 @@ YAML::Node loadMetaInformation(const std::string &in)
     }
     else if (inPath.extension() == ".slam6d")
     {
-        YAML::Node node;
+        YAML::Node node;        
 
         boost::filesystem::path dir = inPath.parent_path();
-        boost::filesystem::path posePath(inPath.stem().string() + ".pose");
-        boost::filesystem::path poseInPath = inPath.parent_path() / posePath;
-        std::ifstream in_str(poseInPath.c_str());
+        std::string filename = inPath.stem().string();
+        boost::filesystem::path posePath = dir / (filename + ".pose");
+        boost::filesystem::path framesPath = dir / (filename + ".frames");
+
+        bool pose_exist = boost::filesystem::exists(posePath);
+        bool frames_exist = boost::filesystem::exists(framesPath);
+
+        if(!pose_exist && !frames_exist)
+        {
+            return node;
+        }
+
+        // assuming slam6d works on scanPostition level?
+        ScanPosition sp;
+        node = sp;
+
+        std::ifstream in_str(posePath.c_str());
         if (in_str.good())
         {
             // std::cout << timestamp
@@ -126,7 +141,7 @@ YAML::Node loadMetaInformation(const std::string &in)
             Vector3d angles(r, t, p);
 
             Transformd poseEstimate = poseToMatrix(pose, angles);
-            node["pose_estimate"] = poseEstimate;
+            node["pose_estimation"] = poseEstimate;
         }
         else
         {
@@ -134,23 +149,31 @@ YAML::Node loadMetaInformation(const std::string &in)
                       << "LoadMetaInformation(SLAM6D): Warning: No pose file found." << std::endl;
         }
 
-        boost::filesystem::path framesPath(inPath.stem().string() + ".frames");
-        boost::filesystem::path framesInPath = inPath.parent_path() / framesPath;
-        if (boost::filesystem::exists(framesInPath))
+        if (frames_exist)
         {
             // std::cout << timestamp
             //           << "LoadMetaInformation(SLAM6D): Loading " << framesInPath << std::endl;
-            Transformd registration = getTransformationFromFrames<double>(framesInPath);
+            Transformd registration = getTransformationFromFrames<double>(framesPath);
             node["registration"] = registration;
+            node["transformation"] = registration;
         }
         else
         {
+            // node frames found. taking poseEstimate as transformation
+            if(node["pose_estimation"])
+            {
+                node["transformation"] = node["pose_estimation"].as<Transformd>();
+            }
+            
             std::cout << timestamp
-                      << "LoadMetaInformation(SLAM6D): Warning: No pose file found." << std::endl;
+                      << "LoadMetaInformation(SLAM6D): Warning: No frames file found." << std::endl;
         }
+
         return node;
     } else {
         std::cout << "Kernel Panic: Meta extension " << inPath.extension() << " unknown. " << std::endl; 
+        YAML::Node node;
+        return node;
     }
 }
 

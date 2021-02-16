@@ -92,9 +92,9 @@ struct convert<lvr2::Scan>
             scan.endTime = -1.0;
         }
         
-        if(node["pose_estimate"])
+        if(node["pose_estimation"])
         {
-            scan.poseEstimation = node["pose_estimate"].as<lvr2::Transformd>();
+            scan.poseEstimation = node["pose_estimation"].as<lvr2::Transformd>();
         } else {
             scan.poseEstimation = lvr2::Transformd::Identity();
         }
