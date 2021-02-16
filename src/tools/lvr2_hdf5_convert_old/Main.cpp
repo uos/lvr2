@@ -39,11 +39,13 @@ ScanProjectPtr dummyScanProject()
 {
     ScanProjectPtr ret(new ScanProject);
 
-    for(size_t i=0; i<5; i++)
+    for(size_t i=0; i<10; i++)
     {
         ScanPositionPtr scan_pos(new ScanPosition);
+         
         scan_pos->transformation = Transformd::Identity();
         scan_pos->transformation(0,3) = static_cast<double>(i);
+        scan_pos->poseEstimation = scan_pos->transformation;
 
         for(size_t j=0; j<2; j++)
         {
@@ -426,8 +428,8 @@ int main(int argc, char** argv)
     // debugTest();
     // return 0;
     // directoryIOTest();
-    // slam6dIOTest();
-    hdf5IOTest();
+    slam6dIOTest();
+    // hdf5IOTest();
     return 0;
     // // compressionTest();
     // // return 0;

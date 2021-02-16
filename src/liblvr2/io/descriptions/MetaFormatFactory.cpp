@@ -33,50 +33,51 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
     }
     else if (p.extension() == ".slam6d")
     {
+        boost::filesystem::path dir = p.parent_path();
+        std::string filename = p.stem().string();
+        boost::filesystem::path posePath = dir / (filename + ".pose");
+        boost::filesystem::path framesPath = dir / (filename + ".frames");
+
+        // ScanPosition sp;
+        // sp = node;
+
+        // Eigen::Affine3d T(sp.transformation);
+
         // Try to get pose estimation from yaml node
         // and write it to pose file in the directory
         // encoded in the pseudo meta path
         if (node["pose_estimation"])
         {
+            // TODO: check this
+            // 1. the pose calculation seems to be wrong. use eigen like conversions to euler angles and translation instead
+            // 2. need to transform in cm and degrees
+
             Transformf transform = node["pose_estimation"].as<Transformf>();
             BaseVector<float> position;
             BaseVector<float> angles;
+            transform.transposeInPlace();
+
             getPoseFromMatrix(position, angles, transform);
 
-            //Construct .pose file path and save
-            boost::filesystem::path outfilePath(outfile);
-            boost::filesystem::path dir = outfilePath.parent_path();
-            boost::filesystem::path posePath(outfilePath.stem().string() + ".pose");
-            boost::filesystem::path poseOutPath = p.parent_path() / posePath;
-
-            // std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << poseOutPath << std::endl;
-            writePose(position, angles, poseOutPath);
+            std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << posePath << std::endl;
+            std::cout << transform << std::endl;
+            writePose(position, angles, posePath);
         }
 
         // Same for registration. If present, write frames file
         if (node["registration"])
         {
             Transformf transform = node["registration"].as<Transformf>();
-            //Construct .pose file path and save
-            boost::filesystem::path outfilePath(outfile);
-            boost::filesystem::path dir = outfilePath.parent_path();
-            boost::filesystem::path framesPath(outfilePath.stem().string() + ".frames");
-            boost::filesystem::path framesOutPath = p.parent_path() / framesPath;
-            // std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesOutPath << std::endl;
-            writeFrame(transform, framesOutPath);
+            writeFrame(transform, framesPath);
         }
 
         // Or transformation. If present, write frames file
         if (node["transformation"])
         {
             Transformf transform = node["transformation"].as<Transformf>();
-            //Construct .pose file path and save
-            boost::filesystem::path outfilePath(outfile);
-            boost::filesystem::path dir = outfilePath.parent_path();
-            boost::filesystem::path framesPath(outfilePath.stem().string() + ".frames");
-            boost::filesystem::path framesOutPath = p.parent_path() / framesPath;
-            // std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesOutPath << std::endl;
-            writeFrame(transform, framesOutPath);
+            std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesPath << std::endl;
+            std::cout << transform << std::endl;
+            writeFrame(transform, framesPath);
         }
     } else {
         std::cout << timestamp << " [MetaFormatFactory] Meta extension " << p.extension() << " unknown. " << std::endl; 
