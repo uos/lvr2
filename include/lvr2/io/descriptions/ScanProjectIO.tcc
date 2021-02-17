@@ -39,6 +39,37 @@ void ScanProjectIO<FeatureBase>::save(
 }
 
 template <typename FeatureBase>
+boost::optional<YAML::Node> ScanProjectIO<FeatureBase>::loadMeta() const
+{
+    boost::optional<YAML::Node> ret;
+
+    Description d = m_featureBase->m_description->scanProject();
+
+    if(!d.meta)
+    {
+        return ret;
+    }
+
+    if(!d.metaRoot)
+    {
+        if(!d.dataRoot)
+        {
+            return ret;
+        }
+        d.metaRoot = d.dataRoot;
+    }
+
+    YAML::Node meta;
+    if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+    {
+        return ret;
+    }
+
+    ret = meta;
+    return ret;
+}
+
+template <typename FeatureBase>
 ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
 {
     ScanProjectPtr ret;

@@ -47,6 +47,8 @@ class ScanProjectIO
     void save(ScanProjectPtr scanProject) const;
     ScanProjectPtr load() const;
 
+    boost::optional<YAML::Node> loadMeta() const;
+
     void saveScanProject(ScanProjectPtr scanProject) const;
     ScanProjectPtr loadScanProject() const;
     

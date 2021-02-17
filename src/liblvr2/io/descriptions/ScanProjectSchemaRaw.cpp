@@ -104,12 +104,14 @@ Description ScanProjectSchemaRaw::scanChannel(
 
     Description dp = scan(scanPosNo, lidarNo, scanNo);
 
-    if(channelName == "points" || channelName == "normals" || channelName == "colors")
-    {
-        d.dataRoot = *dp.dataRoot + "/points.ply";
-    } else {
-        d.dataRoot = *dp.dataRoot;
-    }
+    // if(channelName == "points" || channelName == "normals" || channelName == "colors")
+    // {
+    //     d.dataRoot = *dp.dataRoot + "/points.ply";
+    // } else {
+    //     d.dataRoot = *dp.dataRoot;
+    // }
+
+    d.dataRoot = *dp.dataRoot;
 
     d.data = channelName;
     d.metaRoot = *dp.dataRoot;

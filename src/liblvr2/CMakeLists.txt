@@ -59,6 +59,7 @@ set(LVR2_SOURCES
     io/descriptions/ScanProjectSchemaHDF5.cpp
     # io/descriptions/LabelScanProjectSchemaHDF5V2.cpp
     io/descriptions/DirectoryKernel.cpp
+    io/descriptions/DirectoryDataIO.cpp
     io/descriptions/MetaFormatFactory.cpp
     io/descriptions/ScanProjectSchema.cpp
     io/descriptions/HDF5Kernel.cpp

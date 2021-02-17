@@ -11,6 +11,8 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/Timestamp.hpp"
 
+#include "DirectoryDataIO.hpp"
+
 namespace lvr2
 {
     
@@ -235,35 +237,37 @@ protected:
         if(p.extension() == ".data")
         {
 
-            std::ifstream in(filename, std::ios::in | std::ios::binary);
-            if (!in.good())
-            {
-                return boost::shared_array<T>(nullptr);
-            }
+            // boost::shared_array<T> ret = dataIOload(filename, dims);
 
-            //read Dimensions size
-            size_t dimSize;
-            size_t totalArraySize = 0;
-            in.read(reinterpret_cast<char *>(&dimSize), sizeof(dimSize));
+            // std::ifstream in(filename, std::ios::in | std::ios::binary);
+            // if (!in.good())
+            // {
+            //     return boost::shared_array<T>(nullptr);
+            // }
 
-            for(int i = 0; i < dimSize; i++)
-            {
-                size_t tmp;
-                in.read(reinterpret_cast<char *>(&tmp), sizeof(tmp));
-                if(totalArraySize == 0)
-                {
-                    totalArraySize = tmp;
-                } else{
-                    totalArraySize *= tmp;
-                }
-                dims.push_back(tmp);
-            }
+            // //read Dimensions size
+            // size_t dimSize;
+            // size_t totalArraySize = 0;
+            // in.read(reinterpret_cast<char *>(&dimSize), sizeof(dimSize));
+
+            // for(int i = 0; i < dimSize; i++)
+            // {
+            //     size_t tmp;
+            //     in.read(reinterpret_cast<char *>(&tmp), sizeof(tmp));
+            //     if(totalArraySize == 0)
+            //     {
+            //         totalArraySize = tmp;
+            //     } else{
+            //         totalArraySize *= tmp;
+            //     }
+            //     dims.push_back(tmp);
+            // }
             
-            T* rawData = new T[totalArraySize];
+            // T* rawData = new T[totalArraySize];
 
-            in.read(reinterpret_cast<char *>(rawData), totalArraySize * sizeof(T));
-            boost::shared_array<T> ret(rawData);
-            return ret;
+            // in.read(reinterpret_cast<char *>(rawData), totalArraySize * sizeof(T));
+            // boost::shared_array<T> ret(rawData);
+            return dataIOload<T>(filename, dims);
 
         } else {
             // has some unknown extension
@@ -274,7 +278,7 @@ protected:
 
     template <typename T>
     void saveArray(
-        const std::string &group, const std::string &container, 
+        const std::string &group, const std::string& container, 
         const std::vector<size_t> &dims, const boost::shared_array<T>& data) const
     {
         if (dims.size() > 0)
@@ -310,25 +314,60 @@ protected:
                 savePointBuffer(group, container, buffer);
             } else {
                 filename += ".data";
-                std::ofstream fout_data(filename, std::ios::out | std::ios::binary);
-            
-                // dims
-                size_t ndims = dims.size();
-                fout_data.write(reinterpret_cast<const char *>(&ndims), sizeof(size_t));
-
-                for(size_t i=0; i<ndims; i++)
-                {
-                    fout_data.write(reinterpret_cast<const char *>(&dims[i]), sizeof(size_t));
-                }
-
-                // data
-                fout_data.write(reinterpret_cast<const char *>(&data[0]), sizeof(T) * length);
 
 
-                fout_data.close();
+                dataIOsave(filename, dims, data);
+
+                // std::ofstream fout_data(filename, std::ios::out | std::ios::binary);
+                
+                
+
+                // // YAML:Emitter Emitter;
+                // // emitter << YAML::DoubleQuoted << YAML::Flow << /* rest of code */;
+                
+
+                // // HEADER: "data" (string,4), VERSION (int,4), JSON_BYTES (8, long unsigned int), DATA_BYTES (8, long unsigned int)
+                // // JSON:
+                // // - SHAPE: [1000,1000,1000], TYPE:FLOAT, ...
+                // // MyData1
+                // // 13fn80v021308c32083rbnewjadöüüwe
+
+                // // char MAGIC[4] = {'d', 'a', 't', 'a'};
+                // // int VERSION = 1;
+
+                // // size_t Nelements = 1;
+
+                // YAML::Node meta;
+                // // meta["shape"] = Load("[]");
+                // // for(size_t i=0; i<dims.size(); i++)
+                // // {
+                // //     meta["shape"].push_back(dims[i]);
+                // //     Nelements *= dims[i];
+                // // }
+                // // // typeMap<T>();
+                // // // TODO Type map
+                // meta["type"] = dataIOTypeName<T>();
+
+                // std::cout << "DataIO meta: " << meta << std::endl;
+                
+                // // // TODO get bytes of meta
+                // // long unsigned int JSON_BYTES = 100;
+                // // long unsigned int DATA_BYTES = Nelements * sizeof(T);
+
+
+                // // dims
+                // size_t ndims = dims.size();
+                // fout_data.write(reinterpret_cast<const char *>(&ndims), sizeof(size_t));
+
+                // for(size_t i=0; i<ndims; i++)
+                // {
+                //     fout_data.write(reinterpret_cast<const char *>(&dims[i]), sizeof(size_t));
+                // }
+
+                // // data
+                // fout_data.write(reinterpret_cast<const char *>(&data[0]), sizeof(T) * length);
+                // fout_data.close();
             }
-
-            
         }
     }
 
