@@ -61,6 +61,8 @@ struct DataIOHeader
 
 std::ostream& operator<<(std::ostream& os, const DataIOHeader& header);
 
+
+
 template<typename T>
 void dataIOsave(
     std::string filename, 
@@ -142,6 +144,8 @@ boost::shared_array<T> dataIOload(
     delete[] json_meta;
     return ret;
 }
+
+DataIOHeader dataIOloadHeader(std::string filename);
 
 } // namespace lvr2
 

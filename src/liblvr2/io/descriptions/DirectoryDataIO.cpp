@@ -74,4 +74,16 @@ std::ostream& operator<<(std::ostream& os, const DataIOHeader& header)
     return os;
 }
 
+DataIOHeader dataIOloadHeader(std::string filename)
+{
+    std::ifstream fin;
+    fin.open(filename, std::ios::binary | std::ios::in);
+    /// LOAD HEADER
+    DataIOHeader header;
+    fin.read(reinterpret_cast<char*>(&header), sizeof(DataIOHeader));
+    fin.close();
+
+    return header;
+}
+
 } // namespace lvr2

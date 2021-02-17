@@ -19,7 +19,6 @@
 // #include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 // #include "lvr2/io/hdf5/ScanProjectIO.hpp"
 
-
 #include "lvr2/io/hdf5/Hdf5Util.hpp"
 #include <boost/filesystem.hpp>
 
@@ -30,10 +29,58 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <boost/iostreams/code_converter.hpp>
+#include <boost/iostreams/device/mapped_file.hpp>
+
+
 #include "Hdf5ReaderOld.hpp"
 #include "ScanTypesCompare.hpp"
 
 using namespace lvr2;
+
+PointBufferPtr operator*(Transformd T, PointBufferPtr points)
+{
+    PointBufferPtr ret(new PointBuffer);
+
+    for(auto elem : *points)
+    {
+        (*ret)[elem.first] = elem.second;
+    }
+
+    if(ret->hasChannel<float>("points"))
+    {
+        Channel<float> points = ret->get<float>("points");
+    
+        for(size_t i=0; i<points.numElements(); i++)
+        {
+            Vector4d p(points[i][0], points[i][1], points[i][2], 1);
+            Vector4d p_ = T * p;
+            points[i][0] = p_(0);
+            points[i][1] = p_(1);
+            points[i][2] = p_(2);
+        }
+
+        ret->add<float>("points", points);
+    }
+
+    if(ret->hasChannel<float>("normals"))
+    {
+        Channel<float> normals = ret->get<float>("normals");
+
+        for(size_t i=0; i<normals.numElements(); i++)
+        {
+            Vector3d n(normals[i][0], normals[i][1], normals[i][2]);
+            Vector3d n_ = T.block<3,3>(0,0) * n;
+            normals[i][0] = n_(0);
+            normals[i][1] = n_(1);
+            normals[i][2] = n_(2);
+        }
+
+        ret->add("normals", normals);
+    }
+
+    return ret;
+}
 
 ScanProjectPtr dummyScanProject()
 {
@@ -82,6 +129,11 @@ ScanProjectPtr dummyScanProject()
                 }
 
                 scan->points->add("normals", normals);
+
+
+                Transformd T = Transformd::Identity();
+                T(2,3) = static_cast<double>(i);
+                scan->points = T * scan->points;
 
                 scan->numPoints = scan->points->numPoints();
                 scan->startTime = 0.0;
@@ -212,6 +264,137 @@ bool hdf5IOTest()
     return equal(sp, sp_loaded);
 }
 
+struct Slam6DConfig 
+{
+    std::string executable = "/home/amock/software/3DTK/bin/slam6D";
+    std::string tmpdir = "tmp_slam";
+
+    int start = 0;
+    int end = -1;
+    
+    /**
+     * @brief Minimization method for ICP
+     * 1 = unit quaternion based method by Horn
+     * 2 = singular value decomposition by Arun et al.
+     * 3 = orthonormal matrices by Horn et al.
+     * 4 = dual quaternion method by Walker et al.
+     * 5 = helix approximation by Hofer & Potmann
+     * 6 = small angle approximation
+     * 7 = Lu & Milios style, i.e., uncertainty based, with Euler angles
+     * 8 = Lu & Milios style, i.e., uncertainty based, with Quaternion
+     * 9 = unit quaternion with scale method by Horn
+     */
+    size_t algo = 1;
+
+    /**
+     * @brief selects the Nearest Neighbor Search Algorithm
+     * 0 = simple k-d tree
+     * 1 = cached k-d tree
+     * 2 = ANNTree
+     * 3 = BOCTree
+     */
+    size_t nns_method = 0;
+
+    /**
+     * @brief selects the method for closing the loop explicitly
+     * 0 = no loop closing technique
+     * 1 = euler angles
+     * 2 = quaternions
+     * 3 = unit quaternions
+     * 4 = SLERP (recommended)
+     */
+    size_t loop6DAlgo = 0;
+
+    /**
+     * @brief selects the minimizazion method for the SLAM matching algorithm
+     * 0 = no global relaxation technique
+     * 1 = Lu & Milios extension using euler angles due to Borrmann et al.
+     * 2 = Lu & Milios extension using using unit quaternions
+     * 3 = HELIX approximation by Hofer and Pottmann
+     * 4 = small angle approximation
+     */
+    size_t graphSlam6DAlgo = 0;
+
+    /**
+     * @brief sets the maximal number of ICP iterations to <NR>
+     */
+    int iter = 50;
+
+    /**
+     * @brief sets the maximal number of iterations 
+     * for SLAM to <NR>(if not set, graphSLAM is not executed)
+     */
+    int iterSLAM = -1;
+
+    /**
+     * @brief neglegt all data points with a distance larger than NR 'units'
+     * 
+     */
+    double max = -1.0; 
+
+    double epsICP = 0.00001;
+    double epsSLAM = 0.5; // careful (cm)
+};
+
+ScanProjectPtr slam6d(ScanProjectPtr sp, Slam6DConfig config)
+{
+    // save to slam6d structure
+    DirectoryKernelPtr kernel(new DirectoryKernel(config.tmpdir));
+    DirectorySchemaPtr schema(new ScanProjectSchemaSlam6D(config.tmpdir));
+    DirectoryIO dirio(kernel, schema);
+    dirio.save(sp);
+
+    std::stringstream ss;
+    ss << config.executable;
+    
+    // add parameters here
+    
+    ss << " -s " << config.start;
+    if(config.end >= 0)
+    {
+        ss << " -e " << config.end;
+    }
+    
+    ss << " -a " << config.algo;
+    ss << " -t " << config.nns_method;
+    ss << " -L " << config.loop6DAlgo;
+    ss << " -G " << config.graphSlam6DAlgo;
+    ss << " -i " << config.iter;
+    if(config.iterSLAM >= 0)
+    {
+        ss << " -I " << config.iterSLAM;
+    }
+    if(config.max >= 0.0)
+    {
+        ss << " -m " << config.max;
+    }
+    ss << " -5 " << config.epsICP;
+    ss << " -6 " << config.epsSLAM;
+
+    ss << " " << config.tmpdir;
+    system(ss.str().c_str());
+
+    // load slam6d
+    return dirio.ScanProjectIO::load();
+}
+
+void registrationTest()
+{
+    auto sp = dummyScanProject();
+
+    Slam6DConfig config;
+    auto sp_registered = slam6d(sp, config);
+
+    for(size_t i=0; i<sp_registered->positions.size(); i++)
+    {
+        std::cout << std::endl;
+        std::cout << "Position " << i <<  " Corrected estimation " << std::endl;
+        std::cout << sp->positions[i]->poseEstimation << std::endl;
+        std::cout << "To" << std::endl;
+        std::cout << sp_registered->positions[i]->transformation << std::endl;
+    }
+}
+
 bool slam6dIOTest()
 {
     std::string dirname = "slam6d_directory";
@@ -222,6 +405,8 @@ bool slam6dIOTest()
 
     LOG(lvr2::Logger::DEBUG) << "Create Dummy Scanproject..." << std::endl;
     auto sp = dummyScanProject();
+
+    // register 
 
     LOG(lvr2::Logger::DEBUG) << "Save Scanproject to directory..." << std::endl;
     dirio.save(sp);
@@ -427,10 +612,93 @@ void debugTest()
 
 // }
 
+void metaOnlyTest()
+{
+    std::string dirname = "meta_io_test";
+
+    DirectoryKernelPtr kernel(new DirectoryKernel(dirname));
+    DirectorySchemaPtr schema(new ScanProjectSchemaRaw(dirname));
+    DirectoryIO dirio(kernel, schema);
+
+    auto sp = dummyScanProject();
+
+    dirio.save(sp);
+    
+
+}
+
+namespace bio = boost::iostreams;
+
+void writeBigFile()
+{
+    std::string filename = "/home/amock/datasets/hello.data";
+
+    // 300 millionen punkte
+    size_t Npoints = 300000000;
+
+    doubleArr points(new double[Npoints * 3]);
+    for(size_t i=0; i<Npoints * 3; i++)
+    {
+        points[i] = i;
+    }
+
+    std::vector<size_t> shape = {Npoints, 3};
+    std::cout << "Save!" << std::endl;
+    dataIOsave(filename, shape, points);
+    std::cout << "Finished." << std::endl;
+}
+
+void memoryMapTest()
+{
+    std::string filename = "/home/amock/datasets/hello.data";
+
+
+    DataIOHeader header = dataIOloadHeader("hello.data");
+
+    // std::cout << "Loaded Header" << std::endl;
+    // std::cout << header << std::endl;
+
+
+    // bio::mapped_file_params params;
+    // params.path = "hello.data";
+    // // params.new_file_size = std::pow(1024,2);
+    // params.flags = bio::mapped_file::mapmode::readonly;
+    // bio::mapped_file mf;
+    // mf.open(params);
+
+    // size_t offset = sizeof(DataIOHeader) + header.JSON_BYTES;
+    // std::cout << "MMap at " << offset << std::endl;
+    
+    // // char* begin = mf.data();
+
+    // char* bytes = (char*)mf.const_data();
+    // char* begin = bytes + offset;
+
+    // double* data = reinterpret_cast<double*>(begin);
+
+    // std::cout << data[10] << std::endl;
+
+    // // std::cout << data[0] << data[1] << bytes[2] << bytes[3] << std::endl;
+
+    // // std::cout << *reinterpret_cast<double*>(begin) << std::endl;
+
+    // // // char* bytes = begin;
+    // // // for (size_t i = 0; i < 10; ++i)
+    // // //     bytes[i] = 'C';
+
+    // mf.close();
+
+}
+
 int main(int argc, char** argv)
 {
     LOG.setLoggerLevel(lvr2::Logger::DEBUG);
-    
+
+    writeBigFile();
+    // memoryMapTest();
+    return 0;
+
+    // return 0;
     
     
     // YAML::Node node;
@@ -446,11 +714,13 @@ int main(int argc, char** argv)
     
     
     // hdf5IOTest();
-    // directoryIOTest();
+    directoryIOTest();
     // debugTest();
     // return 0;
     // directoryIOTest();
-    slam6dIOTest();
+    // slam6dIOTest();
+    // registrationTest();
+    metaOnlyTest();
     // hdf5IOTest();
     return 0;
     // // compressionTest();
