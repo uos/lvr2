@@ -152,16 +152,6 @@ size_t countPointsInFile(const boost::filesystem::path& inFile)
     return n_points;
 }
 
-void writePose(const BaseVector<float>& position, const BaseVector<float>& angles, const boost::filesystem::path& out)
-{
-    std::ofstream o(out.c_str());
-    if(o.good())
-    {
-        o << position[0] << " " << position[1] << " " << position[2] << std::endl;
-        o << angles[0] << " " << angles[1] << " " << angles[2];
-    }
-}
-
 size_t writeModel(ModelPtr model, const boost::filesystem::path& outfile)
 {
     size_t n_ip = model->m_pointCloud->numPoints();

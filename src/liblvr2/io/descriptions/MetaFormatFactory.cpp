@@ -38,46 +38,15 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
         boost::filesystem::path posePath = dir / (filename + ".pose");
         boost::filesystem::path framesPath = dir / (filename + ".frames");
 
-        // ScanPosition sp;
-        // sp = node;
-
-        // Eigen::Affine3d T(sp.transformation);
-
-        // Try to get pose estimation from yaml node
-        // and write it to pose file in the directory
-        // encoded in the pseudo meta path
-        if (node["pose_estimation"])
+        ScanPosition sp;
+        
+        if(YAML::convert<ScanPosition>::decode(node, sp))
         {
-            // TODO: check this
-            // 1. the pose calculation seems to be wrong. use eigen like conversions to euler angles and translation instead
-            // 2. need to transform in cm and degrees
-
-            Transformf transform = node["pose_estimation"].as<Transformf>();
-            BaseVector<float> position;
-            BaseVector<float> angles;
-            transform.transposeInPlace();
-
-            getPoseFromMatrix(position, angles, transform);
-
-            std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << posePath << std::endl;
-            std::cout << transform << std::endl;
-            writePose(position, angles, posePath);
-        }
-
-        // Same for registration. If present, write frames file
-        if (node["registration"])
-        {
-            Transformf transform = node["registration"].as<Transformf>();
-            writeFrame(transform, framesPath);
-        }
-
-        // Or transformation. If present, write frames file
-        if (node["transformation"])
-        {
-            Transformf transform = node["transformation"].as<Transformf>();
-            std::cout << timestamp << "SaveMetaInformation(SLAM6D): " << framesPath << std::endl;
-            std::cout << transform << std::endl;
-            writeFrame(transform, framesPath);
+            // Is scan position
+            writePose(sp.poseEstimation, posePath);
+            writeFrame(sp.transformation, framesPath);
+        } else {
+            // what to do here?
         }
     } else {
         std::cout << timestamp << " [MetaFormatFactory] Meta extension " << p.extension() << " unknown. " << std::endl; 
@@ -128,21 +97,10 @@ YAML::Node loadMetaInformation(const std::string &in)
 
         // assuming slam6d works on scanPostition level?
         ScanPosition sp;
-        node = sp;
 
-        std::ifstream in_str(posePath.c_str());
-        if (in_str.good())
+        if (pose_exist)
         {
-            // std::cout << timestamp
-            //           << "LoadMetaInformation(SLAM6D): Loading " << poseInPath << std::endl;
-
-            double x, y, z, r, t, p;
-            in_str >> x >> y >> z >> r >> t >> p;
-            Vector3d pose(x, y, z);
-            Vector3d angles(r, t, p);
-
-            Transformd poseEstimate = poseToMatrix(pose, angles);
-            node["pose_estimation"] = poseEstimate;
+            sp.poseEstimation = getTransformationFromPose<double>(posePath);
         }
         else
         {
@@ -154,21 +112,18 @@ YAML::Node loadMetaInformation(const std::string &in)
         {
             // std::cout << timestamp
             //           << "LoadMetaInformation(SLAM6D): Loading " << framesInPath << std::endl;
-            Transformd registration = getTransformationFromFrames<double>(framesPath);
-            node["registration"] = registration;
-            node["transformation"] = registration;
+            sp.transformation = getTransformationFromFrames<double>(framesPath);
         }
         else
         {
             // node frames found. taking poseEstimate as transformation
-            if(node["pose_estimation"])
-            {
-                node["transformation"] = node["pose_estimation"].as<Transformd>();
-            }
+            sp.transformation = sp.poseEstimation;
             
             std::cout << timestamp
                       << "LoadMetaInformation(SLAM6D): Warning: No frames file found." << std::endl;
         }
+
+        node = sp;
 
         return node;
     } else {

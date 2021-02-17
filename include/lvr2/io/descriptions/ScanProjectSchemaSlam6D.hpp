@@ -11,6 +11,17 @@
 namespace lvr2
 {
 
+/**
+ * @brief ScanProjectSchema for Slam6D projects
+ * 
+ * Takes the transformation and poseEstimation from scanPositions and 
+ * uses the data from first scanner (0) and first scan(0) of the scanPositions
+ * 
+ * That assumes that the scan is recorded at the origin of the scanPosition
+ * Otherwise, you have to adjust the scanPositions transformation such that
+ * it is given
+ * 
+ */
 class ScanProjectSchemaSlam6D : public DirectorySchema
 {
 public:

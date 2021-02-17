@@ -1,3 +1,4 @@
+#include "lvr2/types/MatrixTypes.hpp"
 
 namespace lvr2
 {
@@ -118,6 +119,42 @@ void writeFrame(const Transform<T>& transform, const boost::filesystem::path& fr
         << transform.col(3)(3);
 
     out.close();
+}
+
+template<typename T>
+void writePose(const BaseVector<T>& position, const BaseVector<T>& angles, const boost::filesystem::path& out)
+{
+    std::ofstream o(out.c_str());
+    if(o.good())
+    {
+        o << position[0] << " " << position[1] << " " << position[2] << std::endl;
+        o << angles[0] << " " << angles[1] << " " << angles[2];
+    }
+}
+
+template<typename T>
+void writePose(const Vector3<T>& position, const Vector3<T>& angles, const boost::filesystem::path& out)
+{
+    std::ofstream o(out.c_str());
+    if(o.good())
+    {
+        o << position(0) << " " << position(1) << " " << position(2) << std::endl;
+        o << angles(0) << " " << angles(1) << " " << angles(2);
+    }
+}
+
+template<typename T>
+void writePose(const Transform<T>& transform, const boost::filesystem::path& poseOut)
+{
+    Vector3<T> position = transform.template block<1,3>(0,3);
+    Vector3<T> angles = transform.template block<3,3>(0,0).eulerAngles(0, 1, 2) / 0.0174533;
+
+    std::cout << "Writing: " << std::endl;
+    std::cout << "- position: " << position.transpose() << std::endl;
+    std::cout << "- rotation: " << angles.transpose() << std::endl;
+
+    // to degree
+    writePose(position, angles, poseOut);
 }
 
 template<typename T>

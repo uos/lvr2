@@ -134,7 +134,18 @@ void writeFrame(const Transform<T>& transform, const boost::filesystem::path& fr
  * @param position      Position
  * @param angles        Rotation angles in degrees
  */
-void writePose(const BaseVector<float>& position, const BaseVector<float>& angles, const boost::filesystem::path& out);
+template<typename T>
+void writePose(const BaseVector<T>& position, const BaseVector<T>& angles, const boost::filesystem::path& out);
+
+template<typename T>
+void writePose(const Vector3<T>& position, const Vector3<T>& angles, const boost::filesystem::path& out);
+
+/**
+ * @brief Write pose information in Euler representation
+ * 
+ */
+template<typename T>
+void writePose(const Transform<T>& transform, const boost::filesystem::path& poseOut);
 
 /**
  * @brief   Writes the given model to the given file

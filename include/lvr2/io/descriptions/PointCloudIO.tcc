@@ -29,58 +29,6 @@ void PointCloudIO<FeatureBase>::save(
     }
 }
 
-// template<typename FeatureBase>
-// void PointCloudIO<FeatureBase>::save(
-//     const size_t& posNo,
-//     const size_t& lidarNo,
-//     const size_t& scanNo,
-//     PointBufferPtr pcl) const
-// {
-//     std::cout <<  "SSAAAAVFE " << std::endl;
-
-//     auto Dgen = m_featureBase->m_description;
-
-//     std::unordered_map<std::string, PointBufferPtr> container_map;
-
-//     // DATA
-//     for(auto elem : *pcl)
-//     {
-//         Description d = Dgen->scanChannel(posNo, lidarNo, scanNo, elem.first);
-//         boost::filesystem::path proot(*d.dataRoot);
-//         if(proot.extension() != "")
-//         {
-//             if(container_map.find(proot.string()) == container_map.end())
-//             {
-//                 container_map[proot.string()] = PointBufferPtr(new PointBuffer);
-//             }
-//             (*container_map[proot.string()])[elem.first] = elem.second;
-//         } else {
-//             m_vchannel_io->save(*d.dataRoot, *d.data, elem.second);
-//         }        
-//     }
-
-//     // found file format in dataRoot, example: ply, obj, zip. Need to store grouped
-//     for(auto elem : container_map)
-//     {
-//         m_featureBase->savePointCloud("", elem.first, elem.second);
-//     }
-
-//     // META
-//     for(auto elem : *pcl)
-//     {
-//         Description d = Dgen->scanChannel(posNo, lidarNo, scanNo, elem.first);
-        
-//         if(d.meta)
-//         {
-//             YAML::Node meta;
-//             meta = elem.second;
-//             meta["channel_name"] = elem.first;
-//             m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, meta);
-//         }
-//     }
-
-// }
-
 template<typename FeatureBase>
 PointBufferPtr PointCloudIO<FeatureBase>::load(
     const std::string& group, 

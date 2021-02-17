@@ -13,7 +13,7 @@ Description ScanProjectSchemaSlam6D::scanProject() const
 {
     Description d;
 
-    d.dataRoot = "slam6d";
+    d.dataRoot = "";
 
     d.metaRoot = d.dataRoot;
     // d.meta = "meta.slam6d";

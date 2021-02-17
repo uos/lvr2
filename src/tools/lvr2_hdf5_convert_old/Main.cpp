@@ -222,13 +222,35 @@ bool slam6dIOTest()
 
     LOG(lvr2::Logger::DEBUG) << "Create Dummy Scanproject..." << std::endl;
     auto sp = dummyScanProject();
-    
+
     LOG(lvr2::Logger::DEBUG) << "Save Scanproject to directory..." << std::endl;
     dirio.save(sp);
+
+    // do slam6d
+    std::string slam6dfile = "/home/amock/software/3DTK/bin/slam6D";
+
+
+    std::stringstream ss;
+    ss << slam6dfile;
+    ss << " ";
+    ss << dirname;
+    system(ss.str().c_str());
 
     // return true;
     LOG(lvr2::Logger::DEBUG) << "Load Scanproject from directory..." << std::endl;
     auto sp_loaded = dirio.ScanProjectIO::load();
+
+
+    for(size_t i=0; i<sp_loaded->positions.size(); i++)
+    {
+        std::cout << std::endl;
+        std::cout << "Position " << i <<  " Corrected estimation " << std::endl;
+        std::cout << sp->positions[i]->poseEstimation << std::endl;
+        std::cout << "To" << std::endl;
+        std::cout << sp_loaded->positions[i]->transformation << std::endl;
+    }
+
+
 
     return equal(sp, sp_loaded);
 }
