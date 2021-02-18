@@ -100,10 +100,11 @@ private:
     }
 
     std::fstream m_file;
-
     Header m_header;
     size_t m_pos;
 };
+
+using DataIOPtr = std::shared_ptr<DataIO>;
 
 std::ostream& operator<<(std::ostream& os, const DataIO::Header& header);
 
