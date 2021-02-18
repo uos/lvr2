@@ -219,7 +219,6 @@ ModelPtr ModelFactory::readModel( std::string filename )
     }
 
     return m;
-
 }
 
 void ModelFactory::saveModel( ModelPtr m, std::string filename)

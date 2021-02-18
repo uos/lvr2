@@ -62,7 +62,7 @@ std::string dataIOTypeName<double>()
     return "DOUBLE";
 }
 
-std::ostream& operator<<(std::ostream& os, const DataIOHeader& header)
+std::ostream& operator<<(std::ostream& os, const DataIO::Header& header)
 {
     os << "DataIOHeader" << std::endl;
     // a string needs a termination character '\0'
@@ -74,16 +74,53 @@ std::ostream& operator<<(std::ostream& os, const DataIOHeader& header)
     return os;
 }
 
-DataIOHeader dataIOloadHeader(std::string filename)
+DataIO::DataIO(std::string filename, std::ios_base::openmode ios_mode)
+:m_pos(0)
 {
-    std::ifstream fin;
-    fin.open(filename, std::ios::binary | std::ios::in);
-    /// LOAD HEADER
-    DataIOHeader header;
-    fin.read(reinterpret_cast<char*>(&header), sizeof(DataIOHeader));
-    fin.close();
+    m_file.open(filename, ios_mode | std::ios::binary);
+    m_header = loadHeader();
+}
 
-    return header;
+DataIO::~DataIO()
+{
+    m_file.close();
+}
+
+DataIO::Header DataIO::loadHeader()
+{
+    Header ret;
+    movePosition(0);
+
+    m_file.read(reinterpret_cast<char*>(&ret), sizeof(Header));
+    m_pos += sizeof(Header);
+    return ret;
+}
+
+YAML::Node DataIO::loadMeta()
+{
+    YAML::Node ret;
+
+    movePosition(sizeof(Header));
+
+    char * json_meta = new char[m_header.JSON_BYTES + 1];
+    json_meta[m_header.JSON_BYTES] = '\0';
+    m_file.read(json_meta, m_header.JSON_BYTES);
+
+    ret = YAML::Load(json_meta);
+    m_pos += m_header.JSON_BYTES;
+    
+    delete[] json_meta;
+    return ret;
+}
+
+std::vector<size_t> DataIO::loadShape()
+{
+    return loadMeta()["SHAPE"].as<std::vector<size_t> >();
+}
+
+std::string DataIO::loadType()
+{
+    return loadMeta()["TYPE"].as<std::string>();
 }
 
 } // namespace lvr2
