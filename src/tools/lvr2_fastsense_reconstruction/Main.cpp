@@ -37,6 +37,8 @@
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 
+#include "tsdf.h"
+
 /**
  * log(CHUNK_SIZE).
  * The side length is a power of 2 so that divisions by the side length can be accomplished by shifting.
@@ -49,7 +51,7 @@ constexpr int CHUNK_SIZE = 1 << CHUNK_SHIFT;
 constexpr int MAP_RESOLUTION = 64;
 
 /// Scale for the boudingbox vectors
-constexpr int SCALE = 100;
+constexpr int SCALE = 1000;
 
 /// HDF5 class structure for saving meshes
 // using HDF5MeshToolIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
@@ -167,7 +169,7 @@ int main(int argc, char** argv)
     {
         // Get the chunk data
         HighFive::DataSet d = g.getDataSet(tag);
-        std::vector<int> chunk_data;
+        std::vector<TSDFValue::RawType> chunk_data;
         d.read(chunk_data);
         // Get the chunk position
         std::vector<int> chunk_pos;
@@ -188,8 +190,11 @@ int main(int argc, char** argv)
             {
                 for (int k = 0; k < CHUNK_SIZE; k++)
                 {
-                    float tsdf_value = (float)chunk_data[(CHUNK_SIZE * CHUNK_SIZE * i + CHUNK_SIZE * j + k) * 2] / MAP_RESOLUTION;
-                    int weight = chunk_data[(CHUNK_SIZE * CHUNK_SIZE * i + CHUNK_SIZE * j + k) * 2 + 1];
+                    auto entry = TSDFValue(chunk_data[CHUNK_SIZE * CHUNK_SIZE * i + CHUNK_SIZE * j + k]);
+
+                    auto tsdf_value = (float)(entry.value()) / MAP_RESOLUTION;
+                    auto weight = entry.weight();
+
                     int x = CHUNK_SIZE * chunk_pos[0] + i;
                     int y = CHUNK_SIZE * chunk_pos[1] + j;
                     int z = CHUNK_SIZE * chunk_pos[2] + k;
@@ -205,6 +210,8 @@ int main(int argc, char** argv)
             }
         }
     }
+
+    std::cout << __LINE__ << std::endl;
 
     std::cout << "Reconstruct mesh with a marching cubes algorithm..." << std::endl;
 
