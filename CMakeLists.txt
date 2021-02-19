@@ -602,7 +602,7 @@ add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 add_subdirectory(src/tools/lvr2_ground_level_extractor)
 add_subdirectory(src/tools/lvr2_hdf5_convert_old)
-add_subdirectory(src/tools/lvr2_tree)
+add_subdirectory(src/tools/lvr2_hdf5_inspect)
 
 # does not compile after ScanTypes changes
 # add_subdirectory(src/tools/lvr2_largescale_reconstruct)
