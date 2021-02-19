@@ -10,8 +10,8 @@ void ScanProjectIO<FeatureBase>::save(
     Description d = m_featureBase->m_description->scanProject();
 
 
-    std::cout << "[ScanProjectIO - save]: Description" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanProjectIO - save]: Description" << std::endl;
+    // std::cout << d << std::endl;
 
     // if(!d.dataRoot)
     // {
@@ -41,32 +41,8 @@ void ScanProjectIO<FeatureBase>::save(
 template <typename FeatureBase>
 boost::optional<YAML::Node> ScanProjectIO<FeatureBase>::loadMeta() const
 {
-    boost::optional<YAML::Node> ret;
-
     Description d = m_featureBase->m_description->scanProject();
-
-    if(!d.meta)
-    {
-        return ret;
-    }
-
-    if(!d.metaRoot)
-    {
-        if(!d.dataRoot)
-        {
-            return ret;
-        }
-        d.metaRoot = d.dataRoot;
-    }
-
-    YAML::Node meta;
-    if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
-    {
-        return ret;
-    }
-
-    ret = meta;
-    return ret;
+    return m_metaIO->load(d);
 }
 
 template <typename FeatureBase>

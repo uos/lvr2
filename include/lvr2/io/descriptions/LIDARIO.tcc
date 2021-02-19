@@ -27,6 +27,15 @@ void LIDARIO<FeatureBase>::save(
 }
 
 template <typename FeatureBase>
+boost::optional<YAML::Node> LIDARIO<FeatureBase>::loadMeta(
+        const size_t& scanPosNo,
+        const size_t& lidarNo) const
+{
+    Description d = m_featureBase->m_description->lidar(scanPosNo, lidarNo);
+    return m_metaIO->load(d);
+}
+
+template <typename FeatureBase>
 LIDARPtr LIDARIO<FeatureBase>::load(
     const size_t& scanPosNo,
     const size_t& lidarNo) const

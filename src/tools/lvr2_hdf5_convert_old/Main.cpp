@@ -9,7 +9,6 @@
 #include "lvr2/io/descriptions/ScanProjectSchemaSlam6D.hpp"
 // #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
 
-
 #include "lvr2/io/descriptions/ScanProjectSchemaRaw.hpp"
 
 #include "lvr2/io/descriptions/DirectoryIO.hpp"
@@ -32,9 +31,11 @@
 #include <boost/iostreams/code_converter.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 
-
 #include "Hdf5ReaderOld.hpp"
 #include "ScanTypesCompare.hpp"
+
+#include <random>
+#include <chrono>
 
 using namespace lvr2;
 
@@ -621,9 +622,90 @@ void metaOnlyTest()
     DirectoryIO dirio(kernel, schema);
 
     auto sp = dummyScanProject();
-
     dirio.save(sp);
-    
+    sp.reset();
+    // now the RAM is clean
+
+    // load Only Meta
+
+    // every enity contains optional meta information
+    boost::optional<YAML::Node> meta = dirio.ScanProjectIO::loadMeta();
+
+    std::cout << std::endl;
+    LOG(Logger::HIGHLIGHT) << "ScanProject" << std::endl;
+    LOG(Logger::WARNING) << meta << std::endl;
+
+    // LOG.tab();
+
+    for(size_t scanPosNo = 0; ;scanPosNo++)
+    {
+        meta = dirio.ScanPositionIO::loadMeta(scanPosNo);
+
+        if(!meta)
+        {
+            break;
+        }
+
+        std::cout << std::endl;
+        LOG(Logger::HIGHLIGHT) << "ScanPosition " << scanPosNo << std::endl;
+        LOG(Logger::WARNING) << meta << std::endl;
+
+        LOG.tab();
+        for(size_t lidarNo = 0; ;lidarNo++)
+        {
+            meta = dirio.LIDARIO::loadMeta(scanPosNo, lidarNo);
+
+            if(!meta)
+            {
+                break;
+            }
+
+            std::cout << std::endl;
+            LOG(Logger::HIGHLIGHT) << "LIDAR " << lidarNo << std::endl;
+            LOG(Logger::INFO) << meta << std::endl;
+
+            LOG.tab();
+
+            for(size_t scanNo = 0; ;scanNo++)
+            {
+                meta = dirio.ScanIO::loadMeta(scanPosNo, lidarNo, scanNo);
+                if(!meta)
+                {
+                    break;
+                }
+                std::cout << std::endl;
+                LOG(Logger::HIGHLIGHT) << "Scan " << scanNo << std::endl;
+                LOG(Logger::DEBUG) << meta << std::endl;
+
+                // A scan also contains point data
+                // meta information about the channels can be obtained by
+                std::unordered_map<std::string, YAML::Node> meta_points 
+                    = dirio.ScanIO::loadChannelMetas(scanPosNo, lidarNo, scanNo);
+                
+                std::cout << std::endl;
+                LOG(Logger::DEBUG) << "[Channels: ]" << std::endl;
+                
+                for(auto entry : meta_points)
+                {
+                    LOG(Logger::DEBUG) << "- " << entry.first << ": " << std::endl;
+                    LOG.tab();
+                    LOG(Logger::DEBUG) << entry.second << std::endl;
+                    LOG.deltab();
+                }
+            }
+
+            for(size_t camNo = 0; ;camNo++)
+            {
+                
+            }
+
+            LOG.deltab();
+        }
+        LOG.deltab();
+
+    }
+
+    // LOG.deltab();
 
 }
 
@@ -637,56 +719,245 @@ void writeBigFile()
     size_t Npoints = 300000000;
 
     doubleArr points(new double[Npoints * 3]);
-    for(size_t i=0; i<Npoints * 3; i++)
+
+    std::default_random_engine gen;
+    std::normal_distribution<double> distX(10.0,2.0);
+    std::normal_distribution<double> distY(5.0,5.0);
+    std::normal_distribution<double> distZ(1.0,20.0);
+
+    for(size_t i=0; i<Npoints; i++)
     {
-        points[i] = i;
+        points[i * 3 + 0] = distX(gen);
+        points[i * 3 + 1] = distY(gen);
+        points[i * 3 + 2] = distZ(gen);
     }
 
     std::vector<size_t> shape = {Npoints, 3};
     std::cout << "Save!" << std::endl;
-    dataIOsave(filename, shape, points);
+    DataIO dataIO(filename, std::ios::out);
+    dataIO.save(shape, points);
     std::cout << "Finished." << std::endl;
 }
 
+template<typename T>
+class LazyDataset {
+public:
+    LazyDataset(std::string filename)
+    {
+        DataIOPtr dataIO(new DataIO(filename, std::ios::in));
+        DataIO::Header header = dataIO->loadHeader();
+        size_t offset = sizeof(DataIO::Header) + header.JSON_BYTES;
+        shape = dataIO->loadShape();
+        dataIO.reset();
+
+        bio::mapped_file_params params;
+        params.path = filename;
+        params.flags = bio::mapped_file::mapmode::readonly;
+
+        m_mf.open(params);
+        m_data = reinterpret_cast<const T*>(m_mf.const_data() + offset);
+
+
+    }
+
+    LazyDataset(const T* data, const std::vector<size_t>& shape)
+    :m_data(data)
+    ,shape(shape)
+    {
+        
+    }
+
+    ~LazyDataset()
+    {
+        if(m_mf.is_open())
+        {
+            m_mf.close();
+        }
+    }
+
+    LazyDataset operator[](const size_t idx)
+    {
+        std::vector<size_t> new_shape;
+        size_t shift = 1;
+
+        for(size_t i=1; i<shape.size(); i++)
+        {
+            new_shape.push_back(shape[i]);
+            shift *= shape[i];
+        }
+
+        return LazyDataset(m_data + idx * shift, new_shape);
+    }
+
+    LazyDataset operator=(const T& elem)
+    {
+        m_data[0] = elem;
+        return *this;
+    }
+
+    operator T() const
+    {
+        return m_data[0];
+    }
+
+    std::vector<size_t> shape;
+
+    const T* m_data;
+
+private:
+
+    size_t* m_shape;
+    
+    bio::mapped_file m_mf;
+};
+
+
+
 void memoryMapTest()
 {
+
+    auto start = std::chrono::steady_clock::now();
+    auto end = std::chrono::steady_clock::now();
+    double elapsed_time;
+
+
     std::string filename = "/home/amock/datasets/hello.data";
 
+    LazyDataset<double> ds(filename);
 
-    DataIOHeader header = dataIOloadHeader("hello.data");
+    double value = ds[0][0][0];
+    std::cout << value << std::endl;
+
+
+    // DataIOPtr dataIO(new DataIO(filename, std::ios::in) );
+    // DataIO::Header header = dataIO->loadHeader();
+    // std::vector<size_t> shape = dataIO->loadShape();
+    // std::string dataType = dataIO->loadType();
+    // dataIO.reset();
 
     // std::cout << "Loaded Header" << std::endl;
     // std::cout << header << std::endl;
 
 
     // bio::mapped_file_params params;
-    // params.path = "hello.data";
-    // // params.new_file_size = std::pow(1024,2);
+    // params.path = filename;
     // params.flags = bio::mapped_file::mapmode::readonly;
     // bio::mapped_file mf;
     // mf.open(params);
 
-    // size_t offset = sizeof(DataIOHeader) + header.JSON_BYTES;
-    // std::cout << "MMap at " << offset << std::endl;
+    // size_t offset = sizeof(DataIO::Header) + header.JSON_BYTES;
+    // // std::cout << "MMap at " << offset << std::endl;
     
-    // // char* begin = mf.data();
+    // const char* bytes = mf.const_data();
+    // const char* data_begin = bytes + offset;
 
-    // char* bytes = (char*)mf.const_data();
-    // char* begin = bytes + offset;
+    // const double* data = reinterpret_cast<const double*>(data_begin);
 
-    // double* data = reinterpret_cast<double*>(begin);
+    // // double* data = reinterpret_cast<double*>(begin);
 
-    // std::cout << data[10] << std::endl;
+    // // std::cout << "Calculating the mean of " << shape[0] << " points " << std::endl; 
 
-    // // std::cout << data[0] << data[1] << bytes[2] << bytes[3] << std::endl;
+    // start = std::chrono::steady_clock::now();
+    // double meanx = 0.0;
+    // double meany = 0.0;
+    // double meanz = 0.0;
 
-    // // std::cout << *reinterpret_cast<double*>(begin) << std::endl;
+    // for(size_t i=0; i<shape[0]; i++)
+    // {
+    //     meanx += data[i * shape[1] + 0];
+    //     meany += data[i * shape[1] + 1];
+    //     meanz += data[i * shape[1] + 2];
+    // }
 
-    // // // char* bytes = begin;
-    // // // for (size_t i = 0; i < 10; ++i)
-    // // //     bytes[i] = 'C';
+    // meanx /= static_cast<double>(shape[0]);
+    // meany /= static_cast<double>(shape[0]);
+    // meanz /= static_cast<double>(shape[0]);
+
+    // end = std::chrono::steady_clock::now();
+    // elapsed_time = std::chrono::duration_cast<
+    //     std::chrono::duration<double> >(end - start).count();
+
+    // std::cout << "Runtime: " << elapsed_time << "s" << std::endl;
+    // std::cout << "Mean: " << meanx << " " << meany << " " << meanz << std::endl;
+    // std::cout << "Calculating the stddev of " << shape[0] << " points " << std::endl; 
+
+    // start = std::chrono::steady_clock::now();
+    // double varx = 0.0;
+    // double vary = 0.0;
+    // double varz = 0.0;
+    // for(size_t i=0; i<shape[0]; i++)
+    // {
+    //     double dx = data[i * shape[1] + 0] - meanx;
+    //     double dy = data[i * shape[1] + 1] - meany;
+    //     double dz = data[i * shape[1] + 2] - meanz;
+    //     varx += dx * dx;
+    //     vary += dy * dy;
+    //     varz += dz * dz;
+    // }
+
+    // varx /= static_cast<double>(shape[0] - 1);
+    // vary /= static_cast<double>(shape[0] - 1);
+    // varz /= static_cast<double>(shape[0] - 1);
+
+    // end = std::chrono::steady_clock::now();
+    // elapsed_time = std::chrono::duration_cast<
+    //     std::chrono::duration<double> >(end - start).count();
+    // std::cout << "Runtime: " << elapsed_time << "s" << std::endl;
+    // std::cout << "Stddev: " << std::sqrt(varx) << " " << std::sqrt(vary) << " " << std::sqrt(varz) << std::endl;
+
+    // std::cout << std::endl;
+    // std::cout << "--------------------------------------------" << std::endl;
 
     // mf.close();
+}
+
+void lazyDatasetTest()
+{
+    std::string filename = "/home/amock/datasets/lazyDataset.data";
+
+    // 300 millionen punkte
+
+    std::vector<size_t> shape = {100, 50, 20};
+    doubleArr data(new double[100 * 50 * 20]);
+
+    for(size_t i=0; i<100; i++)
+    {
+        for(size_t j=0; j<50; j++)
+        {
+            for(size_t k=0; k<20; k++)
+            {
+                data[i * 50 * 20 + j * 20 + k ] = static_cast<double>(i) * 10000.0 + static_cast<double>(j) * 100.0 + static_cast<double>(k);
+            }
+        }
+    }
+
+    std::cout << "Save!" << std::endl;
+    DataIOPtr dataIO(new DataIO(filename, std::ios::out) );
+    dataIO->save(shape, data);
+    std::cout << "Finished." << std::endl;
+    dataIO.reset();
+
+    LazyDataset<double> ds(filename);
+
+    std::cout << ds.m_data[1 * 50 * 20 + 1 * 20 + 1] << std::endl;
+
+    double sum = 0.0;
+    for(size_t i=0; i<100; i++)
+    {
+        for(size_t j=0; j<50; j++)
+        {
+            for(size_t k=0; k<20; k++)
+            {
+                sum += ds[i][j][k];
+            }
+        }
+    }
+
+    std::cout << "Sum: " << sum << std::endl; 
+
+    // double value = ds[1];
+
+    // std::cout << value << std::endl;
 
 }
 
@@ -694,9 +965,10 @@ int main(int argc, char** argv)
 {
     LOG.setLoggerLevel(lvr2::Logger::DEBUG);
 
-    writeBigFile();
+    // lazyDatasetTest();
+    // writeBigFile();
     // memoryMapTest();
-    return 0;
+    // return 0;
 
     // return 0;
     
@@ -714,7 +986,7 @@ int main(int argc, char** argv)
     
     
     // hdf5IOTest();
-    directoryIOTest();
+    // directoryIOTest();
     // debugTest();
     // return 0;
     // directoryIOTest();

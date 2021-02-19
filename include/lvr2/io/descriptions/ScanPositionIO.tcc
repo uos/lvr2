@@ -58,9 +58,16 @@ void ScanPositionIO< FeatureBase>::save(
     // std::cout << "[ScanPositionIO] Meta written. " << std::endl;
 }
 
+template <typename FeatureBase>
+boost::optional<YAML::Node> ScanPositionIO<FeatureBase>::loadMeta(
+        const size_t& scanPosNo) const
+{
+    Description d = m_featureBase->m_description->position(scanPosNo);
+    return m_metaIO->load(d);
+}
 
-template <typename  FeatureBase>
-ScanPositionPtr ScanPositionIO< FeatureBase>::load(
+template <typename FeatureBase>
+ScanPositionPtr ScanPositionIO<FeatureBase>::load(
     const size_t& scanPosNo) const
 {
     ScanPositionPtr ret;

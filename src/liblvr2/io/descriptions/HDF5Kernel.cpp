@@ -10,6 +10,11 @@ HDF5Kernel::HDF5Kernel(const std::string& rootFile, HDF5KernelConfig config)
 :FileKernel(rootFile)
 ,m_config(config)
 {
+    boost::filesystem::path p(rootFile);
+    if(!boost::filesystem::exists(p.parent_path()))
+    {
+        boost::filesystem::create_directory(p.parent_path());
+    }
     m_hdf5File = hdf5util::open(rootFile);
 }
 

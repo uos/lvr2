@@ -12,6 +12,7 @@
 #include "HyperspectralCameraIO.hpp"
 #include "CameraIO.hpp"
 #include "LIDARIO.hpp"
+#include "MetaIO.hpp"
 // #include "LIDARIO.hpp"
 
 namespace lvr2
@@ -55,6 +56,9 @@ class ScanPositionIO
         ScanPositionPtr scanPositionPtr
         ) const;
 
+    boost::optional<YAML::Node> loadMeta(
+        const size_t& scanPosNo) const;
+
     ScanPositionPtr load(
         const size_t& scanPosNo) const;
 
@@ -78,6 +82,7 @@ class ScanPositionIO
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
     
     // dependencies
+    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
     LIDARIO<FeatureBase>* m_lidarIO = static_cast<LIDARIO<FeatureBase>*>(m_featureBase);
     CameraIO<FeatureBase>* m_cameraIO = static_cast<CameraIO<FeatureBase>*>(m_featureBase);
     HyperspectralCameraIO<FeatureBase>* m_hyperspectralCameraIO = static_cast<HyperspectralCameraIO<FeatureBase>*>(m_featureBase);
@@ -93,7 +98,8 @@ struct FeatureConstruct< ScanPositionIO, FeatureBase>
     using dep1 = typename FeatureConstruct<LIDARIO, FeatureBase>::type;
     using dep2 = typename FeatureConstruct<CameraIO, FeatureBase>::type;
     using dep3 = typename FeatureConstruct<HyperspectralCameraIO, FeatureBase>::type;
-    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
+    using dep4 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
+    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>::template Merge<dep4>;
 
     // add the feature itself
     using type = typename deps::template add_features<ScanPositionIO>::type;

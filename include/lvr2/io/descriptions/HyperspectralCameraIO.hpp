@@ -4,6 +4,8 @@
 #define LVR2_IO_DESCRIPTIONS_HYPERSPECTRALCAMERAIO_HPP
 
 #include "lvr2/types/ScanTypes.hpp"
+
+#include "MetaIO.hpp"
 #include "HyperspectralPanoramaIO.hpp"
 
 namespace lvr2
@@ -22,10 +24,15 @@ public:
         const size_t& scanPosNo,
         const size_t& hCamNo) const;
 
+    boost::optional<YAML::Node> loadMeta(
+        const size_t& scanPosNo,
+        const size_t& hCamNo) const;
+
 protected:
     FeatureBase *m_featureBase = static_cast<FeatureBase*>(this);
 
     // dependencies
+    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
     HyperspectralPanoramaIO<FeatureBase>* m_hyperspectralPanoramaIO = static_cast<HyperspectralPanoramaIO<FeatureBase>*>(m_featureBase);
 
     // dependencies
@@ -44,7 +51,10 @@ template <typename FeatureBase>
 struct FeatureConstruct<HyperspectralCameraIO, FeatureBase>
 {
     // DEPS
-    using deps = typename FeatureConstruct<HyperspectralPanoramaIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<HyperspectralPanoramaIO, FeatureBase>::type;
+    using deps = typename dep1::template Merge<dep2>;
+    
     // ADD THE FEATURE ITSELF
     using type = typename deps::template add_features<HyperspectralCameraIO>::type;
 };

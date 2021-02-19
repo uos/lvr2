@@ -73,6 +73,16 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
 }
 
 template <typename FeatureBase>
+boost::optional<YAML::Node> CameraImageIO<FeatureBase>::loadMeta(
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const size_t& imgNo) const
+{
+    Description d = m_featureBase->m_description->cameraImage(scanPosNo, camNo, imgNo);
+    return m_metaIO->load(d); 
+}
+
+template <typename FeatureBase>
 void CameraImageIO<FeatureBase>::saveCameraImage(
     const size_t& scanPosNr, 
     const size_t& camNr, 

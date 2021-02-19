@@ -3,8 +3,8 @@
 namespace lvr2
 {
 
-template <typename Derived>
-void HyperspectralCameraIO<Derived>::save(
+template <typename FeatureBase>
+void HyperspectralCameraIO<FeatureBase>::save(
     const size_t& scanPosNo,
     const size_t& hCamNo,
     HyperspectralCameraPtr hcam) const
@@ -38,8 +38,8 @@ void HyperspectralCameraIO<Derived>::save(
     }
 }
 
-template <typename Derived>
-HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(
+template <typename FeatureBase>
+HyperspectralCameraPtr HyperspectralCameraIO<FeatureBase>::load(
         const size_t& scanPosNo,
         const size_t& hCamNo) const
 {
@@ -89,6 +89,15 @@ HyperspectralCameraPtr HyperspectralCameraIO<Derived>::load(
     }
 
     return ret;
+}
+
+template <typename FeatureBase>
+boost::optional<YAML::Node> HyperspectralCameraIO<FeatureBase>::loadMeta(
+    const size_t& scanPosNo,
+    const size_t& hCamNo) const
+{
+    Description d = m_featureBase->m_description->hyperspectralCamera(scanPosNo, hCamNo);
+    return m_metaIO->load(d);
 }
 
 } // namespace lvr2

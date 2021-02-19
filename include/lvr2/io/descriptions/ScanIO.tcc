@@ -1,6 +1,7 @@
 #include "lvr2/io/yaml/Scan.hpp"
 #include <boost/optional/optional_io.hpp>
 #include "lvr2/registration/OctreeReduction.hpp"
+#include "lvr2/io/hdf5/Hdf5Util.hpp"
 
 namespace lvr2
 {
@@ -121,26 +122,14 @@ void ScanIO<FeatureBase>::save(
 }
 
 template <typename FeatureBase>
-YAML::Node ScanIO<FeatureBase>::loadMeta(
+boost::optional<YAML::Node> ScanIO<FeatureBase>::loadMeta(
     const size_t& scanPosNo, 
     const size_t& sensorNo,
     const size_t& scanNo) const
 {
     auto Dgen = m_featureBase->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
-
-    YAML::Node ret;
-
-    if(d.meta)
-    {
-        if(!m_featureBase->m_kernel->exists(*d.metaRoot, *d.meta))
-        {
-            return ret;
-        }
-        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, ret);
-    }
-
-    return ret;
+    return m_metaIO->load(d);
 }
 
 template <typename FeatureBase>

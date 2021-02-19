@@ -81,4 +81,16 @@ HyperspectralPanoramaChannelPtr HyperspectralPanoramaChannelIO<Derived>::load(
     return ret;
 }
 
+template <typename Derived>
+boost::optional<YAML::Node> HyperspectralPanoramaChannelIO<Derived>::loadMeta(
+    const size_t& scanPosNo,
+    const size_t& hCamNo,
+    const size_t& hPanoNo,
+    const size_t& channelId) const
+{
+    auto Dgen = m_featureBase->m_description;
+    Description d = Dgen->hyperspectralPanoramaChannel(scanPosNo, hCamNo, hPanoNo, channelId);
+    return m_metaIO->load(d);
+}
+
 } // namespace lvr2

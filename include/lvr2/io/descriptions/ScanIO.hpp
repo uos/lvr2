@@ -3,12 +3,18 @@
 #ifndef LVR2_IO_DESCRIPTIONS_SCANIO_HPP
 #define LVR2_IO_DESCRIPTIONS_SCANIO_HPP
 
-#include "PointCloudIO.hpp"
+
+
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 
 #include <sstream>
 #include <yaml-cpp/yaml.h>
+
+#include "MetaIO.hpp"
+#include "PointCloudIO.hpp"
+
+
 namespace lvr2
 {
 
@@ -24,7 +30,7 @@ class ScanIO
             ScanPtr buffer
         ) const;
 
-    YAML::Node loadMeta(
+    boost::optional<YAML::Node> loadMeta(
         const size_t& scanPosNo, 
         const size_t& sensorNo,
         const size_t& scanNo
@@ -67,10 +73,9 @@ class ScanIO
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
     // dependencies
+    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
     PointCloudIO<FeatureBase>* m_pclIO = static_cast<PointCloudIO<FeatureBase>*>(m_featureBase);
     VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_featureBase);
-
-
 
     static constexpr const char* ID = "ScanIO";
     static constexpr const char* OBJID = "Scan";
@@ -87,7 +92,9 @@ template <typename FeatureBase>
 struct FeatureConstruct<ScanIO, FeatureBase >
 {
     // DEPS
-    using deps = typename FeatureConstruct<PointCloudIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<PointCloudIO, FeatureBase>::type;
+    using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF
     using type = typename deps::template add_features<ScanIO>::type;
