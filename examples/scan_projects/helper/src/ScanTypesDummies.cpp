@@ -108,79 +108,79 @@ ScanProjectPtr dummyScanProject()
             scan_pos->lidars.push_back(lidar);
         }
 
-        // for(size_t j=0; j<2; j++)
-        // {
-        //     CameraPtr scan_cam(new Camera);
-        //     scan_cam->transformation = Transformd::Identity();
-        //     scan_cam->transformation(1,3) = -static_cast<double>(j);
-        //     scan_cam->model.distortionModel = "opencv";
-        //     scan_cam->model.k.resize(10);
-        //     scan_cam->model.cx = 100.2;
-        //     scan_cam->model.cy = 50.5;
-        //     scan_cam->model.fx = 120.99;
-        //     scan_cam->model.fy = 90.72;
+        for(size_t j=0; j<2; j++)
+        {
+            CameraPtr scan_cam(new Camera);
+            scan_cam->transformation = Transformd::Identity();
+            scan_cam->transformation(1,3) = -static_cast<double>(j);
+            scan_cam->model.distortionModel = "opencv";
+            scan_cam->model.k.resize(10);
+            scan_cam->model.cx = 100.2;
+            scan_cam->model.cy = 50.5;
+            scan_cam->model.fx = 120.99;
+            scan_cam->model.fy = 90.72;
 
-        //     for(size_t k=0; k<10; k++)
-        //     {
-        //         scan_cam->model.k[k] = static_cast<double>(k) / 4.0;
-        //     }
+            for(size_t k=0; k<10; k++)
+            {
+                scan_cam->model.k[k] = static_cast<double>(k) / 4.0;
+            }
             
-        //     for(size_t k=0; k<7; k++)
-        //     {
-        //         CameraImagePtr si = synthetic::genLVRImage();
-        //         si->timestamp = 0.0;
-        //         si->transformation = Transformd::Identity();
-        //         si->transformation(2,3) = -static_cast<double>(k);
-        //         si->extrinsicsEstimation = Extrinsicsd::Identity() / static_cast<double>(k + 1);
-        //         scan_cam->images.push_back(si);
-        //     }
+            for(size_t k=0; k<7; k++)
+            {
+                CameraImagePtr si = synthetic::genLVRImage();
+                si->timestamp = 0.0;
+                si->transformation = Transformd::Identity();
+                si->transformation(2,3) = -static_cast<double>(k);
+                si->extrinsicsEstimation = Extrinsicsd::Identity() / static_cast<double>(k + 1);
+                scan_cam->images.push_back(si);
+            }
 
-        //     scan_cam->name = "Canon";
-        //     scan_pos->cameras.push_back(scan_cam);
-        // }
+            scan_cam->name = "Canon";
+            scan_pos->cameras.push_back(scan_cam);
+        }
 
-        // for(size_t j=0; j<2; j++)
-        // {
-        //     HyperspectralCameraPtr h_cam(new HyperspectralCamera);
+        for(size_t j=0; j<2; j++)
+        {
+            HyperspectralCameraPtr h_cam(new HyperspectralCamera);
 
-        //     h_cam->transformation = Transformd::Identity();
-        //     h_cam->transformation(1,3) = -static_cast<double>(j);
+            h_cam->transformation = Transformd::Identity();
+            h_cam->transformation(1,3) = -static_cast<double>(j);
 
-        //     h_cam->model.principal(0) =  5.5;
-        //     h_cam->model.principal(1) = 4.4;
+            h_cam->model.principal(0) =  5.5;
+            h_cam->model.principal(1) = 4.4;
 
-        //     h_cam->model.focalLength(0) = 10.1;
-        //     h_cam->model.focalLength(1) = 10.2;
+            h_cam->model.focalLength(0) = 10.1;
+            h_cam->model.focalLength(1) = 10.2;
 
-        //     h_cam->model.distortion.resize(3);
-        //     h_cam->model.distortion[0] = 2.0;
-        //     h_cam->model.distortion[1] = 1.0;
-        //     h_cam->model.distortion[2] = 0.5;
+            h_cam->model.distortion.resize(3);
+            h_cam->model.distortion[0] = 2.0;
+            h_cam->model.distortion[1] = 1.0;
+            h_cam->model.distortion[2] = 0.5;
 
-        //     for(size_t k=0; k<3; k++)
-        //     {
-        //         HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
+            for(size_t k=0; k<3; k++)
+            {
+                HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
 
-        //         pano->resolution[0] = 200;
-        //         pano->resolution[1] = 200;
-        //         pano->wavelength[0] = 100.0;
-        //         pano->wavelength[1] = 900.25;
+                pano->resolution[0] = 200;
+                pano->resolution[1] = 200;
+                pano->wavelength[0] = 100.0;
+                pano->wavelength[1] = 900.25;
 
-        //         for(size_t l=0; l<7; l++)
-        //         {
-        //             HyperspectralPanoramaChannelPtr hchannel(new HyperspectralPanoramaChannel);
+                for(size_t l=0; l<7; l++)
+                {
+                    HyperspectralPanoramaChannelPtr hchannel(new HyperspectralPanoramaChannel);
 
-        //             CameraImagePtr si = synthetic::genLVRImage();
-        //             hchannel->channel = si->image.clone();
-        //             hchannel->timestamp = 0.0;
-        //             pano->channels.push_back(hchannel);
-        //         }
+                    CameraImagePtr si = synthetic::genLVRImage();
+                    hchannel->channel = si->image.clone();
+                    hchannel->timestamp = 0.0;
+                    pano->channels.push_back(hchannel);
+                }
 
-        //         h_cam->panoramas.push_back(pano);
-        //     }
+                h_cam->panoramas.push_back(pano);
+            }
 
-        //     scan_pos->hyperspectral_cameras.push_back(h_cam);
-        // }
+            scan_pos->hyperspectral_cameras.push_back(h_cam);
+        }
 
         ret->positions.push_back(scan_pos);
     }
