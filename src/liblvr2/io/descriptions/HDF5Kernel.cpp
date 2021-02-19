@@ -34,9 +34,9 @@ void HDF5Kernel::savePointBuffer(
     // std::cout <<  "[HDF5Kernel - savePointBuffer]: " << group  <<  ", "  << container << std::endl;
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
 
-    std::string tmp = "PointBuffer";
-    std::cout << "Set Attribute type='PointBuffer' at group '" << group << "'" << std::endl;
-    hdf5util::setAttribute(g, "type", tmp);
+    // std::string tmp = "PointBuffer";
+    // std::cout << "Set Attribute type='PointBuffer' at group '" << group << "'" << std::endl;
+    // hdf5util::setAttribute(g, "type", tmp);
 
     for(auto elem : *buffer)
     {
@@ -55,18 +55,6 @@ void HDF5Kernel::saveImage(
         std::tie(groupName, datasetName) = hdf5util::validateGroupDataset(group, container);
 
         HighFive::Group group = hdf5util::getGroup(m_hdf5File, groupName, true);
-
-        std::vector<std::string> names = hdf5util::splitGroupNames(datasetName);
-
-        if(names.size() > 1)
-        {
-            std::cout << "Found group in dataset name" << std::endl;
-            
-            for(auto name : names)
-            {
-                std::cout << "-- " << name << std::endl;
-            }
-        }
 
         size_t w = img.cols;
         size_t h = img.rows;

@@ -136,6 +136,14 @@ void HDF5Kernel::saveArray(
 
         HighFive::DataSpace dataSpace(dim);
         HighFive::DataSetCreateProps properties;
+
+        if(m_config.compressionLevel > 0)
+        {
+            std::vector<hsize_t> chunkSizes(dim.size(), 1);
+            chunkSizes[0] = dim[0];
+            properties.add(HighFive::Chunking(chunkSizes));
+            properties.add(HighFive::Deflate(m_config.compressionLevel));
+        }
         
         std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
             g, datasetName, dataSpace, properties
@@ -271,19 +279,27 @@ void HDF5Kernel::save(HighFive::Group &g,
         {
             std::vector<size_t > dims = {channel.numElements(), channel.width()};
 
-        HighFive::DataSpace dataSpace(dims);
-        HighFive::DataSetCreateProps properties;
-   
-        std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
-            g, datasetName, dataSpace, properties
-        );
+            HighFive::DataSpace dataSpace(dims);
+            HighFive::DataSetCreateProps properties;
 
-        const T* ptr = channel.dataPtr().get();
-        dataset->write_raw(ptr);
-        m_hdf5File->flush();
+            if(m_config.compressionLevel > 0)
+            {
+                std::vector<hsize_t> chunkSizes;
+                chunkSizes.assign(dims.begin(), dims.end()); 
+                properties.add(HighFive::Chunking(chunkSizes));
+                properties.add(HighFive::Deflate(m_config.compressionLevel));
+            }
+    
+            std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
+                g, datasetName, dataSpace, properties
+            );
 
-        std::string sensor_type = "Channel";
-        hdf5util::setAttribute<std::string>(*dataset, "sensor_type", sensor_type);
+            const T* ptr = channel.dataPtr().get();
+            dataset->write_raw(ptr);
+            m_hdf5File->flush();
+
+            std::string sensor_type = "Channel";
+            hdf5util::setAttribute<std::string>(*dataset, "sensor_type", sensor_type);
         } 
         else 
         {

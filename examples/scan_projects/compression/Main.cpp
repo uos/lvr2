@@ -82,16 +82,44 @@ int main(int argc, char** argv)
     //// Further comments:
     // My tests with compression levels
     // 'du -sh *' output:
-    // 1,6G	sp_compressed_0.h5
-    // 1,2G	sp_compressed_1.h5
-    // 1,2G	sp_compressed_2.h5
-    // 1,2G	sp_compressed_3.h5
-    // 1,2G	sp_compressed_4.h5
-    // 1,2G	sp_compressed_5.h5
-    // 1,2G	sp_compressed_6.h5
-    // 1,2G	sp_compressed_7.h5
-    // 1,2G	sp_compressed_8.h5
-    // 1,2G	sp_compressed_9.h5
+    
+    // chunk: {numElements, width}
+    // 586M	sp_compressed_0.h5
+    // 58M	sp_compressed_1.h5
+    // 58M	sp_compressed_2.h5
+    // 58M	sp_compressed_3.h5
+    // 55M	sp_compressed_4.h5
+    // 55M	sp_compressed_5.h5
+    // 55M	sp_compressed_6.h5
+    // 55M	sp_compressed_7.h5
+    // 54M	sp_compressed_8.h5
+    // 54M	sp_compressed_9.h5
+
+    // chunk: {numElements, 1}
+    // 586M	examples_sp_compression/sp_compressed_0.h5
+    // 55M	examples_sp_compression/sp_compressed_1.h5
+    // 54M	examples_sp_compression/sp_compressed_2.h5
+    // 54M	examples_sp_compression/sp_compressed_3.h5
+    // 52M	examples_sp_compression/sp_compressed_4.h5
+    // 52M	examples_sp_compression/sp_compressed_5.h5
+    // 52M	examples_sp_compression/sp_compressed_6.h5
+    // 52M	examples_sp_compression/sp_compressed_7.h5
+    // 51M	examples_sp_compression/sp_compressed_8.h5
+    // 51M	examples_sp_compression/sp_compressed_9.h5
+
+    // chunk: {64, width}
+
+    // 586M	examples_sp_compression/sp_compressed_0.h5
+    // 87M	examples_sp_compression/sp_compressed_1.h5
+    // 87M	examples_sp_compression/sp_compressed_2.h5
+    // 87M	examples_sp_compression/sp_compressed_3.h5
+    // 84M	examples_sp_compression/sp_compressed_4.h5
+    // 84M	examples_sp_compression/sp_compressed_5.h5
+    // 84M	examples_sp_compression/sp_compressed_6.h5
+    // 84M	examples_sp_compression/sp_compressed_7.h5
+    // 84M	examples_sp_compression/sp_compressed_8.h5
+    // 84M	examples_sp_compression/sp_compressed_9.h5
+
 
     return 0;
 }
