@@ -107,8 +107,7 @@ public:
 
     // We want to save specific scan channels in "points.ply" such as "points", "normals", "colors".
     // Thus, we can visualize the pointclouds by well known viewer-software
-    // The difference to "MySchema" is, that we dont loose the other channels that cannot be stored in a "ply" file
-    // 
+    // The difference to "MySchema" is, that we dont discard the other channels that cannot be stored in a "ply" file
     virtual Description scanChannel(const size_t& scanPosNo, const size_t& lidarNo, const size_t& scanNo, const std::string& channelName) const {
         Description d_scan_channel = ScanProjectSchemaRaw::scanChannel(scanPosNo, lidarNo, scanNo, channelName);
         
