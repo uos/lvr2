@@ -18,7 +18,7 @@
 // #include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 // #include "lvr2/io/hdf5/ScanProjectIO.hpp"
 
-#include "lvr2/io/hdf5/Hdf5Util.hpp"
+#include "lvr2/util/Hdf5Util.hpp"
 #include <boost/filesystem.hpp>
 
 #include "lvr2/util/Synthetic.hpp"

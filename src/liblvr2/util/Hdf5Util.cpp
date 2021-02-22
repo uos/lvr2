@@ -1,4 +1,4 @@
-#include "lvr2/io/hdf5/Hdf5Util.hpp"
+#include "lvr2/util/Hdf5Util.hpp"
 #include "lvr2/types/Channel.hpp"
 
 namespace lvr2

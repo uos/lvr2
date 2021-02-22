@@ -1,7 +1,7 @@
 #ifndef HDF5_READER_OLD_HPP
 #define HDF5_READER_OLD_HPP
 
-#include "lvr2/io/hdf5/Hdf5Util.hpp"
+#include "lvr2/util/Hdf5Util.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2 {

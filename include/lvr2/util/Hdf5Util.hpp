@@ -3,24 +3,28 @@
 
 #pragma once
 
-#include "lvr2/geometry/Matrix4.hpp"
-#include "lvr2/io/Timestamp.hpp"
-
+// HDF5-related includes
 #include <H5Tpublic.h>
-#include <boost/filesystem.hpp>
-#include <boost/optional.hpp>
-#include "lvr2/io/yaml/Matrix.hpp"
-
-#include <chrono>
 #include <hdf5_hl.h>
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
+
+// Boost libraries
+#include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
+
+// C++ standard library
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
 
+// LVR internal includes
 #include "lvr2/util/Tuple.hpp"
+#include "lvr2/io/yaml/Matrix.hpp"
+#include "lvr2/geometry/Matrix4.hpp"
+#include "lvr2/io/Timestamp.hpp"
 
 namespace lvr2
 {

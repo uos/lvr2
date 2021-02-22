@@ -3,17 +3,17 @@
 #ifndef LVR2_IO_DESCRIPTIONS_SCANIO_HPP
 #define LVR2_IO_DESCRIPTIONS_SCANIO_HPP
 
-
-
-#include "lvr2/types/ScanTypes.hpp"
-#include "lvr2/registration/ReductionAlgorithm.hpp"
-
 #include <sstream>
 #include <yaml-cpp/yaml.h>
 
+#include "lvr2/io/yaml/Scan.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
+#include "lvr2/registration/ReductionAlgorithm.hpp"
+#include "lvr2/util/Hdf5Util.hpp"
+#include "lvr2/types/ScanTypes.hpp"
+
 #include "MetaIO.hpp"
 #include "PointCloudIO.hpp"
-
 
 namespace lvr2
 {

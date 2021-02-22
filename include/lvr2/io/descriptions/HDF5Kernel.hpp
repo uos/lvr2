@@ -1,15 +1,11 @@
 #ifndef HDF5KERNEL_HPP
 #define HDF5KERNEL_HPP
 
-#include <hdf5_hl.h>
-#include <highfive/H5DataSet.hpp>
-#include <highfive/H5DataSpace.hpp>
-#include <highfive/H5File.hpp>
-
-#include "lvr2/types/Channel.hpp"
-#include "lvr2/io/descriptions/FileKernel.hpp"
-#include "lvr2/io/hdf5/Hdf5Util.hpp"
 #include "lvr2/types/VariantChannel.hpp"
+#include "lvr2/types/Channel.hpp"
+#include "lvr2/util/Hdf5Util.hpp"
+
+#include "FileKernel.hpp"
 
 namespace lvr2
 {

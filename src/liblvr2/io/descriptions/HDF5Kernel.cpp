@@ -1,6 +1,6 @@
 #include "lvr2/io/descriptions/HDF5Kernel.hpp"
 #include "lvr2/io/yaml.hpp"
-#include "lvr2/io/hdf5/Hdf5Util.hpp"
+//#include "lvr2/io/hdf5/Hdf5Util.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2

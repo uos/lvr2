@@ -46,8 +46,8 @@
 #include <cstring>
 #include <memory>
 
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
-#include "lvr2/io/hdf5/MeshIO.hpp"
+#include "lvr2/io/deprecated/hdf5/HDF5FeatureBase.hpp"
+#include "lvr2/io/deprecated/hdf5/MeshIO.hpp"
 
 using namespace lvr2;
 

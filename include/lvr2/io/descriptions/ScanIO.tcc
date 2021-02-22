@@ -1,7 +1,4 @@
-#include "lvr2/io/yaml/Scan.hpp"
-#include <boost/optional/optional_io.hpp>
-#include "lvr2/registration/OctreeReduction.hpp"
-#include "lvr2/io/hdf5/Hdf5Util.hpp"
+
 
 namespace lvr2
 {

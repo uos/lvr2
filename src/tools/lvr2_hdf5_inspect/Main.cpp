@@ -3,7 +3,8 @@
 #include "Options.hpp"
 
 #include <lvr2/io/descriptions/HDF5IO.hpp>
-#include <lvr2/io/hdf5/Hdf5Util.hpp>
+#include <lvr2/util/Hdf5Util.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 

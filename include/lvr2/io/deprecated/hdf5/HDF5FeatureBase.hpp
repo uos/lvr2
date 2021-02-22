@@ -6,7 +6,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "lvr2/io/hdf5/Hdf5Util.hpp"
+#include "lvr2/util/Hdf5Util.hpp"
 
 #include <H5Tpublic.h>
 #include <hdf5_hl.h>

@@ -2,7 +2,7 @@
 #ifndef LVR2_IO_HDF5_ARRAYIO_HPP
 #define LVR2_IO_HDF5_ARRAYIO_HPP
 
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
+#include "HDF5FeatureBase.hpp"
 #include <boost/shared_array.hpp>
 
 namespace lvr2 {
