@@ -33,7 +33,7 @@
  *  @author Thomas Wiemann
  */
 
-#include "lvr2/registration/TreeUtils.hpp"
+#include "lvr2/util/TreeUtils.hpp"
 #include "lvr2/registration/AABB.hpp"
 
 #include <limits>

@@ -6,6 +6,7 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Hdf5Util.cpp
     util/Synthetic.cpp
+    util/TreeUtils.cpp
     display/Renderable.cpp
     # display/GroundPlane.cpp
     display/MultiPointCloud.cpp
@@ -77,7 +78,6 @@ set(LVR2_SOURCES
     registration/Metascan.cpp
     registration/SLAMAlign.cpp
     registration/GraphSLAM.cpp
-    registration/TreeUtils.cpp
     registration/OctreeReduction.cpp
     # registration/RegistrationPipeline.cpp
     types/CustomChannelTypes.cpp

@@ -35,7 +35,7 @@
 #ifndef KDTREE_HPP_
 #define KDTREE_HPP_
 
-#include "TreeUtils.hpp"
+#include "lvr2/util/TreeUtils.hpp"
 #include "SLAMScanWrapper.hpp"
 
 #include <memory>
