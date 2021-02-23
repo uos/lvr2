@@ -30,7 +30,7 @@
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/GeoTIFFIO.hpp"
+#include "lvr2/io/baseio/GeoTIFFIO.hpp"
 #include "lvr2/display/ColorMap.hpp"
 
 using boost::optional;

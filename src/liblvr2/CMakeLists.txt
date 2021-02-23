@@ -27,6 +27,9 @@ set(LVR2_SOURCES
     io/baseio/AsciiIO.cpp
     io/baseio/BaseIO.cpp
     io/baseio/ObjIO.cpp
+    io/baseio/DatIO.cpp
+    io/baseio/LasIO.cpp
+    io/baseio/GeoTIFFIO.cpp
 #    io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp
     io/baseio/PPMIO.cpp
@@ -37,9 +40,7 @@ set(LVR2_SOURCES
     io/Progress.cpp
     io/MeshBuffer.cpp
     io/LineReader.cpp
-    io/baseio/DatIO.cpp
-    io/baseio/LasIO.cpp
-    io/GeoTIFFIO.cpp
+  
     # io/HDF5IO.cpp
     io/Timestamp.cpp
     io/GridIO.cpp

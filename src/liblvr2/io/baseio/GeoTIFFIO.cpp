@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "lvr2/io/GeoTIFFIO.hpp"
+#include "lvr2/io/baseio/GeoTIFFIO.hpp"
 #include "lvr2/io/Timestamp.hpp"
 
 namespace lvr2
