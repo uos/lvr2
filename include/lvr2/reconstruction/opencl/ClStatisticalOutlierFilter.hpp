@@ -40,7 +40,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define CL_HPP_TARGET_OPENCL_VERSION 120
+#define CL_TARGET_OPENCL_VERSION 220
+#define CL_HPP_TARGET_OPENCL_VERSION 220
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 #define __CL_ENABLE_EXCEPTIONS
 

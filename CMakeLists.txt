@@ -421,20 +421,18 @@ add_definitions(${LVR2_DEFINITIONS})
 option(WITH_KINFU "Compile LVR Kinfu" OFF)
 
 ###############################################################################
-# Check and set CUDA host compiler flags. CUDA 6.5 is only
-# compatible to gcc4.8. Older CUDA versions require GCC lower
-# than 4.8
+# Check and set CUDA host compiler flags.          
 ###############################################################################
 if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
               AND CUDA_VERSION VERSION_GREATER 8
-              AND CUDA_VERSION VERSION_LESS 10)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5 )
+              AND CUDA_VERSION VERSION_LESS 12)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8 )
         message(STATUS "******************************************************************")
-        message(STATUS "* Your gcc version needs to be lower than 6 to compile the LVR   *")
+        message(STATUS "* Your gcc version needs to be lower than 8 to compile the LVR   *")
         message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
-        message(STATUS "* g++-6*. Please ensure that g++ 6 is installed on your system.  *")
+        message(STATUS "* g++-8. Please ensure that g++ 8 is installed on your system.   *")
         message(STATUS "******************************************************************")
-        set(CUDA_HOST_COMPILER "g++-6" CACHE STRING "" FORCE)
+        set(CUDA_HOST_COMPILER "g++-8" CACHE STRING "" FORCE)
         endif()
 endif()
 
