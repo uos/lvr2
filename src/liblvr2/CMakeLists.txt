@@ -29,11 +29,11 @@ set(LVR2_SOURCES
     io/baseio/ObjIO.cpp
 #    io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp
-    io/PPMIO.cpp
-    io/PLYIO.cpp
-    io/STLIO.cpp
-    io/UosIO.cpp
-    io/PCDIO.cpp
+    io/baseio/PPMIO.cpp
+    io/baseio/PLYIO.cpp
+    io/baseio/STLIO.cpp
+    io/baseio/UosIO.cpp
+    io/baseio/PCDIO.cpp
     io/Progress.cpp
     io/MeshBuffer.cpp
     io/LineReader.cpp

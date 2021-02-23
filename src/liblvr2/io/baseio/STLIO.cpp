@@ -33,7 +33,7 @@
  */
 
 
-#include "lvr2/io/STLIO.hpp"
+#include "lvr2/io/baseio/STLIO.hpp"
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
