@@ -24,7 +24,7 @@ set(LVR2_SOURCES
     # display/Arrow.cpp
     display/TexturedMesh.cpp
     display/MeshCluster.cpp
-    io/AsciiIO.cpp
+    io/baseio/AsciiIO.cpp
     io/ObjIO.cpp
 #    io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp

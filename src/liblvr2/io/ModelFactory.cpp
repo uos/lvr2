@@ -32,7 +32,7 @@
  *  @author Thomas Wiemann
  */
 
-#include "lvr2/io/AsciiIO.hpp"
+#include "lvr2/io/baseio/AsciiIO.hpp"
 #include "lvr2/io/PLYIO.hpp"
 #include "lvr2/io/UosIO.hpp"
 #include "lvr2/io/ObjIO.hpp"
