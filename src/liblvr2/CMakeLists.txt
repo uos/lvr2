@@ -51,7 +51,7 @@ set(LVR2_SOURCES
     io/Polygon.cpp
     io/ModelFactory.cpp
     # io/ScanDataManager.cpp
-    # io/ScanDirectoryParser.cpp
+    io/ScanDirectoryParser.cpp
     io/yaml/Matrix.cpp
     io/descriptions/ScanProjectSchemaRaw.cpp
     io/descriptions/ScanProjectSchemaSlam6D.cpp
@@ -74,7 +74,7 @@ set(LVR2_SOURCES
     algorithm/ChunkHashGrid.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
-    # registration/SLAMScanWrapper.cpp
+    registration/SLAMScanWrapper.cpp
     registration/Metascan.cpp
     registration/SLAMAlign.cpp
     registration/GraphSLAM.cpp
