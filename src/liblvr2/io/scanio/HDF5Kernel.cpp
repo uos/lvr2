@@ -1,5 +1,5 @@
 #include "lvr2/io/scanio/HDF5Kernel.hpp"
-#include "lvr2/io/yaml.hpp"
+#include "lvr2/io/scanio/yaml/YAML.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2

@@ -1,5 +1,3 @@
-#include "lvr2/io/yaml/Camera.hpp"
-
 namespace lvr2
 {
 

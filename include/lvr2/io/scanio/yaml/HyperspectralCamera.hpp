@@ -3,6 +3,7 @@
 #define LVR2_IO_YAML_HYPERSPECTRALCAMERAMETA_IO_HPP
 
 #include <yaml-cpp/yaml.h>
+
 #include "Matrix.hpp"
 #include "CameraModels.hpp"
 #include "lvr2/types/ScanTypes.hpp"

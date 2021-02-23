@@ -4,7 +4,7 @@
 
 #include "lvr2/io/scanio/FeatureBase.hpp"
 #include "lvr2/types/VariantChannel.hpp"
-#include "lvr2/io/yaml/VariantChannel.hpp"
+#include "lvr2/io/scanio/yaml/VariantChannel.hpp"
 
 // Dependencies
 #include "lvr2/io/scanio/ChannelIO.hpp"

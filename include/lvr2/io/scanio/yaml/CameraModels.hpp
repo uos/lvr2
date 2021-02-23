@@ -2,6 +2,7 @@
 #define LVR2_IO_YAML_CAMERA_MODELS_HPP
 
 #include <yaml-cpp/yaml.h>
+
 #include "Matrix.hpp"
 #include "lvr2/types/CameraModels.hpp"
 

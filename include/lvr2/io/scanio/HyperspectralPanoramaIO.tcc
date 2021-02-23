@@ -1,5 +1,3 @@
-#include "lvr2/io/yaml/HyperspectralCamera.hpp"
-
 namespace lvr2 {
 
 template <typename Derived>

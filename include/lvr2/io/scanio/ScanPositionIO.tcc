@@ -1,7 +1,3 @@
-#include "lvr2/io/yaml/ScanPosition.hpp"
-
- #include <boost/optional/optional_io.hpp>
-
 namespace lvr2
 {
 

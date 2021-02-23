@@ -6,6 +6,7 @@
 
 // deps
 #include "MetaIO.hpp"
+#include "lvr2/io/scanio/yaml/HyperspectralCamera.hpp"
 #include "HyperspectralPanoramaChannelIO.hpp"
 
 namespace lvr2 {

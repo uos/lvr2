@@ -4,7 +4,7 @@
 #include "lvr2/io/Timestamp.hpp"
 
 #include <yaml-cpp/yaml.h>
-#include "lvr2/io/yaml/Matrix.hpp"
+#include "lvr2/io/scanio/yaml/Matrix.hpp"
 
 // TODO: remove this dep
 #include "lvr2/io/IOUtils.hpp"

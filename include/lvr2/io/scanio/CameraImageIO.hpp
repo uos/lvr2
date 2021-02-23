@@ -6,6 +6,7 @@
 #include "MetaIO.hpp"
 #include "ImageIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/io/scanio/yaml/CameraImage.hpp"
 
 namespace lvr2
 {

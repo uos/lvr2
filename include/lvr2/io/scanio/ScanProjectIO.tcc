@@ -1,5 +1,3 @@
-#include "lvr2/io/yaml/ScanProject.hpp"
-
 namespace lvr2
 {
 

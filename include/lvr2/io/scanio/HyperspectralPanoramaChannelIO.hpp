@@ -2,7 +2,7 @@
 #define LVR2_IO_DESCRIPTIONS_HYPERSPECTRAL_PANORAMA_CHANNEL_IO_HPP
 
 #include "lvr2/types/ScanTypes.hpp"
-
+#include "lvr2/io/scanio/yaml/HyperspectralCamera.hpp"
 // deps
 #include "MetaIO.hpp"
 #include "ImageIO.hpp"

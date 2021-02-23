@@ -52,7 +52,7 @@ set(LVR2_SOURCES
     io/ModelFactory.cpp
     # io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
-    io/yaml/Matrix.cpp
+    io/scanio/yaml/Matrix.cpp
     io/scanio/ScanProjectSchemaRaw.cpp
     io/scanio/ScanProjectSchemaSlam6D.cpp
     # io/scanio/ScanProjectSchemaSLAM.cpp

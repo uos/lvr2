@@ -6,7 +6,7 @@
 #include <sstream>
 #include <yaml-cpp/yaml.h>
 
-#include "lvr2/io/yaml/Scan.hpp"
+#include "lvr2/io/scanio/yaml/Scan.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 #include "lvr2/util/Hdf5Util.hpp"

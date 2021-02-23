@@ -3,9 +3,11 @@
 #ifndef LVR2_IO_DESCRIPTIONS_SCANPOSITIONIO_HPP
 #define LVR2_IO_DESCRIPTIONS_SCANPOSITIONIO_HPP
 
-#include "lvr2/types/ScanTypes.hpp"
-
 #include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
+
+#include "lvr2/io/scanio/yaml/ScanPosition.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 // Dependencies
 // SensorIOs

@@ -3,6 +3,7 @@
 
 #include "MetaIO.hpp"
 #include "ScanIO.hpp"
+#include "lvr2/io/scanio/yaml/LIDAR.hpp"
 
 namespace lvr2
 {

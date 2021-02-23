@@ -3,6 +3,7 @@
 #ifndef LVR2_IO_scanio_SCANPROJECTIO_HPP
 #define LVR2_IO_scanio_SCANPROJECTIO_HPP
 
+#include "lvr2/io/scanio/yaml/ScanProject.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 
