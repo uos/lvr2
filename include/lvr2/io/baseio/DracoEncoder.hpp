@@ -18,8 +18,8 @@
 
 /**
  *
- * @file      DracoDecoder.hpp
- * @brief     Decodes a draco comptressed file into a lvr model
+ * @file      DracoEncoder.hpp
+ * @brief     Encodes a lvr model into a draco compressed file
  * @details   Supports geometrys compressed using draco https://github.com/google/draco
  *
  * @author    Steffen Schupp (sschupp), sschupp@uos.de
@@ -27,23 +27,25 @@
  *
  **/
 
-#ifndef DRACO_DECODER_HPP
-#define DRACO_DECODER_HPP
+#ifndef DRACO_ENCODER_HPP
+#define DRACO_ENCODER_HPP
 
-#include "Model.hpp"
-#include "draco/compression/decode.h"
+#include "lvr2/io/Model.hpp"
+#include "draco/compression/encode.h"
 
 namespace lvr2
 {
 
 /**
- * @brief delivers ModelPtr from draco DecoderBuffer
+ * @brief encodes Model to draco EncodeBuffer which contents can be written into a file
  *
- * @param buffer Decoder Buffer thats contents get parsed to a Model
- * @param type GeometryType of loaded structure
- * @return ModelPtr to Model that got created from buffer
+ * @param modelptr modelPtr to Model that shall be encoded
+ * @param type GeometryType of Geometry to be encoded
+ *
+ * @return unique_ptr pointing to a EncoderBuffer that can be used to write a draco file
  **/
-ModelPtr decodeDraco(draco::DecoderBuffer& buffer, draco::EncodedGeometryType type);
+std::unique_ptr<draco::EncoderBuffer> encodeDraco(ModelPtr                   modelPtr,
+                                                  draco::EncodedGeometryType type);
 
 } // namespace lvr
 

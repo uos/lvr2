@@ -18,8 +18,8 @@
 
 /**
  *
- * @file      DracoEncoder.hpp
- * @brief     Encodes a lvr model into a draco compressed file
+ * @file      DrcIO.hpp
+ * @brief     IO module for importing and exporting .drc files
  * @details   Supports geometrys compressed using draco https://github.com/google/draco
  *
  * @author    Steffen Schupp (sschupp), sschupp@uos.de
@@ -27,26 +27,42 @@
  *
  **/
 
-#ifndef DRACO_ENCODER_HPP
-#define DRACO_ENCODER_HPP
+#ifndef DRCIO_HPP
+#define DRCIO_HPP
 
-#include "Model.hpp"
-#include "draco/compression/encode.h"
+#include "lvr2/io/baseio/BaseIO.hpp"
 
 namespace lvr2
 {
 
-/**
- * @brief encodes Model to draco EncodeBuffer which contents can be written into a file
- *
- * @param modelptr modelPtr to Model that shall be encoded
- * @param type GeometryType of Geometry to be encoded
- *
- * @return unique_ptr pointing to a EncoderBuffer that can be used to write a draco file
- **/
-std::unique_ptr<draco::EncoderBuffer> encodeDraco(ModelPtr                   modelPtr,
-                                                  draco::EncodedGeometryType type);
+class DrcIO : public BaseIO
+{
+  public:
+    DrcIO(){};
 
-} // namespace lvr
+    /**
+     * @brief Parse the draco and load supported elements.
+     *
+     * @param filename  The file to read.
+     */
+    virtual ModelPtr read(string filename);
 
-#endif
+    /**
+     * @brief Save/Compress the loaded elements to a draco file.
+     *
+     * @param filename Filename of the file to write.
+     */
+    virtual void save(string filename);
+
+    /**
+     * @brief Set the model and saves/compresses the loaded elements
+     *  to a draco file
+     *
+     * @param filename Filename of the file to write.
+     */
+    virtual void save(ModelPtr model, string filename);
+};
+
+} /* namespace lvr */
+
+#endif // DRCIO_HPP

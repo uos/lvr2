@@ -111,9 +111,9 @@ endif()
 
 if(draco_FOUND)
 set(LVR2_SOURCES ${LVR2_SOURCES}
-  io/DracoEncoder.cpp
-  io/DracoDecoder.cpp 
-  io/DrcIO.cpp)
+  io/baseio/DracoEncoder.cpp
+  io/baseio/DracoDecoder.cpp 
+  io/baseio/DrcIO.cpp)
 endif(draco_FOUND)
 
 #####################################################################################
@@ -122,7 +122,7 @@ endif(draco_FOUND)
 
 if(RiVLib_FOUND)
   set(LVR2_SOURCES ${LVR2_SOURCES} 
-    io/RxpIO.cpp)
+    io/baseio/RxpIO.cpp)
 endif()
 
 #####################################################################################
