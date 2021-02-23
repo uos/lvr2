@@ -25,6 +25,7 @@ set(LVR2_SOURCES
     display/TexturedMesh.cpp
     display/MeshCluster.cpp
     io/baseio/AsciiIO.cpp
+    io/baseio/BaseIO.cpp
     io/ObjIO.cpp
 #    io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp
@@ -38,7 +39,6 @@ set(LVR2_SOURCES
     io/LineReader.cpp
     io/DatIO.cpp
     io/LasIO.cpp
-    io/BaseIO.cpp
     io/GeoTIFFIO.cpp
     # io/HDF5IO.cpp
     io/Timestamp.cpp
