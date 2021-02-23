@@ -15,7 +15,6 @@ set(LVR2_IMG_NORMAL_DEPS
 	lvr2_static
 	lvr2las_static
 	lvr2rply_static
-	lvr2slam6d_static
 	${LVR2_LIB_DEPENDENCIES}
 	)
 

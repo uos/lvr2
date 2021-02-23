@@ -39,7 +39,6 @@
 #include "lvr2/io/LasIO.hpp"
 // #include "lvr2/io/HDF5IO.hpp"
 // #include "lvr2/io/WaveformIO.hpp"
-#include "lvr2/io/BoctreeIO.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DatIO.hpp"
 #include "lvr2/io/STLIO.hpp"
@@ -131,34 +130,12 @@ ModelPtr ModelFactory::readModel( std::string filename )
                     found_3d = true;
                 }
             }
-
-            // Check for .oct files
-            if(p.extension().string() == ".oct")
-            {
-                // Check for naming convention "scanxxx.3d"
-                int num = 0;
-                if(sscanf(p.filename().string().c_str(), "scan%3d", &num))
-                {
-                    found_boctree = true;
-                }
-            }
-
-
         }
 
         // Check and create io
         if(!found_boctree && found_3d)
         {
             io = new UosIO;
-        }
-        else if(found_boctree && found_3d)
-        {
-            cout << timestamp << "Found 3d files and octrees. Loading octrees per default." << endl;
-            io = new BoctreeIO;
-        }
-        else if(found_boctree && !found_3d)
-        {
-            io = new BoctreeIO;
         }
         else
         {

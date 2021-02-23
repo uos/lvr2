@@ -387,11 +387,6 @@ find_package(yaml-cpp REQUIRED)
 # no found variable
 include_directories(${YAML_CPP_INCLUDE_DIR})
 
-# SLAM6D stuff
-add_subdirectory(ext/slam6d)
-include_directories( ${SLAM6D_INCLUDE_DIR} )
-list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
-
 # CTPL
 add_subdirectory(ext/CTPL)
 include_directories(${CTPL_INCLUDE_DIR})

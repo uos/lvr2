@@ -42,7 +42,6 @@ set(LVR2_SOURCES
     io/GeoTIFFIO.cpp
     # io/HDF5IO.cpp
     io/Timestamp.cpp
-    io/BoctreeIO.cpp
     io/GridIO.cpp
     io/Polygon.cpp
     io/SoilAssistField.cpp
@@ -149,13 +148,11 @@ endif()
 
 set(LVR2_INTERNAL_DEPENDENCIES_STATIC
     lvr2rply_static
-    lvr2las_static
-    lvr2slam6d_static)
+    lvr2las_static)
 
 set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2rply
-    lvr2las
-    lvr2slam6d)
+    lvr2las)
 
 #####################################################################################
 # Set c++0x flags for gcc compilers (needed for boctree io)
