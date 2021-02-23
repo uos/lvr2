@@ -604,7 +604,7 @@ add_subdirectory(src/tools/lvr2_hdf5_inspect)
 
 # does not compile after ScanTypes changes
 # add_subdirectory(src/tools/lvr2_largescale_reconstruct)
-# add_subdirectory(src/tools/lvr2_kaboom)
+add_subdirectory(src/tools/lvr2_kaboom)
 # add_subdirectory(src/tools/lvr2_hdf5_builder_2)
 # add_subdirectory(src/tools/lvr2_slam2hdf5)
 # add_subdirectory(src/tools/lvr2_hdf5togeotiff)

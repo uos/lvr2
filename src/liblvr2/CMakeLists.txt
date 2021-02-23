@@ -53,18 +53,18 @@ set(LVR2_SOURCES
     # io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/yaml/Matrix.cpp
-    io/descriptions/ScanProjectSchemaRaw.cpp
-    io/descriptions/ScanProjectSchemaSlam6D.cpp
-    # io/descriptions/ScanProjectSchemaSLAM.cpp
-    # io/descriptions/ScanProjectSchemaHyperlib.cpp
-    io/descriptions/ScanProjectSchemaHDF5.cpp
-    # io/descriptions/LabelScanProjectSchemaHDF5V2.cpp
-    io/descriptions/DirectoryKernel.cpp
-    io/descriptions/DirectoryDataIO.cpp
-    io/descriptions/MetaFormatFactory.cpp
-    io/descriptions/ScanProjectSchema.cpp
-    io/descriptions/HDF5Kernel.cpp
-    # io/descriptions/HDF5MetaDescriptionV2.cpp
+    io/scanio/ScanProjectSchemaRaw.cpp
+    io/scanio/ScanProjectSchemaSlam6D.cpp
+    # io/scanio/ScanProjectSchemaSLAM.cpp
+    # io/scanio/ScanProjectSchemaHyperlib.cpp
+    io/scanio/ScanProjectSchemaHDF5.cpp
+    # io/scanio/LabelScanProjectSchemaHDF5V2.cpp
+    io/scanio/DirectoryKernel.cpp
+    io/scanio/DirectoryDataIO.cpp
+    io/scanio/MetaFormatFactory.cpp
+    io/scanio/ScanProjectSchema.cpp
+    io/scanio/HDF5Kernel.cpp
+    # io/scanio/HDF5MetaDescriptionV2.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp

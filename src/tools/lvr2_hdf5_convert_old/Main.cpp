@@ -2,18 +2,18 @@
 
 #include "Options.hpp"
 
-// #include "lvr2/io/descriptions/DirectoryIO.hpp"
-#include "lvr2/io/descriptions/HDF5IO.hpp"
-#include "lvr2/io/descriptions/HDF5Kernel.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaHDF5.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaSlam6D.hpp"
-// #include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
+// #include "lvr2/io/scanio/DirectoryIO.hpp"
+#include "lvr2/io/scanio/HDF5IO.hpp"
+#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaSlam6D.hpp"
+// #include "lvr2/io/scanio/ScanProjectSchemaHyperlib.hpp"
 
-#include "lvr2/io/descriptions/ScanProjectSchemaRaw.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
 
-#include "lvr2/io/descriptions/DirectoryIO.hpp"
-#include "lvr2/io/descriptions/DirectoryKernel.hpp"
-// #include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
+#include "lvr2/io/scanio/DirectoryIO.hpp"
+#include "lvr2/io/scanio/DirectoryKernel.hpp"
+// #include "lvr2/io/scanio/ScanProjectSchemaHDF5V2.hpp"
 
 // #include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 // #include "lvr2/io/hdf5/ScanProjectIO.hpp"
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
         HDF5KernelPtr kernel(new HDF5Kernel(outfilename));
         HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
 
-        descriptions::HDF5IO hdf5io(kernel, schema);
+        scanio::HDF5IO hdf5io(kernel, schema);
 
         std::cout << "Write to '" << outfilename << "' with new Hdf5 format." << std::endl;
         hdf5io.save(sp);
