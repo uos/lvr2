@@ -34,14 +34,14 @@
 
 #include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/io/LineReader.hpp"
-#include "lvr2/io/Progress.hpp"
-#include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/hdf5/ArrayIO.hpp"
 #include "lvr2/io/hdf5/ChannelIO.hpp"
 #include "lvr2/io/hdf5/MatrixIO.hpp"
 #include "lvr2/io/hdf5/PointCloudIO.hpp"
 #include "lvr2/io/hdf5/VariantChannelIO.hpp"
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"
+#include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional/optional_io.hpp>

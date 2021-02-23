@@ -32,7 +32,7 @@
 #include <string.h>
 
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"

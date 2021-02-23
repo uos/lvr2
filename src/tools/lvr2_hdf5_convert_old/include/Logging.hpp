@@ -5,7 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <boost/algorithm/string.hpp>
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 namespace lvr2 {
 

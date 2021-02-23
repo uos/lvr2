@@ -38,7 +38,7 @@
 
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 
 #include <vector>

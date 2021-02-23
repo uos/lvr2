@@ -29,8 +29,8 @@
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
-#include "lvr2/io/Progress.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <Eigen/Dense>
 

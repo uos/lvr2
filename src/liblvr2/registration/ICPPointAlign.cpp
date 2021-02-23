@@ -33,7 +33,7 @@
  */
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/registration/EigenSVDPointAlign.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <iomanip>
 #include <chrono>

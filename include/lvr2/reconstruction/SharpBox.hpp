@@ -36,10 +36,10 @@
 #ifndef SHARPBOX_H_
 #define SHARPBOX_H_
 
+#include <float.h>
 
 #include "FastBox.hpp"
 #include "MCTable.hpp"
-#include <float.h>
 #include "ExtendedMCTable.hpp"
 #include "PointsetSurface.hpp"
 

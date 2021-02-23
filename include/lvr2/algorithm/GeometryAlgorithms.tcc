@@ -35,7 +35,7 @@
 #include <set>
 
 #include "lvr2/attrmaps/AttrMaps.hpp"
-#include "lvr2/io/Progress.hpp"
+#include "lvr2/util/Progress.hpp"
 
 namespace lvr2
 {

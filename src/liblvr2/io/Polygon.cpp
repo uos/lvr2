@@ -26,7 +26,7 @@
  */
 
 #include "lvr2/io/Polygon.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 #include <highfive/H5Easy.hpp>
 #include <iostream>
 

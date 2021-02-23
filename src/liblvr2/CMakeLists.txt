@@ -1,14 +1,9 @@
 set(LVR2_SOURCES
+    algorithm/ChunkBuilder.cpp
+    algorithm/ChunkManager.cpp
+    algorithm/ChunkHashGrid.cpp
     config/lvropenmp.cpp
     config/BaseOption.cpp
-    texture/Texture.cpp
-    texture/TextureFactory.cpp
-    util/CoordinateTransform.cpp
-    util/Hdf5Util.cpp
-    util/IOUtils.cpp
-    util/Synthetic.cpp
-    util/TreeUtils.cpp
-    util/Util.cpp
     display/Renderable.cpp
     # display/GroundPlane.cpp
     display/MultiPointCloud.cpp
@@ -37,12 +32,9 @@ set(LVR2_SOURCES
     io/baseio/STLIO.cpp
     io/baseio/UosIO.cpp
     io/baseio/PCDIO.cpp
-    io/Progress.cpp
     io/MeshBuffer.cpp
     io/LineReader.cpp
-  
     # io/HDF5IO.cpp
-    io/Timestamp.cpp
     io/GridIO.cpp
     io/Polygon.cpp
     io/SoilAssistField.cpp
@@ -69,9 +61,6 @@ set(LVR2_SOURCES
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
     reconstruction/LBKdTree.cpp
-    algorithm/ChunkBuilder.cpp
-    algorithm/ChunkManager.cpp
-    algorithm/ChunkHashGrid.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp
@@ -81,6 +70,16 @@ set(LVR2_SOURCES
     registration/OctreeReduction.cpp
     # registration/RegistrationPipeline.cpp
     types/CustomChannelTypes.cpp
+    texture/Texture.cpp
+    texture/TextureFactory.cpp
+    util/CoordinateTransform.cpp
+    util/Hdf5Util.cpp
+    util/IOUtils.cpp
+    util/Synthetic.cpp
+    util/TreeUtils.cpp
+    util/Util.cpp
+    util/Progress.cpp
+    util/Timestamp.cpp
 )
 
 #####################################################################################

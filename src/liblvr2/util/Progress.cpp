@@ -33,7 +33,7 @@
  */
 
 
-#include "lvr2/io/Progress.hpp"
+#include "lvr2/util/Progress.hpp"
 
 #include <sstream>
 #include <iostream>

@@ -43,8 +43,8 @@
 // #include "lvr2/io/HDF5IO.hpp"
 // #include "lvr2/io/WaveformIO.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/Timestamp.hpp"
-#include "lvr2/io/Progress.hpp"
+#include "lvr2/util/Timestamp.hpp"
+#include "lvr2/util/Progress.hpp"
 
 // PCL related includes
 #ifdef LVR2_USE_PCL

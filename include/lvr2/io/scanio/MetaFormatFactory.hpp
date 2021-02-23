@@ -1,7 +1,7 @@
 #ifndef METAFILEFACTORY_HPP
 #define METAFILEFACTORY_HPP
 
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <yaml-cpp/yaml.h>
 #include "lvr2/io/scanio/yaml/Matrix.hpp"

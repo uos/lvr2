@@ -46,13 +46,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/tuple/tuple.hpp>
 
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Util.hpp"
+#include "lvr2/util/Timestamp.hpp"
 #include "lvr2/io/baseio/ObjIO.hpp"
 #include "lvr2/texture/TextureFactory.hpp"
 #include "lvr2/texture/Texture.hpp"
 #include "lvr2/texture/Material.hpp"
-#include "lvr2/util/Util.hpp"
-
 
 namespace lvr2
 {

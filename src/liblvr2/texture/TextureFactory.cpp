@@ -37,7 +37,7 @@
 #include "lvr2/texture/TextureFactory.hpp"
 
 #include "lvr2/io/baseio/PPMIO.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 #include "lvr2/texture/Texture.hpp"
 
 #include <opencv2/core.hpp>

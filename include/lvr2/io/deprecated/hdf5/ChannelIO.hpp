@@ -6,10 +6,10 @@
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
 
+#include "lvr2/util/Timestamp.hpp"
 #include "lvr2/util/Hdf5Util.hpp"
 #include "lvr2/types/Channel.hpp"
 #include "lvr2/io/GroupedChannelIO.hpp"
-#include "lvr2/io/Timestamp.hpp"
 
 // Depending Features
 

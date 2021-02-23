@@ -3,7 +3,7 @@
 #define LVR2_IO_DESCRIPTIONS_CHANNELIO_HPP
 
 #include "lvr2/types/Channel.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 // Depending Features
 

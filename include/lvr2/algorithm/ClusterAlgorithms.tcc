@@ -38,12 +38,11 @@
 #include "lvr2/algorithm/ContourAlgorithms.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
-#include "lvr2/util/Random.hpp"
 #include "lvr2/geometry/Normal.hpp"
+#include "lvr2/util/Random.hpp"
 #include "lvr2/util/Debug.hpp"
-
-#include "lvr2/io/Progress.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <algorithm>
 #include <complex>

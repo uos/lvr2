@@ -9,7 +9,7 @@
 #include "lvr2/io/scanio/FileKernel.hpp"
 #include "lvr2/io/scanio/MetaFormatFactory.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include "DirectoryDataIO.hpp"
 
