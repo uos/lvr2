@@ -50,7 +50,7 @@
 #include "lvr2/texture/Material.hpp"
 #include "lvr2/algorithm/ClusterPainter.hpp"
 
-#include "lvr2/io/ObjIO.hpp"
+#include "lvr2/io/baseio/ObjIO.hpp"
 
 namespace lvr2
 {

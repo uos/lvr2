@@ -47,7 +47,7 @@
 #include <boost/tuple/tuple.hpp>
 
 #include "lvr2/io/Timestamp.hpp"
-#include "lvr2/io/ObjIO.hpp"
+#include "lvr2/io/baseio/ObjIO.hpp"
 #include "lvr2/texture/TextureFactory.hpp"
 #include "lvr2/texture/Texture.hpp"
 #include "lvr2/texture/Material.hpp"

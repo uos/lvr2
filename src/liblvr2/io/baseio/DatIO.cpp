@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "lvr2/io/DatIO.hpp"
+#include "lvr2/io/baseio/DatIO.hpp"
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/Progress.hpp"
 
