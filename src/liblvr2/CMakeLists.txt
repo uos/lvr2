@@ -3,11 +3,12 @@ set(LVR2_SOURCES
     config/BaseOption.cpp
     texture/Texture.cpp
     texture/TextureFactory.cpp
-    util/Util.cpp
+    util/CoordinateTransform.cpp
     util/Hdf5Util.cpp
+    util/IOUtils.cpp
     util/Synthetic.cpp
     util/TreeUtils.cpp
-    util/IOUtils.cpp
+    util/Util.cpp
     display/Renderable.cpp
     # display/GroundPlane.cpp
     display/MultiPointCloud.cpp
@@ -24,7 +25,6 @@ set(LVR2_SOURCES
     display/TexturedMesh.cpp
     display/MeshCluster.cpp
     io/AsciiIO.cpp
-    io/CoordinateTransform.cpp
     io/ObjIO.cpp
 #    io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp

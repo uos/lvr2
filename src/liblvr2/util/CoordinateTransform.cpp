@@ -32,7 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
-#include "lvr2/io/CoordinateTransform.hpp"
+#include "lvr2/util/CoordinateTransform.hpp"
 #include "lvr2/io/Timestamp.hpp"
 
 #include <boost/shared_ptr.hpp>

@@ -30,10 +30,10 @@
 
 #include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/Model.hpp"
-#include "lvr2/io/CoordinateTransform.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/TransformUtils.hpp"
+#include "lvr2/util/CoordinateTransform.hpp"
 
 #include <boost/filesystem.hpp>
 

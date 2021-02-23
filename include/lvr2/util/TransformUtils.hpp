@@ -37,7 +37,7 @@
 
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/io/Model.hpp"
-#include "lvr2/io/CoordinateTransform.hpp"
+#include "lvr2/util/CoordinateTransform.hpp"
 
 #include <Eigen/Dense>
 
