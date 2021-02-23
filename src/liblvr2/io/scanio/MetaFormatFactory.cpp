@@ -1,8 +1,8 @@
 #include "lvr2/io/scanio/MetaFormatFactory.hpp"
-#include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/scanio/yaml/Util.hpp"
 #include "lvr2/io/scanio/yaml/ScanPosition.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/util/IOUtils.hpp"
 
 #include <unordered_set>
 

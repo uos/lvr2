@@ -7,10 +7,10 @@
 #include "lvr2/io/scanio/yaml/Matrix.hpp"
 
 // TODO: remove this dep
-#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/util/IOUtils.hpp"
 
 // TODO:  remove this dep
-#include "lvr2/registration/TransformUtils.hpp"
+#include "lvr2/util/TransformUtils.hpp"
 
 
 #include <boost/filesystem.hpp>

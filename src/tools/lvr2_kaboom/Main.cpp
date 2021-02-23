@@ -37,7 +37,7 @@
 
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/ScanDirectoryParser.hpp"
-#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/util/IOUtils.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 
 using namespace lvr2;

@@ -7,6 +7,7 @@ set(LVR2_SOURCES
     util/Hdf5Util.cpp
     util/Synthetic.cpp
     util/TreeUtils.cpp
+    util/IOUtils.cpp
     display/Renderable.cpp
     # display/GroundPlane.cpp
     display/MultiPointCloud.cpp
@@ -29,7 +30,6 @@ set(LVR2_SOURCES
     io/AttributeMeshIOBase.cpp
     io/PPMIO.cpp
     io/PLYIO.cpp
-    io/IOUtils.cpp
     io/STLIO.cpp
     io/UosIO.cpp
     io/PCDIO.cpp
