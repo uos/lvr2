@@ -16,6 +16,7 @@ namespace lvr2
 LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString name) :
     QTreeWidgetItem(LVRScanPositionItemType), m_scanPositionBridge(bridge), m_name(name)
 {
+    //add child items for each scan
     for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
     {
         std::stringstream pos;
@@ -31,6 +32,7 @@ LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString n
         addChild(modelItem);
     }
 
+    //add child items for each cam
     for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
     {
         ScanCamBridgePtr camBridge(new LVRScanCamBridge(bridge->getScanPosition()->cams[0]));
@@ -40,6 +42,7 @@ LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString n
         addChild(camItem);
     }
 
+    //add pose item as child
     LVRPoseItem* posItem = new LVRPoseItem(bridge->getPose());
     addChild(posItem);
 
@@ -77,6 +80,51 @@ ScanPositionBridgePtr LVRScanPositionItem::getScanPositionBridge()
 bool LVRScanPositionItem::isEnabled()
 {
     return this->checkState(0);
+}
+
+void LVRScanPositionItem::setBridge(ScanPositionBridgePtr bridge)
+{
+    //delete children of this item
+    m_scanPositionBridge = bridge;
+    for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
+    {
+        delete child(0);
+    }
+    for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
+    {
+        delete child(0);
+    }
+    delete child(0);
+
+    //create new items for scans
+    for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
+    {
+        std::stringstream pos;
+        pos << "" << std::setfill('0') << std::setw(8) << i;
+        std::string posName = pos.str();
+        std::vector<ModelBridgePtr> models;
+        models = bridge->getModels();
+        LVRModelItem* modelItem = new LVRModelItem(models[i], QString::fromStdString(posName));
+        if(bridge->getScanPosition()->scans[i]->waveform)
+        {
+            modelItem->getModelBridge()->setWaveform(bridge->getScanPosition()->scans[i]->waveform);
+        }
+        addChild(modelItem);
+    }
+
+    //create new items for cams
+    for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
+    {
+        ScanCamBridgePtr camBridge(new LVRScanCamBridge(bridge->getScanPosition()->cams[0]));
+        QString camName;
+        QTextStream(&camName) << "cam_" << i;
+        LVRScanCamItem* camItem = new LVRScanCamItem(camBridge, camName);
+        addChild(camItem);
+    }
+
+    //create new pose item
+    LVRPoseItem* posItem = new LVRPoseItem(bridge->getPose());
+    addChild(posItem);
 }
 
 void LVRScanPositionItem::setVisibility(bool visible)

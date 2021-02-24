@@ -40,6 +40,7 @@
 #include <QString>
 #include <QColor>
 #include <QTreeWidgetItem>
+#include "LVRImageModelItem.hpp"
 
 namespace lvr2
 {
@@ -47,19 +48,47 @@ namespace lvr2
 class LVRScanImageItem : public QTreeWidgetItem
 {
 public:
+    /**
+     *  @brief          Constructor. Creates a ScanImageitem with the given bridge and name
+     */
     LVRScanImageItem(ScanImageBridgePtr bridge, QString name = "");
+
+    /**
+     *  @brief          Copy constructor.
+     */
     LVRScanImageItem(const LVRScanImageItem& item);
+
+    /**
+     *  @brief          Destructor.
+     */
     virtual ~LVRScanImageItem();
 
+    /**
+     *  @brief          Setter for the image in the bridge
+     *  @param img      image to be set in cv::Mat format
+     */
     void                setImage(const cv::Mat& img);
-    QString             getName();
-    void                setName(QString name);
-    bool                isEnabled();
-    ScanImageBridgePtr	getScanImageBridge();
-    void                setScanImageVisibility(int column, bool globalValue);
 
-public Q_SLOTS:
-	void			setVisibility(bool visible);
+    /**
+     *  @brief          Getter for item name
+     */
+    QString             getName();
+
+    /**
+     *  @brief          Setter for item name
+     *  @param name     Name to set
+     */
+    void                setName(QString name);
+
+    /**
+     *  @brief          Return whether the itemm is enabled (checked)
+     */
+    bool                isEnabled();
+
+    /**
+     *  @brief          Getter for the ScanImageBridge
+     */
+    ScanImageBridgePtr	getScanImageBridge();
 
 protected:
     ScanImageBridgePtr  m_scanImageBridge;

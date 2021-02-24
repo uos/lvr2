@@ -54,6 +54,7 @@ public:
     QString         getName();
     void            setName(QString name);
     bool            isEnabled();
+    void            setBridge(ScanPositionBridgePtr bridge);
 
 public Q_SLOTS:
     void			setVisibility(bool visible);

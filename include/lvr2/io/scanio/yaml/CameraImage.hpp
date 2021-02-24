@@ -7,6 +7,8 @@
 #include <yaml-cpp/yaml.h>
 
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/util/Timestamp.hpp"
+
 #include "Matrix.hpp"
 
 namespace YAML {

@@ -28,7 +28,7 @@
 #ifndef HDF5IO_HPP_
 #define HDF5IO_HPP_
 
-#include "BaseIO.hpp"
+#include "lvr2/io/baseio/BaseIO.hpp"
 #include "DataStruct.hpp"
 
 #include "lvr2/geometry/BaseVector.hpp"

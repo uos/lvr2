@@ -11,9 +11,10 @@
 namespace lvr2
 {
 
-LVRScanProjectItem::LVRScanProjectItem(ScanProjectBridgePtr bridge, QString name) :
+LVRScanProjectItem::LVRScanProjectItem(ScanProjectBridgePtr bridge, std::shared_ptr<FeatureBuild<ScanProjectIO>> io, QString name) :
     QTreeWidgetItem(LVRScanProjectItemType), m_scanProjectBridge(bridge), m_name(name)
 {
+    m_io = io;
     for(int i = 0; i < bridge->getScanProject()->positions.size(); i++)
     {
         std::stringstream pos;
@@ -33,6 +34,7 @@ LVRScanProjectItem::LVRScanProjectItem(const LVRScanProjectItem& item)
 {
     m_scanProjectBridge   = item.m_scanProjectBridge;
     m_name          = item.m_name;
+    m_io = item.m_io;
 }
 
 
@@ -55,6 +57,31 @@ ScanProjectBridgePtr LVRScanProjectItem::getScanProjectBridge()
 bool LVRScanProjectItem::isEnabled()
 {
     return this->checkState(0);
+}
+
+void LVRScanProjectItem::setBridge(ScanProjectBridgePtr bridge)
+{
+    //delete children of item
+    m_scanProjectBridge = bridge;
+    for(int i = 0; i < bridge->getScanProject()->positions.size(); i++)
+    {
+        delete child(0);
+    }
+
+    //create new child item for each position
+    for(int i = 0; i < bridge->getScanProject()->positions.size(); i++)
+    {
+        std::stringstream pos;
+        pos << "" << std::setfill('0') << std::setw(8) << i;
+        std::string posName = pos.str();
+        LVRScanPositionItem* scanPosItem = new LVRScanPositionItem(bridge->getScanPositions()[i], QString::fromStdString(posName));
+        addChild(scanPosItem);
+    }
+}
+
+std::shared_ptr<FeatureBuild<ScanProjectIO>> LVRScanProjectItem::getIO()
+{
+    return m_io;
 }
 
 void LVRScanProjectItem::setVisibility(bool visible)

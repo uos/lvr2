@@ -80,19 +80,58 @@ void LVRScanImageBridge::setImage(const cv::Mat& img)
 
     imageData->Modified();
 
-    imageActor = vtkSmartPointer<vtkImageActor>::New();
+    imageActor = vtkSmartPointer<vtkActor2D>::New();
 
-    imageActor->GetMapper()->SetInputData(imageData);
+    vtkSmartPointer<vtkImageMapper> mapper = vtkSmartPointer<vtkImageMapper>::New();
+    mapper->SetInputData(imageData);
+    mapper->SetColorWindow(255);
+    mapper->SetColorLevel(128);
+    imageActor->SetMapper(mapper);
                 
     std::cout << "Loading Image succeeded!" << std::endl;
 }
 
-void LVRScanImageBridge::setVisibility(bool visible){
-    //TODO IMPLEMENT ME
-    
-    std::cout << "setting visibility to " << visible << image->imageFile.string() <<std::endl;
+
+void LVRScanImageBridge::addPosActor(vtkSmartPointer<vtkRenderer> renderer ,vtkSmartPointer<vtkActor> actor, std::vector<LVRVtkArrow*> arrows)
+{
+    //check whether the posActor is already added
+    if (posActor != nullptr)
+    {
+        return;
+    }
+
+    //add the posActor and the arrows to the renderer and set them as members
+    renderer->AddActor(actor);
+    posActor = actor;
+    m_arrows = arrows;
+    for (auto arrow : arrows)
+    {
+        renderer->AddActor(arrow->getArrowActor());
+        renderer->AddActor(arrow->getStartActor());
+        renderer->AddActor(arrow->getEndActor());
+    }
 }
 
+void LVRScanImageBridge::removePosActor(vtkSmartPointer<vtkRenderer> renderer)
+{
+    //check whether there are any actors to remove
+    if (posActor == nullptr)
+    {
+        return;
+    }
+    //remove and delete actors
+    renderer->RemoveActor(posActor);
+    posActor = nullptr;
+    for (auto arrow : m_arrows)
+    {
+        renderer->RemoveActor(arrow->getArrowActor());
+        renderer->RemoveActor(arrow->getStartActor());
+        renderer->RemoveActor(arrow->getEndActor());
+        delete arrow;
+    }
+    m_arrows.clear();
+
+}
 LVRScanImageBridge::~LVRScanImageBridge()
 {
     

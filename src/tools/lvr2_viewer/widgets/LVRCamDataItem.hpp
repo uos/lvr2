@@ -16,7 +16,7 @@
 #include "lvr2/geometry/Normal.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/registration/TransformUtils.hpp"
+#include "lvr2/util/TransformUtils.hpp"
 
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../vtkBridge/LVRBoundingBoxBridge.hpp"

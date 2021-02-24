@@ -71,7 +71,11 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRScanCamItem.cpp
     widgets/LVRScanImageItem.cpp
     widgets/LVRScanProjectOpenDialog.cpp
+    widgets/LVRReductionAlgorithmDialog.cpp
     util/qttf.cpp
+    widgets/LVRCameraModelItem.cpp
+    widgets/LVRImageModelItem.cpp
+    widgets/LVRExtrinsicsItem.cpp
 )
 
 #if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
@@ -107,6 +111,7 @@ set(LVR2_VIEWER_MOCS
     widgets/LVRPlotter.hpp
     widgets/LVRHistogram.hpp
     widgets/LVRScanProjectOpenDialog.hpp
+    widgets/LVRReductionAlgorithmDialog.hpp
 )
 
 #####################################################################################
@@ -138,6 +143,7 @@ list(APPEND LVR2_VIEWER_UIS
    ui/LVRTooltipDialogUI.ui
    ui/LVRHistogram.ui
    ui/LVRScanProjectOpenDialogUI.ui
+   ui/LVRReductionAlgorithmDialogUI.ui
 )
 
 #####################################################################################
@@ -179,6 +185,7 @@ set(LVR2_VIEWER_DEPENDENCIES
   lvr2_static
   lvr2rply_static
   lvr2las_static
+  lvr2slam6d_static
   ${LVR2_LIB_DEPENDENCIES}
   ${Qt5Widgets_LIBRARIES}
   ${VTK_LIBRARIES}

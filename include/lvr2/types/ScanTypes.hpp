@@ -359,6 +359,82 @@ struct HyperspectralCamera : SensorType, Transformable
 
 
 /*****************************************************************************
+ * @brief   Struct to hold a Fullwaveform Data for a scan
+ * 
+ *****************************************************************************/
+
+struct Waveform : SensorDataType
+{
+    Waveform() : maxBucketSize(0),// amplitude(), deviation(), reflectance(), backgroundRadiation(),
+    waveformSamples(){};
+    ~Waveform(){};
+    /// Sensor type flag
+    static constexpr char                    kind[] = "Waveform";
+
+    /// Max Bucket Size of Waveform samples
+    int                                      maxBucketSize;
+/*
+    /// Amplitude
+    std::vector<float>                       amplitude;
+
+    /// Deviation
+    std::vector<float>                       deviation;
+
+    /// Reflectance
+    std::vector<float>                       reflectance;
+
+    /// Background Radiation
+    std::vector<float>                       backgroundRadiation;*/
+
+    //Waveform
+    std::vector<uint16_t>                    waveformSamples;
+    std::vector<long>                        waveformIndices;
+    std::vector<uint8_t>                     echoType;
+    std::vector<bool>                        lowPower;
+    //Eigen::Matrix<uint16_t, Eigen::Dynamic, Eigen::Dynamic>         waveformSamples;
+};
+using WaveformPtr = std::shared_ptr<Waveform>;
+
+/*****************************************************************************
+ * @brief   Struct to represent a LabelInstance
+ *****************************************************************************/
+struct LabelInstance : SensorDataType
+{
+    static constexpr char           kind[] = "LabelInstance";
+    std::string instanceName;
+
+    Vector3i color;
+
+    std::vector<int> labeledIDs;
+};
+using LabelInstancePtr = std::shared_ptr<LabelInstance>;
+/*****************************************************************************
+ * @brief   Struct to represent a LabelClass
+ *****************************************************************************/
+struct LabelClass : SensorDataType
+{
+    static constexpr char           kind[] = "LabelClass";
+    std::string className;
+
+    std::vector<LabelInstancePtr> instances;
+};
+using LabelClassPtr = std::shared_ptr<LabelClass>;
+/*****************************************************************************
+ * @brief   Struct to represent a LabelRoot
+ *****************************************************************************/
+struct LabelRoot : SensorDataType
+{
+    static constexpr char           kind[] = "LabelRoot";
+    PointBufferPtr points;
+    WaveformPtr waveform;
+
+    std::vector<std::pair<std::pair<uint32_t,uint32_t>,uint32_t>> pointOffsets;
+
+    std::vector<LabelClassPtr> labelClasses;
+};
+using LabelRootPtr = std::shared_ptr<LabelRoot>;
+
+/*****************************************************************************
  * @brief   Represents a scan position consisting of a scan and
  *          images taken at this position
  * 

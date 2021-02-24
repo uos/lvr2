@@ -74,7 +74,7 @@ vtkStandardNewMacro(LVRPickingInteractor);
 
 LVRPickingInteractor::LVRPickingInteractor() :
 //LVRPickingInteractor::LVRPickingInteractor(vtkSmartPointer<vtkRenderer> renderer) :
-   m_motionFactor(50), m_rotationFactor(20), m_interactorMode(TRACKBALL)
+   m_motionFactor(20), m_rotationFactor(20), m_interactorMode(TRACKBALL)
 {
     m_modified = false;
     m_startCameraMovePosition[0] = 0;

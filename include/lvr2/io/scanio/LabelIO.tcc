@@ -1,4 +1,4 @@
-#include "lvr2/io/yaml/Label.hpp"
+#include "lvr2/io/scanio/yaml/Label.hpp"
 namespace lvr2
 {
 
