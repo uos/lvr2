@@ -44,7 +44,7 @@ namespace lvr2
 
 class LVRScanImageBridge;
 
-LVRScanImageBridge::LVRScanImageBridge(ScanImagePtr img)
+LVRScanImageBridge::LVRScanImageBridge(CameraImagePtr img)
 {
     image = img;
 }

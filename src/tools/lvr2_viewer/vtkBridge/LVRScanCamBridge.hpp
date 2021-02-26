@@ -62,7 +62,7 @@ public:
      * @brief       Constructor. Parses the model information and generates vtk actor
      *              instances for the given data.
      */
-    LVRScanCamBridge(ScanCameraPtr camera);
+    LVRScanCamBridge(CameraPtr camera);
 
     /**
      *  @brief      Copy constructor
@@ -80,7 +80,7 @@ public:
     friend class LVRScanCamItem;
 
 private:
-    ScanCameraPtr m_cam;
+    CameraPtr m_cam;
 };
 
 typedef boost::shared_ptr<LVRScanCamBridge> ScanCamBridgePtr;

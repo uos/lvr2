@@ -97,10 +97,10 @@ void LVRScanProjectOpenDialog::updateDirectorySchema(int index)
     switch(index)
     {
         case 0:
-            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaHyperlib(m_kernel->fileResource()));
+            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaRaw(m_kernel->fileResource()));
             break;
         case 1:
-            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaSLAM(m_kernel->fileResource()));
+            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaSlam6D(m_kernel->fileResource()));
             break;
     }
 }
@@ -109,7 +109,7 @@ void LVRScanProjectOpenDialog::updateHDF5Schema(int index)
     switch(index)
     {
         case 0:
-            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5V2());
+            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
             break;
     }
 }

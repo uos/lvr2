@@ -32,7 +32,12 @@ LVRScanProjectBridge::LVRScanProjectBridge(ModelBridgePtr modelBridge)
     ScanProjectPtr modelProject(new ScanProject);
     ScanPositionPtr posPtr(new ScanPosition);
     ScanPtr scanPtr(new Scan);
-    posPtr->scans.push_back(scanPtr);
+
+
+    posPtr->lidars.push_back(LIDARPtr(new LIDAR));
+
+
+    posPtr->lidars[0]->scans.push_back(scanPtr);
     modelProject->positions.push_back(posPtr);
     
     //set Pointcloud
@@ -49,7 +54,7 @@ LVRScanProjectBridge::LVRScanProjectBridge(ModelBridgePtr modelBridge)
     angle[1] = modelBridge->getPose().t;
     angle[2] = modelBridge->getPose().p;
 
-    posPtr->registration = poseToMatrix(pos, angle);
+    posPtr->transformation = poseToMatrix(pos, angle);
     m_scanproject = modelProject;
 
     ScanPositionBridgePtr posBridgePtr;

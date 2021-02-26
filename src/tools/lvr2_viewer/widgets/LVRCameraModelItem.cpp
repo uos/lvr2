@@ -3,10 +3,10 @@
 namespace lvr2
 {
 
-LVRCameraModelItem::LVRCameraModelItem(ScanCamera& cam) :
+LVRCameraModelItem::LVRCameraModelItem(Camera& cam) :
     QTreeWidgetItem(LVRCameraModelItemType)
 {
-    m_model = cam.camera;
+    m_model = cam.model;
 
     QIcon icon;
     icon.addFile(QString::fromUtf8(":/qv_transform_tree_icon.png"), QSize(), QIcon::Normal, QIcon::Off);
@@ -36,14 +36,14 @@ LVRCameraModelItem::LVRCameraModelItem(ScanCamera& cam) :
     setModel(m_model);
 }
 
-void LVRCameraModelItem::setModel(PinholeModeld& model)
+void LVRCameraModelItem::setModel(PinholeModel& model)
 {
     m_model = model;
     QString num;
 
     //fill child items with text
     m_fxItem->setText(0, "fx:");
-    m_fxItem->setText(1, num.setNum(m_model.fx,'f'));
+    m_fxItem->setText(1, num.setNum(m_model.fx ,'f'));
 
     m_cxItem->setText(0, "cx:");
     m_cxItem->setText(1, num.setNum(m_model.cx,'f'));

@@ -47,12 +47,14 @@ class ScanProjectIO
 {
   public:
     void save(ScanProjectPtr scanProject) const;
+    void saveScanProject(ScanProjectPtr scanProject) const;
+   
     ScanProjectPtr load() const;
+    ScanProjectPtr loadScanProject() const;
+    ScanProjectPtr loadScanProject(ReductionAlgorithmPtr reduction) const;
 
     boost::optional<YAML::Node> loadMeta() const;
 
-    void saveScanProject(ScanProjectPtr scanProject) const;
-    ScanProjectPtr loadScanProject() const;
     
   protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);

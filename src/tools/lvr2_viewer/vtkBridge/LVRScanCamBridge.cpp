@@ -44,7 +44,7 @@ namespace lvr2
 
 class LVRMeshBufferBridge;
 
-LVRScanCamBridge::LVRScanCamBridge(ScanCameraPtr camera)
+LVRScanCamBridge::LVRScanCamBridge(CameraPtr camera)
 {
     m_cam = camera;
 }

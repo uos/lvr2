@@ -387,7 +387,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     const size_t& scanNo, 
     ReductionAlgorithmPtr reduction) const
 {
-    ScanPtr ret = loadScan(scanPosNo, scanNo);
+    ScanPtr ret = loadScan(scanPosNo, sensorNo, scanNo);
 
     if(ret)
     {

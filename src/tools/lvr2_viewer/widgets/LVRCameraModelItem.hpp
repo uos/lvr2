@@ -2,8 +2,11 @@
 #define LVRCAMERAMODELITEM_HPP
 
 #include <QTreeWidgetItem>
-#include "lvr2/types/ScanTypes.hpp"
 #include <QtWidgets/qtreewidget.h>
+
+#include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/types/CameraModels.hpp"
+
 #include "LVRItemTypes.hpp"
 
 namespace lvr2
@@ -15,7 +18,7 @@ public:
     /**
      *  @brief          Constructor. Constructs an item with the cameramodel for the given ScanCamera
      */
-    LVRCameraModelItem(ScanCamera& cam);
+    LVRCameraModelItem(Camera& cam);
     
     /**
      *  @brief          Destructor.
@@ -25,10 +28,10 @@ public:
     /**
      *  @brief          Set the internal model to the given model
      */
-    void setModel(PinholeModeld& model);
+    void setModel(PinholeModel& model);
 
 protected:
-    PinholeModeld m_model;
+    PinholeModel m_model;
     std::shared_ptr<QTreeWidgetItem> m_fxItem;
     std::shared_ptr<QTreeWidgetItem> m_cxItem;
     std::shared_ptr<QTreeWidgetItem> m_fyItem;

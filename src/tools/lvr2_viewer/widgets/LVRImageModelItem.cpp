@@ -3,14 +3,14 @@
 namespace lvr2
 {
 
-LVRImageModelItem::LVRImageModelItem(ScanImage& img) : 
+LVRImageModelItem::LVRImageModelItem(CameraImage& img) : 
     QTreeWidgetItem(LVRImageModelItemType)
 {
     //set text off item to meta
     setText(0, "Meta");
 
     //create Extrinsics and timestamp item
-    m_extrinsics = std::make_shared<LVRExtrinsicsItem>(img.extrinsics);
+    m_extrinsics = std::make_shared<LVRExtrinsicsItem>(img.extrinsicsEstimation);
     m_timestamp = std::make_shared<QTreeWidgetItem>(this);
 
     addChild(m_extrinsics.get());

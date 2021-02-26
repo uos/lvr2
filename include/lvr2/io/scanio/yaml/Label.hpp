@@ -21,7 +21,7 @@ struct convert<lvr2::LabelInstance>
 {
     static Node encode(const lvr2::LabelInstance& instance) {
         Node node;
-        node["sensor_type"] = lvr2::LabelInstance::sensorType;
+        node["type"] = lvr2::LabelInstance::type;
         node["name"] = instance.instanceName;
         node["color"] = Load("[]");
         node["color"].push_back(instance.color[0]);
@@ -32,7 +32,7 @@ struct convert<lvr2::LabelInstance>
 
     static bool decode(const Node& node, lvr2::LabelInstance& instance) {
         
-        if(node["sensor_type"].as<std::string>() != lvr2::LabelInstance::sensorType) 
+        if(node["type"].as<std::string>() != lvr2::LabelInstance::type) 
         {
             return false;
         }
@@ -51,7 +51,7 @@ struct convert<lvr2::LabelClass>
 {
     static Node encode(const lvr2::LabelClass& labelClass) {
         Node node;
-        node["sensor_type"] = lvr2::LabelInstance::sensorType;
+        node["type"] = lvr2::LabelInstance::type;
         node["name"] = labelClass.className;
 
         return node;
@@ -59,7 +59,7 @@ struct convert<lvr2::LabelClass>
 
     static bool decode(const Node& node, lvr2::LabelClass& labelClass) {
         
-        if(node["sensor_type"].as<std::string>() != lvr2::LabelClass::sensorType) 
+        if(node["type"].as<std::string>() != lvr2::LabelClass::type) 
         {
             return false;
         }

@@ -11,10 +11,10 @@
 namespace lvr2
 {
 
-class ScanProjectSchemaRaw : public DirectorySchema, public HDF5Schema
+class ScanProjectSchemaRaw : public DirectorySchema
 {
 public:
-    ScanProjectSchemaRaw(std::string& rootDir) : DirectorySchema(rootDir) {};
+    ScanProjectSchemaRaw(const std::string& rootDir) : DirectorySchema(rootDir) {};
 
     ~ScanProjectSchemaRaw() = default;
 

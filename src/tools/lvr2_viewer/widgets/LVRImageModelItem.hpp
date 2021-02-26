@@ -17,7 +17,7 @@ public:
     /**
      *  @brief          Constructor. Constructs an ImageModelItem from the ScanImage.
      */
-    LVRImageModelItem(ScanImage& img);
+    LVRImageModelItem(CameraImage& img);
 
     /**
      *  @brief          Destructor.

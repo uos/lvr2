@@ -68,7 +68,7 @@ public:
      * @brief       Constructor. Parses the model information and generates vtk actor
      *              instances for the given data.
      */
-    LVRScanImageBridge(ScanImagePtr img);
+    LVRScanImageBridge(CameraImagePtr img);
 
     /**
      *  @brief      Copy constructor.
@@ -114,7 +114,7 @@ public:
 
 private:
 
-    ScanImagePtr image;
+    CameraImagePtr image;
     vtkSmartPointer<vtkImageData> imageData;
     vtkSmartPointer<vtkActor2D> imageActor;
     vtkSmartPointer<vtkActor> posActor;

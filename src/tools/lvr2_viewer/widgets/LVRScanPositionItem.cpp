@@ -3,41 +3,52 @@
 #include "LVRTextureMeshItem.hpp"
 #include "LVRItemTypes.hpp"
 #include "LVRModelItem.hpp"
+#include "LVRScanCamItem.hpp"
+#include "LVRScanImageItem.hpp"
+
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 #include <vtkPolyDataMapper.h>
+
 #include <sstream>
-#include "LVRScanCamItem.hpp"
-#include "LVRScanImageItem.hpp"
+
 #include <QTextStream>
+
 namespace lvr2
 {
 
 LVRScanPositionItem::LVRScanPositionItem(ScanPositionBridgePtr bridge, QString name) :
-    QTreeWidgetItem(LVRScanPositionItemType), m_scanPositionBridge(bridge), m_name(name)
+    QTreeWidgetItem(LVRScanPositionItemType), 
+    m_scanPositionBridge(bridge), 
+    m_name(name)
 {
+    ScanPositionPtr pos = bridge->getScanPosition();
+
     //add child items for each scan
-    for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
+    for(auto lidar: pos->lidars)
     {
-        std::stringstream pos;
-        pos << "" << std::setfill('0') << std::setw(8) << i;
-        std::string posName = pos.str();
-        std::vector<ModelBridgePtr> models;
-        models = bridge->getModels();
-        LVRModelItem* modelItem = new LVRModelItem(models[i], QString::fromStdString(posName));
-        if(bridge->getScanPosition()->scans[i]->waveform)
+        for (int i = 0; i < lidar->scans.size(); i++)
         {
-            modelItem->getModelBridge()->setWaveform(bridge->getScanPosition()->scans[i]->waveform);
+            std::stringstream pos;
+            pos << "" << std::setfill('0') << std::setw(8) << i;
+            std::string posName = pos.str();
+            std::vector<ModelBridgePtr> models;
+            models = bridge->getModels();
+            LVRModelItem *modelItem = new LVRModelItem(models[i], QString::fromStdString(posName));
+            // if (lidar->scans[i]->waveform)
+            // {
+            //     modelItem->getModelBridge()->setWaveform(bridge->getScanPosition()->scans[i]->waveform);
+            // }
+            addChild(modelItem);
         }
-        addChild(modelItem);
     }
 
     //add child items for each cam
-    for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
+    for(int i = 0; i < bridge->getScanPosition()->cameras.size(); i++)
     {
-        ScanCamBridgePtr camBridge(new LVRScanCamBridge(bridge->getScanPosition()->cams[0]));
+        ScanCamBridgePtr camBridge(new LVRScanCamBridge(bridge->getScanPosition()->cameras[0]));
         QString camName;
-        QTextStream(&camName) << "cam_" << i;
+        QTextStream(&camName) << "camera_" << i;
         LVRScanCamItem* camItem = new LVRScanCamItem(camBridge, camName);
         addChild(camItem);
     }
@@ -85,39 +96,49 @@ bool LVRScanPositionItem::isEnabled()
 void LVRScanPositionItem::setBridge(ScanPositionBridgePtr bridge)
 {
     //delete children of this item
+    // TODO: Does this make sense? Has bridge always the same
+    // elemets as the current tree???
     m_scanPositionBridge = bridge;
-    for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
+    ScanPositionPtr pos = bridge->getScanPosition();
+    for (auto lidar : pos->lidars)
     {
-        delete child(0);
+        for (int i = 0; i < lidar->scans.size(); i++)
+        {
+            delete child(0);
+        }
     }
-    for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
+
+    for (int i = 0; i < bridge->getScanPosition()->cameras.size(); i++)
     {
         delete child(0);
     }
     delete child(0);
 
     //create new items for scans
-    for(int i = 0; i < bridge->getScanPosition()->scans.size(); i++)
+    for (auto lidar : pos->lidars)
     {
-        std::stringstream pos;
-        pos << "" << std::setfill('0') << std::setw(8) << i;
-        std::string posName = pos.str();
-        std::vector<ModelBridgePtr> models;
-        models = bridge->getModels();
-        LVRModelItem* modelItem = new LVRModelItem(models[i], QString::fromStdString(posName));
-        if(bridge->getScanPosition()->scans[i]->waveform)
+        for (int i = 0; i < lidar->scans.size(); i++)
         {
-            modelItem->getModelBridge()->setWaveform(bridge->getScanPosition()->scans[i]->waveform);
+            std::stringstream pos;
+            pos << "" << std::setfill('0') << std::setw(8) << i;
+            std::string posName = pos.str();
+            std::vector<ModelBridgePtr> models;
+            models = bridge->getModels();
+            LVRModelItem *modelItem = new LVRModelItem(models[i], QString::fromStdString(posName));
+            // if (bridge->getScanPosition()->scans[i]->waveform)
+            // {
+            //     modelItem->getModelBridge()->setWaveform(lidar->scans[i]->waveform);
+            // }
+            addChild(modelItem);
         }
-        addChild(modelItem);
     }
 
     //create new items for cams
-    for(int i = 0; i < bridge->getScanPosition()->cams.size(); i++)
+    for(int i = 0; i < bridge->getScanPosition()->cameras.size(); i++)
     {
-        ScanCamBridgePtr camBridge(new LVRScanCamBridge(bridge->getScanPosition()->cams[0]));
+        ScanCamBridgePtr camBridge(new LVRScanCamBridge(bridge->getScanPosition()->cameras[i]));
         QString camName;
-        QTextStream(&camName) << "cam_" << i;
+        QTextStream(&camName) << "camera_" << i;
         LVRScanCamItem* camItem = new LVRScanCamItem(camBridge, camName);
         addChild(camItem);
     }

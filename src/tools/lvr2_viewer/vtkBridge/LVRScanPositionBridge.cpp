@@ -21,10 +21,11 @@ LVRScanPositionBridge::LVRScanPositionBridge(ScanPositionPtr position) :
     m_pose.t = -angles[1] * 180 / PI;
     m_pose.p = -angles[2] * 180 / PI;
     
+    
     //add all the scans in the scanposition to the models
-    for(auto lidars : position->lidars)
+    for(auto lidar : position->lidars)
     {
-        for(auto scan : lidars)
+        for(auto scan : lidar->scans)
         {
             ModelPtr model(new Model);
             if (scan->points)

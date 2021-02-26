@@ -103,8 +103,8 @@
 #include "../widgets/LVRPointcloudSelectionDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
 #include "../widgets/LVRLabelTreeWidget.hpp"
-#include "../widgets/LVRScanDataItem.hpp"
-#include "../widgets/LVRCamDataItem.hpp"
+//#include "../widgets/LVRScanDataItem.hpp"
+//#include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"
 #include "../widgets/LVRPointInfo.hpp"
 #include "../widgets/LVRLabelClassTreeItem.hpp"
@@ -272,7 +272,8 @@ public Q_SLOTS:
     void updateSpectralSlidersEnabled(bool checked);
     /// Switches between Sliders and Gradients. checked == true => Gradient DockWidget enabled
     void updateSpectralGradientEnabled(bool checked);
-    QTreeWidgetItem* addScans(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent);
+
+    //QTreeWidgetItem* addScans(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent);
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);

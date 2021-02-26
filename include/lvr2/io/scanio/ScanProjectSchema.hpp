@@ -41,9 +41,9 @@ std::ostream& operator<<(std::ostream& os, const Description& desc);
 class ScanProjectSchema
 {
 public:
-    ScanProjectSchema() {}
+    ScanProjectSchema() = default;
 
-    ~ScanProjectSchema() = default;
+    virtual ~ScanProjectSchema() = default;
 
     virtual Description scanProject() const = 0;
 

@@ -68,7 +68,8 @@ LVRScanCamItem::LVRScanCamItem(ScanCamBridgePtr bridge, QString name) :
     for(int i = 0; i < m_scanCamBridge->m_cam->images.size(); i++)
     {
         ScanImageBridgePtr imgBridge(new LVRScanImageBridge(m_scanCamBridge->m_cam->images[i]));
-        QString imgName = QString::fromStdString(m_scanCamBridge->m_cam->images[i]->imageFile.string());
+        /// Fixme: How to lazy-load?==
+        QString imgName = "Image_" + i;
         LVRScanImageItem* imgItem = new LVRScanImageItem(imgBridge, imgName);
         addChild(imgItem);
     }

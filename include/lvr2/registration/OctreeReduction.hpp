@@ -90,6 +90,7 @@ private:
  */
 class OctreeReductionAlgorithm : public ReductionAlgorithm
 {
+public:
     OctreeReductionAlgorithm(double voxelSize, size_t minPoints) : 
         m_octree(nullptr), m_voxelSize(voxelSize), m_minPoints(minPoints) {};
 

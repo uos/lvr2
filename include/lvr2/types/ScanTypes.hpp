@@ -74,6 +74,11 @@ struct SensorDataType {
     static constexpr char           type[] = "SensorData";
 };
 
+struct LabelDataType {
+    static constexpr char           type[] = "LabelData";
+};
+
+
 struct Transformable {
     /// Transformation to the upper frame:
     /// ScanProject: to World (GPS)
@@ -273,6 +278,7 @@ struct CameraImage : SensorDataType, Transformable
 
     /// Timestamp 
     double                          timestamp;
+
 };
 
 
@@ -398,7 +404,7 @@ using WaveformPtr = std::shared_ptr<Waveform>;
 /*****************************************************************************
  * @brief   Struct to represent a LabelInstance
  *****************************************************************************/
-struct LabelInstance : SensorDataType
+struct LabelInstance : LabelDataType
 {
     static constexpr char           kind[] = "LabelInstance";
     std::string instanceName;
@@ -411,7 +417,7 @@ using LabelInstancePtr = std::shared_ptr<LabelInstance>;
 /*****************************************************************************
  * @brief   Struct to represent a LabelClass
  *****************************************************************************/
-struct LabelClass : SensorDataType
+struct LabelClass :LabelDataType
 {
     static constexpr char           kind[] = "LabelClass";
     std::string className;
@@ -422,7 +428,7 @@ using LabelClassPtr = std::shared_ptr<LabelClass>;
 /*****************************************************************************
  * @brief   Struct to represent a LabelRoot
  *****************************************************************************/
-struct LabelRoot : SensorDataType
+struct LabelRoot : LabelDataType
 {
     static constexpr char           kind[] = "LabelRoot";
     PointBufferPtr points;
@@ -456,36 +462,36 @@ using LabelRootPtr = std::shared_ptr<LabelRoot>;
 
 
 
-// /*****************************************************************************
-//  * @brief   Struct to represent a scan project with marker showing if a scan
-//  *          pose has been changed
-//  *****************************************************************************/
-// struct ScanProjectEditMark
-// {
-//     ScanProjectEditMark(){}
-//     ScanProjectEditMark(ScanProjectPtr _project):project(project){}
-//     ScanProjectPtr project;
-//     /// True if scan pose has been changed, one bool for each scan position
-//     std::vector<bool> changed;
-// };
-// using ScanProjectEditMarkPtr = std::shared_ptr<ScanProjectEditMark>;
+/*****************************************************************************
+ * @brief   Struct to represent a scan project with marker showing if a scan
+ *          pose has been changed
+ *****************************************************************************/
+struct ScanProjectEditMark
+{
+    ScanProjectEditMark(){}
+    ScanProjectEditMark(ScanProjectPtr _project):project(project){}
+    ScanProjectPtr project;
+    /// True if scan pose has been changed, one bool for each scan position
+    std::vector<bool> changed;
+};
+using ScanProjectEditMarkPtr = std::shared_ptr<ScanProjectEditMark>;
 
-// /*****************************************************************************
-//  * @brief   Struct to Represt a scan with Labels
-//  *****************************************************************************/
-// struct LabeledScanProjectEditMark
-// {
-//     LabeledScanProjectEditMark(){}
-//     LabeledScanProjectEditMark(ScanProjectPtr _project)
-//     {
-//         editMarkProject = ScanProjectEditMarkPtr(new ScanProjectEditMark(_project));
-//     }
-//     ScanProjectEditMarkPtr editMarkProject;
+/*****************************************************************************
+ * @brief   Struct to Represt a scan with Labels
+ *****************************************************************************/
+struct LabeledScanProjectEditMark
+{
+    LabeledScanProjectEditMark(){}
+    LabeledScanProjectEditMark(ScanProjectPtr _project)
+    {
+        editMarkProject = ScanProjectEditMarkPtr(new ScanProjectEditMark(_project));
+    }
+    ScanProjectEditMarkPtr editMarkProject;
     
-//     //Contains all data assoicated with Label
-//     LabelRootPtr                    labelRoot;
-// };
-// using LabeledScanProjectEditMarkPtr = std::shared_ptr<LabeledScanProjectEditMark>;
+    //Contains all data assoicated with Label
+    LabelRootPtr                    labelRoot;
+};
+using LabeledScanProjectEditMarkPtr = std::shared_ptr<LabeledScanProjectEditMark>;
 
 
 

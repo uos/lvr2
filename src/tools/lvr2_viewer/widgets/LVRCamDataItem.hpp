@@ -10,8 +10,6 @@
 
 #include <Eigen/Dense>
 
-#include "lvr2/io/ScanDataManager.hpp"
-#include "lvr2/geometry/Transformable.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
 #include "lvr2/types/ScanTypes.hpp"

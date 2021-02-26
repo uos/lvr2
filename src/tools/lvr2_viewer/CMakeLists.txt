@@ -58,9 +58,9 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRPointInfo.cpp
     widgets/LVRPlotter.cpp
     widgets/LVRHistogram.cpp
-    widgets/LVRScanDataItem.cpp
-    widgets/LVRCamDataItem.cpp
-    widgets/LVRCvImageItem.cpp
+#    widgets/LVRScanDataItem.cpp
+#    widgets/LVRCamDataItem.cpp
+#    widgets/LVRCvImageItem.cpp
     widgets/LVRBoundingBoxItem.cpp
     widgets/LVRGraphicsView.cpp
     widgets/LVRLabelTreeWidget.cpp
@@ -72,7 +72,7 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRScanImageItem.cpp
     widgets/LVRScanProjectOpenDialog.cpp
     widgets/LVRReductionAlgorithmDialog.cpp
-    util/qttf.cpp
+#    util/qttf.cpp
     widgets/LVRCameraModelItem.cpp
     widgets/LVRImageModelItem.cpp
     widgets/LVRExtrinsicsItem.cpp
@@ -185,7 +185,6 @@ set(LVR2_VIEWER_DEPENDENCIES
   lvr2_static
   lvr2rply_static
   lvr2las_static
-  lvr2slam6d_static
   ${LVR2_LIB_DEPENDENCIES}
   ${Qt5Widgets_LIBRARIES}
   ${VTK_LIBRARIES}

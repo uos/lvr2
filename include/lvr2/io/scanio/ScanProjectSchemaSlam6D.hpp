@@ -25,7 +25,7 @@ namespace lvr2
 class ScanProjectSchemaSlam6D : public DirectorySchema
 {
 public:
-    ScanProjectSchemaSlam6D(std::string& rootDir) : DirectorySchema(rootDir) {};
+    ScanProjectSchemaSlam6D(const std::string& rootDir) : DirectorySchema(rootDir) {};
 
     ~ScanProjectSchemaSlam6D() = default;
 

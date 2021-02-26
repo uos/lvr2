@@ -44,6 +44,7 @@
 namespace lvr2
 {
 
+/// TODO: ADD Support for lidars!
 class LVRScanPositionItem : public QTreeWidgetItem
 {
 public:
