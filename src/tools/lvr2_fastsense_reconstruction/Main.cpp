@@ -38,6 +38,7 @@
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 
 #include "tsdf.h"
+#include <unordered_set>
 
 /**
  * log(CHUNK_SIZE).
@@ -68,6 +69,8 @@ void print_usage(const std::string& prog_name)
 {
     std::cout << prog_name << " <path-to_hdf5-map-file> <save-directory> <mesh-name> <Params: [shc]* with s=smoothing, h=fill_holes, c=clean_contours>" << std::endl;
 }
+
+void fill_holes(lvr2::HalfEdgeMesh<lvr2::BaseVector<int>>& mesh, size_t maxSize);
 
 int main(int argc, char** argv)
 {
@@ -232,7 +235,8 @@ int main(int argc, char** argv)
     if(fillHoles)
     {
         std::cout << "Start removing holes!" << std::endl;
-        naiveFillSmallHoles(mesh, 20, false);
+        // naiveFillSmallHoles(mesh, 20, false);
+        fill_holes(mesh, 20);
         std::cout << "Finished removing holes!" << std::endl;
     }
     
@@ -292,3 +296,27 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
+using namespace lvr2;
+
+size_t fill_holes(HalfEdgeMesh<BaseVector<int>>& mesh, size_t maxSize, bool collapseOnly)
+{
+    std::unordered_set<HalfEdgeHandle> visited_edges;
+
+    std::vector<std::vector<HalfEdgeHandle>> contours;
+
+    for (auto& eH : mesh.edges())
+    {
+        if (!visited_edges.emplace(eH).second)
+        {
+            continue;
+        }
+        if (mesh.numAdjacentFaces(eH) != 1)
+        {
+            continue;
+        }
+        // TODO: get heH without face, add to contour
+        // TODO: remember to add everything in countour to visited_edges
+    }
+}
+
