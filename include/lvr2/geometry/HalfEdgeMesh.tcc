@@ -1745,6 +1745,51 @@ void HalfEdgeMesh<BaseVecT>::splitVertex(EdgeHandle eH,
     getE(newEdgeC.first).face  = newFace2H;
 }
 
+/**
+ * @brief Fills holes of a maximum contour size (meaning maximum number of edges making up the contour) in the mesh
+ * 
+ * @tparam BaseVecT base vector
+ * @param maxSize maximum number of edges belonging to the contour
+ * @return size_t 
+ */
+template <typename BaseVecT>
+size_t HalfEdgeMesh<BaseVecT>::fill_holes(size_t maxSize)
+{
+    std::unordered_set<EdgeHandle> visited_edges;
+
+    std::vector<std::vector<HalfEdgeHandle>> contours;
+    
+    //used to store the current contour
+    std::vector<HalfEdgeHandle> cur_contour;
+
+    for (auto& eH : mesh.edges())
+    {
+        if (!visited_edges.emplace(eH).second)
+        {
+            continue;
+        }
+        if (mesh.numAdjacentFaces(eH) != 1)
+        {
+            continue;
+        }
+        // TODO: get heH without face, add to contour
+        // TODO: remember to add everything in countour to visited_edges
+
+        //get halfedges of edge
+        auto& heH1 = HalfEdgeHandle::oneHalfOf(eH);
+        auto& heH2 = getE(heH1).twin;
+        
+    }
+}
+
+void HalfEdgeMesh<BaseVecT>::find_contour(HalfEdgeHandle heH, std::vector<HalfEdgeHandle> &contour)
+{
+    return;
+}
+
+
+
+
 template <typename BaseVecT>
 EdgeHandle HalfEdgeMesh<BaseVecT>::halfToFullEdgeHandle(HalfEdgeHandle handle) const
 {

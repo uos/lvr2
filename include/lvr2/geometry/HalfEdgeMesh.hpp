@@ -89,6 +89,8 @@ public:
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
     VertexSplitResult splitVertex(VertexHandle vertexToBeSplitH);
     EdgeSplitResult splitEdge(EdgeHandle edgeH);
+    size_t fill_holes(size_t maxSize);
+    void find_contour(HalfEdgeHandle heH, std:vector<HalfEdgeHandle>& contour);
     vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void flipEdge(EdgeHandle edgeH) final;
     void splitVertex(EdgeHandle eH, VertexHandle vH, BaseVecT pos1, BaseVecT pos2);
