@@ -9,7 +9,6 @@ set(LVR2_EXAMPLES_SCAN_PROJECTS_DEPS
 	lvr2_static
 	lvr2las_static
 	lvr2rply_static
-	lvr2slam6d_static
 	${LVR2_LIB_DEPENDENCIES}
 )
 

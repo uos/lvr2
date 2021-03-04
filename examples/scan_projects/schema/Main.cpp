@@ -12,18 +12,18 @@
 #include "lvr2/types/ScanTypes.hpp"
 
 // DirectoryIO includes
-#include "lvr2/io/descriptions/DirectoryIO.hpp"
-#include "lvr2/io/descriptions/DirectoryKernel.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaRaw.hpp"
+#include "lvr2/io/scanio/DirectoryIO.hpp"
+#include "lvr2/io/scanio/DirectoryKernel.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
 
 // Hdf5IO includes
-#include "lvr2/io/descriptions/HDF5IO.hpp"
-#include "lvr2/io/descriptions/HDF5Kernel.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/scanio/HDF5IO.hpp"
+#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
 
 using namespace lvr2;
 // using this is only temporary until old IO is deleted
-using lvr2::descriptions::HDF5IO;
+using lvr2::scanio::HDF5IO;
 
 ////////////////////////////////
 /// SCHEMA USAGE 1
