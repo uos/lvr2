@@ -233,16 +233,15 @@ int main(int argc, char** argv)
     if(fillHoles)
     {
         std::cout << "Start removing holes!" << std::endl;
-        // naiveFillSmallHoles(mesh, 200, false);
-        mesh.fillHoles(199);
+        mesh.fillHoles(200); //fills holes with a maximum contour size of 200
         std::cout << "Finished removing holes!" << std::endl;
     }
     
     if (smooth)
     {
         std::cout << "Started smoothing..." << std::endl;
-        float smoothing_factor = 0.5;
-        float num_smoothings = 3;
+        float smoothing_factor = 0.5; //determines, how much the laplacian smoothing
+        float num_smoothings = 10; //determines how often the laplacian smoothing is applied.
 
         //perform laplacian smoothing on the mesh
         for(int i = 0; i < num_smoothings; i++)
@@ -253,6 +252,7 @@ int main(int argc, char** argv)
                 auto& vertex = mesh.getVertexPosition(vertexH);
                 lvr2::BaseVector<float> avg_vec(0,0,0);
 
+                //calculate the average vector from the neighbors to the center
                 for(auto vH : n_vertices)
                 {
                     auto v = mesh.getVertexPosition(vH);
@@ -261,6 +261,7 @@ int main(int argc, char** argv)
 
                 avg_vec /= n_vertices.size();
                 
+                //smoothing factor is used to determine how much the vertex is moved in the calculated direction
                 lvr2::BaseVector<float> avg_vec_factorized(avg_vec[0] * smoothing_factor,
                                                            avg_vec[1] * smoothing_factor,
                                                            avg_vec[2] * smoothing_factor);
@@ -282,13 +283,6 @@ int main(int argc, char** argv)
     auto model_ptr = std::make_shared<lvr2::Model>(buffer);
     lvr2::PLYIO ply_io;
     ply_io.save(model_ptr, dst_dir_name + "/" + mesh_name_ply);
-
-    // std::cout << "Write mesh into HDF5 file..." << std::endl;
-
-    // // Write mesh into HDF5 file
-    // HDF5MeshToolIO hdf5;
-    // hdf5.open(dst_dir_name + "/" + mesh_name_h5);
-    // hdf5.save("tsdf_mesh", buffer);
 
     std::cout << "mesh saved!" << std::endl;
 

@@ -30,6 +30,8 @@
  *
  *  @date 02.06.2017
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ *  @author Patrick Hoffmann <pahoffmann@uni-osnabrueck.de>
+ *  @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
 #include <algorithm>
@@ -1780,6 +1782,7 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
         visitedVertices.clear();
         bool valid = true;
 
+        // find contour vertices by running around the non-existing face (the hole) -> using .next
         auto start = heH;
         do
         {
@@ -1788,7 +1791,6 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
             visitedEdges[halfToFullEdgeHandle(heH)] = true;
             heH = he.next;
             he = getE(heH);
-            // assert(!he.face);
         } while (heH != start);
 
         if (!valid)
@@ -1803,6 +1805,7 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
             continue;
         }
 
+        // as the contour fulfills all the necessary criteria, we add it to the list of contours which will be filled
         contours.push_back(currContour);
     }
 
@@ -1811,25 +1814,27 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
     string comment = timestamp.getElapsedTime() + "Removing holes";
     ProgressBar progress(contours.size(), comment);
 
+    // now fill the found holes
     for (const auto& contour : contours)
     {
-        ++progress;
+        ++progress; // advance the progress bar
         try
         {
-
+            //if the hole constist of three edges, we can instantly fill it by adding a face
             if (contour.size() == 3)
             {
                 addFace(contour[0], contour[1], contour[2]);
                 continue;
             }
-
+            
+            // calculate the averge point of the contour and adding it to the mesh
             BaseVecT middle = getV(contour[0]).pos;
             for (size_t i = 1; i < contour.size(); i++)
             {
                 middle += getV(contour[i]).pos;
             }
             middle /= contour.size();
-            auto middleH = addVertex(middle);
+            auto middleH = this->addVertex(middle);
 
             auto lastH = contour.back();
 
@@ -1840,22 +1845,7 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
                 lastH = vH;
             }
 
-            int num_splits = 5;
-
-            /*for(int i = 0; i < num_splits; i++)
-            {
-                auto nVertices = this->getNeighboursOfVertex(middleH);
-
-                for(auto nH : nVertices)
-                {
-                    OptionalEdgeHandle handle = this->getEdgeBetween(nH, middleH);
-                    if(handle)
-                    {
-                        cout << "splitting stuff.." << endl;
-                        this->splitEdge(handle.unwrap());
-                    }
-                }
-            }*/
+            // apply a a contour size dependent number of vertex splits to the mesh to add vertices to make the hole filling more smooth and consistent.
             for(int i = 0; i < contour.size() * 2; i++)
             {
                 this->splitVertex(middleH);

@@ -30,6 +30,8 @@
  *
  *  @date 02.06.2017
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ *  @author Patrick Hoffmann <pahoffmann@uni-osnabrueck.de>
+ *  @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
 #ifndef LVR2_GEOMETRY_HALFEDGEMESH_H_
