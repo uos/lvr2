@@ -70,8 +70,6 @@ void print_usage(const std::string& prog_name)
     std::cout << prog_name << " <path-to_hdf5-map-file> <save-directory> <mesh-name> <Params: [shc]* with s=smoothing, h=fill_holes, c=clean_contours>" << std::endl;
 }
 
-void fill_holes(lvr2::HalfEdgeMesh<lvr2::BaseVector<int>>& mesh, size_t maxSize);
-
 int main(int argc, char** argv)
 {
     if (argc < 4)
@@ -117,8 +115,8 @@ int main(int argc, char** argv)
     HighFive::File f(src_name, HighFive::File::ReadOnly); // TODO: Path and name as command line input
     HighFive::Group g = f.getGroup("/map");
 
-    lvr2::BaseVector<int> min(0, 0, 0); 
-    lvr2::BaseVector<int> max(0, 0, 0);
+    lvr2::BaseVector<float> min(0, 0, 0); 
+    lvr2::BaseVector<float> max(0, 0, 0);
 
     std::cout << "Determine map boundingbox..." << std::endl;
 
@@ -159,13 +157,13 @@ int main(int argc, char** argv)
     }
 
     min *= CHUNK_SIZE;
-    max = max * CHUNK_SIZE + lvr2::BaseVector<int>(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
+    max = max * CHUNK_SIZE + lvr2::BaseVector<float>(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
 
     std::cout << "Create and fill reconstruction grid..." << std::endl;
 
     // Create the Grid for the reconstruction algorithm
-    lvr2::BoundingBox<lvr2::BaseVector<int>> bb(min * SCALE, max * SCALE);
-    auto grid = std::make_shared<lvr2::HashGrid<lvr2::BaseVector<int>, lvr2::FastBox<lvr2::BaseVector<int>>>>(MAP_RESOLUTION, bb);
+    lvr2::BoundingBox<lvr2::BaseVector<float>> bb(min * SCALE, max * SCALE);
+    auto grid = std::make_shared<lvr2::HashGrid<lvr2::BaseVector<float>, lvr2::FastBox<lvr2::BaseVector<float>>>>(MAP_RESOLUTION, bb);
 
     // Fill the grid with the valid TSDF values of the map
     for (auto tag : g.listObjectNames())
@@ -219,8 +217,8 @@ int main(int argc, char** argv)
     std::cout << "Reconstruct mesh with a marching cubes algorithm..." << std::endl;
 
     // Reconstruct the mesh with a marching cubes algorithm
-    lvr2::FastReconstruction<lvr2::BaseVector<int>, lvr2::FastBox<lvr2::BaseVector<int>>> reconstruction(grid);
-    lvr2::HalfEdgeMesh<lvr2::BaseVector<int>> mesh;
+    lvr2::FastReconstruction<lvr2::BaseVector<float>, lvr2::FastBox<lvr2::BaseVector<float>>> reconstruction(grid);
+    lvr2::HalfEdgeMesh<lvr2::BaseVector<float>> mesh;
     reconstruction.getMesh(mesh);
 
     std::cout << "Finished reconstruction!" << std::endl;
@@ -235,8 +233,8 @@ int main(int argc, char** argv)
     if(fillHoles)
     {
         std::cout << "Start removing holes!" << std::endl;
-        // naiveFillSmallHoles(mesh, 20, false);
-        fill_holes(mesh, 20);
+        // naiveFillSmallHoles(mesh, 200, false);
+        mesh.fillHoles(199);
         std::cout << "Finished removing holes!" << std::endl;
     }
     
@@ -244,7 +242,7 @@ int main(int argc, char** argv)
     {
         std::cout << "Started smoothing..." << std::endl;
         float smoothing_factor = 0.5;
-        float num_smoothings = 20;
+        float num_smoothings = 3;
 
         //perform laplacian smoothing on the mesh
         for(int i = 0; i < num_smoothings; i++)
@@ -253,7 +251,7 @@ int main(int argc, char** argv)
             {
                 auto n_vertices = mesh.getNeighboursOfVertex(vertexH);
                 auto& vertex = mesh.getVertexPosition(vertexH);
-                lvr2::BaseVector<int> avg_vec(0,0,0);
+                lvr2::BaseVector<float> avg_vec(0,0,0);
 
                 for(auto vH : n_vertices)
                 {
@@ -263,9 +261,9 @@ int main(int argc, char** argv)
 
                 avg_vec /= n_vertices.size();
                 
-                lvr2::BaseVector<int> avg_vec_factorized((int)(static_cast<float>(avg_vec[0]) * smoothing_factor),
-                                                        (int)(static_cast<float>(avg_vec[1]) * smoothing_factor),
-                                                        (int)(static_cast<float>(avg_vec[2]) * smoothing_factor));
+                lvr2::BaseVector<float> avg_vec_factorized(avg_vec[0] * smoothing_factor,
+                                                           avg_vec[1] * smoothing_factor,
+                                                           avg_vec[2] * smoothing_factor);
 
                 vertex += avg_vec_factorized;
             }
@@ -275,7 +273,7 @@ int main(int argc, char** argv)
     }
 
     // Convert halfedgemesh to an IO format
-    lvr2::SimpleFinalizer<lvr2::BaseVector<int>> finalizer;
+    lvr2::SimpleFinalizer<lvr2::BaseVector<float>> finalizer;
     auto buffer = finalizer.apply(mesh);
 
     std::cout << "Write mesh into PLY file..." << std::endl;
@@ -296,27 +294,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
-using namespace lvr2;
-
-size_t fill_holes(HalfEdgeMesh<BaseVector<int>>& mesh, size_t maxSize, bool collapseOnly)
-{
-    std::unordered_set<HalfEdgeHandle> visited_edges;
-
-    std::vector<std::vector<HalfEdgeHandle>> contours;
-
-    for (auto& eH : mesh.edges())
-    {
-        if (!visited_edges.emplace(eH).second)
-        {
-            continue;
-        }
-        if (mesh.numAdjacentFaces(eH) != 1)
-        {
-            continue;
-        }
-        // TODO: get heH without face, add to contour
-        // TODO: remember to add everything in countour to visited_edges
-    }
-}
-

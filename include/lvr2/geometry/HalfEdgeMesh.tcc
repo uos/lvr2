@@ -786,14 +786,6 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
     circulateAroundVertex(handle, [&edgesOut, this](auto eH)
     {
         edgesOut.push_back(halfToFullEdgeHandle(eH));
-
-        // Throw an exception if number of out edges becomes
-        // too large. This can happen if there is a bug in the
-        // half edge mesh topology
-        if(edgesOut.size() > 40)
-        {
-            throw VertexLoopException("getEdgesOfVertex: Loop detected");
-        }
         return true;
     });
 }
@@ -1753,41 +1745,131 @@ void HalfEdgeMesh<BaseVecT>::splitVertex(EdgeHandle eH,
  * @return size_t 
  */
 template <typename BaseVecT>
-size_t HalfEdgeMesh<BaseVecT>::fill_holes(size_t maxSize)
+void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
 {
-    std::unordered_set<EdgeHandle> visited_edges;
+    DenseEdgeMap<bool> visitedEdges(numEdges(), false);
 
-    std::vector<std::vector<HalfEdgeHandle>> contours;
-    
-    //used to store the current contour
-    std::vector<HalfEdgeHandle> cur_contour;
+    std::vector<std::vector<VertexHandle>> contours;
+    vector<VertexHandle> currContour;
+    std::unordered_set<VertexHandle> visitedVertices;
 
-    for (auto& eH : mesh.edges())
+    for (const auto& eH : this->edges())
     {
-        if (!visited_edges.emplace(eH).second)
+        if (visitedEdges[eH])
         {
             continue;
         }
-        if (mesh.numAdjacentFaces(eH) != 1)
-        {
-            continue;
-        }
-        // TODO: get heH without face, add to contour
-        // TODO: remember to add everything in countour to visited_edges
+        visitedEdges[eH] = true;
 
         //get halfedges of edge
-        auto& heH1 = HalfEdgeHandle::oneHalfOf(eH);
-        auto& heH2 = getE(heH1).twin;
-        
+        auto heH = HalfEdgeHandle::oneHalfOf(eH);
+        auto he = getE(heH);
+        if (he.face)
+        {
+            // if this HalfEdge has a face, check the other one
+            heH = he.twin;
+            he = getE(heH);
+            if (he.face)
+            {
+                // both sides have a face => not a boundary
+                continue;
+            }
+        }
+
+        currContour.clear();
+        visitedVertices.clear();
+        bool valid = true;
+
+        auto start = heH;
+        do
+        {
+            currContour.push_back(he.target);
+            valid = valid && visitedVertices.emplace(he.target).second;
+            visitedEdges[halfToFullEdgeHandle(heH)] = true;
+            heH = he.next;
+            he = getE(heH);
+            // assert(!he.face);
+        } while (heH != start);
+
+        if (!valid)
+        {
+            cerr << "Broken Contour" << endl;
+            continue;
+        }
+
+        // we only check maxSize after completing the above loop to ensure all edges are marked as visited
+        if (currContour.size() > maxSize || currContour.size() < 3)
+        {
+            continue;
+        }
+
+        contours.push_back(currContour);
     }
+
+    cout << timestamp << "Found " << contours.size() << " holes" << endl;
+
+    string comment = timestamp.getElapsedTime() + "Removing holes";
+    ProgressBar progress(contours.size(), comment);
+
+    for (const auto& contour : contours)
+    {
+        ++progress;
+        try
+        {
+
+            if (contour.size() == 3)
+            {
+                addFace(contour[0], contour[1], contour[2]);
+                continue;
+            }
+
+            BaseVecT middle = getV(contour[0]).pos;
+            for (size_t i = 1; i < contour.size(); i++)
+            {
+                middle += getV(contour[i]).pos;
+            }
+            middle /= contour.size();
+            auto middleH = addVertex(middle);
+
+            auto lastH = contour.back();
+
+            // add a Triangles from adjacent vertices to the middle
+            for (const auto& vH : contour)
+            {
+                addFace(middleH, lastH, vH);
+                lastH = vH;
+            }
+
+            int num_splits = 5;
+
+            /*for(int i = 0; i < num_splits; i++)
+            {
+                auto nVertices = this->getNeighboursOfVertex(middleH);
+
+                for(auto nH : nVertices)
+                {
+                    OptionalEdgeHandle handle = this->getEdgeBetween(nH, middleH);
+                    if(handle)
+                    {
+                        cout << "splitting stuff.." << endl;
+                        this->splitEdge(handle.unwrap());
+                    }
+                }
+            }*/
+            for(int i = 0; i < contour.size() * 2; i++)
+            {
+                this->splitVertex(middleH);
+            }
+           
+
+        }
+        catch(PanicException exception)
+        {
+            std::cerr << "Nope" << endl;
+        }
+    }
+    cout << endl;
 }
-
-void HalfEdgeMesh<BaseVecT>::find_contour(HalfEdgeHandle heH, std::vector<HalfEdgeHandle> &contour)
-{
-    return;
-}
-
-
 
 
 template <typename BaseVecT>
