@@ -30,6 +30,8 @@
  *
  *  @date 02.06.2017
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ *  @author Patrick Hoffmann <pahoffmann@uni-osnabrueck.de>
+ *  @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
 #include <algorithm>
@@ -786,14 +788,6 @@ void HalfEdgeMesh<BaseVecT>::getEdgesOfVertex(
     circulateAroundVertex(handle, [&edgesOut, this](auto eH)
     {
         edgesOut.push_back(halfToFullEdgeHandle(eH));
-
-        // Throw an exception if number of out edges becomes
-        // too large. This can happen if there is a bug in the
-        // half edge mesh topology
-        if(edgesOut.size() > 40)
-        {
-            throw VertexLoopException("getEdgesOfVertex: Loop detected");
-        }
         return true;
     });
 }
@@ -1744,6 +1738,167 @@ void HalfEdgeMesh<BaseVecT>::splitVertex(EdgeHandle eH,
     getE(newEdge2.second).face = newFace2H;
     getE(newEdgeC.first).face  = newFace2H;
 }
+
+/**
+ * @brief Fills holes of a maximum contour size (meaning maximum number of edges making up the contour) in the mesh
+ * 
+ * @tparam BaseVecT base vector
+ * @param maxSize maximum number of edges belonging to the contour
+ * @return size_t 
+ */
+template <typename BaseVecT>
+void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
+{
+    DenseEdgeMap<bool> visitedEdges(numEdges(), false);
+
+    std::vector<std::vector<VertexHandle>> contours;
+    vector<VertexHandle> currContour;
+    std::unordered_set<VertexHandle> visitedVertices;
+
+    for (const auto& eH : this->edges())
+    {
+        if (visitedEdges[eH])
+        {
+            continue;
+        }
+        visitedEdges[eH] = true;
+
+        //get halfedges of edge
+        auto heH = HalfEdgeHandle::oneHalfOf(eH);
+        auto he = getE(heH);
+        if (he.face)
+        {
+            // if this HalfEdge has a face, check the other one
+            heH = he.twin;
+            he = getE(heH);
+            if (he.face)
+            {
+                // both sides have a face => not a boundary
+                continue;
+            }
+        }
+
+        currContour.clear();
+        visitedVertices.clear();
+        bool valid = true;
+
+        // find contour vertices by running around the non-existing face (the hole) -> using .next
+        auto start = heH;
+        do
+        {
+            currContour.push_back(he.target);
+            valid = valid && visitedVertices.emplace(he.target).second;
+            visitedEdges[halfToFullEdgeHandle(heH)] = true;
+            heH = he.next;
+            he = getE(heH);
+        } while (heH != start);
+
+        if (!valid)
+        {
+            cerr << "Broken Contour" << endl;
+            continue;
+        }
+
+        // we only check maxSize after completing the above loop to ensure all edges are marked as visited
+        if (currContour.size() > maxSize || currContour.size() < 3)
+        {
+            continue;
+        }
+
+        // as the contour fulfills all the necessary criteria, we add it to the list of contours which will be filled
+        contours.push_back(currContour);
+    }
+
+    cout << timestamp << "Found " << contours.size() << " holes" << endl;
+
+    string comment = timestamp.getElapsedTime() + "Removing holes";
+    ProgressBar progress(contours.size(), comment);
+
+    // now fill the found holes
+    for (const auto& contour : contours)
+    {
+        ++progress; // advance the progress bar
+        try
+        {
+            //if the hole constist of three edges, we can instantly fill it by adding a face
+            if (contour.size() == 3)
+            {
+                addFace(contour[0], contour[1], contour[2]);
+                continue;
+            }
+            
+            // calculate the averge point of the contour and adding it to the mesh
+            BaseVecT middle = getV(contour[0]).pos;
+            for (size_t i = 1; i < contour.size(); i++)
+            {
+                middle += getV(contour[i]).pos;
+            }
+            middle /= contour.size();
+            auto middleH = this->addVertex(middle);
+
+            auto lastH = contour.back();
+
+            // add a Triangles from adjacent vertices to the middle
+            for (const auto& vH : contour)
+            {
+                addFace(middleH, lastH, vH);
+                lastH = vH;
+            }
+
+            // apply a a contour size dependent number of vertex splits to the mesh to add vertices to make the hole filling more smooth and consistent.
+            for(int i = 0; i < contour.size() * 2; i++)
+            {
+                this->splitVertex(middleH);
+            }
+           
+
+        }
+        catch(PanicException exception)
+        {
+            std::cerr << "Nope" << endl;
+        }
+    }
+    cout << endl;
+}
+
+/**
+ * @brief Smooths the mesh using the laplacian smoothing approach
+ * 
+ * @tparam BaseVecT 
+ * @param smoothFactor   Determines how much the center point is moved into the direction of the average vector to it
+ * @param numSmoothings  Determines how often laplacian smoothing is applied to the mesh (default: 1)
+ */
+template <typename BaseVecT>
+void HalfEdgeMesh<BaseVecT>::laplacianSmoothing(float smoothFactor, int numSmooths)
+{
+    //perform laplacian smoothing on the mesh
+    for(int i = 0; i < numSmooths; i++)
+    {
+        for(auto vertexH : this->vertices())
+        {
+            auto n_vertices = this->getNeighboursOfVertex(vertexH);
+            auto& vertex = this->getVertexPosition(vertexH);
+            BaseVecT avg_vec(0,0,0);
+
+            //calculate the average vector from the neighbors to the center
+            for(auto vH : n_vertices)
+            {
+                auto v = this->getVertexPosition(vH);
+                avg_vec += (v - vertex);
+            }
+
+            avg_vec /= n_vertices.size();
+            
+            //smoothing factor is used to determine how much the vertex is moved in the calculated direction
+            BaseVecT avg_vec_factorized(avg_vec[0] * smoothFactor,
+                                        avg_vec[1] * smoothFactor,
+                                        avg_vec[2] * smoothFactor);
+
+            vertex += avg_vec_factorized;
+        }
+    }
+}
+
 
 template <typename BaseVecT>
 EdgeHandle HalfEdgeMesh<BaseVecT>::halfToFullEdgeHandle(HalfEdgeHandle handle) const
