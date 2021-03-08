@@ -244,6 +244,7 @@ int main(int argc, char** argv)
         float num_smoothings = 10; //determines how often the laplacian smoothing is applied.
 
         mesh.laplacianSmoothing(smoothing_factor, num_smoothings);
+        std::cout << "Finished smooting!" << std::endl;
     }
 
     // Convert halfedgemesh to an IO format

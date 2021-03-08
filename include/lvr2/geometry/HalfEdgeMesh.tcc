@@ -1871,8 +1871,6 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
 template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::laplacianSmoothing(float smoothFactor, int numSmooths)
 {
-    std::cout << "Started smoothing..." << std::endl;
-
     //perform laplacian smoothing on the mesh
     for(int i = 0; i < numSmooths; i++)
     {
@@ -1899,8 +1897,6 @@ void HalfEdgeMesh<BaseVecT>::laplacianSmoothing(float smoothFactor, int numSmoot
             vertex += avg_vec_factorized;
         }
     }
-
-    std::cout << "Finished smooting!" << std::endl;
 }
 
 
