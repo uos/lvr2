@@ -1861,6 +1861,48 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
     cout << endl;
 }
 
+/**
+ * @brief Smooths the mesh using the laplacian smoothing approach
+ * 
+ * @tparam BaseVecT 
+ * @param smoothFactor   Determines how much the center point is moved into the direction of the average vector to it
+ * @param numSmoothings  Determines how often laplacian smoothing is applied to the mesh (default: 1)
+ */
+template <typename BaseVecT>
+void HalfEdgeMesh<BaseVecT>::laplacianSmoothing(float smoothFactor, int numSmooths)
+{
+    std::cout << "Started smoothing..." << std::endl;
+
+    //perform laplacian smoothing on the mesh
+    for(int i = 0; i < numSmooths; i++)
+    {
+        for(auto vertexH : this->vertices())
+        {
+            auto n_vertices = this->getNeighboursOfVertex(vertexH);
+            auto& vertex = this->getVertexPosition(vertexH);
+            BaseVecT avg_vec(0,0,0);
+
+            //calculate the average vector from the neighbors to the center
+            for(auto vH : n_vertices)
+            {
+                auto v = this->getVertexPosition(vH);
+                avg_vec += (v - vertex);
+            }
+
+            avg_vec /= n_vertices.size();
+            
+            //smoothing factor is used to determine how much the vertex is moved in the calculated direction
+            BaseVecT avg_vec_factorized(avg_vec[0] * smoothFactor,
+                                        avg_vec[1] * smoothFactor,
+                                        avg_vec[2] * smoothFactor);
+
+            vertex += avg_vec_factorized;
+        }
+    }
+
+    std::cout << "Finished smooting!" << std::endl;
+}
+
 
 template <typename BaseVecT>
 EdgeHandle HalfEdgeMesh<BaseVecT>::halfToFullEdgeHandle(HalfEdgeHandle handle) const

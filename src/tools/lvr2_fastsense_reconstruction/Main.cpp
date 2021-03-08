@@ -243,34 +243,7 @@ int main(int argc, char** argv)
         float smoothing_factor = 0.5; //determines, how much the laplacian smoothing
         float num_smoothings = 10; //determines how often the laplacian smoothing is applied.
 
-        //perform laplacian smoothing on the mesh
-        for(int i = 0; i < num_smoothings; i++)
-        {
-            for(auto vertexH : mesh.vertices())
-            {
-                auto n_vertices = mesh.getNeighboursOfVertex(vertexH);
-                auto& vertex = mesh.getVertexPosition(vertexH);
-                lvr2::BaseVector<float> avg_vec(0,0,0);
-
-                //calculate the average vector from the neighbors to the center
-                for(auto vH : n_vertices)
-                {
-                    auto v = mesh.getVertexPosition(vH);
-                    avg_vec += (v - vertex);
-                }
-
-                avg_vec /= n_vertices.size();
-                
-                //smoothing factor is used to determine how much the vertex is moved in the calculated direction
-                lvr2::BaseVector<float> avg_vec_factorized(avg_vec[0] * smoothing_factor,
-                                                           avg_vec[1] * smoothing_factor,
-                                                           avg_vec[2] * smoothing_factor);
-
-                vertex += avg_vec_factorized;
-            }
-        }
-
-        std::cout << "Finished smooting!" << std::endl;
+        mesh.laplacianSmoothing(smoothing_factor, num_smoothings);
     }
 
     // Convert halfedgemesh to an IO format
