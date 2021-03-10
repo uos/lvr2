@@ -68,6 +68,20 @@ public:
         
 };
 
+class ScanProjectSchemaRawPly : public ScanProjectSchemaRaw
+{
+public:
+
+    ScanProjectSchemaRawPly(const std::string& dir) : ScanProjectSchemaRaw(dir) {};
+
+    virtual ~ScanProjectSchemaRawPly() = default;
+
+    virtual Description scan(
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
+        const size_t& scanNo) const override;
+};
+
 } // namespace lvr2
 
 #endif // SCANPROJETSCHEMA_RAW_HPP_

@@ -100,6 +100,9 @@ void LVRScanProjectOpenDialog::updateDirectorySchema(int index)
             m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaRaw(m_kernel->fileResource()));
             break;
         case 1:
+            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaRawPly(m_kernel->fileResource()));
+            break;
+        case 2:
             m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaSlam6D(m_kernel->fileResource()));
             break;
     }
@@ -157,7 +160,8 @@ void LVRScanProjectOpenDialog::updateAvailableSchemas()
             b->addItem("HDF5 Schema V2");
             break;
         case DIR:
-            b->addItem("Hyperlib");
+            b->addItem("RAW");
+            b->addItem("RAW PLY");
             b->addItem("SLAM 6D");
             break;    
         default:

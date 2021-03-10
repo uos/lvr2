@@ -204,4 +204,28 @@ Description ScanProjectSchemaRaw::hyperspectralPanoramaChannel(
     return d;
 }
 
+Description ScanProjectSchemaRawPly::scan( 
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
+        const size_t& scanNo) const
+{
+    std::stringstream sstr;
+    sstr << std::setfill('0') << std::setw(8) << scanNo;
+
+    Description dp = lidar(scanPosNo, lidarNo);
+
+    Description d;
+
+    std::cout << *dp.dataRoot << std::endl;
+    std::cout << sstr.str() << std::endl;
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+
+    d.data = "points.ply";
+
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
+
+    return d;
+}
+
 } // namespace lvr2
