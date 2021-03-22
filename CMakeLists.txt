@@ -604,7 +604,7 @@ add_subdirectory(src/tools/lvr2_kaboom)
 # add_subdirectory(src/tools/lvr2_slam2hdf5)
 # add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 # add_subdirectory(src/tools/lvr2_registration)
-# add_subdirectory(src/tools/lvr2_scanproject_parser)
+add_subdirectory(src/tools/lvr2_scanproject_parser)
 # add_subdirectory(src/tools/lvr2_chunking_server)
 
 
