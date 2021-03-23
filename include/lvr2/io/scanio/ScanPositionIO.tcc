@@ -17,6 +17,11 @@ void ScanPositionIO< FeatureBase>::save(
         return;
     }
 
+    if(!scanPositionPtr)
+    {
+        return;
+    }
+
     // Save all lidar sensors
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
     {
