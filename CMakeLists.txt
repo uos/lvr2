@@ -284,8 +284,7 @@ if(MPI_FOUND)
   set($Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
 endif()
 
-find_package(Boost 1.54 COMPONENTS ${Boost_COMPONENTS} REQUIRED QUIET)
-
+find_package(Boost COMPONENTS ${Boost_COMPONENTS} REQUIRED QUIET)
 
 link_directories(${Boost_LIBRARY_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
@@ -376,11 +375,15 @@ add_subdirectory(ext/laslib)
 include_directories( ${LASLIB_INCLUDE_DIR} )
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
-# HighFive
-include_directories("ext/HighFive/include")
+# HDF5
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
 message(STATUS "Found HDF5")
+
+# HighFive
+set(HIGHFIVE_INCLUDE_DIRS "ext/HighFive/include")
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${HIGHFIVE_INCLUDE_DIRS})
+include_directories(${HIGHFIVE_INCLUDE_DIRS})
 
 # yaml-cpp
 find_package(yaml-cpp REQUIRED)
@@ -673,6 +676,11 @@ install(FILES
     CMakeModules/FindSTANN.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
 
+# Installation of HighFive headers
+# need to do it like this sind add_subdirectory to "ext/HighFive" crashs
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ext/HighFive/include/
+    DESTINATION "include"
+    PATTERN "*.in" EXCLUDE)
 
 ###############################################################################
 # DOCUMENTATION
