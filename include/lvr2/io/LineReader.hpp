@@ -64,21 +64,42 @@ struct fileAttribut
     size_t m_line_element_amount;
 };
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma pack(1)
+struct xyz
+#else
 struct __attribute__((packed)) xyz
+#endif
 {
     lvr2::coord<float> point;
 };
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma pack(1)
+struct xyzn : xyz
+#else
 struct __attribute__((packed)) xyzn : xyz
+#endif
 {
     lvr2::coord<float> normal;
 };
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma pack(1)
+struct xyznc : xyzn
+#else
 struct __attribute__((packed)) xyznc : xyzn
+#endif
 {
     lvr2::color<unsigned char> color;
 };
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma pack(1)
+struct xyzc : xyz
+#else
 struct __attribute__((packed)) xyzc : xyz
+#endif
 {
     lvr2::color<unsigned char> color;
 };
