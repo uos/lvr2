@@ -31,6 +31,12 @@
  *  @date July 22, 2019
  *  @author Malte Hillmann
  */
+
+
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <math.h>
+
 #include "lvr2/registration/GraphSLAM.hpp"
 
 #include <Eigen/SparseCholesky>
@@ -169,7 +175,14 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last, const
 
                 double ctx, stx, cty, sty;
 
-#ifndef __APPLE__
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+                // x
+                ctx = std::cos(theta.x());
+                stx = std::sin(theta.x());
+                // y 
+                cty = std::cos(theta.y());
+                sty = std::sin(theta.y());
+#elif defined(__APPLE__)
                 sincos(theta.x(), &stx, &ctx);
                 sincos(theta.y(), &sty, &cty);
 #else
