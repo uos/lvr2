@@ -1747,7 +1747,7 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
         poseFile.replace_extension(extension);
         if (boost::filesystem::exists(poseFile))
         {
-            cout << "Found Pose file: " << poseFile << endl;
+            std::cout << "Found Pose file: " << poseFile << std::endl;
             Transformf mat = getTransformationFromFile<float>(poseFile);
             BaseVector<float> pos, angles;
             getPoseFromMatrix<float>(pos, angles, mat.transpose());
@@ -4210,11 +4210,11 @@ void LVRMainWindow::readLWF()
 
     WaveformPtr waveform = WaveformPtr(new Waveform);
     waveform->waveformIndices.push_back(0);
-    uint16_t data[colums];
+    std::vector<uint16_t> data(colums);
 
     for (int i = 0; i < lines; i++)
     {
-        waveformFile.read((char *) &data, sizeof(uint16_t) * colums);
+        waveformFile.read((char *) &(data[0]), sizeof(uint16_t) * colums);
         //First entry is the channel
         waveform->lowPower.push_back(data[0]);
 

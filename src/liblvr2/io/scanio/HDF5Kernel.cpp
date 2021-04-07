@@ -41,6 +41,7 @@ void HDF5Kernel::savePointBuffer(
     for(auto elem : *buffer)
     {
         this->template save(g, elem.first, elem.second);
+        //this->save(g, elem.first, elem.second);
     }
 }
 
