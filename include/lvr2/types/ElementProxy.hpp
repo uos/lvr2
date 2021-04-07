@@ -58,7 +58,11 @@ class ElementProxyPtr
     // "Pointer" arithmetic
     ElementProxyPtr operator+(const ElementProxyPtr&) = delete;
     
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    SSIZE_T operator-(const ElementProxyPtr& p)
+#else
     ssize_t operator-(const ElementProxyPtr& p)
+#endif
     {
       return (this->m_ptr - p.m_ptr) / m_w;
     }
