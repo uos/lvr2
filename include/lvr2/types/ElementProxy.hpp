@@ -59,7 +59,7 @@ class ElementProxyPtr
     ElementProxyPtr operator+(const ElementProxyPtr&) = delete;
     
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    SSIZE_T operator-(const ElementProxyPtr& p)
+    long long operator-(const ElementProxyPtr& p)
 #else
     ssize_t operator-(const ElementProxyPtr& p)
 #endif
