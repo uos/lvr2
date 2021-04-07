@@ -40,7 +40,11 @@
 #include <vector>
 class vtkUnsignedCharArray;
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+class LVRInteractorStylePolygonPick
+#else
 class VTKINTERACTIONSTYLE_EXPORT LVRInteractorStylePolygonPick
+#endif
   : public vtkInteractorStyleTrackballCamera
 {
 public:
