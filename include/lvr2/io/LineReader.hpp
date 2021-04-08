@@ -65,7 +65,7 @@ struct fileAttribut
 };
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#pragma pack(1)
+#pragma pack(push, 1)
 struct xyz
 #else
 struct __attribute__((packed)) xyz
@@ -75,7 +75,11 @@ struct __attribute__((packed)) xyz
 };
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#pragma pack(1)
+#pragma pack(pop)
+#endif
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma pack(push, 1)
 struct xyzn : xyz
 #else
 struct __attribute__((packed)) xyzn : xyz
@@ -85,7 +89,11 @@ struct __attribute__((packed)) xyzn : xyz
 };
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#pragma pack(1)
+#pragma pack(pop)
+#endif
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma pack(push, 1)
 struct xyznc : xyzn
 #else
 struct __attribute__((packed)) xyznc : xyzn
@@ -95,7 +103,11 @@ struct __attribute__((packed)) xyznc : xyzn
 };
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#pragma pack(1)
+#pragma pack(pop)
+#endif
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma pack(push, 1)
 struct xyzc : xyz
 #else
 struct __attribute__((packed)) xyzc : xyz
@@ -103,6 +115,10 @@ struct __attribute__((packed)) xyzc : xyz
 {
     lvr2::color<unsigned char> color;
 };
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma pack(pop)
+#endif
 
 
 class LineReader
