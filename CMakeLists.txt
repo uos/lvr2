@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.4)
 project(LAS_VEGAS VERSION 2)
 
-
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
-  CACHE STRING "Vcpkg toolchain file")
+if(MSVC)
+    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
+        CACHE STRING "Vcpkg toolchain file")
+endif()
 
 # OPTIONS
 option(BUILD_EXAMPLES "Build the examples" OFF)
@@ -93,7 +94,11 @@ endif(GDAL_FOUND)
 #------------------------------------------------------------------------------
 # Searching for CUDA
 #------------------------------------------------------------------------------
-option(WITH_CUDA "Compile with CUDA support" ON)
+if(MSVC)
+    option(WITH_CUDA "Compile with CUDA support" FALSE)
+else()
+    option(WITH_CUDA "Compile with CUDA support" TRUE)
+endif()
 if(NOT APPLE AND WITH_CUDA)
 find_package( CUDA 8)
 if(CUDA_FOUND)
