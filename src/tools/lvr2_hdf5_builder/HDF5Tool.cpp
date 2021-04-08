@@ -44,7 +44,7 @@
 
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/HDF5IO.hpp"
-#include "lvr2/types/Hyperspectral.hpp"
+//#include "lvr2/types/Hyperspectral.hpp"
 #include "lvr2/display/ColorMap.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Matrix4.hpp"

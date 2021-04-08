@@ -183,11 +183,11 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last, const
                 cty = std::cos(theta.y());
                 sty = std::sin(theta.y());
 #elif defined(__APPLE__)
-                sincos(theta.x(), &stx, &ctx);
-                sincos(theta.y(), &sty, &cty);
-#else
                 __sincos(theta.x(), &stx, &ctx);
                 __sincos(theta.y(), &sty, &cty);
+#else 
+                sincos(theta.x(), &stx, &ctx);
+                sincos(theta.y(), &sty, &cty);
 #endif
 
                 // Fill Ha

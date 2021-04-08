@@ -292,7 +292,8 @@ set(Boost_COMPONENTS
   thread
   serialization
   timer
-  iostreams)
+  iostreams
+  date_time)
 
 if(MPI_FOUND)
   set($Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
@@ -640,30 +641,30 @@ add_subdirectory(src/liblvr2)
 ###############################################################################
 
 add_subdirectory(src/tools/lvr2_reconstruct)
-#add_subdirectory(src/tools/lvr2_dmc_reconstruction)
-#add_subdirectory(src/tools/lvr2_gs_reconstruction)
-#add_subdirectory(src/tools/lvr2_asciiconverter)
-#add_subdirectory(src/tools/lvr2_transform)
-#add_subdirectory(src/tools/lvr2_octree_test)
-#add_subdirectory(src/tools/lvr2_image_normals)
-#add_subdirectory(src/tools/lvr2_plymerger)
+add_subdirectory(src/tools/lvr2_dmc_reconstruction)
+add_subdirectory(src/tools/lvr2_gs_reconstruction)
+add_subdirectory(src/tools/lvr2_asciiconverter)
+add_subdirectory(src/tools/lvr2_transform)
+add_subdirectory(src/tools/lvr2_octree_test)
+add_subdirectory(src/tools/lvr2_image_normals)
+add_subdirectory(src/tools/lvr2_plymerger)
 # add_subdirectory(src/tools/lvr2_hdf5_builder)
-#add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
-#add_subdirectory(src/tools/lvr2_slam6d_merger)
-#add_subdirectory(src/tools/lvr2_chunking)
-#add_subdirectory(src/tools/lvr2_mesh_reducer)
-#add_subdirectory(src/tools/lvr2_ground_level_extractor)
-#dd_subdirectory(src/tools/lvr2_hdf5_convert_old)
-#dd_subdirectory(src/tools/lvr2_hdf5_inspect)
+add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
+add_subdirectory(src/tools/lvr2_slam6d_merger)
+add_subdirectory(src/tools/lvr2_chunking)
+add_subdirectory(src/tools/lvr2_mesh_reducer)
+add_subdirectory(src/tools/lvr2_ground_level_extractor)
+add_subdirectory(src/tools/lvr2_hdf5_convert_old)
+add_subdirectory(src/tools/lvr2_hdf5_inspect)
 
 # does not compile after ScanTypes changes
 # add_subdirectory(src/tools/lvr2_largescale_reconstruct)
-#add_subdirectory(src/tools/lvr2_kaboom)
+add_subdirectory(src/tools/lvr2_kaboom)
 # add_subdirectory(src/tools/lvr2_hdf5_builder_2)
 # add_subdirectory(src/tools/lvr2_slam2hdf5)
 # add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 # add_subdirectory(src/tools/lvr2_registration)
-#dd_subdirectory(src/tools/lvr2_scanproject_parser)
+add_subdirectory(src/tools/lvr2_scanproject_parser)
 # add_subdirectory(src/tools/lvr2_chunking_server)
 
 

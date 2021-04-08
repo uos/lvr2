@@ -32,6 +32,11 @@
  *  @author Thomas Wiemann
  */
 
+ 
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <cmath>
+
 namespace lvr2
 {
 

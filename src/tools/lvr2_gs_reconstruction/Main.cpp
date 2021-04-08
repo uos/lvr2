@@ -105,6 +105,8 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
+    // TODO handle accordingly under windows.
+#if !(defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__))
     /* Catch ctr+c and save the Mesh.. */
     struct sigaction sigIntHandler;
 
@@ -113,6 +115,7 @@ int main(int argc, char** argv)
     sigIntHandler.sa_flags = 0;
 
     sigaction(SIGINT, &sigIntHandler, NULL);
+#endif
     PointBufferPtr buffer = model->m_pointCloud;
 
     if (!buffer)
