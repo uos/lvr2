@@ -45,14 +45,21 @@ struct convert<lvr2::MultiChannel>
 
     static bool decode(const Node& node, lvr2::MultiChannel& vchannel) 
     {
-        if(!node["type"])
+        // if(!node["type"])
+        // {
+        //     std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] "
+        //              << "MultiChannel meta has no 'type'" << std::endl; 
+        //     return false;
+        // }
+
+        if(node["entity"] && node["entity"].as<std::string>() != "Channel")
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] "
-                     << "MultiChannel meta has no 'type'" << std::endl; 
-            return false;
+            std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] " 
+                        << "Nodes type '" << node["entity"].as<std::string>()
+                        << "' is not 'Channel'" << std::endl; 
         }
 
-        if(node["type"].as<std::string>() != "Channel")
+        if(node["type"] && node["type"].as<std::string>() != "Channel")
         {
             std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] " 
                         << "Nodes type '" << node["type"].as<std::string>()

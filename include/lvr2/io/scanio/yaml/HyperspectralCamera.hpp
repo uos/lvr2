@@ -40,14 +40,22 @@ struct convert<lvr2::HyperspectralCamera>
 
     static bool decode(const Node& node, lvr2::HyperspectralCamera& camera)
     {
-        if(!node["type"])
+        // if(!node["type"])
+        // {
+        //     std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
+        //              << "HyperspectralCamera meta has no key 'type'" << std::endl; 
+        //     return false;
+        // }
+        if(node["entity"] && node["entity"].as<std::string>() != lvr2::HyperspectralCamera::type)
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
-                     << "HyperspectralCamera meta has no key 'type'" << std::endl; 
+            // different hierarchy level
+            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] " 
+                        << "Nodes type '" << node["entity"].as<std::string>()
+                        << "' is not '" <<  lvr2::HyperspectralCamera::type << "'" << std::endl; 
             return false;
         }
 
-        if (node["type"].as<std::string>() != lvr2::HyperspectralCamera::type)
+        if(node["type"] && node["type"].as<std::string>() != lvr2::HyperspectralCamera::type)
         {
             // different hierarchy level
             std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] " 
@@ -56,11 +64,8 @@ struct convert<lvr2::HyperspectralCamera>
             return false;
         }
 
-        if(!node["kind"])
+        if(node["kind"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
-                     << "WARNING: Sensor has no key 'kind'. Assuming this sensor to by of kind "  << lvr2::Camera::kind << std::endl;
-        } else {
             if(node["kind"].as<std::string>() != lvr2::HyperspectralCamera::kind)
             {
                 std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] " 
@@ -68,16 +73,52 @@ struct convert<lvr2::HyperspectralCamera>
                             << "' is not '" <<  lvr2::HyperspectralCamera::kind << "'" << std::endl; 
                 return false;
             }
+        } 
+        else if(node["sensor_type"])
+        {
+            if(node["sensor_type"].as<std::string>() != lvr2::HyperspectralCamera::kind)
+            {
+                std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] " 
+                            << "Nodes kind '" << node["sensor_type"].as<std::string>()
+                            << "' is not '" <<  lvr2::HyperspectralCamera::kind << "'" << std::endl; 
+                return false;
+            }
+        } else {
+            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
+                     << "WARNING: Cannot detect specialization of sensor. Assuming this sensor to by of kind "  << lvr2::HyperspectralCamera::kind << std::endl;
         }
+
+        // if(!node["kind"] && !node["sensor_type"])
+        // {
+        //     std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
+        //              << "WARNING: Sensor has no key 'kind'. Assuming this sensor to by of kind "  << lvr2::HyperspectralCamera::kind << std::endl;
+        // } else {
+            
+        //     if(node["kind"].as<std::string>() != lvr2::HyperspectralCamera::kind)
+        //     {
+        //         std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] " 
+        //                     << "Nodes kind '" << node["kind"].as<std::string>()
+        //                     << "' is not '" <<  lvr2::HyperspectralCamera::kind << "'" << std::endl; 
+        //         return false;
+        //     }
+        // }
 
         if(node["name"])
         {
             camera.name = node["name"].as<decltype(camera.name)>();
         }
 
+        if(node["sensor_name"])
+        {
+            camera.name = node["sensor_name"].as<decltype(camera.name)>();
+        }
+
         if(node["model"])
         {
             camera.model= node["model"].as<decltype(camera.model)>();
+        } else {
+            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
+                << "WARNING: Hyperspectral camera has no sensor model in meta file." << std::endl;
         }
 
         return true;
@@ -111,14 +152,30 @@ struct convert<lvr2::HyperspectralPanorama>
 
     static bool decode(const Node& node, lvr2::HyperspectralPanorama& pano)
     {
-        if(!node["type"])
+        // if(!node["type"])
+        // {
+        //     std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] "
+        //              << "HyperspectralPanorama meta has no key 'type'" << std::endl; 
+        //     return false;
+        // }
+
+        if(node["entity"] && node["entity"].as<std::string>() != lvr2::HyperspectralPanorama::type)
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] "
-                     << "HyperspectralPanorama meta has no key 'type'" << std::endl; 
-            return false;
+            if(node["entity"].as<std::string>() == lvr2::HyperspectralPanorama::kind)
+            {
+                std::cout << "[YAML::convert<HyperspectralPanorama> - decode] " 
+                    << "WARNING: 'entity' is '" << node["entity"].as<std::string>() 
+                    << "'. 'entity' should be '" << lvr2::HyperspectralPanorama::type
+                    << "' and 'sensor_type' should be '" << lvr2::HyperspectralPanorama::kind << "'" << std::endl;
+            } else {
+                std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] " 
+                        << "Nodes entity '" << node["entity"].as<std::string>()
+                        << "' is not '" <<  lvr2::HyperspectralPanorama::type << "'" << std::endl; 
+                return false;
+            }
         }
 
-        if (node["type"].as<std::string>() != lvr2::HyperspectralPanorama::type)
+        if(node["type"] && node["type"].as<std::string>() != lvr2::HyperspectralPanorama::type)
         {
             // different hierarchy level
             std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] " 
@@ -127,19 +184,30 @@ struct convert<lvr2::HyperspectralPanorama>
             return false;
         }
 
-        if(!node["kind"])
+        if(node["kind"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] "
-                     << "WARNING: Sensor has no key 'kind'. Assuming this sensor to by of kind "  << lvr2::Camera::kind << std::endl;
-        } else {
-            if(node["kind"].as<std::string>() != lvr2::HyperspectralPanorama::kind)
+            if(node["kind"].as<std::string>() != lvr2::HyperspectralCamera::kind)
             {
                 std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] " 
                             << "Nodes kind '" << node["kind"].as<std::string>()
                             << "' is not '" <<  lvr2::HyperspectralPanorama::kind << "'" << std::endl; 
                 return false;
             }
+        } 
+        else if(node["sensor_type"])
+        {
+            if(node["sensor_type"].as<std::string>() != lvr2::HyperspectralCamera::kind)
+            {
+                std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] " 
+                            << "Nodes kind '" << node["sensor_type"].as<std::string>()
+                            << "' is not '" <<  lvr2::HyperspectralPanorama::kind << "'" << std::endl; 
+                return false;
+            }
+        } else {
+            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] "
+                     << "WARNING: Cannot detect specialization of SensorData. Assuming this SensorData to be of kind "  << lvr2::HyperspectralPanorama::kind << std::endl;
         }
+
 
         if(node["transformation"])
         {

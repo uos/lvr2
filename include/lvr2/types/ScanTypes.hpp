@@ -319,7 +319,7 @@ using HyperspectralPanoramaChannelOptional = boost::optional<HyperspectralPanora
 struct HyperspectralPanorama : SensorDataType, Transformable
 {
     /// Sensor type flag
-    static constexpr char                          kind[] = "HyperspectralPanorama";
+    static constexpr char                          kind[] = "SpectralImage";
 
     /// preview generated from channels (optional: check if preview.empty())
     // cv::Mat                                        preview;
@@ -351,7 +351,7 @@ using HyperspectralPanoramaOptional = boost::optional<HyperspectralPanorama>;
 struct HyperspectralCamera : SensorType, Transformable
 {
     /// Sensor type flag
-    static constexpr char                    kind[] = "HyperspectralCamera";
+    static constexpr char                    kind[] = "SpectralCamera";
 
     /// Camera model
     CylindricalModel                         model;

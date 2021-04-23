@@ -40,17 +40,17 @@ struct convert<lvr2::ScanProject>
 
     static bool decode(const Node& node, lvr2::ScanProject& scanProj) 
     {
-        if(!node["type"])
-        {
-            std::cout << "[YAML::convert<ScanProject> - decode] 'type' Tag not found." << std::endl;
-            return false;
-        }
+        // if(!node["type"])
+        // {
+        //     std::cout << "[YAML::convert<ScanProject> - decode] 'type' Tag not found." << std::endl;
+        //     return false;
+        // }
 
-        if(node["type"].as<std::string>() != lvr2::ScanProject::type)
-        {
-            std::cout << "[YAML::convert<ScanProject> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::ScanProject::type << std::endl;
-            return false;
-        }
+        // if(node["type"].as<std::string>() != lvr2::ScanProject::type)
+        // {
+        //     std::cout << "[YAML::convert<ScanProject> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::ScanProject::type << std::endl;
+        //     return false;
+        // }
 
         if(node["transformation"])
         {
@@ -59,6 +59,11 @@ struct convert<lvr2::ScanProject>
             scanProj.transformation  = lvr2::Transformd::Identity();
         }
       
+        if(node["crs"])
+        {
+            scanProj.crs = node["crs"].as<std::string>();
+        }
+
         if(node["coordinate_system"])
         {
             scanProj.coordinateSystem = node["coordinate_system"].as<std::string>();

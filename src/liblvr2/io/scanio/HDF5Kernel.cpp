@@ -668,6 +668,16 @@ std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
                     YAML::Node node = hdf5util::getAttributeMeta(metaGroup);
                     ret[groupName] = node;
                 }
+            } 
+            else if(metaGroup.hasAttribute("entity"))
+            {
+                std::string tmp = type;
+                if(hdf5util::checkAttribute(metaGroup, "entity", tmp))
+                {
+                    // Found a group with 'sensor_type' attribute: try to load yaml with loadMetaYAML
+                    YAML::Node node = hdf5util::getAttributeMeta(metaGroup);
+                    ret[groupName] = node;
+                }
             }
         }
 
@@ -679,6 +689,14 @@ std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
             if(metaDataset.hasAttribute("type"))
             {
                 if(hdf5util::checkAttribute(metaDataset, "type", tmp))
+                {
+                    YAML::Node node = hdf5util::getAttributeMeta(metaDataset);
+                    ret[groupName] = node;
+                }
+            }
+            else if(metaDataset.hasAttribute("entity"))
+            {
+                if(hdf5util::checkAttribute(metaDataset, "entity", tmp))
                 {
                     YAML::Node node = hdf5util::getAttributeMeta(metaDataset);
                     ret[groupName] = node;

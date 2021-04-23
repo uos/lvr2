@@ -93,12 +93,48 @@ bool _dynamicLoad(
         {
             vchannel = *copt;
         } else {
-            std::cout << "[VariantChannelIO] WARNING: Could not reveive Channel from ChannelIO!" << std::endl;
+            std::cout << "[VariantChannelIO] WARNING: Could not receive Channel from ChannelIO!" << std::endl;
             return false;
         }
 
         return true;
     }
+
+
+    // some fallbacks for incorrect namings
+    if(dyn_type == "uint16")
+    {
+        using DataT = uint16_t;
+
+        ChannelOptional<DataT> copt = io->template load<DataT>(group, name);
+        if(copt)
+        {
+            vchannel = *copt;
+        } else {
+            std::cout << "[VariantChannelIO] WARNING: Could not receive Channel from ChannelIO!" << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
+    if(dyn_type == "uint8")
+    {
+        // std::cout << "[VariantChannelIO] WARNING: Depricated type name 'uint8' found at point field: " << name << std::endl;
+        using DataT = uint8_t;
+
+        ChannelOptional<DataT> copt = io->template load<DataT>(group, name);
+        if(copt)
+        {
+            vchannel = *copt;
+        } else {
+            std::cout << "[VariantChannelIO] WARNING: Could not receive Channel from ChannelIO!" << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
 
     std::cout << "[VariantChannelIO] WARNING: data type '" << dyn_type << "' not implemented in PointBuffer." << std::endl;
     return false;
@@ -147,7 +183,6 @@ boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
     std::string groupName,
     std::string datasetName)
 {
-
     // std::cout << "[VariantChannelIO - load] " << groupName << ", " << datasetName << std::endl;
 
     boost::optional<VariantChannelT> ret;

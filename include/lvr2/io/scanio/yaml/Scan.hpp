@@ -65,13 +65,13 @@ struct convert<lvr2::Scan>
 
     static bool decode(const Node& node, lvr2::Scan& scan) 
     {
-        if(!node["type"])
-        {
-            std::cout << "[YAML::convert<Scan> - decode] 'type' Tag not found." << std::endl;
-            return false;
-        }
+        // if(!node["type"])
+        // {
+        //     std::cout << "[YAML::convert<Scan> - decode] 'type' Tag not found." << std::endl;
+        //     return false;
+        // }
 
-        if(node["type"].as<std::string>() != lvr2::Scan::type) 
+        if(node["type"] && node["type"].as<std::string>() != lvr2::Scan::type) 
         {
             // TODO: proper  warning or error?
             std::cout << "[YAML::convert<Scan> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::Scan::type << std::endl;
@@ -105,8 +105,7 @@ struct convert<lvr2::Scan>
         } else {
             scan.transformation = lvr2::Transformd::Identity();
         }
-        
-        
+
         if(node["config"])
         {
             const Node& config = node["config"];
@@ -138,6 +137,29 @@ struct convert<lvr2::Scan>
                 scan.numPoints = config["num_points"].as<size_t>();
             }   
         }
+
+        // HyperLib hack
+        // everything is clear about the meta format: same but different
+        if(node["angle_phi"])
+        {
+            scan.phiMin = node["angle_phi"][0].as<double>() * M_PI / 180.0;
+            scan.phiMax = node["angle_phi"][1].as<double>() * M_PI / 180.0;
+            double phi_inc = node["angle_phi"][2].as<double>() * M_PI / 180.0;
+
+            // is hResolution, increment or number of angles?
+            scan.hResolution = phi_inc;
+        }
+
+        if(node["angle_theta"])
+        {
+            scan.thetaMin = node["angle_theta"][0].as<double>() * M_PI / 180.0;
+            scan.thetaMax = node["angle_theta"][1].as<double>() * M_PI / 180.0;
+            double theta_inc = node["angle_theta"][2].as<double>() * M_PI / 180.0;
+
+            scan.vResolution = theta_inc;
+        }
+
+        
 
         return true;
     }

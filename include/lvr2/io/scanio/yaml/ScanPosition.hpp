@@ -26,6 +26,7 @@ struct convert<lvr2::ScanPosition>
         Node node;
         
         node["type"] = lvr2::ScanPosition::type;
+        // node["entity"] = lvr2::ScanPosition::type;
         // node["kind"] = boost::typeindex::type_id<lvr2::ScanPosition>().pretty_name();
         node["pose_estimation"] = scanPos.poseEstimation;
         node["transformation"] = scanPos.transformation;
@@ -35,17 +36,17 @@ struct convert<lvr2::ScanPosition>
 
     static bool decode(const Node& node, lvr2::ScanPosition& scanPos) 
     {
-        if(!node["type"])
-        {
-            std::cout << "[YAML::convert<ScanPosition> - decode] 'type' Tag not found." << std::endl;
-            return false;
-        }    
+        // if(!node["type"])
+        // {
+        //     std::cout << "[YAML::convert<ScanPosition> - decode] 'type' Tag not found." << std::endl;
+        //     return false;
+        // }    
 
-        if(node["type"].as<std::string>() != lvr2::ScanPosition::type)
-        {
-            std::cout << "[YAML::convert<ScanPosition> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::ScanPosition::type << std::endl;
-            return false;
-        }
+        // if(node["type"].as<std::string>() != lvr2::ScanPosition::type)
+        // {
+        //     std::cout << "[YAML::convert<ScanPosition> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::ScanPosition::type << std::endl;
+        //     return false;
+        // }
         
         if(node["pose_estimation"])
         {

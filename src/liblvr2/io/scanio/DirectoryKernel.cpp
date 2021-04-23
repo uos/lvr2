@@ -368,6 +368,13 @@ std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
                     ret[entry.path().stem().string()] = meta;
                 }
             }
+            else if (meta["entity"])
+            {
+                if(meta["entity"].as<std::string>() == type)
+                {
+                    ret[entry.path().stem().string()] = meta;
+                }
+            }
         }
     }
 
