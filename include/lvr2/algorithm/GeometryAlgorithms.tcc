@@ -34,6 +34,10 @@
 #include <queue>
 #include <set>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <cmath>
+
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/util/Progress.hpp"
 

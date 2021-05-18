@@ -97,7 +97,7 @@ public:
     {
         if (m_len == m_mapping.size())
         {
-            cout << "Error: Overflow in ClusterTexCoordMapping" << endl;
+            std::cout << "Error: Overflow in ClusterTexCoordMapping" << std::endl;
         }
         else
         {

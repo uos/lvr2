@@ -5,6 +5,12 @@
 #define CV_AA cv::LINE_AA
 #endif
 
+
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <math.h>
+
+
 namespace lvr2 {
 
 namespace synthetic {

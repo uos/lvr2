@@ -25,11 +25,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <math.h>
+
 #include "lvr2/reconstruction/Projection.hpp"
 
 
 #include <iostream>
 using namespace std;
+
+
 
 namespace lvr2
 {

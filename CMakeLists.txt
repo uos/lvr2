@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.4)
 project(LAS_VEGAS VERSION 2)
 
+if(MSVC)
+    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
+        CACHE STRING "Vcpkg toolchain file")
+endif()
+
 # OPTIONS
 option(BUILD_EXAMPLES "Build the examples" OFF)
 
@@ -52,6 +57,11 @@ endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)
   list(APPEND LVR2_DEFINITIONS -DNOMINMAX)
+    set(CMAKE_CXX_STANDARD 17)
+    set(HAVE_CXX_ATOMICS64_WITHOUT_LIB True)
+    set(HAVE_CXX_ATOMICS_WITHOUT_LIB True)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+  add_compile_definitions(_HAS_STD_BYTE=0)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
@@ -84,7 +94,11 @@ endif(GDAL_FOUND)
 #------------------------------------------------------------------------------
 # Searching for CUDA
 #------------------------------------------------------------------------------
-option(WITH_CUDA "Compile with CUDA support" ON)
+if(MSVC)
+    option(WITH_CUDA "Compile with CUDA support" FALSE)
+else()
+    option(WITH_CUDA "Compile with CUDA support" TRUE)
+endif()
 if(NOT APPLE AND WITH_CUDA)
 find_package( CUDA 8)
 if(CUDA_FOUND)
@@ -278,7 +292,8 @@ set(Boost_COMPONENTS
   thread
   serialization
   timer
-  iostreams)
+  iostreams
+  date_time)
 
 if(MPI_FOUND)
   set($Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
@@ -300,9 +315,32 @@ if(OPENMP_FOUND)
   link_directories(${OpenMP_LIBRARY_DIRS})
   include_directories(${OpenMP_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPEN_MP)
+
+  # tasks only in OpenMP 3.0 and above thus we need llvm openmp in experimental mode
+  # See here: https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/
+  if(MSVC)
+    set(CMAKE_CXX_FLAGS " -openmp:llvm -openmp:experimental ${CMAKE_CXX_FLAGS}")
+  endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+
 endif(OPENMP_FOUND)
 
+#set(OpenMP_CXX "${CMAKE_CXX_COMPILER}")
+#set(OpenMP_CXX_FLAGS "-Xclang -fopenmp")
+#set(OpenMP_CXX_LIB_NAMES "libomp" "libiomp5")
+#set(OpenMP_libomp_LIBRARY libomp)
+#set(OpenMP_libiomp5_LIBRARY libiomp5)
+
+#OPENMP
+#find_package(OpenMP REQUIRED)
+#if(OPENMP_FOUND)
+#  message(STATUS "Found OpenMP")
+#  link_directories(${OpenMP_LIBRARY_DIRS})
+# include_directories(${OpenMP_INCLUDE_DIRS})
+#  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPEN_MP)
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+#endif()
 #------------------------------------------------------------------------------
 # Searching for OpenGL
 #------------------------------------------------------------------------------
@@ -513,6 +551,25 @@ endif()
 # SET DEPENDENCIES
 ###############################################################################
 
+if(MSVC)
+set(LVR2_LIB_DEPENDENCIES
+    ${Boost_LIBARIES}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_IOSTREAMS_LIBRARY}
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${GDAL_LIBRARY}
+    ${OpenCV_LIBS}
+    ${GSL_LIBRARIES}
+    ${LZ4_LIBRARY}
+    ${TIFF_LIBRARY}
+    ${YAML_CPP_LIBRARIES}
+    ${OpenMP_CXX_LIBRARIES}
+    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+else()
 set(LVR2_LIB_DEPENDENCIES
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
@@ -531,7 +588,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     m
     )
-
+    endif()
 #####################################################################################
 # ADD ALL EXTERNAL DEPENDENCIES
 #####################################################################################

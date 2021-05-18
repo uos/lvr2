@@ -35,6 +35,11 @@
  * @author Rasmus Diederichsen <rdiederichse@uni-osnabrueck.de>
  */
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <math.h>
+
+
 #include "lvr2/algorithm/ContourAlgorithms.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
