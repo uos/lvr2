@@ -1,6 +1,6 @@
 #include "lvr2/registration/AABB.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
-#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/util/IOUtils.hpp"
 
 #include <vector>
 

@@ -36,6 +36,7 @@
 
 #include "../vtkBridge/LVRScanProjectBridge.hpp"
 #include "LVRPoseItem.hpp"
+#include "lvr2/io/scanio/DirectoryIO.hpp"
 
 #include <QString>
 #include <QColor>
@@ -47,13 +48,15 @@ namespace lvr2
 class LVRScanProjectItem : public QTreeWidgetItem
 {
 public:
-    LVRScanProjectItem(ScanProjectBridgePtr bridge, QString name = "");
+    LVRScanProjectItem(ScanProjectBridgePtr bridge, std::shared_ptr<FeatureBuild<ScanProjectIO>> io, QString name = "");
     LVRScanProjectItem(const LVRScanProjectItem& item);
     virtual ~LVRScanProjectItem();
     ScanProjectBridgePtr	getScanProjectBridge();
     QString         getName();
     void            setName(QString name);
     bool            isEnabled();
+    void            setBridge(ScanProjectBridgePtr bridge);
+    std::shared_ptr<FeatureBuild<ScanProjectIO>> getIO();
 
 public Q_SLOTS:
     void			setVisibility(bool visible);
@@ -61,6 +64,7 @@ public Q_SLOTS:
 protected:
     ScanProjectBridgePtr  m_scanProjectBridge;
     QString         m_name;
+    std::shared_ptr<FeatureBuild<ScanProjectIO>> m_io;
 };
 
 } /* namespace lvr2 */

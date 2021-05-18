@@ -29,9 +29,6 @@
 
 #include <Eigen/Dense>
 
-#include "LVRReconstructionMarchingCubesDialog.hpp"
-#include "LVRItemTypes.hpp"
-
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/BilinearFastBox.hpp"
@@ -42,8 +39,11 @@
 #include "lvr2/reconstruction/TetraederBox.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/io/Progress.hpp"
+#include "lvr2/util/Progress.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
+
+#include "LVRReconstructionMarchingCubesDialog.hpp"
+#include "LVRItemTypes.hpp"
 
 namespace lvr2
 {
@@ -207,11 +207,6 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
 
     PointBufferPtr pc_buffer = m_pc->getPointBuffer();
     
-    Transformd T = qttf::getTransformation(m_pc, NULL);
-    std::cout << T << std::endl;
-
-    pc_buffer = qttf::transform(pc_buffer, T);
-
     PointsetSurfacePtr<Vec> surface;
 
     if(pcm == "STANN" || pcm == "FLANN" || pcm == "NABO" || pcm == "NANOFLANN")

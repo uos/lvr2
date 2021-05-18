@@ -1,0 +1,107 @@
+
+#ifndef LVR2_IO_YAML_VARIANT_CHANNEL_HPP
+#define LVR2_IO_YAML_VARIANT_CHANNEL_HPP
+
+#include <yaml-cpp/yaml.h>
+#include <utility>
+
+#include "Matrix.hpp"
+
+#include "lvr2/util/Timestamp.hpp"
+#include "lvr2/types/MultiChannelMap.hpp"
+
+
+namespace YAML {
+
+template<>
+struct convert<lvr2::MultiChannel> 
+{
+    /**
+     * Encode Eigen matrix to yaml. 
+     */
+    static Node encode(const lvr2::MultiChannel& vchannel) {
+        
+        Node node;
+
+        std::string kind = "basic";
+
+        node["type"] = "Channel";
+        node["data_type"] = vchannel.typeName();
+
+        node["kind"] = kind;
+        
+        if(kind == "custom")
+        {
+            // for custom 
+            node["stored_type"] = lvr2::Channel<unsigned char>::typeName();
+        }
+
+        node["shape"] = Load("[]");
+        node["shape"].push_back(vchannel.numElements());
+        node["shape"].push_back(vchannel.width());
+
+        return node;
+    }
+
+    static bool decode(const Node& node, lvr2::MultiChannel& vchannel) 
+    {
+        // if(!node["type"])
+        // {
+        //     std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] "
+        //              << "MultiChannel meta has no 'type'" << std::endl; 
+        //     return false;
+        // }
+
+        if(node["entity"] && node["entity"].as<std::string>() != "Channel")
+        {
+            std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] " 
+                        << "Nodes type '" << node["entity"].as<std::string>()
+                        << "' is not 'Channel'" << std::endl; 
+        }
+
+        if(node["type"] && node["type"].as<std::string>() != "Channel")
+        {
+            std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] " 
+                        << "Nodes type '" << node["type"].as<std::string>()
+                        << "' is not 'Channel'" << std::endl; 
+            return false;
+        }
+
+        // if(node["data_type"].as<std::string>() != vchannel.typeName())
+        // {
+        //     return false;
+        // }
+        
+        return true;
+    }
+
+};
+
+// template<>
+// struct convert< std::pair<std::string, lvr2::MultiChannel> > 
+// {
+//     /**
+//      * Encode Eigen matrix to yaml. 
+//      */
+//     static Node encode(const std::pair<std::string, lvr2::MultiChannel>& vit) {
+        
+//         Node node;
+//         // node["name"] = vit.first;
+//         return node;
+//     }
+
+//     static bool decode(const Node& node, std::pair<std::string, lvr2::MultiChannel>& vit) 
+//     {
+        
+
+//         return true;
+//     }
+
+// };
+
+
+
+}  // namespace YAML
+
+#endif // LVR2_IO_YAML_VARIANT_CHANNEL_HPP
+

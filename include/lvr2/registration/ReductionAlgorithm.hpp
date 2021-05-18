@@ -69,9 +69,10 @@ protected:
 using ReductionAlgorithmPtr = std::shared_ptr<ReductionAlgorithm>;
 
 
-
-
-// EXAMPLE: Reduce All: return empty
+/**
+ * @brief ReductionAlgorithm implementation that returns
+ *        empty point buffer
+ */
 class AllReductionAlgorithm : public ReductionAlgorithm 
 {
 public:
@@ -82,7 +83,80 @@ public:
      }
 };
 
+/**
+ * @brief ReductionAlgorithm implementation that returns a point
+ *        buffer with a fixed number of points with an evenly 
+ *        spaced selection from the original point buffer
+ */
+class FixedSizeReductionAlgorithm : public ReductionAlgorithm
+{
+public:
+     /**
+      * @param numPoints Number of points the original point buffer
+      *                  gets reduced to
+      */
+     FixedSizeReductionAlgorithm(size_t numPoints) :
+          m_numPoints(numPoints) {};
 
+     virtual PointBufferPtr getReducedPoints()
+     {
+          // return original point buffer if it has fewer/equal number of points
+          if(m_numPoints >= m_pointBuffer->numPoints())
+          {
+               return m_pointBuffer;
+          }
+          size_t idx;
+          PointBufferPtr buff(new PointBuffer);
+          floatArr pointArray(new float[m_numPoints * 3]);
+          for(size_t i = 0; i < m_numPoints; i++) {
+               // num_dimension * i * space between points
+               idx = 3 * i * (m_pointBuffer->numPoints() / m_numPoints);
+               // x
+               pointArray[i*3] = m_pointBuffer->getPointArray()[idx];
+               // y
+               pointArray[i*3+1] = m_pointBuffer->getPointArray()[idx+1];
+               // z
+               pointArray[i*3+2] = m_pointBuffer->getPointArray()[idx+2];
+          }
+          buff->setPointArray(pointArray, m_numPoints);
+          return buff;
+     }
+private:
+     size_t     m_numPoints;
+};
+
+/**
+ * @brief ReductionAlgorithm implementation that returns a specified
+ *        percentage from the original point buffer with an evenly 
+ *        spaced selection
+ */
+class PercentageReductionAlgorithm : public ReductionAlgorithm
+{
+public:
+     /**
+      * @param percent percentage to which the original point buffer
+      *                gets reduced
+      */
+     PercentageReductionAlgorithm(float percent) :
+          m_percent(percent) {};
+
+     virtual PointBufferPtr getReducedPoints()
+     {
+          // calculate the number of points and use FixedSize reduction
+          // since it already implements evenly spaced selection
+          size_t numOfPoints = (size_t)(m_pointBuffer->numPoints() * m_percent);
+          ReductionAlgorithmPtr fixedSizeReduction(new FixedSizeReductionAlgorithm(numOfPoints));
+          fixedSizeReduction->setPointBuffer(m_pointBuffer);
+          return fixedSizeReduction->getReducedPoints();
+     }
+private:
+     float     m_percent;
+};
+
+/**
+ * @brief ReductionAlgorithm implementation that returns
+ *        complete point buffer without any reduction
+ */
 class NoReductionAlgorithm : public ReductionAlgorithm 
 {
 public:
@@ -91,7 +165,6 @@ public:
           return m_pointBuffer;
      }
 };
-
 
 } // namespace lvr2
 

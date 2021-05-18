@@ -1,14 +1,17 @@
 #ifndef LVRSCANPROJECTOPENDIALOG_HPP
 #define LVRSCANPROJECTOPENDIALOG_HPP
 
-#include "lvr2/io/descriptions/FileKernel.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchema.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaSLAM.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
-#include "lvr2/io/descriptions/DirectoryKernel.hpp"
-#include "lvr2/io/descriptions/HDF5Kernel.hpp"
-
+#include "lvr2/io/scanio/FileKernel.hpp"
+#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaSlam6D.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/scanio/DirectoryKernel.hpp"
+#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/registration/ReductionAlgorithm.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
+#include "LVRReductionAlgorithmDialog.hpp"
+#include "../vtkBridge/LVRScanProjectBridge.hpp"
 
 #include "ui_LVRScanProjectOpenDialogUI.h"
 
@@ -59,18 +62,56 @@ public:
      */
     FileKernelPtr kernel() {return m_kernel;}
 
+    /// Used to represent the type
+    /// of the currently selected scan project
+    enum ProjectType{NONE, DIR, HDF5};
+
+    /**
+     * @brief Returns ProjectType
+     * 
+     * @return ProjectType
+     */
+    ProjectType projectType() {return m_projectType;}
+
+    /**
+     * @brief Returns ReductionPtr
+     * 
+     * @return ReductionPtr
+     */
+    ReductionAlgorithmPtr reductionPtr() {return m_reductionPtr;}
+
+        /**
+     * @brief Returns ProjectType
+     * 
+     * @return ProjectType
+     */
+    ProjectScale projectScale() {return m_projectScale;}
+
+    /**
+     *  @brief Return whether the dialog was finished with OK
+     */
+    bool successful();
+
 public Q_SLOTS:
     /// Shows the QFileDialog
     void openPathDialog();
 
+    /// Called to open the reduction algorithm dialog
+    void openReductionDialog();
+
+    /// Called when a diffent project type was selected
+    void projectTypeSelectionChanged(int index);
+
     /// Called when a diffent schema was selected
     void schemaSelectionChanged(int index);
 
-private:
+    /// Called when a diffent reduction was selected
+    void projectScaleSelectionChanged(int index);
 
-    /// Internally used to represent the type
-    /// of the currently selected scan project
-    enum ProjectType{NONE, DIR, HDF5};
+    /// Called when OK is pressed
+    void acceptOpen();
+
+private:
 
     /// Connects signals and slots
     void connectSignalsAndSlots();
@@ -78,6 +119,9 @@ private:
     /// Updates the list of available schemas
     /// depending on selected scan project type
     void updateAvailableSchemas();
+
+    /// adds scales to combobox and sets default selection
+    void initAvailableScales();
 
     /// Sets the current (directory) schema based
     /// on the selected list index in the combo box
@@ -101,6 +145,16 @@ private:
 
     /// Current scan project type
     ProjectType                     m_projectType;
+
+    /// Current reduction type algorithm
+    ReductionAlgorithmPtr           m_reductionPtr;
+
+    /// Current project scale which affects
+    /// scaling of scanner position cylinder
+    ProjectScale                    m_projectScale;
+
+    /// States that the dialog was submitted successfully
+    bool                            m_successful;
 };
 
 } // namespace std

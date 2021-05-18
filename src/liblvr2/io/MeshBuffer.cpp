@@ -26,7 +26,7 @@
  */
 
 #include "lvr2/io/MeshBuffer.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <iostream>
 using std::cout;

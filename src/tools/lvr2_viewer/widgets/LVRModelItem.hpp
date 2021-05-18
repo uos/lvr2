@@ -58,6 +58,7 @@ public:
     bool            isEnabled();
     ModelBridgePtr	getModelBridge();
     void            setModelVisibility(int column, bool globalValue);
+    void            setBridge(ModelBridgePtr bridge);
 
 public Q_SLOTS:
 	void			setVisibility(bool visible);

@@ -5,9 +5,9 @@
 #include <Eigen/Dense>
 
 #include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
-#include "lvr2/geometry/Transformable.hpp"
 #include "lvr2/io/PointBuffer.hpp"
 #include <QTreeWidgetItem>
 

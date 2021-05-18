@@ -39,12 +39,12 @@
 using std::unique_ptr;
 using std::make_unique;
 
-#include "lvr2/io/Progress.hpp"
 #include "lvr2/io/Model.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
+#include "lvr2/util/Progress.hpp"
 
 using Vec = lvr2::BaseVector<float>;
 

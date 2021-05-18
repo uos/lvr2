@@ -31,6 +31,7 @@
 #define LVR2_TYPES_MULTICHANNELMAP
 
 #include "VariantChannelMap.hpp"
+#include "CustomChannelTypes.hpp"
 
 namespace lvr2 {
     
@@ -43,7 +44,7 @@ namespace lvr2 {
 //    CH_32S,
 //    CH_32F,
 //    CH_64F
-//};
+//};s
 
 // Don't touch the order. (ROS point_fiel compatibility)
 // TODO In future these should be exchangeable.
@@ -54,9 +55,16 @@ using MultiChannelMap = VariantChannelMap<
         unsigned short,
         int,
         unsigned int,
+        long int,
+        unsigned long int,
         float,
-        double
+        double,
+        bool,
+        WaveformData
     >;
+
+using MultiChannel = typename MultiChannelMap::val_type;
+using MultiChannelOptional = boost::optional<MultiChannel>;
 
 } // namespace lvr2
 

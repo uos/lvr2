@@ -155,7 +155,7 @@ void BilinearFastBox<BaseVecT>::getSurface(
                 BaseVecT& p2 = mesh.getVertexPosition(vertices[1]);
 
                 this->m_surface->searchTree()->kSearch(p1, kc, nearest1);
-                size_t nk = min(kc, nearest1.size());
+                size_t nk = std::min(kc, nearest1.size());
                 FloatChannel pts = *(m_surface->pointBuffer()->getFloatChannel("points"));
 
                 //Hmmm, sometimes the k-search seems to fail...
@@ -176,7 +176,7 @@ void BilinearFastBox<BaseVecT>::getSurface(
                 }
 
                 this->m_surface->searchTree()->kSearch(p2, kc, nearest2);
-                nk = min(kc, nearest2.size());
+                nk = std::min(kc, nearest2.size());
 
                 //Hmmm, sometimes the k-search seems to fail...
                 if(nk > 0)

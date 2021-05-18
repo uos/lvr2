@@ -58,9 +58,9 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRPointInfo.cpp
     widgets/LVRPlotter.cpp
     widgets/LVRHistogram.cpp
-    widgets/LVRScanDataItem.cpp
-    widgets/LVRCamDataItem.cpp
-    widgets/LVRCvImageItem.cpp
+#    widgets/LVRScanDataItem.cpp
+#    widgets/LVRCamDataItem.cpp
+#    widgets/LVRCvImageItem.cpp
     widgets/LVRBoundingBoxItem.cpp
     widgets/LVRGraphicsView.cpp
     widgets/LVRLabelTreeWidget.cpp
@@ -71,7 +71,11 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRScanCamItem.cpp
     widgets/LVRScanImageItem.cpp
     widgets/LVRScanProjectOpenDialog.cpp
-    util/qttf.cpp
+    widgets/LVRReductionAlgorithmDialog.cpp
+#    util/qttf.cpp
+    widgets/LVRCameraModelItem.cpp
+    widgets/LVRImageModelItem.cpp
+    widgets/LVRExtrinsicsItem.cpp
 )
 
 #if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
@@ -107,6 +111,7 @@ set(LVR2_VIEWER_MOCS
     widgets/LVRPlotter.hpp
     widgets/LVRHistogram.hpp
     widgets/LVRScanProjectOpenDialog.hpp
+    widgets/LVRReductionAlgorithmDialog.hpp
 )
 
 #####################################################################################
@@ -138,6 +143,7 @@ list(APPEND LVR2_VIEWER_UIS
    ui/LVRTooltipDialogUI.ui
    ui/LVRHistogram.ui
    ui/LVRScanProjectOpenDialogUI.ui
+   ui/LVRReductionAlgorithmDialogUI.ui
 )
 
 #####################################################################################
@@ -147,14 +153,6 @@ list(APPEND LVR2_VIEWER_UIS
 set(LVR2_VIEWER_RESOURCES
    res/viewer.qrc
 )
-
-#####################################################################################
-# Setup Visual Studio Project
-#####################################################################################
-
-if(MSVC)
-  include(LVR2VSSetup.txt)
-endif()
 
 #####################################################################################
 # Generate ui and resource headers
@@ -179,7 +177,6 @@ set(LVR2_VIEWER_DEPENDENCIES
   lvr2_static
   lvr2rply_static
   lvr2las_static
-  lvr2slam6d_static
   ${LVR2_LIB_DEPENDENCIES}
   ${Qt5Widgets_LIBRARIES}
   ${VTK_LIBRARIES}

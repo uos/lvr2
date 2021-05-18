@@ -1,13 +1,11 @@
 set(LVR2_SOURCES
+    algorithm/ChunkBuilder.cpp
+    algorithm/ChunkManager.cpp
+    algorithm/ChunkHashGrid.cpp
     config/lvropenmp.cpp
     config/BaseOption.cpp
-    texture/Texture.cpp
-    texture/TextureFactory.cpp
-    util/Util.cpp
-    util/Hdf5Util.cpp
-    util/Synthetic.cpp
     display/Renderable.cpp
-    display/GroundPlane.cpp
+    # display/GroundPlane.cpp
     display/MultiPointCloud.cpp
     display/StaticMesh.cpp
     display/Color.cpp
@@ -18,71 +16,70 @@ set(LVR2_SOURCES
     display/ColorMap.cpp
     display/GlTexture.cpp
     display/PointCorrespondences.cpp
-    display/Arrow.cpp
+    # display/Arrow.cpp
     display/TexturedMesh.cpp
     display/MeshCluster.cpp
-    io/AsciiIO.cpp
-    io/CoordinateTransform.cpp
-    io/ObjIO.cpp
+    io/baseio/AsciiIO.cpp
+    io/baseio/BaseIO.cpp
+    io/baseio/ObjIO.cpp
+    io/baseio/DatIO.cpp
+    io/baseio/LasIO.cpp
+    io/baseio/GeoTIFFIO.cpp
 #    io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp
-    io/PPMIO.cpp
-    io/PLYIO.cpp
-    io/IOUtils.cpp
-    io/STLIO.cpp
-    io/UosIO.cpp
-    io/PCDIO.cpp
-    io/Progress.cpp
+    io/baseio/PPMIO.cpp
+    io/baseio/PLYIO.cpp
+    io/baseio/STLIO.cpp
+    io/baseio/UosIO.cpp
+    io/baseio/PCDIO.cpp
     io/MeshBuffer.cpp
     io/LineReader.cpp
-    io/LabelBuffer.cpp
-#    io/KinectGrabber.cpp
-    io/DatIO.cpp
-    io/LasIO.cpp
-    io/BaseIO.cpp
-    io/GeoTIFFIO.cpp
-    io/HDF5IO.cpp
-    io/Timestamp.cpp
-    io/BoctreeIO.cpp
+    # io/HDF5IO.cpp
     io/GridIO.cpp
     io/Polygon.cpp
     io/SoilAssistField.cpp
     io/SoilAssistSubField.cpp
     io/PointBuffer.cpp
-    io/WaveformBuffer.cpp
     io/Polygon.cpp
     io/ModelFactory.cpp
-    io/ScanDataManager.cpp
+    # io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
-    io/ScanIOUtils.cpp
-    io/WaveformIO.cpp
-    io/descriptions/ScanProjectSchemaRaw.cpp
-    io/descriptions/ScanProjectSchemaSLAM.cpp
-    io/descriptions/ScanProjectSchemaHyperlib.cpp
-    io/descriptions/ScanProjectSchemaHDF5V2.cpp
-    io/descriptions/LabelScanProjectSchemaHDF5V2.cpp
-    io/descriptions/DirectoryKernel.cpp
-    io/descriptions/MetaFormatFactory.cpp
-    io/descriptions/ScanProjectSchema.cpp
-    io/descriptions/HDF5Kernel.cpp
-    io/descriptions/LabelHDF5IO.cpp
-    io/descriptions/HDF5MetaDescriptionV2.cpp
+    io/scanio/yaml/Matrix.cpp
+    io/scanio/ScanProjectSchemaRaw.cpp
+    io/scanio/ScanProjectSchemaSlam6D.cpp
+    # io/scanio/ScanProjectSchemaSLAM.cpp
+    # io/scanio/ScanProjectSchemaHyperlib.cpp
+    io/scanio/ScanProjectSchemaHDF5.cpp
+    # io/scanio/LabelScanProjectSchemaHDF5V2.cpp
+    io/scanio/DirectoryKernel.cpp
+    io/scanio/DirectoryDataIO.cpp
+    io/scanio/MetaFormatFactory.cpp
+    io/scanio/ScanProjectSchema.cpp
+    io/scanio/HDF5Kernel.cpp
+    # io/scanio/HDF5MetaDescriptionV2.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
     reconstruction/LBKdTree.cpp
-    algorithm/ChunkBuilder.cpp
-    algorithm/ChunkManager.cpp
-    algorithm/ChunkHashGrid.cpp
     registration/ICPPointAlign.cpp
     registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp
     registration/Metascan.cpp
     registration/SLAMAlign.cpp
     registration/GraphSLAM.cpp
-    registration/TreeUtils.cpp
     registration/OctreeReduction.cpp
-    registration/RegistrationPipeline.cpp
+    # registration/RegistrationPipeline.cpp
+    types/CustomChannelTypes.cpp
+    texture/Texture.cpp
+    texture/TextureFactory.cpp
+    util/CoordinateTransform.cpp
+    util/Hdf5Util.cpp
+    util/IOUtils.cpp
+    util/Synthetic.cpp
+    util/TreeUtils.cpp
+    util/Util.cpp
+    util/Progress.cpp
+    util/Timestamp.cpp
 )
 
 #####################################################################################
@@ -113,9 +110,9 @@ endif()
 
 if(draco_FOUND)
 set(LVR2_SOURCES ${LVR2_SOURCES}
-  io/DracoEncoder.cpp
-  io/DracoDecoder.cpp 
-  io/DrcIO.cpp)
+  io/baseio/DracoEncoder.cpp
+  io/baseio/DracoDecoder.cpp 
+  io/baseio/DrcIO.cpp)
 endif(draco_FOUND)
 
 #####################################################################################
@@ -124,7 +121,7 @@ endif(draco_FOUND)
 
 if(RiVLib_FOUND)
   set(LVR2_SOURCES ${LVR2_SOURCES} 
-    io/RxpIO.cpp)
+    io/baseio/RxpIO.cpp)
 endif()
 
 #####################################################################################
@@ -138,26 +135,16 @@ if(OPENCL_FOUND)
 endif()
 
 #####################################################################################
-# Create source groups to structure code in Visual Studio
-#####################################################################################
-
-if(MSVC)
-  include(LVRVSSetup.txt)
-endif()
-
-#####################################################################################
 # Setup dependencies to external libraries
 #####################################################################################
 
 set(LVR2_INTERNAL_DEPENDENCIES_STATIC
     lvr2rply_static
-    lvr2las_static
-    lvr2slam6d_static)
+    lvr2las_static)
 
 set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2rply
-    lvr2las
-    lvr2slam6d)
+    lvr2las)
 
 #####################################################################################
 # Set c++0x flags for gcc compilers (needed for boctree io)

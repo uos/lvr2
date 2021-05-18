@@ -6,16 +6,12 @@
 
 #include <vtkMatrix4x4.h>
 
-#include "lvr2/io/ScanDataManager.hpp"
-#include "lvr2/geometry/Transformable.hpp"
-
 #include "../vtkBridge/LVRModelBridge.hpp"
 #include "../vtkBridge/LVRBoundingBoxBridge.hpp"
 
 #include "LVRBoundingBoxItem.hpp"
 #include "LVRPointCloudItem.hpp"
 #include "LVRPoseItem.hpp"
-#include "LVRCamDataItem.hpp"
 
 #include <Eigen/Dense>
 

@@ -36,7 +36,7 @@
 #include "ui_LVRReconstructionEstimateNormalsDialogUI.h"
 #include "LVRPointCloudItem.hpp"
 #include "LVRModelItem.hpp"
-#include "LVRScanDataItem.hpp"
+//#include "LVRScanDataItem.hpp"
 
 using Ui::EstimateNormalsDialog;
 

@@ -37,6 +37,7 @@
 #include "LVRItemTypes.hpp"
 #include "LVRTextureMeshItem.hpp"
 #include "LVRScanImageItem.hpp"
+#include "LVRCameraModelItem.hpp"
 
 
 #include <vtkSmartPointer.h>
@@ -63,14 +64,19 @@ LVRScanCamItem::LVRScanCamItem(ScanCamBridgePtr bridge, QString name) :
 
     setCheckState(0, Qt::Checked);
 
-    for(int i = 0; i < m_scanCamBridge->cam->images.size(); i++)
+    //create a ScanImageItem for every image in the camera
+    for(int i = 0; i < m_scanCamBridge->m_cam->images.size(); i++)
     {
-        ScanImageBridgePtr imgBridge(new LVRScanImageBridge(m_scanCamBridge->cam->images[i]));
-        QString imgName = QString::fromStdString(m_scanCamBridge->cam->images[i]->imageFile.string());
+        ScanImageBridgePtr imgBridge(new LVRScanImageBridge(m_scanCamBridge->m_cam->images[i]));
+        /// Fixme: How to lazy-load?==
+        QString imgName = "Image_" + i;
         LVRScanImageItem* imgItem = new LVRScanImageItem(imgBridge, imgName);
         addChild(imgItem);
     }
 
+    //add model for camera as child
+    LVRCameraModelItem* model = new LVRCameraModelItem(*(m_scanCamBridge->m_cam));
+    addChild(model);
 }
 
 LVRScanCamItem::LVRScanCamItem(const LVRScanCamItem& item)
@@ -95,11 +101,6 @@ void LVRScanCamItem::setName(QString name)
 bool LVRScanCamItem::isEnabled()
 {
     return this->checkState(0);
-}
-
-void LVRScanCamItem::setVisibility(bool visible)
-{
-	m_scanCamBridge->setVisibility(visible);
 }
 
 

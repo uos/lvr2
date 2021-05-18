@@ -102,6 +102,7 @@ static const char* errorString[] = {
     "CL_INVALID_LINKER_OPTIONS",
     "CL_INVALID_DEVICE_PARTITION_COUNT",
 };
+
 #define checkOclErrors(err) __checkOclErrors((err), #err, __FILE__, __LINE__)
 static void __checkOclErrors(const cl_int err, const char* const func, const char* const file, const int line)
 {

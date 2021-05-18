@@ -246,9 +246,15 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
             useVoxelsize,
             options.extrude()
         );
+        std::cout << "start Distance" << std::endl;
+
         grid->calcDistanceValues();
-        auto reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
-        return make_pair(grid, std::move(reconstruction));
+        std::cout << "start make unique" << std::endl;
+        auto reconstruction = std::make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
+        std::cout << "created reconstruction" << std::endl;
+       // return make_pair(grid, std::move(reconstruction));
+        return make_pair(grid, make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid));
+
     }
     // else if(decompositionType == "DMC")
     // {
@@ -336,11 +342,17 @@ int main(int argc, char** argv)
 
     shared_ptr<GridBase> grid;
     unique_ptr<FastReconstructionBase<Vec>> reconstruction;
+    std::cout << "ASDASD" << std::endl;
     std::tie(grid, reconstruction) = createGridAndReconstruction(options, surface);
-
+    std::cout << "JOO" << std::endl;
     // Reconstruct mesh
     reconstruction->getMesh(mesh);
 
+    std::cout << "JOOO 2 " << std::endl;
+    if (mesh.numFaces() > 0)
+    {
+        std::cout << "GOT MESH" << std::endl;
+    }
     // Save grid to file
     if(options.saveGrid() && grid)
     {

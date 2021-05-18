@@ -41,20 +41,18 @@
 
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DataStruct.hpp"
-#include "lvr2/io/IOUtils.hpp"
-#include "lvr2/io/descriptions/HDF5Kernel.hpp"
-#include "lvr2/io/descriptions/LabelHDF5IO.hpp"
-#include "lvr2/io/descriptions/HDF5IO.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaHyperlib.hpp"
-#include "lvr2/io/descriptions/LabelScanProjectSchemaHDF5V2.hpp"
-#include "lvr2/io/descriptions/ScanProjectSchemaHDF5V2.hpp"
-#include "lvr2/io/descriptions/DirectoryIO.hpp"
-
+#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/scanio/LabelHDF5IO.hpp"
+#include "lvr2/io/scanio/HDF5IO.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
+#include "lvr2/io/scanio/LabelScanProjectSchemaHDF5V2.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/scanio/DirectoryIO.hpp"
 #include "lvr2/io/Polygon.hpp"
-
-#include "lvr2/registration/TransformUtils.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/util/Util.hpp"
+#include "lvr2/util/IOUtils.hpp"
+#include "lvr2/util/TransformUtils.hpp"
 
 #include "../widgets/LVRLabelInstanceTreeItem.hpp"
 
@@ -67,12 +65,17 @@
 #include <vtkDefaultPass.h>
 #include <vtkCubeSource.h>
 #include <vtkAppendPolyData.h>
+#include <vtkSphereSource.h>
 
 #include "../vtkBridge/LVRChunkedMeshBridge.hpp"
 #include "../vtkBridge/LVRChunkedMeshCuller.hpp"
 #include "../vtkBridge/LVRSoilAssistBridge.hpp"
 
 #include <QString>
+#include <QImage>
+#include <QPixmap>
+#include <QLabel>
+
 
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
@@ -148,8 +151,30 @@ LVRMainWindow::LVRMainWindow()
     m_actionShowImage = new QAction("Show Image", this);
     m_actionSetViewToCamera = new QAction("Set view to camera", this);
 
+    m_actionReductionAlgorithm = new QAction("Change ReductionAlgorithm", this);
+    m_actionShowScannerPosition = new QAction("Show scanner position(s)");
+    m_actionHideScannerPosition = new QAction("Hide scanner position(s)");
+    m_actionShowCamPosition = new QAction("Show Camera Position", this);
+    m_actionShowCamTrajectory = new QAction("Show Camera Trajectory", this);
+    m_actionRemoveCamTrajectory = new QAction("Remove Camera Trajectory", this);
+    m_actionRemoveCamPosition = new QAction("Remove Camera Position", this);
+
     this->addAction(m_actionCopyModelItem);
     this->addAction(m_actionPasteModelItem);
+
+    m_scanPositionContextMenu = new QMenu();
+    m_scanPositionContextMenu->addAction(m_actionReductionAlgorithm);
+    m_scanPositionContextMenu->addAction(m_actionShowScannerPosition);
+    m_scanPositionContextMenu->addAction(m_actionHideScannerPosition);
+
+    m_scanImageContextMenu = new QMenu();
+    m_scanImageContextMenu->addAction(m_actionSetViewToCamera);
+    m_scanImageContextMenu->addAction(m_actionShowCamPosition);
+    m_scanImageContextMenu->addAction(m_actionRemoveCamPosition);
+
+    m_scanCamContextMenu = new QMenu();
+    m_scanCamContextMenu->addAction(m_actionShowCamTrajectory);
+    m_scanCamContextMenu->addAction(m_actionRemoveCamTrajectory);
 
     m_labelTreeParentItemContextMenu = new QMenu();
     m_labelTreeParentItemContextMenu->addAction(m_actionAddLabelClass);
@@ -161,6 +186,7 @@ LVRMainWindow::LVRMainWindow()
     m_labelTreeChildItemContextMenu->addAction(m_actionShowWaveform);
 
     m_treeParentItemContextMenu = new QMenu;
+    m_treeParentItemContextMenu->addAction(m_actionReductionAlgorithm);
     m_treeParentItemContextMenu->addAction(m_actionRenameModelItem);
     m_treeParentItemContextMenu->addAction(m_actionDeleteModelItem);
     m_treeParentItemContextMenu->addAction(m_actionCopyModelItem);
@@ -181,8 +207,6 @@ LVRMainWindow::LVRMainWindow()
     m_actionOpen = this->actionOpen;
     m_actionOpenChunkedMesh = this->actionOpenChunkedMesh;
     m_actionOpenScanProject = this->actionOpenScanProject;
-    m_actionOpenScanProjectDir = this->actionOpenScanProjectDir;
-    m_actionOpenScanProjectH5 = this->actionOpenScanProjectH5;
     m_actionExport = this->actionExport;
     m_actionQuit = this->actionQuit;
     // Toolbar item "Views"
@@ -285,8 +309,9 @@ LVRMainWindow::LVRMainWindow()
      actionRenderEDM->setEnabled(false);
 #endif
 
+    m_loadingLabel = new QLabel(this); 
+    initLoading();
     connectSignalsAndSlots();
-
 }
 
 LVRMainWindow::~LVRMainWindow()
@@ -336,6 +361,19 @@ LVRMainWindow::~LVRMainWindow()
     {
         delete m_errorDialog;
     }
+    if (m_scanPositionContextMenu)
+    {
+        delete m_scanPositionContextMenu;
+    }
+    if (m_scanImageContextMenu)
+    {
+        delete m_scanImageContextMenu;
+    }
+    if (m_scanCamContextMenu)
+    {
+        delete m_scanCamContextMenu;
+    }
+
     delete m_incompatibilityBox;
 
     delete m_actionRenameModelItem;
@@ -348,6 +386,13 @@ LVRMainWindow::~LVRMainWindow()
     delete m_actionUnloadPointCloudData;
     delete m_actionShowImage;
     delete m_actionSetViewToCamera;
+    delete m_actionReductionAlgorithm;
+    delete m_actionShowCamPosition;
+    delete m_actionShowCamTrajectory;
+    delete m_actionRemoveCamTrajectory;
+    delete m_actionRemoveCamPosition;
+    delete m_actionShowScannerPosition;
+    delete m_actionHideScannerPosition;
     
 }
 
@@ -357,8 +402,6 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionOpenChunkedMesh, SIGNAL(triggered()), this, SLOT(loadChunkedMesh()));
     QObject::connect(m_actionExport, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
     QObject::connect(this->actionOpenScanProject, SIGNAL(triggered()), this, SLOT(openScanProject()));
-    QObject::connect(m_actionOpenScanProjectDir, SIGNAL(triggered()), this, SLOT(loadScanProjectDir()));
-    QObject::connect(m_actionOpenScanProjectH5, SIGNAL(triggered()), this, SLOT(loadScanProjectH5()));
 
     QObject::connect(this->actionExportLabeledPointcloud, SIGNAL(triggered()), this, SLOT(exportLabels()));
     QObject::connect(this->actionReadWaveform, SIGNAL(triggered()), this, SLOT(readLWF()));
@@ -370,9 +413,11 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(restoreSliders()));
     QObject::connect(treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(highlightBoundingBoxes()));
     QObject::connect(treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(setModelVisibility(QTreeWidgetItem*, int)));
+    QObject::connect(treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(doubleClick(QTreeWidgetItem*, int)));
 
     QObject::connect(labelTreeWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showLabelTreeContextMenu(const QPoint&)));
 
+    QObject::connect(this, SIGNAL(showLoadingLabel()), m_loadingLabel, SLOT(show()));
 
     QObject::connect(m_actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
     QObject::connect(this->actionShow_LabelDock, SIGNAL(toggled(bool)), this, SLOT(toggleLabelDock(bool)));
@@ -393,6 +438,14 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowImage, SIGNAL(triggered()), this, SLOT(showImage()));
     QObject::connect(m_actionSetViewToCamera, SIGNAL(triggered()), this, SLOT(setViewToCamera()));
 
+    QObject::connect(m_actionReductionAlgorithm, SIGNAL(triggered()), this, SLOT(changeReductionAlgorithm()));
+    QObject::connect(m_actionShowCamPosition, SIGNAL(triggered()), this, SLOT(showCamPosition()));
+    QObject::connect(m_actionShowCamTrajectory, SIGNAL(triggered()), this, SLOT(showCamTrajectory()));
+    QObject::connect(m_actionRemoveCamTrajectory, SIGNAL(triggered()), this, SLOT(removeCamTrajectory()));
+    QObject::connect(m_actionRemoveCamPosition, SIGNAL(triggered()), this, SLOT(removeCamPosition()));
+
+    QObject::connect(m_actionShowScannerPosition, SIGNAL(triggered()), this, SLOT(showScannerPosition()));
+    QObject::connect(m_actionHideScannerPosition, SIGNAL(triggered()), this, SLOT(hideScannerPosition()));
 
     QObject::connect(m_actionExportModelTransformed, SIGNAL(triggered()), this, SLOT(exportSelectedModel()));
 
@@ -559,6 +612,228 @@ void LVRMainWindow::showBackgroundDialog()
 #endif
 
     }
+}
+
+
+void LVRMainWindow::showScannerPosition()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if (items.size() > 0)
+    {        
+        LVRScanPositionItem* posItem;
+        LVRScanProjectItem* projItem;
+        QTreeWidgetItem* item = items.first();
+        if (item->type() == LVRScanPositionItemType)
+        {   
+            projItem = static_cast<LVRScanProjectItem*>(item->parent());
+            posItem = static_cast<LVRScanPositionItem*>(item);
+            posItem->getScanPositionBridge()->showScannerPosition(m_renderer, (int)projItem->getScanProjectBridge()->getScale());
+        } 
+        else if (item->type() == LVRScanProjectItemType)
+        {
+            projItem = static_cast<LVRScanProjectItem*>(item);
+            LVRScanPositionItem* posItem;
+            for( int i = 0; i < item->childCount(); ++i)
+            {
+                posItem = static_cast<LVRScanPositionItem*>(item->child(i));
+                posItem->getScanPositionBridge()->showScannerPosition(m_renderer, (int)projItem->getScanProjectBridge()->getScale());
+            }
+        }
+    }
+    refreshView();
+
+}
+
+void LVRMainWindow::hideScannerPosition()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if (items.size() > 0)
+    {        
+        LVRScanPositionItem* posItem;
+        QTreeWidgetItem* item = items.first();
+        if (item->type() == LVRScanPositionItemType)
+        {
+            posItem = static_cast<LVRScanPositionItem*>(item);
+            posItem->getScanPositionBridge()->hideScannerPosition(m_renderer);
+        } 
+        else if (item->type() == LVRScanProjectItemType)
+        {
+            LVRScanPositionItem* posItem;
+            for( int i = 0; i < item->childCount(); ++i)
+            {
+                posItem = static_cast<LVRScanPositionItem*>(item->child(i));
+                posItem->getScanPositionBridge()->hideScannerPosition(m_renderer);
+            }
+        }
+    }
+    refreshView();
+}
+
+void LVRMainWindow::removeCamTrajectory()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRScanCamItem* camItem = static_cast<LVRScanCamItem*>(items.first());
+
+        //go through all the children of the scancam and remove actors
+        int i;
+        for(i = 0; i < camItem->childCount(); i++)
+        {
+            if (camItem->type() == LVRScanCamItemType)
+            {
+                if (camItem->child(i)->type() == LVRScanImageItemType)
+                {
+                    LVRScanImageItem* imgItem = static_cast<LVRScanImageItem*>(camItem->child(i));
+                    imgItem->getScanImageBridge()->removePosActor(m_renderer);
+                }
+            }
+        }
+        refreshView();
+    }
+}
+
+void LVRMainWindow::showCamTrajectory()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        //get cam and ScanPosition item
+        LVRScanCamItem* camItem = static_cast<LVRScanCamItem*>(items.first());
+        LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(camItem->parent());
+
+        //get registration matrix from ScanPosition
+        Transformd trans1 = posItem->getScanPositionBridge()->getScanPosition()->transformation;
+        
+        //for each cam item, show cam Position
+        int i;
+        for(i = 0; i < camItem->childCount(); i++)
+        {
+            if (camItem->type() == LVRScanCamItemType)
+            {
+                if (camItem->child(i)->type() == LVRScanImageItemType)
+                {
+                    //get extrinsics for the camera
+                    Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(camItem->child(i)->child(0)->child(1))->extrinsics();
+                    Transformd trans = static_cast<Transformd>(ext);
+
+                    //calculate position and orientation vectors for the camera
+                    Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
+                    Vector4<double> view = trans1 * trans * Vector4<double>(0,0,1,0);
+                    Vector4<double> up = trans1 * trans * Vector4<double>(0,1,0,0);
+                    Vector4<double> side = trans1 * trans * Vector4<double>(1, 0,0,0);
+
+                    //create sphere to represent camerra
+                    vtkSmartPointer<vtkSphereSource> sphereSource1 = 
+                        vtkSmartPointer<vtkSphereSource>::New();
+                    sphereSource1->SetCenter(pos(0), pos(1), pos(2));
+                    sphereSource1->SetRadius(0.1);
+                    sphereSource1->Update();
+
+                    vtkSmartPointer<vtkPolyDataMapper> mapper1 = 
+                        vtkSmartPointer<vtkPolyDataMapper>::New();
+                    mapper1->SetInputConnection(sphereSource1->GetOutputPort());
+  
+                    vtkSmartPointer<vtkActor> actor1 = 
+                        vtkSmartPointer<vtkActor>::New();
+                    actor1->SetMapper(mapper1);
+
+                    //create arrows for orientation of the camera
+                    Vec start(pos(0), pos(1), pos(2));
+                    Vec end(pos(0) + 0.5 * view(0), pos(1) + 0.5 * view(1), pos(2) + 0.5 * view(2));
+                    LVRVtkArrow* arrow = new LVRVtkArrow(start, end);
+                    arrow->setTmpColor(0, 0, 1);
+       
+                    Vec endUp(pos(0) + 0.5 * up(0), pos(1) + 0.5 * up(1), pos(2) + 0.5 * up(2));
+                    LVRVtkArrow* arrowUp = new LVRVtkArrow(start, endUp);
+                    arrowUp->setTmpColor(0, 1, 0);
+                    
+                    Vec endSide(pos(0) + 0.5 * side(0), pos(1) + 0.5 * side(1), pos(2) + 0.5 * side(2));
+                    LVRVtkArrow* arrowSide = new LVRVtkArrow(start, endSide);
+                    arrowSide->setTmpColor(1, 0, 0);
+                    
+                    //add sphere actor and aarow actors to the ScanImageBridge and renderer
+                    std::vector<LVRVtkArrow*> arrows = {arrow, arrowUp, arrowSide};
+                    static_cast<LVRScanImageItem*>(camItem->child(i))->getScanImageBridge()->addPosActor(m_renderer, actor1, arrows);
+
+                }
+            }
+        }
+        refreshView();
+    }
+}
+
+void LVRMainWindow::removeCamPosition()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    if(items.size() > 0)
+    {
+        LVRScanImageItem* imgItem = static_cast<LVRScanImageItem*>(items.first());
+        imgItem->getScanImageBridge()->removePosActor(m_renderer);
+    }
+    refreshView();
+}
+
+void LVRMainWindow::showCamPosition()
+{
+
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    if(items.size() > 0)
+    {
+        //get image and position item
+        LVRScanImageItem* imgItem = static_cast<LVRScanImageItem*>(items.first());
+        LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(imgItem->parent()->parent());
+        
+        //get registration of scanPosition and extrinsics of camera
+        Transformd trans1 = posItem->getScanPositionBridge()->getScanPosition()->transformation;
+        Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(imgItem->child(0)->child(1))->extrinsics();
+        Transformd trans = static_cast<Transformd>(ext);
+
+        //calculate position and orientation vectors for the camera
+        Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
+        Vector4<double> view = trans1 * trans * Vector4<double>(0,0,1,0);
+        Vector4<double> up = trans1 * trans * Vector4<double>(0,-1,0,0);
+        Vector4<double> side = trans1 * trans * Vector4<double>(-1, 0,0,0);
+
+        //create sphere to represent camera
+        vtkSmartPointer<vtkSphereSource> sphereSource1 = 
+            vtkSmartPointer<vtkSphereSource>::New();
+        std::cout << pos(0) << " " << pos(1) << " " << pos(2) << std::endl;
+        sphereSource1->SetCenter(pos(0), pos(1), pos(2));
+        sphereSource1->SetRadius(0.1);
+        sphereSource1->Update();
+  
+        vtkSmartPointer<vtkPolyDataMapper> mapper1 = 
+            vtkSmartPointer<vtkPolyDataMapper>::New();
+        mapper1->SetInputConnection(sphereSource1->GetOutputPort());
+  
+        vtkSmartPointer<vtkActor> actor1 = 
+            vtkSmartPointer<vtkActor>::New();
+        actor1->SetMapper(mapper1);
+
+        //construct arrows to represent orientation of the camera
+        Vec start(pos(0), pos(1), pos(2));
+        Vec end(pos(0) + 0.5 * view(0), pos(1) + 0.5 * view(1), pos(2) + 0.5 * view(2));
+        LVRVtkArrow* arrow = new LVRVtkArrow(start, end);
+        arrow->setTmpColor(0, 0, 1);
+
+        Vec endUp(pos(0) + 0.5 * up(0), pos(1) + 0.5 * up(1), pos(2) + 0.5 * up(2));
+        LVRVtkArrow* arrowUp = new LVRVtkArrow(start, endUp);
+        arrowUp->setTmpColor(0, 1, 0);
+
+        Vec endSide(pos(0) + 0.5 * side(0), pos(1) + 0.5 * side(1), pos(2) + 0.5 * side(2));
+        LVRVtkArrow* arrowSide = new LVRVtkArrow(start, endSide);
+        arrowSide->setTmpColor(1, 0, 0);
+        
+        //add sphere actor and arrow acotrs to ScanImageBridge and renderer 
+        std::vector<LVRVtkArrow*> arrows = {arrow, arrowUp, arrowSide};
+        imgItem->getScanImageBridge()->addPosActor(m_renderer, actor1, arrows);
+    }
+    
+
+    refreshView();
+
 }
 
 void LVRMainWindow::setupQVTK()
@@ -1365,55 +1640,75 @@ void LVRMainWindow::showTreeContextMenu(const QPoint& p)
             QPoint globalPos = treeWidget->mapToGlobal(p);
             m_treeChildItemContextMenu->exec(globalPos);
         }
-        if (item->type() == LVRScanDataItemType)
+        // if (item->type() == LVRScanDataItemType)
+        // {
+        //     QPoint globalPos = treeWidget->mapToGlobal(p);
+
+        //     LVRScanDataItem *sdi = static_cast<LVRScanDataItem *>(item);
+        //     QMenu *con_menu = new QMenu;
+
+        //     if (sdi->isPointCloudLoaded())
+        //     {
+        //         con_menu->addAction(m_actionUnloadPointCloudData);
+        //     }
+        //     else
+        //     {
+        //         con_menu->addAction(m_actionLoadPointCloudData);
+        //     }
+
+        //     con_menu->addAction(m_actionDeleteModelItem);
+        //     con_menu->addAction(m_actionCopyModelItem);
+        //     if(m_items_copied.size() > 0)
+        //     {
+        //         con_menu->addAction(m_actionPasteModelItem);
+        //     } 
+        //     con_menu->exec(globalPos);
+
+        //     delete con_menu;
+        // }
+        // if(item->type() == LVRCvImageItemType)
+        // {
+        //     QPoint globalPos = treeWidget->mapToGlobal(p);
+        //     QMenu *con_menu = new QMenu;
+
+        //     LVRCvImageItem *cvi = static_cast<LVRCvImageItem *>(item);
+
+        //     con_menu->addAction(m_actionShowImage);
+        //     con_menu->exec(globalPos);
+
+        //     delete con_menu;
+        // }
+        // if(item->type() == LVRCamDataItemType)
+        // {
+        //     QPoint globalPos = treeWidget->mapToGlobal(p);
+        //     QMenu *con_menu = new QMenu;
+
+        //     LVRCamDataItem* cam = static_cast<LVRCamDataItem *>(item);
+
+        //     con_menu->addAction(m_actionSetViewToCamera);
+        //     con_menu->exec(globalPos);
+
+        //     delete con_menu;
+        // }
+        if(item->type() == LVRScanPositionItemType)
         {
             QPoint globalPos = treeWidget->mapToGlobal(p);
-
-            LVRScanDataItem *sdi = static_cast<LVRScanDataItem *>(item);
-            QMenu *con_menu = new QMenu;
-
-            if (sdi->isPointCloudLoaded())
-            {
-                con_menu->addAction(m_actionUnloadPointCloudData);
-            }
-            else
-            {
-                con_menu->addAction(m_actionLoadPointCloudData);
-            }
-
-            con_menu->addAction(m_actionDeleteModelItem);
-            con_menu->addAction(m_actionCopyModelItem);
-            if(m_items_copied.size() > 0)
-            {
-                con_menu->addAction(m_actionPasteModelItem);
-            } 
-            con_menu->exec(globalPos);
-
-            delete con_menu;
+            m_scanPositionContextMenu->exec(globalPos);
         }
-        if(item->type() == LVRCvImageItemType)
+        if(item->type() == LVRScanProjectItemType)
         {
             QPoint globalPos = treeWidget->mapToGlobal(p);
-            QMenu *con_menu = new QMenu;
-
-            LVRCvImageItem *cvi = static_cast<LVRCvImageItem *>(item);
-
-            con_menu->addAction(m_actionShowImage);
-            con_menu->exec(globalPos);
-
-            delete con_menu;
+            m_scanPositionContextMenu->exec(globalPos);
         }
-        if(item->type() == LVRCamDataItemType)
+        if(item->type() == LVRScanImageItemType)
         {
             QPoint globalPos = treeWidget->mapToGlobal(p);
-            QMenu *con_menu = new QMenu;
-
-            LVRCamDataItem* cam = static_cast<LVRCamDataItem *>(item);
-
-            con_menu->addAction(m_actionSetViewToCamera);
-            con_menu->exec(globalPos);
-
-            delete con_menu;
+            m_scanImageContextMenu->exec(globalPos);
+        }
+        if(item->type() == LVRScanCamItemType)
+        {
+            QPoint globalPos = treeWidget->mapToGlobal(p);
+            m_scanCamContextMenu->exec(globalPos);
         }
     }
 }
@@ -1452,7 +1747,7 @@ LVRModelItem* LVRMainWindow::loadModelItem(QString name)
         poseFile.replace_extension(extension);
         if (boost::filesystem::exists(poseFile))
         {
-            cout << "Found Pose file: " << poseFile << endl;
+            std::cout << "Found Pose file: " << poseFile << std::endl;
             Transformf mat = getTransformationFromFile<float>(poseFile);
             BaseVector<float> pos, angles;
             getPoseFromMatrix<float>(pos, angles, mat.transpose());
@@ -1522,12 +1817,12 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 //read intermediaformat
                 DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(info.absoluteFilePath().toStdString())); 
                 std::string tmp = info.absolutePath().toStdString();
-                DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib(tmp)); 
+                DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaRaw(tmp)); 
                 DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
                 ScanProjectPtr scanProject = dirIO.loadScanProject();
                 ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
                 bridge->addActors(m_renderer);
-                LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+                LVRScanProjectItem* item = new LVRScanProjectItem(bridge, nullptr, "ScanProject");
                 QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
                 root->addChild(item);
                 item->setExpanded(false);
@@ -1641,22 +1936,22 @@ void LVRMainWindow::loadPointCloudData()
     {
         QTreeWidgetItem* item = items.first();
 
-        if(item->type() == LVRScanDataItemType)
-        {
-            LVRScanDataItem *sd = static_cast<LVRScanDataItem *>(item);
+        // if(item->type() == LVRScanDataItemType)
+        // {
+        //     LVRScanDataItem *sd = static_cast<LVRScanDataItem *>(item);
 
 
-            if (!sd->isPointCloudLoaded())
-            {
-                sd->loadPointCloudData(m_renderer);
-                sd->setVisibility(true, m_actionShow_Points->isChecked());
+        //     if (!sd->isPointCloudLoaded())
+        //     {
+        //         sd->loadPointCloudData(m_renderer);
+        //         sd->setVisibility(true, m_actionShow_Points->isChecked());
 
-                highlightBoundingBoxes();
-                assertToggles();
-                restoreSliders();
-                refreshView();
-            }
-        }
+        //         highlightBoundingBoxes();
+        //         assertToggles();
+        //         restoreSliders();
+        //         refreshView();
+        //     }
+        // }
     }
 
 }
@@ -1668,66 +1963,32 @@ void LVRMainWindow::unloadPointCloudData()
     {
         QTreeWidgetItem* item = items.first();
 
-        if(item->type() == LVRScanDataItemType)
-        {
-            LVRScanDataItem *sd = static_cast<LVRScanDataItem *>(item);
+        // if(item->type() == LVRScanDataItemType)
+        // {
+        //     LVRScanDataItem *sd = static_cast<LVRScanDataItem *>(item);
 
-            if (sd->isPointCloudLoaded())
-            {
-                sd->unloadPointCloudData(m_renderer);
+        //     if (sd->isPointCloudLoaded())
+        //     {
+        //         sd->unloadPointCloudData(m_renderer);
 
-                highlightBoundingBoxes();
-                refreshView();
-                restoreSliders();
-                assertToggles();
-            }
-        }
-    }
-
-}
-
-void LVRMainWindow::loadScanProjectDir(bool lazy)
-{
-    QString filename = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "", 
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    std::string tmp = filename.toStdString();
-    if (tmp != "") 
-    {
-        DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
-        DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
-        DirectoryIO dirIO(dirKernel, hyperlibSchema);
-
-        // TODO: Lazy loading by ReductionAlgorithm.
-        ScanProjectPtr scanProject = dirIO.loadScanProject();
-
-        loadScanProject(scanProject, filename);
+        //         highlightBoundingBoxes();
+        //         refreshView();
+        //         restoreSliders();
+        //         assertToggles();
+        //     }
+        // }
     }
 }
 
-void LVRMainWindow::loadScanProjectH5()
-{
-    QString filename = QFileDialog::getOpenFileName(this, tr("Open scan project"), "", tr("Scan project (*.h5)"));
-    std::string tmp = filename.toStdString();
-
-    if (tmp != "")
-    {
-        HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
-        HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
-        descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-        ScanProjectPtr scanProject = hdf5IO.loadScanProject();
-        loadScanProject(scanProject, filename);
-    }
-}
-
-void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename)
+void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io, ProjectScale scale)
 {
     this->checkBoxShowFocal->setChecked(false);
 
     std::vector<ScanPositionPtr> positions = scanProject->positions;
 
-    ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
+    ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject, scale));
     bridge->addActors(m_renderer);
-    LVRScanProjectItem* item = new LVRScanProjectItem(bridge, "ScanProject");
+    LVRScanProjectItem* item = new LVRScanProjectItem(bridge, io, "ScanProject");
     QTreeWidgetItem *root = new QTreeWidgetItem(treeWidget);
 
     QFileInfo info((filename));
@@ -1736,28 +1997,197 @@ void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename
     root->setText(0, base);
     root->setData(0,Qt::UserRole, filename);
     root->addChild(item);
-    item->setExpanded(false);    
+    item->setExpanded(false); 
+    showLoading(false);
     refreshView();
-    // TODO: Ball wegbekommen
-    // Code verstehen (LVRScanProjectBridge und LVRScanProjectItem)
+}
+
+void LVRMainWindow::changeReductionAlgorithm()
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    LVRReductionAlgorithmDialog* dialog = new LVRReductionAlgorithmDialog(this);
+    resizeLoading();
+    showLoading(true);
+    // Display dialog
+    dialog->setModal(true);
+    dialog->raise();
+    dialog->activateWindow();
+    dialog->exec();
+
+    //check if dialog was successful
+    if(!dialog->successful())
+    {   
+        showLoading(false);
+        return;
+    }
+
+    //check for item type and load accordingly
+    ReductionAlgorithmPtr reduction = dialog->reductionPtr();
+    if(items.size() > 0)
+    {
+        QTreeWidgetItem* item = items.first();
+        if(item->type() == LVRModelItemType)
+        {
+            //get ModelItem and ScanProjectItem
+            LVRModelItem* modelItem = static_cast<LVRModelItem*>(item);
+            LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item->parent()->parent());
+
+            //get diirectory/file name
+            QString filename = modelItem->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
+            std::string tmp = filename.toStdString();
+            QFileInfo info(filename);
+
+            ScanPtr scan;
+
+            //get relevant numbers for loading scan
+            int scanpos_nr = modelItem->parent()->data(0, Qt::UserRole).toInt();
+            int scan_nr = modelItem->data(0, Qt::UserRole).toInt();
+            
+            //load scan with IO from ScanProjectItem
+            std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+            if (io == nullptr)
+            {
+                std::cerr << "No IOPtr" << std::endl;
+                return;
+            }
+
+            /// CUrrently just check lidar 0
+            if (info.suffix() == "h5")
+            {
+                auto hdf5IO = std::dynamic_pointer_cast<scanio::HDF5IO>(io);
+                scan = hdf5IO->loadScan(scanpos_nr, 0, scan_nr, reduction);
+            }
+            else
+            {
+                auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+                scan = dirIO->loadScan(scanpos_nr, 0, scan_nr, reduction);
+            }
+
+
+
+            //create new model and change replace old model in ModelItem
+            ModelPtr model(new Model(scan->points));
+            modelItem->getModelBridge()->removeActors(m_renderer);
+            ModelBridgePtr newBridge(new LVRModelBridge(model));
+            newBridge->addActors(m_renderer);
+            modelItem->setBridge(newBridge);
+
+            //replace ModelBridge in ScanPositionBridge 
+            LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(modelItem->parent());
+            std::vector<ModelBridgePtr> models = posItem->getScanPositionBridge()->getModels();
+            models[scan_nr] = newBridge;
+            posItem->getScanPositionBridge()->setModels(models);
+
+        }
+        else if(item->type() == LVRScanPositionItemType)
+        {
+            //get ModelItem and ScanProjectItem
+            LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(item);
+            LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item->parent());
+
+            //get diirectory/file name
+            QString filename = posItem->parent()->parent()->data(0, Qt::UserRole).toString();
+            std::string tmp = filename.toStdString();
+            QFileInfo info(filename);
+
+            ScanPositionPtr scanPos;
+
+            //get number of scanposition
+            int scanpos_nr = posItem->data(0, Qt::UserRole).toInt();
+            
+            //load ScanPosition from IO of ScanProjectItem
+            std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+            if (io == nullptr)
+            {
+                std::cerr << "No IOPtr" << std::endl;
+                return;
+            }
+            if (info.suffix() == "h5")
+            {
+                auto hdf5IO = std::dynamic_pointer_cast<scanio::HDF5IO>(io);
+                scanPos = hdf5IO->loadScanPosition(scanpos_nr, reduction);
+            }
+            else
+            {
+                auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+                scanPos = dirIO->loadScanPosition(scanpos_nr, reduction);
+            }
+            
+            //replace ScanPositionBridge in ScanPositionItem
+            posItem->getScanPositionBridge()->removeActors(m_renderer);
+            ScanPositionBridgePtr newBridge(new LVRScanPositionBridge(scanPos));
+            newBridge->addActors(m_renderer);
+            if(posItem->getScanPositionBridge()->scannerPositionIsVisible()) 
+            {
+                posItem->getScanPositionBridge()->hideScannerPosition(m_renderer);
+                newBridge->showScannerPosition(m_renderer, (int)projItem->getScanProjectBridge()->getScale());
+            }
+            posItem->setBridge(newBridge);
+
+            std::vector<ScanPositionBridgePtr> positions = projItem->getScanProjectBridge()->getScanPositions();
+            positions[scanpos_nr] = newBridge;
+            projItem->getScanProjectBridge()->setScanPositions(positions);
+
+        }
+        else if(item->type() == LVRScanProjectItemType)
+        {
+            hideScannerPosition();
+            std::cout << "ScanProject " << item->data(0, Qt::UserRole).toInt() << std::endl;
+
+            LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item);
+            
+            QString filename = projItem->parent()->data(0, Qt::UserRole).toString();
+            std::string tmp = filename.toStdString();
+            QFileInfo info(filename);
+
+            ScanProjectPtr scanProj;
+
+            std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+            if (io == nullptr)
+            {
+                std::cerr << "No IOPtr" << std::endl;
+                return;
+            }
+
+            if (info.suffix() == "h5")
+            {
+                auto hdf5IO = std::dynamic_pointer_cast<scanio::HDF5IO>(io);
+                scanProj = hdf5IO->loadScanProject(reduction);
+            }
+            else
+            {
+                auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+                scanProj = dirIO->loadScanProject(reduction);
+            }
+
+            projItem->getScanProjectBridge()->removeActors(m_renderer);
+            ScanProjectBridgePtr newBridge(new LVRScanProjectBridge(scanProj, projItem->getScanProjectBridge()->getScale()));
+            newBridge->addActors(m_renderer);
+            projItem->setBridge(newBridge);
+
+        }
+    }
+    showLoading(false);
+    refreshView();
+    delete dialog;
 }
 
 
 void LVRMainWindow::showImage()
 {
-    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+    // QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
 
-    if(items.size() > 0)
-    {
-        QTreeWidgetItem* item = items.first();
+    // if(items.size() > 0)
+    // {
+    //     QTreeWidgetItem* item = items.first();
 
-        if(item->type() == LVRCvImageItemType)
-        {
-            LVRCvImageItem *cvi = static_cast<LVRCvImageItem *>(item);
+    //     if(item->type() == LVRCvImageItemType)
+    //     {
+    //         LVRCvImageItem *cvi = static_cast<LVRCvImageItem *>(item);
 
-            cvi->openWindow();
-        }
-    }
+    //         cvi->openWindow();
+    //     }
+    // }
 }
 
 void LVRMainWindow::setViewToCamera()
@@ -1768,12 +2198,43 @@ void LVRMainWindow::setViewToCamera()
     {
         QTreeWidgetItem* item = items.first();
 
-        if(item->type() == LVRCamDataItemType)
+        // if(item->type() == LVRCamDataItemType)
+        // {
+        //     LVRCamDataItem *cam = static_cast<LVRCamDataItem *>(item);
+
+        //     cam->setCameraView();
+
+        //     refreshView();
+        // }
+        if(item->type() == LVRScanImageItemType)
         {
-            LVRCamDataItem *cam = static_cast<LVRCamDataItem *>(item);
+            //get image and scanposition item
+            LVRScanImageItem* imgItem = static_cast<LVRScanImageItem*>(items.first());
+            LVRScanPositionItem* posItem = static_cast<LVRScanPositionItem*>(imgItem->parent()->parent());
 
-            cam->setCameraView();
+            //remove pos actor of the image so that it doesnt block the view 
+            imgItem->getScanImageBridge()->removePosActor(m_renderer);
 
+            //get transformation matrix from scanposition
+            Transformd trans1 = posItem->getScanPositionBridge()->getScanPosition()->transformation;
+
+            //get extrinsics of the camera and cast it to transformation matrix
+            Extrinsicsd ext = static_cast<LVRExtrinsicsItem*>(imgItem->child(0)->child(1))->extrinsics();
+            Transformd trans = static_cast<Transformd>(ext);
+
+            //calculate cumulative transformation matrix
+            Vector3<double> pos = multiply(trans1, multiply(trans, {0,0,0}));
+
+            //get vtkcamera and set its position and orientation to the ScanCamera
+            vtkCamera* cam = m_renderer->GetActiveCamera();
+            
+            cam->SetPosition(pos(0),pos(1),pos(2));
+
+            Vector4<double> up = trans1 * trans * Vector4<double>(0,-1,0,0);
+            cam->SetViewUp(up(0),up(1),up(2));
+
+            Vector4<double> view = trans1 * trans * Vector4<double>(0,0,1,0);
+            cam->SetFocalPoint(view(0) + pos(0), view(1) + pos(1), view(2) + pos(2));
             refreshView();
         }
     }
@@ -2110,20 +2571,20 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
 
         refreshView();
     }
-    else if (treeWidgetItem->type() == LVRScanDataItemType)
-    {
-        LVRScanDataItem *item = static_cast<LVRScanDataItem *>(treeWidgetItem);
-        item->setVisibility(true, m_actionShow_Points->isChecked());
+    // else if (treeWidgetItem->type() == LVRScanDataItemType)
+    // {
+    //     LVRScanDataItem *item = static_cast<LVRScanDataItem *>(treeWidgetItem);
+    //     item->setVisibility(true, m_actionShow_Points->isChecked());
 
-        refreshView();
-    }
-    else if (treeWidgetItem->type() == LVRCamDataItemType)
-    {
-        LVRCamDataItem *item = static_cast<LVRCamDataItem *>(treeWidgetItem);
-        item->setVisibility(true);
+    //     refreshView();
+    // }
+    // else if (treeWidgetItem->type() == LVRCamDataItemType)
+    // {
+    //     LVRCamDataItem *item = static_cast<LVRCamDataItem *>(treeWidgetItem);
+    //     item->setVisibility(true);
 
-        refreshView();
-    }
+    //     refreshView();
+    // }
     else if (treeWidgetItem->type() == LVRBoundingBoxItemType)
     {
         LVRBoundingBoxItem *item = static_cast<LVRBoundingBoxItem *>(treeWidgetItem);
@@ -2154,57 +2615,6 @@ void LVRMainWindow::setModelVisibility(QTreeWidgetItem* treeWidgetItem, int colu
     else if (treeWidgetItem->parent() && treeWidgetItem->parent()->type() == LVRScanDataItemType)
     {
         setModelVisibility(treeWidgetItem->parent(), column);
-    }
-    else if (treeWidgetItem->type() == LVRScanImageItemType)
-    {
-        if(treeWidgetItem->checkState(0))
-        {
-            QString filename = treeWidgetItem->parent()->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
-            std::string tmp = filename.toStdString();
-            QFileInfo info(filename);
-
-            int img_nr = treeWidgetItem->data(0, Qt::UserRole).toInt();
-            int cam_nr = treeWidgetItem->parent()->data(0, Qt::UserRole).toInt();
-            int scanpos_nr = treeWidgetItem->parent()->parent()->data(0, Qt::UserRole).toInt();
-            cv::Mat img;
-            if (info.suffix() == "h5")
-            {
-                HDF5SchemaPtr hdf5Schema(new ScanProjectSchemaHDF5V2());
-                HDF5KernelPtr hdf5Kernel(new HDF5Kernel(tmp));
-                descriptions::HDF5IO hdf5IO(hdf5Kernel, hdf5Schema);
-                Description d = hdf5Schema->scanImage(scanpos_nr, cam_nr, img_nr);
-                img = *hdf5Kernel->loadImage(*d.groupName, *d.dataSetName);
-            }
-            else
-            {
-                DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
-                DirectoryKernelPtr dirKernel(new DirectoryKernel(tmp));
-                DirectoryIO dirIO(dirKernel, hyperlibSchema);
-                Description d = hyperlibSchema->scanImage(scanpos_nr, cam_nr, img_nr);
-                img = *dirKernel->loadImage(*d.groupName, *d.dataSetName);
-            }
-
-            #if (CV_VERSION_MAJOR >= 4)
-                cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
-            #else
-                cv::cvtColor(img, img, CV_BGR2RGB);
-            #endif
-            //std::cout << filename.toStdString() << std::endl;
-            LVRScanImageItem *item = static_cast<LVRScanImageItem*>(treeWidgetItem);
-            //item->setVisibility(item->checkState(0));
-            item->setImage(img);
-            item->getScanImageBridge()->addActors(m_renderer);
-            refreshView();
-            updateView();
-        }
-        else
-        {
-            LVRScanImageItem *item = static_cast<LVRScanImageItem*>(treeWidgetItem);
-            item->getScanImageBridge()->removeActors(m_renderer);
-            std::cout << "Remove Actors" << std::endl;
-            refreshView();
-            updateView();
-        }
     }
 }
 
@@ -2307,11 +2717,11 @@ void LVRMainWindow::togglePoints(bool checkboxState)
                 LVRModelItem* model_item = static_cast<LVRModelItem*>(item->parent());
                 if(model_item->isEnabled()) model_item->setVisibility(checkboxState);
             }
-            if (item->parent()->type() == LVRScanDataItemType)
-            {
-                LVRScanDataItem* sd_item = static_cast<LVRScanDataItem*>(item->parent());
-                sd_item->setVisibility(true, checkboxState);
-            }
+            // if (item->parent()->type() == LVRScanDataItemType)
+            // {
+            //     LVRScanDataItem* sd_item = static_cast<LVRScanDataItem*>(item->parent());
+            //     sd_item->setVisibility(true, checkboxState);
+            // }
             if (item->parent()->type() == LVRLabelItemType)
             {
                 LVRLabelItem* label_item = static_cast<LVRLabelItem*>(item->parent());
@@ -2394,42 +2804,42 @@ void LVRMainWindow::toggleWireframe(bool checkboxState)
     }
 }
 
-QTreeWidgetItem* LVRMainWindow::addScans(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
-{
-    QTreeWidgetItem *lastItem = nullptr;
-    std::vector<ScanPtr> scans = sdm->getScans();
-    std::vector<std::vector<ScanImage> > camData = sdm->getCameraData();
+// QTreeWidgetItem* LVRMainWindow::addScans(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent)
+// {
+//     QTreeWidgetItem *lastItem = nullptr;
+//     std::vector<ScanPtr> scans = sdm->getScans();
+//     std::vector<std::vector<ScanImage> > camData = sdm->getCameraData();
 
-    bool cam_data_available = camData.size() > 0;
+//     bool cam_data_available = camData.size() > 0;
 
-    for (size_t i = 0; i < scans.size(); i++)
-    {
-        char buf[128];
-        std::sprintf(buf, "%05d", scans[i]->positionNumber);
-        LVRScanDataItem *item = new LVRScanDataItem(scans[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
+//     for (size_t i = 0; i < scans.size(); i++)
+//     {
+//         char buf[128];
+//         std::sprintf(buf, "%05d", scans[i]->positionNumber);
+//         LVRScanDataItem *item = new LVRScanDataItem(scans[i], sdm, i, m_renderer, QString("pos_") + buf, parent);
 
-        if(cam_data_available && camData[i].size() > 0)
-        {
-            QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
-            cameras_item->setText(0, QString("Photos"));
-            // insert cam poses
-            // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
-            for(int j=0; j < camData[i].size(); j++)
-            {
-                char buf2[128];
-                std::sprintf(buf2, "%05d", j);
-                // implement this
-                LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("photo_") + buf2, cameras_item);
+//         if(cam_data_available && camData[i].size() > 0)
+//         {
+//             QTreeWidgetItem* cameras_item = new QTreeWidgetItem(item, LVRCamerasItemType);
+//             cameras_item->setText(0, QString("Photos"));
+//             // insert cam poses
+//             // QTreeWidgetItem *images = new QTreeWidgetItem(item, QString("cams"));
+//             for(int j=0; j < camData[i].size(); j++)
+//             {
+//                 char buf2[128];
+//                 std::sprintf(buf2, "%05d", j);
+//                 // implement this
+//                 LVRCamDataItem *cam_item = new LVRCamDataItem(camData[i][j], sdm, j, m_renderer, QString("photo_") + buf2, cameras_item);
 
-                lastItem = cam_item;
-            }
-        }
+//                 lastItem = cam_item;
+//             }
+//         }
 
-        lastItem = item;
-    }
+//         lastItem = item;
+//     }
 
-    return lastItem;
-}
+//     return lastItem;
+// }
 
 void LVRMainWindow::parseCommandLine(int argc, char** argv)
 {
@@ -3166,6 +3576,96 @@ void LVRMainWindow::updatePointCount(uint16_t id, int selectedPointCount)
         }
     }
 }
+
+void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
+{
+    if (item->type() == LVRExtrinsicsItemType)
+    {
+        //Show extrinsics matrix on double click in separate window
+        QMessageBox msgBox;
+        LVRExtrinsicsItem* ext = static_cast<LVRExtrinsicsItem*>(item); 
+        QString mat;
+        QString num;
+
+        //print with fitting format
+        for (int i = 0; i < 16; i++)
+        {
+            if(i % 4 == 0)
+            {
+                mat += QString("\n");
+            }
+            num = QString::number(ext->extrinsics()(i));
+            if(ext->extrinsics()(i) >= 0)
+            {
+                num = QString(" ") + num;
+            }
+            if(num.length() < 3)
+            {
+                num += QString(".");
+            }
+            while (num.length() < 11)
+            {
+                num += QString("0");
+            }
+
+            mat += num + QString("   ");
+        }
+        msgBox.setText(mat);
+        msgBox.exec();
+    }
+    else if (item->type() == LVRScanImageItemType)
+    {
+        //get ScanProjectItem and file/directory name of the ScanProject
+        LVRScanProjectItem* projItem = static_cast<LVRScanProjectItem*>(item->parent()->parent()->parent());
+        QString filename = item->parent()->parent()->parent()->parent()->data(0, Qt::UserRole).toString();
+        std::string tmp = filename.toStdString();
+        QFileInfo info(filename);
+
+        //get relevant numbers for loading the scanimage
+        int img_nr = item->data(0, Qt::UserRole).toInt();
+        int cam_nr = item->parent()->data(0, Qt::UserRole).toInt();
+        int scanpos_nr = item->parent()->parent()->data(0, Qt::UserRole).toInt();
+
+        cv::Mat img;
+
+        //laod image with IO from the ScanProjectItem
+        std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+        if (io == nullptr)
+        {
+            std::cerr << "No IOPtr" << std::endl;
+            return;
+        }
+        if (info.suffix() == "h5")
+        {
+            auto hdf5IO = std::dynamic_pointer_cast<scanio::HDF5IO>(io);
+            Description d = hdf5IO->m_description->cameraImage(scanpos_nr, cam_nr, img_nr);
+            img = *hdf5IO->loadImage(*d.dataRoot, *d.data);
+        }
+        else
+        {
+            auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+            Description d = dirIO->m_description->cameraImage(scanpos_nr, cam_nr, img_nr);
+            img = *dirIO->loadImage(*d.dataRoot, *d.data);
+        }
+        
+
+        #if (CV_VERSION_MAJOR >= 4)
+            cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+        #else
+            cv::cvtColor(img, img, CV_BGR2RGB);
+        #endif
+
+        //create new window with pixmap from image
+        QImage image(img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
+        QPixmap pixMap = QPixmap::fromImage(image);
+        QLabel* label = new QLabel(); 
+        label->setAlignment(Qt::AlignCenter);
+        pixMap = pixMap.scaled(label->size(), Qt::KeepAspectRatio);
+        label->setPixmap(pixMap);
+        label->show();
+    }
+}
+
 void LVRMainWindow::cellSelected(QTreeWidgetItem* item, int column)
 {
     if(column == LABEL_NAME_COLUMN)
@@ -3322,7 +3822,7 @@ void LVRMainWindow::openIntermediaProject()
     }
     DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(dir.toStdString())); 
     std::string tmp  = dir.toStdString();
-    DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaHyperlib(tmp)); 
+    DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaRaw(tmp)); 
     DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
     ScanProjectPtr scanProject = dirIO.loadScanProject();
     LabeledScanProjectEditMarkPtr labelScanProject= LabeledScanProjectEditMarkPtr(new LabeledScanProjectEditMark());
@@ -3339,50 +3839,102 @@ void LVRMainWindow::openIntermediaProject()
 
 void LVRMainWindow::openScanProject()
 {
-    // QString fileName = QFileDialog::getOpenFileName(this,
-    //             tr("Open HDF5 File"), QDir::homePath(), tr("HDF5 files (*.h5)"));
-    // if(!QFile::exists(fileName))
-    // {
-    //     return;
-    // }
-    // openHDF5(fileName.toStdString());
-
     LVRScanProjectOpenDialog* dialog = new LVRScanProjectOpenDialog(this);
-    
+    resizeLoading();
+    showLoading(true);
     // Display
     dialog->setModal(true);
     dialog->raise();
     dialog->activateWindow();
     dialog->exec();
 
-    delete dialog;
+    ScanProjectSchemaPtr schema = dialog->schema();
+    FileKernelPtr kernel = dialog->kernel();
+    
 
+    if(!dialog->successful())
+    {
+        showLoading(false);
+        return;
+    }
+
+    LVRScanProjectOpenDialog::ProjectType projectType = dialog->projectType();
+    ReductionAlgorithmPtr reduction = dialog->reductionPtr();
+    ProjectScale scale = dialog->projectScale();
+    
+    ScanProjectPtr scanProject;
+    std::shared_ptr<FeatureBuild<ScanProjectIO>> io;
+    switch(projectType)
+    {
+        case LVRScanProjectOpenDialog::DIR:
+        {
+            DirectoryKernelPtr dirKernel = std::dynamic_pointer_cast<DirectoryKernel>(kernel); 
+            DirectorySchemaPtr dirSchema = std::dynamic_pointer_cast<DirectorySchema>(schema);
+            auto dirIOPtr = std::shared_ptr<DirectoryIO>(new DirectoryIO(dirKernel, dirSchema));
+            io = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(dirIOPtr);
+            scanProject = io->loadScanProject(reduction);
+            break;
+        }
+        case LVRScanProjectOpenDialog::HDF5:
+        {
+            HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel); 
+            HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
+            auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
+            io = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
+            scanProject = io->loadScanProject(reduction);
+            break;
+        }
+    }
+    
+    loadScanProject(scanProject, QString::fromStdString(kernel->fileResource()), io, scale);
+    delete dialog;
 }
  
 void LVRMainWindow::openHDF5(std::string fileName)
 {
-    LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
-    HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName));
-    LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
-    LabeledScanProjectEditMarkPtr labelScanProject = h5IO.loadScanProject();
+    std::cout << "Labeled opening currently not working" << std::endl;
+    // LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
+    // HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName));
+    // LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
+    // LabeledScanProjectEditMarkPtr labelScanProject = h5IO.loadScanProject();
    
-    this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, fileName);
+    // this->treeWidget->addLabeledScanProjectEditMark(labelScanProject, fileName);
 
-    if(labelScanProject->labelRoot)
-    {
-        this->dockWidgetLabel->show();
-        m_pickingInteractor->setPoints(this->treeWidget->getBridgePtr()->getLabelBridgePtr()->getPointBridge()->getPolyIDData());
-        this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot, m_pickingInteractor,selectedInstanceComboBox);
-    } else
-    {
-        labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
-    }
-    this->treeWidget->getBridgePtr()->addActors(m_renderer);
-    updateView();
-
-
-   
+    // if(labelScanProject->labelRoot)
+    // {
+    //     this->dockWidgetLabel->show();
+    //     m_pickingInteractor->setPoints(this->treeWidget->getBridgePtr()->getLabelBridgePtr()->getPointBridge()->getPolyIDData());
+    //     this->labelTreeWidget->setLabelRoot(labelScanProject->labelRoot, m_pickingInteractor,selectedInstanceComboBox);
+    // } else
+    // {
+    //     labelScanProject->labelRoot = labelTreeWidget->getLabelRoot();
+    // }
+    // this->treeWidget->getBridgePtr()->addActors(m_renderer);
+    // updateView();
 }
+
+void LVRMainWindow::initLoading()
+{
+    m_loadingLabel->setText("Loading...");
+    m_loadingLabel->setAlignment(Qt::AlignCenter);
+    m_loadingLabel->setStyleSheet("background-color: rgba(0,0,0,75%); color: white; font-weight: bold;");
+    m_loadingLabel->move(this->width()-m_loadingLabel->width(),this->height()-m_loadingLabel->height());
+    showLoading(false);
+}
+
+void LVRMainWindow::resizeLoading()
+{
+    m_loadingLabel->move(this->width()-m_loadingLabel->width(),this->height()-m_loadingLabel->height());
+}
+
+void LVRMainWindow::showLoading(bool state)
+{
+    state ? m_loadingLabel->show() : m_loadingLabel->hide();
+}
+
+
+
+
 void LVRMainWindow::exportLabels()
 {
     std::cout << "Unused" << std::endl;
@@ -3658,11 +4210,11 @@ void LVRMainWindow::readLWF()
 
     WaveformPtr waveform = WaveformPtr(new Waveform);
     waveform->waveformIndices.push_back(0);
-    uint16_t data[colums];
+    std::vector<uint16_t> data(colums);
 
     for (int i = 0; i < lines; i++)
     {
-        waveformFile.read((char *) &data, sizeof(uint16_t) * colums);
+        waveformFile.read((char *) &(data[0]), sizeof(uint16_t) * colums);
         //First entry is the channel
         waveform->lowPower.push_back(data[0]);
 
@@ -3818,16 +4370,17 @@ void LVRMainWindow::exportScanProject()
             //as HDF5
             LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
             HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName.toStdString() + ".h5"));
-            LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
+           // LabelHDF5IO h5IO(hdf5Kernel, hdf5Schema);
 
-            h5IO.saveLabelScanProject(labeledScanProject);
-
-        }else
+            //h5IO.saveLabelScanProject(labeledScanProject);
+            std::cout << "HDF5 io labeling not working" << std::endl;
+         }
+        else
         {
 
             //Intermedia
             std::string tmp = fileName.toStdString();
-            DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaHyperlib(tmp));
+            DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaRaw(tmp));
             DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(fileName.toStdString()));
             DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
         

@@ -207,7 +207,9 @@ void LVRPointBufferBridge::refreshSpectralGradient()
         size_t nearRedStart = Util::getSpectralChannel(700, m_pointBuffer, n_channels - 2);
         size_t nearRedEnd   = Util::getSpectralChannel(1100, m_pointBuffer, n_channels - 1);
 
-        #pragma omp parallel for reduction(max : ndviMax), reduction(min : ndviMin)
+#if !(defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__))
+        #pragma omp parallel for reduction(max:ndviMax), reduction(min:ndviMin)
+#endif
         for (int i = 0; i < n; i++)
         {
             float redTotal = 0;
@@ -251,7 +253,9 @@ void LVRPointBufferBridge::refreshSpectralGradient()
     {
         // get min and max
         float max_val = spec[m_spectralGradientChannel], min_val = spec[m_spectralGradientChannel];
-        #pragma omp parallel for reduction(max : max_val), reduction(min : min_val)
+#if !(defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__))
+        #pragma omp parallel for reduction(max:max_val), reduction(min:min_val)
+#endif
         for (int i = 0; i < n; i++)
         {
             int specIndex = n_channels * i + m_spectralGradientChannel;

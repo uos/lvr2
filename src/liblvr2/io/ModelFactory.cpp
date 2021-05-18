@@ -32,19 +32,19 @@
  *  @author Thomas Wiemann
  */
 
-#include "lvr2/io/AsciiIO.hpp"
-#include "lvr2/io/PLYIO.hpp"
-#include "lvr2/io/UosIO.hpp"
-#include "lvr2/io/ObjIO.hpp"
-#include "lvr2/io/LasIO.hpp"
-#include "lvr2/io/HDF5IO.hpp"
-#include "lvr2/io/WaveformIO.hpp"
-#include "lvr2/io/BoctreeIO.hpp"
+#include "lvr2/io/baseio/AsciiIO.hpp"
+#include "lvr2/io/baseio/PLYIO.hpp"
+#include "lvr2/io/baseio/UosIO.hpp"
+#include "lvr2/io/baseio/ObjIO.hpp"
+#include "lvr2/io/baseio/LasIO.hpp"
+#include "lvr2/io/baseio/DatIO.hpp"
+#include "lvr2/io/baseio/STLIO.hpp"
+
+// #include "lvr2/io/HDF5IO.hpp"
+// #include "lvr2/io/WaveformIO.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/DatIO.hpp"
-#include "lvr2/io/STLIO.hpp"
-#include "lvr2/io/Timestamp.hpp"
-#include "lvr2/io/Progress.hpp"
+#include "lvr2/util/Timestamp.hpp"
+#include "lvr2/util/Progress.hpp"
 
 // PCL related includes
 #ifdef LVR2_USE_PCL
@@ -65,8 +65,7 @@ CoordinateTransform<float> ModelFactory::m_transform;
 
 ModelPtr ModelFactory::readModel( std::string filename )
 {
-
-    ModelPtr m(new Model);
+    ModelPtr m;
 
     // Check extension
     boost::filesystem::path selectedFile( filename );
@@ -100,14 +99,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new DatIO;
     }
-    else if (extension ==".h5")
-    {
-        io = new HDF5IO;
-    }
-    else if (extension ==".lwf")
-    {
-	io = new WaveformIO;
-    }
+    // else if (extension ==".lwf")
+    // {
+	// io = new WaveformIO;
+    // }
 #ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
@@ -136,34 +131,12 @@ ModelPtr ModelFactory::readModel( std::string filename )
                     found_3d = true;
                 }
             }
-
-            // Check for .oct files
-            if(p.extension().string() == ".oct")
-            {
-                // Check for naming convention "scanxxx.3d"
-                int num = 0;
-                if(sscanf(p.filename().string().c_str(), "scan%3d", &num))
-                {
-                    found_boctree = true;
-                }
-            }
-
-
         }
 
         // Check and create io
         if(!found_boctree && found_3d)
         {
             io = new UosIO;
-        }
-        else if(found_boctree && found_3d)
-        {
-            cout << timestamp << "Found 3d files and octrees. Loading octrees per default." << endl;
-            io = new BoctreeIO;
-        }
-        else if(found_boctree && !found_3d)
-        {
-            io = new BoctreeIO;
         }
         else
         {
@@ -224,7 +197,6 @@ ModelPtr ModelFactory::readModel( std::string filename )
     }
 
     return m;
-
 }
 
 void ModelFactory::saveModel( ModelPtr m, std::string filename)
@@ -252,10 +224,6 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new STLIO;
     }
-    else if (extension == ".h5")
-    {
-        io = new HDF5IO;
-    }
 #ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
@@ -274,8 +242,6 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
         cout << timestamp << "File format " << extension
             << " is currently not supported." << endl;
     }
-
-
 
 }
 

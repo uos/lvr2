@@ -32,9 +32,10 @@
  *      Author: Isaak Mitschke
  */
 
-#include "lvr2/io/Timestamp.hpp"
-#include "lvr2/io/Progress.hpp"
 #include <cstring>
+
+#include "lvr2/util/Timestamp.hpp"
+#include "lvr2/util/Progress.hpp"
 #include "lvr2/io/LineReader.hpp"
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"
 

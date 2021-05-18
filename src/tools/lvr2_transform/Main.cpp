@@ -38,7 +38,7 @@
 #include "lvr2/geometry/Matrix4.hpp"
 #include "lvr2/io/Model.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 #include <iostream>
 #include <cmath>
 

@@ -54,9 +54,10 @@ LVRScanImageItem::LVRScanImageItem(ScanImageBridgePtr bridge, QString name) :
 
     // Setup item properties
     setText(0, m_name);
+    setText(1, "Double Click to display");
     int imgNr = name.left(8).toInt();
     setData(0, Qt::UserRole, imgNr);
-    setCheckState(0, Qt::Unchecked);
+    addChild(new LVRImageModelItem(*(m_scanImageBridge->image)));
 }
 
 LVRScanImageItem::LVRScanImageItem(const LVRScanImageItem& item)
@@ -92,18 +93,8 @@ void LVRScanImageItem::setImage(const cv::Mat& img)
     m_scanImageBridge->setImage(img);
 }
 
-void LVRScanImageItem::setVisibility(bool visible)
-{
-	m_scanImageBridge->setVisibility(visible);
-}
 
-void LVRScanImageItem::setScanImageVisibility(int column, bool globalValue)
-{
-	if(checkState(column) == globalValue || globalValue == true)
-	{
-	    setVisibility(checkState(column));
-	}
-}
+
 
 LVRScanImageItem::~LVRScanImageItem()
 {

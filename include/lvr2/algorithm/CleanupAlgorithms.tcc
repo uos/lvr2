@@ -29,10 +29,10 @@
  * CleanupAlgorithms.tcc
  */
 
-#include "lvr2/io/Progress.hpp"
+#include "lvr2/util/Progress.hpp"
 #include "lvr2/algorithm/ContourAlgorithms.hpp"
 #include "lvr2/attrmaps/AttrMaps.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 namespace lvr2
 {

@@ -38,7 +38,7 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 
-#include "lvr2/io/CoordinateTransform.hpp"
+#include "lvr2/util/CoordinateTransform.hpp"
 
 namespace lvr2
 {

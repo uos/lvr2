@@ -37,8 +37,8 @@
 
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
-#include "lvr2/io/hdf5/ChunkIO.hpp"
+#include "lvr2/io/deprecated/hdf5/HDF5FeatureBase.hpp"
+#include "lvr2/io/deprecated/hdf5/ChunkIO.hpp"
 
 #include <list>
 #include <unordered_map>

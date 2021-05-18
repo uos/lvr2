@@ -36,7 +36,7 @@
 #define IOFACTORY_H_
 
 #include "lvr2/io/Model.hpp"
-#include "lvr2/io/CoordinateTransform.hpp"
+#include "lvr2/util/CoordinateTransform.hpp"
 
 #include <string>
 #include <vector>
