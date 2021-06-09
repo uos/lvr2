@@ -1061,14 +1061,19 @@ void LVRMainWindow::restoreSliders()
         PointBufferPtr p = pointCloudItem->getPointBuffer();
         UCharChannelOptional spec_channels = p->getUCharChannel("spectral_channels");
 
+        // if the channel "spectral_channels" could not get loaded, try with the channel "spectral"
+        if(!spec_channels) {
+            spec_channels = p->getUCharChannel("spectral");
+        } 
+
         if (spec_channels)
         {
-            n_channels = spec_channels->width();
+            n_channels = spec_channels->width();   
             int wavelength_min = *p->getIntAtomic("spectral_wavelength_min");
             int wavelength_max = *p->getIntAtomic("spectral_wavelength_max");
 
             this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
-            for (int i = 0; i < 3; i++)
+                for (int i = 0; i < 3; i++)
             {
                 m_spectralSliders[i]->setMaximum(wavelength_max - 1);
                 m_spectralSliders[i]->setMinimum(wavelength_min);
@@ -1079,7 +1084,7 @@ void LVRMainWindow::restoreSliders()
                 m_spectralLineEdits[i]->setEnabled(use_channel[i]);
 
                 m_spectralCheckboxes[i]->setChecked(use_channel[i]);
-
+                
                 m_spectralLineEdits[i]->setText(QString("%1").arg(Util::getSpectralWavelength(channels[i], p)));
             }
             this->dockWidgetSpectralSliderSettingsContents->setEnabled(true);
@@ -3213,7 +3218,7 @@ void LVRMainWindow::showHistogramDialog()
     for (LVRPointCloudItem* item : pointCloudItems)
     {
         PointBufferPtr points = item->getPointBuffer();
-        if (!points->getUCharChannel("spectral_channels"))
+        if (!points->getUCharChannel("spectral_channels") && !points->getUCharChannel("spectral"))
         {
             showErrorDialog();
             return;
@@ -3383,7 +3388,7 @@ void LVRMainWindow::onSpectralLineEditChanged()
         PointBufferPtr points = (*items.begin())->getPointBuffer();
         int min = *points->getIntAtomic("spectral_wavelength_min");
         int max = *points->getIntAtomic("spectral_wavelength_max");
-
+        
         for (int i = 0; i < 3; i++)
         {
             QString test = m_spectralLineEdits[i]-> text();
@@ -3473,6 +3478,10 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
 
     size_t n_spec, n_channels;
     UCharChannelOptional spectral_channels = points->getUCharChannel("spectral_channels");
+
+    if(!spectral_channels) {
+        spectral_channels = points->getUCharChannel("spectral");
+    }
 
     if (spectral_channels)
     {
