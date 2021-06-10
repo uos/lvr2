@@ -2,6 +2,7 @@
 #ifndef LVR2_IO_YAML_SCANMETA_IO_HPP
 #define LVR2_IO_YAML_SCANMETA_IO_HPP
 
+
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"

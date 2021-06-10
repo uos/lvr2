@@ -62,6 +62,7 @@ if(MSVC)
     set(HAVE_CXX_ATOMICS_WITHOUT_LIB True)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
   add_compile_definitions(_HAS_STD_BYTE=0)
+  add_compile_definitions(_USE_MATH_DEFINES)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
