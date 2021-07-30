@@ -71,6 +71,12 @@
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
 
+#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/scanio/HDF5IO.hpp"
+#include "lvr2/io/scanio/ScanProjectIO.hpp"
+#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
+
 #include "lvr2/geometry/BVH.hpp"
 
 #include "lvr2/reconstruction/DMCReconstruction.hpp"
@@ -104,15 +110,60 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
 {
     // Create a point loader object
     ModelPtr model = ModelFactory::readModel(options.getInputFileName());
-
+    PointBufferPtr buffer;
     // Parse loaded data
     if (!model)
     {
-        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-        return nullptr;
-    }
+        boost::filesystem::path selectedFile( options.getInputFileName());
+        std::string extension = selectedFile.extension().string();
+        std::string filePath = selectedFile.generic_path().string();
 
-    PointBufferPtr buffer = model->m_pointCloud;
+        if(selectedFile.extension().string() != ".h5") {
+            cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+            return nullptr;
+        }
+        cout << "loading h5 scanproject from " << filePath << endl;
+
+        // load data from h5 file [LVRMainWindow:3890]
+        FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
+        ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
+
+        HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel);
+        HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
+
+        auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
+        std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
+
+
+        ReductionAlgorithmPtr reduction = ReductionAlgorithmPtr(new NoReductionAlgorithm());
+        ScanProjectPtr scanProject = scanProjectIo->loadScanProject(reduction);
+
+        if(scanProject->positions.size() <= options.getScanPositionIndex()) {
+            cout << timestamp << "Unable to find scanPosition at index " << options.getScanPositionIndex() << endl;
+            return nullptr;
+        }
+
+        ScanPositionPtr scanPos = scanProject->positions.at(options.getScanPositionIndex());
+        // TODO: what happens when we have more than one lidar???
+        LIDARPtr lidar = scanPos->lidars.at(0);
+        // TODO: what happens when a lidar has more than one scan??
+        ScanPtr scan = lidar->scans.at(0);
+        
+        
+        // cout << "TEST START" << endl;
+        // cout << "current scanPosIndex: " << options.getScanPositionIndex() << endl;
+        // cout << "Cameras: " << scanPos->cameras.size() << endl;
+        // cout << "Hyper Cameras: " << scanPos->hyperspectral_cameras.size() << endl;
+        // cout << "Lidars: " << scanPos->lidars.size() << endl;        
+        // cout  << "Lidar Scans: " << lidar->scans.size() << endl;
+        // cout << "Points in scan: " <<  scan->points->numPoints() << endl;
+        // cout << "TEST END" << endl;
+
+        buffer = scan->points;
+    }
+    else {
+        buffer = model->m_pointCloud;
+    }
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();

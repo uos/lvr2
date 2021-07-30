@@ -60,7 +60,7 @@ Options::Options(int argc, char** argv)
     // Create option descriptions
     m_descr.add_options()
         ("help", "Produce help message")
-        ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
+        ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz), .ply and .h5")
         ("outputFile", value< vector<string> >()->multitoken()->default_value(vector<string>{"triangle_mesh.ply", "triangle_mesh.obj"}), "Output file name. Supported formats are ASCII (.pts, .xyz) and .ply")
         ("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
         ("noExtrusion", "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
@@ -113,6 +113,7 @@ Options::Options(int argc, char** argv)
         ("useGPU", "GPU normal estimation")
         ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint --flipPoint x y z" )
         ("texFromImages,q", "Foo Bar ............")
+        ("scanPositionIndex", value<int>(&m_scanPositionIndex)->default_value(0), "Index of the h5 Scan Position used for the reconstructor")
         ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
     ;
 
@@ -467,6 +468,11 @@ vector<float> Options::getFlippoint() const
 bool Options::texturesFromImages() const
 {
     return m_variables.count("texFromImages");
+}
+
+int Options::getScanPositionIndex() const
+{
+    return m_scanPositionIndex;
 }
 
 string Options::getProjectDir() const

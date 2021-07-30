@@ -3886,6 +3886,7 @@ void LVRMainWindow::openScanProject()
         }
         case LVRScanProjectOpenDialog::HDF5:
         {
+            // use this for reconstruct?
             HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel); 
             HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
             auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));

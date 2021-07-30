@@ -330,6 +330,8 @@ public:
 
     string getProjectDir() const;
 
+    int getScanPositionIndex() const;
+
 private:
 
     /// The set voxelsize
@@ -406,6 +408,9 @@ private:
 
     /// Reduction ratio for mesh reduction via edge collapse
     float                           m_edgeCollapseReductionRatio;
+
+    // h5 scan position used for reconstruction
+    int m_scanPositionIndex;
 
 
     ///Path to texture pack
