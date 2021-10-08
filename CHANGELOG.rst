@@ -2,8 +2,8 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+20.11.3 (2021-10-08)
+--------------------
 * add libgdal-dev to package.xml, resolves `#10 <https://github.com/uos/lvr2/issues/10>`_
 
 20.11.2 (2020-12-03)
