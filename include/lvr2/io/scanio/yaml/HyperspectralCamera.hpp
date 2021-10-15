@@ -33,7 +33,6 @@ struct convert<lvr2::HyperspectralCamera>
         node["kind"] = lvr2::HyperspectralCamera::kind;
         node["name"] = camera.name;
         node["transformation"] = camera.transformation;
-        node["model"] = camera.model;
 
         return node;
     }
@@ -111,14 +110,6 @@ struct convert<lvr2::HyperspectralCamera>
         if(node["sensor_name"])
         {
             camera.name = node["sensor_name"].as<decltype(camera.name)>();
-        }
-
-        if(node["model"])
-        {
-            camera.model= node["model"].as<decltype(camera.model)>();
-        } else {
-            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
-                << "WARNING: Hyperspectral camera has no sensor model in meta file." << std::endl;
         }
 
         return true;
@@ -208,23 +199,14 @@ struct convert<lvr2::HyperspectralPanorama>
                      << "WARNING: Cannot detect specialization of SensorData. Assuming this SensorData to be of kind "  << lvr2::HyperspectralPanorama::kind << std::endl;
         }
 
-
-        if(node["transformation"])
-        {
-            pano.transformation = node["transformation"].as<lvr2::Transformd>();
+        if(node["width"]) {
+            pano.resolution[0] = node["width"].as<size_t>();
         }
 
-        if(node["resolution"])
-        {
-            pano.resolution[0] = node["resolution"][0].as<unsigned int>();
-            pano.resolution[1] = node["resolution"][1].as<unsigned int>();
+        if(node["height"]) {
+            pano.resolution[1] = node["height"].as<size_t>();
         }
-
-        if(node["wavelength"])
-        {
-            pano.wavelength[0] = node["wavelength"][0].as<double>();
-            pano.wavelength[1] = node["wavelength"][0].as<double>();
-        }
+    
 
         return true;
     }

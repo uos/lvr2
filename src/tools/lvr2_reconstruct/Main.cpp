@@ -51,7 +51,9 @@
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
 #include "lvr2/algorithm/Materializer.hpp"
 #include "lvr2/algorithm/Texturizer.hpp"
-//#include "lvr2/algorithm/ImageTexturizer.hpp"
+// #include "lvr2/algorithm/ImageTexturizer.hpp"
+#include "lvr2/algorithm/SpectralTexturizer.hpp"
+
 
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/BilinearFastBox.hpp"
@@ -107,13 +109,16 @@ using PsSurface = lvr2::PointsetSurface<Vec>;
 
 template <typename BaseVecT>
 PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
-{
+{   
+
     // Create a point loader object
     ModelPtr model = ModelFactory::readModel(options.getInputFileName());
     PointBufferPtr buffer;
     // Parse loaded data
     if (!model)
     {
+
+        // TODO: TEMPORARILY loading the whole file 
         boost::filesystem::path selectedFile( options.getInputFileName());
         std::string extension = selectedFile.extension().string();
         std::string filePath = selectedFile.generic_path().string();
@@ -145,19 +150,10 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
 
         ScanPositionPtr scanPos = scanProject->positions.at(options.getScanPositionIndex());
         // TODO: what happens when we have more than one lidar???
+        
         LIDARPtr lidar = scanPos->lidars.at(0);
         // TODO: what happens when a lidar has more than one scan??
         ScanPtr scan = lidar->scans.at(0);
-        
-        
-        // cout << "TEST START" << endl;
-        // cout << "current scanPosIndex: " << options.getScanPositionIndex() << endl;
-        // cout << "Cameras: " << scanPos->cameras.size() << endl;
-        // cout << "Hyper Cameras: " << scanPos->hyperspectral_cameras.size() << endl;
-        // cout << "Lidars: " << scanPos->lidars.size() << endl;        
-        // cout  << "Lidar Scans: " << lidar->scans.size() << endl;
-        // cout << "Points in scan: " <<  scan->points->numPoints() << endl;
-        // cout << "TEST END" << endl;
 
         buffer = scan->points;
     }
@@ -520,32 +516,44 @@ int main(int argc, char** argv)
         options.getTexMaxClusterSize()
     );
 
+    SpectralTexturizer<Vec> spec_texter(
+        options.getTexelSize(),
+        options.getTexMinClusterSize(),
+        options.getTexMaxClusterSize()
+    );
+
     // When using textures ...
     if (options.generateTextures())
     {
-        if (!options.texturesFromImages())
-        {
+
+        // TODO: when the file is a h5 file, try an image texter
+        boost::filesystem::path selectedFile( options.getInputFileName());
+        std::string filePath = selectedFile.generic_path().string();
+
+        if(selectedFile.extension().string() != ".h5") {
             materializer.setTexturizer(texturizer);
-        }
-        else
+        } 
+        else 
         {
-            // cout << "ScanProject" << endl;
-            // ScanprojectIO project;
+            cout << "loadig h5 model again. this is temporary and needs to be replaced by loadpartial" << endl;
 
-            // if (options.getProjectDir().empty())
-            // {
-            //     cout << "Empty" << endl;
-            //     project.parse_project(options.getInputFileName());
-            // }
-            // else
-            // {
-            //     cout << "Not empty" << endl;
-            //     project.parse_project(options.getProjectDir());
-            // }
+            FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
+            ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
 
-            // img_texter.set_project(project.get_project());
+            HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel);
+            HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
 
-            // materializer.setTexturizer(img_texter);
+            auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
+            std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
+
+
+            ReductionAlgorithmPtr reduction = ReductionAlgorithmPtr(new NoReductionAlgorithm());
+            ScanProjectPtr scanProject = scanProjectIo->loadScanProject(reduction);
+
+            spec_texter.set_project(scanProject);
+            spec_texter.init_image_data(options.getScanPositionIndex(), 0);
+
+            materializer.setTexturizer(spec_texter);
         }
     }
 

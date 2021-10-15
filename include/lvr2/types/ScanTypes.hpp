@@ -321,6 +321,9 @@ struct HyperspectralPanorama : SensorDataType, Transformable
     /// Sensor type flag
     static constexpr char                          kind[] = "SpectralImage";
 
+    /// Camera model
+    CylindricalModel                               model;
+
     /// preview generated from channels (optional: check if preview.empty())
     // cv::Mat                                        preview;
 
@@ -352,9 +355,6 @@ struct HyperspectralCamera : SensorType, Transformable
 {
     /// Sensor type flag
     static constexpr char                    kind[] = "SpectralCamera";
-
-    /// Camera model
-    CylindricalModel                         model;
 
     /// Extrinsics estimate
     Extrinsicsd                              extrinsicsEstimation = Extrinsicsd::Identity();
