@@ -57,9 +57,7 @@ private:
 
     bool image_data_initialized;
     cv::Mat spectralPanorama;
-
-    template<typename ValueType>
-    void undistorted_to_distorted_uv(ValueType &u, ValueType &v, const cv::Mat &img);
+    Vector2d point_to_panorama_coord(Vector3d point, Vector2d principal_point, Vector2d focal_length, float distortion[]);
 
 };
 }

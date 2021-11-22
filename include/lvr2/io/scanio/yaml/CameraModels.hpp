@@ -5,6 +5,7 @@
 
 #include "Matrix.hpp"
 #include "lvr2/types/CameraModels.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 namespace YAML {
 
@@ -144,6 +145,27 @@ struct convert<lvr2::CylindricalModel>
             // different sensor type
             return false;
         }
+
+        if(node["camera_model"])
+        {
+            const Node& camNode = node["camera_model"];
+
+            if(camNode["camera_fov"]) 
+            {
+                camera.fov = camNode["camera_fov"].as<lvr2::Vector2d>();;
+            }
+        }
+
+        // TODO: cannot load values???
+        // camera.fov = node["camera_model/camera_fov"].as<lvr2::Vector2d>();
+
+        camera.principal = node["camera_model/principal_point"].as<lvr2::Vector2d>();
+
+        camera.focalLength = node["camera_model/focal_length"].as<lvr2::Vector2d>();
+
+        camera.distortion = node["camera_model/distortion"].as<std::vector<double>>();
+
+
 
         return true;
     }

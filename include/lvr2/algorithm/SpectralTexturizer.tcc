@@ -1,3 +1,5 @@
+#include <math.h>
+
 namespace lvr2
 {
 
@@ -49,80 +51,36 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
 
             int c = 0;
 
-
             // init pixel with color red
             texture.m_data[(sizeX * y + x) * 3 + 0] = 255;
             texture.m_data[(sizeX * y + x) * 3 + 1] = 0;
             texture.m_data[(sizeX * y + x) * 3 + 2] = 0;
 
-            double ac_angle = (36.0 + 72.0 + c);
-            ac_angle *= (M_PI/180.0);
+            Vector3d point = Vector3d(currentPos[0],currentPos[1],currentPos[2]);
+            Vector2d principal_point = Vector2d(-0.01985554, 0.0);
+            Vector2d focal_length = Vector2d(1,1);
+            float distortions[3] = {-0.15504703, -0.14184141, 0.};
 
-            Eigen::Vector3d direction(1.0, 0.0, 0.0);
-            Eigen::Matrix3d angle_rot;
-            angle_rot = Eigen::AngleAxisd(ac_angle, Eigen::Vector3d::UnitZ());
+            // get uv_coord
+            Vector2d uv_coord = point_to_panorama_coord(point, principal_point, focal_length, distortions);
+            
 
-            Eigen::Vector3d p(currentPos[0], currentPos[1], currentPos[2]);
-
-            Intrinsicsd intrinsics;
-            intrinsics  <<
-                2395.4336550315002 , 0 , 3027.8728609530291 ,         // UOS
-                0 , 2393.3126174899603 , 2031.02743729632 ,
-                0 , 0 , 1;
-
-            Transformd tmp;
-            tmp << 
-                -0.16570779, -0.00014603, 0.98617489, -0.19101685,
-                -0.02101020, -0.99977249, -0.00367840, -0.00125086,
-                0.98595106, -0.02132927,  0.16566702, -0.05212102,
-                0, 0, 0, 1;
-
-            p = angle_rot * p;
-
-            double angle = p.dot(direction);
-
-            totalCallCount++;
-            // TODO: --RED BUG--: remove angle and try again?
-            if(angle > 0) // is in new view 
+            if(std::floor(uv_coord[0] < spectralPanorama.rows) && std::floor(uv_coord[1]) < spectralPanorama.cols)
             {
-                correctAngleCount++;
-                p = tmp.block<3, 3>(0, 0) * p; // rotation
-                p = p + tmp.block<3,1>(0,3); // translation
-
-                Eigen::Vector3d proj = intrinsics * p;
-                proj /= proj[2];
-
-                std::cout << proj[0] << " " << spectralPanorama.cols << " " << proj[1] << " " << spectralPanorama.rows << std::endl;
-
-
-                if(std::floor(proj[0] < spectralPanorama.cols) && std::floor(proj[1]) < spectralPanorama.rows)
+                if(uv_coord[0] >= 0 && uv_coord[1] >= 0)
                 {
-                    correctSizeCount++;
-                    // check if visible
-                    if(proj[0] >= 0 &&proj[1] >= 0)
-                    {
-                        visibleCount++;
-                        cv::Vec3b p = spectralPanorama.template at<cv::Vec3b>(std::floor(proj[1]), std::floor(proj[0]));
-                        texture.m_data[(sizeX * y + x) * 3 + 0] = p[2];
-                        texture.m_data[(sizeX * y + x) * 3 + 1] = p[1];
-                        texture.m_data[(sizeX * y + x) * 3 + 2] = p[0];
-                        break;
-                    }
-                        
+                    cv::Vec3d test_color = spectralPanorama.template at<cv::Vec3d>(0,0);
+                    cv::Vec3d uv_color = spectralPanorama.template at<cv::Vec3d>(std::floor(uv_coord[0]), std::floor(uv_coord[1]));
+                    
+                    texture.m_data[(sizeX * y + x) * 3 + 0] = std::floor(uv_color[0]);
+                    texture.m_data[(sizeX * y + x) * 3 + 1] = std::floor(uv_color[1]);
+                    texture.m_data[(sizeX * y + x) * 3 + 2] = std::floor(uv_color[2]);
+                    break;
                 }
             }
             c++;
         }
     }
-
-    std::cout << "START COUNT" << std::endl;
-    std::cout << "TOTAL COUNT: " << totalCallCount << std::endl;
-    std::cout << "ANGLE COUNT: " << correctAngleCount  << std::endl;
-    std::cout << "SIZE COUNT: " << correctSizeCount << std::endl;
-    std::cout << "VISIBLE COUNT: " << visibleCount << std::endl;
-    std::cout << "END COUNT" << std::endl;
-
-
     return this->m_textures.push(texture);
 }
 
@@ -132,10 +90,13 @@ void SpectralTexturizer<BaseVecT>::init_image_data(int scanPositionIndex, int sp
 {
     ScanPositionPtr scanPos = project->positions.at(scanPositionIndex);
     HyperspectralCameraPtr hyperCam = scanPos->hyperspectral_cameras.at(0);
-    // TODO: check this
-    // CameraPtr camPtr = scanPos->cameras.at(0);
 
     HyperspectralPanoramaPtr panorama = hyperCam->panoramas.at(0);
+    std::cout << panorama->type << std::endl;
+    std::cout << panorama->kind << std::endl;
+    CylindricalModel cameraModel = panorama->model;
+
+    // std::cout << panorama->model << std::endl;
     HyperspectralPanoramaChannelPtr panoChannel = panorama->channels.at(0);
     spectralPanorama = panoChannel->channel;
 
@@ -143,17 +104,50 @@ void SpectralTexturizer<BaseVecT>::init_image_data(int scanPositionIndex, int sp
 }
 
 template<typename BaseVecT>
-template<typename ValueType>
-void SpectralTexturizer<BaseVecT>::undistorted_to_distorted_uv(
-    ValueType &u,
-    ValueType &v,
-    const cv::Mat &img)
+Vector2d SpectralTexturizer<BaseVecT>::point_to_panorama_coord(Vector3d point, Vector2d principal_point, Vector2d focal_length, float distortion[])
 {
-    ValueType x, y, ud, vd, r_2, r_4, r_6, r_8, fx, fy, Cx, Cy, k1, k2, k3, k4, p1, p2;
+    Vector2d out_coord = Vector2d();
+    float x = point[0];
+    float y = point[1];
+    float z = point[2];
 
+    // calculate the angle of the horizontal axis
+    float theta = -atan2(y, x);
+    out_coord[1] = (focal_length[1] * theta) + principal_point[1];
 
+    // calculate the angle of the vertical axis
+    float phi = -z / sqrt(pow(x, 2) + pow(y, 2));
 
+    float ndistortion = sizeof(distortion) / sizeof(distortion[0]) + 1;
+
+    float phi_distorted = phi;
+    float r = 1.0;
+
+    // if there is distortion, calculate the distorted angle
+    if(ndistortion >= 1) 
+    {
+        phi_distorted += distortion[0] * phi;
+    }
+    if(ndistortion >= 2)
+    {
+        phi_distorted += distortion[1] * phi * (pow(phi,2) - pow(r, 2));
+    }
+    if(ndistortion >= 3)
+    {
+        phi_distorted += distortion[2] * phi * (pow(phi,4) - pow(r, 4));
+    }
+    phi_distorted *= focal_length[0];
+    phi_distorted += principal_point[0];
+
+    out_coord[0] = phi_distorted;
+
+    // adjust out_coord to image size
+    out_coord[1] += M_PI;
+    out_coord[1] = out_coord[1] * (spectralPanorama.cols / (2*M_PI));
+    out_coord[0] += M_PI / 2;
+    out_coord[0] = out_coord[0] * (spectralPanorama.rows / M_PI);
+
+    return out_coord;
 
 }
-
 } // namespace lvr2

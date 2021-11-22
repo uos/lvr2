@@ -86,6 +86,7 @@ struct convert<lvr2::HyperspectralCamera>
             std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
                      << "WARNING: Cannot detect specialization of sensor. Assuming this sensor to by of kind "  << lvr2::HyperspectralCamera::kind << std::endl;
         }
+        std::cout << "load camera???  " << std::endl;
 
         // if(!node["kind"] && !node["sensor_type"])
         // {
@@ -105,6 +106,8 @@ struct convert<lvr2::HyperspectralCamera>
         if(node["name"])
         {
             camera.name = node["name"].as<decltype(camera.name)>();
+            std::cout << "HERE!!!!!!!!!!!!!!!!!!!!" << std::endl;
+            std::cout << camera.name << std::endl;
         }
 
         if(node["sensor_name"])
