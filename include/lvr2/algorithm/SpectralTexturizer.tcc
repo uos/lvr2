@@ -22,7 +22,7 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
     // load image if not already done
     if(!image_data_initialized)
     {
-        this->init_image_data(0, 0);
+        this->init_image_data(0);
     }
 
     if(!image_data_initialized)
@@ -59,7 +59,7 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
             Vector3d point = Vector3d(currentPos[0],currentPos[1],currentPos[2]);
             Vector2d principal_point = Vector2d(-0.01985554, 0.0);
             Vector2d focal_length = Vector2d(1,1);
-            float distortions[3] = {-0.15504703, -0.14184141, 0.};
+            float distortions[3] = {-0.15504703, -0.14184141, 0.0};
 
             // get uv_coord
             Vector2d uv_coord = point_to_panorama_coord(point, principal_point, focal_length, distortions);
@@ -70,7 +70,7 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
                 if(uv_coord[0] >= 0 && uv_coord[1] >= 0)
                 {
                     cv::Vec3d test_color = spectralPanorama.template at<cv::Vec3d>(0,0);
-                    cv::Vec3d uv_color = spectralPanorama.template at<cv::Vec3d>(std::floor(uv_coord[0]), std::floor(uv_coord[1]));
+                    cv::Vec3f uv_color = spectralPanorama.template at<cv::Vec3f>(std::floor(uv_coord[0]), std::floor(uv_coord[1]));
                     
                     texture.m_data[(sizeX * y + x) * 3 + 0] = std::floor(uv_color[0]);
                     texture.m_data[(sizeX * y + x) * 3 + 1] = std::floor(uv_color[1]);
@@ -86,10 +86,9 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
 
 
 template<typename BaseVecT>
-void SpectralTexturizer<BaseVecT>::init_image_data(int scanPositionIndex, int spectralIndex)
+void SpectralTexturizer<BaseVecT>::init_image_data(int spectralIndex)
 {
-    ScanPositionPtr scanPos = project->positions.at(scanPositionIndex);
-    HyperspectralCameraPtr hyperCam = scanPos->hyperspectral_cameras.at(0);
+    HyperspectralCameraPtr hyperCam = scanPosition->hyperspectral_cameras.at(0);
 
     HyperspectralPanoramaPtr panorama = hyperCam->panoramas.at(0);
     std::cout << panorama->type << std::endl;

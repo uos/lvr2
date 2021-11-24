@@ -141,14 +141,13 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
 
 
         ReductionAlgorithmPtr reduction = ReductionAlgorithmPtr(new NoReductionAlgorithm());
-        ScanProjectPtr scanProject = scanProjectIo->loadScanProject(reduction);
+        ScanPositionPtr scanPos = scanProjectIo->loadScanPosition(options.getScanPositionIndex(), reduction);
+        // TODO Check if scan position is not null
+        // if(scanProject->positions.size() <= options.getScanPositionIndex()) {
+        //     cout << timestamp << "Unable to find scanPosition at index " << options.getScanPositionIndex() << endl;
+        //     return nullptr;
+        // }
 
-        if(scanProject->positions.size() <= options.getScanPositionIndex()) {
-            cout << timestamp << "Unable to find scanPosition at index " << options.getScanPositionIndex() << endl;
-            return nullptr;
-        }
-
-        ScanPositionPtr scanPos = scanProject->positions.at(options.getScanPositionIndex());
         // TODO: what happens when we have more than one lidar???
         
         LIDARPtr lidar = scanPos->lidars.at(0);
@@ -548,10 +547,13 @@ int main(int argc, char** argv)
 
 
             ReductionAlgorithmPtr reduction = ReductionAlgorithmPtr(new NoReductionAlgorithm());
-            ScanProjectPtr scanProject = scanProjectIo->loadScanProject(reduction);
 
-            spec_texter.set_project(scanProject);
-            spec_texter.init_image_data(options.getScanPositionIndex(), 0);
+            ScanPositionPtr scanPosition = scanProjectIo->loadScanPosition(options.getScanPositionIndex(), reduction);
+            // TODO: can this be scanPosition?
+            // ScanProjectPtr scanProject = scanProjectIo->loadScanProject(reduction);
+            // spec_texter.set_project(scanProject);
+            spec_texter.set_scanPosition(scanPosition);
+            spec_texter.init_image_data(0);
 
             materializer.setTexturizer(spec_texter);
         }
