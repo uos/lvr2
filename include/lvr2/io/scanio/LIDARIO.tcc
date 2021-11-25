@@ -91,7 +91,7 @@ LIDARPtr LIDARIO<FeatureBase>::load(
         }
         scanNo++;
     }
-    
+    return ret;
 }
 
 
