@@ -31,7 +31,7 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
             for (int x = 0; x < sizeX; x++) {
                 texture.m_data[(sizeX * y + x) * 3 + 0] = 0;
                 texture.m_data[(sizeX * y + x) * 3 + 1] = 0;
-                texture.m_data[(sizeX * y + x) * 3 + 1] = 0;
+                texture.m_data[(sizeX * y + x) * 3 + 2] = 0;
             }
         }
         return this->m_textures.push(texture);
@@ -63,19 +63,17 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
 
             // get uv_coord
             Vector2d uv_coord = point_to_panorama_coord(point, principal_point, focal_length, distortions);
-            
+            uv_coord[0] = std::floor(uv_coord[0]);
+            uv_coord[1] = std::floor(uv_coord[1]);
 
             if(std::floor(uv_coord[0] < spectralPanorama.rows) && std::floor(uv_coord[1]) < spectralPanorama.cols)
             {
                 if(uv_coord[0] >= 0 && uv_coord[1] >= 0)
                 {
-                    cv::Vec3d test_color = spectralPanorama.template at<cv::Vec3d>(0,0);
-                    cv::Vec3f uv_color = spectralPanorama.template at<cv::Vec3f>(std::floor(uv_coord[0]), std::floor(uv_coord[1]));
-                    
-                    texture.m_data[(sizeX * y + x) * 3 + 0] = std::floor(uv_color[0]);
-                    texture.m_data[(sizeX * y + x) * 3 + 1] = std::floor(uv_color[1]);
-                    texture.m_data[(sizeX * y + x) * 3 + 2] = std::floor(uv_color[2]);
-                    break;
+                    cv::Vec<unsigned char, 150 > pixel = spectralPanorama.at<cv::Vec<unsigned char, 150>>(uv_coord[0], uv_coord[1]);
+                    texture.m_data[(sizeX * y + x) * 3 + 0] = pixel[0];
+                    texture.m_data[(sizeX * y + x) * 3 + 1] = pixel[0];
+                    texture.m_data[(sizeX * y + x) * 3 + 2] = pixel[0];
                 }
             }
             c++;
@@ -145,6 +143,7 @@ Vector2d SpectralTexturizer<BaseVecT>::point_to_panorama_coord(Vector3d point, V
     out_coord[1] = out_coord[1] * (spectralPanorama.cols / (2*M_PI));
     out_coord[0] += M_PI / 2;
     out_coord[0] = out_coord[0] * (spectralPanorama.rows / M_PI);
+    // TODO: check if the values are adjusted correctly!!!
 
     return out_coord;
 

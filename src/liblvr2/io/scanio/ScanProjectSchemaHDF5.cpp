@@ -175,10 +175,9 @@ Description ScanProjectSchemaHDF5::hyperspectralPanoramaChannel(
     Description d;
     d.dataRoot = dp.dataRoot;
     d.metaRoot = dp.metaRoot;
-    // d.meta = sstr.str();
-    // d.data = sstr.str();
-    d.meta = "preview";
-    d.data = "preview";
+
+    d.meta = "frames";
+    d.data = "frames";
 
     return d;
 }
