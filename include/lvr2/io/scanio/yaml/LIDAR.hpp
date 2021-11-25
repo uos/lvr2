@@ -17,37 +17,36 @@ struct convert<lvr2::LIDAR>
 {
     static Node encode(const lvr2::LIDAR& lidar) {
         Node node;
+        node["entity"] = lvr2::LIDAR::entity;
         node["type"] = lvr2::LIDAR::type;
-        node["kind"] = lvr2::LIDAR::kind;
         node["transformation"] = lidar.transformation;
         return node;
     }
 
     static bool decode(const Node& node, lvr2::LIDAR& lidar) 
     {
-        // if(!node["type"])
-        // {
-        //     std::cout << "[YAML::convert<LIDAR> - decode] 'type' Tag not found." << std::endl;
-        //     return false;
-        // }
-
-        if(node["type"] && node["type"].as<std::string>() != lvr2::LIDAR::type) 
+        // Check for entity field
+        if(!node["entity"])
         {
-            std::cout << "[YAML::convert<LIDAR> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::LIDAR::type << std::endl;
+            std::cout << "[YAML::convert<LIDAR> - decode] 'entity' Tag not found." << std::endl;
+            return false;
+        }
+        if(node["entity"].as<std::string>() != lvr2::LIDAR::entity) 
+        {
+            std::cout << "[YAML::convert<LIDAR> - decode] Try to load " << node["entity"].as<std::string>() << " as " << lvr2::LIDAR::entity << std::endl;
             return false;
         }
 
-
-        if(!node["kind"]) // optional kind
+        // Check for typ field
+        if(!node["type"])
         {
-            std::cout << "[YAML::convert<LIDAR> - decode] WARNING: 'kind' Tag not found. Assuming this meta to be of kind " << lvr2::LIDAR::kind << std::endl;
-            // return false;
-        } else {
-            if(node["kind"].as<std::string>() != lvr2::LIDAR::kind) 
-            {
-                std::cout << "[YAML::convert<LIDAR> - decode] Try to load " << node["kind"].as<std::string>() << " as " << lvr2::LIDAR::kind << std::endl;
-                return false;
-            }
+            std::cout << "[YAML::convert<LIDAR> - decode] 'type' Tag not found." << std::endl;
+            return false;
+        }
+        if(node["type"].as<std::string>() != lvr2::LIDAR::type) 
+        {
+            std::cout << "[YAML::convert<LIDAR> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::LIDAR::type << std::endl;
+            return false;
         }
 
         if(node["transformation"])

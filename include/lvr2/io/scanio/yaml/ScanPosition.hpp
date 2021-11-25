@@ -5,6 +5,7 @@
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
 #include "Matrix.hpp"
+#include "lvr2/io/scanio/yaml/Util.hpp"
 
 namespace YAML {  
 
@@ -25,9 +26,8 @@ struct convert<lvr2::ScanPosition>
     static Node encode(const lvr2::ScanPosition& scanPos) {
         Node node;
         
+        node["entity"] = lvr2::ScanPosition::entity;
         node["type"] = lvr2::ScanPosition::type;
-        // node["entity"] = lvr2::ScanPosition::type;
-        // node["kind"] = boost::typeindex::type_id<lvr2::ScanPosition>().pretty_name();
         node["pose_estimation"] = scanPos.poseEstimation;
         node["transformation"] = scanPos.transformation;
         node["timestamp"] = scanPos.timestamp;
@@ -36,17 +36,16 @@ struct convert<lvr2::ScanPosition>
 
     static bool decode(const Node& node, lvr2::ScanPosition& scanPos) 
     {
-        // if(!node["type"])
-        // {
-        //     std::cout << "[YAML::convert<ScanPosition> - decode] 'type' Tag not found." << std::endl;
-        //     return false;
-        // }    
-
-        // if(node["type"].as<std::string>() != lvr2::ScanPosition::type)
-        // {
-        //     std::cout << "[YAML::convert<ScanPosition> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::ScanPosition::type << std::endl;
-        //     return false;
-        // }
+        // Check if 'entity' and 'type' Tags are valid
+        // maybe checking for both is redundant because they are the same
+        // but maybe this changes in the future, so just leave it like this
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "ScanPosition", 
+            lvr2::ScanPosition::entity, 
+            lvr2::ScanPosition::type))
+        {
+            return false;
+        }
         
         if(node["pose_estimation"])
         {

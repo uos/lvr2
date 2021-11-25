@@ -8,6 +8,7 @@
 
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include "lvr2/io/scanio/yaml/Util.hpp"
 
 #include "Matrix.hpp"
 
@@ -22,8 +23,8 @@ struct convert<lvr2::CameraImage>
     static Node encode(const lvr2::CameraImage& cameraImage) { 
         Node node;
 
+        node["entity"] = lvr2::CameraImage::entity;
         node["type"] = lvr2::CameraImage::type;
-        node["kind"] = lvr2::CameraImage::kind;
         node["transformation"] = cameraImage.transformation;
         node["extrinsics_estimation"] = cameraImage.extrinsicsEstimation;
         node["width"] = cameraImage.image.cols;
@@ -35,21 +36,14 @@ struct convert<lvr2::CameraImage>
 
     static bool decode(const Node& node, lvr2::CameraImage& scanImage) 
     {
-        if(!node["type"])
+       // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "CameraImage", 
+            lvr2::CameraImage::entity, 
+            lvr2::CameraImage::type))
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<CameraImage> - decode] "
-                     << "CameraImage meta has no 'type'" << std::endl; 
             return false;
         }
-
-        if(node["type"].as<std::string>() != lvr2::CameraImage::type)
-        {
-            std::cout << lvr2::timestamp << "[YAML::convert<CameraImage> - decode] " 
-                        << "Nodes type '" << node["type"].as<std::string>()
-                        << "' is not '" <<  lvr2::CameraImage::type << "'" << std::endl; 
-            return false;
-        } 
-        
     
         // Get fields
         if(node["transformation"])

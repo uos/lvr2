@@ -5,6 +5,7 @@
 
 #include "Matrix.hpp"
 #include "lvr2/types/CameraModels.hpp"
+#include "lvr2/io/scanio/yaml/Util.hpp"
 
 namespace YAML {
 
@@ -14,8 +15,8 @@ struct convert<lvr2::PinholeModel>
     static Node encode(const lvr2::PinholeModel& model)
     {
         Node node;
+        node["entity"] = lvr2::PinholeModel::entity;
         node["type"] = lvr2::PinholeModel::type;
-        node["camera_model"] = lvr2::PinholeModel::kind;
 
         node["c"] = Load("[]");
         node["c"].push_back(model.cx);
@@ -41,34 +42,14 @@ struct convert<lvr2::PinholeModel>
 
     static bool decode(const Node& node, lvr2::PinholeModel& model)
     {
-        if(!node["type"])
+        // TODO: Deprecation check for camera_model Tag
+        // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "PinholeModel", 
+            lvr2::PinholeModel::entity, 
+            lvr2::PinholeModel::type))
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<PinholeModel> - decode] "
-                     << "CameraModel has no key 'type'" << std::endl; 
             return false;
-        }
-
-        if (node["type"].as<std::string>() != lvr2::PinholeModel::type)
-        {
-            // different hierarchy level
-            std::cout << lvr2::timestamp << "[YAML::convert<PinholeModel> - decode] " 
-                        << "Nodes type '" << node["type"].as<std::string>()
-                        << "' is not '" <<  lvr2::PinholeModel::type << "'" << std::endl; 
-            return false;
-        }
-
-        if(!node["camera_model"])
-        {
-            std::cout << lvr2::timestamp << "[YAML::convert<PinholeModel> - decode] "
-                     << "WARNING: CameraModel has no key 'camera_model'. Assuming this model to by of kind "  << lvr2::PinholeModel::kind << std::endl;
-        } else {
-            if(node["camera_model"].as<std::string>() != lvr2::PinholeModel::kind)
-            {
-                std::cout << lvr2::timestamp << "[YAML::convert<PinholeModel> - decode] " 
-                            << "Nodes camera_model '" << node["camera_model"].as<std::string>()
-                            << "' is not '" <<  lvr2::PinholeModel::kind << "'" << std::endl; 
-                return false;
-            }
         }
 
         model.cx = node["c"][0].as<double>();
@@ -111,8 +92,8 @@ struct convert<lvr2::CylindricalModel>
     {
         Node node;
 
+        node["entity"] = lvr2::CylindricalModel::entity;
         node["type"] = lvr2::CylindricalModel::type;
-        node["kind"] = lvr2::CylindricalModel::kind;
 
         node["principal"] = Load("[]");
         node["principal"].push_back(model.principal(0));
@@ -133,18 +114,15 @@ struct convert<lvr2::CylindricalModel>
 
     static bool decode(const Node& node, lvr2::CylindricalModel& camera)
     {
-        if (node["type"].as<std::string>() != lvr2::CylindricalModel::type)
+        // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "CylindricalModel", 
+            lvr2::CylindricalModel::entity, 
+            lvr2::CylindricalModel::type))
         {
-            // different hierarchy level
             return false;
         }
-
-        if(node["kind"].as<std::string>() != lvr2::CylindricalModel::kind)
-        {
-            // different sensor type
-            return false;
-        }
-
+        // TODO: Actually load the data
         return true;
     }
 };

@@ -7,6 +7,7 @@
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/scanio/yaml/Matrix.hpp"
+#include "lvr2/io/scanio/yaml/Util.hpp"
 
 namespace YAML {
 
@@ -20,8 +21,8 @@ struct convert<lvr2::Waveform>
     static Node encode(const lvr2::Waveform& waveform) {
         
         Node node;
+        node["entity"] = lvr2::Waveform::entity;
         node["type"] = lvr2::Waveform::type;
-        node["kind"] = lvr2::Waveform::kind;
         node["maxBucketSize"] = waveform.maxBucketSize;
 
         return node;
@@ -29,15 +30,15 @@ struct convert<lvr2::Waveform>
 
     static bool decode(const Node& node, lvr2::Waveform& waveform) 
     {
-        if(node["type"].as<std::string>() != lvr2::Waveform::type)
+        // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "Waveform", 
+            lvr2::Waveform::entity, 
+            lvr2::Waveform::type))
         {
             return false;
         }
 
-        if(node["type"].as<std::string>() != lvr2::Waveform::type)
-        {
-            return false;
-        }
         
         // Get fields
         if(node["maxBucketSize"])

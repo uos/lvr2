@@ -25,8 +25,8 @@ struct convert<lvr2::Scan>
      */
     static Node encode(const lvr2::Scan& scan) {
         Node node;
+        node["entity"] = lvr2::Scan::entity;
         node["type"] = lvr2::Scan::type;
-        node["kind"] = lvr2::Scan::kind;
 
         node["start_time"]  = scan.startTime;
         node["end_time"] = scan.endTime;
@@ -65,16 +65,12 @@ struct convert<lvr2::Scan>
 
     static bool decode(const Node& node, lvr2::Scan& scan) 
     {
-        // if(!node["type"])
-        // {
-        //     std::cout << "[YAML::convert<Scan> - decode] 'type' Tag not found." << std::endl;
-        //     return false;
-        // }
-
-        if(node["type"] && node["type"].as<std::string>() != lvr2::Scan::type) 
+        // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "Scan", 
+            lvr2::Scan::entity, 
+            lvr2::Scan::type))
         {
-            // TODO: proper  warning or error?
-            std::cout << "[YAML::convert<Scan> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::Scan::type << std::endl;
             return false;
         }
 

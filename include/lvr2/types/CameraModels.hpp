@@ -19,7 +19,7 @@ namespace lvr2 {
  */
 struct CameraModel 
 {
-    static constexpr char           type[] = "CameraModel";
+    static constexpr char           entity[] = "Model";
     // /**
     //  * @brief Project point from camera coordinate system (3D) onto image coordinate system (2D)
     //  * 
@@ -35,7 +35,7 @@ struct CameraModel
 
 struct PinholeModel : CameraModel
 {
-    static constexpr char           kind[] = "PinholeModel";
+    static constexpr char           type[] = "Pinhole";
 
     double fx = 0;
     double fy = 0;
@@ -51,7 +51,7 @@ using PinholeModelPtr = std::shared_ptr<PinholeModel>;
 
 struct CylindricalModel : CameraModel 
 {
-    static constexpr char           kind[] = "CylindricalModel";
+    static constexpr char           type[] = "Cylindrical";
 
     /// Principal x, y
     Vector2d                        principal;
@@ -69,6 +69,8 @@ struct CylindricalModel : CameraModel
 using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;
 
 struct SphericalModel : CameraModel {
+    static constexpr char           type[] = "Spherical";
+
     /// Focal length
     double                          focalLength;
 
