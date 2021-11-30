@@ -106,9 +106,17 @@ struct convert<lvr2::HyperspectralPanorama>
         node["resolution"].push_back(pano.resolution[0]);
         node["resolution"].push_back(pano.resolution[1]);
 
-        node["wavelength"] = Load("[]");
-        node["wavelength"].push_back(pano.wavelength[0]);
-        node["wavelength"].push_back(pano.wavelength[1]);
+        node["num_bands"] = pano.num_bands;
+        node["frame_order"] = pano.frame_order;
+
+        if(pano.model)
+        {
+            node["model"] = *pano.model;
+        }
+
+        // node["wavelength"] = Load("[]");
+        // node["wavelength"].push_back(pano.wavelength[0]);
+        // node["wavelength"].push_back(pano.wavelength[1]);
 
         return node;
     }
@@ -150,10 +158,19 @@ struct convert<lvr2::HyperspectralPanorama>
             pano.resolution[1] = node["resolution"][1].as<unsigned int>();
         }
 
-        if(node["wavelength"])
+        if(node["num_bands"])
         {
-            pano.wavelength[0] = node["wavelength"][0].as<double>();
-            pano.wavelength[1] = node["wavelength"][0].as<double>();
+            pano.num_bands = node["num_bands"].as<unsigned int>();
+        }
+
+        if(node["frame_order"])
+        {
+            pano.frame_order = node["frame_order"].as<std::string>();
+        }
+
+        if(node["model"])
+        {
+            pano.model = node["model"].as<lvr2::CylindricalModel>();
         }
 
         return true;

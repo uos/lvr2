@@ -324,13 +324,22 @@ struct HyperspectralPanorama : SensorDataEntity, Transformable
     /// Sensor type flag
     static constexpr char                          type[] = "SpectralImage";
 
-    /// preview generated from channels (optional: check if preview.empty())
-    // cv::Mat                                        preview;
-
     /// minimum and maximum wavelength
-    double                                         wavelength[2];
+    // double                                         wavelength[2];
     /// resolution in x and y
     size_t                                         resolution[2];
+
+    unsigned int                                   num_bands;
+    std::string                                    frame_order;
+
+    /// Camera model (optional): overrides the HyperspectralCamera model
+    CylindricalModelOptional                       model;
+
+
+    // DATA
+
+    /// preview generated from channels (optional: check if preview.empty())
+    cv::Mat                                        preview;
 
     /// OpenCV representation
     std::vector<HyperspectralPanoramaChannelPtr>   channels;

@@ -161,10 +161,13 @@ ScanProjectPtr dummyScanProject()
             {
                 HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
 
-                pano->resolution[0] = 200;
+                pano->resolution[0] = 500;
                 pano->resolution[1] = 200;
-                pano->wavelength[0] = 100.0;
-                pano->wavelength[1] = 900.25;
+                pano->num_bands = 150;
+                pano->frame_order = "frames";
+
+                // override sensor model
+                pano->model = h_cam->model;
 
                 for(size_t l=0; l<7; l++)
                 {

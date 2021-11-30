@@ -48,10 +48,11 @@ struct PinholeModel : CameraModel
 };
 
 using PinholeModelPtr = std::shared_ptr<PinholeModel>;
+using PinholeModelOptional = boost::optional<PinholeModel>;
 
 struct CylindricalModel : CameraModel 
 {
-    static constexpr char           type[] = "Cylindrical";
+    static constexpr char           type[] = "Panorama";
 
     /// Principal x, y
     Vector2d                        principal;
@@ -67,6 +68,7 @@ struct CylindricalModel : CameraModel
 };
 
 using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;
+using CylindricalModelOptional = boost::optional<CylindricalModel>;
 
 struct SphericalModel : CameraModel {
     static constexpr char           type[] = "Spherical";

@@ -18,14 +18,30 @@ struct convert<lvr2::PinholeModel>
         node["entity"] = lvr2::PinholeModel::entity;
         node["type"] = lvr2::PinholeModel::type;
 
-        node["c"] = Load("[]");
-        node["c"].push_back(model.cx);
-        node["c"].push_back(model.cy);
         
-        node["f"] = Load("[]");
-        node["f"].push_back(model.fx);
-        node["f"].push_back(model.fy);
 
+        // Old
+        // node["c"] = Load("[]");
+        // node["c"].push_back(model.cx);
+        // node["c"].push_back(model.cy);
+        
+        // node["f"] = Load("[]");
+        // node["f"].push_back(model.fx);
+        // node["f"].push_back(model.fy);
+
+        // New
+        Eigen::Matrix3d M;
+        M.setIdentity();
+
+        M(0,0) = model.fx;
+        M(1,1) = model.fy;
+
+        M(0,2) = model.cx;
+        M(1,2) = model.cy;
+
+        node["intrinsics"] = M;
+
+        // Optional?
         node["resolution"] = Load("[]");
         node["resolution"].push_back(model.width);
         node["resolution"].push_back(model.height);
@@ -52,10 +68,19 @@ struct convert<lvr2::PinholeModel>
             return false;
         }
 
-        model.cx = node["c"][0].as<double>();
-        model.cy = node["c"][1].as<double>();
-        model.fx = node["f"][0].as<double>();
-        model.fy = node["f"][1].as<double>();
+        
+        // Old
+        // model.cx = node["c"][0].as<double>();
+        // model.cy = node["c"][1].as<double>();
+        // model.fx = node["f"][0].as<double>();
+        // model.fy = node["f"][1].as<double>();
+
+        // New
+        Eigen::Matrix3d M = node["intrinsics"].as<Eigen::Matrix3d>();
+        model.fx = M(0,0);
+        model.fy = M(1,1);
+        model.cx = M(0,2);
+        model.cy = M(1,2);
 
         model.width = node["resolution"][0].as<unsigned int>();
         model.height = node["resolution"][1].as<unsigned int>();
@@ -95,13 +120,17 @@ struct convert<lvr2::CylindricalModel>
         node["entity"] = lvr2::CylindricalModel::entity;
         node["type"] = lvr2::CylindricalModel::type;
 
-        node["principal"] = Load("[]");
-        node["principal"].push_back(model.principal(0));
-        node["principal"].push_back(model.principal(1));
+        node["principal_point"] = Load("[]");
+        node["principal_point"].push_back(model.principal(0));
+        node["principal_point"].push_back(model.principal(1));
 
-        node["focal_length"] = Load("[]");
-        node["focal_length"] = model.focalLength(0);
-        node["focal_length"] = model.focalLength(1);
+        node["focal_lengths"] = Load("[]");
+        node["focal_lengths"].push_back(model.focalLength(0));
+        node["focal_lengths"].push_back(model.focalLength(1));
+
+        node["camera_fov"] = Load("[]");
+        node["camera_fov"].push_back(model.fov(0));
+        node["camera_fov"].push_back(model.fov(1));
 
         node["distortion"] = Load("[]");
         for(size_t i=0; i<model.distortion.size(); i++)
@@ -112,7 +141,7 @@ struct convert<lvr2::CylindricalModel>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::CylindricalModel& camera)
+    static bool decode(const Node& node, lvr2::CylindricalModel& model)
     {
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, 
@@ -122,7 +151,32 @@ struct convert<lvr2::CylindricalModel>
         {
             return false;
         }
-        // TODO: Actually load the data
+
+        model.principal(0) = node["principal_point"][0].as<double>();
+        model.principal(1) = node["principal_point"][1].as<double>();
+
+        model.focalLength(0) = node["focal_lengths"][0].as<double>();
+        model.focalLength(1) = node["focal_lengths"][1].as<double>();
+
+        model.fov(0) = node["camera_fov"][0].as<double>();
+        model.fov(1) = node["camera_fov"][1].as<double>();
+
+        model.distortion.resize(0);
+        
+        Node distortionNode = node["distortion"];
+
+        if(distortionNode)
+        {
+            YAML::const_iterator it = distortionNode.begin();
+            YAML::const_iterator it_end = distortionNode.end();
+
+            for(; it != it_end; it++)
+            {
+                model.distortion.push_back(it->as<double>());
+            }
+        }
+
+
         return true;
     }
 };

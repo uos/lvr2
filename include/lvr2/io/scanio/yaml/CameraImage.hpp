@@ -26,9 +26,11 @@ struct convert<lvr2::CameraImage>
         node["entity"] = lvr2::CameraImage::entity;
         node["type"] = lvr2::CameraImage::type;
         node["transformation"] = cameraImage.transformation;
-        node["extrinsics_estimation"] = cameraImage.extrinsicsEstimation;
-        node["width"] = cameraImage.image.cols;
-        node["height"] = cameraImage.image.rows;
+        node["pose_estimation"] = cameraImage.extrinsicsEstimation;
+        node["resolution"] = Load("[]");
+        node["resolution"].push_back(cameraImage.image.cols); // X
+        node["resolution"].push_back(cameraImage.image.rows); // Y
+        node["resolution"].push_back(cameraImage.image.channels()); // Z: number of channels
         node["timestamp"] = cameraImage.timestamp;
 
         return node;
@@ -55,10 +57,10 @@ struct convert<lvr2::CameraImage>
             scanImage.transformation = lvr2::Transformd::Identity();
         }
 
-        if(node["extrinsics_estimation"])
+        if(node["pose_estimation"])
         {
             // NAN check?
-            scanImage.extrinsicsEstimation = node["extrinsics_estimation"].as<lvr2::Extrinsicsd>();
+            scanImage.extrinsicsEstimation = node["pose_estimation"].as<lvr2::Extrinsicsd>();
         }
         else
         {

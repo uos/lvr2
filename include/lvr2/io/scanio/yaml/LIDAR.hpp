@@ -20,6 +20,7 @@ struct convert<lvr2::LIDAR>
         node["entity"] = lvr2::LIDAR::entity;
         node["type"] = lvr2::LIDAR::type;
         node["transformation"] = lidar.transformation;
+        node["name"] = lidar.name;
         return node;
     }
 
@@ -54,6 +55,11 @@ struct convert<lvr2::LIDAR>
             lidar.transformation = node["transformation"].as<lvr2::Transformd>();
         } else {
             lidar.transformation = lvr2::Transformd::Identity();
+        }
+
+        if(node["name"])
+        {
+            lidar.name = node["name"].as<std::string>();
         }
 
         return true;
