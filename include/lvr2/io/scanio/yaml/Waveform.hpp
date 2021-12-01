@@ -32,7 +32,7 @@ struct convert<lvr2::Waveform>
     {
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "Waveform", 
+            "waveform", 
             lvr2::Waveform::entity, 
             lvr2::Waveform::type))
         {

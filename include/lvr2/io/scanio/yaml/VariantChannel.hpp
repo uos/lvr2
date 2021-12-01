@@ -24,9 +24,9 @@ struct convert<lvr2::MultiChannel>
         
         Node node;
 
-        std::string type = "Basic";
+        std::string type = "array";
 
-        node["entity"] = "Channel";
+        node["entity"] = "channel";
         node["data_type"] = vchannel.typeName();
 
         node["type"] = type;
@@ -50,9 +50,9 @@ struct convert<lvr2::MultiChannel>
         // TODO: Channels dont have entity and type fields,
         // if that changes this needs to be changed too
         if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "MultiChannel", 
-            "Channel", 
-            "Basic"))
+            "multi_channel", 
+            "channel", 
+            "array"))
         {
             return false;
         }

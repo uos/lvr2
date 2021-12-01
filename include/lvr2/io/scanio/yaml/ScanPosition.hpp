@@ -40,7 +40,7 @@ struct convert<lvr2::ScanPosition>
         // maybe checking for both is redundant because they are the same
         // but maybe this changes in the future, so just leave it like this
         if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "ScanPosition", 
+            "scan_position", 
             lvr2::ScanPosition::entity, 
             lvr2::ScanPosition::type))
         {

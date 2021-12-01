@@ -36,7 +36,7 @@ struct convert<lvr2::LabelInstance>
 
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "LabelInstance", 
+            "label_instance", 
             lvr2::LabelInstance::entity, 
             lvr2::LabelInstance::type))
         {
@@ -68,7 +68,7 @@ struct convert<lvr2::LabelClass>
         
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "LabelClass", 
+            "label_class", 
             lvr2::LabelClass::entity, 
             lvr2::LabelClass::type))
         {

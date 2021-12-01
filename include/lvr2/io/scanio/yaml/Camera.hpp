@@ -41,7 +41,7 @@ struct convert<lvr2::Camera>
     static bool decode(const Node& node, lvr2::Camera& camera) 
     {
         // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndType(node, "Camera", lvr2::Camera::entity, lvr2::Camera::type))
+        if (!YAML_UTIL::ValidateEntityAndType(node, "camera", lvr2::Camera::entity, lvr2::Camera::type))
         {
             return false;
         }

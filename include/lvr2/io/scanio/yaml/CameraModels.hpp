@@ -61,7 +61,7 @@ struct convert<lvr2::PinholeModel>
         // TODO: Deprecation check for camera_model Tag
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "PinholeModel", 
+            "pinhole", 
             lvr2::PinholeModel::entity, 
             lvr2::PinholeModel::type))
         {

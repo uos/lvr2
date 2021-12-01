@@ -43,7 +43,7 @@ struct convert<lvr2::ScanProject>
     {
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "ScanProject", 
+            "scan_project", 
             lvr2::ScanProject::entity, 
             lvr2::ScanProject::type))
         {

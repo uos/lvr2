@@ -58,7 +58,7 @@ struct convert<lvr2::HyperspectralCamera>
 
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "HyperspectralCamera", 
+            "hyperspectral_camera", 
             lvr2::HyperspectralCamera::entity, 
             lvr2::HyperspectralCamera::type))
         {

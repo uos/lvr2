@@ -56,26 +56,26 @@ using ScanPtr = std::shared_ptr<Scan>;
 using CameraImagePtr = std::shared_ptr<CameraImage>;
 
 struct ScanProjectEntity {
-    static constexpr char           entity[] = "ScanProject";
+    static constexpr char           entity[] = "scan_project";
 };
 
 struct ScanPositionEntity {
-    static constexpr char           entity[] = "ScanPosition";
+    static constexpr char           entity[] = "scan_position";
 };
 
 struct SensorEntity {
-    static constexpr char           entity[] = "Sensor";
+    static constexpr char           entity[] = "sensor";
     // Optional name of this sensor: e.g. RieglVZ-400i
     std::string name;
     // Fixed transformation to upper frame (ScanPosition)
 };
 
 struct SensorDataEntity {
-    static constexpr char           entity[] = "SensorData";
+    static constexpr char           entity[] = "sensor_data";
 };
 
 struct LabelDataEntity {
-    static constexpr char           entity[] = "LabelData";
+    static constexpr char           entity[] = "label_data";
 };
 
 
@@ -101,7 +101,7 @@ struct ScanProject : ScanProjectEntity, Transformable
 {
     //// META BEGIN
     // the type of this struct
-    static constexpr char type[] = "ScanProject";
+    static constexpr char type[] = "scan_project";
 
     // the project coordinate system. This is specified as a combination of a geo-coordinate system (as EPSG reference)
     std::string                     crs;
@@ -134,7 +134,7 @@ struct ScanPosition : ScanPositionEntity, Transformable
 {
     /// META BEGIN
     // the type of this struct
-    static constexpr char type[] = "ScanPosition";
+    static constexpr char type[] = "scan_position";
     /// Estimated pose relativ to upper coordinate system
     Transformd                         poseEstimation = Transformd::Identity();
 
@@ -174,7 +174,7 @@ struct LIDAR : SensorEntity, Transformable
 {
     //// META BEGIN
     // TODO: check boost type_info
-    static constexpr char           type[] = "Lidar";
+    static constexpr char           type[] = "lidar";
     //// META END
 
     //// HIERARCHY BEGIN
@@ -195,7 +195,7 @@ struct Camera : SensorEntity, Transformable
 {
     //// META BEGIN
     // TODO: check boost::typeindex<>::pretty_name (contains lvr2 as namespace: "lvr2::Camera")
-    static constexpr char             type[] = "Camera";
+    static constexpr char             type[] = "camera";
     /// Pinhole camera model
     PinholeModel                      model;
     //// META END
@@ -211,7 +211,7 @@ struct Camera : SensorEntity, Transformable
 struct Scan : SensorDataEntity, Transformable
 {
     //// META BEGIN
-    static constexpr char           type[] = "Scan";
+    static constexpr char           type[] = "scan";
 
     /// Dynamic transformation of this sensor data
     /// Example 1:
@@ -269,7 +269,7 @@ struct Scan : SensorDataEntity, Transformable
 
 struct CameraImage : SensorDataEntity, Transformable
 {
-    static constexpr char           type[] = "CameraImage";
+    static constexpr char           type[] = "camera_image";
     /// Extrinsics estimate
     Extrinsicsd                     extrinsicsEstimation = Extrinsicsd::Identity();
 
@@ -295,7 +295,7 @@ struct CameraImage : SensorDataEntity, Transformable
 // Not a lvr channel
 struct HyperspectralPanoramaChannel : SensorDataEntity
 {
-    static constexpr char           type[]  =  "HyperspectralPanoramaChannel";
+    static constexpr char           type[]  =  "hyperspectral_panorama_channel";
 
     /// Timestamp 
     double                          timestamp;
@@ -322,7 +322,7 @@ using HyperspectralPanoramaChannelOptional = boost::optional<HyperspectralPanora
 struct HyperspectralPanorama : SensorDataEntity, Transformable
 {
     /// Sensor type flag
-    static constexpr char                          type[] = "SpectralImage";
+    static constexpr char                          type[] = "spectral_panorama";
 
     /// minimum and maximum wavelength
     // double                                         wavelength[2];
@@ -363,7 +363,7 @@ using HyperspectralPanoramaOptional = boost::optional<HyperspectralPanorama>;
 struct HyperspectralCamera : SensorEntity, Transformable
 {
     /// Sensor type flag
-    static constexpr char                    type[] = "SpectralCamera";
+    static constexpr char                    type[] = "spectral_camera";
 
     /// Camera model
     CylindricalModel                         model;
@@ -387,7 +387,7 @@ struct Waveform : SensorDataEntity
     waveformSamples(){};
     ~Waveform(){};
     /// Sensor type flag
-    static constexpr char                    type[] = "Waveform";
+    static constexpr char                    type[] = "waveform";
 
     /// Max Bucket Size of Waveform samples
     int                                      maxBucketSize;
@@ -418,7 +418,7 @@ using WaveformPtr = std::shared_ptr<Waveform>;
  *****************************************************************************/
 struct LabelInstance : LabelDataEntity
 {
-    static constexpr char           type[] = "LabelInstance";
+    static constexpr char           type[] = "label_instance";
     std::string instanceName;
 
     Vector3i color;
@@ -431,7 +431,7 @@ using LabelInstancePtr = std::shared_ptr<LabelInstance>;
  *****************************************************************************/
 struct LabelClass :LabelDataEntity
 {
-    static constexpr char           type[] = "LabelClass";
+    static constexpr char           type[] = "label_class";
     std::string className;
 
     std::vector<LabelInstancePtr> instances;
@@ -442,7 +442,7 @@ using LabelClassPtr = std::shared_ptr<LabelClass>;
  *****************************************************************************/
 struct LabelRoot : LabelDataEntity
 {
-    static constexpr char           type[] = "LabelRoot";
+    static constexpr char           type[] = "label_root";
     PointBufferPtr points;
     WaveformPtr waveform;
 
