@@ -57,11 +57,12 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
             texture.m_data[(sizeX * y + x) * 3 + 2] = 0;
 
             Vector3d point = Vector3d(currentPos[0],currentPos[1],currentPos[2]);
+            // TODO: This needs to be replaced with h5 Data (needs to be implemented!!!)
             Vector2d principal_point = Vector2d(-0.01985554, 0.0);
             Vector2d focal_length = Vector2d(1,1);
             float distortions[3] = {-0.15504703, -0.14184141, 0.0};
 
-            // get uv_coord
+            // get uv_coord and floor it
             Vector2d uv_coord = point_to_panorama_coord(point, principal_point, focal_length, distortions);
             uv_coord[0] = std::floor(uv_coord[0]);
             uv_coord[1] = std::floor(uv_coord[1]);
@@ -89,11 +90,8 @@ void SpectralTexturizer<BaseVecT>::init_image_data(int spectralIndex)
     HyperspectralCameraPtr hyperCam = scanPosition->hyperspectral_cameras.at(0);
 
     HyperspectralPanoramaPtr panorama = hyperCam->panoramas.at(0);
-    std::cout << panorama->type << std::endl;
-    std::cout << panorama->kind << std::endl;
     CylindricalModel cameraModel = panorama->model;
 
-    // std::cout << panorama->model << std::endl;
     HyperspectralPanoramaChannelPtr panoChannel = panorama->channels.at(0);
     spectralPanorama = panoChannel->channel;
 
