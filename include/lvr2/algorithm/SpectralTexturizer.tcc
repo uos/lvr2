@@ -85,14 +85,8 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
 
 
 template<typename BaseVecT>
-void SpectralTexturizer<BaseVecT>::init_image_data(int spectralIndex)
+void SpectralTexturizer<BaseVecT>::init_image_data(HyperspectralPanoramaChannelPtr panoChannel)
 {
-    HyperspectralCameraPtr hyperCam = scanPosition->hyperspectral_cameras.at(0);
-
-    HyperspectralPanoramaPtr panorama = hyperCam->panoramas.at(0);
-    CylindricalModel cameraModel = panorama->model;
-
-    HyperspectralPanoramaChannelPtr panoChannel = panorama->channels.at(0);
     spectralPanorama = panoChannel->channel;
 
     this->image_data_initialized = true;

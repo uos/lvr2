@@ -129,29 +129,22 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         }
         cout << "loading h5 scanproject from " << filePath << endl;
 
-        // load data from h5 file [LVRMainWindow:3890]
+        // create hdf5 kernel and schema 
         FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
         ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
-
+        
         HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel);
         HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
+        
+        // create io object for hdf5 files
+        auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
 
         auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
         std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
 
-
         ReductionAlgorithmPtr reduction = ReductionAlgorithmPtr(new NoReductionAlgorithm());
         ScanPositionPtr scanPos = scanProjectIo->loadScanPosition(options.getScanPositionIndex(), reduction);
-        // TODO Check if scan position is not null
-        // if(scanProject->positions.size() <= options.getScanPositionIndex()) {
-        //     cout << timestamp << "Unable to find scanPosition at index " << options.getScanPositionIndex() << endl;
-        //     return nullptr;
-        // }
-
-        // TODO: what happens when we have more than one lidar???
-        
         LIDARPtr lidar = scanPos->lidars.at(0);
-        // TODO: what happens when a lidar has more than one scan??
         ScanPtr scan = lidar->scans.at(0);
 
         buffer = scan->points;
@@ -503,12 +496,6 @@ int main(int argc, char** argv)
         *surface
     );
 
-    // ImageTexturizer<Vec> img_texter(
-    //     options.getTexelSize(),
-    //     options.getTexMinClusterSize(),
-    //     options.getTexMaxClusterSize()
-    // );
-
     Texturizer<Vec> texturizer(
         options.getTexelSize(),
         options.getTexMinClusterSize(),
@@ -534,27 +521,21 @@ int main(int argc, char** argv)
         } 
         else 
         {
-            cout << "loadig h5 model again. this is temporary and needs to be replaced by loadpartial" << endl;
-
+            // create hdf5 kernel and schema 
             FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
             ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
-
+            
             HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel);
             HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
-
-            auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
-            std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
-
-
-            ReductionAlgorithmPtr reduction = ReductionAlgorithmPtr(new NoReductionAlgorithm());
-
-            ScanPositionPtr scanPosition = scanProjectIo->loadScanPosition(options.getScanPositionIndex(), reduction);
-            // TODO: can this be scanPosition?
-            // ScanProjectPtr scanProject = scanProjectIo->loadScanProject(reduction);
-            // spec_texter.set_project(scanProject);
-            spec_texter.set_scanPosition(scanPosition);
-            spec_texter.init_image_data(0);
-
+            
+            // create io object for hdf5 files
+            auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
+            // load panorama Channel from hdf5 file
+            auto panoramaChannel = hdf5IO.HyperspectralPanoramaChannelIO::load(0,0,0,0);
+            
+            // initialize spectral texturizer
+            spec_texter.init_image_data(panoramaChannel);
+            // use spectral texturizer as the used texturizer
             materializer.setTexturizer(spec_texter);
         }
     }

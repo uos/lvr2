@@ -25,18 +25,6 @@ public:
     {
         image_data_initialized = false;
     }
-    /**
-     * @brief Sets the internal ScanProjectPtr to the given one
-     * 
-     * @param scanPosition The UOS ScanPosition Pointer the internal project will be set to.
-     */
-    void set_scanPosition(ScanPositionPtr& scanPosition)
-    {
-        this->scanPosition = scanPosition;
-    }
-
-
-
 
     virtual TextureHandle generateTexture(
         int index,
@@ -47,19 +35,16 @@ public:
     /**
      * @brief set the image data to a specific panorama image of a given scanPosition
      * 
-     * @param spectralIndex index to specify what spectral channel to use
+     * @param panoChannel Panorama channel to use
      */
-    void init_image_data(int spectralIndex);
+    void init_image_data(HyperspectralPanoramaChannelPtr panoChannel);
 
 
 private:
-    // ScanProjectPtr project;
-    ScanPositionPtr scanPosition;
 
     bool image_data_initialized;
     cv::Mat spectralPanorama;
     Vector2d point_to_panorama_coord(Vector3d point, Vector2d principal_point, Vector2d focal_length, float distortion[]);
-
 };
 }
 
