@@ -5,6 +5,7 @@
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/CameraModels.hpp"
+#include "lvr2/types/Variant.hpp"
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
@@ -15,6 +16,8 @@
 #include <memory>
 #include <vector>
 #include <string>
+
+#include <boost/variant.hpp>
 
 namespace lvr2
 {
@@ -43,6 +46,7 @@ struct HyperspectralCamera;
 struct Scan; // LIDAR has N Scans
 
 struct CameraImage; // Camera has N CameraImages
+struct CameraImageGroup;
 
 // shared ptr typedefs
 using ScanProjectPtr = std::shared_ptr<ScanProject>;
@@ -54,6 +58,9 @@ using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
 
 using ScanPtr = std::shared_ptr<Scan>;
 using CameraImagePtr = std::shared_ptr<CameraImage>;
+using CameraImageGroupPtr = std::shared_ptr<CameraImageGroup>;
+// either one image or one image group
+using CameraImageOrGroup = Variant<CameraImagePtr, CameraImageGroupPtr>;
 
 struct ScanProjectEntity {
     static constexpr char           entity[] = "scan_project";
@@ -72,6 +79,10 @@ struct SensorEntity {
 
 struct SensorDataEntity {
     static constexpr char           entity[] = "sensor_data";
+};
+
+struct SensorDataGroupEntity {
+    static constexpr char           entity[] = "sensor_data_group";
 };
 
 struct LabelDataEntity {
@@ -118,7 +129,7 @@ struct ScanProject : ScanProjectEntity, Transformable
     /// system. It is assumed that all coordinate systems 
     /// loaded with this software are right-handed
     std::string                     coordinateSystem = "right-handed";
-    std::string                     unit = "m";
+    std::string                     unit = "meter";
 
     //// META END
 
@@ -201,7 +212,9 @@ struct Camera : SensorEntity, Transformable
     //// META END
     //// HIERARCHY BEGIN
     /// Pointer to a set of images taken at a scan position
-    std::vector<CameraImagePtr>       images;
+    // std::vector<CameraImagePtr>       images;
+    std::vector<CameraImageOrGroup>     images;
+    
     //// HIERARCHY END
 };
 
@@ -284,6 +297,13 @@ struct CameraImage : SensorDataEntity, Transformable
 
 };
 
+struct CameraImageGroup : SensorDataGroupEntity, Transformable
+{
+    static constexpr char           type[] = "camera_images";
+
+    // Data
+    std::vector<CameraImageOrGroup>        images;
+};
 
 
 /*****************************************************************************

@@ -23,7 +23,14 @@ void CameraIO<FeatureBase>::save(
     // writing data
     for(size_t scanImageNo = 0; scanImageNo < cameraPtr->images.size(); scanImageNo++)
     {
-        m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, cameraPtr->images[scanImageNo]);
+        if(cameraPtr->images[scanImageNo].is_type<CameraImagePtr>())
+        {
+            // 
+            CameraImagePtr img = cameraPtr->images[scanImageNo].get<CameraImagePtr>();
+             m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, img);
+        } else {
+            // Group: TODO implement
+        }
     }
 
     // writing meta

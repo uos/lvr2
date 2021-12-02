@@ -2,6 +2,8 @@
 
 namespace lvr2 {
 
+
+
 bool equal(CameraImagePtr si1, CameraImagePtr si2)
 {
     if(!si1 && si2){return false;}
@@ -46,6 +48,52 @@ bool equal(CameraImagePtr si1, CameraImagePtr si2)
     //     return false;
     // }
 
+    return true;
+}
+
+bool equal(CameraImageGroupPtr g1, CameraImageGroupPtr g2)
+{
+    if(!g1 && g2){return false;}
+    if(g1 && !g2){return false;}
+    if(!g1 && !g2){return true;}
+
+    if(g1->images.size() != g2->images.size())
+    {
+        return false;
+    }
+
+    for(size_t i=0; i<g1->images.size(); i++)
+    {
+        if(!equal(g1->images[i], g2->images[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool equal(CameraImageOrGroup sg1, CameraImageOrGroup sg2)
+{
+    if(sg1.is_type<CameraImagePtr>() && sg2.is_type<CameraImagePtr>())
+    {
+        auto si1 = sg1.get<CameraImagePtr>();
+        auto si2 = sg2.get<CameraImagePtr>();
+        if(!equal(si1, si2))
+        {
+            return false;
+        }
+    } else if(sg1.is_type<CameraImageGroupPtr>() && sg2.is_type<CameraImageGroupPtr>() ) {
+        auto g1 = sg1.get<CameraImageGroupPtr>();
+        auto g2 = sg2.get<CameraImageGroupPtr>();
+
+        if(!equal(g1, g2))
+        {
+            return false;
+        }
+    } else {
+        return false;
+    }
     return true;
 }
 

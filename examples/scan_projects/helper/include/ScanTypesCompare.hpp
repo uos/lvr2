@@ -9,6 +9,10 @@ bool equal(const double& a, const double& b);
 
 bool equal(CameraImagePtr si1, CameraImagePtr si2);
 
+bool equal(CameraImageGroupPtr si1, CameraImageGroupPtr si2);
+
+bool equal(CameraImageOrGroup sg1, CameraImageOrGroup sg2);
+
 bool equal(CameraPtr sc1, CameraPtr sc2);
 
 bool equal(PointBufferPtr p1, PointBufferPtr p2);
