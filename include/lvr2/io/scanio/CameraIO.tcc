@@ -17,19 +17,20 @@ void CameraIO<FeatureBase>::save(
         return;
     }
 
-    // std::cout << "[CameraIO - save] Description:" << std::endl;
-    // std::cout << d << std::endl;
-
     // writing data
     for(size_t scanImageNo = 0; scanImageNo < cameraPtr->images.size(); scanImageNo++)
     {
         if(cameraPtr->images[scanImageNo].is_type<CameraImagePtr>())
         {
-            // 
-            CameraImagePtr img = cameraPtr->images[scanImageNo].get<CameraImagePtr>();
-             m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, img);
+            // Image
+            CameraImagePtr img;
+            img <<= cameraPtr->images[scanImageNo];
+            m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, img);
         } else {
-            // Group: TODO implement
+            // Group
+            CameraImageGroupPtr group;
+            group <<= cameraPtr->images[scanImageNo];
+            m_cameraImageGroupIO->save(scanPosNo, scanCamNo, scanImageNo, group);
         }
     }
 
@@ -63,7 +64,6 @@ CameraPtr CameraIO<FeatureBase>::load(
     }
 
     /// META
-
     if(d.meta)
     {
         YAML::Node meta;
@@ -76,18 +76,24 @@ CameraPtr CameraIO<FeatureBase>::load(
         ret.reset(new Camera);
     }
 
-
     /// DATA
-
     size_t scanImageNo = 0;
     while(true)
     {
-        CameraImagePtr scanImage = m_cameraImageIO->load(scanPosNo, scanCamNo, scanImageNo);
-        if(scanImage)
+        CameraImagePtr image = m_cameraImageIO->load(scanPosNo, scanCamNo, scanImageNo);
+        
+        if(image)
         {
-            ret->images.push_back(scanImage);
+            ret->images.push_back(image);
         } else {
-            break;
+            CameraImageGroupPtr group = m_cameraImageGroupIO->load(scanPosNo, scanCamNo, scanImageNo);
+
+            if(group)
+            {
+                ret->images.push_back(group);
+            } else {
+                break;
+            }
         }
         scanImageNo++;
     }

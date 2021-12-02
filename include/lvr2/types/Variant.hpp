@@ -118,9 +118,14 @@ protected:
     struct TupleIndex<T1, std::tuple<U, Types...>> {
         static constexpr std::size_t value = 1 + TupleIndex<T1, std::tuple<Types...>>::value;
     };
-
-
 };
+
+template<typename T, typename... Tp>
+T& operator<<=(T& x, const Variant<Tp...>& v)
+{
+    x = v.template get<T>();
+    return x;
+}
 
 } // namespace lvr2
 

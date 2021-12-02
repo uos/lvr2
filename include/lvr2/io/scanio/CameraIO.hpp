@@ -5,8 +5,10 @@
 
 #include "MetaIO.hpp"
 #include "CameraImageIO.hpp"
+#include "CameraImageGroupIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/scanio/yaml/Camera.hpp"
+
 
 namespace lvr2
 {
@@ -43,6 +45,7 @@ protected:
     // dependencies
     MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
     CameraImageIO<FeatureBase>* m_cameraImageIO = static_cast<CameraImageIO<FeatureBase>*>(m_featureBase);
+    CameraImageGroupIO<FeatureBase>* m_cameraImageGroupIO = static_cast<CameraImageGroupIO<FeatureBase>*>(m_featureBase);
 
     static constexpr const char* ID = "CameraIO";
     static constexpr const char* OBJID = "Camera";
@@ -61,7 +64,8 @@ struct FeatureConstruct<CameraIO, FeatureBase>
     // DEPS
     using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
     using dep2 = typename FeatureConstruct<CameraImageIO, FeatureBase>::type;
-    using deps = typename dep1::template Merge<dep2>;
+    using dep3 = typename FeatureConstruct<CameraImageGroupIO, FeatureBase>::type;
+    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
 
     // ADD THE FEATURE ITSELF
     using type = typename deps::template add_features<CameraIO>::type;

@@ -82,6 +82,46 @@ struct convert<lvr2::CameraImage>
 
 };
 
+
+template<>
+struct convert<lvr2::CameraImageGroup> 
+{
+    static Node encode(const lvr2::CameraImageGroup& cameraImageGroup) { 
+        Node node;
+
+        node["entity"] = lvr2::CameraImageGroup::entity;
+        node["type"] = lvr2::CameraImageGroup::type;
+        node["transformation"] = cameraImageGroup.transformation;
+
+        return node;
+    }
+
+    static bool decode(const Node& node, lvr2::CameraImageGroup& cameraImageGroup) 
+    {
+       // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "camera_images", 
+            lvr2::CameraImageGroup::entity, 
+            lvr2::CameraImageGroup::type))
+        {
+            return false;
+        }
+    
+        // Get fields
+        if(node["transformation"])
+        {
+            cameraImageGroup.transformation = node["transformation"].as<lvr2::Transformd>();
+        }
+        else
+        {
+            cameraImageGroup.transformation = lvr2::Transformd::Identity();
+        }
+
+        return true;
+    }
+
+};
+
 }  // namespace YAML
 
 #endif // LVR2_IO_YAML_CAMERAIMAGE_IO_HPP

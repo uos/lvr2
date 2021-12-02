@@ -125,7 +125,26 @@ ScanProjectPtr dummyScanProject()
                 scan_cam->model.k[k] = static_cast<double>(k) / 4.0;
             }
             
-            for(size_t k=0; k<7; k++)
+            // image groups
+            for(size_t k=0; k<2; k++)
+            {
+                CameraImageGroupPtr g(new CameraImageGroup);
+                g->transformation.setIdentity();
+                
+                for(size_t l=0; l<3; l++)
+                {
+                    CameraImagePtr si = synthetic::genLVRImage();
+                    si->timestamp = 0.0;
+                    si->transformation = Transformd::Identity();
+                    si->transformation(2,3) = -static_cast<double>(l);
+                    si->extrinsicsEstimation = Extrinsicsd::Identity() / static_cast<double>(l + 1);
+                    g->images.push_back(si);
+                }
+                scan_cam->images.push_back(g);
+            }
+
+            // images at top level
+            for(size_t k=0; k<3; k++)
             {
                 CameraImagePtr si = synthetic::genLVRImage();
                 si->timestamp = 0.0;

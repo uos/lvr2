@@ -119,19 +119,23 @@ Description ScanProjectSchemaRaw::scanChannel(
     return d;
 }
 
-// std::string ScanProjectSchemaRaw::scanChannelInv(
-//     std::string d_data) const
-// {
-
-// }
-
 Description ScanProjectSchemaRaw::cameraImage(
     const size_t& scanPosNo,
     const size_t& camNo,
-    const size_t& cameraImageNo) const
+    const std::vector<size_t>& cameraImageNos) const
 {
+    if(cameraImageNos.size() == 0)
+    {
+        std::cout << "ERROR: cameraImageNos size = 0" << std::endl;   
+    }
+
     std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << cameraImageNo;
+    sstr << std::setfill('0') << std::setw(8) << cameraImageNos[0];
+
+    for(size_t i=1; i<cameraImageNos.size(); i++)
+    {
+        sstr << "/" << std::setfill('0') << std::setw(8) << cameraImageNos[i];
+    }
 
     Description dp = camera(scanPosNo, camNo);
 
@@ -143,6 +147,14 @@ Description ScanProjectSchemaRaw::cameraImage(
     d.meta = "meta.yaml";
 
     return d;
+}
+
+Description ScanProjectSchemaRaw::cameraImageGroup(
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const std::vector<size_t>& cameraImageGroupNos) const
+{
+    return cameraImage(scanPosNo, camNo, cameraImageGroupNos);
 }
 
 Description ScanProjectSchemaRaw::hyperspectralCamera(

@@ -23,7 +23,6 @@ using StringOptional = boost::optional<std::string>;
 //     StringOptional metaName;
 // };
 
-
 struct Description
 {
     // data or group location
@@ -68,11 +67,16 @@ public:
     virtual Description camera(
         const size_t& scanPosNo,
         const size_t& camNo) const = 0;
- 
+
     virtual Description cameraImage(
         const size_t& scanPosNo,
         const size_t& camNo,
-        const size_t& cameraImageNo) const = 0;
+        const std::vector<size_t>& cameraImageNos) const = 0;
+
+    virtual Description cameraImageGroup(
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const std::vector<size_t>& cameraImageGroupNos) const = 0;
 
     virtual Description hyperspectralCamera(
         const size_t& scanPosNo,
