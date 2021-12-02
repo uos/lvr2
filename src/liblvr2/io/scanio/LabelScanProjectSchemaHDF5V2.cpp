@@ -21,6 +21,7 @@ Description LabelScanProjectSchemaHDF5V2::scanProject() const
     d.metaData = boost::none;       // No metadata for project 
     return d;
 }
+
 Description LabelScanProjectSchemaHDF5V2::position(const size_t &scanPosNo) const
 {
     Description d; 
@@ -103,6 +104,7 @@ Description LabelScanProjectSchemaHDF5V2::waveform(const std::string &scanPositi
     d.groupName = totalGroupPath.string();
     return d;
 }
+
 Description LabelScanProjectSchemaHDF5V2::scanCamera(const size_t &scanPositionNo, const size_t &camNo) const
 {
     // Group name

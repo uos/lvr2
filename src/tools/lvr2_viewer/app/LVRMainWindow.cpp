@@ -3637,15 +3637,19 @@ void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
         }
         if (info.suffix() == "h5")
         {
-            auto hdf5IO = std::dynamic_pointer_cast<scanio::HDF5IO>(io);
-            Description d = hdf5IO->m_description->cameraImage(scanpos_nr, cam_nr, img_nr);
-            img = *hdf5IO->loadImage(*d.dataRoot, *d.data);
+            // auto hdf5IO = std::dynamic_pointer_cast<scanio::HDF5IO>(io);
+            // Description d = hdf5IO->m_description->cameraImage(scanpos_nr, cam_nr, img_nr);
+            // img = *hdf5IO->loadImage(*d.dataRoot, *d.data);
         }
         else
         {
             auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
-            Description d = dirIO->m_description->cameraImage(scanpos_nr, cam_nr, img_nr);
-            img = *dirIO->loadImage(*d.dataRoot, *d.data);
+            // std::vector<size_t> img_nrs = {img_nr};
+            auto camImage = dirIO->CameraImageIO::load(scanpos_nr, cam_nr, img_nr);
+            img = camImage->image;
+
+            // Description d = dirIO->m_description->cameraImage(scanpos_nr, cam_nr, img_nr);
+            // img = *dirIO->loadImage(*d.dataRoot, *d.data);
         }
         
 

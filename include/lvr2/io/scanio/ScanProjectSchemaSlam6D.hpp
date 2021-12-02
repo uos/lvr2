@@ -56,7 +56,12 @@ public:
     virtual Description cameraImage(
         const size_t& scanPosNo,
         const size_t& camNo,
-        const size_t& cameraImageNo) const;
+        const std::vector<size_t>& cameraImageNo) const;
+
+    virtual Description cameraImageGroup(
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const std::vector<size_t>& cameraImageGroupNos) const;
 
     virtual Description hyperspectralCamera(
         const size_t& scanPosNo,

@@ -111,12 +111,22 @@ Description ScanProjectSchemaHDF5::scanChannel(
 Description ScanProjectSchemaHDF5::cameraImage(
     const size_t& scanPosNo,
     const size_t& camNo, 
-    const size_t& cameraImageNo) const
+    const std::vector<size_t>& cameraImageNos) const
 {
-    Description dp = camera(scanPosNo, camNo);
+    if(cameraImageNos.size() == 0)
+    {
+        std::cout << "ERROR: cameraImageNos size = 0" << std::endl;   
+    }
 
     std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << cameraImageNo;
+    sstr << std::setfill('0') << std::setw(8) << cameraImageNos[0];
+
+    for(size_t i=1; i<cameraImageNos.size(); i++)
+    {
+        sstr << "/" << std::setfill('0') << std::setw(8) << cameraImageNos[i];
+    }
+
+    Description dp = camera(scanPosNo, camNo);
    
     Description d;
     d.dataRoot = dp.dataRoot;
@@ -126,6 +136,15 @@ Description ScanProjectSchemaHDF5::cameraImage(
 
     return d; 
 }
+
+Description ScanProjectSchemaHDF5::cameraImageGroup(
+    const size_t& scanPosNo,
+    const size_t& camNo, 
+    const std::vector<size_t>& cameraImageGroupNos) const
+{
+    return cameraImage(scanPosNo, camNo, cameraImageGroupNos);
+}
+
 
 Description ScanProjectSchemaHDF5::hyperspectralCamera(
     const size_t& scanPosNo,

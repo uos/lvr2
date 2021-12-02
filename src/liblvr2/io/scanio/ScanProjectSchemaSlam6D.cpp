@@ -97,7 +97,17 @@ Description ScanProjectSchemaSlam6D::scanChannel(
 Description ScanProjectSchemaSlam6D::cameraImage(
     const size_t& scanPosNo,
     const size_t& camNo,
-    const size_t& cameraImageNo) const
+    const std::vector<size_t>& cameraImageNos) const
+{
+    Description d;
+
+    return d;
+}
+
+Description ScanProjectSchemaSlam6D::cameraImageGroup(
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const std::vector<size_t>& cameraImageGroupNos) const
 {
     Description d;
 
