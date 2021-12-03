@@ -262,8 +262,14 @@ ScanProjectPtr dummyScanProjectMinimal()
     {
         ScanPositionPtr scan_pos(new ScanPosition);
          
-        scan_pos->transformation = Transformd::Identity();
-        scan_pos->transformation(0,3) = static_cast<double>(i);
+
+        Eigen::Affine3d A;
+        A.setIdentity();
+        A.translate(Eigen::Vector3d(1.0, 2.0, 3.0));
+        
+        scan_pos->transformation = A.matrix();
+
+        scan_pos->transformation(0,3) += static_cast<double>(i);
         scan_pos->poseEstimation = scan_pos->transformation;
 
         scan_pos->boundingBox = BoundingBox<VecT>(

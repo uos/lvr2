@@ -7,6 +7,7 @@
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/io/scanio/yaml/Util.hpp"
 
+#include "AABB.hpp"
 #include "Matrix.hpp"
 
 namespace YAML {  
@@ -35,6 +36,11 @@ struct convert<lvr2::ScanProject>
         node["unit"] = scanProj.unit;
         node["transformation"] = scanProj.transformation;
         node["name"] = scanProj.name;
+
+        if(scanProj.boundingBox)
+        {
+            node["aabb"] = *scanProj.boundingBox;
+        }
 
         return node;
     }
@@ -76,6 +82,12 @@ struct convert<lvr2::ScanProject>
         {
             scanProj.name = node["name"].as<std::string>();
         }
+
+        if(node["aabb"])
+        {
+            scanProj.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
+        }
+
     
         return true;
     }

@@ -5,6 +5,7 @@
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
 #include "Matrix.hpp"
+#include "AABB.hpp"
 #include "lvr2/io/scanio/yaml/Util.hpp"
 
 namespace YAML {  
@@ -31,6 +32,12 @@ struct convert<lvr2::ScanPosition>
         node["pose_estimation"] = scanPos.poseEstimation;
         node["transformation"] = scanPos.transformation;
         node["timestamp"] = scanPos.timestamp;
+
+        if(scanPos.boundingBox)
+        {
+            node["aabb"] = *scanPos.boundingBox;
+        }
+
         return node;
     }
 
@@ -66,6 +73,11 @@ struct convert<lvr2::ScanPosition>
             scanPos.timestamp = node["timestamp"].as<double>();
         } else {
             scanPos.timestamp = -1.0;
+        }
+
+        if(node["aabb"])
+        {
+            scanPos.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
         }
 
         return true;
