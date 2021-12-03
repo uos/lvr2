@@ -252,8 +252,15 @@ bool equal(ScanPtr s1, ScanPtr s2)
         SphericalModel s1m = *s1->model;
         SphericalModel s2m = *s2->model;
         if(!equal(s1m.phi[0], s2m.phi[0]) ){
-            // std::cout << "Scan: phiMin differs: " << s1->model.phi[0] << " <-> " << s2->model.phi[0] << std::endl;
+            std::cout << "Scan: phiMin differs: " << s1m.phi[0] << " <-> " << s2m.phi[0] << std::endl;
             return false;}
+        if(!equal(s1m.phi[1], s2m.phi[1]) ){
+            std::cout << "Scan: phiMax differs: " << s1m.phi[1] << " <-> " << s2m.phi[1] << std::endl;
+            return false;}
+        if(!equal(s1m.phi[2], s2m.phi[2]) ){
+            std::cout << "Scan: phiRes differs: " << s1m.phi[2] << " <-> " << s2m.phi[2] << std::endl;
+            return false;}
+        
         // if(!equal(s1->model.phi[1], s2->model.phi[1]) ){
         //     std::cout << "Scan: phiMax differs: " << s1->model.phi[1] << " <-> " << s2->model.phi[1] << std::endl;
         //     return false;}

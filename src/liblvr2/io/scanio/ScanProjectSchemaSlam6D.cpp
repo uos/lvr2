@@ -133,6 +133,17 @@ Description ScanProjectSchemaSlam6D::hyperspectralPanorama(
     return d;
 }
 
+Description ScanProjectSchemaSlam6D::hyperspectralPanoramaPreview(
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const size_t& panoNo) const
+{
+    Description d;
+
+    return d;
+}
+
+
 Description ScanProjectSchemaSlam6D::hyperspectralPanoramaChannel(
     const size_t& scanPosNo,
     const size_t& camNo,
