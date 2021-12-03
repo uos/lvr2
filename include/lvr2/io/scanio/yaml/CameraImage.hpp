@@ -39,7 +39,7 @@ struct convert<lvr2::CameraImage>
     static bool decode(const Node& node, lvr2::CameraImage& scanImage) 
     {
        // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndType(node, 
+        if (!YAML_UTIL::ValidateEntityAndTypeSilent(node, 
             "camera_image", 
             lvr2::CameraImage::entity, 
             lvr2::CameraImage::type))
@@ -99,7 +99,7 @@ struct convert<lvr2::CameraImageGroup>
     static bool decode(const Node& node, lvr2::CameraImageGroup& cameraImageGroup) 
     {
        // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndType(node, 
+        if (!YAML_UTIL::ValidateEntityAndTypeSilent(node, 
             "camera_images", 
             lvr2::CameraImageGroup::entity, 
             lvr2::CameraImageGroup::type))

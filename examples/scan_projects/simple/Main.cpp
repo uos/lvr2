@@ -100,7 +100,7 @@ int main(int argc, char** argv)
     // generate 
 
     LOG(Logger::DEBUG) << "Generating dataset, wait." << std::endl;
-    ScanProjectPtr sp = dummyScanProject();
+    ScanProjectPtr sp = dummyScanProjectMinimal();
 
     LOG(Logger::INFO) << "1. Example: DirectoryIO" << std::endl;
     LOG.tab();

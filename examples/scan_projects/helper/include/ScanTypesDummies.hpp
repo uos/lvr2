@@ -23,6 +23,15 @@ PointBufferPtr operator*(Transformd T, PointBufferPtr points);
  */
 ScanProjectPtr dummyScanProject();
 
+/**
+ * @brief Generates a dummy scan projects with some sensors and sensordata
+ * - pointclouds of size 2502 in shapes of spheres 
+ * - lvr2 logo as images
+ * 
+ * @return ScanProjectPtr 
+ */
+ScanProjectPtr dummyScanProjectMinimal();
+
 } // namespace lvr2
 
 #endif // LVR2_EXAMPLES_SCANTYPES_DUMMIES_HPP

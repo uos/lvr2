@@ -217,6 +217,17 @@ bool equal(ScanPtr s1, ScanPtr s2)
     if(s1 && !s2){return false;}
     if(!s1 && !s2){return true;}
 
+
+    if(s1->model && !s2->model)
+    {
+        return false;
+    }
+
+    if(!s1->model && s2->model)
+    {
+        return false;
+    }
+
     if(!s1->transformation.isApprox(s2->transformation)){ 
         std::cout << "Scan transformation differ: " << std::endl;
         std::cout << s1->transformation << std::endl;
@@ -224,6 +235,7 @@ bool equal(ScanPtr s1, ScanPtr s2)
         std::cout << s2->transformation << std::endl;
         return false; 
     }
+
 
     if(!equal(s1->startTime, s2->startTime) ){
         std::cout << "Scan: startTime differs: " << s1->startTime << " <-> " << s2->startTime << std::endl;
@@ -234,26 +246,33 @@ bool equal(ScanPtr s1, ScanPtr s2)
     if(s1->numPoints != s2->numPoints){
         std::cout << "Scan: numPoints differs: " << s1->numPoints << " <-> " << s2->numPoints << std::endl;
         return false;}
-    if(!equal(s1->phiMin, s2->phiMin) ){
-        std::cout << "Scan: phiMin differs: " << s1->phiMin << " <-> " << s2->phiMin << std::endl;
-        return false;}
-    if(!equal(s1->phiMax, s2->phiMax) ){
-        std::cout << "Scan: phiMax differs: " << s1->phiMax << " <-> " << s2->phiMax << std::endl;
-        return false;}
-    if(!equal(s1->thetaMin, s2->thetaMin) ){
-        std::cout << "Scan: thetaMin differs: " << s1->thetaMin << " <-> " << s2->thetaMin << std::endl;
-        return false;}
-    if(!equal(s1->thetaMax, s2->thetaMax) ){
-        std::cout << "Scan: thetaMax differs: " << s1->thetaMax << " <-> " << s2->thetaMax << std::endl;
-        return false;}
+
+    if(s1->model)
+    {
+        SphericalModel s1m = *s1->model;
+        SphericalModel s2m = *s2->model;
+        if(!equal(s1m.phi[0], s2m.phi[0]) ){
+            // std::cout << "Scan: phiMin differs: " << s1->model.phi[0] << " <-> " << s2->model.phi[0] << std::endl;
+            return false;}
+        // if(!equal(s1->model.phi[1], s2->model.phi[1]) ){
+        //     std::cout << "Scan: phiMax differs: " << s1->model.phi[1] << " <-> " << s2->model.phi[1] << std::endl;
+        //     return false;}
+        // if(!equal(s1->model.phi[2], s2->model.phi[2]) ){
+        //     std::cout << "Scan: phiRes differs: " << s1->model.phi[2] << " <-> " << s2->model.phi[2] << std::endl;
+        //     return false;}
+        // if(!equal(s1->model.theta[0], s2->model.theta[0]) ){
+        //     // std::cout << "Scan: thetaMax differs: " << s1->thetaMax << " <-> " << s2->thetaMax << std::endl;
+        //     return false;}
+        
+        // if(s1->vResolution != s2->vResolution){
+        //     std::cout << "Scan: vResolution differs: " << s1->vResolution << " <-> " << s2->vResolution << std::endl;
+        //     return false;}
+        
+        // if(s1->hResolution != s2->hResolution){
+        //     std::cout << "Scan: hResolution differs: " << s1->hResolution << " <-> " << s2->hResolution << std::endl;
+        //     return false;}
+    }
     
-    if(s1->vResolution != s2->vResolution){
-        std::cout << "Scan: vResolution differs: " << s1->vResolution << " <-> " << s2->vResolution << std::endl;
-        return false;}
-    
-    if(s1->hResolution != s2->hResolution){
-        std::cout << "Scan: hResolution differs: " << s1->hResolution << " <-> " << s2->hResolution << std::endl;
-        return false;}
 
     if(!equal(s1->points, s2->points)){
         std::cout << "scan points differ" << std::endl;

@@ -84,6 +84,7 @@ inline bool ValidateNodeTag(const YAML::Node& node, const char* decoder_name, co
 
     return true;
 }
+
 /**
  * @brief Checks if the entity and type tag of the \ref node exist and match \ref entity and \ref type respectively.
  * 
@@ -105,6 +106,35 @@ inline bool ValidateEntityAndType(const YAML::Node& node, const char* converter_
 
     return true;
 }
+
+
+inline bool ValidateNodeTagSilent(const YAML::Node& node, const char* decoder_name, const char* tag_name, const char* required_value)
+{
+    if(!node[tag_name])
+    {
+        return false;
+    }
+    if (node[tag_name].as<std::string>() != required_value)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+inline bool ValidateEntityAndTypeSilent(const YAML::Node& node, const char* converter_name, const char* entity, const char* type)
+{
+    // If either one of these Tags is missing or does not match the Value return false
+    if (!ValidateNodeTagSilent(node, converter_name, "entity", entity) ||
+        !ValidateNodeTagSilent(node, converter_name, "type", type))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
 
 } // namespace YAML_UTIL
 

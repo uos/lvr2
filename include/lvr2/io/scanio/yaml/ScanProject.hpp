@@ -70,8 +70,6 @@ struct convert<lvr2::ScanProject>
         if(node["unit"])
         {
             scanProj.unit = node["unit"].as<std::string>();
-        } else {
-            scanProj.unit = "m";
         }
               
         if(node["name"])

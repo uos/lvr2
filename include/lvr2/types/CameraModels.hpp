@@ -43,8 +43,10 @@ struct PinholeModel : CameraModel
     double cy = 0;
     unsigned width = 0;
     unsigned height = 0;
-    std::vector<double> k;
-    std::string distortionModel = "unknown";
+    
+    /// Distortion
+    std::vector<double> distortionCoefficients;
+    std::string distortionModel = "opencv";
 };
 
 using PinholeModelPtr = std::shared_ptr<PinholeModel>;
@@ -64,7 +66,8 @@ struct CylindricalModel : CameraModel
     Vector2d                        fov;
 
     /// Distortion
-    std::vector<double>             distortion;
+    std::vector<double>             distortionCoefficients;
+    std::string                     distortionModel = "schneider_maass";
 };
 
 using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;
@@ -74,19 +77,23 @@ struct SphericalModel : CameraModel {
     static constexpr char           type[] = "spherical";
 
     /// Focal length
-    double                          focalLength;
+    double                          phi[3];
 
     /// Offset angle
-    double                          offsetAngle;
+    double                          theta[3];
+
+    double                          range[3];
 
     /// Principal x, y, z
     Vector3d                        principal;
 
     /// Distortion
-    std::vector<double>             distortion;
+    std::vector<double>             distortionCoefficients;
+    std::string                     distortionModel = "unknown";
 };
 
 using SphericalModelPtr = std::shared_ptr<SphericalModel>;
+using SphericalModelOptional = boost::optional<SphericalModel>;
 
 
 } // namespace lvr2

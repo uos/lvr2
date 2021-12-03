@@ -186,6 +186,7 @@ struct LIDAR : SensorEntity, Transformable
     //// META BEGIN
     // TODO: check boost type_info
     static constexpr char           type[] = "lidar";
+    SphericalModel                  model;
     //// META END
 
     //// HIERARCHY BEGIN
@@ -238,23 +239,27 @@ struct Scan : SensorDataEntity, Transformable
     /// Pose estimation of this scan in project coordinates
     Transformd                       poseEstimation = Transformd::Identity();
 
-    /// Min horizontal scan angle
-    double                           thetaMin;
 
-    /// Max horizontal scan angle
-    double                           thetaMax;
+    // model of the scan
+    SphericalModelOptional           model;
 
-    /// Min vertical scan angle
-    double                           phiMin;
+    // /// Min horizontal scan angle
+    // double                           thetaMin;
 
-    /// Max vertical scan angle
-    double                           phiMax;
+    // /// Max horizontal scan angle
+    // double                           thetaMax;
 
-    /// Horizontal resolution of used laser scanner
-    double                           hResolution;
+    // /// Min vertical scan angle
+    // double                           phiMin;
 
-    /// Vertical resolution of used laser scanner
-    double                           vResolution;
+    // /// Max vertical scan angle
+    // double                           phiMax;
+
+    // /// Horizontal resolution of used laser scanner
+    // double                           hResolution;
+
+    // /// Vertical resolution of used laser scanner
+    // double                           vResolution;
 
     /// Start timestamp 
     double                           startTime;
@@ -347,10 +352,15 @@ struct HyperspectralPanorama : SensorDataEntity, Transformable
     /// minimum and maximum wavelength
     // double                                         wavelength[2];
     /// resolution in x and y
-    size_t                                         resolution[2];
 
-    unsigned int                                   num_bands;
-    std::string                                    frame_order;
+    unsigned int                                   framesResolution[3];
+    unsigned int                                   bandAxis;
+    unsigned int                                   frameAxis;
+    std::string                                    dataType;
+
+
+    unsigned int                                   panoramaResolution[3];
+
 
     /// Camera model (optional): overrides the HyperspectralCamera model
     CylindricalModelOptional                       model;
@@ -360,6 +370,7 @@ struct HyperspectralPanorama : SensorDataEntity, Transformable
 
     /// preview generated from channels (optional: check if preview.empty())
     cv::Mat                                        preview;
+    std::string                                    previewType;
 
     /// OpenCV representation
     std::vector<HyperspectralPanoramaChannelPtr>   channels;
@@ -387,9 +398,6 @@ struct HyperspectralCamera : SensorEntity, Transformable
 
     /// Camera model
     CylindricalModel                         model;
-
-    /// Extrinsics estimate
-    Extrinsicsd                              extrinsicsEstimation = Extrinsicsd::Identity();
 
     /// OpenCV representation
     std::vector<HyperspectralPanoramaPtr>    panoramas;
