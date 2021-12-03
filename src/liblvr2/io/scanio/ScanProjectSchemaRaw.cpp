@@ -222,11 +222,11 @@ Description ScanProjectSchemaRaw::hyperspectralPanoramaChannel(
     Description dp = hyperspectralPanorama(scanPosNo, camNo, panoNo);
 
     Description d;
-    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
-    d.data = "image.png";
+    d.dataRoot = *dp.dataRoot + "/data";
+    d.data = sstr.str() + ".png";
     
     d.metaRoot = d.dataRoot;
-    d.meta = "meta.yaml";
+    d.meta = boost::none;
     
     return d;
 }

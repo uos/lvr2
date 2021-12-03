@@ -75,8 +75,14 @@ HyperspectralPanoramaChannelPtr HyperspectralPanoramaChannelIO<Derived>::load(
     }
     
     /// DATA
-    ret->channel = *m_imageIO->load(*d.dataRoot, *d.data);
-
+    auto img = m_imageIO->load(*d.dataRoot, *d.data);
+    if(img)
+    {
+        ret->channel = *img;
+    } else {
+        ret.reset();
+    }
+    
     return ret;
 }
 
