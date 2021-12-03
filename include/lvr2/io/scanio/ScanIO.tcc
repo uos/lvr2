@@ -37,7 +37,7 @@ void ScanIO<FeatureBase>::save(
                 {
                     YAML::Node meta;
                     meta = elem.second;
-                    meta["channel_name"] = elem.first;
+                    meta["name"] = elem.first;
                     m_featureBase->m_kernel->saveMetaYAML(*dc.metaRoot, *dc.meta, meta);
                 }
             }
@@ -101,7 +101,7 @@ void ScanIO<FeatureBase>::save(
                 {
                     YAML::Node meta;
                     meta = elem.second;
-                    meta["channel_name"] = elem.first;
+                    meta["name"] = elem.first;
                     m_featureBase->m_kernel->saveMetaYAML(*dc.metaRoot, *dc.meta, meta);
                 }
             }
@@ -321,9 +321,9 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
                     m_featureBase->m_kernel->loadMetaYAML(*dc.metaRoot, *dc.meta, cmeta);
 
 
-                    if(cmeta["channel_name"])
+                    if(cmeta["name"])
                     {
-                        channel_name = cmeta["channel_name"].as<std::string>();
+                        channel_name = cmeta["name"].as<std::string>();
                     }
 
                     // std::cout << "First Hint found: " << channel_name << std::endl;
@@ -345,9 +345,9 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
         {
             std::string channel_name = meta.first;
 
-            if(meta.second["channel_name"])
+            if(meta.second["name"])
             {
-                channel_name = meta.second["channel_name"].template as<std::string>();
+                channel_name = meta.second["name"].template as<std::string>();
             }
 
             if(channel_metas.find(channel_name) == channel_metas.end())
