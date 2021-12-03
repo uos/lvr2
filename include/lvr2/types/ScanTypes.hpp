@@ -99,6 +99,16 @@ struct Transformable {
     Transformd transformation = Transformd::Identity();
 };
 
+// using AABB = BoundingBox<BaseVector<float> >;
+
+struct Bounded {
+    BoundingBox<BaseVector<float> > boundingBox;
+};
+
+struct BoundedOptional {
+    boost::optional<BoundingBox<BaseVector<float> > > boundingBox;
+};
+
 /*****************************************************************************
  * @brief   Struct to represent a scan project consisting
  *          of a set of scan position. Each scan position 
@@ -108,7 +118,7 @@ struct Transformable {
  *          the corresponding data is not available for this 
  *          scan position number.
  *****************************************************************************/
-struct ScanProject : ScanProjectEntity, Transformable
+struct ScanProject : ScanProjectEntity, Transformable, BoundedOptional
 {
     //// META BEGIN
     // the type of this struct
@@ -141,7 +151,7 @@ struct ScanProject : ScanProjectEntity, Transformable
     //// HIERARCHY END
 };
 
-struct ScanPosition : ScanPositionEntity, Transformable
+struct ScanPosition : ScanPositionEntity, Transformable, BoundedOptional
 {
     /// META BEGIN
     // the type of this struct
@@ -181,12 +191,12 @@ struct ScanPosition : ScanPositionEntity, Transformable
  ****************************************************************************/
 
 // Flag Struct
-struct LIDAR : SensorEntity, Transformable
+struct LIDAR : SensorEntity, Transformable, BoundedOptional
 {
     //// META BEGIN
     // TODO: check boost type_info
-    static constexpr char           type[] = "lidar";
-    SphericalModel                  model;
+    static constexpr char               type[] = "lidar";
+    SphericalModel                      model;
     //// META END
 
     //// HIERARCHY BEGIN
@@ -222,7 +232,7 @@ struct Camera : SensorEntity, Transformable
 /*****************************************************************************
  * @brief Struct to represent a scan within a scan project
  ****************************************************************************/
-struct Scan : SensorDataEntity, Transformable
+struct Scan : SensorDataEntity, Transformable, BoundedOptional
 {
     //// META BEGIN
     static constexpr char           type[] = "scan";
@@ -271,7 +281,7 @@ struct Scan : SensorDataEntity, Transformable
     size_t                           numPoints;
 
     /// Axis aligned bounding box of this scan
-    BoundingBox<BaseVector<float> >  boundingBox;
+    // BoundingBox<BaseVector<float> >  boundingBox;
 
     //// META END
 

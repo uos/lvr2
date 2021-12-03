@@ -181,6 +181,21 @@ Description ScanProjectSchemaHDF5::hyperspectralPanorama(
     return d;
 }
 
+Description ScanProjectSchemaHDF5::hyperspectralPanoramaPreview(
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const size_t& panoNo) const
+{
+    Description dp = hyperspectralPanorama(scanPosNo, camNo, panoNo);
+    Description d;
+
+    d.dataRoot = *dp.dataRoot;
+    d.metaRoot = d.dataRoot;
+    d.data = "preview";
+
+    return d;
+}
+
 Description ScanProjectSchemaHDF5::hyperspectralPanoramaChannel(
     const size_t& scanPosNo,
     const size_t& camNo,

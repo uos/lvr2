@@ -21,11 +21,13 @@ void ScanIO<FeatureBase>::save(
         return;
     }
 
+    // std::cout << "ScanIO - save data " << scanPosNo << " " << sensorNo << " " << scanNo << std::endl;
     //// DATA
     if(scanPtr->points)
     {
         if(d.data)
-        {
+        { 
+            // std::cout << "Save Channel wise" << std::endl;
             m_pclIO->save(*d.dataRoot, *d.data, scanPtr->points);
 
             // save metas
@@ -43,6 +45,7 @@ void ScanIO<FeatureBase>::save(
             }
 
         } else {
+            // std::cout << "Save Partial" << std::endl;
             // a lot of code for the problem of capsulating SOME channels into one PLY
             // there could be other channels that do not fit in this ply
 
@@ -53,8 +56,11 @@ void ScanIO<FeatureBase>::save(
             /// Data (Channel)
             for(auto elem : *scanPtr->points)
             {
+                
                 Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
                 boost::filesystem::path proot(*dc.dataRoot);
+
+                
                 // std::cout << "Description of " <<  elem.first << std::endl;
                 // std::cout << dc << std::endl;
 
@@ -74,6 +80,8 @@ void ScanIO<FeatureBase>::save(
                     std::string group, dataset;
                     std::tie(group, dataset) = hdf5util::validateGroupDataset(proot.string(), *dc.data);
 
+                    // std::cout << "Save " << elem.first << " to " << group << " - " << dataset << std::endl;
+
                     // Data
                     m_vchannel_io->save(group, dataset, elem.second);
                 }
@@ -92,6 +100,8 @@ void ScanIO<FeatureBase>::save(
                 m_featureBase->m_kernel->savePointBuffer(group, name, ex_elem.second);
             }
 
+            // std::cout << "Save Channel METAs" << std::endl;
+
             // META
             // save meta for each channel
             for(auto elem : *scanPtr->points)
@@ -105,17 +115,24 @@ void ScanIO<FeatureBase>::save(
                     m_featureBase->m_kernel->saveMetaYAML(*dc.metaRoot, *dc.meta, meta);
                 }
             }
+
+            // std::cout << "END channels" << std::endl;
         }
     }
+
+    // std::cout << "save SCAN META" << std::endl;
 
     //// META
     if(d.meta)
     {
         YAML::Node node;
         node = *scanPtr;
+
+        // std::cout << "write YAML" << std::endl;
         m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
     
+    // std::cout << "Success" << std::endl;
 }
 
 template <typename FeatureBase>

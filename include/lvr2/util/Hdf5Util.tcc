@@ -502,9 +502,11 @@ void setAttributeMatrix(
     const std::string& attr_name,
     const Eigen::MatrixXd& mat)
 {
+    const Eigen::MatrixXd matT = mat.transpose();
+
     std::vector<size_t> dims = {
-        static_cast<size_t>(mat.cols()), 
-        static_cast<size_t>(mat.rows())};
+        static_cast<size_t>(matT.cols()), 
+        static_cast<size_t>(matT.rows())};
 
     HighFive::DataSpace ds(dims);
 
@@ -554,7 +556,7 @@ void setAttributeMatrix(
         );
     }
 
-    h5att->write_raw(mat.data());
+    h5att->write_raw(matT.data());
 }
 
 template <typename HT, typename T>
@@ -651,11 +653,11 @@ boost::optional<Eigen::MatrixXd> getAttributeMatrix(
             return ret;
         }
 
-        Eigen::MatrixXd mat(dims[0], dims[1]);
+        Eigen::MatrixXd mat(dims[1], dims[0]);
 
         h5attr.read(mat.data());
 
-        ret = mat;
+        ret = mat.transpose();
     }
 
     return ret;
@@ -678,6 +680,7 @@ void setAttributeMeta(
         // add prefix to key
         if(prefix != ""){ attributeName = prefix + "/" + attributeName; }
 
+        // std::cout << attributeName << ": Scalar" << std::endl;
         if(value.Type() == YAML::NodeType::Scalar)
         {
             // Write Scalar
@@ -714,14 +717,15 @@ void setAttributeMeta(
         } 
         else if(value.Type() == YAML::NodeType::Sequence) 
         {
-
             // check if matrix
-            if(value.begin()->IsSequence() )
+            // this command segfaults for empty sequences
+            // value.begin() != value.end() -> empty list check
+            if(value.begin() != value.end() && value.begin()->IsSequence() )
             {
                 // Double list
-                // std::cout << "IS MATRIX" << std::endl;
                 if(YAML::isMatrix(value))
                 {
+                    // std::cout << "Write MATRIX" << std::endl;
                     // list of lists is a matrix
                     // TODO: hard coded type double
                     Eigen::MatrixXd mat;
@@ -780,64 +784,78 @@ void setAttributeMeta(
 
                     nelements++;
                 }
-                if(is_int)
-                {
-                    std::vector<long int> data;
-                    for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
-                    {
-                        data.push_back(seq_it->as<long int>());
-                    }
-                    setAttributeVector(g, attributeName, data);
-                }
-                else if(is_double)
-                {
-                    std::vector<double> data;
-                    for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
-                    {
-                        data.push_back(seq_it->as<double>());
-                    }
-                    setAttributeVector(g, attributeName, data);
-                }
-                else if(is_bool)
-                {
-                    // Bool vector is special
-                    // https://stackoverflow.com/questions/51352045/void-value-not-ignored-as-it-ought-to-be-on-non-void-function
-                    // need workaround
 
-                    // hdf5 stores bool arrays in uint8 anyway
-                    // std::vector<uint8_t> data;
-                    // for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
-                    // {
-                    //     data.push_back(static_cast<uint8_t>(seq_it->as<bool>()));
-                    // }
-                    // hdf5util::setAttributeVector(g, attributeName, data);
+                // std::cout << "Nelements: " << nelements << std::endl;
 
-                    boost::shared_array<bool> data(new bool[nelements]);
-                    size_t i = 0;
-                    for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++, i++)
-                    {
-                        data[i] = seq_it->as<bool>();
-                    }
-                    setAttributeArray(g, attributeName, data, nelements);
-                } 
-                else if(is_string) 
+                if(nelements > 0)
                 {
-                    std::vector<std::string> data;
-                    for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
+                    if(is_int)
                     {
-                        data.push_back(seq_it->as<std::string>());
+                        // std::cout << "Write INT" << std::endl;
+                        std::vector<long int> data;
+                        for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
+                        {
+                            data.push_back(seq_it->as<long int>());
+                        }
+                        setAttributeVector(g, attributeName, data);
                     }
-                    setAttributeVector(g, attributeName, data);
-                } 
-                else 
-                {
-                    std::cout << "Tried to write YAML list of unknown typed elements: " << value << std::endl;
+                    else if(is_double)
+                    {
+                        // std::cout << "Write DOUBLE" << std::endl;
+                        std::vector<double> data;
+                        for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
+                        {
+                            data.push_back(seq_it->as<double>());
+                        }
+                        setAttributeVector(g, attributeName, data);
+                    }
+                    else if(is_bool)
+                    {
+                        // std::cout << "Write Bool" << std::endl;
+                        // Bool vector is special
+                        // https://stackoverflow.com/questions/51352045/void-value-not-ignored-as-it-ought-to-be-on-non-void-function
+                        // need workaround
+
+                        // hdf5 stores bool arrays in uint8 anyway
+                        // std::vector<uint8_t> data;
+                        // for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
+                        // {
+                        //     data.push_back(static_cast<uint8_t>(seq_it->as<bool>()));
+                        // }
+                        // hdf5util::setAttributeVector(g, attributeName, data);
+
+                        boost::shared_array<bool> data(new bool[nelements]);
+                        size_t i = 0;
+                        for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++, i++)
+                        {
+                            data[i] = seq_it->as<bool>();
+                        }
+                        setAttributeArray(g, attributeName, data, nelements);
+                    } 
+                    else if(is_string) 
+                    {
+                        // std::cout << "Write String" << std::endl;
+                        std::vector<std::string> data;
+                        for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++)
+                        {
+                            data.push_back(seq_it->as<std::string>());
+                        }
+                        setAttributeVector(g, attributeName, data);
+                    } 
+                    else 
+                    {
+                        std::cout << "Tried to write YAML list of unknown typed elements: " << value << std::endl;
+                    }
+                } else {
+                    // std::cout << "WARNING: Tried to write zero elements list" << std::endl;
                 }
+
+                
             }
 
             // TODO: check list of strings
             
-
+            // std::cout << attributeName << ": written." << std::endl;
         } 
         else if(value.Type() == YAML::NodeType::Map) 
         {

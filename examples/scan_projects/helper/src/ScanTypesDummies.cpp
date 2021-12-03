@@ -98,7 +98,7 @@ ScanProjectPtr dummyScanProject()
                 model.range[2] = 0.001;
 
                 scan->model = model;
-                
+
                 scan->poseEstimation = lvr2::Transformd::Identity();
                 scan->transformation = lvr2::Transformd::Identity();
                 scan->transformation(2,3) = static_cast<double>(k);
@@ -185,6 +185,8 @@ ScanProjectPtr dummyScanProject()
             h_cam->model.distortionCoefficients[1] = 1.0;
             h_cam->model.distortionCoefficients[2] = 0.5;
 
+
+
             for(size_t k=0; k<3; k++)
             {
                 HyperspectralPanoramaPtr pano(new HyperspectralPanorama);
@@ -203,6 +205,10 @@ ScanProjectPtr dummyScanProject()
 
                 // override sensor model
                 pano->model = h_cam->model;
+
+                pano->previewType = "sum";
+                CameraImagePtr si = synthetic::genLVRImage();
+                pano->preview = si->image.clone();
 
                 for(size_t l=0; l<7; l++)
                 {
@@ -233,6 +239,8 @@ ScanProjectPtr dummyScanProject()
 
 ScanProjectPtr dummyScanProjectMinimal()
 {
+    using VecT = BaseVector<float>;
+
     ScanProjectPtr ret(new ScanProject);
 
     PointBufferPtr points = synthetic::genSpherePoints(200, 200);
@@ -247,6 +255,9 @@ ScanProjectPtr dummyScanProjectMinimal()
     }
     points->add("normals", normals);
 
+    ret->boundingBox = BoundingBox<VecT>(
+                VecT(-1.0, -2.0, -3.0), VecT(1.0, 2.0, 3.0));
+
     for(size_t i=0; i<1; i++)
     {
         ScanPositionPtr scan_pos(new ScanPosition);
@@ -255,12 +266,18 @@ ScanProjectPtr dummyScanProjectMinimal()
         scan_pos->transformation(0,3) = static_cast<double>(i);
         scan_pos->poseEstimation = scan_pos->transformation;
 
+        scan_pos->boundingBox = BoundingBox<VecT>(
+                VecT(-1.0, -2.0, -3.0), VecT(1.0, 2.0, 3.0));
+
         for(size_t j=0; j<1; j++)
         {
             LIDARPtr lidar(new LIDAR);
             lidar->name = "Riegl VZ400i";
             lidar->transformation = Transformd::Identity();
             lidar->transformation(1,3) = static_cast<double>(j);
+
+            lidar->boundingBox = BoundingBox<VecT>(
+                VecT(-1.0, -2.0, -3.0), VecT(1.0, 2.0, 3.0));
 
             for(size_t k=0; k<1; k++)
             {
@@ -294,6 +311,9 @@ ScanProjectPtr dummyScanProjectMinimal()
                 scan->startTime = 0.0;
                 scan->endTime  = 100.0;
 
+                scan->boundingBox = BoundingBox<VecT>(
+                    VecT(-1.0, -2.0, -3.0), VecT(1.0, 2.0, 3.0));
+                
                 lidar->scans.push_back(scan);
             }
             
@@ -388,6 +408,10 @@ ScanProjectPtr dummyScanProjectMinimal()
 
                 // override sensor model
                 pano->model = h_cam->model;
+
+                pano->previewType = "sum";
+                CameraImagePtr si = synthetic::genLVRImage();
+                pano->preview = si->image.clone();
 
                 for(size_t l=0; l<2; l++)
                 {

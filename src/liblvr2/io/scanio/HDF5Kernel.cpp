@@ -180,7 +180,7 @@ void HDF5Kernel::saveMetaYAML(
     const std::string &metaName,
     const YAML::Node &node) const
 {
-    // std::cout << "[HDF5Kernel - saveMetaYAML] " << group << ", " << metaName << std::endl;
+    // std::cout << "[HDF5Kernel - saveMetaYAML] " << group_ << ", " << metaName << std::endl;
     std::string group, container;
     std::tie(group, container) = hdf5util::validateGroupDataset(group_, metaName);
 
@@ -196,14 +196,18 @@ void HDF5Kernel::saveMetaYAML(
 
             if(h5type == HighFive::ObjectType::Group)
             {
+                // std::cout << "G - setAttributeMeta" << std::endl;
                 HighFive::Group attgroup = hg.getGroup(container);
                 hdf5util::setAttributeMeta(attgroup, node);
             }
             else if(h5type == HighFive::ObjectType::Dataset) 
             {
+                // std::cout << "DS - setAttributeMeta" << std::endl;
                 HighFive::DataSet attds = hg.getDataSet(container);
                 hdf5util::setAttributeMeta(attds, node);
+                
             }
+            // std::cout << "." << std::endl;
 
         } else {
             // Group or Dataset does not exist yet. 

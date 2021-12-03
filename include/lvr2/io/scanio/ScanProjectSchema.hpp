@@ -87,6 +87,11 @@ public:
         const size_t& camNo,
         const size_t& panoNo) const = 0;
 
+    virtual Description hyperspectralPanoramaPreview(
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const size_t& panoNo) const = 0;
+
     virtual Description hyperspectralPanoramaChannel(
         const size_t& scanPosNo,
         const size_t& camNo,

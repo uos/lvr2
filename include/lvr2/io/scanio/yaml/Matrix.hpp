@@ -65,6 +65,8 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
         if(A != rows)
         {
             std::cout << "[YAML::convert<Matrix> - decode] rows in yaml (" << rows << ") differ from static matrix rows (" << A << ")." << std::endl;
+            
+            std::cout << node << std::endl;
             return false;
         }
 

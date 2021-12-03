@@ -6,6 +6,7 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "Matrix.hpp"
+#include "AABB.hpp"
 
 namespace YAML {  
 
@@ -24,6 +25,9 @@ struct convert<lvr2::Scan>
      * Encode Eigen matrix to yaml. 
      */
     static Node encode(const lvr2::Scan& scan) {
+
+        // std::cout << "Encode Scan"
+
         Node node;
         node["entity"] = lvr2::Scan::entity;
         node["type"] = lvr2::Scan::type;
@@ -35,13 +39,15 @@ struct convert<lvr2::Scan>
         node["pose_estimation"] = scan.poseEstimation;
         node["transformation"] = scan.transformation;
 
+        if(scan.boundingBox)
+        {
+            node["aabb"] = *scan.boundingBox;
+        }
+
         if(scan.model)
         {
             node["model"] = *scan.model;
         }
-
-        
-
 
         if(scan.points)
         {
@@ -104,38 +110,11 @@ struct convert<lvr2::Scan>
         {
             scan.model = node["model"].as<lvr2::SphericalModel>();
         }
-
-        // if(node["config"])
-        // {
-        //     const Node& config = node["config"];
         
-        //     if(config["theta"])
-        //     {
-        //         scan.thetaMin = config["theta"][0].as<double>();
-        //         scan.thetaMax = config["theta"][1].as<double>();
-        //     }
-            
-        //     if(config["phi"])
-        //     {
-        //         scan.phiMin = config["phi"][0].as<double>();
-        //         scan.phiMax = config["phi"][1].as<double>();
-        //     }
-
-        //     if(config["v_res"])
-        //     {
-        //         scan.vResolution = config["v_res"].as<double>();
-        //     }            
-
-        //     if(config["h_res"])
-        //     {
-        //         scan.hResolution = config["h_res"].as<double>();
-        //     }
-            
-        //     if(config["num_points"])
-        //     {
-        //         scan.numPoints = config["num_points"].as<size_t>();
-        //     }   
-        // }
+        if(node["aabb"])
+        {
+            scan.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
+        }
 
         return true;
     }

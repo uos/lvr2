@@ -194,6 +194,21 @@ Description ScanProjectSchemaRaw::hyperspectralPanorama(
     return d;
 }
 
+Description ScanProjectSchemaRaw::hyperspectralPanoramaPreview(
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const size_t& panoNo) const
+{
+    Description dp = hyperspectralPanorama(scanPosNo, camNo, panoNo);
+    Description d;
+
+    d.dataRoot = *dp.dataRoot;
+    d.metaRoot = d.dataRoot;
+    d.data = "preview.png";
+
+    return d;
+}
+
 Description ScanProjectSchemaRaw::hyperspectralPanoramaChannel(
     const size_t& scanPosNo,
     const size_t& camNo,

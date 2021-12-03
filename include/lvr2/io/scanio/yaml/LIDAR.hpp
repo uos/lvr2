@@ -2,6 +2,7 @@
 #define LVR2_IO_YAML_LIDAR_HPP
 
 #include "Matrix.hpp"
+#include "AABB.hpp"
 
 namespace YAML {  
 
@@ -22,6 +23,13 @@ struct convert<lvr2::LIDAR>
         node["transformation"] = lidar.transformation;
         node["name"] = lidar.name;
         node["model"] = lidar.model;
+
+
+        if(lidar.boundingBox)
+        {
+            node["aabb"] = *lidar.boundingBox;
+        }
+
         return node;
     }
 
@@ -66,6 +74,11 @@ struct convert<lvr2::LIDAR>
         if(node["model"])
         {
             lidar.model = node["model"].as<lvr2::SphericalModel>();
+        }
+
+        if(node["aabb"])
+        {
+            lidar.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
         }
 
         return true;

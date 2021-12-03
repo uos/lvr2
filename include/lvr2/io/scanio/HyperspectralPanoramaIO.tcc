@@ -23,6 +23,13 @@ void HyperspectralPanoramaIO<Derived>::save(
         m_hyperspectralPanoramaChannelIO->save(scanPosNo, hCamNo, hPanoNo, i, pano->channels[i]);
     }
 
+    // Save panorama preview
+    if(!pano->preview.empty())
+    {
+        Description dp = Dgen->hyperspectralPanoramaPreview(scanPosNo, hCamNo, hPanoNo);
+        m_imageIO->save(*dp.dataRoot, *dp.data, pano->preview);
+    }
+
     if(d.meta)
     {
         YAML::Node node;
@@ -70,6 +77,14 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
         
         // no meta name specified but scan position is there: 
         ret.reset(new HyperspectralPanorama);
+    }
+
+    /// Preview
+    Description dp = Dgen->hyperspectralPanoramaPreview(scanPosNo, hCamNo, hPanoNo);
+    auto preview = m_imageIO->load(*dp.dataRoot, *dp.data);
+    if(preview)
+    {
+        ret->preview = *preview;
     }
 
     /// DATA
