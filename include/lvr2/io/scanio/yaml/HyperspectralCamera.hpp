@@ -206,58 +206,12 @@ struct convert<lvr2::HyperspectralPanoramaChannel>
     {
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "HyperspectralPanoramaChannel", 
+            "spectral_panorama_channel", 
             lvr2::HyperspectralPanoramaChannel::entity, 
             lvr2::HyperspectralPanoramaChannel::type))
         {
             return false;
         }
-        // if(!node["type"])
-        // {
-        //     std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] "
-        //              << "HyperspectralPanorama meta has no key 'type'" << std::endl; 
-        //     return false;
-        // }
-
-        // if (node["type"].as<std::string>() != lvr2::HyperspectralPanorama::type)
-        // {
-        //     // different hierarchy level
-        //     std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] " 
-        //                 << "Nodes type '" << node["type"].as<std::string>()
-        //                 << "' is not '" <<  lvr2::HyperspectralPanorama::type << "'" << std::endl; 
-        //     return false;
-        // }
-
-        // if(!node["kind"])
-        // {
-        //     std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] "
-        //              << "WARNING: Sensor has no key 'kind'. Assuming this sensor to by of kind "  << lvr2::Camera::kind << std::endl;
-        // } else {
-        //     if(node["kind"].as<std::string>() != lvr2::HyperspectralPanorama::kind)
-        //     {
-        //         std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] " 
-        //                     << "Nodes kind '" << node["kind"].as<std::string>()
-        //                     << "' is not '" <<  lvr2::HyperspectralPanorama::kind << "'" << std::endl; 
-        //         return false;
-        //     }
-        // }
-
-        // if(node["transformation"])
-        // {
-        //     pano.transformation = node["transformation"].as<lvr2::Transformd>();
-        // }
-
-        // if(node["resolution"])
-        // {
-        //     pano.resolution[0] = node["resolution"][0].as<unsigned int>();
-        //     pano.resolution[1] = node["resolution"][1].as<unsigned int>();
-        // }
-
-        // if(node["wavelength"])
-        // {
-        //     pano.wavelength[0] = node["wavelength"][0].as<double>();
-        //     pano.wavelength[1] = node["wavelength"][0].as<double>();
-        // }
 
         return true;
     }

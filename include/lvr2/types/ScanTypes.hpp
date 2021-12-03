@@ -330,7 +330,7 @@ struct CameraImageGroup : SensorDataGroupEntity, Transformable
 // Not a lvr channel
 struct HyperspectralPanoramaChannel : SensorDataEntity
 {
-    static constexpr char           type[]  =  "hyperspectral_panorama_channel";
+    static constexpr char           type[]  =  "spectral_panorama_channel";
 
     /// Timestamp 
     double                          timestamp;
