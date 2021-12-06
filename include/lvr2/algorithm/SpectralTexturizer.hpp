@@ -44,7 +44,14 @@ private:
 
     bool image_data_initialized;
     cv::Mat spectralPanorama;
+    // camera data
+    Vector2d principal_point;
+    Vector2d focal_length;
+    Vector2d camera_fov;
+    float distortions[3];
+
     Vector2d point_to_panorama_coord(Vector3d point, Vector2d principal_point, Vector2d focal_length, float distortion[]);
+    void prepare_camera_data();
 };
 }
 

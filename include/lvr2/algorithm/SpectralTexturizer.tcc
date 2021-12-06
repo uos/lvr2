@@ -57,10 +57,6 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
             texture.m_data[(sizeX * y + x) * 3 + 2] = 0;
 
             Vector3d point = Vector3d(currentPos[0],currentPos[1],currentPos[2]);
-            // TODO: This needs to be replaced with h5 Data (needs to be implemented!!!)
-            Vector2d principal_point = Vector2d(-0.01985554, 0.0);
-            Vector2d focal_length = Vector2d(1,1);
-            float distortions[3] = {-0.15504703, -0.14184141, 0.0};
 
             // get uv_coord and floor it
             Vector2d uv_coord = point_to_panorama_coord(point, principal_point, focal_length, distortions);
@@ -87,10 +83,34 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
 template<typename BaseVecT>
 void SpectralTexturizer<BaseVecT>::init_image_data(HyperspectralPanoramaChannelPtr panoChannel)
 {
+
+    // TODO: load data from h5 file (after h5 rework is implemented!!)
+    principal_point = Vector2d(-0.01985554, 0.0);
+    focal_length = Vector2d(0,0);
+    camera_fov = Vector2d(0.82903139,6.28318531);
+
+
+    distortions[0] = -0.15504703;
+    distortions[1] = -0.14184141;
+    distortions[2] = 0.0; 
+
+
     spectralPanorama = panoChannel->channel;
 
+    prepare_camera_data();
     this->image_data_initialized = true;
 }
+
+template<typename BaseVecT>
+void SpectralTexturizer<BaseVecT>::prepare_camera_data() {
+    // resolution(y,x)
+    Vector2d resolution = Vector2d(spectralPanorama.rows, spectralPanorama.cols);
+    focal_length[0] = resolution[0] / camera_fov[0] + focal_length[0] * resolution[0];
+    focal_length[1] = resolution[1] / camera_fov[1] + focal_length[1] * resolution[1];
+    principal_point[0] = resolution[0] / 2.0 + principal_point[0] * resolution[0];
+    principal_point[1] = resolution[1] / 2.0 + principal_point[1] * resolution[1];
+}
+
 
 template<typename BaseVecT>
 Vector2d SpectralTexturizer<BaseVecT>::point_to_panorama_coord(Vector3d point, Vector2d principal_point, Vector2d focal_length, float distortion[])
@@ -129,13 +149,6 @@ Vector2d SpectralTexturizer<BaseVecT>::point_to_panorama_coord(Vector3d point, V
     phi_distorted += principal_point[0];
 
     out_coord[0] = phi_distorted;
-
-    // adjust out_coord to image size
-    out_coord[1] += M_PI;
-    out_coord[1] = out_coord[1] * (spectralPanorama.cols / (2*M_PI));
-    out_coord[0] += M_PI / 2;
-    out_coord[0] = out_coord[0] * (spectralPanorama.rows / M_PI);
-    // TODO: check if the values are adjusted correctly!!!
 
     return out_coord;
 
