@@ -209,25 +209,49 @@ void loadPartialMeta(ScanProjectPtr sp)
 
 int main(int argc, char** argv)
 {
-    LOG.setLoggerLevel(Logger::DEBUG);
 
-    LOG(Logger::HIGHLIGHT) << "ScanProjects Load Partial" << std::endl;
-    // generate 
+    if(argc > 1)
+    {
+        std::string filename = argv[1];
+        HDF5KernelPtr kernel(new HDF5Kernel(filename));
+        HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
+        HDF5IO hdf5io(kernel, schema);
 
-    LOG(Logger::DEBUG) << "Generating dataset, wait." << std::endl;
-    ScanProjectPtr sp = dummyScanProject();
+        auto sp_loaded = hdf5io.ScanProjectIO::load();
 
-    std::cout << std::endl;
-    LOG(Logger::HIGHLIGHT) << "1. Example: Load datasets partially" << std::endl;
-    LOG.tab();
-    loadPartial(sp);
-    LOG.deltab();
+        // std::vector<size_t> image_ids = {0,0};
+        // CameraImagePtr img = hdf5io.CameraImageIO::load(0, 0, image_ids);
 
-    std::cout << std::endl;
-    LOG(Logger::HIGHLIGHT) << "2. Example: Load meta information partially" << std::endl; 
-    LOG.tab();
-    loadPartialMeta(sp);
-    LOG.deltab();
+        // if(img)
+        // {
+        //     cv::namedWindow("test", cv::WINDOW_NORMAL);
+        //     cv::imshow("test", img->image);
+        //     cv::waitKey(0);
+        // }
+
+    } else {
+
+        LOG.setLoggerLevel(Logger::DEBUG);
+
+        LOG(Logger::HIGHLIGHT) << "ScanProjects Load Partial" << std::endl;
+        // generate 
+
+        LOG(Logger::DEBUG) << "Generating dataset, wait." << std::endl;
+        ScanProjectPtr sp = dummyScanProject();
+
+        std::cout << std::endl;
+        LOG(Logger::HIGHLIGHT) << "1. Example: Load datasets partially" << std::endl;
+        LOG.tab();
+        loadPartial(sp);
+        LOG.deltab();
+
+        std::cout << std::endl;
+        LOG(Logger::HIGHLIGHT) << "2. Example: Load meta information partially" << std::endl; 
+        LOG.tab();
+        loadPartialMeta(sp);
+        LOG.deltab();
+    }
+
 
     //// Further comments:
     

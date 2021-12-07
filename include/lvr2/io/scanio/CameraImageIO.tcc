@@ -76,6 +76,7 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
         {
             return ret;
         }
+
         CameraImagePtr loaded(new CameraImage);
         if(YAML::convert<CameraImage>::decode(meta, *loaded) )
         {
@@ -89,7 +90,7 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
     } else {
         ret.reset(new CameraImage);
     }
-    
+
     // loading
     // should data be loaded ?
     boost::optional<cv::Mat> opt_img = m_imageIO->loadImage(*d.dataRoot, *d.data);

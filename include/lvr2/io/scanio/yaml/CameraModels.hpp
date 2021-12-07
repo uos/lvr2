@@ -71,7 +71,6 @@ struct convert<lvr2::PinholeModel>
             return false;
         }
 
-        
         // Old
         // model.cx = node["c"][0].as<double>();
         // model.cy = node["c"][1].as<double>();
@@ -79,14 +78,21 @@ struct convert<lvr2::PinholeModel>
         // model.fy = node["f"][1].as<double>();
 
         // New
-        Eigen::Matrix3d M = node["intrinsics"].as<Eigen::Matrix3d>();
-        model.fx = M(0,0);
-        model.fy = M(1,1);
-        model.cx = M(0,2);
-        model.cy = M(1,2);
-
-        model.width = node["resolution"][0].as<unsigned int>();
-        model.height = node["resolution"][1].as<unsigned int>();
+        if(node["intrinsics"])
+        {
+            Eigen::Matrix3d M = node["intrinsics"].as<Eigen::Matrix3d>();
+            model.fx = M(0,0);
+            model.fy = M(1,1);
+            model.cx = M(0,2);
+            model.cy = M(1,2);
+        }
+        
+        if(node["resolution"])
+        {
+            model.width = node["resolution"][0].as<unsigned int>();
+            model.height = node["resolution"][1].as<unsigned int>();
+        }
+        
 
         if(node["distortion_model"])
         {

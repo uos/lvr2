@@ -69,6 +69,7 @@ CameraPtr CameraIO<FeatureBase>::load(
         YAML::Node meta;
         if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
+            std::cout << meta << std::endl;
             return ret;
         }
         ret = std::make_shared<Camera>(meta.as<Camera>());
