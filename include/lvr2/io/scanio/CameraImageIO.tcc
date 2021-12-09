@@ -91,8 +91,10 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
         ret.reset(new CameraImage);
     }
 
-    // loading data
-    std::function<cv::Mat()> loader = [this,d]() {
+    // should we load the data here?
+    // we could pass the loader as link to the storage instead of the data now
+    std::function<cv::Mat()> image_loader = [this,d]()
+    {
         cv::Mat ret;
         boost::optional<cv::Mat> opt_img = this->m_imageIO->loadImage(*d.dataRoot, *d.data);
         if(opt_img)
@@ -102,10 +104,7 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
         return ret;
     };
 
-    // should we load the data here?
-    // we could pass the loader as link to the storage instead of the data now
-    ret->image = loader();
-    // ret->image.loader = loader;
+    ret->image = image_loader();
 
     return ret;
 }

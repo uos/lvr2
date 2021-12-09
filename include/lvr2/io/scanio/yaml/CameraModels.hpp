@@ -39,7 +39,7 @@ struct convert<lvr2::PinholeModel>
         M(0,2) = model.cx;
         M(1,2) = model.cy;
 
-        node["intrinsics"] = M;
+        node["intrinsic"] = M;
 
         // Optional?
         node["resolution"] = Load("[]");
@@ -54,7 +54,6 @@ struct convert<lvr2::PinholeModel>
         {
             node["distortion_coefficients"].push_back(model.distortionCoefficients[i]);
         }
-        
 
         return node;
     }
@@ -78,9 +77,9 @@ struct convert<lvr2::PinholeModel>
         // model.fy = node["f"][1].as<double>();
 
         // New
-        if(node["intrinsics"])
+        if(node["intrinsic"])
         {
-            Eigen::Matrix3d M = node["intrinsics"].as<Eigen::Matrix3d>();
+            Eigen::Matrix3d M = node["intrinsic"].as<Eigen::Matrix3d>();
             model.fx = M(0,0);
             model.fy = M(1,1);
             model.cx = M(0,2);
@@ -92,7 +91,6 @@ struct convert<lvr2::PinholeModel>
             model.width = node["resolution"][0].as<unsigned int>();
             model.height = node["resolution"][1].as<unsigned int>();
         }
-        
 
         if(node["distortion_model"])
         {
