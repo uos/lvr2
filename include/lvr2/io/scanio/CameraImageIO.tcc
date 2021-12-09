@@ -104,6 +104,7 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
         return ret;
     };
 
+    // TODO: add this function to the struct
     ret->image = image_loader();
 
     return ret;

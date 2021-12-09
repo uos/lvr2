@@ -314,8 +314,8 @@ ScanPtr ScanIO<FeatureBase>::load(
     }   
 
     // add reduced version
-    std::function<PointBufferPtr(ReductionAlgorithmPtr)> points_loader_reduced = [ret](ReductionAlgorithmPtr red) {
-        PointBufferPtr points = ret->points_loader();
+    std::function<PointBufferPtr(ReductionAlgorithmPtr)> points_loader_reduced = [points_loader](ReductionAlgorithmPtr red) {
+        PointBufferPtr points = points_loader();
 
         if(points)
         {
@@ -327,6 +327,7 @@ ScanPtr ScanIO<FeatureBase>::load(
     };
 
     // load data here?
+    // TODO: add points_loader and points_loader_reduced to struct instead
     ret->points = points_loader();
 
     return ret;
