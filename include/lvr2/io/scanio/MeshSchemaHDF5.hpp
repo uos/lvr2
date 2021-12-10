@@ -1,0 +1,33 @@
+#pragma once
+
+#include "lvr2/io/scanio/MeshSchema.hpp"
+
+namespace lvr2
+{
+
+class MeshSchemaHDF5 : public MeshSchema
+{
+    public:
+    MeshSchemaHDF5() = default;
+
+    virtual ~MeshSchemaHDF5() = default;
+
+    virtual Description mesh(std::string name) const;
+
+    virtual Description vertices(std::string name) const;
+
+    virtual Description vertexChannel(std::string mesh_name, std::string channel_name) const;
+
+    virtual Description surface(std::string name, size_t surface_index) const;
+
+    virtual Description surfaceIndices(std::string name, size_t surface_index) const;
+
+    virtual Description textureCoordinates(std::string name, size_t surface_index) const;
+
+    virtual Description material(std::string name, size_t material_index) const;
+
+    virtual Description texture(std::string name, size_t material_index, std::string layer_name) const;
+};
+
+
+} // namespace lvr2
