@@ -4,9 +4,9 @@
 #include <iomanip>
 #include <boost/optional/optional_io.hpp>
 
-#include <lvr2/io/scanio/MeshSchema.hpp>
-#include <lvr2/io/scanio/MeshSchemaDirectory.hpp>
-#include <lvr2/io/scanio/MeshSchemaHDF5.hpp>
+#include <lvr2/io/meshio/MeshSchema.hpp>
+#include <lvr2/io/meshio/MeshSchemaDirectory.hpp>
+#include <lvr2/io/meshio/MeshSchemaHDF5.hpp>
 #include <lvr2/util/Timestamp.hpp>
 
 

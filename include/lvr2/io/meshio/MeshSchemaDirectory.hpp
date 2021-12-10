@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lvr2/io/scanio/MeshSchema.hpp"
+#include "lvr2/io/meshio/MeshSchema.hpp"
 
 namespace lvr2
 {

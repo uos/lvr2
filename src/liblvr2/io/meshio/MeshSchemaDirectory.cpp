@@ -1,4 +1,4 @@
-#include "lvr2/io/scanio/MeshSchemaDirectory.hpp"
+#include "lvr2/io/meshio/MeshSchemaDirectory.hpp"
 #include <iomanip>
 
 namespace lvr2

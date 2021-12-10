@@ -1,4 +1,4 @@
-#include "lvr2/io/scanio/MeshSchemaHDF5.hpp"
+#include "lvr2/io/meshio/MeshSchemaHDF5.hpp"
 #include <iomanip>
 
 namespace lvr2
