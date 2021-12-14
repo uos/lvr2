@@ -27,4 +27,7 @@ public:
     virtual Description texture(std::string name, size_t material_index, std::string layer_name) const = 0;
 
 };
+
+using MeshSchemaPtr = std::shared_ptr<MeshSchema>;
+
 } // namespace lvr2
