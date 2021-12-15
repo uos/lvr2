@@ -27,7 +27,20 @@ void CameraImageIO<FeatureBase>::save(
 
 
     // save data
+
+    const bool data_loaded_before = imgPtr->loaded();
+
+    if(!data_loaded_before)
+    {
+        imgPtr->load();
+    }
+
     m_imageIO->save(*d.dataRoot, *d.data, imgPtr->image);
+
+    if(!data_loaded_before)
+    {
+        imgPtr->release();
+    }
 
     // save meta
     if(d.meta)

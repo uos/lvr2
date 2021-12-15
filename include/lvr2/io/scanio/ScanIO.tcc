@@ -21,6 +21,13 @@ void ScanIO<FeatureBase>::save(
         return;
     }
 
+    const bool data_loaded_before = scanPtr->loaded();
+
+    if(!data_loaded_before)
+    {
+        scanPtr->load();
+    }
+
     // std::cout << "ScanIO - save data " << scanPosNo << " " << sensorNo << " " << scanNo << std::endl;
     //// DATA
     if(scanPtr->points)
@@ -118,6 +125,11 @@ void ScanIO<FeatureBase>::save(
 
             // std::cout << "END channels" << std::endl;
         }
+    }
+
+    if(!data_loaded_before)
+    {
+        scanPtr->release();
     }
 
     // std::cout << "save SCAN META" << std::endl;

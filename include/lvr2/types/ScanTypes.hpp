@@ -301,12 +301,10 @@ struct Scan : SensorDataEntity, Transformable, BoundedOptional
         }
     }
 
-    void unload()
+    void release()
     {
         points.reset();
     }
-
-    
 
 };
 
@@ -344,7 +342,7 @@ struct CameraImage : SensorDataEntity, Transformable
         }
     }
 
-    void unload()
+    void release()
     {
         if(loaded())
         {

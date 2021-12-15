@@ -221,9 +221,7 @@ int main(int argc, char** argv)
         auto sp_loaded = hdf5io.ScanProjectIO::load();
         std::cout << timestamp << "Done." << std::endl;
 
-
-
-        ReductionAlgorithmPtr red(new FixedSizeReductionAlgorithm(1000));
+        
 
         if(sp_loaded)
         {
@@ -236,12 +234,14 @@ int main(int argc, char** argv)
                 scan->load();
                 std::cout << timestamp << "Done." << std::endl;
                 std::cout << *scan->points << std::endl;
+                scan->release();
 
-                scan->unload();
+                ReductionAlgorithmPtr red(new FixedSizeReductionAlgorithm(1000));
                 std::cout << timestamp << "Load " << scan->numPoints << " points reduced" << std::endl;
                 scan->load(red);
                 std::cout << timestamp << "Done." << std::endl;
                 std::cout << *scan->points << std::endl;
+                scan->release();
             }
 
             // Get Camera 0 of Scan position 0
