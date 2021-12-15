@@ -7,6 +7,8 @@
 #include "lvr2/types/CameraModels.hpp"
 #include "lvr2/types/Variant.hpp"
 
+#include "lvr2/registration/ReductionAlgorithm.hpp"
+
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
 #include <string_view>
@@ -18,6 +20,8 @@
 #include <string>
 
 #include <boost/variant.hpp>
+
+
 
 namespace lvr2
 {
@@ -253,22 +257,6 @@ struct Scan : SensorDataEntity, Transformable, BoundedOptional
     // model of the scan
     SphericalModelOptional           model;
 
-    // /// Min horizontal scan angle
-    // double                           thetaMin;
-
-    // /// Max horizontal scan angle
-    // double                           thetaMax;
-
-    // /// Min vertical scan angle
-    // double                           phiMin;
-
-    // /// Max vertical scan angle
-    // double                           phiMax;
-
-    // /// Horizontal resolution of used laser scanner
-    // double                           hResolution;
-
-    // /// Vertical resolution of used laser scanner
     // double                           vResolution;
 
     /// Start timestamp 
@@ -287,6 +275,39 @@ struct Scan : SensorDataEntity, Transformable, BoundedOptional
 
     /// Point buffer containing the scan points
     PointBufferPtr                   points;
+
+    /// Loader
+    std::function<PointBufferPtr()>  points_loader;
+    std::function<PointBufferPtr(ReductionAlgorithmPtr)> points_loader_lazy;
+
+    bool loaded() const
+    {
+        return points ? true : false;
+    }
+
+    void load()
+    {
+        if(!loaded())
+        {
+            points = points_loader();
+        }
+    }
+
+    void load(ReductionAlgorithmPtr red)
+    {
+        if(!loaded())
+        {
+            points = points_loader_lazy(red);
+        }
+    }
+
+    void unload()
+    {
+        points.reset();
+    }
+
+    
+
 };
 
 /*****************************************************************************
@@ -306,6 +327,30 @@ struct CameraImage : SensorDataEntity, Transformable
 
     /// OpenCV representation
     cv::Mat                         image;
+
+    /// Loader
+    std::function<cv::Mat()>        image_loader;
+
+    bool loaded() const
+    {
+        return !image.empty();
+    }
+
+    void load()
+    {
+        if(!loaded())
+        {
+            image = image_loader();
+        }
+    }
+
+    void unload()
+    {
+        if(loaded())
+        {
+            image.release();
+        }
+    }
 
     /// Timestamp 
     double                          timestamp;

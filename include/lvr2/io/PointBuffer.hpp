@@ -126,6 +126,17 @@ public:
     /// Makes a clone
     PointBuffer clone() const;
 
+    template<typename V>
+    PointBuffer manipulate(V visitor)
+    {
+        PointBuffer cm;
+        for(auto vchannel: *this)
+        {
+            cm.insert({vchannel.first, boost::apply_visitor(visitor, vchannel.second)});
+        }
+        return cm;
+    }
+
 };
 
 using PointBufferPtr = std::shared_ptr<PointBuffer>;

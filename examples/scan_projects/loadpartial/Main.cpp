@@ -217,17 +217,57 @@ int main(int argc, char** argv)
         HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
         HDF5IO hdf5io(kernel, schema);
 
+        std::cout << timestamp << "Load ScanProject" << std::endl;
         auto sp_loaded = hdf5io.ScanProjectIO::load();
+        std::cout << timestamp << "Done." << std::endl;
 
-        // std::vector<size_t> image_ids = {0,0};
-        // CameraImagePtr img = hdf5io.CameraImageIO::load(0, 0, image_ids);
 
-        // if(img)
-        // {
-        //     cv::namedWindow("test", cv::WINDOW_NORMAL);
-        //     cv::imshow("test", img->image);
-        //     cv::waitKey(0);
-        // }
+
+        ReductionAlgorithmPtr red(new FixedSizeReductionAlgorithm(1000));
+
+        if(sp_loaded)
+        {
+            // Get Scan 0 of Lidar 0 of Scan Position 0
+            ScanPtr scan = sp_loaded->positions[0]->lidars[0]->scans[0];
+        
+            if(scan)
+            {
+                std::cout << timestamp << "Load " << scan->numPoints << " points completely" << std::endl;
+                scan->load();
+                std::cout << timestamp << "Done." << std::endl;
+                std::cout << *scan->points << std::endl;
+
+                scan->unload();
+                std::cout << timestamp << "Load " << scan->numPoints << " points reduced" << std::endl;
+                scan->load(red);
+                std::cout << timestamp << "Done." << std::endl;
+                std::cout << *scan->points << std::endl;
+            }
+
+            // Get Camera 0 of Scan position 0
+            CameraPtr cam = sp_loaded->positions[0]->cameras[0];
+
+            // Get Image 0 of Group 0
+            if(cam->images[0].is_type<CameraImageGroupPtr>() )
+            {
+                CameraImageGroupPtr group;
+                group <<= cam->images[0];
+                CameraImagePtr img;
+                img <<= group->images[0];
+
+                if(img)
+                {
+                    std::cout << timestamp << "Load image completely" << std::endl;
+                    img->image = img->image_loader();
+                    std::cout << timestamp << "Done." << std::endl;
+
+                    cv::namedWindow("image", cv::WINDOW_NORMAL);
+                    cv::imshow("image", img->image);
+                    cv::waitKey(0);
+                }
+            }
+        }
+        
 
     } else {
 
