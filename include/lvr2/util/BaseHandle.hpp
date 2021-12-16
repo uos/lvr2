@@ -30,12 +30,17 @@
  *
  *  @date 02.06.2017
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ *  @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
 #ifndef LVR2_UTIL_BASEHANDLE_H_
 #define LVR2_UTIL_BASEHANDLE_H_
 
 #include <boost/optional.hpp>
+#include <limits>
+
+#include "lvr2/geometry/pmp/SurfaceMesh.h"
+#include "lvr2/util/Panic.hpp"
 
 namespace lvr2
 {
@@ -50,22 +55,7 @@ namespace lvr2
  * Internally, the handle is just an index. How those indices are used is
  * determined by the thing creating handles (e.g. the mesh implementation).
  */
-template<typename IdxT=uint32_t >
-class BaseHandle
-{
-public:
-    explicit BaseHandle(IdxT idx);
-
-    IdxT idx() const;
-    void setIdx(IdxT idx);
-
-    bool operator==(const BaseHandle& other) const;
-    bool operator!=(const BaseHandle& other) const;
-    bool operator<(const BaseHandle& other) const;
-
-protected:
-    IdxT m_idx;
-};
+using BaseHandle = pmp::Handle;
 
 /**
  * @brief Base class for optional handles (handles that can be "null" or
@@ -75,35 +65,47 @@ protected:
  * class uses a special index value to store the "None" value. This saves
  * memory.
  */
-template <typename IdxT, typename NonOptionalT>
-class BaseOptionalHandle
+template <typename NonOptionalT = BaseHandle>
+class BaseOptionalHandle : public BaseHandle
 {
+    pmp::IndexType idx() const = delete;
+
 public:
-    BaseOptionalHandle();
-    BaseOptionalHandle(BaseHandle<IdxT> handle);
-    BaseOptionalHandle(boost::optional<BaseHandle<IdxT>> handle);
-    explicit BaseOptionalHandle(IdxT idx);
+    using BaseHandle::BaseHandle;
+    BaseOptionalHandle()
+        : BaseHandle()
+    {}
+    BaseOptionalHandle(NonOptionalT src)
+        : BaseHandle(src)
+    {}
+    BaseOptionalHandle(boost::optional<BaseHandle> handle)
+        : BaseHandle(handle ? handle->idx() : std::numeric_limits<pmp::IndexType>::max())
+    {}
 
-    explicit operator bool() const;
+    explicit operator bool() const
+    {
+        return is_valid();
+    }
 
-    bool operator!() const;
-
-    bool operator==(const BaseOptionalHandle& other) const;
-    bool operator!=(const BaseOptionalHandle& other) const;
+    bool operator!() const
+    {
+        return !is_valid();
+    }
 
     /**
      * @brief Extracts the handle. If `this` doesn't hold a handle (is "None"),
      *        this method panics.
      */
-    NonOptionalT unwrap() const;
-    void setIdx(IdxT idx);
-
-private:
-    IdxT m_idx;
+    NonOptionalT unwrap() const
+    {
+        if (!is_valid())
+        {
+            panic("Tried to unwrap invalid handle!");
+        }
+        return NonOptionalT(BaseHandle::idx());
+    }
 };
 
 } // namespace lvr2
-
-#include "lvr2/util/BaseHandle.tcc"
 
 #endif /* LVR2_UTIL_BASEHANDLE_H_ */
