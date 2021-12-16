@@ -6,6 +6,7 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "Matrix.hpp"
+#include "lvr2/io/scanio/yaml/Util.hpp"
 
 namespace YAML {  
 
@@ -21,6 +22,7 @@ struct convert<lvr2::LabelInstance>
 {
     static Node encode(const lvr2::LabelInstance& instance) {
         Node node;
+        node["entity"] = lvr2::LabelInstance::entity;
         node["type"] = lvr2::LabelInstance::type;
         node["name"] = instance.instanceName;
         node["color"] = Load("[]");
@@ -31,8 +33,12 @@ struct convert<lvr2::LabelInstance>
     }
 
     static bool decode(const Node& node, lvr2::LabelInstance& instance) {
-        
-        if(node["type"].as<std::string>() != lvr2::LabelInstance::type) 
+
+        // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "label_instance", 
+            lvr2::LabelInstance::entity, 
+            lvr2::LabelInstance::type))
         {
             return false;
         }
@@ -51,6 +57,7 @@ struct convert<lvr2::LabelClass>
 {
     static Node encode(const lvr2::LabelClass& labelClass) {
         Node node;
+        node["entity"] = lvr2::LabelInstance::entity;
         node["type"] = lvr2::LabelInstance::type;
         node["name"] = labelClass.className;
 
@@ -59,11 +66,14 @@ struct convert<lvr2::LabelClass>
 
     static bool decode(const Node& node, lvr2::LabelClass& labelClass) {
         
-        if(node["type"].as<std::string>() != lvr2::LabelClass::type) 
+        // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "label_class", 
+            lvr2::LabelClass::entity, 
+            lvr2::LabelClass::type))
         {
             return false;
         }
-
         labelClass.className = node["name"].as<string>();
         return true;
     }

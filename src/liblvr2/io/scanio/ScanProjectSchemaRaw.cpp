@@ -119,19 +119,23 @@ Description ScanProjectSchemaRaw::scanChannel(
     return d;
 }
 
-// std::string ScanProjectSchemaRaw::scanChannelInv(
-//     std::string d_data) const
-// {
-
-// }
-
 Description ScanProjectSchemaRaw::cameraImage(
     const size_t& scanPosNo,
     const size_t& camNo,
-    const size_t& cameraImageNo) const
+    const std::vector<size_t>& cameraImageNos) const
 {
+    if(cameraImageNos.size() == 0)
+    {
+        std::cout << "ERROR: cameraImageNos size = 0" << std::endl;   
+    }
+
     std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << cameraImageNo;
+    sstr << std::setfill('0') << std::setw(8) << cameraImageNos[0];
+
+    for(size_t i=1; i<cameraImageNos.size(); i++)
+    {
+        sstr << "/" << std::setfill('0') << std::setw(8) << cameraImageNos[i];
+    }
 
     Description dp = camera(scanPosNo, camNo);
 
@@ -143,6 +147,14 @@ Description ScanProjectSchemaRaw::cameraImage(
     d.meta = "meta.yaml";
 
     return d;
+}
+
+Description ScanProjectSchemaRaw::cameraImageGroup(
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const std::vector<size_t>& cameraImageGroupNos) const
+{
+    return cameraImage(scanPosNo, camNo, cameraImageGroupNos);
 }
 
 Description ScanProjectSchemaRaw::hyperspectralCamera(
@@ -182,6 +194,21 @@ Description ScanProjectSchemaRaw::hyperspectralPanorama(
     return d;
 }
 
+Description ScanProjectSchemaRaw::hyperspectralPanoramaPreview(
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const size_t& panoNo) const
+{
+    Description dp = hyperspectralPanorama(scanPosNo, camNo, panoNo);
+    Description d;
+
+    d.dataRoot = *dp.dataRoot;
+    d.metaRoot = d.dataRoot;
+    d.data = "preview.png";
+
+    return d;
+}
+
 Description ScanProjectSchemaRaw::hyperspectralPanoramaChannel(
     const size_t& scanPosNo,
     const size_t& camNo,
@@ -195,11 +222,11 @@ Description ScanProjectSchemaRaw::hyperspectralPanoramaChannel(
     Description dp = hyperspectralPanorama(scanPosNo, camNo, panoNo);
 
     Description d;
-    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
-    d.data = "image.png";
+    d.dataRoot = *dp.dataRoot + "/data";
+    d.data = sstr.str() + ".png";
     
     d.metaRoot = d.dataRoot;
-    d.meta = "meta.yaml";
+    d.meta = boost::none;
     
     return d;
 }

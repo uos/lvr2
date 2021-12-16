@@ -5,7 +5,9 @@
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include "lvr2/io/scanio/yaml/Util.hpp"
 
+#include "AABB.hpp"
 #include "Matrix.hpp"
 
 namespace YAML {  
@@ -27,30 +29,32 @@ struct convert<lvr2::ScanProject>
     static Node encode(const lvr2::ScanProject& scanProj) {
         Node node;
         
+        node["entity"] = lvr2::ScanProject::entity;
         node["type"] = lvr2::ScanProject::type;
-        // node["kind"] = boost::typeindex::type_id<lvr2::ScanProject>().pretty_name();
         node["crs"] =  scanProj.crs;
         node["coordinate_system"] = scanProj.coordinateSystem;
         node["unit"] = scanProj.unit;
         node["transformation"] = scanProj.transformation;
         node["name"] = scanProj.name;
 
+        if(scanProj.boundingBox)
+        {
+            node["aabb"] = *scanProj.boundingBox;
+        }
+
         return node;
     }
 
     static bool decode(const Node& node, lvr2::ScanProject& scanProj) 
     {
-        // if(!node["type"])
-        // {
-        //     std::cout << "[YAML::convert<ScanProject> - decode] 'type' Tag not found." << std::endl;
-        //     return false;
-        // }
-
-        // if(node["type"].as<std::string>() != lvr2::ScanProject::type)
-        // {
-        //     std::cout << "[YAML::convert<ScanProject> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::ScanProject::type << std::endl;
-        //     return false;
-        // }
+        // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "scan_project", 
+            lvr2::ScanProject::entity, 
+            lvr2::ScanProject::type))
+        {
+            return false;
+        }
 
         if(node["transformation"])
         {
@@ -72,14 +76,18 @@ struct convert<lvr2::ScanProject>
         if(node["unit"])
         {
             scanProj.unit = node["unit"].as<std::string>();
-        } else {
-            scanProj.unit = "m";
         }
               
         if(node["name"])
         {
             scanProj.name = node["name"].as<std::string>();
         }
+
+        if(node["aabb"])
+        {
+            scanProj.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
+        }
+
     
         return true;
     }

@@ -129,6 +129,8 @@ ScanPositionPtr ScanPositionIO<FeatureBase>::load(
     size_t camNo = 0;
     while(true)
     {
+        // std::cout << "[ScanPositionIO - load] Load Camera " << camNo << std::endl;
+
         CameraPtr cam = m_cameraIO->load(scanPosNo, camNo);
         if(cam)
         {

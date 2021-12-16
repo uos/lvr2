@@ -8,6 +8,7 @@
 
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include "lvr2/io/scanio/yaml/Util.hpp"
 
 #include "Matrix.hpp"
 
@@ -22,12 +23,14 @@ struct convert<lvr2::CameraImage>
     static Node encode(const lvr2::CameraImage& cameraImage) { 
         Node node;
 
+        node["entity"] = lvr2::CameraImage::entity;
         node["type"] = lvr2::CameraImage::type;
-        node["kind"] = lvr2::CameraImage::kind;
         node["transformation"] = cameraImage.transformation;
-        node["extrinsics_estimation"] = cameraImage.extrinsicsEstimation;
-        node["width"] = cameraImage.image.cols;
-        node["height"] = cameraImage.image.rows;
+        node["pose_estimation"] = cameraImage.extrinsicsEstimation;
+        node["resolution"] = Load("[]");
+        node["resolution"].push_back(cameraImage.image.cols); // X
+        node["resolution"].push_back(cameraImage.image.rows); // Y
+        node["resolution"].push_back(cameraImage.image.channels()); // Z: number of channels
         node["timestamp"] = cameraImage.timestamp;
 
         return node;
@@ -35,21 +38,14 @@ struct convert<lvr2::CameraImage>
 
     static bool decode(const Node& node, lvr2::CameraImage& scanImage) 
     {
-        if(!node["type"])
+       // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndTypeSilent(node, 
+            "camera_image", 
+            lvr2::CameraImage::entity, 
+            lvr2::CameraImage::type))
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<CameraImage> - decode] "
-                     << "CameraImage meta has no 'type'" << std::endl; 
             return false;
         }
-
-        if(node["type"].as<std::string>() != lvr2::CameraImage::type)
-        {
-            std::cout << lvr2::timestamp << "[YAML::convert<CameraImage> - decode] " 
-                        << "Nodes type '" << node["type"].as<std::string>()
-                        << "' is not '" <<  lvr2::CameraImage::type << "'" << std::endl; 
-            return false;
-        } 
-        
     
         // Get fields
         if(node["transformation"])
@@ -61,10 +57,10 @@ struct convert<lvr2::CameraImage>
             scanImage.transformation = lvr2::Transformd::Identity();
         }
 
-        if(node["extrinsics_estimation"])
+        if(node["pose_estimation"])
         {
             // NAN check?
-            scanImage.extrinsicsEstimation = node["extrinsics_estimation"].as<lvr2::Extrinsicsd>();
+            scanImage.extrinsicsEstimation = node["pose_estimation"].as<lvr2::Extrinsicsd>();
         }
         else
         {
@@ -79,6 +75,46 @@ struct convert<lvr2::CameraImage>
         {
             // TODO: how to handle no timestamp?
             scanImage.timestamp = -1.0;
+        }
+
+        return true;
+    }
+
+};
+
+
+template<>
+struct convert<lvr2::CameraImageGroup> 
+{
+    static Node encode(const lvr2::CameraImageGroup& cameraImageGroup) { 
+        Node node;
+
+        node["entity"] = lvr2::CameraImageGroup::entity;
+        node["type"] = lvr2::CameraImageGroup::type;
+        node["transformation"] = cameraImageGroup.transformation;
+
+        return node;
+    }
+
+    static bool decode(const Node& node, lvr2::CameraImageGroup& cameraImageGroup) 
+    {
+       // Check if 'entity' and 'type' Tags are valid
+        if (!YAML_UTIL::ValidateEntityAndTypeSilent(node, 
+            "camera_images", 
+            lvr2::CameraImageGroup::entity, 
+            lvr2::CameraImageGroup::type))
+        {
+            return false;
+        }
+    
+        // Get fields
+        if(node["transformation"])
+        {
+            cameraImageGroup.transformation = node["transformation"].as<lvr2::Transformd>();
+        }
+        else
+        {
+            cameraImageGroup.transformation = lvr2::Transformd::Identity();
         }
 
         return true;

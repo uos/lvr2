@@ -543,10 +543,11 @@ void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
                 size_t numPoints = scan->points->numPoints();
                 floatArr pts = scan->points->getPointArray();
 
+                scan->boundingBox = BoundingBox<BaseVector<float> >();
                 for (size_t i = 0; i < numPoints; i++)
                 {
                     BaseVector<float> pt(pts[i*3 + 0], pts[i*3 + 1], pts[i*3 + 2]);
-                    scan->boundingBox.expand(pt);
+                    scan->boundingBox->expand(pt);
                 }
 
                 Transformd pose_estimate = Transformd::Identity();

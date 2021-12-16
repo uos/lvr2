@@ -9,12 +9,14 @@ void LIDARIO<FeatureBase>::save(
     auto Dgen = m_featureBase->m_description;
     Description d = Dgen->lidar(scanPosNo, lidarNo);
 
+    // std::cout << "LIDARIO - save data " << std::endl;
     // Save data
     for(size_t scanNo = 0; scanNo < lidar->scans.size(); scanNo++)
     {
         m_scanIO->save(scanPosNo, lidarNo, scanNo, lidar->scans[scanNo]);
     }
 
+    // std::cout << "LIDARIO - save meta " << std::endl;
     // Save meta
     if(d.meta)
     {
@@ -91,7 +93,7 @@ LIDARPtr LIDARIO<FeatureBase>::load(
         }
         scanNo++;
     }
-    
+    return ret;
 }
 
 

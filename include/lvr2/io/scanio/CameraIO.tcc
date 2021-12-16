@@ -17,13 +17,21 @@ void CameraIO<FeatureBase>::save(
         return;
     }
 
-    // std::cout << "[CameraIO - save] Description:" << std::endl;
-    // std::cout << d << std::endl;
-
     // writing data
     for(size_t scanImageNo = 0; scanImageNo < cameraPtr->images.size(); scanImageNo++)
     {
-        m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, cameraPtr->images[scanImageNo]);
+        if(cameraPtr->images[scanImageNo].is_type<CameraImagePtr>())
+        {
+            // Image
+            CameraImagePtr img;
+            img <<= cameraPtr->images[scanImageNo];
+            m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, img);
+        } else {
+            // Group
+            CameraImageGroupPtr group;
+            group <<= cameraPtr->images[scanImageNo];
+            m_cameraImageGroupIO->save(scanPosNo, scanCamNo, scanImageNo, group);
+        }
     }
 
     // writing meta
@@ -56,12 +64,12 @@ CameraPtr CameraIO<FeatureBase>::load(
     }
 
     /// META
-
     if(d.meta)
     {
         YAML::Node meta;
         if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
+            std::cout << meta << std::endl;
             return ret;
         }
         ret = std::make_shared<Camera>(meta.as<Camera>());
@@ -69,18 +77,24 @@ CameraPtr CameraIO<FeatureBase>::load(
         ret.reset(new Camera);
     }
 
-
     /// DATA
-
     size_t scanImageNo = 0;
     while(true)
     {
-        CameraImagePtr scanImage = m_cameraImageIO->load(scanPosNo, scanCamNo, scanImageNo);
-        if(scanImage)
+        CameraImagePtr image = m_cameraImageIO->load(scanPosNo, scanCamNo, scanImageNo);
+        
+        if(image)
         {
-            ret->images.push_back(scanImage);
+            ret->images.push_back(image);
         } else {
-            break;
+            CameraImageGroupPtr group = m_cameraImageGroupIO->load(scanPosNo, scanCamNo, scanImageNo);
+
+            if(group)
+            {
+                ret->images.push_back(group);
+            } else {
+                break;
+            }
         }
         scanImageNo++;
     }

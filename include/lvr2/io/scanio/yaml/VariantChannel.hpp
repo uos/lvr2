@@ -9,6 +9,7 @@
 
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/types/MultiChannelMap.hpp"
+#include "lvr2/io/scanio/yaml/Util.hpp"
 
 
 namespace YAML {
@@ -23,14 +24,14 @@ struct convert<lvr2::MultiChannel>
         
         Node node;
 
-        std::string kind = "basic";
+        std::string type = "array";
 
-        node["type"] = "Channel";
+        node["entity"] = "channel";
         node["data_type"] = vchannel.typeName();
 
-        node["kind"] = kind;
+        node["type"] = type;
         
-        if(kind == "custom")
+        if(type == "custom")
         {
             // for custom 
             node["stored_type"] = lvr2::Channel<unsigned char>::typeName();
@@ -45,6 +46,16 @@ struct convert<lvr2::MultiChannel>
 
     static bool decode(const Node& node, lvr2::MultiChannel& vchannel) 
     {
+        // Check if 'entity' and 'type' Tags are valid
+        // TODO: Channels dont have entity and type fields,
+        // if that changes this needs to be changed too
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "multi_channel", 
+            "channel", 
+            "array"))
+        {
+            return false;
+        }
         // if(!node["type"])
         // {
         //     std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] "
@@ -52,20 +63,20 @@ struct convert<lvr2::MultiChannel>
         //     return false;
         // }
 
-        if(node["entity"] && node["entity"].as<std::string>() != "Channel")
-        {
-            std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] " 
-                        << "Nodes type '" << node["entity"].as<std::string>()
-                        << "' is not 'Channel'" << std::endl; 
-        }
+        // if(node["entity"] && node["entity"].as<std::string>() != "Channel")
+        // {
+        //     std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] " 
+        //                 << "Nodes type '" << node["entity"].as<std::string>()
+        //                 << "' is not 'Channel'" << std::endl; 
+        // }
 
-        if(node["type"] && node["type"].as<std::string>() != "Channel")
-        {
-            std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] " 
-                        << "Nodes type '" << node["type"].as<std::string>()
-                        << "' is not 'Channel'" << std::endl; 
-            return false;
-        }
+        // if(node["type"] && node["type"].as<std::string>() != "Channel")
+        // {
+        //     std::cout << lvr2::timestamp << "[YAML::convert<MultiChannel> - decode] " 
+        //                 << "Nodes type '" << node["type"].as<std::string>()
+        //                 << "' is not 'Channel'" << std::endl; 
+        //     return false;
+        // }
 
         // if(node["data_type"].as<std::string>() != vchannel.typeName())
         // {

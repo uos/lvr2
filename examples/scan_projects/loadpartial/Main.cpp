@@ -209,25 +209,89 @@ void loadPartialMeta(ScanProjectPtr sp)
 
 int main(int argc, char** argv)
 {
-    LOG.setLoggerLevel(Logger::DEBUG);
 
-    LOG(Logger::HIGHLIGHT) << "ScanProjects Load Partial" << std::endl;
-    // generate 
+    if(argc > 1)
+    {
+        std::string filename = argv[1];
+        HDF5KernelPtr kernel(new HDF5Kernel(filename));
+        HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
+        HDF5IO hdf5io(kernel, schema);
 
-    LOG(Logger::DEBUG) << "Generating dataset, wait." << std::endl;
-    ScanProjectPtr sp = dummyScanProject();
+        std::cout << timestamp << "Load ScanProject" << std::endl;
+        auto sp_loaded = hdf5io.ScanProjectIO::load();
+        std::cout << timestamp << "Done." << std::endl;
 
-    std::cout << std::endl;
-    LOG(Logger::HIGHLIGHT) << "1. Example: Load datasets partially" << std::endl;
-    LOG.tab();
-    loadPartial(sp);
-    LOG.deltab();
+        
 
-    std::cout << std::endl;
-    LOG(Logger::HIGHLIGHT) << "2. Example: Load meta information partially" << std::endl; 
-    LOG.tab();
-    loadPartialMeta(sp);
-    LOG.deltab();
+        if(sp_loaded)
+        {
+            // Get Scan 0 of Lidar 0 of Scan Position 0
+            ScanPtr scan = sp_loaded->positions[0]->lidars[0]->scans[0];
+        
+            if(scan)
+            {
+                std::cout << timestamp << "Load " << scan->numPoints << " points completely" << std::endl;
+                scan->load();
+                std::cout << timestamp << "Done." << std::endl;
+                std::cout << *scan->points << std::endl;
+                scan->release();
+
+                ReductionAlgorithmPtr red(new FixedSizeReductionAlgorithm(1000));
+                std::cout << timestamp << "Load " << scan->numPoints << " points reduced" << std::endl;
+                scan->load(red);
+                std::cout << timestamp << "Done." << std::endl;
+                std::cout << *scan->points << std::endl;
+                scan->release();
+            }
+
+            // Get Camera 0 of Scan position 0
+            CameraPtr cam = sp_loaded->positions[0]->cameras[0];
+
+            // Get Image 0 of Group 0
+            if(cam->images[0].is_type<CameraImageGroupPtr>() )
+            {
+                CameraImageGroupPtr group;
+                group <<= cam->images[0];
+                CameraImagePtr img;
+                img <<= group->images[0];
+
+                if(img)
+                {
+                    std::cout << timestamp << "Load image completely" << std::endl;
+                    img->image = img->image_loader();
+                    std::cout << timestamp << "Done." << std::endl;
+
+                    cv::namedWindow("image", cv::WINDOW_NORMAL);
+                    cv::imshow("image", img->image);
+                    cv::waitKey(0);
+                }
+            }
+        }
+        
+
+    } else {
+
+        LOG.setLoggerLevel(Logger::DEBUG);
+
+        LOG(Logger::HIGHLIGHT) << "ScanProjects Load Partial" << std::endl;
+        // generate 
+
+        LOG(Logger::DEBUG) << "Generating dataset, wait." << std::endl;
+        ScanProjectPtr sp = dummyScanProject();
+
+        std::cout << std::endl;
+        LOG(Logger::HIGHLIGHT) << "1. Example: Load datasets partially" << std::endl;
+        LOG.tab();
+        loadPartial(sp);
+        LOG.deltab();
+
+        std::cout << std::endl;
+        LOG(Logger::HIGHLIGHT) << "2. Example: Load meta information partially" << std::endl; 
+        LOG.tab();
+        loadPartialMeta(sp);
+        LOG.deltab();
+    }
+
 
     //// Further comments:
     

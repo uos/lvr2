@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <lvr2/types/Variant.hpp>
 
 // LOG << "hello world" << std::endl;
 #include "../helper/include/Logging.hpp"
@@ -22,7 +23,7 @@
 #include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
 
 using namespace lvr2;
-// using this is only temporary until old IO is deleted
+// // using this is only temporary until old IO is deleted
 using lvr2::scanio::HDF5IO;
 
 void directoryIOExample(ScanProjectPtr sp)
@@ -90,6 +91,7 @@ void hdf5IOExample(ScanProjectPtr sp)
     LOG(Logger::DEBUG) << "- You can use 'HDFCompass' to view the entire hdf5 structure" << std::endl;
 }
 
+
 int main(int argc, char** argv)
 {
     LOG.setLoggerLevel(Logger::DEBUG);
@@ -98,7 +100,7 @@ int main(int argc, char** argv)
     // generate 
 
     LOG(Logger::DEBUG) << "Generating dataset, wait." << std::endl;
-    ScanProjectPtr sp = dummyScanProject();
+    ScanProjectPtr sp = dummyScanProjectMinimal();
 
     LOG(Logger::INFO) << "1. Example: DirectoryIO" << std::endl;
     LOG.tab();

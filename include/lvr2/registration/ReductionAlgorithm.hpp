@@ -29,6 +29,7 @@
 #define LVR2_REDUCTION_ALGORITHM_HPP
 
 #include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/algorithm/BaseBufferManipulators.hpp"
 
 #include <memory>
 
@@ -101,25 +102,24 @@ public:
      virtual PointBufferPtr getReducedPoints()
      {
           // return original point buffer if it has fewer/equal number of points
-          if(m_numPoints >= m_pointBuffer->numPoints())
+          
+          auto it = m_pointBuffer->find("points");
+
+          if(it != m_pointBuffer->end())
           {
-               return m_pointBuffer;
+               // points exist
+               auto vchannel = m_pointBuffer->at("points");
+               if(vchannel.numElements() > m_numPoints)
+               {
+                    PointBuffer reduced_points = m_pointBuffer->manipulate( 
+                         manipulators::Slice(0, m_numPoints) 
+                    );
+
+                    return std::make_shared<PointBuffer>(reduced_points);
+               }
           }
-          size_t idx;
-          PointBufferPtr buff(new PointBuffer);
-          floatArr pointArray(new float[m_numPoints * 3]);
-          for(size_t i = 0; i < m_numPoints; i++) {
-               // num_dimension * i * space between points
-               idx = 3 * i * (m_pointBuffer->numPoints() / m_numPoints);
-               // x
-               pointArray[i*3] = m_pointBuffer->getPointArray()[idx];
-               // y
-               pointArray[i*3+1] = m_pointBuffer->getPointArray()[idx+1];
-               // z
-               pointArray[i*3+2] = m_pointBuffer->getPointArray()[idx+2];
-          }
-          buff->setPointArray(pointArray, m_numPoints);
-          return buff;
+
+          return m_pointBuffer;
      }
 private:
      size_t     m_numPoints;

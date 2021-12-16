@@ -71,13 +71,16 @@ MeshBufferPtr DirectoryKernel::loadMeshBuffer(
     const std::string &group,
     const std::string container) const
 {
+    MeshBufferPtr ret;
+
     boost::filesystem::path p = getAbsolutePath(group, container);
     std::cout << timestamp << "Directory Kernel::loadMeshBuffer(): " << p.string() << std::endl;
     ModelPtr model = ModelFactory::readModel(p.string());
     if (model)
     {
-        return model->m_mesh;
+        ret =  model->m_mesh;
     }
+    return ret;
 }
 
 PointBufferPtr DirectoryKernel::loadPointBuffer(
@@ -111,7 +114,7 @@ boost::optional<cv::Mat> DirectoryKernel::loadImage(
     else
     {
         opt = boost::none;
-        std::cout << "Loading image failed!" << std::endl;
+        std::cout << "[DirectoryKernel - loadImage] Loading image at " << group << " - " << container << " failed!" << std::endl;
     }
     return opt;
 }

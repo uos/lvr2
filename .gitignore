@@ -58,6 +58,8 @@ debian/lvr2-*/
 .settings
 .project
 .cproject
+# Clang cache
+.cache
 
 # RiVLib lib path
 ext/rivlib/

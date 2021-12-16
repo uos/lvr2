@@ -5,6 +5,9 @@
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/CameraModels.hpp"
+#include "lvr2/types/Variant.hpp"
+
+#include "lvr2/registration/ReductionAlgorithm.hpp"
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
@@ -16,20 +19,24 @@
 #include <vector>
 #include <string>
 
+#include <boost/variant.hpp>
+
+
+
 namespace lvr2
 {
 
 // Forward Declarations 
 
 // Groups
-struct ScanProjectType;
-struct ScanPositionType;
+struct ScanProjectEntity;
+struct ScanPositionEntity;
 
-struct SensorType;
+struct SensorEntity;
 // Abstract Sensor?
-using SensorPtr = std::shared_ptr<SensorType>;
-struct SensorDataType;
-using SensorDataPtr = std::shared_ptr<SensorDataType>;
+using SensorPtr = std::shared_ptr<SensorEntity>;
+struct SensorDataEntity;
+using SensorDataPtr = std::shared_ptr<SensorDataEntity>;
 
 // Container types
 struct ScanProject;
@@ -43,6 +50,7 @@ struct HyperspectralCamera;
 struct Scan; // LIDAR has N Scans
 
 struct CameraImage; // Camera has N CameraImages
+struct CameraImageGroup;
 
 // shared ptr typedefs
 using ScanProjectPtr = std::shared_ptr<ScanProject>;
@@ -54,28 +62,35 @@ using HyperspectralCameraPtr = std::shared_ptr<HyperspectralCamera>;
 
 using ScanPtr = std::shared_ptr<Scan>;
 using CameraImagePtr = std::shared_ptr<CameraImage>;
+using CameraImageGroupPtr = std::shared_ptr<CameraImageGroup>;
+// either one image or one image group
+using CameraImageOrGroup = Variant<CameraImagePtr, CameraImageGroupPtr>;
 
-struct ScanProjectType {
-    static constexpr char           type[] = "ScanProject";
+struct ScanProjectEntity {
+    static constexpr char           entity[] = "scan_project";
 };
 
-struct ScanPositionType {
-    static constexpr char           type[] = "ScanPosition";
+struct ScanPositionEntity {
+    static constexpr char           entity[] = "scan_position";
 };
 
-struct SensorType {
-    static constexpr char           type[] = "Sensor";
+struct SensorEntity {
+    static constexpr char           entity[] = "sensor";
     // Optional name of this sensor: e.g. RieglVZ-400i
     std::string name;
     // Fixed transformation to upper frame (ScanPosition)
 };
 
-struct SensorDataType {
-    static constexpr char           type[] = "SensorData";
+struct SensorDataEntity {
+    static constexpr char           entity[] = "sensor_data";
 };
 
-struct LabelDataType {
-    static constexpr char           type[] = "LabelData";
+struct SensorDataGroupEntity {
+    static constexpr char           entity[] = "sensor_data_group";
+};
+
+struct LabelDataEntity {
+    static constexpr char           entity[] = "label_data";
 };
 
 
@@ -88,6 +103,16 @@ struct Transformable {
     Transformd transformation = Transformd::Identity();
 };
 
+// using AABB = BoundingBox<BaseVector<float> >;
+
+struct Bounded {
+    BoundingBox<BaseVector<float> > boundingBox;
+};
+
+struct BoundedOptional {
+    boost::optional<BoundingBox<BaseVector<float> > > boundingBox;
+};
+
 /*****************************************************************************
  * @brief   Struct to represent a scan project consisting
  *          of a set of scan position. Each scan position 
@@ -97,9 +122,11 @@ struct Transformable {
  *          the corresponding data is not available for this 
  *          scan position number.
  *****************************************************************************/
-struct ScanProject : ScanProjectType, Transformable
+struct ScanProject : ScanProjectEntity, Transformable, BoundedOptional
 {
     //// META BEGIN
+    // the type of this struct
+    static constexpr char type[] = "scan_project";
 
     // the project coordinate system. This is specified as a combination of a geo-coordinate system (as EPSG reference)
     std::string                     crs;
@@ -116,7 +143,7 @@ struct ScanProject : ScanProjectType, Transformable
     /// system. It is assumed that all coordinate systems 
     /// loaded with this software are right-handed
     std::string                     coordinateSystem = "right-handed";
-    std::string                     unit = "m";
+    std::string                     unit = "meter";
 
     //// META END
 
@@ -128,10 +155,11 @@ struct ScanProject : ScanProjectType, Transformable
     //// HIERARCHY END
 };
 
-struct ScanPosition : ScanPositionType, Transformable
+struct ScanPosition : ScanPositionEntity, Transformable, BoundedOptional
 {
     /// META BEGIN
-
+    // the type of this struct
+    static constexpr char type[] = "scan_position";
     /// Estimated pose relativ to upper coordinate system
     Transformd                         poseEstimation = Transformd::Identity();
 
@@ -167,11 +195,12 @@ struct ScanPosition : ScanPositionType, Transformable
  ****************************************************************************/
 
 // Flag Struct
-struct LIDAR : SensorType, Transformable
+struct LIDAR : SensorEntity, Transformable, BoundedOptional
 {
     //// META BEGIN
     // TODO: check boost type_info
-    static constexpr char           kind[] = "LIDAR";
+    static constexpr char               type[] = "lidar";
+    SphericalModel                      model;
     //// META END
 
     //// HIERARCHY BEGIN
@@ -188,27 +217,29 @@ struct LIDAR : SensorType, Transformable
  *          (extrinsic matrix) with respect to the laser scanner
  * 
  ****************************************************************************/
-struct Camera : SensorType, Transformable
+struct Camera : SensorEntity, Transformable
 {
     //// META BEGIN
     // TODO: check boost::typeindex<>::pretty_name (contains lvr2 as namespace: "lvr2::Camera")
-    static constexpr char             kind[] = "Camera";
+    static constexpr char             type[] = "camera";
     /// Pinhole camera model
     PinholeModel                      model;
     //// META END
     //// HIERARCHY BEGIN
     /// Pointer to a set of images taken at a scan position
-    std::vector<CameraImagePtr>       images;
+    // std::vector<CameraImagePtr>       images;
+    std::vector<CameraImageOrGroup>     images;
+    
     //// HIERARCHY END
 };
 
 /*****************************************************************************
  * @brief Struct to represent a scan within a scan project
  ****************************************************************************/
-struct Scan : SensorDataType, Transformable
+struct Scan : SensorDataEntity, Transformable, BoundedOptional
 {
     //// META BEGIN
-    static constexpr char           kind[] = "Scan";
+    static constexpr char           type[] = "scan";
 
     /// Dynamic transformation of this sensor data
     /// Example 1:
@@ -222,23 +253,11 @@ struct Scan : SensorDataType, Transformable
     /// Pose estimation of this scan in project coordinates
     Transformd                       poseEstimation = Transformd::Identity();
 
-    /// Min horizontal scan angle
-    double                           thetaMin;
 
-    /// Max horizontal scan angle
-    double                           thetaMax;
+    // model of the scan
+    SphericalModelOptional           model;
 
-    /// Min vertical scan angle
-    double                           phiMin;
-
-    /// Max vertical scan angle
-    double                           phiMax;
-
-    /// Horizontal resolution of used laser scanner
-    double                           hResolution;
-
-    /// Vertical resolution of used laser scanner
-    double                           vResolution;
+    // double                           vResolution;
 
     /// Start timestamp 
     double                           startTime;
@@ -250,12 +269,43 @@ struct Scan : SensorDataType, Transformable
     size_t                           numPoints;
 
     /// Axis aligned bounding box of this scan
-    BoundingBox<BaseVector<float> >  boundingBox;
+    // BoundingBox<BaseVector<float> >  boundingBox;
 
     //// META END
 
     /// Point buffer containing the scan points
     PointBufferPtr                   points;
+
+    /// Loader
+    std::function<PointBufferPtr()>  points_loader;
+    std::function<PointBufferPtr(ReductionAlgorithmPtr)> points_loader_lazy;
+
+    bool loaded() const
+    {
+        return points ? true : false;
+    }
+
+    void load()
+    {
+        if(!loaded())
+        {
+            points = points_loader();
+        }
+    }
+
+    void load(ReductionAlgorithmPtr red)
+    {
+        if(!loaded())
+        {
+            points = points_loader_lazy(red);
+        }
+    }
+
+    void release()
+    {
+        points.reset();
+    }
+
 };
 
 /*****************************************************************************
@@ -264,9 +314,9 @@ struct Scan : SensorDataType, Transformable
  * 
  *****************************************************************************/
 
-struct CameraImage : SensorDataType, Transformable
+struct CameraImage : SensorDataEntity, Transformable
 {
-    static constexpr char           kind[] = "CameraImage";
+    static constexpr char           type[] = "camera_image";
     /// Extrinsics estimate
     Extrinsicsd                     extrinsicsEstimation = Extrinsicsd::Identity();
 
@@ -276,11 +326,42 @@ struct CameraImage : SensorDataType, Transformable
     /// OpenCV representation
     cv::Mat                         image;
 
+    /// Loader
+    std::function<cv::Mat()>        image_loader;
+
+    bool loaded() const
+    {
+        return !image.empty();
+    }
+
+    void load()
+    {
+        if(!loaded())
+        {
+            image = image_loader();
+        }
+    }
+
+    void release()
+    {
+        if(loaded())
+        {
+            image.release();
+        }
+    }
+
     /// Timestamp 
     double                          timestamp;
 
 };
 
+struct CameraImageGroup : SensorDataGroupEntity, Transformable
+{
+    static constexpr char           type[] = "camera_images";
+
+    // Data
+    std::vector<CameraImageOrGroup>        images;
+};
 
 
 /*****************************************************************************
@@ -290,9 +371,9 @@ struct CameraImage : SensorDataType, Transformable
  *****************************************************************************/
 
 // Not a lvr channel
-struct HyperspectralPanoramaChannel : SensorDataType
+struct HyperspectralPanoramaChannel : SensorDataEntity
 {
-    static constexpr char           kind[]  =  "HyperspectralPanoramaChannel";
+    static constexpr char           type[]  =  "spectral_panorama_channel";
 
     /// Timestamp 
     double                          timestamp;
@@ -316,18 +397,33 @@ using HyperspectralPanoramaChannelOptional = boost::optional<HyperspectralPanora
  * 
  *****************************************************************************/
 
-struct HyperspectralPanorama : SensorDataType, Transformable
+struct HyperspectralPanorama : SensorDataEntity, Transformable
 {
     /// Sensor type flag
-    static constexpr char                          kind[] = "SpectralImage";
-
-    /// preview generated from channels (optional: check if preview.empty())
-    // cv::Mat                                        preview;
+    static constexpr char                          type[] = "spectral_panorama";
 
     /// minimum and maximum wavelength
-    double                                         wavelength[2];
+    // double                                         wavelength[2];
     /// resolution in x and y
-    size_t                                         resolution[2];
+
+    unsigned int                                   framesResolution[3];
+    unsigned int                                   bandAxis;
+    unsigned int                                   frameAxis;
+    std::string                                    dataType;
+
+
+    unsigned int                                   panoramaResolution[3];
+
+
+    /// Camera model (optional): overrides the HyperspectralCamera model
+    CylindricalModelOptional                       model;
+
+
+    // DATA
+
+    /// preview generated from channels (optional: check if preview.empty())
+    cv::Mat                                        preview;
+    std::string                                    previewType;
 
     /// OpenCV representation
     std::vector<HyperspectralPanoramaChannelPtr>   channels;
@@ -348,16 +444,13 @@ using HyperspectralPanoramaOptional = boost::optional<HyperspectralPanorama>;
 //  * 
 //  *****************************************************************************/
 
-struct HyperspectralCamera : SensorType, Transformable
+struct HyperspectralCamera : SensorEntity, Transformable
 {
     /// Sensor type flag
-    static constexpr char                    kind[] = "SpectralCamera";
+    static constexpr char                    type[] = "spectral_camera";
 
     /// Camera model
     CylindricalModel                         model;
-
-    /// Extrinsics estimate
-    Extrinsicsd                              extrinsicsEstimation = Extrinsicsd::Identity();
 
     /// OpenCV representation
     std::vector<HyperspectralPanoramaPtr>    panoramas;
@@ -369,13 +462,13 @@ struct HyperspectralCamera : SensorType, Transformable
  * 
  *****************************************************************************/
 
-struct Waveform : SensorDataType
+struct Waveform : SensorDataEntity
 {
     Waveform() : maxBucketSize(0),// amplitude(), deviation(), reflectance(), backgroundRadiation(),
     waveformSamples(){};
     ~Waveform(){};
     /// Sensor type flag
-    static constexpr char                    kind[] = "Waveform";
+    static constexpr char                    type[] = "waveform";
 
     /// Max Bucket Size of Waveform samples
     int                                      maxBucketSize;
@@ -404,9 +497,9 @@ using WaveformPtr = std::shared_ptr<Waveform>;
 /*****************************************************************************
  * @brief   Struct to represent a LabelInstance
  *****************************************************************************/
-struct LabelInstance : LabelDataType
+struct LabelInstance : LabelDataEntity
 {
-    static constexpr char           kind[] = "LabelInstance";
+    static constexpr char           type[] = "label_instance";
     std::string instanceName;
 
     Vector3i color;
@@ -417,9 +510,9 @@ using LabelInstancePtr = std::shared_ptr<LabelInstance>;
 /*****************************************************************************
  * @brief   Struct to represent a LabelClass
  *****************************************************************************/
-struct LabelClass :LabelDataType
+struct LabelClass :LabelDataEntity
 {
-    static constexpr char           kind[] = "LabelClass";
+    static constexpr char           type[] = "label_class";
     std::string className;
 
     std::vector<LabelInstancePtr> instances;
@@ -428,9 +521,9 @@ using LabelClassPtr = std::shared_ptr<LabelClass>;
 /*****************************************************************************
  * @brief   Struct to represent a LabelRoot
  *****************************************************************************/
-struct LabelRoot : LabelDataType
+struct LabelRoot : LabelDataEntity
 {
-    static constexpr char           kind[] = "LabelRoot";
+    static constexpr char           type[] = "label_root";
     PointBufferPtr points;
     WaveformPtr waveform;
 

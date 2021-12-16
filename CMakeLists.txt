@@ -457,28 +457,28 @@ add_definitions(${LVR2_DEFINITIONS})
 ###############################################################################
 option(WITH_KINFU "Compile LVR Kinfu" OFF)
 
-###############################################################################
-# Check and set CUDA host compiler flags.          
-###############################################################################
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
-              AND CUDA_VERSION VERSION_GREATER 8
-              AND CUDA_VERSION VERSION_LESS 12)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8 )
-        message(STATUS "******************************************************************")
-        message(STATUS "* Your gcc version needs to be lower than 8 to compile the LVR   *")
-        message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
-        message(STATUS "* g++-8. Please ensure that g++ 8 is installed on your system.   *")
-        message(STATUS "******************************************************************")
-        set(CUDA_HOST_COMPILER "g++-8" CACHE STRING "" FORCE)
-        endif()
+
+
+
+# ###############################################################################
+# # Check and set CUDA host compiler flags.          
+# ###############################################################################
+if(CUDA_FOUND)
+
+include(max_cuda_gcc_version)
+max_cuda_gcc_version(CUDA_VERSION MAX_CUDA_GCC_VERSION)
+message(STATUS "MAX_CUDA_GCC_VERSION: ${MAX_CUDA_GCC_VERSION}")
+
+if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER ${MAX_CUDA_GCC_VERSION} )
+  message(STATUS "******************************************************************")
+  message(STATUS "* Your gcc version needs to be lower than or equal ${MAX_CUDA_GCC_VERSION} to compile the LVR   *")
+  message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
+  message(STATUS "* g++-${MAX_CUDA_GCC_VERSION}. Please ensure that g++-${MAX_CUDA_GCC_VERSION} is installed on your system.   *")
+  message(STATUS "******************************************************************")
+  set(CUDA_HOST_COMPILER "g++-${MAX_CUDA_GCC_VERSION}" CACHE STRING "" FORCE)
 endif()
 
-if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
-    message(STATUS "Building LVR KinFu.")
-    add_subdirectory(ext/kintinuous)
-    include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
-endif()
-
+endif(CUDA_FOUND)
 
 ###############################################################################
 # APPLE OMP OPTION FOR CLANG-OMP
@@ -655,7 +655,7 @@ add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_chunking)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 add_subdirectory(src/tools/lvr2_ground_level_extractor)
-add_subdirectory(src/tools/lvr2_hdf5_convert_old)
+# add_subdirectory(src/tools/lvr2_hdf5_convert_old)
 add_subdirectory(src/tools/lvr2_hdf5_inspect)
 
 # does not compile after ScanTypes changes
