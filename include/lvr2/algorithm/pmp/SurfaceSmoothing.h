@@ -22,6 +22,7 @@ public:
     //! Perform \p iters iterations of explicit Laplacian smoothing.
     //! Decide whether to use uniform Laplacian or cotan Laplacian (default: cotan).
     void explicit_smoothing(unsigned int iters = 10,
+                            float smooth_factor = 0.5,
                             bool use_uniform_laplace = false);
 
     //! \brief Perform implicit Laplacian smoothing.

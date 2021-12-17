@@ -32,6 +32,12 @@
  *  @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
+#include "lvr2/algorithm/pmp/SurfaceHoleFilling.h"
+#include "lvr2/algorithm/pmp/SurfaceSmoothing.h"
+#include "lvr2/util/Progress.hpp"
+
+#include <unordered_set>
+
 namespace lvr2
 {
 
@@ -253,5 +259,194 @@ MeshHandleIteratorPtr<EdgeHandle> PmpMesh<BaseVecT>::edgesEnd() const
         std::make_unique<pmp::SurfaceMesh::EdgeIterator>(m_mesh.edges_end())
     );
 }
+
+template<typename BaseVecT>
+VertexSplitResult PmpMesh<BaseVecT>::splitVertex(VertexHandle vH)
+{
+    pmp::Halfedge longest_heH;
+    double longest_length = -1;
+    for (const pmp::Halfedge heH : m_mesh.halfedges(vH))
+    {
+        double length = m_mesh.edge_length(m_mesh.edge(heH));
+        if (length > longest_length)
+        {
+            longest_heH = heH;
+            longest_length = length;
+        }
+    }
+    if (longest_length < 0)
+    {
+        panic("Called splitVertex on vertex with no edges");
+    }
+
+    EdgeSplitResult splitResult = this->splitEdge(m_mesh.edge(longest_heH));
+    VertexSplitResult result(splitResult.edgeCenter);
+    result.addedFaces.assign(splitResult.addedFaces.begin(), splitResult.addedFaces.end());
+
+    // TODO: Check and fix Delaunay
+
+    return result;
+}
+
+template<typename BaseVecT>
+EdgeSplitResult PmpMesh<BaseVecT>::splitEdge(EdgeHandle eH)
+{
+    pmp::Point mid_point = (m_mesh.position(m_mesh.vertex(eH, 0)) + m_mesh.position(m_mesh.vertex(eH, 1))) / 2;
+    pmp::Vertex mid_vH = m_mesh.add_vertex(mid_point);
+    pmp::Halfedge new_heH = m_mesh.split(eH, mid_vH);
+
+    EdgeSplitResult result(mid_vH);
+    pmp::Face f = m_mesh.face(new_heH);
+    if (f.is_valid())
+    {
+        result.addedFaces.push_back(f);
+    }
+    f = m_mesh.face(m_mesh.opposite_halfedge(new_heH));
+    if (f.is_valid())
+    {
+        result.addedFaces.push_back(f);
+    }
+    return result;
+}
+
+template<typename BaseVecT>
+void PmpMesh<BaseVecT>::fillHoles(size_t maxSize)
+{
+    DenseEdgeMap<bool> visitedEdges(m_mesh.edges_size(), false);
+    std::vector<pmp::Halfedge> contours;
+
+    for (const auto& eH : m_mesh.edges())
+    {
+        if (visitedEdges[eH])
+        {
+            continue;
+        }
+        visitedEdges[eH] = true;
+
+        //get halfedges of edge
+        auto heH = m_mesh.halfedge(eH, 0);
+        if (!m_mesh.is_boundary(heH))
+        {
+            // if this HalfEdge has a face, check the other one
+            heH = m_mesh.opposite_halfedge(heH);
+            if (!m_mesh.is_boundary(heH))
+            {
+                // both sides have a face => not a boundary
+                continue;
+            }
+        }
+
+        // find contour vertices by running around the non-existing face (the hole) -> using .next
+        auto start = heH;
+        int count = 0;
+        do
+        {
+            visitedEdges[m_mesh.edge(heH)] = true;
+            heH = m_mesh.next_halfedge(heH);
+            count++;
+        } while (heH != start);
+
+        // we only check maxSize after completing the above loop to ensure all edges are marked as visited
+        if (count > maxSize || count < 3)
+        {
+            continue;
+        }
+
+        // as the contour fulfills all the necessary criteria, we add it to the list of contours which will be filled
+        contours.push_back(heH);
+    }
+
+    cout << timestamp << "Found " << contours.size() << " holes" << endl;
+
+    string comment = timestamp.getElapsedTime() + "Removing holes";
+    ProgressBar progress(contours.size(), comment);
+
+    pmp::SurfaceHoleFilling holeFilling(m_mesh);
+    size_t filled = 0;
+
+    // now fill the found holes
+    for (pmp::Halfedge contour_heH : contours)
+    {
+        ++progress; // advance the progress bar
+        try
+        {
+            holeFilling.fill_hole(contour_heH);
+            filled++;
+        }
+        catch(pmp::InvalidInputException exception)
+        {
+            if (strcmp(exception.what(), "SurfaceHoleFilling: Non-manifold hole.") == 0)
+            {
+                // ignore non-manifold holes
+                continue;
+            }
+            else
+            {
+                std::cerr << "Error while filling hole: " << exception.what() << std::endl;
+            }
+        }
+    }
+    cout << endl;
+    cout << "Filled " << filled << " / " << contours.size() << " holes" << endl;
+}
+
+template<typename BaseVecT>
+void PmpMesh<BaseVecT>::laplacianSmoothing(float smoothFactor, int numSmooths, bool useUniformLaplace)
+{
+    pmp::SurfaceSmoothing smoothing(m_mesh);
+    smoothing.explicit_smoothing(numSmooths, smoothFactor, useUniformLaplace);
+}
+
+template<typename BaseVecT>
+vector<VertexHandle> PmpMesh<BaseVecT>::findCommonNeigbours(VertexHandle vH1, VertexHandle vH2)
+{
+    std::unordered_set<pmp::Vertex> vH2nb;
+    for (pmp::Vertex nb : m_mesh.vertices(vH2))
+    {
+        vH2nb.insert(nb);
+    }
+    vector<VertexHandle> result;
+    for (pmp::Vertex nb : m_mesh.vertices(vH1))
+    {
+        if (vH2nb.find(nb) != vH2nb.end())
+        {
+            result.push_back(nb);
+        }
+    }
+    return result;
+}
+
+template<typename BaseVecT>
+void PmpMesh<BaseVecT>::splitVertex(EdgeHandle eH, VertexHandle vH, pmp::Point pos1, pmp::Point pos2)
+{
+    m_mesh.position(vH) = pos1;
+    m_mesh.split(eH, pos2);
+}
+
+template<typename BaseVecT>
+std::pair<BaseVecT, float> PmpMesh<BaseVecT>::triCircumCenter(FaceHandle faceH)
+{
+    //get vertices of the face
+    auto v_iter = m_mesh.vertices(faceH);
+    BaseVecT a = p2b(m_mesh.position(*v_iter));
+    BaseVecT b = p2b(m_mesh.position(*(++v_iter)));
+    BaseVecT c = p2b(m_mesh.position(*(++v_iter)));
+
+    BaseVecT circumCenter = a;
+
+    float radius;
+
+    BaseVecT cMinusA = c-a;
+    BaseVecT bMinusA = b-a;
+
+    BaseVecT numerator = ( (bMinusA.cross(cMinusA).cross(bMinusA)) * cMinusA.length2()  +  (cMinusA.cross(bMinusA.cross(cMinusA))) * bMinusA.length2() );
+    float denominator = ( 2 * (bMinusA.cross(cMinusA)).length2());
+
+    circumCenter += numerator / denominator;
+    radius = (circumCenter-a).length();
+
+    return std::make_pair(circumCenter, radius);
+}
+
 
 } // namespace lvr2

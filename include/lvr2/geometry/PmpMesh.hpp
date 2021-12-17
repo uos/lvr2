@@ -50,11 +50,11 @@ namespace lvr2
 template<typename BaseVecT>
 class PmpMesh : public BaseMesh<BaseVecT>
 {
-    pmp::Point b2p(const BaseVecT& p) const
+    static inline pmp::Point b2p(const BaseVecT& p)
     {
-        return pmp::Point(p.x, p.y, p.z);
+        return pmp::Point(p[0], p[1], p[2]);
     }
-    BaseVecT p2b(const pmp::Point& p) const
+    static inline BaseVecT p2b(const pmp::Point& p)
     {
         return BaseVecT(p[0], p[1], p[2]);
     }
@@ -122,7 +122,20 @@ public:
     BaseVecT getVertexPosition(VertexHandle handle) const override
     { return p2b(m_mesh.position(handle)); }
     BaseVecT& getVertexPosition(VertexHandle handle) override
-    { return *(BaseVecT*)&m_mesh.position(handle); }
+    {
+        // The returned reference might be modified by the caller, and those modifications must
+        // be reflected in the original Point. Thus, we return a reference to the internal Point,
+        // while pretending that it is a BaseVecT. This only works if the memory layout is the
+        // same in both types, namely { <ScalarType> x, y, z } or equivalent.
+        if constexpr (sizeof(BaseVecT) == sizeof(pmp::Point) && std::is_same_v<typename BaseVecT::CoordType, pmp::Point::value_type>)
+        {
+            return *(BaseVecT*)&m_mesh.position(handle);
+        }
+        else
+        {
+            panic("getVertexPosition() called for non-standard vertex type!");
+        }
+    }
 
     array<VertexHandle, 3> getVerticesOfFace(FaceHandle handle) const override;
     array<EdgeHandle, 3> getEdgesOfFace(FaceHandle handle) const override;
@@ -151,10 +164,15 @@ public:
     VertexSplitResult splitVertex(VertexHandle vertexToBeSplitH);
     EdgeSplitResult splitEdge(EdgeHandle edgeH);
     void fillHoles(size_t maxSize);
-    void laplacianSmoothing(float smoothFactor, int numSmooths=1);
+    void laplacianSmoothing(float smoothFactor, int numSmooths = 1, bool useUniformLaplace = true);
     vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void splitVertex(EdgeHandle eH, VertexHandle vH, pmp::Point pos1, pmp::Point pos2);
-    std::pair<pmp::Point, float> triCircumCenter(FaceHandle faceH);
+    std::pair<BaseVecT, float> triCircumCenter(FaceHandle faceH);
+
+    pmp::SurfaceMesh& getSurfaceMesh()
+    { return m_mesh; }
+    const pmp::SurfaceMesh& getSurfaceMesh() const
+    { return m_mesh; }
 
 private:
     pmp::SurfaceMesh m_mesh;

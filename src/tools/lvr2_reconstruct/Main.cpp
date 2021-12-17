@@ -363,7 +363,8 @@ int main(int argc, char** argv)
     // Fill small holes if requested
     if(options.getFillHoles())
     {
-        naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+        mesh.fillHoles(options.getFillHoles());
+        // naiveFillSmallHoles(mesh, options.getFillHoles(), false);
     }
 
     // Calculate initial face normals

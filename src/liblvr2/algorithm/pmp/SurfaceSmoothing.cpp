@@ -67,6 +67,7 @@ void SurfaceSmoothing::compute_vertex_weights(bool use_uniform_laplace)
 }
 
 void SurfaceSmoothing::explicit_smoothing(unsigned int iters,
+                                          float smooth_factor,
                                           bool use_uniform_laplace)
 {
     if (!mesh_.n_vertices())
@@ -112,7 +113,7 @@ void SurfaceSmoothing::explicit_smoothing(unsigned int iters,
         // step 2: move each vertex by its (damped) Laplacian
         for (auto v : mesh_.vertices())
         {
-            points[v] += 0.5f * laplace[v];
+            points[v] += smooth_factor * laplace[v];
         }
     }
 
