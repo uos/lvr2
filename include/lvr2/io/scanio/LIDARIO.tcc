@@ -13,6 +13,7 @@ void LIDARIO<FeatureBase>::save(
     // Save data
     for(size_t scanNo = 0; scanNo < lidar->scans.size(); scanNo++)
     {
+        std::cout << "[LIDARIO - save] Save Scan " << scanNo << std::endl;
         m_scanIO->save(scanPosNo, lidarNo, scanNo, lidar->scans[scanNo]);
     }
 

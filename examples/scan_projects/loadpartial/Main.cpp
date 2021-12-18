@@ -221,8 +221,6 @@ int main(int argc, char** argv)
         auto sp_loaded = hdf5io.ScanProjectIO::load();
         std::cout << timestamp << "Done." << std::endl;
 
-        
-
         if(sp_loaded)
         {
             // Get Scan 0 of Lidar 0 of Scan Position 0
@@ -258,16 +256,33 @@ int main(int argc, char** argv)
                 if(img)
                 {
                     std::cout << timestamp << "Load image completely" << std::endl;
-                    img->image = img->image_loader();
+                    img->load();
                     std::cout << timestamp << "Done." << std::endl;
+                    img->release();
 
-                    cv::namedWindow("image", cv::WINDOW_NORMAL);
-                    cv::imshow("image", img->image);
-                    cv::waitKey(0);
+                    // cv::namedWindow("image", cv::WINDOW_NORMAL);
+                    // cv::imshow("image", img->image);
+                    // cv::waitKey(0);
                 }
             }
         }
-        
+
+
+        ScanProjectPtr scan_proj_out(new ScanProject);
+
+        // copy scan project
+        *scan_proj_out = *sp_loaded;
+        // take only first 2 positions
+        scan_proj_out->positions.resize(1);
+        scan_proj_out->positions[0] = sp_loaded->positions[0];
+
+
+        std::string outfile = "test.h5";
+        HDF5KernelPtr kernel2(new HDF5Kernel(outfile));
+        HDF5IO hdf5io_out(kernel2, schema);
+
+        std::cout << "Save Scanproject to " << outfile << std::endl;
+        hdf5io_out.save(sp_loaded);
 
     } else {
 

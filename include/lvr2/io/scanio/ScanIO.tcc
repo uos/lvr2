@@ -34,7 +34,7 @@ void ScanIO<FeatureBase>::save(
     {
         if(d.data)
         { 
-            // std::cout << "Save Channel wise" << std::endl;
+            std::cout << "Save Channel wise" << std::endl;
             m_pclIO->save(*d.dataRoot, *d.data, scanPtr->points);
 
             // save metas
@@ -52,7 +52,7 @@ void ScanIO<FeatureBase>::save(
             }
 
         } else {
-            // std::cout << "Save Partial" << std::endl;
+            std::cout << "Save Partial" << std::endl;
             // a lot of code for the problem of capsulating SOME channels into one PLY
             // there could be other channels that do not fit in this ply
 
@@ -63,7 +63,7 @@ void ScanIO<FeatureBase>::save(
             /// Data (Channel)
             for(auto elem : *scanPtr->points)
             {
-                
+                std::cout << "Save " << elem.first << std::endl;
                 Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
                 boost::filesystem::path proot(*dc.dataRoot);
 
@@ -87,7 +87,7 @@ void ScanIO<FeatureBase>::save(
                     std::string group, dataset;
                     std::tie(group, dataset) = hdf5util::validateGroupDataset(proot.string(), *dc.data);
 
-                    // std::cout << "Save " << elem.first << " to " << group << " - " << dataset << std::endl;
+                    std::cout << "Save " << elem.first << " to " << group << " - " << dataset << std::endl;
 
                     // Data
                     m_vchannel_io->save(group, dataset, elem.second);
@@ -107,7 +107,7 @@ void ScanIO<FeatureBase>::save(
                 m_featureBase->m_kernel->savePointBuffer(group, name, ex_elem.second);
             }
 
-            // std::cout << "Save Channel METAs" << std::endl;
+            std::cout << "Save Channel METAs" << std::endl;
 
             // META
             // save meta for each channel
@@ -123,7 +123,7 @@ void ScanIO<FeatureBase>::save(
                 }
             }
 
-            // std::cout << "END channels" << std::endl;
+            std::cout << "END channels" << std::endl;
         }
     }
 
