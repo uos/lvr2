@@ -217,9 +217,9 @@ int main(int argc, char** argv)
         HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
         HDF5IO hdf5io(kernel, schema);
 
-        std::cout << timestamp << "Load ScanProject" << std::endl;
+        std::cout << timestamp << "1. Load ScanProject no data" << std::endl;
         auto sp_loaded = hdf5io.ScanProjectIO::load();
-        std::cout << timestamp << "Done." << std::endl;
+        std::cout << timestamp << "- Done." << std::endl;
 
         if(sp_loaded)
         {
@@ -228,16 +228,16 @@ int main(int argc, char** argv)
         
             if(scan)
             {
-                std::cout << timestamp << "Load " << scan->numPoints << " points completely" << std::endl;
+                std::cout << timestamp << "- Load " << scan->numPoints << " points completely" << std::endl;
                 scan->load();
-                std::cout << timestamp << "Done." << std::endl;
+                std::cout << timestamp << "- Done." << std::endl;
                 std::cout << *scan->points << std::endl;
                 scan->release();
 
                 ReductionAlgorithmPtr red(new FixedSizeReductionAlgorithm(1000));
-                std::cout << timestamp << "Load " << scan->numPoints << " points reduced" << std::endl;
+                std::cout << timestamp << "- Load " << scan->numPoints << " points reduced" << std::endl;
                 scan->load(red);
-                std::cout << timestamp << "Done." << std::endl;
+                std::cout << timestamp << "- Done." << std::endl;
                 std::cout << *scan->points << std::endl;
                 scan->release();
             }
@@ -255,20 +255,21 @@ int main(int argc, char** argv)
 
                 if(img)
                 {
-                    std::cout << timestamp << "Load image completely" << std::endl;
+                    std::cout << timestamp << "- Load image completely" << std::endl;
                     img->load();
-                    std::cout << timestamp << "Done." << std::endl;
+                    std::cout << timestamp << "- Done." << std::endl;
                     
 
-                    cv::namedWindow("image", cv::WINDOW_NORMAL);
-                    cv::imshow("image", img->image);
-                    cv::waitKey(0);
+                    // cv::namedWindow("image", cv::WINDOW_NORMAL);
+                    // cv::imshow("image", img->image);
+                    // cv::waitKey(0);
 
                     img->release();
                 }
             }
         }
 
+        // 2. Save partial scan project without loading each dataset
 
         ScanProjectPtr scan_proj_out(new ScanProject);
 
@@ -287,8 +288,25 @@ int main(int argc, char** argv)
         HDF5KernelPtr kernel2(new HDF5Kernel(outfile, config));
         HDF5IO hdf5io_out(kernel2, schema);
 
-        std::cout << "Save Scanproject to " << outfile << std::endl;
+        std::cout << timestamp << "2. Save reduced Scanproject to " << outfile << std::endl;
         hdf5io_out.save(scan_proj_out);
+        std::cout << timestamp << "Done." << std::endl;
+
+
+        // 3. 
+
+        std::cout << timestamp << "3. Load reduced ScanProject with data" << std::endl;
+
+        HDF5IO hdf5io_data(kernel2, schema, true);
+
+        ScanProjectPtr scan_proj_in = hdf5io_data.ScanProjectIO::load();
+
+
+        std::cout << timestamp << "Done" << std::endl;
+        std::cout << *scan_proj_in->positions[0]->lidars[0]->scans[0]->points << std::endl;
+
+
+
 
     } else {
 

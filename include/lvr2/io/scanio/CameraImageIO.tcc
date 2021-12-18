@@ -123,6 +123,11 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
     // New:
     ret->image_loader = image_loader;
 
+    if(m_featureBase->m_load_data)
+    {
+        ret->image = image_loader();
+    }
+
     return ret;
 }
 

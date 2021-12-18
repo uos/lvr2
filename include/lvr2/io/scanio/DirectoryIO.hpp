@@ -24,8 +24,8 @@ public:
      * @param kernel 
      * @param schema 
      */
-    DirectoryIO(DirectoryKernelPtr kernel, DirectorySchemaPtr schema) 
-    : DirectoryIOBase(kernel, schema) 
+    DirectoryIO(DirectoryKernelPtr kernel, DirectorySchemaPtr schema, bool load_data = false) 
+    : DirectoryIOBase(kernel, schema, load_data) 
     {}
 };
 

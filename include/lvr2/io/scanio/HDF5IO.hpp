@@ -17,8 +17,8 @@ using HDF5IOBase = FeatureBuild<ScanProjectIO>;
 class HDF5IO : public HDF5IOBase
 {
 public:
-    HDF5IO(HDF5KernelPtr kernel, HDF5SchemaPtr schema)
-    : HDF5IOBase(kernel, schema)
+    HDF5IO(HDF5KernelPtr kernel, HDF5SchemaPtr schema, bool load_data = false)
+    : HDF5IOBase(kernel, schema, load_data)
     { }
 };
 

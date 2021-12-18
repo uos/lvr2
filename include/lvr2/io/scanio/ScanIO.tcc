@@ -347,8 +347,16 @@ ScanPtr ScanIO<FeatureBase>::load(
     // load data here?
     // TODO: add points_loader and points_loader_reduced to struct instead
     // Old:
+
+
     // ret->points = points_loader();
     // New:
+    
+    if(m_featureBase->m_load_data)
+    {
+        ret->points = points_loader();
+    }
+    
     ret->points_loader = points_loader;
     ret->points_loader_lazy = points_loader_reduced;
 
