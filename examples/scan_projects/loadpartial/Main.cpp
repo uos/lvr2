@@ -292,21 +292,15 @@ int main(int argc, char** argv)
         hdf5io_out.save(scan_proj_out);
         std::cout << timestamp << "Done." << std::endl;
 
-
-        // 3. 
-
+        // 3. Load reduced scan project
         std::cout << timestamp << "3. Load reduced ScanProject with data" << std::endl;
 
         HDF5IO hdf5io_data(kernel2, schema, true);
 
         ScanProjectPtr scan_proj_in = hdf5io_data.ScanProjectIO::load();
 
-
         std::cout << timestamp << "Done" << std::endl;
         std::cout << *scan_proj_in->positions[0]->lidars[0]->scans[0]->points << std::endl;
-
-
-
 
     } else {
 
