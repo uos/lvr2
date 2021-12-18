@@ -25,20 +25,20 @@ void ScanPositionIO< FeatureBase>::save(
     // Save all lidar sensors
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
     {
-        std::cout << " [ScanPositionIO]: Writing lidar " << i << std::endl;
+        // std::cout << " [ScanPositionIO]: Writing lidar " << i << std::endl;
         m_lidarIO->save(scanPosNo, i, scanPositionPtr->lidars[i]);
     }
 
-    std::cout << "[ScanPositionIO] LIDARs written. " << std::endl;
+    // std::cout << "[ScanPositionIO] LIDARs written. " << std::endl;
 
     // Save all scan camera sensors
     for(size_t i = 0; i < scanPositionPtr->cameras.size(); i++)
     {
-        std::cout << " [ScanPositionIO]: Writing camera " << i << std::endl;
+        // std::cout << " [ScanPositionIO]: Writing camera " << i << std::endl;
         m_cameraIO->save(scanPosNo, i, scanPositionPtr->cameras[i]);
     }
 
-    std::cout << "[ScanPositionIO] Cameras written. " << std::endl;
+    // std::cout << "[ScanPositionIO] Cameras written. " << std::endl;
     
     // Save all hyperspectral camera sensors
     for(size_t i=0; i < scanPositionPtr->hyperspectral_cameras.size(); i++)
@@ -46,7 +46,7 @@ void ScanPositionIO< FeatureBase>::save(
         m_hyperspectralCameraIO->save(scanPosNo, i, scanPositionPtr->hyperspectral_cameras[i]);
     }
 
-    std::cout << "[ScanPositionIO] Hyper written. " << std::endl;
+    // std::cout << "[ScanPositionIO] Hyper written. " << std::endl;
 
     // std::cout << "[ScanPositionIO - save] Write Meta." << std::endl;
     // Save meta information

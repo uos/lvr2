@@ -258,11 +258,13 @@ int main(int argc, char** argv)
                     std::cout << timestamp << "Load image completely" << std::endl;
                     img->load();
                     std::cout << timestamp << "Done." << std::endl;
-                    img->release();
+                    
 
-                    // cv::namedWindow("image", cv::WINDOW_NORMAL);
-                    // cv::imshow("image", img->image);
-                    // cv::waitKey(0);
+                    cv::namedWindow("image", cv::WINDOW_NORMAL);
+                    cv::imshow("image", img->image);
+                    cv::waitKey(0);
+
+                    img->release();
                 }
             }
         }
@@ -278,11 +280,15 @@ int main(int argc, char** argv)
 
 
         std::string outfile = "test.h5";
-        HDF5KernelPtr kernel2(new HDF5Kernel(outfile));
+        
+        HDF5KernelConfig config;
+        config.compressionLevel = 0;
+
+        HDF5KernelPtr kernel2(new HDF5Kernel(outfile, config));
         HDF5IO hdf5io_out(kernel2, schema);
 
         std::cout << "Save Scanproject to " << outfile << std::endl;
-        hdf5io_out.save(sp_loaded);
+        hdf5io_out.save(scan_proj_out);
 
     } else {
 

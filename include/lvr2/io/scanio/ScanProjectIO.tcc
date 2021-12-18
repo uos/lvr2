@@ -21,7 +21,7 @@ void ScanProjectIO<FeatureBase>::save(
     // Iterate over all positions and save
     for (size_t i = 0; i < scanProject->positions.size(); i++)
     {
-        std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
+        // std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
         m_scanPositionIO->saveScanPosition(i, scanProject->positions[i]);
     }
 

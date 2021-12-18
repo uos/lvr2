@@ -24,7 +24,6 @@ struct convert<lvr2::LIDAR>
         node["name"] = lidar.name;
         node["model"] = lidar.model;
 
-
         if(lidar.boundingBox)
         {
             node["aabb"] = *lidar.boundingBox;
@@ -35,30 +34,15 @@ struct convert<lvr2::LIDAR>
 
     static bool decode(const Node& node, lvr2::LIDAR& lidar) 
     {
-        // Check for entity field
-        if(!node["entity"])
+        if (!YAML_UTIL::ValidateEntityAndType(node, 
+            "lidar", 
+            lvr2::LIDAR::entity, 
+            lvr2::LIDAR::type))
         {
-            std::cout << "[YAML::convert<LIDAR> - decode] 'entity' Tag not found." << std::endl;
-            return false;
-        }
-        if(node["entity"].as<std::string>() != lvr2::LIDAR::entity) 
-        {
-            std::cout << "[YAML::convert<LIDAR> - decode] Try to load " << node["entity"].as<std::string>() << " as " << lvr2::LIDAR::entity << std::endl;
             return false;
         }
 
-        // Check for typ field
-        if(!node["type"])
-        {
-            std::cout << "[YAML::convert<LIDAR> - decode] 'type' Tag not found." << std::endl;
-            return false;
-        }
-        if(node["type"].as<std::string>() != lvr2::LIDAR::type) 
-        {
-            std::cout << "[YAML::convert<LIDAR> - decode] Try to load " << node["type"].as<std::string>() << " as " << lvr2::LIDAR::type << std::endl;
-            return false;
-        }
-
+        // std::cout << "name" << std::endl;
         if(node["transformation"])
         {
             lidar.transformation = node["transformation"].as<lvr2::Transformd>();
@@ -66,20 +50,29 @@ struct convert<lvr2::LIDAR>
             lidar.transformation = lvr2::Transformd::Identity();
         }
 
+        // std::cout << "name" << std::endl;
         if(node["name"])
         {
             lidar.name = node["name"].as<std::string>();
         }
 
+        // std::cout << "model" << std::endl;
         if(node["model"])
         {
             lidar.model = node["model"].as<lvr2::SphericalModel>();
+        } else {
+            // defaults
+            lidar.model.range[0] = 0.0;
+            
         }
 
+        // std::cout << "aabb" << std::endl;
         if(node["aabb"])
         {
             lidar.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
         }
+
+        // std::cout << "return" << std::endl;
 
         return true;
     }

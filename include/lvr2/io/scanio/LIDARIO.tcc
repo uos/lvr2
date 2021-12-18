@@ -13,7 +13,7 @@ void LIDARIO<FeatureBase>::save(
     // Save data
     for(size_t scanNo = 0; scanNo < lidar->scans.size(); scanNo++)
     {
-        std::cout << "[LIDARIO - save] Save Scan " << scanNo << std::endl;
+        // std::cout << "[LIDARIO - save] Save Scan " << scanNo << std::endl;
         m_scanIO->save(scanPosNo, lidarNo, scanNo, lidar->scans[scanNo]);
     }
 
@@ -71,6 +71,7 @@ LIDARPtr LIDARIO<FeatureBase>::load(
         {
             return ret;
         }
+        // std::cout << "[LIDARIO - load] Load Meta " << std::endl;
         ret = std::make_shared<LIDAR>(meta.as<LIDAR>());
     } else {
         // no meta name specified but scan position is there: 

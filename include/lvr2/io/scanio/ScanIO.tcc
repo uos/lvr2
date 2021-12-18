@@ -34,7 +34,7 @@ void ScanIO<FeatureBase>::save(
     {
         if(d.data)
         { 
-            std::cout << "Save Channel wise" << std::endl;
+            // std::cout << "Save Channel wise" << std::endl;
             m_pclIO->save(*d.dataRoot, *d.data, scanPtr->points);
 
             // save metas
@@ -52,7 +52,7 @@ void ScanIO<FeatureBase>::save(
             }
 
         } else {
-            std::cout << "Save Partial" << std::endl;
+            // std::cout << "Save Partial" << std::endl;
             // a lot of code for the problem of capsulating SOME channels into one PLY
             // there could be other channels that do not fit in this ply
 
@@ -63,7 +63,7 @@ void ScanIO<FeatureBase>::save(
             /// Data (Channel)
             for(auto elem : *scanPtr->points)
             {
-                std::cout << "Save " << elem.first << std::endl;
+                // std::cout << "Save " << elem.first << std::endl;
                 Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
                 boost::filesystem::path proot(*dc.dataRoot);
 
@@ -87,7 +87,7 @@ void ScanIO<FeatureBase>::save(
                     std::string group, dataset;
                     std::tie(group, dataset) = hdf5util::validateGroupDataset(proot.string(), *dc.data);
 
-                    std::cout << "Save " << elem.first << " to " << group << " - " << dataset << std::endl;
+                    // std::cout << "Save " << elem.first << " to " << group << " - " << dataset << std::endl;
 
                     // Data
                     m_vchannel_io->save(group, dataset, elem.second);
@@ -107,7 +107,7 @@ void ScanIO<FeatureBase>::save(
                 m_featureBase->m_kernel->savePointBuffer(group, name, ex_elem.second);
             }
 
-            std::cout << "Save Channel METAs" << std::endl;
+            // std::cout << "Save Channel METAs" << std::endl;
 
             // META
             // save meta for each channel
@@ -123,7 +123,7 @@ void ScanIO<FeatureBase>::save(
                 }
             }
 
-            std::cout << "END channels" << std::endl;
+            // std::cout << "END channels" << std::endl;
         }
     }
 
@@ -222,6 +222,7 @@ ScanPtr ScanIO<FeatureBase>::load(
 
             if(!channel_metas.empty())
             {
+                // std::cout << "Found channel metas " << std::endl;
                 for(auto elem : channel_metas)
                 {
                     // check if element was added already
@@ -267,6 +268,9 @@ ScanPtr ScanIO<FeatureBase>::load(
                 }
 
             } else {
+
+                // std::cout << "Could not get channel metas" << std::endl;
+
                 // no meta information about channels
                 // could be in case of datasets cannot be 
 
@@ -314,6 +318,8 @@ ScanPtr ScanIO<FeatureBase>::load(
                             //    - this should not happen. meta data must be available
                             // 2. Used directory schema and stored binary channels
                             //    - this should not happen. binary channels must have an meta file
+
+                            // std::cout << dc << std::endl;
 
                             throw std::runtime_error("[ScanIO - Panic. Something orrured that should not happen]");
                         }
@@ -367,9 +373,11 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
         YAML::Node meta;
         m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
 
+        // std::cout << "loadChannelMetas - Loaded Meta: " << std::endl;
+        // std::cout << meta << std::endl;
+
         if(meta["channels"])
         {
-
             for(auto it = meta["channels"].begin(); it != meta["channels"].end(); ++it)
             {
                 std::string channel_name = it->as<std::string>();
@@ -401,6 +409,8 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
         std::string metaGroup = *dc.metaRoot;
         std::string metaFile = *dc.meta;
         std::tie(metaGroup, metaFile) = hdf5util::validateGroupDataset(metaGroup, metaFile);
+
+        // std::cout << "Search for meta files in " << metaGroup << std::endl;
 
         for(auto meta : m_featureBase->m_kernel->metas(metaGroup, "channel"))
         {
