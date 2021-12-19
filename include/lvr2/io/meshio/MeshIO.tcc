@@ -27,8 +27,12 @@ void MeshIO::saveMesh(
 
     {
         YAML::Node meta;
-        meta["dimensions"].push_back(mesh->numVertices());
-        meta["dimensions"].push_back(3);
+        meta["data_type"] = "float";
+        meta["entity"] = "channel";
+        meta["type"] = "array";
+        meta["name"] = "indices";
+        meta["shape"].push_back(mesh->numVertices());
+        meta["shape"].push_back(3);
         m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
@@ -120,8 +124,12 @@ void MeshIO::saveMesh(
             );
         {
             YAML::Node meta;
-            meta["dimensions"].push_back(idx_buffer.size());
-            meta["dimensions"].push_back(1);
+            meta["data_type"] = "uint32";
+            meta["entity"]  = "channel";
+            meta["type"]    = "array";
+            meta["name"]    = "indices";
+            meta["shape"].push_back(idx_buffer.size());
+            meta["shape"].push_back(1);
             m_kernel->saveMetaYAML(
                 *desc.metaRoot,
                 *desc.meta,
@@ -139,8 +147,12 @@ void MeshIO::saveMesh(
             );
         {
             YAML::Node meta;
-            meta["dimensions"].push_back(idx_buffer.size());
-            meta["dimensions"].push_back(2);
+            meta["data_type"] = "float";
+            meta["entity"]  = "channel";
+            meta["type"]    = "array";
+            meta["name"]    = "texture_coordinates";
+            meta["shape"].push_back(idx_buffer.size());
+            meta["shape"].push_back(2);
             m_kernel->saveMetaYAML(
                 *desc.metaRoot,
                 *desc.meta,
@@ -176,7 +188,7 @@ void MeshIO::saveMesh(
     const auto& materials = mesh->getMaterials();
     const auto& textures  = mesh->getTextures();
 
-    ProgressBar material_progress( materials.size(), timestamp.getElapsedTime() + "[MeshIO] Saving materials");
+    ProgressBar material_progress( materials.size(), timestamp.getElapsedTime() + "[MeshIO] Saving materials & textures");
     // Step 3: Save all Materials
     for (size_t idx = 0; idx < materials.size(); idx++)
     {
