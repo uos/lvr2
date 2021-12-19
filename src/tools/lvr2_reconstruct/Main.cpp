@@ -69,6 +69,7 @@
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/PlutoMapIO.hpp"
+#include "lvr2/io/meshio/MeshIO.hpp"
 #include "lvr2/util/Factories.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
@@ -552,7 +553,7 @@ int main(int argc, char** argv)
     if (options.generateTextures())
     {
         // Set optioins to save them to disk
-        materializer.saveTextures();
+        //materializer.saveTextures();
         buffer->addIntAtomic(1, "mesh_save_textures");
         buffer->addIntAtomic(1, "mesh_texture_image_extension");
     }
@@ -572,6 +573,27 @@ int main(int argc, char** argv)
 
     for(const std::string& output_filename : options.getOutputFileNames())
     {
+        boost::filesystem::path selectedFile( output_filename );
+        std::string extension = selectedFile.extension().string();
+        
+        if (extension == ".h5")
+        {
+            /* TODO: TESTING IO move this to a part of this program where it makes sense*/
+
+            std::cout << timestamp << "[Experimental] Saving using MeshIO" << std::endl;
+
+            FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(output_filename));
+            MeshSchemaPtr schema = MeshSchemaPtr(new MeshSchemaHDF5());
+
+            MeshIOPtr mesh_io = MeshIOPtr(new MeshIO(kernel, schema));
+
+            mesh_io->saveMesh(
+                "Mesh1",
+                buffer
+                );
+            continue;
+        }
+
         cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
         ModelFactory::saveModel(m, output_filename);
     }

@@ -2,6 +2,8 @@
 
 #include "MeshSchema.hpp"
 #include <lvr2/io/scanio/FileKernel.hpp>
+#include <lvr2/io/meshio/MeshSchemaDirectory.hpp>
+#include <lvr2/io/meshio/MeshSchemaHDF5.hpp>
 
 namespace lvr2
 {
@@ -18,15 +20,15 @@ public:
         m_schema(schema)
         {};
 
-    template <typename ClusterHandleT, typename MaterialHandleT>
-    void MeshIO::saveMesh(
+    void saveMesh(
         std::string mesh_name, 
-        MeshBufferPtr mesh, 
-        ClusterBiMap<ClusterHandleT> clusters,
-        MaterializerResult<MaterialHandleT> materials);
+        MeshBufferPtr mesh
+        );
 
 }; 
 
-#include "MeshIO.tcc"
+using MeshIOPtr = std::shared_ptr<MeshIO>;
 
 } // namespace lvr2
+
+#include "MeshIO.tcc"
