@@ -1,10 +1,8 @@
 #pragma once
 
-#include "MeshSchema.hpp"
-#include <lvr2/io/scanio/FileKernel.hpp>
-#include <lvr2/io/meshio/MeshSchemaDirectory.hpp>
-#include <lvr2/io/meshio/MeshSchemaHDF5.hpp>
 #include <lvr2/io/meshio/FeatureBase.hpp>
+#include <lvr2/io/MeshBuffer.hpp>
+#include <lvr2/io/meshio/MaterialIO.hpp>
 
 namespace lvr2
 {
@@ -21,12 +19,19 @@ public:
 protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
+    MaterialIO<FeatureBase>* m_materialIO 
+        = static_cast<MaterialIO<FeatureBase>*>(m_featureBase);
+
 };
 
 template <typename FeatureBase>
 struct meshio::FeatureConstruct<MeshIO, FeatureBase>
 {
-    using type = typename FeatureBase::template add_features<MeshIO>::type;
+    // Dependencies
+    using dep1 = typename FeatureConstruct<MaterialIO, FeatureBase>::type;
+
+    // Add the feature
+    using type = typename dep1::template add_features<MeshIO>::type;
 };
 
 } // namespace lvr2

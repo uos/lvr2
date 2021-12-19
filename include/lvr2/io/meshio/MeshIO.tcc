@@ -185,58 +185,16 @@ void MeshIO<FeatureBase>::saveMesh(
     std::cout << std::endl;
 
 
-    const auto& materials = mesh->getMaterials();
-    const auto& textures  = mesh->getTextures();
-
-    ProgressBar material_progress( materials.size(), timestamp.getElapsedTime() + "[MeshIO] Saving materials & textures");
     // Step 3: Save all Materials
+    const auto& materials = mesh->getMaterials();
+    ProgressBar material_progress( materials.size(), timestamp.getElapsedTime() + "[MeshIO] Saving materials & textures");
     for (size_t idx = 0; idx < materials.size(); idx++)
     {
-        Description desc = m_featureBase->m_schema->material(mesh_name, idx);
-        const Material& mat = materials[idx];
-
-        // Write metadata
-        YAML::Node meta;
-        meta = mat;
-        
-        m_featureBase->m_kernel->saveMetaYAML(
-            *desc.metaRoot,
-            *desc.meta,
-            meta
+        m_materialIO->saveMaterial(
+            mesh_name,
+            idx,
+            mesh
         );
-
-        // Write Textures TODO: Add support for multiple layers
-        if (mat.m_texture)
-        {
-            const Texture tex = textures[(*mat.m_texture).idx()];
-            desc = m_featureBase->m_schema->texture(mesh_name, idx, "RGB");
-
-            size_t byte_count = tex.m_width * tex.m_height * tex.m_numChannels * tex.m_numBytesPerChan;
-            ucharArr copy(new uint8_t[byte_count]);
-            std::copy(
-                tex.m_data,
-                tex.m_data + byte_count,
-                copy.get());
-
-            m_featureBase->m_kernel->saveUCharArray(
-                *desc.dataRoot,
-                *desc.data,
-                {tex.m_height, 
-                tex.m_width, 
-                tex.m_numChannels, 
-                tex.m_numBytesPerChan},
-                copy);
-
-            // Save metadata
-            YAML::Node meta;
-            meta = tex;
-            m_featureBase->m_kernel->saveMetaYAML(
-                *desc.metaRoot,
-                *desc.meta,
-                meta
-            );
-        }
-
         ++material_progress;
     }
     std::cout << std::endl;
