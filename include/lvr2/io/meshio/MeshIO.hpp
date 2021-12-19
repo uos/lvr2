@@ -4,30 +4,30 @@
 #include <lvr2/io/scanio/FileKernel.hpp>
 #include <lvr2/io/meshio/MeshSchemaDirectory.hpp>
 #include <lvr2/io/meshio/MeshSchemaHDF5.hpp>
+#include <lvr2/io/meshio/FeatureBase.hpp>
 
 namespace lvr2
 {
 
+template <typename FeatureBase>
 class MeshIO
 {
-private:
-    FileKernelPtr   m_kernel;
-    MeshSchemaPtr   m_schema;
-
 public:
-    MeshIO(FileKernelPtr kernel, MeshSchemaPtr schema): 
-        m_kernel(kernel), 
-        m_schema(schema)
-        {};
-
     void saveMesh(
         std::string mesh_name, 
         MeshBufferPtr mesh
-        );
+        ) const;
 
-}; 
+protected:
+    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
-using MeshIOPtr = std::shared_ptr<MeshIO>;
+};
+
+template <typename FeatureBase>
+struct meshio::FeatureConstruct<MeshIO, FeatureBase>
+{
+    using type = typename FeatureBase::template add_features<MeshIO>::type;
+};
 
 } // namespace lvr2
 

@@ -29,5 +29,6 @@ class MeshSchemaHDF5 : public MeshSchema
     virtual Description texture(std::string name, size_t material_index, std::string layer_name) const;
 };
 
+using MeshSchemaHDF5Ptr = std::shared_ptr<MeshSchemaHDF5>;
 
 } // namespace lvr2

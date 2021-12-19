@@ -8,18 +8,18 @@
 namespace lvr2
 {
 
-
-void MeshIO::saveMesh(
+template <typename FeatureBase>
+void MeshIO<FeatureBase>::saveMesh(
     std::string mesh_name, 
     MeshBufferPtr mesh
-    )
+    ) const
 {
     std::cout << timestamp << "[MeshIO] Saving vertices" << std::endl;
 
     // Step 1: Save vertices
-    auto desc = m_schema->vertexChannel(mesh_name, "coordinates");
+    auto desc = m_featureBase->m_schema->vertexChannel(mesh_name, "coordinates");
     // Write the vertices
-    m_kernel->saveFloatArray(
+    m_featureBase->m_kernel->saveFloatArray(
         *desc.dataRoot,
         *desc.data,
         {mesh->numVertices(), 3},
@@ -33,7 +33,7 @@ void MeshIO::saveMesh(
         meta["name"] = "indices";
         meta["shape"].push_back(mesh->numVertices());
         meta["shape"].push_back(3);
-        m_kernel->saveMetaYAML(
+        m_featureBase->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             meta
@@ -115,8 +115,8 @@ void MeshIO::saveMesh(
         ////          ////
 
         // Write index buffer
-        Description desc = m_schema->surfaceIndices(mesh_name, cluster_idx);
-        m_kernel->saveArray(
+        Description desc = m_featureBase->m_schema->surfaceIndices(mesh_name, cluster_idx);
+        m_featureBase->m_kernel->saveArray(
             *desc.dataRoot,
             *desc.data,
             {idx_buffer.size()},
@@ -130,7 +130,7 @@ void MeshIO::saveMesh(
             meta["name"]    = "indices";
             meta["shape"].push_back(idx_buffer.size());
             meta["shape"].push_back(1);
-            m_kernel->saveMetaYAML(
+            m_featureBase->m_kernel->saveMetaYAML(
                 *desc.metaRoot,
                 *desc.meta,
                 meta
@@ -138,8 +138,8 @@ void MeshIO::saveMesh(
         }
 
         // Write uv buffer
-        desc = m_schema->textureCoordinates(mesh_name, cluster_idx);
-        m_kernel->saveArray(
+        desc = m_featureBase->m_schema->textureCoordinates(mesh_name, cluster_idx);
+        m_featureBase->m_kernel->saveArray(
             *desc.dataRoot,
             *desc.data,
             {idx_buffer.size(), 2}, // 2 float coords for each index
@@ -153,7 +153,7 @@ void MeshIO::saveMesh(
             meta["name"]    = "texture_coordinates";
             meta["shape"].push_back(idx_buffer.size());
             meta["shape"].push_back(2);
-            m_kernel->saveMetaYAML(
+            m_featureBase->m_kernel->saveMetaYAML(
                 *desc.metaRoot,
                 *desc.meta,
                 meta
@@ -161,7 +161,7 @@ void MeshIO::saveMesh(
         }
 
         // Write surface meta
-        desc = m_schema->surface(mesh_name, cluster_idx);
+        desc = m_featureBase->m_schema->surface(mesh_name, cluster_idx);
         YAML::Node meta;
         if (clm_map_opt)
         {
@@ -172,7 +172,7 @@ void MeshIO::saveMesh(
         {
             std::cout << timestamp << "[MeshIO] Cannot add material to surface!" << std::endl;
         }
-        m_kernel->saveMetaYAML(
+        m_featureBase->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             meta
@@ -192,14 +192,14 @@ void MeshIO::saveMesh(
     // Step 3: Save all Materials
     for (size_t idx = 0; idx < materials.size(); idx++)
     {
-        Description desc = m_schema->material(mesh_name, idx);
+        Description desc = m_featureBase->m_schema->material(mesh_name, idx);
         const Material& mat = materials[idx];
 
         // Write metadata
         YAML::Node meta;
         meta = mat;
         
-        m_kernel->saveMetaYAML(
+        m_featureBase->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             meta
@@ -209,7 +209,7 @@ void MeshIO::saveMesh(
         if (mat.m_texture)
         {
             const Texture tex = textures[(*mat.m_texture).idx()];
-            desc = m_schema->texture(mesh_name, idx, "RGB");
+            desc = m_featureBase->m_schema->texture(mesh_name, idx, "RGB");
 
             size_t byte_count = tex.m_width * tex.m_height * tex.m_numChannels * tex.m_numBytesPerChan;
             ucharArr copy(new uint8_t[byte_count]);
@@ -218,7 +218,7 @@ void MeshIO::saveMesh(
                 tex.m_data + byte_count,
                 copy.get());
 
-            m_kernel->saveUCharArray(
+            m_featureBase->m_kernel->saveUCharArray(
                 *desc.dataRoot,
                 *desc.data,
                 {tex.m_height, 
@@ -230,7 +230,7 @@ void MeshIO::saveMesh(
             // Save metadata
             YAML::Node meta;
             meta = tex;
-            m_kernel->saveMetaYAML(
+            m_featureBase->m_kernel->saveMetaYAML(
                 *desc.metaRoot,
                 *desc.meta,
                 meta
