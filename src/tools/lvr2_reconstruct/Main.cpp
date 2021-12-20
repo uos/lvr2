@@ -35,7 +35,7 @@
 
 #include "lvr2/config/lvropenmp.hpp"
 
-#include "lvr2/geometry/PmpMesh.hpp"
+#include "lvr2/geometry/PMPMesh.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
@@ -333,7 +333,7 @@ int main(int argc, char** argv)
     // Reconstruct mesh from point cloud data
     // =======================================================================
     // Create an empty mesh
-    lvr2::PmpMesh<Vec> mesh;
+    lvr2::PMPMesh<Vec> mesh;
 
     shared_ptr<GridBase> grid;
     unique_ptr<FastReconstructionBase<Vec>> reconstruction;
