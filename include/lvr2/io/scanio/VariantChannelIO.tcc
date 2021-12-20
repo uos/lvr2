@@ -12,9 +12,19 @@ void saveDynamic(
     const ChannelIO<Derived>* io
     )
 {
-    using StoreType = typename VChannelT::template type_of_index<I>;
-    io->template save<StoreType>(group, name, 
-            channel.template extract<StoreType>());
+    if(I == channel.type())
+    {
+        using StoreType = typename VChannelT::template type_of_index<I>;
+        io->template save<StoreType>(group, name, 
+                channel.template extract<StoreType>());
+    } else {
+        std::stringstream ss;
+        ss << "[VariantChannelIO - saveDynamic] Error: " << channel.typeName() << " not supported.";
+
+        std::cout << ss.str() << std::endl;
+        throw std::runtime_error(ss.str());
+    }
+    
 }
 
 // Recursion
@@ -54,9 +64,7 @@ void VariantChannelIO<Derived>::save(
     const VariantChannel<Tp...>& vchannel)
 {
     // std::cout << "[VariantChannelIO - save] " << groupName << "; " << channelName << "; " << vchannel.typeName() << std::endl;
-    // std::cout << d << std::endl;
 
-    // std::cout << "[VariantChannelIO - save] " << groupName << ", " << datasetName << ", " << vchannel.typeName() << std::endl;
     using VChannelT = VariantChannel<Tp...>;
 
     // keep this order! We need Hdf5 to build the dataset first, then writing meta information

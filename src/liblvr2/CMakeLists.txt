@@ -2,6 +2,24 @@ set(LVR2_SOURCES
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
     algorithm/ChunkHashGrid.cpp
+    algorithm/pmp/DifferentialGeometry.cpp
+    algorithm/pmp/DistancePointTriangle.cpp
+    algorithm/pmp/DifferentialGeometry.cpp
+    algorithm/pmp/SurfaceFactory.cpp
+    algorithm/pmp/SurfaceGeodesic.cpp
+    algorithm/pmp/SurfaceParameterization.cpp
+    algorithm/pmp/SurfaceSmoothing.cpp
+    algorithm/pmp/TriangleKdTree.cpp
+    algorithm/pmp/DistancePointTriangle.cpp
+    algorithm/pmp/SurfaceFairing.cpp
+    algorithm/pmp/SurfaceHoleFilling.cpp
+    algorithm/pmp/SurfaceRemeshing.cpp
+    algorithm/pmp/SurfaceSubdivision.cpp
+    algorithm/pmp/SurfaceCurvature.cpp
+    algorithm/pmp/SurfaceFeatures.cpp
+    algorithm/pmp/SurfaceNormals.cpp
+    algorithm/pmp/SurfaceSimplification.cpp
+    algorithm/pmp/SurfaceTriangulation.cpp
     config/lvropenmp.cpp
     config/BaseOption.cpp
     display/Renderable.cpp
@@ -19,6 +37,8 @@ set(LVR2_SOURCES
     # display/Arrow.cpp
     display/TexturedMesh.cpp
     display/MeshCluster.cpp
+    geometry/pmp/SurfaceMesh.cpp
+    geometry/pmp/SurfaceMeshIO.cpp
     io/baseio/AsciiIO.cpp
     io/baseio/BaseIO.cpp
     io/baseio/ObjIO.cpp

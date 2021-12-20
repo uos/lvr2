@@ -159,7 +159,7 @@ size_t iterativeEdgeCollapse(
     string msg = timestamp.getElapsedTime()
         + "Collapsing up to "
         + std::to_string(count)
-        + "of the edges ";
+        + " edges ";
     ProgressBar progress(count + 1, msg);
     ++progress;
 

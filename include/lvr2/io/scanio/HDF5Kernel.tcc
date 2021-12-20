@@ -123,6 +123,30 @@ void HDF5Kernel::saveArray(
     save(groupName, datasetName, dim,  data);
 }
 
+
+template<typename T>
+static std::vector<hsize_t> autoComputeChunkSize(
+    const std::vector<size_t> dims,
+    size_t chunkBytes)
+{    
+    std::vector<hsize_t> chunk_sizes(dims.size(), 1);
+
+    size_t elems_per_chunk = chunkBytes / sizeof(T);
+    size_t current_elems_per_chunk = 1;
+    
+    size_t dim_id = dims.size() - 1;
+
+    while(dim_id >= 0 && dims[dim_id] * current_elems_per_chunk <= elems_per_chunk) 
+    {
+        current_elems_per_chunk *= dims[dim_id];
+        chunk_sizes[dim_id] = dims[dim_id];
+        dim_id -= 1;
+    }
+
+    chunk_sizes[dim_id] = elems_per_chunk / current_elems_per_chunk;
+    return chunk_sizes;
+}
+
 template<typename T> 
 void HDF5Kernel::saveArray(
     const std::string& groupName, 
@@ -131,16 +155,16 @@ void HDF5Kernel::saveArray(
     const boost::shared_array<T> data) const
 {
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, groupName, true);
+    
+    // std::cout << "[HDF5Kernel - saveArray]" << std::endl;
     if(m_hdf5File && m_hdf5File->isValid())
     {
-
         HighFive::DataSpace dataSpace(dim);
         HighFive::DataSetCreateProps properties;
 
         if(m_config.compressionLevel > 0)
         {
-            std::vector<hsize_t> chunkSizes(dim.size(), 1);
-            chunkSizes[0] = dim[0];
+            std::vector<hsize_t> chunkSizes = autoComputeChunkSize<T>(dim, 10 * 1024);
             properties.add(HighFive::Chunking(chunkSizes));
             properties.add(HighFive::Deflate(m_config.compressionLevel));
         }
@@ -155,7 +179,7 @@ void HDF5Kernel::saveArray(
     } 
     else 
     {
-        throw std::runtime_error("[Hdf5 - ArrayIO]: Hdf5 file not open.");
+        throw std::runtime_error("[HDF5Kernel - saveArray]: Hdf5 file not open.");
     }
 }
 

@@ -125,7 +125,11 @@ public:
 
     FeatureBase(
         const FileKernelPtr inKernel, 
-        const ScanProjectSchemaPtr inDesc) : m_kernel(inKernel), m_description(inDesc)
+        const ScanProjectSchemaPtr inDesc,
+        const bool load_data = false) 
+    : m_kernel(inKernel)
+    , m_description(inDesc)
+    , m_load_data(load_data)
     {
 
     }
@@ -143,6 +147,8 @@ public:
 
     const FileKernelPtr             m_kernel;
     const ScanProjectSchemaPtr      m_description;
+
+    const bool                      m_load_data;
 
 };
 
