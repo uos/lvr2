@@ -57,7 +57,6 @@ void ChannelIO<FeatureBase>::save(
             // NOT IMPLEMENTED TYPE TO WRITE
             std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
         }
-        
     }
 }
 
@@ -75,8 +74,6 @@ void ChannelIO<FeatureBase>::save(
     Description d = Dgen->position(scanPosNo);
     d = Dgen->lidar(d, lidarNo);
     d = Dgen->scan(d, scanNo);
-    
-
 }
 
 template<typename FeatureBase>
@@ -86,6 +83,7 @@ void ChannelIO<FeatureBase>::saveCustom(
     std::string name,
     const Channel<T>& channel) const
 {
+    // std::cout << "[ChannelIO - saveCustom ]" << std::endl;
     size_t tmp_size;
     T tmp_obj;
     boost::shared_array<unsigned char> buffer = byteEncode(tmp_obj, tmp_size);
@@ -111,7 +109,7 @@ void ChannelIO<FeatureBase>::saveCustom(
         memcpy(data_ptr, Npointsc, sizeof(size_t));
         data_ptr += sizeof(size_t);
 
-        std::cout << "Write Meta: " << Npoints << " points" << std::endl;
+        // std::cout << "Write Meta: " << Npoints << " points" << std::endl;
 
         // Filling shared_array with data
         for(size_t i = 0; i<channel.numElements(); i++)
@@ -235,14 +233,20 @@ void ChannelIO<FeatureBase>::saveFundamental(
     std::string name,
     const Channel<T>& channel) const
 {
+    // std::cout << "ChannelIO - saveFundamental" << std::endl;
     if constexpr(FileKernel::ImplementedTypes::contains<T>())
     {
         std::vector<size_t> dims(2);
         dims[0] = channel.numElements();
         dims[1] = channel.width();
+        // std::cout << "Save Channel " << dims[0] << "x" << dims[1] << std::endl;  
         m_featureBase->m_kernel->template saveArray<T>(group, name, dims, channel.dataPtr());
     } else {
         // TODO: Error or Warning?
+        std::stringstream ss;
+        ss << "Kernel does not support channels of type '" << channel.typeName() << "'";
+        std::cout << ss.str() << std::endl;
+        throw std::runtime_error(ss.str());  
     }
 }
 

@@ -76,16 +76,17 @@ using CylindricalModelOptional = boost::optional<CylindricalModel>;
 struct SphericalModel : CameraModel {
     static constexpr char           type[] = "spherical";
 
-    /// Focal length
-    double                          phi[3];
+    /// Phi: min, max, inc
+    double                          phi[3] = {0.0, 0.0, 0.0};
 
-    /// Offset angle
-    double                          theta[3];
+    /// Theta: min, max, inc
+    double                          theta[3] = {0.0, 0.0, 0.0};
 
-    double                          range[3];
+    /// Range: min, max, inc
+    double                          range[3] = {0.0, 0.0, 0.0};
 
     /// Principal x, y, z
-    Vector3d                        principal;
+    Vector3d                        principal = Vector3d(0.0, 0.0, 0.0);
 
     /// Distortion
     std::vector<double>             distortionCoefficients;

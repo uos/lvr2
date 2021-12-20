@@ -643,16 +643,14 @@ std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
 {
     std::unordered_map<std::string, YAML::Node> ret;
 
-    
-
+    throw std::runtime_error("HDF5Kernel - meats(group) not implemented");
     
     return ret;
 }
 
-
 std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
     const std::string& group, 
-    const std::string& type) const
+    const std::string& entity) const
 {
     std::unordered_map<std::string, YAML::Node> ret;
 
@@ -664,19 +662,9 @@ std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
         if(h5type == HighFive::ObjectType::Group)
         {
             HighFive::Group metaGroup = h5Group.getGroup(groupName);
-            if(metaGroup.hasAttribute("type"))
+            if(metaGroup.hasAttribute("entity"))
             {
-                std::string tmp = type;
-                if(hdf5util::checkAttribute(metaGroup, "type", tmp))
-                {
-                    // Found a group with 'sensor_type' attribute: try to load yaml with loadMetaYAML
-                    YAML::Node node = hdf5util::getAttributeMeta(metaGroup);
-                    ret[groupName] = node;
-                }
-            } 
-            else if(metaGroup.hasAttribute("entity"))
-            {
-                std::string tmp = type;
+                std::string tmp = entity;
                 if(hdf5util::checkAttribute(metaGroup, "entity", tmp))
                 {
                     // Found a group with 'sensor_type' attribute: try to load yaml with loadMetaYAML
@@ -689,17 +677,8 @@ std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
         if(h5type == HighFive::ObjectType::Dataset)
         {
             HighFive::DataSet metaDataset = h5Group.getDataSet(groupName);
-            std::string tmp = type;
-
-            if(metaDataset.hasAttribute("type"))
-            {
-                if(hdf5util::checkAttribute(metaDataset, "type", tmp))
-                {
-                    YAML::Node node = hdf5util::getAttributeMeta(metaDataset);
-                    ret[groupName] = node;
-                }
-            }
-            else if(metaDataset.hasAttribute("entity"))
+            std::string tmp = entity;
+            if(metaDataset.hasAttribute("entity"))
             {
                 if(hdf5util::checkAttribute(metaDataset, "entity", tmp))
                 {

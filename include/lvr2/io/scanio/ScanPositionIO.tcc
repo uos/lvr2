@@ -25,6 +25,7 @@ void ScanPositionIO< FeatureBase>::save(
     // Save all lidar sensors
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
     {
+        // std::cout << " [ScanPositionIO]: Writing lidar " << i << std::endl;
         m_lidarIO->save(scanPosNo, i, scanPositionPtr->lidars[i]);
     }
 

@@ -63,7 +63,7 @@ void ScanIO<FeatureBase>::save(
             /// Data (Channel)
             for(auto elem : *scanPtr->points)
             {
-                
+                // std::cout << "Save " << elem.first << std::endl;
                 Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
                 boost::filesystem::path proot(*dc.dataRoot);
 
@@ -222,6 +222,7 @@ ScanPtr ScanIO<FeatureBase>::load(
 
             if(!channel_metas.empty())
             {
+                // std::cout << "Found channel metas " << std::endl;
                 for(auto elem : channel_metas)
                 {
                     // check if element was added already
@@ -267,6 +268,9 @@ ScanPtr ScanIO<FeatureBase>::load(
                 }
 
             } else {
+
+                // std::cout << "Could not get channel metas" << std::endl;
+
                 // no meta information about channels
                 // could be in case of datasets cannot be 
 
@@ -315,6 +319,8 @@ ScanPtr ScanIO<FeatureBase>::load(
                             // 2. Used directory schema and stored binary channels
                             //    - this should not happen. binary channels must have an meta file
 
+                            // std::cout << dc << std::endl;
+
                             throw std::runtime_error("[ScanIO - Panic. Something orrured that should not happen]");
                         }
                     }
@@ -341,10 +347,18 @@ ScanPtr ScanIO<FeatureBase>::load(
     // load data here?
     // TODO: add points_loader and points_loader_reduced to struct instead
     // Old:
+
+
     // ret->points = points_loader();
     // New:
+    
+    if(m_featureBase->m_load_data)
+    {
+        ret->points = points_loader();
+    }
+    
     ret->points_loader = points_loader;
-    ret->points_loader_lazy = points_loader_reduced;
+    ret->points_loader_reduced = points_loader_reduced;
 
     return ret;
 }
@@ -367,9 +381,11 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
         YAML::Node meta;
         m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
 
+        // std::cout << "loadChannelMetas - Loaded Meta: " << std::endl;
+        // std::cout << meta << std::endl;
+
         if(meta["channels"])
         {
-
             for(auto it = meta["channels"].begin(); it != meta["channels"].end(); ++it)
             {
                 std::string channel_name = it->as<std::string>();
@@ -401,6 +417,8 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
         std::string metaGroup = *dc.metaRoot;
         std::string metaFile = *dc.meta;
         std::tie(metaGroup, metaFile) = hdf5util::validateGroupDataset(metaGroup, metaFile);
+
+        // std::cout << "Search for meta files in " << metaGroup << std::endl;
 
         for(auto meta : m_featureBase->m_kernel->metas(metaGroup, "channel"))
         {
@@ -453,11 +471,22 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     if(ret)
     {
         // ret->points = ret->points_loader_reduced(reduction);
+        
         if(ret->points)
         {
             reduction->setPointBuffer(ret->points);
             ret->points = reduction->getReducedPoints();
+        } else if(ret->points_loader_reduced) {
+            ret->points = ret->points_loader_reduced(reduction);
+        } else if(ret->points_loader) {
+            ret->load();
+            if(ret->points)
+            {
+                reduction->setPointBuffer(ret->points);
+                ret->points = reduction->getReducedPoints();
+            }
         }
+
     }
 
     return ret;
