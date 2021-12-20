@@ -14,8 +14,13 @@ public:
         const std::string& mesh_name,
         const size_t material_index,
         const std::string& texture_name,
-        const MeshBufferPtr& mesh,
         const Texture& texture
+    ) const;
+
+    Texture loadTexture(
+        const std::string& mesh_name,
+        const size_t material_index,
+        const std::string& texture_name
     ) const;
 protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);

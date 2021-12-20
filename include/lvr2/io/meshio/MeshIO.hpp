@@ -13,8 +13,8 @@ class MeshIO
 {
 public:
     void saveMesh(
-        std::string mesh_name, 
-        MeshBufferPtr mesh
+        const std::string mesh_name, 
+        const MeshBufferPtr mesh
         ) const;
 
 protected:

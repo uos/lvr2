@@ -10,11 +10,12 @@ namespace lvr2
 
 template <typename FeatureBase>
 void MeshIO<FeatureBase>::saveMesh(
-    std::string mesh_name, 
-    MeshBufferPtr mesh
+    const std::string mesh_name, 
+    const MeshBufferPtr mesh
     ) const
 {
     std::cout << timestamp << "[MeshIO] Saving vertices" << std::endl;
+    std::cout << timestamp << "[MeshIO] ===== ADD SUPPORT FOR OTHER CHANNELS! =====" << std::endl;
 
     // Step 1: Save vertices
     auto desc = m_featureBase->m_schema->vertexChannel(mesh_name, "coordinates");
@@ -52,7 +53,6 @@ void MeshIO<FeatureBase>::saveMesh(
 
     // display progress bar
     ProgressBar surface_progress(n_cluster, timestamp.getElapsedTime() + "[MeshIO] Saving surfaces");
-
     size_t cluster_idx = 0;
     while(true)
     {

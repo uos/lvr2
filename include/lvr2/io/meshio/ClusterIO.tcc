@@ -1,4 +1,5 @@
 #include "ClusterIO.hpp"
+#include <lvr2/util/Util.hpp>
 
 namespace lvr2
 {

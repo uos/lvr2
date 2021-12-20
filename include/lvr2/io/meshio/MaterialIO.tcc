@@ -34,7 +34,6 @@ void MaterialIO<FeatureBase>::saveMaterial(
             mesh_name,
             material_index,
             "RGB",
-            mesh,
             tex
         );
     }
