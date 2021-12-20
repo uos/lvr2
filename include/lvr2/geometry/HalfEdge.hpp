@@ -49,10 +49,10 @@ namespace lvr2
 // are handles to the half edge with the lower index.
 
 /// Handle to access half edges of the HEM.
-class HalfEdgeHandle : public BaseHandle<Index>
+class HalfEdgeHandle : public BaseHandle
 {
 public:
-    using BaseHandle<Index>::BaseHandle;
+    using BaseHandle::BaseHandle;
 
     static HalfEdgeHandle oneHalfOf(EdgeHandle eH)
     {
@@ -63,11 +63,10 @@ public:
 };
 
 /// Semantically equivalent to `boost::optional<HalfEdgeHandle>`
-class OptionalHalfEdgeHandle : public BaseOptionalHandle<Index, HalfEdgeHandle>
+class OptionalHalfEdgeHandle : public BaseOptionalHandle<HalfEdgeHandle>
 {
 public:
-    using BaseOptionalHandle<Index, HalfEdgeHandle>::BaseOptionalHandle;
-    OptionalHalfEdgeHandle() : BaseOptionalHandle() {}
+    using BaseOptionalHandle<HalfEdgeHandle>::BaseOptionalHandle;
     OptionalHalfEdgeHandle(EdgeHandle eH) : OptionalHalfEdgeHandle(eH.idx()) {}
 };
 

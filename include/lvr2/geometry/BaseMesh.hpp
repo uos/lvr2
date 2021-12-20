@@ -49,49 +49,6 @@
 namespace lvr2
 {
 
-/**
- * @brief An iterator for handles in the BaseMesh.
- *
- * Important: This is not a fail fast iterator! If the mesh struct is changed
- * while using an instance of this iterator the behavior is undefined!
- *
- * @tparam HandleT The type of the requested handle
- */
-template<typename HandleT>
-class MeshHandleIterator
-{
-    static_assert(std::is_base_of<BaseHandle<Index>, HandleT>::value, "HandleT must inherit from BaseHandle!");
-public:
-    /// Advances the iterator once. Using the dereference operator afterwards
-    /// will yield the next handle.
-    virtual MeshHandleIterator& operator++() = 0;
-    virtual bool operator==(const MeshHandleIterator& other) const = 0;
-    virtual bool operator!=(const MeshHandleIterator& other) const = 0;
-
-    /// Returns the current handle.
-    virtual HandleT operator*() const = 0;
-
-    virtual ~MeshHandleIterator() = default;
-
-    using HandleType = HandleT;
-};
-
-/// A wrapper for the MeshHandleIterator to save beloved future programmers from dereferencing too much <3
-template<typename HandleT>
-class MeshHandleIteratorPtr
-{
-public:
-    MeshHandleIteratorPtr(std::unique_ptr<MeshHandleIterator<HandleT>> iter) : m_iter(std::move(iter)) {};
-    MeshHandleIteratorPtr& operator++();
-    bool operator==(const MeshHandleIteratorPtr& other) const;
-    bool operator!=(const MeshHandleIteratorPtr& other) const;
-    HandleT operator*() const;
-
-    using HandleType = HandleT;
-private:
-    std::unique_ptr<MeshHandleIterator<HandleT>> m_iter;
-};
-
 // Forward declaration
 template <typename> class FaceIteratorProxy;
 template <typename> class EdgeIteratorProxy;

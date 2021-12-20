@@ -75,7 +75,7 @@ template<typename HandleT, typename ValueT>
 class AttributeMap
 {
     static_assert(
-        std::is_base_of<BaseHandle<Index>, HandleT>::value,
+        std::is_base_of<BaseHandle, HandleT>::value,
         "HandleT must inherit from BaseHandle!"
     );
 
@@ -187,7 +187,7 @@ template<typename HandleT>
 class AttributeMapHandleIterator
 {
     static_assert(
-        std::is_base_of<BaseHandle<Index>, HandleT>::value,
+        std::is_base_of<BaseHandle, HandleT>::value,
         "HandleT must inherit from BaseHandle!"
     );
 
@@ -215,7 +215,7 @@ template<typename HandleT>
 class AttributeMapHandleIteratorPtr
 {
     static_assert(
-        std::is_base_of<BaseHandle<Index>, HandleT>::value,
+        std::is_base_of<BaseHandle, HandleT>::value,
         "HandleT must inherit from BaseHandle!"
     );
 

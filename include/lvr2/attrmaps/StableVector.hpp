@@ -104,7 +104,7 @@ template<typename HandleT, typename ElemT>
 class StableVector
 {
     static_assert(
-        std::is_base_of<BaseHandle<Index>, HandleT>::value,
+        std::is_base_of<BaseHandle, HandleT>::value,
         "HandleT must inherit from BaseHandle!"
     );
 

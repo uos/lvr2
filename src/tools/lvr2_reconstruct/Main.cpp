@@ -35,6 +35,7 @@
 
 #include "lvr2/config/lvropenmp.hpp"
 
+#include "lvr2/geometry/PMPMesh.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
@@ -332,7 +333,7 @@ int main(int argc, char** argv)
     // Reconstruct mesh from point cloud data
     // =======================================================================
     // Create an empty mesh
-    lvr2::HalfEdgeMesh<Vec> mesh;
+    lvr2::PMPMesh<Vec> mesh;
 
     shared_ptr<GridBase> grid;
     unique_ptr<FastReconstructionBase<Vec>> reconstruction;
@@ -362,7 +363,8 @@ int main(int argc, char** argv)
     // Fill small holes if requested
     if(options.getFillHoles())
     {
-        naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+        mesh.fillHoles(options.getFillHoles());
+        // naiveFillSmallHoles(mesh, options.getFillHoles(), false);
     }
 
     // Calculate initial face normals
