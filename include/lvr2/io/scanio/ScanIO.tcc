@@ -358,7 +358,7 @@ ScanPtr ScanIO<FeatureBase>::load(
     }
     
     ret->points_loader = points_loader;
-    ret->points_loader_lazy = points_loader_reduced;
+    ret->points_loader_reduced = points_loader_reduced;
 
     return ret;
 }
@@ -471,11 +471,22 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     if(ret)
     {
         // ret->points = ret->points_loader_reduced(reduction);
+        
         if(ret->points)
         {
             reduction->setPointBuffer(ret->points);
             ret->points = reduction->getReducedPoints();
+        } else if(ret->points_loader_reduced) {
+            ret->points = ret->points_loader_reduced(reduction);
+        } else if(ret->points_loader) {
+            ret->load();
+            if(ret->points)
+            {
+                reduction->setPointBuffer(ret->points);
+                ret->points = reduction->getReducedPoints();
+            }
         }
+
     }
 
     return ret;

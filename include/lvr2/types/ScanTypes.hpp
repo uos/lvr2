@@ -278,7 +278,12 @@ struct Scan : SensorDataEntity, Transformable, BoundedOptional
 
     /// Loader
     std::function<PointBufferPtr()>  points_loader;
-    std::function<PointBufferPtr(ReductionAlgorithmPtr)> points_loader_lazy;
+    std::function<PointBufferPtr(ReductionAlgorithmPtr)> points_loader_reduced;
+
+    bool loadable() const
+    {
+        return points_loader ? true : false;
+    }
 
     bool loaded() const
     {
@@ -297,7 +302,7 @@ struct Scan : SensorDataEntity, Transformable, BoundedOptional
     {
         if(!loaded())
         {
-            points = points_loader_lazy(red);
+            points = points_loader_reduced(red);
         }
     }
 
@@ -328,6 +333,11 @@ struct CameraImage : SensorDataEntity, Transformable
 
     /// Loader
     std::function<cv::Mat()>        image_loader;
+
+    bool loadable() const
+    {
+        return image_loader ? true : false;
+    }
 
     bool loaded() const
     {
