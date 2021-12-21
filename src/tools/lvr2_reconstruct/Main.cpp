@@ -531,11 +531,11 @@ int main(int argc, char** argv)
             
             // create io object for hdf5 files
             auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
-            // load panorama Channel from hdf5 file
-            auto panoramaChannel = hdf5IO.HyperspectralPanoramaChannelIO::load(0,0,0,0);
+            // load panorama from hdf5 file
+            auto panorama = hdf5IO.HyperspectralPanoramaIO::load(options.getScanPositionIndex(), 0, 0);
             
             // initialize spectral texturizer
-            spec_texter.init_image_data(panoramaChannel);
+            spec_texter.init_image_data(panorama, 80);
             // use spectral texturizer as the used texturizer
             materializer.setTexturizer(spec_texter);
         }

@@ -17,14 +17,6 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
     // Create texture
     Texture texture(index, sizeX, sizeY, 3, 1, this->m_texelSize);
 
-    // cout << "images: " << images.size() << endl;
-
-    // load image if not already done
-    if(!image_data_initialized)
-    {
-        this->init_image_data(0);
-    }
-
     if(!image_data_initialized)
     {
         for (int y = 0; y < sizeY; y++) {
@@ -67,7 +59,7 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
             {
                 if(uv_coord[0] >= 0 && uv_coord[1] >= 0)
                 {
-                    cv::Vec<unsigned char, 150 > pixel = spectralPanorama.at<cv::Vec<unsigned char, 150>>(uv_coord[0], uv_coord[1]);
+                    cv::Vec<unsigned char, 1 > pixel = spectralPanorama.at<cv::Vec<unsigned char, 1>>(uv_coord[0], uv_coord[1]);
                     texture.m_data[(sizeX * y + x) * 3 + 0] = pixel[0];
                     texture.m_data[(sizeX * y + x) * 3 + 1] = pixel[0];
                     texture.m_data[(sizeX * y + x) * 3 + 2] = pixel[0];
@@ -81,7 +73,7 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
 
 
 template<typename BaseVecT>
-void SpectralTexturizer<BaseVecT>::init_image_data(HyperspectralPanoramaChannelPtr panoChannel)
+void SpectralTexturizer<BaseVecT>::init_image_data(HyperspectralPanoramaPtr pano, int channelIndex)
 {
 
     // TODO: load data from h5 file (after h5 rework is implemented!!)
@@ -94,7 +86,7 @@ void SpectralTexturizer<BaseVecT>::init_image_data(HyperspectralPanoramaChannelP
     distortions[1] = -0.14184141;
     distortions[2] = 0.0; 
 
-
+    HyperspectralPanoramaChannelPtr panoChannel = pano->channels[0];
     spectralPanorama = panoChannel->channel;
 
     prepare_camera_data();

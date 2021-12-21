@@ -75,38 +75,22 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
 
     /// DATA
 
-    // Load Hyperspectral Channels // TODO: i dont think i need this
-    
     // Load Hyperspectral Frame
     HyperspectralPanoramaChannelPtr hchannel = m_hyperspectralPanoramaChannelIO->load(scanPosNo, hCamNo, hPanoNo, 0);
-    std::cout << hchannel->channel.size() << std::endl;
-    std::cout << hchannel->channel.channels() << std::endl;
+
     // hchannel contains matrix of whole spectral area 
-    // cv::Mat channels[hchannel->channel.channels()];
+    cv::Mat channels[hchannel->channel.channels()];
 
-    // cv::Mat[] channels
+    // split hchannel into channels
+    cv::split(hchannel->channel, channels);
 
-
-    // TODO: split the channels to get values of each channel instead of the whole matrix
-    // cv::split(hchannel->channel, channels);
-
-    ret->channels.push_back(hchannel);
-
-
-    // OLD CODE
-    // size_t channelNo = 0;
-    // while(true)
-    // {
-    //     HyperspectralPanoramaChannelPtr hchannel = m_hyperspectralPanoramaChannelIO->load(scanPosNo, hCamNo, hPanoNo, channelNo);
-    //     if(hchannel)
-    //     {
-    //         ret->channels.push_back(hchannel);
-    //     } else {
-    //         break;
-    //     }
-    //     channelNo++;
-    // }
-
+    for(int i = 0; i < hchannel->channel.channels(); i++)
+    {
+        // auto newChannel = std::make_shared<HyperspectralPanoramaChannel>();
+        auto newChannel = HyperspectralPanoramaChannelPtr();
+        newChannel->channel = channels[i];
+        ret->channels.push_back(newChannel);
+    }
 
     return ret;
 }

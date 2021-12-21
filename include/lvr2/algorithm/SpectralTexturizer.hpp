@@ -35,9 +35,10 @@ public:
     /**
      * @brief set the image data to a specific panorama image of a given scanPosition
      * 
-     * @param panoChannel Panorama channel to use
+     * @param pano Panorama to use
+     * @param channelIndex What panorama channel should be used
      */
-    void init_image_data(HyperspectralPanoramaChannelPtr panoChannel);
+    void init_image_data(HyperspectralPanoramaPtr pano, int channelIndex);
 
 
 private:
