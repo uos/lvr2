@@ -1,11 +1,11 @@
 #include "LVRScanProjectBridge.hpp"
-#include "lvr2/registration/TransformUtils.hpp"
+#include "lvr2/util/TransformUtils.hpp"
 
 namespace lvr2
 {
 
 
-LVRScanProjectBridge::LVRScanProjectBridge(ScanProjectPtr project) : m_scanproject(project)
+LVRScanProjectBridge::LVRScanProjectBridge(ScanProjectPtr project, ProjectScale scale) : m_scanproject(project)
 {
 
     for (auto position : project->positions)
@@ -15,12 +15,15 @@ LVRScanProjectBridge::LVRScanProjectBridge(ScanProjectPtr project) : m_scanproje
         posBridgePtr = ScanPositionBridgePtr(new LVRScanPositionBridge(position));
         m_scanPositions.push_back(posBridgePtr);
     }
+
+    m_scale = scale;
 }
 
 LVRScanProjectBridge::LVRScanProjectBridge(const LVRScanProjectBridge& b)
 {
     m_scanproject = b.m_scanproject;
-    m_scanPositions = m_scanPositions;
+    m_scanPositions = b.m_scanPositions;
+    m_scale = b.m_scale;
 }
 
 LVRScanProjectBridge::LVRScanProjectBridge(ModelBridgePtr modelBridge)
@@ -29,7 +32,12 @@ LVRScanProjectBridge::LVRScanProjectBridge(ModelBridgePtr modelBridge)
     ScanProjectPtr modelProject(new ScanProject);
     ScanPositionPtr posPtr(new ScanPosition);
     ScanPtr scanPtr(new Scan);
-    posPtr->scans.push_back(scanPtr);
+
+
+    posPtr->lidars.push_back(LIDARPtr(new LIDAR));
+
+
+    posPtr->lidars[0]->scans.push_back(scanPtr);
     modelProject->positions.push_back(posPtr);
     
     //set Pointcloud
@@ -46,7 +54,7 @@ LVRScanProjectBridge::LVRScanProjectBridge(ModelBridgePtr modelBridge)
     angle[1] = modelBridge->getPose().t;
     angle[2] = modelBridge->getPose().p;
 
-    posPtr->registration = poseToMatrix(pos, angle);
+    posPtr->transformation = poseToMatrix(pos, angle);
     m_scanproject = modelProject;
 
     ScanPositionBridgePtr posBridgePtr;
@@ -79,6 +87,16 @@ ScanProjectPtr LVRScanProjectBridge::getScanProject()
 std::vector<ScanPositionBridgePtr> LVRScanProjectBridge::getScanPositions()
 {
     return m_scanPositions; 
+}
+
+void LVRScanProjectBridge::setScanPositions(std::vector<ScanPositionBridgePtr> scanPositions)
+{
+    m_scanPositions = scanPositions;
+}
+
+ProjectScale LVRScanProjectBridge::getScale()
+{
+    return m_scale;
 }
 
 LVRScanProjectBridge::~LVRScanProjectBridge()

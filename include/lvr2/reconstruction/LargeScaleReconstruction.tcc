@@ -27,11 +27,9 @@
 
 #include <iostream>
 #include "lvr2/types/ScanTypes.hpp"
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
-#include "lvr2/io/hdf5/ChannelIO.hpp"
-#include "lvr2/io/hdf5/ArrayIO.hpp"
-#include "lvr2/io/hdf5/VariantChannelIO.hpp"
-#include "lvr2/io/hdf5/MeshIO.hpp"
+#include "lvr2/io/scanio/ChannelIO.hpp"
+#include "lvr2/io/scanio/ArrayIO.hpp"
+#include "lvr2/io/scanio/VariantChannelIO.hpp"
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"

@@ -41,6 +41,12 @@ size_t VariantChannel<T...>::width() const
 }
 
 template<typename... T>
+std::string VariantChannel<T...>::typeName() const
+{
+    return boost::apply_visitor(TypeNameVisitor(), *this);
+}
+
+template<typename... T>
 template<typename U>
 boost::shared_array<U> VariantChannel<T...>::dataPtr() const
 {

@@ -40,8 +40,15 @@
 
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
-
+#include <vtkCylinderSource.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkActor.h>
+#include <vtkProperty.h>
+#include <vtkTransform.h>
+#include <vtkTransformPolyDataFilter.h>
 #include <boost/shared_ptr.hpp>
+#include "LVRVtkArrow.hpp"
 
 
 namespace lvr2
@@ -88,13 +95,20 @@ public:
     Pose getPose();
 
     std::vector<ModelBridgePtr> getModels();
+    void setModels(std::vector<ModelBridgePtr> models);
     void setVisibility(bool visible);
 
-private:
+    void showScannerPosition(vtkSmartPointer<vtkRenderer> renderer, int scaleFactor);
+    void hideScannerPosition(vtkSmartPointer<vtkRenderer> renderer);
+    bool scannerPositionIsVisible();
 
+private:
+    vtkSmartPointer<vtkActor>   m_cylinderActor;
+    bool                        m_scannerPositionIsVisible;
     std::vector<ModelBridgePtr> models;
-    ScanPositionPtr m_scanposition;
-    Pose m_pose;
+    ScanPositionPtr             m_scanposition;
+    Pose                        m_pose;
+    std::vector<LVRVtkArrow*>   m_arrows;
 
 };
 

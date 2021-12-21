@@ -41,7 +41,7 @@
 #include "lvr2/reconstruction/LocalApproximation.hpp"
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/MCTable.hpp"
-#include "lvr2/io/Progress.hpp"
+#include "lvr2/util/Progress.hpp"
 #include "DMCVecPointHandle.hpp"
 
 #include "metrics/MSRMetric.hpp"

@@ -49,12 +49,13 @@ using namespace std;
 
 #include "Options.hpp"
 
-#include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/util/Timestamp.hpp"
+#include "lvr2/util/IOUtils.hpp"
+#include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
-#include "lvr2/registration/TransformUtils.hpp"
+
 
 #ifdef LVR2_USE_PCL
 #include "lvr2/reconstruction/PCLFiltering.hpp"

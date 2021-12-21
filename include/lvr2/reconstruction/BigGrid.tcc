@@ -32,16 +32,15 @@
  *      Author: Isaak Mitschke
  */
 
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/io/LineReader.hpp"
-#include "lvr2/io/Progress.hpp"
-#include "lvr2/io/Timestamp.hpp"
-#include "lvr2/io/hdf5/ArrayIO.hpp"
-#include "lvr2/io/hdf5/ChannelIO.hpp"
-#include "lvr2/io/hdf5/MatrixIO.hpp"
-#include "lvr2/io/hdf5/PointCloudIO.hpp"
-#include "lvr2/io/hdf5/VariantChannelIO.hpp"
+#include "lvr2/io/scanio/ArrayIO.hpp"
+#include "lvr2/io/scanio/ChannelIO.hpp"
+#include "lvr2/io/scanio/MatrixIO.hpp"
+#include "lvr2/io/scanio/PointCloudIO.hpp"
+#include "lvr2/io/scanio/VariantChannelIO.hpp"
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"
+#include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional/optional_io.hpp>
@@ -561,12 +560,12 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         for (int i = 0; i < project->changed.size(); i++)
         {
             ScanPositionPtr pos = project->project->positions.at(i); // moegl. Weise project->project ?
-            assert(pos->scans.size() > 0);
-            size_t numPoints = pos->scans[0]->points->numPoints();
+            assert(pos->lidars.size() > 0);
+            size_t numPoints = pos->lidars[0]->scans[0]->points->numPoints();
             BoundingBox<BaseVecT> box;
 
-            boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
-            Transformd finalPose_n = pos->scans[0]->registration;
+            boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
+            Transformd finalPose_n = pos->lidars[0]->scans[0]->transformation;
 
             Transformd finalPose = finalPose_n;
 
@@ -628,10 +627,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             {
 
                 ScanPositionPtr pos = project->project->positions.at(i);
-                size_t numPoints = pos->scans[0]->points->numPoints();
-                boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
+                size_t numPoints = pos->lidars[0]->scans[0]->points->numPoints();
+                boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
                 m_numPoints += numPoints;
-                Transformd finalPose_n = pos->scans[0]->registration;
+                Transformd finalPose_n = pos->lidars[0]->scans[0]->transformation;
                 Transformd finalPose = finalPose_n;
                 int dx, dy, dz;
                 for (int k = 0; k < numPoints; k++)
@@ -713,11 +712,11 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             }
             else{
                 ScanPositionPtr pos = project->project->positions.at(i);
-                size_t numPoints = pos->scans[0]->points->numPoints();
+                size_t numPoints = pos->lidars[0]->scans[0]->points->numPoints();
 
 
-                boost::shared_array<float> points = pos->scans[0]->points->getPointArray();
-                Transformd finalPose_n = pos->scans[0]->registration;
+                boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
+                Transformd finalPose_n = pos->lidars[0]->scans[0]->transformation;
                 Transformd finalPose = finalPose_n;
                 for (int k = 0; k < numPoints; k++) {
                     Eigen::Vector4d point(

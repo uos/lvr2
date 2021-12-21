@@ -30,6 +30,8 @@
  *
  *  @date 02.06.2017
  *  @author Lukas Kalbertodt <lukas.kalbertodt@gmail.com>
+ *  @author Patrick Hoffmann <pahoffmann@uni-osnabrueck.de>
+ *  @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
 #ifndef LVR2_GEOMETRY_HALFEDGEMESH_H_
@@ -89,6 +91,8 @@ public:
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) final;
     VertexSplitResult splitVertex(VertexHandle vertexToBeSplitH);
     EdgeSplitResult splitEdge(EdgeHandle edgeH);
+    void fillHoles(size_t maxSize);
+    void laplacianSmoothing(float smoothFactor, int numSmooths=1);
     vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void flipEdge(EdgeHandle edgeH) final;
     void splitVertex(EdgeHandle eH, VertexHandle vH, BaseVecT pos1, BaseVecT pos2);

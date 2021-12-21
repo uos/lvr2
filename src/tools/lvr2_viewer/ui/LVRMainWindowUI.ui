@@ -698,8 +698,6 @@
     <addaction name="actionQuit"/>
     <addaction name="separator"/>
     <addaction name="actionOpenScanProject"/>
-    <addaction name="actionOpenScanProjectDir"/>
-    <addaction name="actionOpenScanProjectH5"/>
 
     <addaction name="actionExportScanProject"/>
     <addaction name="separator"/>
@@ -953,7 +951,7 @@
        </rect>
       </property>
       <property name="value">
-       <double>45.000000000000000</double>
+       <double>20.000000000000000</double>
       </property>
      </widget>
     </widget>
@@ -1802,16 +1800,6 @@
   <action name="actionOpenScanProject">
    <property name="text">
     <string>Open Scan Project</string>
-   </property>
-  </action>
-    <action name="actionOpenScanProjectDir">
-   <property name="text">
-    <string>Open Scan Project Directory</string>
-   </property>
-  </action>  
-  <action name="actionOpenScanProjectH5">
-   <property name="text">
-    <string>Open Scan Project H5</string>
    </property>
   </action>
   <action name="actionExportLabeledPointcloud">

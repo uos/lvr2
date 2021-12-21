@@ -55,7 +55,7 @@ template<typename BaseVecT>
 Normal<float> PointsetSurface<BaseVecT>::getInterpolatedNormal(const BaseVecT& position) const
 {
     FloatChannelOptional normals = m_pointBuffer->getFloatChannel("normals"); 
-    vector<size_t> indices;
+    std::vector<size_t> indices;
     Normal<float> result;
     m_searchTree->kSearch(position, m_ki, indices);
     for (int i = 0; i < m_ki; i++)

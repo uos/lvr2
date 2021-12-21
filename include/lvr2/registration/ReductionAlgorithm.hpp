@@ -29,6 +29,7 @@
 #define LVR2_REDUCTION_ALGORITHM_HPP
 
 #include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/algorithm/BaseBufferManipulators.hpp"
 
 #include <memory>
 
@@ -69,9 +70,10 @@ protected:
 using ReductionAlgorithmPtr = std::shared_ptr<ReductionAlgorithm>;
 
 
-
-
-// EXAMPLE: Reduce All: return empty
+/**
+ * @brief ReductionAlgorithm implementation that returns
+ *        empty point buffer
+ */
 class AllReductionAlgorithm : public ReductionAlgorithm 
 {
 public:
@@ -82,7 +84,79 @@ public:
      }
 };
 
+/**
+ * @brief ReductionAlgorithm implementation that returns a point
+ *        buffer with a fixed number of points with an evenly 
+ *        spaced selection from the original point buffer
+ */
+class FixedSizeReductionAlgorithm : public ReductionAlgorithm
+{
+public:
+     /**
+      * @param numPoints Number of points the original point buffer
+      *                  gets reduced to
+      */
+     FixedSizeReductionAlgorithm(size_t numPoints) :
+          m_numPoints(numPoints) {};
 
+     virtual PointBufferPtr getReducedPoints()
+     {
+          // return original point buffer if it has fewer/equal number of points
+          
+          auto it = m_pointBuffer->find("points");
+
+          if(it != m_pointBuffer->end())
+          {
+               // points exist
+               auto vchannel = m_pointBuffer->at("points");
+               if(vchannel.numElements() > m_numPoints)
+               {
+                    PointBuffer reduced_points = m_pointBuffer->manipulate( 
+                         manipulators::Slice(0, m_numPoints) 
+                    );
+
+                    return std::make_shared<PointBuffer>(reduced_points);
+               }
+          }
+
+          return m_pointBuffer;
+     }
+private:
+     size_t     m_numPoints;
+};
+
+/**
+ * @brief ReductionAlgorithm implementation that returns a specified
+ *        percentage from the original point buffer with an evenly 
+ *        spaced selection
+ */
+class PercentageReductionAlgorithm : public ReductionAlgorithm
+{
+public:
+     /**
+      * @param percent percentage to which the original point buffer
+      *                gets reduced
+      */
+     PercentageReductionAlgorithm(float percent) :
+          m_percent(percent) {};
+
+     virtual PointBufferPtr getReducedPoints()
+     {
+          // calculate the number of points and use FixedSize reduction
+          // since it already implements evenly spaced selection
+          size_t numOfPoints = (size_t)(m_pointBuffer->numPoints() * m_percent);
+          ReductionAlgorithmPtr fixedSizeReduction(new FixedSizeReductionAlgorithm(numOfPoints));
+          fixedSizeReduction->setPointBuffer(m_pointBuffer);
+          return fixedSizeReduction->getReducedPoints();
+     }
+private:
+     float     m_percent;
+};
+
+/**
+ * @brief ReductionAlgorithm implementation that returns
+ *        complete point buffer without any reduction
+ */
 class NoReductionAlgorithm : public ReductionAlgorithm 
 {
 public:
@@ -91,7 +165,6 @@ public:
           return m_pointBuffer;
      }
 };
-
 
 } // namespace lvr2
 

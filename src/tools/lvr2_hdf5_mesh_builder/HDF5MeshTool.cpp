@@ -32,7 +32,7 @@
 #include <string.h>
 
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
@@ -46,8 +46,8 @@
 #include <cstring>
 #include <memory>
 
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
-#include "lvr2/io/hdf5/MeshIO.hpp"
+#include "lvr2/io/deprecated/hdf5/HDF5FeatureBase.hpp"
+#include "lvr2/io/deprecated/hdf5/MeshIO.hpp"
 
 using namespace lvr2;
 

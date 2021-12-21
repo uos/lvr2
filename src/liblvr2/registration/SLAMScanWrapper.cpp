@@ -33,7 +33,7 @@
  */
 
 #include "lvr2/registration/SLAMScanWrapper.hpp"
-#include "lvr2/registration/TreeUtils.hpp"
+#include "lvr2/util/TreeUtils.hpp"
 
 #include <fstream>
 
@@ -47,7 +47,7 @@ SLAMScanWrapper::SLAMScanWrapper(ScanPtr scan)
 {
     if (m_scan)
     {
-        m_scan->registration = m_scan->poseEstimation;
+        m_scan->transformation = m_scan->poseEstimation;
 
         // TODO: m_scan->m_points->load();
 
@@ -77,7 +77,7 @@ ScanPtr SLAMScanWrapper::innerScan()
 
 void SLAMScanWrapper::transform(const Transformd& transform, bool writeFrame, FrameUse use)
 {
-    m_scan->registration = transform * m_scan->registration;
+    m_scan->transformation = transform * m_scan->transformation;
     m_deltaPose = transform * m_deltaPose;
 
     if (writeFrame)
@@ -157,7 +157,7 @@ size_t SLAMScanWrapper::numPoints() const
 
 const Transformd& SLAMScanWrapper::pose() const
 {
-    return m_scan->registration;
+    return m_scan->transformation;
 }
 
 const Transformd& SLAMScanWrapper::deltaPose() const

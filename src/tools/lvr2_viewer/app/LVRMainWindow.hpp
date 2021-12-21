@@ -103,13 +103,16 @@
 #include "../widgets/LVRPointcloudSelectionDialog.hpp"
 #include "../widgets/LVRHistogram.hpp"
 #include "../widgets/LVRLabelTreeWidget.hpp"
-#include "../widgets/LVRScanDataItem.hpp"
-#include "../widgets/LVRCamDataItem.hpp"
+//#include "../widgets/LVRScanDataItem.hpp"
+//#include "../widgets/LVRCamDataItem.hpp"
 #include "../widgets/LVRBoundingBoxItem.hpp"
 #include "../widgets/LVRPointInfo.hpp"
 #include "../widgets/LVRLabelClassTreeItem.hpp"
 #include "../widgets/LVRScanProjectOpenDialog.hpp"
+#include "../widgets/LVRReductionAlgorithmDialog.hpp"
 #include "../widgets/LVRScanImageItem.hpp"
+#include "../widgets/LVRScanCamItem.hpp"
+#include "../widgets/LVRExtrinsicsItem.hpp"
 #include "../vtkBridge/LVRPickingInteractor.hpp"
 #include "../vtkBridge/LVRLabelInteractor.hpp"
 #include "../vtkBridge/LVRVtkArrow.hpp"
@@ -162,9 +165,7 @@ public Q_SLOTS:
     void comboBoxIndexChanged(int index);
     void addNewInstance(LVRLabelClassTreeItem *);
     void loadModel();
-    void loadScanProject(ScanProjectPtr scanProject, QString filename);
-    void loadScanProjectDir(bool lazy = true);
-    void loadScanProjectH5();
+    void loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io = nullptr, ProjectScale scale = cm);
     void loadModels(const QStringList& filenames);
     void loadChunkedMesh();
     void loadChunkedMesh(const QStringList& filenames, std::vector<std::string> layers, int cacheSize, float highResDistance);
@@ -178,6 +179,7 @@ public Q_SLOTS:
     void exportScanProject();
 
     void cellSelected(QTreeWidgetItem* item, int column);
+    void doubleClick(QTreeWidgetItem* item, int column);
     void addLabelClass();
     void lassoButtonToggled(bool);
     void polygonButtonToggled(bool);
@@ -208,6 +210,7 @@ public Q_SLOTS:
     void changeShading(int shader);
 
     void showImage();
+    void changeReductionAlgorithm();
     void setViewToCamera();
 
     /// Updates all selected LVRPointCloudItems to the desired Spectral. **can take seconds**
@@ -236,6 +239,9 @@ public Q_SLOTS:
     void toggleWireframe(bool checkboxState);
     void toogleEDL(bool checkboxstate);
 
+    void initLoading();
+    void showLoading(bool state);
+    void resizeLoading();
     void refreshView();
     void updateView();
     void saveCamera();
@@ -248,6 +254,12 @@ public Q_SLOTS:
     void exportSelectedModel();
     void buildIncompatibilityBox(string actionName, unsigned char allowedTypes);
     void showBackgroundDialog();
+    void removeCamPosition();
+    void showCamPosition();
+    void showCamTrajectory();
+    void removeCamTrajectory();
+    void showScannerPosition();
+    void hideScannerPosition();
 
     /// Shows a Popup Dialog with Information about a Point
     void showPointInfoDialog();
@@ -260,7 +272,8 @@ public Q_SLOTS:
     void updateSpectralSlidersEnabled(bool checked);
     /// Switches between Sliders and Gradients. checked == true => Gradient DockWidget enabled
     void updateSpectralGradientEnabled(bool checked);
-    QTreeWidgetItem* addScans(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent);
+
+    //QTreeWidgetItem* addScans(std::shared_ptr<ScanDataManager> sdm, QTreeWidgetItem *parent);
 
     LVRModelItem* getModelItem(QTreeWidgetItem* item);
     LVRPointCloudItem* getPointCloudItem(QTreeWidgetItem* item);
@@ -287,6 +300,7 @@ Q_SIGNALS:
     void labelAdded(QTreeWidgetItem*);
     void hidePoints(int, bool);
     void labelLoaded(int, std::vector<int>);
+    void showLoadingLabel();
 
 private:
     void setupQVTK();
@@ -319,6 +333,9 @@ private:
     ChunkedMeshCuller* m_chunkCuller;
     QMenu*                                      m_treeParentItemContextMenu;
     QMenu*                                      m_treeChildItemContextMenu;
+    QMenu*                                      m_scanPositionContextMenu;
+    QMenu*                                      m_scanImageContextMenu;
+    QMenu*                                      m_scanCamContextMenu;
 
     QMenu*                                      m_labelTreeParentItemContextMenu;
     QMenu*                                      m_labelTreeChildItemContextMenu;
@@ -326,8 +343,6 @@ private:
     QAction*                            m_actionOpen;
     QAction*                            m_actionOpenChunkedMesh;
     QAction*                            m_actionOpenScanProject;
-    QAction*                            m_actionOpenScanProjectDir;
-    QAction*                            m_actionOpenScanProjectH5;
     QAction*                            m_actionExport;
     QAction*                            m_actionQuit;
     // Toolbar item "Views"
@@ -402,6 +417,13 @@ private:
     QAction*                            m_actionUnloadPointCloudData;
 
     QAction*                            m_actionShowImage;
+    QAction*                            m_actionReductionAlgorithm;
+    QAction*                            m_actionShowScannerPosition;
+    QAction*                            m_actionHideScannerPosition;
+    QAction*                            m_actionShowCamPosition;
+    QAction*                            m_actionShowCamTrajectory;
+    QAction*                            m_actionRemoveCamTrajectory;
+    QAction*                            m_actionRemoveCamPosition;
     QAction*                            m_actionSetViewToCamera;
     
     //Label
@@ -410,6 +432,8 @@ private:
     QAction*                            m_actionAddNewInstance;
     QAction*                            m_actionRemoveInstance;
     QAction*                            m_actionShowWaveform;
+
+    QLabel*                       m_loadingLabel;
 
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 

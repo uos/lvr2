@@ -30,8 +30,20 @@
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/GeoTIFFIO.hpp"
+#include "lvr2/io/baseio/GeoTIFFIO.hpp"
 #include "lvr2/display/ColorMap.hpp"
+
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#ifndef _SSIZE_T_DEFINED
+#ifdef  _WIN64
+typedef __int64    ssize_t;
+#else
+typedef _W64 int   ssize_t;
+#endif
+#define _SSIZE_T_DEFINED
+#endif
+#endif
 
 using boost::optional;
 using std::unique_ptr;

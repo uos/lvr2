@@ -23,7 +23,7 @@ set(GS_DEPENDENCIES
 #####################################################################################
 
 add_executable(lvr2_gs_reconstruction ${GS_RECONSTRUCTION_SOURCES})
-target_link_libraries(lvr2_gs_reconstruction ${GS_DEPENDENCIES} boost_date_time ${Boost_LOG_LIBRARY_RELEASE} lz4)
+target_link_libraries(lvr2_gs_reconstruction ${GS_DEPENDENCIES} ${Boost_LOG_LIBRARY_RELEASE})
 
 install(TARGETS lvr2_gs_reconstruction
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

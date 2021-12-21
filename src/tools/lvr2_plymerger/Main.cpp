@@ -30,7 +30,7 @@
 #include <rply.h>
 
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/Progress.hpp"
+#include "lvr2/util/Progress.hpp"
 
 #include <boost/filesystem.hpp>
 

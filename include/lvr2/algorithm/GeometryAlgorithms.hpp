@@ -36,7 +36,7 @@
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/geometry/Handles.hpp"
 #include "lvr2/geometry/Normal.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <list>
 

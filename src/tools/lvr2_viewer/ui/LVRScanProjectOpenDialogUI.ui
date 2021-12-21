@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>265</height>
+    <width>482</width>
+    <height>280</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Open Scan Project</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>50</x>
-     <y>230</y>
-     <width>341</width>
+     <x>300</x>
+     <y>240</y>
+     <width>171</width>
      <height>32</height>
     </rect>
    </property>
@@ -34,19 +34,19 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>381</width>
+     <width>461</width>
      <height>121</height>
     </rect>
    </property>
    <property name="title">
-    <string>Select Scan Project Type</string>
+    <string> Select Scan Project Type</string>
    </property>
    <widget class="QLineEdit" name="lineEditPath">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>80</y>
-      <width>321</width>
+      <width>401</width>
       <height>25</height>
      </rect>
     </property>
@@ -54,7 +54,7 @@
    <widget class="QToolButton" name="toolButtonPath">
     <property name="geometry">
      <rect>
-      <x>345</x>
+      <x>424</x>
       <y>80</y>
       <width>26</width>
       <height>24</height>
@@ -69,7 +69,7 @@
      <rect>
       <x>10</x>
       <y>40</y>
-      <width>361</width>
+      <width>441</width>
       <height>25</height>
      </rect>
     </property>
@@ -90,21 +90,81 @@
     <rect>
      <x>10</x>
      <y>150</y>
-     <width>381</width>
+     <width>181</width>
      <height>71</height>
     </rect>
    </property>
    <property name="title">
-    <string>Select Schema</string>
+    <string> Schema</string>
    </property>
    <widget class="QComboBox" name="comboBoxSchema">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>33</y>
-      <width>361</width>
+      <width>161</width>
       <height>25</height>
      </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>None</string>
+     </property>
+    </item>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBoxReduction">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>150</y>
+     <width>181</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string> Reduction</string>
+   </property>
+   <widget class="QPushButton" name="pushButtonReduction">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>33</y>
+      <width>161</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>No Reduction</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBoxScale">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>150</y>
+     <width>81</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string> Scale</string>
+   </property>
+   <widget class="QComboBox" name="comboBoxScale">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>33</y>
+      <width>61</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="currentText">
+     <string>None</string>
     </property>
     <item>
      <property name="text">

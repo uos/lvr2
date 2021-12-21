@@ -40,12 +40,15 @@
 
 #include "LVRPointBufferBridge.hpp"
 #include "LVRMeshBufferBridge.hpp"
+#include "LVRVtkArrow.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 #include <vtkImageData.h>
 #include <vtkImageActor.h>
 #include <vtkImageMapper3D.h>
+#include <vtkImageMapper.h>
+#include <vtkActor2D.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -65,8 +68,11 @@ public:
      * @brief       Constructor. Parses the model information and generates vtk actor
      *              instances for the given data.
      */
-    LVRScanImageBridge(ScanImagePtr img);
+    LVRScanImageBridge(CameraImagePtr img);
 
+    /**
+     *  @brief      Copy constructor.
+     */
     LVRScanImageBridge(const LVRScanImageBridge& b);
 
     /**
@@ -85,9 +91,22 @@ public:
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
 
 
-    void        setImage(const cv::Mat& img);
+    /**
+     *  @brief          Adds the given position actors to the imagebridge and renderer
+     *  @param actor    Actor representing the position of the camera when taking the scanimage
+     *  @param arrow    Arrows representing a coordinate system for the camera
+     */
+    void        addPosActor(vtkSmartPointer<vtkRenderer> renderer ,vtkSmartPointer<vtkActor> actor, std::vector<LVRVtkArrow*> arrows);
 
-    void		setVisibility(bool visible);
+    /**
+     *  @brief           Remove the position actors from the renderer
+     */
+    void        removePosActor(vtkSmartPointer<vtkRenderer> renderer);
+
+    /**
+     *  @brief          Sets the image stored in the ImageBridge to the given image
+     */
+    void        setImage(const cv::Mat& img);
 
 
     // Declare scanImage item classes as friends to have fast access to data chunks
@@ -95,9 +114,11 @@ public:
 
 private:
 
-    ScanImagePtr image;
+    CameraImagePtr image;
     vtkSmartPointer<vtkImageData> imageData;
-    vtkSmartPointer<vtkImageActor> imageActor;
+    vtkSmartPointer<vtkActor2D> imageActor;
+    vtkSmartPointer<vtkActor> posActor;
+    std::vector<LVRVtkArrow*> m_arrows;
 };
 
 typedef boost::shared_ptr<LVRScanImageBridge> ScanImageBridgePtr;

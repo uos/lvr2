@@ -32,10 +32,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include "lvr2/io/Progress.hpp"
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/geometry/Handles.hpp"
 #include "lvr2/util/Meap.hpp"
+#include "lvr2/util/Progress.hpp"
 
 using std::unordered_set;
 using std::vector;
@@ -159,7 +159,7 @@ size_t iterativeEdgeCollapse(
     string msg = timestamp.getElapsedTime()
         + "Collapsing up to "
         + std::to_string(count)
-        + "of the edges ";
+        + " edges ";
     ProgressBar progress(count + 1, msg);
     ++progress;
 

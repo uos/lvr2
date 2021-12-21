@@ -25,20 +25,22 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "LargeScaleOptions.hpp"
-#include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
-#include "lvr2/algorithm/GeometryAlgorithms.hpp"
-#include <algorithm>
-#include <iostream>
-#include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/config/lvropenmp.hpp"
 #include <random>
 #include <string>
-#include <lvr2/io/hdf5/ScanIO.hpp>
+#include <algorithm>
+#include <iostream>
+
 #include <boost/filesystem.hpp>
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
-#include "lvr2/io/hdf5/ScanProjectIO.hpp"
-#include "lvr2/io/ScanIOUtils.hpp"
+
+#include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
+#include "lvr2/algorithm/GeometryAlgorithms.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/config/lvropenmp.hpp"
+#include "lvr2/io/scanio/ScanProjectIO.hpp"
+#include "lvr2/util/IOUtils.hpp"
+
+#include "LargeScaleOptions.hpp"
+
 
 using std::cout;
 using std::endl;

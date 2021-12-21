@@ -34,7 +34,7 @@
 #ifndef LVRSCANCAMBRIDGE_HPP_
 #define LVRSCANCAMBRIDGE_HPP_
 
-#include "lvr2/io/descriptions/ScanCameraIO.hpp"
+#include "lvr2/io/scanio/CameraIO.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
@@ -62,7 +62,11 @@ public:
      * @brief       Constructor. Parses the model information and generates vtk actor
      *              instances for the given data.
      */
-    LVRScanCamBridge(ScanCameraPtr camera);
+    LVRScanCamBridge(CameraPtr camera);
+
+    /**
+     *  @brief      Copy constructor
+     */
 
     LVRScanCamBridge(const LVRScanCamBridge& b);
 
@@ -71,26 +75,12 @@ public:
      */
     virtual ~LVRScanCamBridge();
 
-    /**
-     * @brief       Adds the generated actors to the given renderer
-     */
-    void         addActors(vtkSmartPointer<vtkRenderer> renderer);
 
-    /**
-     * @brief       Removes the generated actors from the given renderer
-     */
-    void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
-
-
-
-    void		setVisibility(bool visible);
-
-
-    // Declare model item classes as friends to have fast access to data chunks
+    // Declare cam item class as friend to have fast access to data chunks
     friend class LVRScanCamItem;
 
 private:
-    ScanCameraPtr cam;
+    CameraPtr m_cam;
 };
 
 typedef boost::shared_ptr<LVRScanCamBridge> ScanCamBridgePtr;

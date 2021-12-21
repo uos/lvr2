@@ -13,7 +13,6 @@
 
 namespace lvr2 {
 
-
 template<typename... T>
 class VariantChannel : public boost::variant<Channel<T>...>
 {
@@ -25,6 +24,7 @@ protected:
 
 public:
     using types = std::tuple<T...>;
+    using base::which;
 
     /**
      * @brief Access type index with type
@@ -45,6 +45,8 @@ public:
 
     size_t width() const;
 
+    std::string typeName() const;
+
     template<typename U>
     boost::shared_array<U> dataPtr() const;
 
@@ -59,6 +61,9 @@ public:
      * 
      */
     int type() const;
+
+    // constexpr std::string typeString() const;
+
 
     template<typename U>
     Channel<U> extract() const;
@@ -75,7 +80,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const VariantChannel<T...>& ch)
     {
-        os << "type: " << ch.type() << ", " << static_cast <const base &>(ch);
+        os << "type: " << ch.typeName() << ", " << static_cast <const base &>(ch);
         return os;
     }
 
@@ -98,6 +103,15 @@ protected:
         size_t operator()(const Channel<U>& channel) const
         {
             return channel.width();
+        }
+    };
+
+    struct TypeNameVisitor : public boost::static_visitor<std::string>
+    {
+        template<typename U>
+        std::string operator()(const Channel<U>& channel) const
+        {
+            return channel.typeName();
         }
     };
 

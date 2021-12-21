@@ -1,6 +1,17 @@
 #ifndef MEMORY_HANDLER
 #define MEMORY_HANDLER
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    #ifndef _SSIZE_T_DEFINED
+        #ifdef  _WIN64
+            typedef __int64    ssize_t;
+        #else
+            typedef _W64 int   ssize_t;
+        #endif
+        #define _SSIZE_T_DEFINED
+    #endif
+#endif
+
 #include <iostream>
 #include <vector>
 #include <string.h> //memset

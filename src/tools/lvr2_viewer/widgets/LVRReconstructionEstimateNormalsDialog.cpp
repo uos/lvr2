@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 
 #include <QFileDialog>
 #include "LVRReconstructionEstimateNormalsDialog.hpp"
@@ -34,7 +35,7 @@
 #include "lvr2/io/DataStruct.hpp"
 
 #include "lvr2/reconstruction/PointsetSurface.hpp"
-#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
+
 
 #if defined CUDA_FOUND
     #define GPU_FOUND
@@ -295,25 +296,27 @@ void LVREstimateNormalsDialog::estimateNormals()
                 m_pointCloudWithNormals = new LVRModelItem(bridge, base);
                 m_pointCloudWithNormals->setPose(model_item->getPose());
             }
-            else if (parent->type() == LVRScanDataItemType)
-            {
-                LVRScanDataItem *sd_item = static_cast<LVRScanDataItem *>(parent);
-                base = sd_item->getName() + " (w. normals)";
-                m_pointCloudWithNormals = new LVRModelItem(bridge, base);
-                m_pointCloudWithNormals->setPose(sd_item->getPose());
-            }
+            // else if (parent->type() == LVRScanDataItemType)
+            // {
+            //     LVRScanDataItem *sd_item = static_cast<LVRScanDataItem *>(parent);
+            //     base = sd_item->getName() + " (w. normals)";
+            //     m_pointCloudWithNormals = new LVRModelItem(bridge, base);
+            //     m_pointCloudWithNormals->setPose(sd_item->getPose());
+            // }
 
             m_treeWidget->addTopLevelItem(m_pointCloudWithNormals);
             m_pointCloudWithNormals->setExpanded(true);
         
         } else {
 
-            if(parent->type() == LVRScanDataItemType)
+            // if(parent->type() == LVRScanDataItemType)
+            // {
+            //     // pc_item->update();
+            //     LVRScanDataItem *sd_item = static_cast<LVRScanDataItem *>(parent);
+            //     sd_item->reload();
+            // } 
+            // else 
             {
-                // pc_item->update();
-                LVRScanDataItem *sd_item = static_cast<LVRScanDataItem *>(parent);
-                sd_item->reload();
-            } else {
                 vtkSmartPointer<vtkRenderer> renderer = m_renderWindow->GetRenderers()->GetFirstRenderer();
                 renderer->RemoveActor(pc_item->getPointBufferBridge()->getPointCloudActor());
                 pc_item->update();

@@ -2,10 +2,10 @@
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/ScanIOUtils.hpp"
-#include "lvr2/io/Timestamp.hpp"
 #include "lvr2/io/hdf5/ScanProjectIO.hpp"
 #include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <boost/filesystem.hpp>
 

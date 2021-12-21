@@ -33,7 +33,7 @@
  */
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"
-#include "lvr2/io/Progress.hpp"
+#include "lvr2/util/Progress.hpp"
 
 namespace lvr2
 {

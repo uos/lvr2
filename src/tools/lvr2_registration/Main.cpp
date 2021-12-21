@@ -33,17 +33,9 @@
  */
 
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/IOUtils.hpp"
+#include "lvr2/util/IOUtils.hpp"
 #include "lvr2/registration/SLAMAlign.hpp"
-#include "lvr2/io/HDF5IO.hpp"
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
-#include "lvr2/io/hdf5/ArrayIO.hpp"
-#include "lvr2/io/hdf5/ChannelIO.hpp"
-#include "lvr2/io/hdf5/VariantChannelIO.hpp"
-#include "lvr2/io/hdf5/PointCloudIO.hpp"
-#include "lvr2/io/hdf5/MatrixIO.hpp"
 #include "lvr2/registration/RegistrationPipeline.hpp"
-
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -56,34 +48,6 @@ using namespace lvr2;
 using namespace std;
 using boost::filesystem::path;
 
-string format_name(const string& format, int index)
-{
-    size_t size = snprintf(nullptr, 0, format.c_str(), index) + 1; // Extra space for '\0'
-    char buff[size];
-    snprintf(buff, size, format.c_str(), index);
-    return string(buff);
-}
-
-
-string map_format(const string& format)
-{
-    if (format == "uos")
-    {
-        return "scan%03i.3d";
-    }
-    else if (format == "riegl_txt")
-    {
-        return "scan%03i.txt";
-    }
-    else if (format == "ply")
-    {
-        return "scan%03i.ply";
-    }
-    else
-    {
-        throw boost::program_options::error(string("Unknown Output format: ") + format);
-    }
-}
 
 int main(int argc, char** argv)
 {
@@ -300,30 +264,9 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    using HDF5PCIO = lvr2::Hdf5IO<
-                lvr2::hdf5features::ArrayIO,
-                lvr2::hdf5features::ChannelIO,
-                lvr2::hdf5features::VariantChannelIO,
-                lvr2::hdf5features::PointCloudIO,
-                lvr2::hdf5features::MatrixIO>;
-    // contains the hdf5
-    std::shared_ptr<HDF5PCIO> h5_ptr(new HDF5PCIO());
-
     if(options.useHDF)
     {
-        cout << "HDF5 is used!" << endl;
-        ifstream f(dir.c_str());
-        if (f.good())
-        {
-            // create boost::fileystem::path to hdf file location
-            boost::filesystem::path pathToHDF(dir.c_str());
-            h5_ptr->open(pathToHDF.string());
-        }
-        else
-        {
-            cerr << "The given HDF5 file could not be opened! Oben" << endl;
-            return EXIT_FAILURE;
-        }
+        /// TODO: Should be resolved when using scan project io
     }
 
     // =============== search scans ===============
@@ -331,21 +274,7 @@ int main(int argc, char** argv)
     {
         if (!options.useHDF)
         {
-            for (int i = 0; i < 100; i++)
-            {
-                path file = dir / format_name(format, i);
-                if (exists(file))
-                {
-                    start = i;
-                    cout << "First scan: " << file.filename() << endl;
-                    break;
-                }
-            }
-            if (start == -1)
-            {
-                cerr << "Could not find a starting scan. are you using the right format?" << endl;
-                return EXIT_FAILURE;
-            }
+           /// TODO: Should be resolved when using scan project io
         }
     }
     if (!options.useHDF)
@@ -383,82 +312,82 @@ int main(int argc, char** argv)
 
     int count = end - start + 1;
 
-    vector<string> numOfScansInHDF;
-    if(h5_ptr->m_hdf5_file)
-    {
-        HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
-        numOfScansInHDF = hfscans.listObjectNames();
-    }
+    // vector<string> numOfScansInHDF;
+    // if(h5_ptr->m_hdf5_file)
+    // {
+    //     HighFive::Group hfscans = hdf5util::getGroup(h5_ptr->m_hdf5_file, "raw/scans");
+    //     numOfScansInHDF = hfscans.listObjectNames();
+    // }
 
-    vector<lvr2::ScanPtr> rawScans;
-    if (options.useHDF)
-    {  
-        for (int i = 0; i < numOfScansInHDF.size(); i++)
-        {
-            // create a scan object for each scan in hdf
-            ScanPtr tempScan(new Scan());
-            size_t six;
-            size_t pointsNum;
-            boost::shared_array<float> bb_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "boundingBox", six);
-            BoundingBox<BaseVector<float>> bb(BaseVector<float>(bb_array[0], bb_array[1], bb_array[2]),
-                                    BaseVector<float>(bb_array[3], bb_array[4], bb_array[5]));
-            // bounding box transfered to object
-            tempScan->boundingBox = bb;
+    // vector<lvr2::ScanPtr> rawScans;
+    // if (options.useHDF)
+    // {  
+    //     for (int i = 0; i < numOfScansInHDF.size(); i++)
+    //     {
+    //         // create a scan object for each scan in hdf
+    //         ScanPtr tempScan(new Scan());
+    //         size_t six;
+    //         size_t pointsNum;
+    //         boost::shared_array<float> bb_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "boundingBox", six);
+    //         BoundingBox<BaseVector<float>> bb(BaseVector<float>(bb_array[0], bb_array[1], bb_array[2]),
+    //                                 BaseVector<float>(bb_array[3], bb_array[4], bb_array[5]));
+    //         // bounding box transfered to object
+    //         tempScan->boundingBox = bb;
 
-            boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "fov", six);
-            // fov transfered to object
+    //         boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "fov", six);
+    //         // fov transfered to object
           
-            // TODO: min and max angles from new structure
+    //         // TODO: min and max angles from new structure
 
-            boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "resolution", six);
-            // resolution transfered
-            tempScan->hResolution = res_array[0];
-            tempScan->vResolution = res_array[1];
-            // point cloud transfered
-            boost::shared_array<float> point_array = h5_ptr->loadArray<float>("raw/scans/"+ numOfScansInHDF[i], "points", pointsNum);
-            // important because x, y, z coords
-            pointsNum = pointsNum / 3;
-            PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));
-            tempScan->points = pointPointer;
-            // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + numOfScansInHDF[i]);
-            tempScan->pointsLoaded = true;
-            // pose transfered
-            tempScan->poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + numOfScansInHDF[i], "initialPose").get();
-            tempScan->positionNumber = i;
+    //         boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "resolution", six);
+    //         // resolution transfered
+    //         tempScan->hResolution = res_array[0];
+    //         tempScan->vResolution = res_array[1];
+    //         // point cloud transfered
+    //         boost::shared_array<float> point_array = h5_ptr->loadArray<float>("raw/scans/"+ numOfScansInHDF[i], "points", pointsNum);
+    //         // important because x, y, z coords
+    //         pointsNum = pointsNum / 3;
+    //         PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));
+    //         tempScan->points = pointPointer;
+    //         // tempScan->m_points = h5_ptr->loadPointCloud("raw/scans/" + numOfScansInHDF[i]);
+    //         tempScan->pointsLoaded = true;
+    //         // pose transfered
+    //         tempScan->poseEstimation = h5_ptr->loadMatrix<Transformd>("raw/scans/" + numOfScansInHDF[i], "initialPose").get();
+    //         tempScan->positionNumber = i;
 
-            tempScan->scanRoot = "raw/scans/" + numOfScansInHDF[i];
+    //         tempScan->scanRoot = "raw/scans/" + numOfScansInHDF[i];
 
 
-            // sets the finalPose to the identiy matrix
-            tempScan->registration = Transformd::Identity();
+    //         // sets the finalPose to the identiy matrix
+    //         tempScan->registration = Transformd::Identity();
 
             
-            // DEBUG
-            ScanPosition pos;
-            pos.scans.push_back(tempScan);
-            proj.project->positions.push_back(std::make_shared<ScanPosition>(pos));
-            proj.changed.push_back(false);
+    //         // DEBUG
+    //         ScanPosition pos;
+    //         pos.scans.push_back(tempScan);
+    //         proj.project->positions.push_back(std::make_shared<ScanPosition>(pos));
+    //         proj.changed.push_back(false);
 
-            SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
+    //         SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(tempScan));
 
-           // scans.push_back(slamScan);
-           // align.addScan(slamScan);
-        }
-        // DEBUG
+    //        // scans.push_back(slamScan);
+    //        // align.addScan(slamScan);
+    //     }
+    //     // DEBUG
 
-         cout << "vor Pipe Konstruktor" << endl;
-         ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
-         RegistrationPipeline pipe(&options, projPtr);
-         pipe.doRegistration();
-         cout << "Nach doRegistration" << endl;
-         for (size_t i = 0; i < projPtr->changed.size(); i++)
-         {
-             cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
-         }
+    //      cout << "vor Pipe Konstruktor" << endl;
+    //      ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
+    //      RegistrationPipeline pipe(&options, projPtr);
+    //      pipe.doRegistration();
+    //      cout << "Nach doRegistration" << endl;
+    //      for (size_t i = 0; i < projPtr->changed.size(); i++)
+    //      {
+    //          cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
+    //      }
 
-         cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scans[0]->registration << endl;
-    }
-    else
+    //      cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scans[0]->registration << endl;
+    // }
+    // else
     {
         // case for not using HDF5
         // TODO: change to ScanDirectoryParser once that is done

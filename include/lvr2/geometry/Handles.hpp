@@ -93,7 +93,7 @@ namespace lvr2
  *
  * [1]: https://math.stackexchange.com/q/425968/340615
  */
-using Index = uint32_t;
+using Index = pmp::IndexType;
 
 // Note on strongly typed handles:
 //
@@ -131,81 +131,53 @@ using Index = uint32_t;
 // what a specific parameter is for.
 
 /// Handle to access edges of the mesh.
-class EdgeHandle : public BaseHandle<Index>
-{
-    using BaseHandle<Index>::BaseHandle;
-};
+using EdgeHandle = pmp::Edge;
 
 /// Handle to access faces of the mesh.
-class FaceHandle : public BaseHandle<Index>
-{
-    using BaseHandle<Index>::BaseHandle;
-};
+using FaceHandle = pmp::Face;
 
 /// Handle to access vertices of the mesh.
-class VertexHandle : public BaseHandle<Index>
-{
-    using BaseHandle<Index>::BaseHandle;
-};
+using VertexHandle = pmp::Vertex;
 
 /// Handle to access Cluster of the ClusterBiMap.
-class ClusterHandle : public BaseHandle<Index>
+class ClusterHandle : public BaseHandle
 {
-    using BaseHandle<Index>::BaseHandle;
+    using BaseHandle::BaseHandle;
 };
 
 /// Handle to access textures of the mesh
-class TextureHandle : public BaseHandle<Index>
+class TextureHandle : public BaseHandle
 {
-    using BaseHandle<Index>::BaseHandle;
+    using BaseHandle::BaseHandle;
 };
 
 /// Semantically equivalent to `boost::optional<EdgeHandle>`
-class OptionalEdgeHandle : public BaseOptionalHandle<Index, EdgeHandle>
+class OptionalEdgeHandle : public BaseOptionalHandle<EdgeHandle>
 {
-    using BaseOptionalHandle<Index, EdgeHandle>::BaseOptionalHandle;
+    using BaseOptionalHandle<EdgeHandle>::BaseOptionalHandle;
 };
 
 /// Semantically equivalent to `boost::optional<FaceHandle>`
-class OptionalFaceHandle : public BaseOptionalHandle<Index, FaceHandle>
+class OptionalFaceHandle : public BaseOptionalHandle<FaceHandle>
 {
-    using BaseOptionalHandle<Index, FaceHandle>::BaseOptionalHandle;
+    using BaseOptionalHandle<FaceHandle>::BaseOptionalHandle;
 };
 
 /// Semantically equivalent to `boost::optional<VertexHandle>`
-class OptionalVertexHandle : public BaseOptionalHandle<Index, VertexHandle>
+class OptionalVertexHandle : public BaseOptionalHandle<VertexHandle>
 {
-    using BaseOptionalHandle<Index, VertexHandle>::BaseOptionalHandle;
+    using BaseOptionalHandle<VertexHandle>::BaseOptionalHandle;
 };
 
 /// Semantically equivalent to `boost::optional<ClusterHandle>`
-class OptionalClusterHandle : public BaseOptionalHandle<Index, ClusterHandle>
+class OptionalClusterHandle : public BaseOptionalHandle<ClusterHandle>
 {
-    using BaseOptionalHandle<Index, ClusterHandle>::BaseOptionalHandle;
+    using BaseOptionalHandle<ClusterHandle>::BaseOptionalHandle;
 };
-
-inline std::ostream& operator<<(std::ostream& os, const EdgeHandle& h)
-{
-    os << "E" << h.idx();
-    return os;
-}
-
-inline std::ostream& operator<<(std::ostream& os, const FaceHandle& h)
-{
-    os << "F" << h.idx();
-    return os;
-}
-
-inline std::ostream& operator<<(std::ostream& os, const VertexHandle& h)
-{
-    os << "V" << h.idx();
-    return os;
-}
 
 inline std::ostream& operator<<(std::ostream& os, const ClusterHandle& h)
 {
-    os << "C" << h.idx();
-    return os;
+    return (os << 'c' << h.idx());
 }
 
 inline std::ostream& operator<<(std::ostream& os, const OptionalEdgeHandle& h)

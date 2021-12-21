@@ -34,7 +34,7 @@
 #include <vtkSmartPointer.h>
 
 #include "../vtkBridge/LVRModelBridge.hpp"
-#include "../util/qttf.hpp"
+//#include "../util/qttf.hpp"
 
 #include "ui_LVRReconstructionMarchingCubesDialogUI.h"
 #include "LVRPointCloudItem.hpp"

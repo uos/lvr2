@@ -52,10 +52,9 @@
 #include "lvr2/geometry/BoundingRectangle.hpp"
 #include "lvr2/algorithm/Texturizer.hpp"
 #include "lvr2/algorithm/ColorAlgorithms.hpp"
+#include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
-
-#include "lvr2/io/Progress.hpp"
-#include "lvr2/io/Timestamp.hpp"
 #include <unordered_map>
 #include <unordered_set>
 

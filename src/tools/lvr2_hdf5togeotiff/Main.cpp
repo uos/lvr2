@@ -2,9 +2,6 @@
  * @brief Main file for HDF5 to GeoTIFF or BSQ to HDF5 conversion.
  * @author ndettmer <ndettmer@uos.de>
  */
-
-#include "lvr2/io/HDF5IO.hpp"
-
 #include <boost/range/iterator_range.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
@@ -14,7 +11,7 @@
 
 #include <sys/stat.h>
 
-#include "lvr2/io/GeoTIFFIO.hpp"
+#include "lvr2/io/baseio/GeoTIFFIO.hpp"
 #include "Options.hpp"
 
 

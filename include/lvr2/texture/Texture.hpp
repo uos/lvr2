@@ -40,7 +40,7 @@
 #include <math.h>
 #include <cstdio>
 #include "lvr2/geometry/BoundingRectangle.hpp"
-#include "lvr2/io/PPMIO.hpp"
+#include "lvr2/io/baseio/PPMIO.hpp"
 
 namespace lvr2 
 {

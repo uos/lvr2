@@ -20,7 +20,7 @@ LVRLabeledScanProjectEditMarkItem::LVRLabeledScanProjectEditMarkItem(LabeledScan
     setText(0, name);
     if(bridge->getScanProjectBridgePtr())
     {
-        LVRScanProjectItem* item = new LVRScanProjectItem(bridge->getScanProjectBridgePtr(), "ScanProject");
+        LVRScanProjectItem* item = new LVRScanProjectItem(bridge->getScanProjectBridgePtr(), nullptr, "ScanProject");
         addChild(item);
     }
     if(bridge->getLabelBridgePtr())

@@ -1,5 +1,5 @@
 #include "LVRLabeledScanProjectEditMarkBridge.hpp"
-#include "lvr2/registration/TransformUtils.hpp"
+#include "lvr2/util/TransformUtils.hpp"
 
 namespace lvr2
 {

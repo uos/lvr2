@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.4)
 project(LAS_VEGAS VERSION 2)
 
+if(MSVC)
+    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
+        CACHE STRING "Vcpkg toolchain file")
+endif()
+
 # OPTIONS
 option(BUILD_EXAMPLES "Build the examples" OFF)
 
@@ -52,6 +57,12 @@ endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)
   list(APPEND LVR2_DEFINITIONS -DNOMINMAX)
+    set(CMAKE_CXX_STANDARD 17)
+    set(HAVE_CXX_ATOMICS64_WITHOUT_LIB True)
+    set(HAVE_CXX_ATOMICS_WITHOUT_LIB True)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+  add_compile_definitions(_HAS_STD_BYTE=0)
+  add_compile_definitions(_USE_MATH_DEFINES)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
   # with cmake 3.3
@@ -84,7 +95,11 @@ endif(GDAL_FOUND)
 #------------------------------------------------------------------------------
 # Searching for CUDA
 #------------------------------------------------------------------------------
-option(WITH_CUDA "Compile with CUDA support" ON)
+if(MSVC)
+    option(WITH_CUDA "Compile with CUDA support" FALSE)
+else()
+    option(WITH_CUDA "Compile with CUDA support" TRUE)
+endif()
 if(NOT APPLE AND WITH_CUDA)
 find_package( CUDA 8)
 if(CUDA_FOUND)
@@ -284,14 +299,14 @@ set(Boost_COMPONENTS
   thread
   serialization
   timer
-  iostreams)
+  iostreams
+  date_time)
 
 if(MPI_FOUND)
   set($Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
 endif()
 
-find_package(Boost 1.54 COMPONENTS ${Boost_COMPONENTS} REQUIRED QUIET)
-
+find_package(Boost COMPONENTS ${Boost_COMPONENTS} REQUIRED QUIET)
 
 link_directories(${Boost_LIBRARY_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
@@ -307,6 +322,12 @@ if(OPENMP_FOUND)
   link_directories(${OpenMP_LIBRARY_DIRS})
   include_directories(${OpenMP_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPEN_MP)
+
+  # tasks only in OpenMP 3.0 and above thus we need llvm openmp in experimental mode
+  # See here: https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/
+  if(MSVC)
+    set(CMAKE_CXX_FLAGS " -openmp:llvm -openmp:experimental ${CMAKE_CXX_FLAGS}")
+  endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(OPENMP_FOUND)
 
@@ -382,21 +403,20 @@ add_subdirectory(ext/laslib)
 include_directories( ${LASLIB_INCLUDE_DIR} )
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
 
-# HighFive
-include_directories("ext/HighFive/include")
+# HDF5
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
 message(STATUS "Found HDF5")
+
+# HighFive
+set(HIGHFIVE_INCLUDE_DIRS "ext/HighFive/include")
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${HIGHFIVE_INCLUDE_DIRS})
+include_directories(${HIGHFIVE_INCLUDE_DIRS})
 
 # yaml-cpp
 find_package(yaml-cpp REQUIRED)
 # no found variable
 include_directories(${YAML_CPP_INCLUDE_DIR})
-
-# SLAM6D stuff
-add_subdirectory(ext/slam6d)
-include_directories( ${SLAM6D_INCLUDE_DIR} )
-list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SLAM6D_INSTALL_INCLUDE_DIR})
 
 # CTPL
 add_subdirectory(ext/CTPL)
@@ -426,28 +446,23 @@ add_definitions(${LVR2_DEFINITIONS})
 ###############################################################################
 option(WITH_KINFU "Compile LVR Kinfu" OFF)
 
-###############################################################################
-# Check and set CUDA host compiler flags. CUDA 6.5 is only
-# compatible to gcc4.8. Older CUDA versions require GCC lower
-# than 4.8
-###############################################################################
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
-              AND CUDA_VERSION VERSION_GREATER 8
-              AND CUDA_VERSION VERSION_LESS 10)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5 )
-        message(STATUS "******************************************************************")
-        message(STATUS "* Your gcc version needs to be lower than 6 to compile the LVR   *")
-        message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
-        message(STATUS "* g++-6*. Please ensure that g++ 6 is installed on your system.  *")
-        message(STATUS "******************************************************************")
-        set(CUDA_HOST_COMPILER "g++-6" CACHE STRING "" FORCE)
-        endif()
-endif()
 
-if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
-    message(STATUS "Building LVR KinFu.")
-    add_subdirectory(ext/kintinuous)
-    include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+# ###############################################################################
+# # Check and set CUDA host compiler flags.          
+# ###############################################################################
+if(CUDA_FOUND)
+
+include(max_cuda_gcc_version)
+max_cuda_gcc_version(CUDA_VERSION MAX_CUDA_GCC_VERSION)
+message(STATUS "MAX_CUDA_GCC_VERSION: ${MAX_CUDA_GCC_VERSION}")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER ${MAX_CUDA_GCC_VERSION} )
+    message(STATUS "******************************************************************")
+    message(STATUS "* Your gcc version needs to be lower than or equal ${MAX_CUDA_GCC_VERSION} to compile the LVR   *")
+    message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
+    message(STATUS "* g++-${MAX_CUDA_GCC_VERSION}. Please ensure that g++-${MAX_CUDA_GCC_VERSION} is installed on your system.   *")
+    message(STATUS "******************************************************************")
+    set(CUDA_HOST_COMPILER "g++-${MAX_CUDA_GCC_VERSION}" CACHE STRING "" FORCE)
+  endif()
 endif()
 
 
@@ -500,15 +515,15 @@ endif()
 
 find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
 if(Qt5_FOUND)
-  message(STATUS "Found QT5")
-  find_package(QVTK)
-  if(QVTK_FOUND)
-    message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
-    include_directories(${QVTK_INCLUDE_DIR})
-    add_subdirectory(src/tools/lvr2_viewer)
-  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
-    add_subdirectory(src/tools/lvr2_viewer)
-  endif(QVTK_FOUND)
+   message(STATUS "Found QT5")
+   find_package(QVTK)
+   if(QVTK_FOUND)
+     message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
+     include_directories(${QVTK_INCLUDE_DIR})
+     add_subdirectory(src/tools/lvr2_viewer)
+   elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+     add_subdirectory(src/tools/lvr2_viewer)
+   endif(QVTK_FOUND)
 endif(Qt5_FOUND)
 
 ###############################################################################
@@ -523,6 +538,25 @@ endif()
 # SET DEPENDENCIES
 ###############################################################################
 
+if(MSVC)
+set(LVR2_LIB_DEPENDENCIES
+    ${Boost_LIBARIES}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_IOSTREAMS_LIBRARY}
+    ${OPENGL_LIBRARIES}
+    ${GLUT_LIBRARIES}
+    ${GDAL_LIBRARY}
+    ${OpenCV_LIBS}
+    ${GSL_LIBRARIES}
+    ${LZ4_LIBRARY}
+    ${TIFF_LIBRARY}
+    ${YAML_CPP_LIBRARIES}
+    ${OpenMP_CXX_LIBRARIES}
+    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+else()
 set(LVR2_LIB_DEPENDENCIES
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
@@ -538,11 +572,10 @@ set(LVR2_LIB_DEPENDENCIES
     ${TIFF_LIBRARY}
     ${YAML_CPP_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
-    ${MPI_CXX_LIBRARIES}
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     m
     )
-
+    endif()
 #####################################################################################
 # ADD ALL EXTERNAL DEPENDENCIES
 #####################################################################################
@@ -598,25 +631,26 @@ add_subdirectory(src/tools/lvr2_reconstruct)
 add_subdirectory(src/tools/lvr2_dmc_reconstruction)
 add_subdirectory(src/tools/lvr2_gs_reconstruction)
 add_subdirectory(src/tools/lvr2_largescale_reconstruct)
-add_subdirectory(src/tools/lvr2_largescale_reconstruct_mpi)
 add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
 add_subdirectory(src/tools/lvr2_kaboom)
 add_subdirectory(src/tools/lvr2_octree_test)
 add_subdirectory(src/tools/lvr2_image_normals)
 add_subdirectory(src/tools/lvr2_plymerger)
-# add_subdirectory(src/tools/lvr2_hdf5_builder)
-add_subdirectory(src/tools/lvr2_hdf5_builder_2)
 add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
-add_subdirectory(src/tools/lvr2_slam2hdf5)
-add_subdirectory(src/tools/lvr2_hdf5togeotiff)
+#add_subdirectory(src/tools/lvr2_slam2hdf5)
+#add_subdirectory(src/tools/lvr2_hdf5togeotiff)
 add_subdirectory(src/tools/lvr2_slam6d_merger)
 add_subdirectory(src/tools/lvr2_chunking)
-add_subdirectory(src/tools/lvr2_registration)
+#add_subdirectory(src/tools/lvr2_registration)
 add_subdirectory(src/tools/lvr2_mesh_reducer)
 add_subdirectory(src/tools/lvr2_chunking_server)
 add_subdirectory(src/tools/lvr2_scanproject_parser)
 add_subdirectory(src/tools/lvr2_ground_level_extractor)
+# add_subdirectory(src/tools/lvr2_hdf5_convert_old)
+add_subdirectory(src/tools/lvr2_hdf5_inspect)
+
+
 
 if(CURSES_FOUND AND embree_FOUND)
     add_subdirectory(src/tools/lvr2_ascii_viewer)
@@ -683,6 +717,11 @@ install(FILES
     CMakeModules/FindSTANN.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
 
+# Installation of HighFive headers
+# need to do it like this sind add_subdirectory to "ext/HighFive" crashs
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ext/HighFive/include/
+    DESTINATION "include"
+    PATTERN "*.in" EXCLUDE)
 
 ###############################################################################
 # DOCUMENTATION

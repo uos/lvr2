@@ -139,7 +139,11 @@ KDTreePtr create_recursive(KDTree::Point* points, int n, int maxLeafSize)
         #pragma omp task shared(greater)
         greater = create_recursive(points + l, n - l, maxLeafSize);
 
-        #pragma omp taskwait
+        #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma omp barrier
+        #else
+                #pragma omp taskwait
+        #endif
     }
     else
     {

@@ -2,13 +2,13 @@
 // Created by patrick on 10.02.19.
 //
 
-#include "lvr2/util/Debug.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/reconstruction/PointsetSurface.hpp"
-#include "lvr2/io/Progress.hpp"
 #include "lvr2/reconstruction/LBKdTree.hpp"
-#include <cmath>
+#include "lvr2/util/Debug.hpp"
+#include "lvr2/util/Progress.hpp"
 
+#include <cmath>
 
 namespace lvr2 {
 

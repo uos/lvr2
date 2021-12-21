@@ -1,7 +1,5 @@
 #include "LVRScanProjectOpenDialog.hpp"
 
-
-
 namespace lvr2
 {
 
@@ -9,20 +7,52 @@ LVRScanProjectOpenDialog::LVRScanProjectOpenDialog(QWidget* parent):
     QDialog(parent),
     m_schema(nullptr),
     m_kernel(nullptr),
-    m_projectType(NONE)
+    m_projectType(NONE),
+    m_projectScale(m),
+    m_reductionPtr(nullptr),
+    m_successful(false)
 {
     m_parent = parent;
     m_ui = new LVRScanProjectOpenDialogUI;
     m_ui->setupUi(this);
+    this->setFixedSize(this->size().width(), this->size().height());
+    m_reductionPtr = ReductionAlgorithmPtr(new NoReductionAlgorithm());
+    
+    // displays the default reduction type when dialog is opened
+    m_ui->pushButtonReduction->setText("Complete Point Buffer");
 
-    connectSignalsAndSlots();    
+    initAvailableScales();
+    connectSignalsAndSlots();
 }
 
 void LVRScanProjectOpenDialog::connectSignalsAndSlots()
 {
-     // Add connections
     QObject::connect(m_ui->toolButtonPath, SIGNAL(pressed()), this, SLOT(openPathDialog()));    
+    QObject::connect(m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptOpen()));
     QObject::connect(m_ui->comboBoxSchema, SIGNAL(currentIndexChanged(int)), this, SLOT(schemaSelectionChanged(int)));
+    QObject::connect(m_ui->comboBoxScale, SIGNAL(currentIndexChanged(int)), this, SLOT(projectScaleSelectionChanged(int)));
+    QObject::connect(m_ui->comboBoxProjectType, SIGNAL(currentIndexChanged(int)), this, SLOT(projectTypeSelectionChanged(int)));
+    QObject::connect(m_ui->pushButtonReduction, SIGNAL(pressed()), this, SLOT(openReductionDialog()));
+}
+
+void LVRScanProjectOpenDialog::acceptOpen()
+{
+    m_successful = true;
+}
+
+bool LVRScanProjectOpenDialog::successful()
+{
+    return m_successful;
+}
+
+void LVRScanProjectOpenDialog::projectTypeSelectionChanged(int index)
+{
+    // clear dialog because all previously made selections
+    // may be invalid with the change of the project type
+    m_ui->lineEditPath->clear();
+    m_ui->toolButtonPath->setDown(false);
+    m_projectType = NONE;
+    updateAvailableSchemas();
 }
 
 void LVRScanProjectOpenDialog::schemaSelectionChanged(int index)
@@ -43,15 +73,37 @@ void LVRScanProjectOpenDialog::schemaSelectionChanged(int index)
     }
 }
 
+void LVRScanProjectOpenDialog::projectScaleSelectionChanged(int index)
+{
+    // project scale will affect how big the scanner position cylinder will be rendered
+    switch(index)
+    {
+        case 0:
+            m_projectScale = mm;
+            break;
+        case 1:
+            m_projectScale = cm;
+            break;
+        case 2:
+            m_projectScale = m;
+            break;
+        default:
+            break;
+    }
+}
+
 void LVRScanProjectOpenDialog::updateDirectorySchema(int index)
 {
     switch(index)
     {
         case 0:
-            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaHyperlib(m_kernel->fileResource()));
+            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaRaw(m_kernel->fileResource()));
             break;
         case 1:
-            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaSLAM(m_kernel->fileResource()));
+            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaRawPly(m_kernel->fileResource()));
+            break;
+        case 2:
+            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaSlam6D(m_kernel->fileResource()));
             break;
     }
 }
@@ -60,14 +112,27 @@ void LVRScanProjectOpenDialog::updateHDF5Schema(int index)
     switch(index)
     {
         case 0:
-            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5V2());
+            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
             break;
     }
 }
 
+void LVRScanProjectOpenDialog::initAvailableScales()
+{
+    // Clear all items in combo box
+    QComboBox* b = m_ui->comboBoxScale;
+    b->clear();
+    // add available items to combobox
+    b->addItem("mm");
+    b->addItem("cm");
+    b->addItem("m");
+    // set meters as default
+    b->setCurrentIndex(2);
+}
+
 void LVRScanProjectOpenDialog::updateAvailableSchemas()
 {
-    // Clear all schema entries in combo box
+    // Clear all schema items in combo box
     QComboBox* b = m_ui->comboBoxSchema;
     b->clear();
 
@@ -95,11 +160,52 @@ void LVRScanProjectOpenDialog::updateAvailableSchemas()
             b->addItem("HDF5 Schema V2");
             break;
         case DIR:
-            b->addItem("Hyperlib");
+            b->addItem("RAW");
+            b->addItem("RAW PLY");
             b->addItem("SLAM 6D");
             break;    
         default:
             b->addItem("None");      
+    }
+    m_ui->pushButtonReduction->setEnabled(true);
+}
+
+void LVRScanProjectOpenDialog::openReductionDialog()
+{
+    LVRReductionAlgorithmDialog* dialog = new LVRReductionAlgorithmDialog(this);
+    
+    // Reduction Dialog
+    dialog->setModal(true);
+    dialog->raise();
+    dialog->activateWindow();
+    dialog->exec();
+
+    if(!dialog->successful())
+    {
+        return;
+    }
+
+    m_reductionPtr = dialog->reductionPtr();
+                    
+    switch(dialog->reductionName())
+    {
+        case 0:
+            m_ui->pushButtonReduction->setText("Complete Point Buffer");
+            break;
+        case 1:
+            m_ui->pushButtonReduction->setText("Meta Only");
+            break;
+        case 2:
+            m_ui->pushButtonReduction->setText("Octree Reduction");
+            break;   
+        case 3:
+            m_ui->pushButtonReduction->setText("Fixed Size");
+            break;
+        case 4:
+            m_ui->pushButtonReduction->setText("Percentage");
+            break;
+        default:
+            break;     
     }
 }
 

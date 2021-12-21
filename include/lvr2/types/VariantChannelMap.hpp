@@ -363,10 +363,10 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, const VariantChannelMap<T...>& cm)
     {
-        std::cout << "[ VariantChannelMap ]\n";
+        os << "[ VariantChannelMap ]\n";
         for(auto it : cm)
         {
-            std::cout << it.first << ": " << it.second  << "\n";
+            os << it.first << ": " << it.second  << "\n";
         }
         return os;
     }

@@ -5,6 +5,12 @@
 #define CV_AA cv::LINE_AA
 #endif
 
+
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <math.h>
+
+
 namespace lvr2 {
 
 namespace synthetic {
@@ -152,9 +158,9 @@ PointBufferPtr genSpherePoints(
     return ret;
 }
 
-ScanImagePtr genLVRImage()
+CameraImagePtr genLVRImage()
 {
-    ScanImagePtr imgPtr(new ScanImage);
+    CameraImagePtr imgPtr(new CameraImage);
 
     cv::Mat img(500, 500, CV_8UC3, cv::Scalar(239,234,224));
 
