@@ -16,6 +16,11 @@ public:
         const size_t& material_index,
         const MeshBufferPtr& mesh
     ) const;
+
+    boost::optional<Material> loadMaterial(
+        const std::string& mesh_name,
+        const size_t& material_index
+    ) const;
 protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 

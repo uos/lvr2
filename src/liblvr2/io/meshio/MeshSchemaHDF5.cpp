@@ -8,6 +8,7 @@ Description MeshSchemaHDF5::mesh(std::string name) const
 {
     Description d;
     d.dataRoot = "meshes/" + name;
+    d.data = "";
     d.metaRoot = d.dataRoot;
     d.meta = "";
 

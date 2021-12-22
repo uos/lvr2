@@ -16,6 +16,10 @@ public:
         const std::string mesh_name, 
         const MeshBufferPtr mesh
         ) const;
+    
+    MeshBufferPtr loadMesh(
+        const std::string& mesh_name
+    ) const;
 
 protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);

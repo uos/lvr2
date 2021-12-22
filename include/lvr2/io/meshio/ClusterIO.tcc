@@ -128,5 +128,87 @@ void ClusterIO<FeatureBase>::saveCluster(
     );
     
 }
+template <typename FeatureBase>
+boost::optional<ClusterIOData> ClusterIO<FeatureBase>::loadCluster(
+    const std::string& mesh_name,
+    const size_t& cluster_idx,
+    floatArr mesh_tex_coords,
+    std::vector<indexArray::element_type>& faces
+    ) const
+{
+
+    Description desc = m_featureBase->m_schema->surface(mesh_name, cluster_idx);
+    // Check if the cluster exists
+    if (!m_featureBase->m_kernel->exists(*desc.dataRoot))
+    {
+        return boost::optional<ClusterIOData>();
+    }
+
+    YAML::Node node;
+    m_featureBase->m_kernel->loadMetaYAML(
+        *desc.metaRoot,
+        *desc.meta,
+        node
+    );
+    // Index of the material associated with this cluster
+    indexArray::element_type material_index = node["material"].as<indexArray::element_type>();
+
+    desc = m_featureBase->m_schema->surfaceIndices(mesh_name, cluster_idx);
+    // TODO: indexArray io block
+    m_featureBase->m_kernel->loadMetaYAML(
+        *desc.metaRoot,
+        *desc.meta,
+        node
+    );
+    auto dims = node["shape"].as<std::vector<size_t>>();
+    size_t num_indices = dims[0];
+    indexArray indices = m_featureBase->m_kernel->template loadArray<indexArray::element_type>(
+        *desc.dataRoot,
+        *desc.data,
+        dims
+    );
+    // Load texture coordinates
+    desc = m_featureBase->m_schema->textureCoordinates(mesh_name, cluster_idx);
+    m_featureBase->m_kernel->loadMetaYAML(
+        *desc.metaRoot,
+        *desc.meta,
+        node
+    );
+    dims = node["shape"].as<std::vector<size_t>>();
+    floatArr tex_coords = m_featureBase->m_kernel->template loadArray<floatArr::element_type>(
+        *desc.dataRoot,
+        *desc.data,
+        dims
+    );
+
+    // Write texture coordinates to proper location in mesh buffer
+    if (mesh_tex_coords)
+    {
+        for ( int i = 0; i < num_indices; i++ )
+        {
+            mesh_tex_coords[indices[i] * 2 + 0] = tex_coords[i * 2 + 0];
+            mesh_tex_coords[indices[i] * 2 + 1] = tex_coords[i * 2 + 1];
+        }
+    }
+
+    // Create faces from the indexArray and append at end of faces vec
+    std::vector<indexArray::element_type> face_indices;
+    indexArray::element_type face_index = faces.size() / 3; // each face has 3 indices
+    size_t num_faces = num_indices / 3;
+    for (int i = 0; i < num_faces; i++)
+    {
+        faces.push_back(indices[i * 3 + 0]);
+        faces.push_back(indices[i * 3 + 1]);
+        faces.push_back(indices[i * 3 + 2]);
+        face_indices.push_back(face_index++);
+    }
+
+    ClusterIOData ret;
+    ret.num_faces = num_faces;
+    ret.material_index = material_index;
+    ret.face_indices = Util::convert_vector_to_shared_array(face_indices);
+
+    return boost::optional<ClusterIOData>(ret);
+}
 
 } // namespace lvr2
