@@ -119,18 +119,20 @@ RegistrationPipeline::RegistrationPipeline(const SLAMOptions* options, ScanProje
 
 void RegistrationPipeline::doRegistration()
 {
-    // Create SLAMAlign object and add separate scans. The scans are not transferred via the constructor, because then they will not reduced.
+    // Create SLAMAlign object and add separate scans. The scans are not transferred 
+    // via the constructor, because then they will not reduced. Currently only one
+    // scan and lidar per scan position is supported!
     SLAMAlign align(*m_options);
     for (size_t i = 0; i < m_scans->project->positions.size(); i++)
     {
-        if(m_scans->project->positions.at(i)->scans.size())
+        if( (m_scans->project->positions.at(i)->lidars.size() > 0) && 
+             m_scans->project->positions.at(i)->lidars[0]->scans.size() > 0)
         {
-            // if m_options->rotate_angle is not 0 -> all scans will be rotate around y axis
-            rotateAroundYAxis(&(m_scans->project->positions[i]->scans[0]->poseEstimation), m_options->rotate_angle * M_PI / 180);
+            // If m_options->rotate_angle is not 0 -> all scans will be rotate around y axis
+            rotateAroundYAxis(&(m_scans->project->positions[i]->lidars[0]->scans[0]->poseEstimation), m_options->rotate_angle * M_PI / 180);
 
-            // the SLAMAlign object needs a scan pointer 
-            ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
-            align.addScan(scptr);
+            // SLAMAlign object needs a scan pointer 
+            align.addScan(m_scans->project->positions.at(i)->lidars[0]->scans[0]);
         }
     }
 
@@ -156,7 +158,7 @@ void RegistrationPipeline::doRegistration()
 
         if (( !m_scans->changed.at(i)) && 
               !isToleratedDifference(
-                  m_scans->project->positions.at(i)->scans[0]->registration,
+                  m_scans->project->positions.at(i)->lidars[0]->scans[0]->transformation,
                   align.scan(i)->pose()))
         {
             m_scans->changed.at(i) = true;
@@ -184,9 +186,9 @@ void RegistrationPipeline::doRegistration()
 
         for (size_t i = 0; i < m_scans->project->positions.size(); i++)
         {
-            if(m_scans->project->positions.at(i)->scans.size())
+            if(m_scans->project->positions.at(i)->lidars[0]->scans.size())
             {
-                ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->scans[0]));
+                ScanPtr scptr = std::make_shared<Scan>(*(m_scans->project->positions[i]->lidars[0]->scans[0]));
 
                 align.addScan(scptr);
             }
@@ -202,9 +204,9 @@ void RegistrationPipeline::doRegistration()
 
         if (m_scans->changed.at(i) || all_values_new)
         {
-            posPtr->scans[0]->registration = align.scan(i)->pose();
-            posPtr->registration = align.scan(i)->pose();
-            cout << "Pose Scan Nummer " << i << endl << posPtr->scans[0]->registration << endl;
+            posPtr->lidars[0]->scans[0]->transformation = align.scan(i)->pose();
+            posPtr->transformation = align.scan(i)->pose();
+            cout << "Pose Scan Nummer " << i << endl << posPtr->lidars[0]->scans[0]->transformation << endl;
         }
     }
 }
