@@ -73,13 +73,7 @@
 //     #include "SearchTreeNabo.hpp"
 // #endif
 
-
-// using std::cout;
-// using std::endl;
-// using std::ifstream;
 using std::numeric_limits;
-// using std::ofstream;
-// using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 using std::isnan;

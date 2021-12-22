@@ -42,13 +42,14 @@
 #include "lvr2/config/LSROptionsYamlExtensions.hpp"
 #include "lvr2/config/SLAMOptionsYamlExtensions.hpp"
 #include "lvr2/registration/RegistrationPipeline.hpp"
+#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/scanio/HDF5IO.hpp"
+#include "lvr2/io/scanio/DirectoryKernel.hpp"
+#include "lvr2/io/scanio/DirectoryIO.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
 
-
-using BaseHDF5IO = lvr2::Hdf5IO<>;
-
-// Extend IO with features (dependencies are automatically fetched)
-using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO, lvr2::hdf5features::ScanPositionIO>;
 
 namespace lvr2
 {
@@ -56,8 +57,7 @@ template <typename BaseVecT>
 ChunkingPipeline<BaseVecT>::ChunkingPipeline(
         const boost::filesystem::path& hdf5Path,
         const boost::filesystem::path& configPath,
-        std::shared_ptr<ChunkManager> chunkManager
-        ) :  m_hdf5Path(hdf5Path), m_configPath(configPath)
+        std::shared_ptr<ChunkManager> chunkManager) :  m_hdf5Path(hdf5Path), m_configPath(configPath)
 {
     if (chunkManager != nullptr)
     {
@@ -161,30 +161,34 @@ void ChunkingPipeline<BaseVecT>::practicabilityAnalysis(HalfEdgeMesh<BaseVecT>& 
 template <typename BaseVecT>
 bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& dirPath)
 {
-    HDF5IO hdf;
-    hdf.open(m_hdf5Path.string());
+    HDF5KernelPtr kernel(new HDF5Kernel(dirPath.string()));
+    HDF5SchemaPtr schema(new ScanProjectSchemaHDF5);
+    lvr2::scanio::HDF5IO io(kernel, schema);
+  
+    // Load scans from hdf5
+    ScanProjectPtr scanProjectPtr = io.ScanProjectIO::load();
 
-    // load scans from hdf5
-    ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
-
-    // load scans from directory
-    ScanProject dirScanProject;
-    bool importStatus = loadScanProject(dirPath, dirScanProject);
+    // Load scans from directory
+    ScanProjectPtr dirScanProject;
+    DirectorySchemaPtr dirSchema(new ScanProjectSchemaRaw(dirPath.string()));
+    DirectoryKernelPtr dirKernel(new DirectoryKernel(dirPath.string()));
+    lvr2::scanio::DirectoryIO dirIO(dirKernel, dirSchema);
+    dirScanProject = dirIO.ScanProjectIO::load();
 
     ScanProjectEditMark tmpScanProject;
     std::vector<bool> init(scanProjectPtr->positions.size(), false);
     tmpScanProject.changed = init;
 
-    if (!importStatus)
+    if (!dirScanProject)
     {
         return false;
     }
     else
     {
-        std::cout << timestamp << "Found " << dirScanProject.positions.size() - scanProjectPtr->positions.size() << " new scanPosition(s)" << std::endl;
-        for (int i = scanProjectPtr->positions.size(); i < dirScanProject.positions.size(); i++)
+        std::cout << timestamp << "Found " << dirScanProject->positions.size() - scanProjectPtr->positions.size() << " new scanPosition(s)" << std::endl;
+        for (int i = scanProjectPtr->positions.size(); i < dirScanProject->positions.size(); i++)
         {
-            scanProjectPtr->positions.push_back(dirScanProject.positions[i]);
+            scanProjectPtr->positions.push_back(dirScanProject->positions[i]);
             tmpScanProject.changed.push_back(true);
         }
     }
@@ -227,23 +231,28 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
     registration.doRegistration();
     std::cout << timestamp << "Finished registration!" << std::endl;
 
-    // save raw data
-    HDF5IO hdf;
-    hdf.open(m_hdf5Path.string());
+    // Save raw data
+    HDF5KernelPtr hdf5kernel(new HDF5Kernel(m_hdf5Path.string()));
+    HDF5SchemaPtr hdf5schema(new ScanProjectSchemaHDF5());
+    lvr2::scanio::HDF5IO hdf5io(hdf5kernel, hdf5schema);
 
     for (size_t idx = 0; idx < m_scanProject->changed.size(); idx++)
     {
         if (m_scanProject->changed[idx])
         {
-            // only save changed scanPositions
-            hdf.save(idx, m_scanProject->project->positions[idx]);
+            // Only save changed scanPositions
+            hdf5io.ScanPositionIO::save(idx, m_scanProject->project->positions[idx]);
         }
     }
 
-    // remove hyperspectral data from memory
+    // Remove hyperspectral data from memory
     for (ScanPositionPtr pos : m_scanProject->project->positions)
     {
-        pos->hyperspectralCamera.reset(new HyperspectralCamera);
+        for(auto cam : pos->hyperspectral_cameras)
+        {
+            cam.reset(new HyperspectralCamera);
+        }
+        //pos->hyperspectralCamera.reset(new HyperspectralCamera);
     }
 
     std::cout << timestamp << "Starting large scale reconstruction..." << std::endl;

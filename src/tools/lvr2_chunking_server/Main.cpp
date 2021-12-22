@@ -31,7 +31,7 @@
  * @date 27.11.2019
  * @author Marcel Wiegand
  */
-
+#include "lvr2/reconstruction/SearchTreeFlann.hpp"
 #include "Options.hpp"
 
 #include "lvr2/algorithm/ChunkingPipeline.hpp"

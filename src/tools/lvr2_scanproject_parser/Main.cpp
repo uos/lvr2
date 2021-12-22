@@ -8,6 +8,7 @@
 #include <boost/filesystem.hpp>
 
 using namespace lvr2;
+using namespace lvr2::scanio;
 
 int main(int argc, char** argv)
 {

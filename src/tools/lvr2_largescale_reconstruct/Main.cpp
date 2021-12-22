@@ -32,11 +32,18 @@
 
 #include <boost/filesystem.hpp>
 
+#include "lvr2/reconstruction/SearchTreeFlann.hpp"
 #include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/config/lvropenmp.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
+#include "lvr2/io/scanio/DirectoryIO.hpp"
+#include "lvr2/io/scanio/DirectoryKernel.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
+#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/scanio/HDF5IO.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
 #include "lvr2/util/IOUtils.hpp"
 
 #include "LargeScaleOptions.hpp"
@@ -48,26 +55,20 @@ using namespace lvr2;
 
 #if defined CUDA_FOUND
 #define GPU_FOUND
-
 #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
-
 typedef CudaSurface GpuSurface;
 #elif defined OPENCL_FOUND
 #define GPU_FOUND
-
 #include "lvr2/reconstruction/opencl/ClSurface.hpp"
-
-
 typedef ClSurface GpuSurface;
 #endif
 
 using Vec = lvr2::BaseVector<float>;
-// using ScanHDF5IO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
 
-using BaseHDF5IO = lvr2::Hdf5IO<>;
+// using BaseHDF5IO = lvr2::Hdf5IO<>;
 
 // Extend IO with features (dependencies are automatically fetched)
-using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
+// using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
 
 int main(int argc, char** argv)
 {
@@ -109,15 +110,16 @@ int main(int argc, char** argv)
     std::shared_ptr<ChunkHashGrid> cm;
     BoundingBox<Vec> boundingBox;
 
-    HDF5IO hdf;
 
     //reconstruction from hdf5
     if (extension == ".h5")
     {
-        // loadAllPreviewsFromHDF5(in, *project->project.get());
-        HDF5IO hdf;
-        hdf.open(in);
-        ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
+        HDF5KernelPtr hdf5kernel(new HDF5Kernel(in));
+        HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
+        lvr2::scanio::HDF5IO hdf5io(hdf5kernel, schema);
+
+        auto scanProjectPtr = hdf5io.ScanProjectIO::load();
+
         project->project = scanProjectPtr;
 
         for (int i = 0; i < project->project->positions.size(); i++)
@@ -129,12 +131,17 @@ int main(int argc, char** argv)
     else
     {
 
-        ScanProject dirScanProject;
-        bool importStatus = loadScanProject(in, dirScanProject);
+        ScanProjectPtr dirScanProject;
+        
+        DirectoryKernelPtr dirKernel(new DirectoryKernel(in));
+        DirectorySchemaPtr dirSchema(new ScanProjectSchemaRaw(in));
+        lvr2::scanio::DirectoryIO dirio(dirKernel, dirSchema);
+        dirScanProject = dirio.ScanProjectIO::load();
+
         //reconstruction from ScanProject Folder
-        if(importStatus) {
-            project->project = make_shared<ScanProject>(dirScanProject);
-            std::vector<bool> init(dirScanProject.positions.size(), true);
+        if(dirScanProject) {
+            project->project = dirScanProject;
+            std::vector<bool> init(dirScanProject->positions.size(), true);
             project->changed = init;
         }
         //reconstruction from a .ply file
@@ -142,17 +149,30 @@ int main(int argc, char** argv)
         {
             project->project = ScanProjectPtr(new ScanProject);
             ModelPtr model = ModelFactory::readModel(in);
-            ScanPtr scan(new Scan);
 
+            // Create new scan object
+            ScanPtr scan(new Scan);
             scan->points = model->m_pointCloud;
+
+            // Create new lidar object
+            LIDARPtr lidar(new LIDAR);
+
+            // Create new scan position
             ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
-            scanPosPtr->scans.push_back(scan);
+            scanPosPtr->lidars.push_back(lidar);
+
+            // Buildup scan project structure
             project->project->positions.push_back(scanPosPtr);
+            project->project->positions[0]->lidars.push_back(lidar);
+            project->project->positions[0]->lidars[0]->scans.push_back(scan);
             project->changed.push_back(true);
         }
-        //reconstruction from a folder of .ply files
-        else{
-            project->project = ScanProjectPtr(new ScanProject);
+        else
+        {
+            // Reconstruction from a folder of .ply files
+
+            // Setup basic scan project structure
+            ScanProjectPtr scanProject(new ScanProject);            
             boost::filesystem::directory_iterator it{in};
             while (it != boost::filesystem::directory_iterator{})
             {
@@ -161,18 +181,25 @@ int main(int argc, char** argv)
                 if(ext == ".ply")
                 {
                     ModelPtr model = ModelFactory::readModel(it->path().string());
-                    ScanPtr scan(new Scan);
 
+                    // Create new Scan
+                    ScanPtr scan(new Scan);
                     scan->points = model->m_pointCloud;
-                    ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
-                    scanPosPtr->scans.push_back(scan);
-                    project->project->positions.push_back(scanPosPtr);
+
+                    // Wrap scan into lidar object
+                    LIDARPtr lidar(new LIDAR);
+                    lidar->scans.push_back(scan);
+
+                    // Put lidar into new scan position
+                    ScanPositionPtr position(new ScanPosition);
+                    position->lidars.push_back(lidar);
+
+                    // Add new scan position to scan project   
+                    project->project->positions.push_back(position);
                     project->changed.push_back(true);
                 }
                 it++;
             }
-
-
         }
 
         cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getChunkSize()));

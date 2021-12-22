@@ -88,7 +88,7 @@ set(LVR2_SOURCES
     registration/SLAMAlign.cpp
     registration/GraphSLAM.cpp
     registration/OctreeReduction.cpp
-    # registration/RegistrationPipeline.cpp
+    registration/RegistrationPipeline.cpp
     types/CustomChannelTypes.cpp
     texture/Texture.cpp
     texture/TextureFactory.cpp

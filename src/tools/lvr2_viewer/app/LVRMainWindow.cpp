@@ -1818,7 +1818,7 @@ void LVRMainWindow::loadModels(const QStringList& filenames)
                 DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(info.absoluteFilePath().toStdString())); 
                 std::string tmp = info.absolutePath().toStdString();
                 DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaRaw(tmp)); 
-                DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
+                lvr2::scanio::DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
                 ScanProjectPtr scanProject = dirIO.loadScanProject();
                 ScanProjectBridgePtr bridge(new LVRScanProjectBridge(scanProject));
                 bridge->addActors(m_renderer);
@@ -2059,7 +2059,7 @@ void LVRMainWindow::changeReductionAlgorithm()
             }
             else
             {
-                auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+                auto dirIO = std::dynamic_pointer_cast<lvr2::scanio::DirectoryIO>(io);
                 scan = dirIO->loadScan(scanpos_nr, 0, scan_nr, reduction);
             }
 
@@ -2109,7 +2109,7 @@ void LVRMainWindow::changeReductionAlgorithm()
             }
             else
             {
-                auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+                auto dirIO = std::dynamic_pointer_cast<lvr2::scanio::DirectoryIO>(io);
                 scanPos = dirIO->loadScanPosition(scanpos_nr, reduction);
             }
             
@@ -2156,7 +2156,7 @@ void LVRMainWindow::changeReductionAlgorithm()
             }
             else
             {
-                auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+                auto dirIO = std::dynamic_pointer_cast<lvr2::scanio::DirectoryIO>(io);
                 scanProj = dirIO->loadScanProject(reduction);
             }
 
@@ -3643,7 +3643,7 @@ void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
         }
         else
         {
-            auto dirIO = std::dynamic_pointer_cast<DirectoryIO>(io);
+            auto dirIO = std::dynamic_pointer_cast<lvr2::scanio::DirectoryIO>(io);
             // std::vector<size_t> img_nrs = {img_nr};
             auto camImage = dirIO->CameraImageIO::load(scanpos_nr, cam_nr, img_nr);
             img = camImage->image;
@@ -3828,7 +3828,7 @@ void LVRMainWindow::openIntermediaProject()
     DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(dir.toStdString())); 
     std::string tmp  = dir.toStdString();
     DirectorySchemaPtr hyperlibSchemaPtr(new ScanProjectSchemaRaw(tmp)); 
-    DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
+    lvr2::scanio::DirectoryIO dirIO(dirKernelPtr, hyperlibSchemaPtr);
     ScanProjectPtr scanProject = dirIO.loadScanProject();
     LabeledScanProjectEditMarkPtr labelScanProject= LabeledScanProjectEditMarkPtr(new LabeledScanProjectEditMark());
     ScanProjectEditMarkPtr editMark = ScanProjectEditMarkPtr(new ScanProjectEditMark());
@@ -3875,7 +3875,7 @@ void LVRMainWindow::openScanProject()
         {
             DirectoryKernelPtr dirKernel = std::dynamic_pointer_cast<DirectoryKernel>(kernel); 
             DirectorySchemaPtr dirSchema = std::dynamic_pointer_cast<DirectorySchema>(schema);
-            auto dirIOPtr = std::shared_ptr<DirectoryIO>(new DirectoryIO(dirKernel, dirSchema));
+            auto dirIOPtr = std::shared_ptr<lvr2::scanio::DirectoryIO>(new lvr2::scanio::DirectoryIO(dirKernel, dirSchema));
             io = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(dirIOPtr);
             scanProject = io->loadScanProject(reduction);
             break;
@@ -4387,7 +4387,7 @@ void LVRMainWindow::exportScanProject()
             std::string tmp = fileName.toStdString();
             DirectorySchemaPtr hyperlibSchema(new ScanProjectSchemaRaw(tmp));
             DirectoryKernelPtr dirKernelPtr(new DirectoryKernel(fileName.toStdString()));
-            DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
+            lvr2::scanio::DirectoryIO dirIO(dirKernelPtr, hyperlibSchema);
         
             dirIO.saveScanProject(labeledScanProject->editMarkProject->project);
         }

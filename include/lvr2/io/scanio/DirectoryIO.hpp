@@ -10,7 +10,8 @@
 
 namespace lvr2
 {
-
+namespace scanio
+{
 using DirectoryIOBase = FeatureBuild<ScanProjectIO>;
 
 class DirectoryIO : public DirectoryIOBase
@@ -31,6 +32,7 @@ public:
 
 using DirectoryIOPtr = std::shared_ptr<DirectoryIO>;
 
+} // namespace scanio
 } // namespace lvr2
 
 #endif // DIRECTORYIO_HPP
