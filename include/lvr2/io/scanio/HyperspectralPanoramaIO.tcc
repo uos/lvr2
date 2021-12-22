@@ -86,8 +86,7 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
 
     for(int i = 0; i < hchannel->channel.channels(); i++)
     {
-        // auto newChannel = std::make_shared<HyperspectralPanoramaChannel>();
-        auto newChannel = HyperspectralPanoramaChannelPtr();
+        auto newChannel = std::make_shared<HyperspectralPanoramaChannel>();
         newChannel->channel = channels[i];
         ret->channels.push_back(newChannel);
     }
