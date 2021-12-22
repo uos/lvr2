@@ -196,18 +196,33 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
             *desc.meta,
             node
         );
-        ret->getMaterials().resize(node["n_materials"].as<uint64_t>());
-        ret->getTextures().resize(node["n_textures"].as<uint64_t>());
+        ret->getMaterials().reserve(node["n_materials"].as<uint64_t>()); // Reserve memory
+        ret->getTextures().resize(node["n_textures"].as<uint64_t>()); // Resize for index based access
     }
 
     
-    // size_t material_idx = 0;
-    // while(true)
-    // {
-    //     //m_featureBase->m_materialIO->loadMaterial();
+    size_t material_idx = 0;
+    while(true)
+    {
+        auto res = m_featureBase->m_materialIO->loadMaterial(
+            name,
+            material_idx
+        );
 
-    //     material_idx++;
-    // }
+        if (!res.first)
+        {
+            break;
+        }
+
+        ret->getMaterials().push_back(*res.first);
+        
+        if (res.second)
+        {
+            ret->getTextures()[res.second->m_index] = *res.second;
+        }
+
+        material_idx++;
+    }
 
 
 

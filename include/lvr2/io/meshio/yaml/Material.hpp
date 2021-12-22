@@ -40,9 +40,9 @@ struct convert<lvr2::Rgb8Color>
             return false;
         }
 
-        color[0] = node["r"].as<unsigned char>();
-        color[1] = node["g"].as<unsigned char>();
-        color[2] = node["b"].as<unsigned char>();
+        color[0] = node["r"].as<uint64_t>();
+        color[1] = node["g"].as<uint64_t>();
+        color[2] = node["b"].as<uint64_t>();
 
         return true;
     }
