@@ -312,7 +312,6 @@ ScanPtr ScanIO<FeatureBase>::load(
                             // situation:
                             // no extension of group and no extension of dataset
                             // no meta data
-
                             // there are two options what happend here
                             // 1. Used Hdf5 schema and did not find any meta data
                             //    - this should not happen. meta data must be available
@@ -379,6 +378,11 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
     if(d.meta)
     {
         YAML::Node meta;
+
+        cout << m_featureBase << endl;
+        cout << m_featureBase->m_kernel << endl;
+        cout << m_featureBase->m_kernel->fileResource() << endl;  
+
         m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
 
         // std::cout << "loadChannelMetas - Loaded Meta: " << std::endl;

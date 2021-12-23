@@ -38,6 +38,7 @@
 #include "lvr2/io/scanio/MatrixIO.hpp"
 #include "lvr2/io/scanio/PointCloudIO.hpp"
 #include "lvr2/io/scanio/VariantChannelIO.hpp"
+#include "lvr2/io/scanio/HDF5IO.hpp"
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
@@ -556,12 +557,28 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         // bounding box of all scans in .h5
         std::vector<BoundingBox<BaseVecT>> scan_boxes;
 
+        lvr2::scanio::HDF5IO hdf5io(project->kernel, project->schema); 
+
         //iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < project->changed.size(); i++)
         {
-            ScanPositionPtr pos = project->project->positions.at(i); // moegl. Weise project->project ?
+            ScanPositionPtr pos = project->project->positions.at(i);
             assert(pos->lidars.size() > 0);
-            size_t numPoints = pos->lidars[0]->scans[0]->points->numPoints();
+
+            cout << "Lidars: " << pos->lidars.size() << endl;
+            cout << "Scans: " << pos->lidars[0]->scans.size() << endl;
+            
+            // Load points
+            cout << timestamp << "Loading points from scan position " << i << endl;
+            
+            ScanPtr p = hdf5io.ScanIO::load(i, 0, 0);
+            p->load();
+
+            std::cout << p->points->numPoints() << std::endl;
+
+            size_t numPoints = p->points->numPoints();
+
+            cout << numPoints << endl;
             BoundingBox<BaseVecT> box;
 
             boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
