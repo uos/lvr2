@@ -86,7 +86,7 @@ void SpectralTexturizer<BaseVecT>::init_image_data(HyperspectralPanoramaPtr pano
     distortions[1] = -0.14184141;
     distortions[2] = 0.0; 
 
-    HyperspectralPanoramaChannelPtr panoChannel = pano->channels[0];
+    HyperspectralPanoramaChannelPtr panoChannel = pano->channels[channelIndex];
     spectralPanorama = panoChannel->channel;
 
     prepare_camera_data();
