@@ -249,6 +249,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionShowSpectralColorGradient = this->actionShow_SpectralColorGradient;
     m_actionShowSpectralPointPreview = this->actionShow_SpectralPointPreview;
     m_actionShowSpectralHistogram = this->actionShow_SpectralHistogram;
+    m_actionShowSpectralIndexSelect = this->actionShow_SpectralIndexSelect;
 
     // Slider below tree widget
 //    m_horizontalSliderPointSize = this->horizontalSliderPointSize;
@@ -480,6 +481,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowSpectralColorGradient, SIGNAL(triggered()), dockWidgetSpectralColorGradientSettings, SLOT(show()));
     QObject::connect(m_actionShowSpectralPointPreview, SIGNAL(triggered()), dockWidgetPointPreview, SLOT(show()));
     QObject::connect(m_actionShowSpectralHistogram, SIGNAL(triggered()), this, SLOT(showHistogramDialog()));
+    QObject::connect(m_actionShowSpectralIndexSelect, SIGNAL(triggered()), this, SLOT(showSpectralIndexSelectDialog()));
 
 //    QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
 //    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
@@ -3230,6 +3232,23 @@ void LVRMainWindow::showHistogramDialog()
         }
         m_histograms[item]->show();
     }
+}
+
+void LVRMainWindow::showSpectralIndexSelectDialog()
+{
+    auto items = getSelectedMeshItems();
+    if(items.empty())
+    {
+        std::cout << "please slelect a mesh item!" << std::endl;
+        return;
+    }
+    for (LVRMeshItem* item : items)
+    {
+    }
+    // TODO: implement spectral index selection
+    std::cout << "TODOS: " << std::endl;
+    std::cout << "1. figure out how to switch between spectral textures in the new mesh data structure" << std::endl;
+    std::cout << "2. if the mesh doesnt have a specific texture channel create it using the materializer and render it" << std::endl;
 }
 
 void LVRMainWindow::showPointPreview(vtkActor* actor, int point)

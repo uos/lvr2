@@ -191,6 +191,7 @@ public Q_SLOTS:
     void showErrorDialog();
     /// Shows a Popup Dialog with the average Intensity per Spectral Channel
     void showHistogramDialog();
+    void showSpectralIndexSelectDialog();
     void renameModelItem();
     void estimateNormals();
     void reconstructUsingMarchingCubes();
@@ -387,6 +388,7 @@ private:
     QAction*                            m_actionShowSpectralColorGradient;
     QAction*                            m_actionShowSpectralPointPreview;
     QAction*                            m_actionShowSpectralHistogram;
+    QAction*                            m_actionShowSpectralIndexSelect;
     // Sliders below tree widget
     QSlider*                            m_horizontalSliderPointSize;
     QSlider*                            m_horizontalSliderTransparency;

@@ -513,7 +513,6 @@ int main(int argc, char** argv)
     if (options.generateTextures())
     {
 
-        // TODO: when the file is a h5 file, try an image texter
         boost::filesystem::path selectedFile( options.getInputFileName());
         std::string filePath = selectedFile.generic_path().string();
 

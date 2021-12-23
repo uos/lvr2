@@ -602,6 +602,7 @@
    <addaction name="actionShow_SpectralColorGradient"/>
    <addaction name="actionShow_SpectralPointPreview"/>
    <addaction name="actionShow_SpectralHistogram"/>
+   <addaction name="actionShow_SpectralIndexSelect"/>
    <addaction name="separator"/>
    <addaction name="actionShow_LabelDock"/>
    <addaction name="actionSelected_Lasso"/>
@@ -1723,6 +1724,15 @@
    </property>
    <property name="text">
     <string>Show SpectralHistogram</string>
+   </property>
+  </action>
+  <action name="actionShow_SpectralIndexSelect">
+   <property name="icon">
+    <iconset resource="../res/viewer.qrc">
+     <normaloff>:/qv_point.png</normaloff>:/qv_point.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show SpectralIndexSelect</string>
    </property>
   </action>
   <action name="actionLabel_SpectralHistogram">
