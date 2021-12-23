@@ -163,8 +163,21 @@ public:
 
     VertexSplitResult splitVertex(VertexHandle vertexToBeSplitH);
     EdgeSplitResult splitEdge(EdgeHandle edgeH);
-    void fillHoles(size_t maxSize);
-    void laplacianSmoothing(float smoothFactor, int numSmooths = 1, bool useUniformLaplace = true);
+    /**
+     * @brief Fill holes smaller than maxSize
+     * 
+     * @param maxSize the maximum number of vertices around a hole. Bigger holes are ignored
+     * @param simple true: simple but fast algorithm, false: more complex but slower algorithm
+     */
+    void fillHoles(size_t maxSize, bool simple = true);
+    /**
+     * @brief Performs Laplacian Smoothing
+     * 
+     * @param smoothFactor value between [0..1]. Used to determine the strength of each smoothing step. (usually 0.5)
+     * @param numSmooths number of smoothing steps to perform.
+     * @param useUniformLaplace true: use uniform weights (faster), false: use cotan weights (better quality)
+     */
+    void laplacianSmoothing(float smoothFactor = 0.5, int numSmooths = 1, bool useUniformLaplace = true);
     vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void splitVertex(EdgeHandle eH, VertexHandle vH, pmp::Point pos1, pmp::Point pos2);
     std::pair<BaseVecT, float> triCircumCenter(FaceHandle faceH);
