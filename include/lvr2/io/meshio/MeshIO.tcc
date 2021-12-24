@@ -15,15 +15,16 @@ void MeshIO<FeatureBase>::saveMesh(
     ) const
 {
     std::cout << timestamp << "[MeshIO] Saving vertices" << std::endl;
+    // TODO: Support other vertex data channels
     std::cout << timestamp << "[MeshIO] ===== ADD SUPPORT FOR OTHER CHANNELS! =====" << std::endl;
 
-    // Step 0: Write Mesh meta TODO: wrtie YAML conversion
+    // Step 0: Write Mesh meta 
+    // TODO: write YAML conversion
     {
         Description desc = m_featureBase->m_schema->mesh(mesh_name);
         YAML::Node node;
         node["n_materials"] = (uint64_t) mesh->getMaterials().size();
         node["n_textures"] = (uint64_t) mesh->getTextures().size();
-        node["n_faces"] = (uint64_t) mesh->numFaces();
         m_featureBase->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
@@ -126,6 +127,7 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
     }
 
 
+    std::cout << timestamp << "[MeshIO] Loading vertices" << std::endl;
     desc = m_featureBase->m_schema->vertexChannel(name, "coordinates");
     // Load vertex meta
     YAML::Node node;
@@ -136,7 +138,7 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
     );
 
     // Load vertices
-    auto dims =  node["shape"].as<std::vector<size_t>>();
+    auto dims = node["shape"].as<std::vector<size_t>>();
 
     vertices = m_featureBase->m_kernel->loadFloatArray(
         *desc.dataRoot,
@@ -149,43 +151,7 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
     // TODO: Support other channels
 
     // === Cluster === //
-    std::vector<indexArray::element_type> faces;
-    std::vector<indexArray::element_type> cluster_materials;
-
-    // Load all surfaces/cluster
-    size_t cluster_idx = 0;
-    while(true)
-    {
-        auto cluster = m_featureBase->m_clusterIO->loadCluster(
-            name,
-            cluster_idx,
-            ret->getTextureCoordinates(),
-            faces
-        );
-
-        if (!cluster) break;
-
-        // Insert cluster to mesh
-        std::string cluster_name = "cluster" + std::to_string(cluster_idx) + "_face_indices";
-        ret->addIndexChannel(
-            cluster->face_indices, 
-            cluster_name, 
-            cluster->num_faces, 
-            1);
-        
-        cluster_materials.push_back(cluster->material_index);
-
-        cluster_idx++;
-    }
-    // Insert cluster -> material map
-    ret->addIndexChannel(
-        Util::convert_vector_to_shared_array(cluster_materials),
-        "cluster_material_indices",
-        cluster_materials.size(),
-         1);
-    // Add faces to mesh
-    ret->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
-
+    size_t n_clusters = loadSurfaces(name, ret);
 
     // Load num_materials and num_textures to allocate memory
     {
@@ -200,36 +166,115 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
         ret->getTextures().resize(node["n_textures"].as<uint64_t>()); // Resize for index based access
     }
 
-    
+    // === Materials and Textures === //
+    size_t n_materials = loadMaterials(name, ret);
+
+    return ret;
+}
+
+template <typename FeatureBase>
+size_t MeshIO<FeatureBase>::loadMaterials(
+    const std::string& mesh_name,
+    MeshBufferPtr mesh) const
+{
+    size_t count = 0;
+    while(true)
+    {
+        Description desc = m_featureBase->m_schema->material(mesh_name, count);
+        if (!m_featureBase->m_kernel->exists(
+            *desc.dataRoot,
+            *desc.data
+        )) break;
+        count++;
+    }
+
+    ProgressBar bar(count, timestamp.getElapsedTime() + "[MeshIO] Loading materials & textures");
     size_t material_idx = 0;
     while(true)
     {
         auto res = m_featureBase->m_materialIO->loadMaterial(
-            name,
+            mesh_name,
             material_idx
         );
-
+        // Check if a Material was loaded
         if (!res.first)
         {
             break;
         }
 
-        ret->getMaterials().push_back(*res.first);
-        
+        mesh->getMaterials().push_back(*res.first);
+        // Check if a Texture was loaded
         if (res.second)
         {
-            ret->getTextures()[res.second->m_index] = *res.second;
+            mesh->getTextures()[res.second->m_index] = *res.second;
         }
 
-        material_idx++;
+        ++bar;
+        ++material_idx;
+    }
+    std::cout << std::endl;
+
+    return mesh->getMaterials().size();
+}
+
+template <typename FeatureBase>
+size_t MeshIO<FeatureBase>::loadSurfaces(
+    const std::string& mesh_name,
+    MeshBufferPtr mesh) const
+{
+    std::vector<indexArray::element_type> faces;
+    std::vector<indexArray::element_type> cluster_materials;
+
+    // Count clusters in file
+    size_t count = 0;
+    while(true)
+    {
+        Description desc = m_featureBase->m_schema->surface(mesh_name, count);
+        if (!m_featureBase->m_kernel->exists(
+            *desc.dataRoot,
+            *desc.data
+        )) break;
+        count++;
     }
 
+    ProgressBar bar(count, timestamp.getElapsedTime() + "[MeshIO] Loading surfaces");
+    // Load all surfaces/cluster
+    size_t cluster_idx = 0;
+    while(true)
+    {
+        auto cluster = m_featureBase->m_clusterIO->loadCluster(
+            mesh_name,
+            cluster_idx,
+            mesh->getTextureCoordinates(),
+            faces
+        );
 
+        if (!cluster) break;
 
-    // Last TODO: Reconstruct Face array, reconstruct texture_coordinate array
-    
+        // Insert cluster to mesh
+        std::string cluster_name = "cluster" + std::to_string(cluster_idx) + "_face_indices";
+        mesh->addIndexChannel(
+            cluster->face_indices, 
+            cluster_name, 
+            cluster->num_faces, 
+            1);
+        
+        cluster_materials.push_back(cluster->material_index);
 
-    return ret;
+        ++bar;
+        ++cluster_idx;
+    }
+    std::cout << std::endl;
+    // Insert cluster -> material map
+    mesh->addIndexChannel(
+        Util::convert_vector_to_shared_array(cluster_materials),
+        "cluster_material_indices",
+        cluster_materials.size(),
+         1);
+    // Add faces to mesh
+    mesh->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
+
+    return cluster_idx;
 }
 
 } // namespace lvr2

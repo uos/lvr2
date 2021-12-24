@@ -14,6 +14,7 @@ template <typename FeatureBase>
 class MaterialIO
 {
 public:
+    // TODO: Support multiple textures per material
     void saveMaterial(
         const std::string& mesh_name,
         const size_t& material_index,
