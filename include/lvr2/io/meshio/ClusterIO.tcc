@@ -16,14 +16,14 @@ void ClusterIO<FeatureBase>::saveCluster(
     IndexChannelOptional clm_map_opt = mesh->getIndexChannel("cluster_material_indices");
     if (!clm_map_opt)
     {
-        std::cout << timestamp << "[MeshIO] No cluster -> material_index channel in buffer!" << std::endl;
+        std::cout << timestamp << "[ClusterIO] No cluster -> material_index channel in buffer!" << std::endl;
     }
 
     // Texture coordinates for each vertex
     floatArr uv_coords = mesh->getTextureCoordinates();
     if (!uv_coords)
     {
-        std::cout << timestamp << "[MeshIO] No uv coordinates in buffer!" << std::endl;
+        std::cout << timestamp << "[ClusterIO] No uv coordinates in buffer!" << std::endl;
     }
 
 
@@ -119,7 +119,7 @@ void ClusterIO<FeatureBase>::saveCluster(
     }
     else
     {
-        std::cout << timestamp << "[MeshIO] Cannot add material to surface!" << std::endl;
+        std::cout << timestamp << "[ClusterIO] Cannot add material to surface!" << std::endl;
     }
     m_featureBase->m_kernel->saveMetaYAML(
         *desc.metaRoot,

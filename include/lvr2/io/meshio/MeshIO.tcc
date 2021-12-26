@@ -333,8 +333,8 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
     bool hasColors  = false;
 
     if (m_featureBase->m_kernel->exists(*coord_desc.dataRoot, *coord_desc.data)) hasCoords     = true;
-    if (m_featureBase->m_kernel->exists(*coord_desc.dataRoot, *coord_desc.data)) hasNormals    = true;
-    if (m_featureBase->m_kernel->exists(*coord_desc.dataRoot, *coord_desc.data)) hasColors     = true;
+    if (m_featureBase->m_kernel->exists(*normal_desc.dataRoot, *normal_desc.data)) hasNormals    = true;
+    if (m_featureBase->m_kernel->exists(*color_desc.dataRoot, *color_desc.data)) hasColors     = true;
 
     std::cout << timestamp << "[MeshIO] Mesh has vertex coordinates: " << (hasCoords  ? "yes" : "no") << "\n";
     std::cout << timestamp << "[MeshIO] Mesh has vertex normals:     " << (hasNormals ? "yes" : "no") << "\n";

@@ -66,19 +66,22 @@ std::pair<MaterialOptional, TextureOptional> MaterialIO<FeatureBase>::loadMateri
     Material ret_mat = node.as<lvr2::Material>();
 
     TextureOptional ret_tex_opt;
-    // Get all texture names
-    std::vector<std::string> textures;  
-    m_featureBase->m_kernel->subGroupNames(
-            *desc.dataRoot + "/textures",
-            textures
-        );
-    if (textures.size() > 0)
+    if (m_featureBase->m_kernel->exists(*desc.dataRoot + "/textures"))
     {
-        ret_tex_opt = m_featureBase->m_textureIO->loadTexture(
-            mesh_name,
-            material_index,
-            textures[0]
-        );
+        // Get all texture names
+        std::vector<std::string> textures;  
+        m_featureBase->m_kernel->subGroupNames(
+                *desc.dataRoot + "/textures",
+                textures
+            );
+        if (textures.size() > 0)
+        {
+            ret_tex_opt = m_featureBase->m_textureIO->loadTexture(
+                mesh_name,
+                material_index,
+                textures[0]
+            );
+        }
     }
 
     return std::make_pair(ret_mat, ret_tex_opt);

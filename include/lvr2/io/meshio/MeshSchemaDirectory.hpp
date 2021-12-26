@@ -29,5 +29,6 @@ class MeshSchemaDirectory : public MeshSchema
     virtual Description texture(std::string name, size_t material_index, std::string layer_name) const;
 };
 
+using MeshSchemaDirectoryPtr = std::shared_ptr<MeshSchemaDirectory>;
 
 } // namespace lvr2

@@ -8,6 +8,7 @@ Description MeshSchemaDirectory::mesh(std::string name) const
 {
     Description d;
     d.dataRoot = "meshes/" + name;
+    d.data = "";
     d.metaRoot = d.dataRoot;
     d.meta = "meta.yaml";
 
@@ -25,7 +26,7 @@ Description MeshSchemaDirectory::vertices(std::string name) const
 Description MeshSchemaDirectory::vertexChannel(std::string mesh_name, std::string channel_name) const
 {
     auto d = vertices(mesh_name);
-    d.data = channel_name + ".ply";
+    d.data = channel_name + ".data";
     d.meta = channel_name + ".yaml";
     return d;
 }

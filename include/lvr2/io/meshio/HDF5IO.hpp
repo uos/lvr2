@@ -18,10 +18,9 @@ public:
     HDF5IO(HDF5KernelPtr kernel, MeshSchemaHDF5Ptr schema)
     : HDF5IOBase(kernel, schema)
     {}
-
-    using HDF5IOPtr = std::shared_ptr<HDF5IO>;
 };
 
+using HDF5IOPtr = std::shared_ptr<HDF5IO>;
     
 } // namespace meshio
 } // namespace lvr2
