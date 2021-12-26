@@ -76,7 +76,7 @@ Description MeshSchemaDirectory::texture(std::string name, size_t material_index
 {
     auto d = material(name, material_index);
     d.dataRoot = *d.dataRoot + "/textures";
-    d.data = layer_name + ".jpg";
+    d.data = layer_name + ".data"; // TODO: Change to .jpg when saveImage is used
     d.metaRoot = d.dataRoot;
     d.meta = layer_name + ".yaml";
     return d;
