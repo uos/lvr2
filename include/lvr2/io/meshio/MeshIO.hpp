@@ -23,6 +23,22 @@ public:
 
 private:
     /**
+     * @brief Saves the vertices, normals and colors if available
+     * 
+     * @param mesh_name The name of the mesh
+     * @param mesh The mesh from which to save the data
+     */
+    void saveVertices(std::string mesh_name, MeshBufferPtr mesh) const;
+
+    /**
+     * @brief Loads vertices, normals and colors if available
+     * 
+     * @param mesh_name The name of the mesh to load
+     * @param[out] mesh The mesh to add the vertices, normals and colors
+     */
+    void loadVertices(std::string mesh_name, MeshBufferPtr mesh) const;
+
+    /**
      * @brief Loads all Materials associated with \p mesh_name
      * 
      * @param mesh_name The name of the Mesh in the h5 file
