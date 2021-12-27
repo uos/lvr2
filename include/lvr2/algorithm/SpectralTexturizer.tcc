@@ -68,6 +68,7 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
             c++;
         }
     }
+    texture.m_layerName = "hyperspectral_grayscale_" + std::to_string(channelIndex);
     return this->m_textures.push(texture);
 }
 
@@ -85,7 +86,8 @@ void SpectralTexturizer<BaseVecT>::init_image_data(HyperspectralPanoramaPtr pano
     distortions[0] = -0.15504703;
     distortions[1] = -0.14184141;
     distortions[2] = 0.0; 
-
+    
+    this->channelIndex = channelIndex;
     HyperspectralPanoramaChannelPtr panoChannel = pano->channels[channelIndex];
     spectralPanorama = panoChannel->channel;
 

@@ -90,7 +90,7 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
         newChannel->channel = channels[i];
         ret->channels.push_back(newChannel);
     }
-
+    ret->num_channels = hchannel->channel.channels();
     return ret;
 }
 

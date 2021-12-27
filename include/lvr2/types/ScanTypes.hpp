@@ -334,6 +334,9 @@ struct HyperspectralPanorama : SensorDataType, Transformable
 
     /// OpenCV representation
     std::vector<HyperspectralPanoramaChannelPtr>   channels;
+
+    /// Number of Channels
+    size_t num_channels;
 };
 
 using HyperspectralPanoramaPtr = std::shared_ptr<HyperspectralPanorama>;

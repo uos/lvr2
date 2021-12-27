@@ -31,10 +31,11 @@ void MaterialIO<FeatureBase>::saveMaterial(
     if (mat.m_texture)
     {
         const Texture tex = textures[(*mat.m_texture).idx()];
+        
         m_textureIO->saveTexture(
             mesh_name,
             material_index,
-            "RGB",
+            tex.m_layerName,
             tex
         );
     }
