@@ -70,6 +70,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/PlutoMapIO.hpp"
 #include "lvr2/io/meshio/HDF5IO.hpp"
+#include "lvr2/io/meshio/DirectoryIO.hpp"
 #include "lvr2/util/Factories.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
@@ -574,26 +575,29 @@ int main(int argc, char** argv)
     {
         boost::filesystem::path selectedFile( output_filename );
         std::string extension = selectedFile.extension().string();
-        
-        if (extension == ".h5")
+        cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
+
+        if (extension == "")
         {
             /* TODO: TESTING IO move this to a part of this program where it makes sense*/
 
             std::cout << timestamp << "[Experimental] Saving using MeshIO" << std::endl;
 
-            HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(output_filename));
-            MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
-
-            auto mesh_io = meshio::HDF5IO(kernel, schema);
+            //HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(output_filename));
+            //MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
+            // auto mesh_io = meshio::HDF5IO(kernel, schema);
+            DirectoryKernelPtr kernel = DirectoryKernelPtr(new DirectoryKernel(output_filename));
+            MeshSchemaDirectoryPtr schema = MeshSchemaDirectoryPtr(new MeshSchemaDirectory());
+            auto mesh_io = meshio::DirectoryIO(kernel, schema);
 
             mesh_io.saveMesh(
-                "Mesh1",
+                "Mesh0",
                 buffer
                 );
+
             continue;
         }
 
-        cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
         ModelFactory::saveModel(m, output_filename);
     }
 
