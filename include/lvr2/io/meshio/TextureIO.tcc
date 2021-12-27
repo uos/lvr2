@@ -2,6 +2,7 @@
 #include <numeric>
 #include <functional>
 #include <lvr2/io/meshio/yaml/Texture.hpp>
+#include <opencv2/core/types_c.h>
 
 namespace lvr2
 {
@@ -22,7 +23,7 @@ void TextureIO<FeatureBase>::saveTexture(
         tex.m_data,
         tex.m_data + byte_count,
         copy.get());
-
+    
     m_featureBase->m_kernel->saveUCharArray(
         *desc.dataRoot,
         *desc.data,
@@ -31,6 +32,21 @@ void TextureIO<FeatureBase>::saveTexture(
         tex.m_numChannels, 
         tex.m_numBytesPerChan},
         copy);
+
+    // TODO: save textures as via kernel->saveImage()
+    // cv::Mat matrix(
+    //     {tex.m_height,
+    //     tex.m_width,
+    //     tex.m_numChannels},
+    //     CV_8UC1,
+    //     copy.get()
+    // );
+
+    // m_featureBase->m_kernel->saveImage(
+    //     *desc.dataRoot,
+    //     *desc.data,
+    //     matrix
+    // );
 
     // Save metadata
     YAML::Node meta;
@@ -66,6 +82,7 @@ Texture TextureIO<FeatureBase>::loadTexture(
     // Decode meta 
     // This allocates the Texture memory because it calles the Texture Constructor
     ret = meta.as<lvr2::Texture>();
+    ret.m_layerName = texture_name;
 
     std::vector<size_t> dims = {
         ret.m_height, 

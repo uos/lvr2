@@ -14,17 +14,31 @@ template <typename FeatureBase>
 class MaterialIO
 {
 public:
-    // TODO: Support multiple textures per material
     void saveMaterial(
         const std::string& mesh_name,
         const size_t& material_index,
         const MeshBufferPtr& mesh
     ) const;
 
+    void saveMaterials(
+        const std::string& mesh_name,
+        const MeshBufferPtr& mesh
+    ) const;
+
     std::pair<MaterialOptional, TextureOptional> loadMaterial(
         const std::string& mesh_name,
-        const size_t& material_index
+        const size_t& material_index,
+        StringOptional texture_layer = StringOptional()
     ) const;
+
+        /**
+     * @brief Loads all Materials associated with \p mesh_name
+     * 
+     * @param mesh_name The name of the Mesh in the h5 file
+     * @param[out] mesh The Materials and textures will be added to this mesh. \p mesh needs to have enough memory allocated to hold all textures
+     * @return The number of Materials loaded
+     */
+    size_t loadMaterials(const std::string& mesh_name, MeshBufferPtr mesh, StringOptional texture_layer = StringOptional()) const;
 protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 

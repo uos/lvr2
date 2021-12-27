@@ -69,7 +69,8 @@ public:
         unsigned char numChannels,
         unsigned char numBytesPerChan,
         float texelSize,
-        unsigned char* data = nullptr
+        unsigned char* data = nullptr,
+        std::string layer = "default"
     );
 
     /**
@@ -121,6 +122,9 @@ public:
 
     /// The size of a texture pixel
     float m_texelSize;
+
+    /// The layer name of this texture
+    std::string m_layerName;
 
 };
 

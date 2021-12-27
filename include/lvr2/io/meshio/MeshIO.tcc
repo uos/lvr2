@@ -74,18 +74,10 @@ void MeshIO<FeatureBase>::saveMesh(
 
     // Step 3: Save all Materials
     // Write data
-    const auto& materials = mesh->getMaterials();
-    ProgressBar material_progress( materials.size(), timestamp.getElapsedTime() + "[MeshIO] Saving materials & textures");
-    for (size_t idx = 0; idx < materials.size(); idx++)
-    {
-        m_materialIO->saveMaterial(
-            mesh_name,
-            idx,
-            mesh
-        );
-        ++material_progress;
-    }
-    std::cout << std::endl;
+    m_featureBase->m_materialIO->saveMaterials(
+        mesh_name,
+        mesh
+    );
 }
 
 template <typename FeatureBase>
@@ -124,55 +116,11 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
     }
 
     // === Materials and Textures === //
-    size_t n_materials = loadMaterials(name, ret);
+    size_t n_materials = m_featureBase->m_materialIO->loadMaterials(name, ret);
 
     return ret;
 }
 
-template <typename FeatureBase>
-size_t MeshIO<FeatureBase>::loadMaterials(
-    const std::string& mesh_name,
-    MeshBufferPtr mesh) const
-{
-    size_t count = 0;
-    while(true)
-    {
-        Description desc = m_featureBase->m_schema->material(mesh_name, count);
-        if (!m_featureBase->m_kernel->exists(
-            *desc.dataRoot,
-            *desc.data
-        )) break;
-        count++;
-    }
-
-    ProgressBar bar(count, timestamp.getElapsedTime() + "[MeshIO] Loading materials & textures");
-    size_t material_idx = 0;
-    while(true)
-    {
-        auto res = m_featureBase->m_materialIO->loadMaterial(
-            mesh_name,
-            material_idx
-        );
-        // Check if a Material was loaded
-        if (!res.first)
-        {
-            break;
-        }
-
-        mesh->getMaterials().push_back(*res.first);
-        // Check if a Texture was loaded
-        if (res.second)
-        {
-            mesh->getTextures()[res.second->m_index] = *res.second;
-        }
-
-        ++bar;
-        ++material_idx;
-    }
-    std::cout << std::endl;
-
-    return mesh->getMaterials().size();
-}
 
 template <typename FeatureBase>
 size_t MeshIO<FeatureBase>::loadSurfaces(

@@ -48,6 +48,7 @@ Texture::Texture()
     this->m_numChannels          = 0;
     this->m_numBytesPerChan      = 0;
     this->m_texelSize            = 1.0;
+    this->m_layerName            = "default";
 }
 
 // Texture::Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
@@ -79,7 +80,8 @@ Texture::Texture(
     unsigned char numChannels,
     unsigned char numBytesPerChan,
     float texelSize,
-    unsigned char* data
+    unsigned char* data,
+    std::string layer
 ) :
     m_index(index),
     m_width(width),
@@ -87,7 +89,8 @@ Texture::Texture(
     m_numChannels(numChannels),
     m_numBytesPerChan(numBytesPerChan),
     m_texelSize(texelSize),
-    m_data(new unsigned char[width * height * numChannels * numBytesPerChan])
+    m_data(new unsigned char[width * height * numChannels * numBytesPerChan]),
+    m_layerName(layer)
 {
     if(data)
     {
@@ -103,6 +106,7 @@ Texture::Texture(Texture &&other) {
     this->m_numChannels = other.m_numChannels;
     this->m_numBytesPerChan = other.m_numBytesPerChan;
     this->m_texelSize = other.m_texelSize;
+    this->m_layerName = std::move(other.m_layerName);
 
     other.m_data = nullptr;
     other.m_width = 0;
@@ -120,6 +124,7 @@ Texture::Texture(const Texture& other)
     this->m_numChannels = other.m_numChannels;
     this->m_numBytesPerChan = other.m_numBytesPerChan;
     this->m_texelSize = other.m_texelSize;
+    this->m_layerName = other.m_layerName;
 
     size_t data_size = m_width * m_height * m_numChannels * m_numBytesPerChan;
     m_data = new unsigned char[data_size];
@@ -143,6 +148,7 @@ Texture & Texture::operator=(const Texture &other)
         this->m_numChannels = other.m_numChannels;
         this->m_numBytesPerChan = other.m_numBytesPerChan;
         this->m_texelSize = other.m_texelSize;
+        this->m_layerName = other.m_layerName;
 
         size_t data_size = m_width * m_height * m_numChannels * m_numBytesPerChan;
         m_data = new unsigned char[data_size];
@@ -166,7 +172,8 @@ Texture::Texture(
     m_data(new unsigned char[oldTexture->m_width
                     * oldTexture->m_height
                     * 3
-                    * sizeof(unsigned char)])
+                    * sizeof(unsigned char)]),
+    m_layerName("default")
 {
     size_t copy_len = m_width * m_height * m_numChannels * m_numBytesPerChan;
     std::copy(oldTexture->m_pixels, oldTexture->m_pixels + copy_len, m_data);

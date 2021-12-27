@@ -39,14 +39,6 @@ private:
     void loadVertices(std::string mesh_name, MeshBufferPtr mesh) const;
 
     /**
-     * @brief Loads all Materials associated with \p mesh_name
-     * 
-     * @param mesh_name The name of the Mesh in the h5 file
-     * @param[out] mesh The Materials and textures will be added to this mesh. \p mesh needs to have enough memory allocated to hold all textures
-     * @return The number of Materials loaded
-     */
-    size_t loadMaterials(const std::string& mesh_name, MeshBufferPtr mesh) const;
-    /**
      * @brief Loads all clusters associated with \p mesh_name
      * 
      * @param mesh_name The name of the Mesh in the h5 file
