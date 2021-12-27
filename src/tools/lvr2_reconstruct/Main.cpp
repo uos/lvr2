@@ -577,15 +577,30 @@ int main(int argc, char** argv)
         std::string extension = selectedFile.extension().string();
         cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
 
+        if (extension == ".h5")
+        {
+            /* TODO: TESTING IO move this to a part of this program where it makes sense*/
+
+            std::cout << timestamp << "[Experimental] Saving using MeshIO" << std::endl;
+
+            HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(output_filename));
+            MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
+            auto mesh_io = meshio::HDF5IO(kernel, schema);
+
+            mesh_io.saveMesh(
+                "Mesh0",
+                buffer
+                );
+
+            continue;
+        }
+
         if (extension == "")
         {
             /* TODO: TESTING IO move this to a part of this program where it makes sense*/
 
             std::cout << timestamp << "[Experimental] Saving using MeshIO" << std::endl;
 
-            //HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(output_filename));
-            //MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
-            // auto mesh_io = meshio::HDF5IO(kernel, schema);
             DirectoryKernelPtr kernel = DirectoryKernelPtr(new DirectoryKernel(output_filename));
             MeshSchemaDirectoryPtr schema = MeshSchemaDirectoryPtr(new MeshSchemaDirectory());
             auto mesh_io = meshio::DirectoryIO(kernel, schema);
