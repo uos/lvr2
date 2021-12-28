@@ -24,6 +24,16 @@ void TextureIO<FeatureBase>::saveTexture(
         tex.m_data + byte_count,
         copy.get());
     
+    if (byte_count == 0)
+    {
+        std::cout << timestamp << "[TextureIO] Texture with index: '" << tex.m_index 
+            << "' has byte_count '0'. w: " << tex.m_width 
+            << " h: " << tex.m_height
+            << " n channels: " << tex.m_numChannels
+            << " channel width: " << tex.m_numBytesPerChan << std::endl;
+        std::cout << timestamp << "[TextureIO] Skipping texture" << std::endl;
+        return;
+    }
     m_featureBase->m_kernel->saveUCharArray(
         *desc.dataRoot,
         *desc.data,

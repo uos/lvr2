@@ -213,8 +213,6 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 boundingRect
                 );
 
-                std::cout << texturizer.getTexture(texH).m_layerName << std::endl;
-
                 if (!first_opt) first_opt = texH;
                 // Add layer create handle from global textureCount 
                 // (The combined list will be created at the end)
@@ -317,11 +315,6 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 auto tex = texturizer.getTextures()[texH];
                 combined_textures.set(TextureHandle(tex.m_index), std::move(tex));
             }
-        }
-
-        for (auto texH: combined_textures)
-        {
-            std::cout << "[ " << __FILE__ << " ] " << __LINE__ << ": " << combined_textures[texH].m_layerName << std::endl;
         }
 
         return MaterializerResult<BaseVecT>(

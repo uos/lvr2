@@ -27,7 +27,19 @@ void MaterialIO<FeatureBase>::saveMaterial(
         meta
     );
 
-    // Write Textures TODO: Add support for multiple layers
+    // Write Textures
+    for (auto layer: mat.m_layers)
+    {
+        const Texture tex = textures[layer.second.idx()];
+        
+        m_textureIO->saveTexture(
+            mesh_name,
+            material_index,
+            tex.m_layerName,
+            tex
+        );
+    }
+
     if (mat.m_texture)
     {
         const Texture tex = textures[(*mat.m_texture).idx()];
@@ -43,10 +55,9 @@ void MaterialIO<FeatureBase>::saveMaterial(
 }
 
 template <typename FeatureBase>
-std::pair<MaterialOptional, TextureOptional> MaterialIO<FeatureBase>::loadMaterial(
+std::pair<MaterialOptional, TextureVectorOpt> MaterialIO<FeatureBase>::loadMaterial(
         const std::string& mesh_name,
-        const size_t& material_index,
-        StringOptional texture_layer
+        const size_t& material_index
     ) const
 {
     Description desc = m_featureBase->m_schema->material(
@@ -56,7 +67,7 @@ std::pair<MaterialOptional, TextureOptional> MaterialIO<FeatureBase>::loadMateri
     // Check if material exists
     if (!m_featureBase->m_kernel->exists(*desc.dataRoot))
     {
-        return std::make_pair(MaterialOptional(), TextureOptional());
+        return std::make_pair(MaterialOptional(), TextureVectorOpt());
     }
 
     YAML::Node node;
@@ -67,7 +78,8 @@ std::pair<MaterialOptional, TextureOptional> MaterialIO<FeatureBase>::loadMateri
     );
     Material ret_mat = node.as<lvr2::Material>();
 
-    TextureOptional ret_tex_opt;
+    
+    std::vector<Texture> ret_textures;
     if (m_featureBase->m_kernel->exists(*desc.dataRoot + "/textures"))
     {
         // Get all texture names
@@ -76,35 +88,38 @@ std::pair<MaterialOptional, TextureOptional> MaterialIO<FeatureBase>::loadMateri
                 *desc.dataRoot + "/textures",
                 textures
             );
-        if (!textures.empty())
+        // Load layers
+        for (std::string layer: textures)
         {
-            std::string layer;
-
-            if (texture_layer)
-            {
-                layer = *texture_layer;
-            }
-            else
-            {
-                layer = textures[0];
-            }
-
-            ret_tex_opt = m_featureBase->m_textureIO->loadTexture(
+            auto tex_opt = m_featureBase->m_textureIO->loadTexture(
                 mesh_name,
                 material_index,
                 layer
-            );
+                );
+            
+            if (!tex_opt)
+            {
+                std::cout << timestamp << "[MaterialIO] Texture layer " << layer << " could not be loaded" << std::endl;
+                continue;
+            }
+
+            ret_mat.m_layers.insert(std::pair(layer, tex_opt->m_index));
+            ret_textures.push_back(std::move(*tex_opt));
+        }
+
+        if (!ret_textures.empty())
+        {
+            ret_mat.m_texture = ret_textures[0].m_index;
         }
     }
 
-    return std::make_pair(ret_mat, ret_tex_opt);
+    return std::make_pair(ret_mat, ret_textures);
 }
 
 template <typename FeatureBase>
 size_t MaterialIO<FeatureBase>::loadMaterials(
     const std::string& mesh_name,
-    MeshBufferPtr mesh,
-    StringOptional texture_layer) const
+    MeshBufferPtr mesh) const
 {
     size_t count = 0;
     while(true)
@@ -124,8 +139,7 @@ size_t MaterialIO<FeatureBase>::loadMaterials(
     {
         auto res = loadMaterial(
             mesh_name,
-            material_idx,
-            texture_layer
+            material_idx
         );
         // Check if a Material was loaded
         if (!res.first)
@@ -137,7 +151,10 @@ size_t MaterialIO<FeatureBase>::loadMaterials(
         // Check if a Texture was loaded
         if (res.second)
         {
-            mesh->getTextures()[res.second->m_index] = *res.second;
+            for (Texture&& tex: res.second)
+            {
+                mesh->getTextures()[tex.m_index] = tex;
+            }
         }
         else
         {
