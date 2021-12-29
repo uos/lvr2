@@ -115,7 +115,6 @@ Texture::Texture(Texture &&other) {
     other.m_texelSize            = 1.0;
     other.m_layerName            = "default";
 
-    std::cout << "move constructed" << std::endl;
 }
 
 Texture::Texture(const Texture& other)
@@ -185,8 +184,6 @@ Texture& Texture::operator=(Texture &&other)
         other.m_texelSize            = 1.0;
         other.m_layerName            = "default";
     }
-
-    std::cout << "move assigned" << std::endl;
 
     return *this;
 }
