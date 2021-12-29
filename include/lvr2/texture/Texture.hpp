@@ -93,6 +93,8 @@ public:
 
     Texture & operator=(const Texture &other);
 
+    Texture & operator=(Texture &&other);
+
     /**
      * @brief Destructor
      */
