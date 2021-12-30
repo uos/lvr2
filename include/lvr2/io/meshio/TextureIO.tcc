@@ -69,7 +69,7 @@ void TextureIO<FeatureBase>::saveTexture(
 }
 
 template <typename FeatureBase>
-Texture TextureIO<FeatureBase>::loadTexture(
+TextureOptional TextureIO<FeatureBase>::loadTexture(
     const std::string& mesh_name,
     const size_t material_index,
     const std::string& texture_name
@@ -81,6 +81,12 @@ Texture TextureIO<FeatureBase>::loadTexture(
         material_index,
         texture_name
     );
+
+    // Check if exists
+    if (m_featureBase->m_kernel->exists(*desc.dataRoot, *desc.data))
+    {
+        return TextureOptional();
+    }
 
     // Load meta
     YAML::Node meta;

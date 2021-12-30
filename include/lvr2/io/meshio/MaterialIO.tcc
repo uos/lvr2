@@ -109,7 +109,7 @@ std::pair<MaterialOptional, TextureVectorOpt> MaterialIO<FeatureBase>::loadMater
 
         if (!ret_textures.empty())
         {
-            ret_mat.m_texture = ret_textures[0].m_index;
+            ret_mat.m_texture = TextureHandle(ret_textures[0].m_index);
         }
     }
 
@@ -151,9 +151,9 @@ size_t MaterialIO<FeatureBase>::loadMaterials(
         // Check if a Texture was loaded
         if (res.second)
         {
-            for (Texture&& tex: res.second)
+            for (Texture& tex: *res.second)
             {
-                mesh->getTextures()[tex.m_index] = tex;
+                mesh->getTextures()[tex.m_index] = std::move(tex);
             }
         }
         else

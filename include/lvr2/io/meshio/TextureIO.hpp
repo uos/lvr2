@@ -6,6 +6,8 @@
 namespace lvr2
 {
 
+using TextureOptional = boost::optional<Texture>;
+
 template <typename FeatureBase>
 class TextureIO
 {
@@ -17,7 +19,7 @@ public:
         const Texture& texture
     ) const;
 
-    Texture loadTexture(
+    TextureOptional loadTexture(
         const std::string& mesh_name,
         const size_t material_index,
         const std::string& texture_name
