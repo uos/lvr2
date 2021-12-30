@@ -83,7 +83,7 @@ TextureOptional TextureIO<FeatureBase>::loadTexture(
     );
 
     // Check if exists
-    if (m_featureBase->m_kernel->exists(*desc.dataRoot, *desc.data))
+    if (!m_featureBase->m_kernel->exists(*desc.dataRoot, *desc.data))
     {
         return TextureOptional();
     }

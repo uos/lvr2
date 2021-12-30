@@ -133,7 +133,8 @@ boost::optional<ClusterIOData> ClusterIO<FeatureBase>::loadCluster(
     const std::string& mesh_name,
     const size_t& cluster_idx,
     floatArr mesh_tex_coords,
-    std::vector<indexArray::element_type>& faces
+    std::vector<indexArray::element_type>& faces,
+    std::vector<indexArray::element_type>& faceToMaterial
     ) const
 {
 
@@ -201,6 +202,7 @@ boost::optional<ClusterIOData> ClusterIO<FeatureBase>::loadCluster(
         faces.push_back(indices[i * 3 + 1]);
         faces.push_back(indices[i * 3 + 2]);
         face_indices.push_back(face_index++);
+        faceToMaterial.push_back(material_index);
     }
 
     ClusterIOData ret;

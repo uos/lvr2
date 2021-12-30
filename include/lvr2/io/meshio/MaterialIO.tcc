@@ -113,7 +113,7 @@ std::pair<MaterialOptional, TextureVectorOpt> MaterialIO<FeatureBase>::loadMater
         }
     }
 
-    return std::make_pair(ret_mat, ret_textures);
+    return std::make_pair(ret_mat, std::move(ret_textures));
 }
 
 template <typename FeatureBase>

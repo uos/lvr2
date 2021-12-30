@@ -128,6 +128,7 @@ size_t MeshIO<FeatureBase>::loadSurfaces(
     MeshBufferPtr mesh) const
 {
     std::vector<indexArray::element_type> faces;
+    std::vector<indexArray::element_type> faceToMaterial;
     std::vector<indexArray::element_type> cluster_materials;
 
     // Count clusters in file
@@ -151,7 +152,8 @@ size_t MeshIO<FeatureBase>::loadSurfaces(
             mesh_name,
             cluster_idx,
             mesh->getTextureCoordinates(),
-            faces
+            faces,
+            faceToMaterial
         );
 
         if (!cluster) break;
@@ -178,6 +180,10 @@ size_t MeshIO<FeatureBase>::loadSurfaces(
          1);
     // Add faces to mesh
     mesh->setFaceIndices(Util::convert_vector_to_shared_array(faces), faces.size() / 3);
+    // Insert face -> material map
+    mesh->setFaceMaterialIndices(
+        Util::convert_vector_to_shared_array(faceToMaterial)
+        );
 
     return cluster_idx;
 }

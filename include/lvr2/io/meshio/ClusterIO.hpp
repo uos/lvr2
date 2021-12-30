@@ -30,7 +30,8 @@ public:
         const std::string& mesh_name,
         const size_t& cluster_idx,
         floatArr tex_coords,
-        std::vector<indexArray::element_type>& faces
+        std::vector<indexArray::element_type>& faces,
+        std::vector<indexArray::element_type>& faceToMaterial
     ) const;
 
 protected:
