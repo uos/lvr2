@@ -48,6 +48,7 @@
 #include "lvr2/io/scanio/LabelScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
 #include "lvr2/io/scanio/DirectoryIO.hpp"
+#include "lvr2/io/meshio/HDF5IO.hpp"
 #include "lvr2/io/Polygon.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/util/Util.hpp"
@@ -3921,6 +3922,23 @@ void LVRMainWindow::openScanProject()
  
 void LVRMainWindow::openHDF5(std::string fileName)
 {
+    boost::filesystem::path selectedFile(fileName);
+    std::string extension = selectedFile.extension().string();
+
+    HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(fileName));
+    MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
+    
+    auto mesh_io = meshio::HDF5IO(kernel, schema);
+
+    // this->treeWidget->add
+    MeshBufferPtr buffer = mesh_io.loadMesh("Mesh0");
+    ModelPtr model = ModelPtr(new Model(buffer));
+
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
+
+
+
     std::cout << "Labeled opening currently not working" << std::endl;
     // LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
     // HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName));
