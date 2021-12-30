@@ -114,6 +114,8 @@ Options::Options(int argc, char** argv)
         ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint --flipPoint x y z" )
         ("texFromImages,q", "Foo Bar ............")
         ("scanPositionIndex", value<int>(&m_scanPositionIndex)->default_value(0), "Index of the h5 Scan Position used for the reconstructor")
+        ("minSpectralChannel", value<int>(&m_minSpectralChannel)->default_value(0), "Minimum Spectral Channel Index for Ranged Texture Generation")
+        ("maxSpectralChannel", value<int>(&m_maxSpectralChannel)->default_value(0), "Maximum Spectral Channel Index for Ranged Texture Generation")
         ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
     ;
 
@@ -473,6 +475,16 @@ bool Options::texturesFromImages() const
 int Options::getScanPositionIndex() const
 {
     return m_scanPositionIndex;
+}
+
+int Options::getMinSpectralChannel() const
+{
+    return m_minSpectralChannel;
+}
+
+int Options::getMaxSpectralChannel() const
+{
+    return m_maxSpectralChannel;
 }
 
 string Options::getProjectDir() const

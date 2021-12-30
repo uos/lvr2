@@ -504,11 +504,22 @@ int main(int argc, char** argv)
         options.getTexMaxClusterSize()
     );
 
-    SpectralTexturizer<Vec> spec_texter(
-        options.getTexelSize(),
-        options.getTexMinClusterSize(),
-        options.getTexMaxClusterSize()
-    );
+
+    std::vector<SpectralTexturizer<Vec>> spec_texters;
+    // calculate how many spectral texturizers should be created
+    int texturizer_count = options.getMaxSpectralChannel() - options.getMinSpectralChannel();
+    texturizer_count = std::max(texturizer_count, 1);
+    // initialize the SpectralTexturizers
+    for(int i = 0; i < texturizer_count; i++)
+    {
+        SpectralTexturizer<Vec> spec_text(
+            options.getTexelSize(),
+            options.getTexMinClusterSize(),
+            options.getTexMaxClusterSize()
+        );
+
+        spec_texters.push_back(spec_text);
+    }
 
     // When using textures ...
     if (options.generateTextures())
@@ -533,11 +544,20 @@ int main(int argc, char** argv)
             auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
             // load panorama from hdf5 file
             auto panorama = hdf5IO.HyperspectralPanoramaIO::load(options.getScanPositionIndex(), 0, 0);
-            
-            // initialize spectral texturizer
-            spec_texter.init_image_data(panorama, 80);
-            // use spectral texturizer as the used texturizer
-            materializer.setTexturizer(spec_texter);
+
+            // go through all spectralTexturizers of the vector
+            for(int i = 0; i < texturizer_count; i++)
+            {
+                // if the spectralChannel doesnt exist, skip it
+                if(panorama->num_channels < options.getMinSpectralChannel() + i)
+                {
+                    continue;
+                }
+                // set the spectral texturizer with the current spectral channel
+                spec_texters[i].init_image_data(panorama, std::max(options.getMinSpectralChannel(), 0) + i);
+                // set the texturizer for the current spectral channel
+                materializer.addTexturizer(spec_texters[i]);
+            }
         }
     }
 

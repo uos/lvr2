@@ -332,6 +332,10 @@ public:
 
     int getScanPositionIndex() const;
 
+    int getMinSpectralChannel() const;
+    
+    int getMaxSpectralChannel() const;
+
 private:
 
     /// The set voxelsize
@@ -411,6 +415,9 @@ private:
 
     // h5 scan position used for reconstruction
     int m_scanPositionIndex;
+    // defines which spectralChannels should be used for hyperspectral texture generation
+    int m_minSpectralChannel;
+    int m_maxSpectralChannel;
 
 
     ///Path to texture pack
