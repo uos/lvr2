@@ -51,9 +51,9 @@ private:
     Vector2d principal_point;
     Vector2d focal_length;
     Vector2d camera_fov;
-    float distortions[3];
+    std::vector<float> distortions;
 
-    Vector2d point_to_panorama_coord(Vector3d point, Vector2d principal_point, Vector2d focal_length, float distortion[]);
+    Vector2d point_to_panorama_coord(Vector3d point, Vector2d principal_point, Vector2d focal_length, std::vector<float> distortions);
     void prepare_camera_data();
 };
 }

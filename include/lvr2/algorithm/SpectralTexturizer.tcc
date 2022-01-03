@@ -82,11 +82,10 @@ void SpectralTexturizer<BaseVecT>::init_image_data(HyperspectralPanoramaPtr pano
     focal_length = Vector2d(0,0);
     camera_fov = Vector2d(0.82903139,6.28318531);
 
+    distortions.push_back(-0.15504703);
+    distortions.push_back(-0.14184141);
+    distortions.push_back(0.0);
 
-    distortions[0] = -0.15504703;
-    distortions[1] = -0.14184141;
-    distortions[2] = 0.0; 
-    
     this->channelIndex = channelIndex;
     HyperspectralPanoramaChannelPtr panoChannel = pano->channels[channelIndex];
     spectralPanorama = panoChannel->channel;
@@ -107,7 +106,7 @@ void SpectralTexturizer<BaseVecT>::prepare_camera_data() {
 
 
 template<typename BaseVecT>
-Vector2d SpectralTexturizer<BaseVecT>::point_to_panorama_coord(Vector3d point, Vector2d principal_point, Vector2d focal_length, float distortion[])
+Vector2d SpectralTexturizer<BaseVecT>::point_to_panorama_coord(Vector3d point, Vector2d principal_point, Vector2d focal_length, std::vector<float> distortions)
 {
     Vector2d out_coord = Vector2d();
     float x = point[0];
@@ -121,23 +120,21 @@ Vector2d SpectralTexturizer<BaseVecT>::point_to_panorama_coord(Vector3d point, V
     // calculate the angle of the vertical axis
     float phi = -z / sqrt(pow(x, 2) + pow(y, 2));
 
-    float ndistortion = sizeof(distortion) / sizeof(distortion[0]) + 1;
-
     float phi_distorted = phi;
     float r = 1.0;
 
     // if there is distortion, calculate the distorted angle
-    if(ndistortion >= 1) 
+    if(distortions.size() >= 1) 
     {
-        phi_distorted += distortion[0] * phi;
+        phi_distorted += distortions[0] * phi;
     }
-    if(ndistortion >= 2)
+    if(distortions.size() >= 2)
     {
-        phi_distorted += distortion[1] * phi * (pow(phi,2) - pow(r, 2));
+        phi_distorted += distortions[1] * phi * (pow(phi,2) - pow(r, 2));
     }
-    if(ndistortion >= 3)
+    if(distortions.size() >= 3)
     {
-        phi_distorted += distortion[2] * phi * (pow(phi,4) - pow(r, 4));
+        phi_distorted += distortions[2] * phi * (pow(phi,4) - pow(r, 4));
     }
     phi_distorted *= focal_length[0];
     phi_distorted += principal_point[0];
