@@ -324,6 +324,161 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="dockWidgetTextureSelector">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>420</width>
+     <height>100</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>200</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeatureMask</set>
+   </property>
+   <property name="windowTitle">
+    <string>Texture Selector</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetTextureSelectorContents">
+    <layout class="QVBoxLayout" name="verticalLayoutTextureSelector">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item>
+      <widget class="QFrame" name="frameTextureSelector">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayoutSliders">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_Texture">
+            <property name="text">
+             <string>Texture:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+            <widget class="QComboBox" name="textureSelectorComboBox">
+              <property name="maximumSize">
+                <size>
+                  <width>750</width>
+                  <height>16777215</height>
+                </size>
+              </property>
+            </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+          <widget class="QPushButton" name="textureSelectorLoadButton">
+            <property name="text">
+              <string>Load Texture</string>
+            </property>
+          </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     
+
+     <item>
+      <widget class="QFrame" name="frameTextureGenerator">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayoutSliders">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+
+
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_hdf5Channel">
+            <property name="text">
+             <string>Spectral Channel:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_spectralChannel">
+            <property name="maximumSize">
+             <size>
+              <width>500</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_texelSize">
+            <property name="text">
+             <string>Texel Size:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_texelSize">
+            <property name="maximumSize">
+             <size>
+              <width>500</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+
+        <item>
+            <widget class="QPushButton" name="textureSelectorGenButton">
+              <property name="text">
+                <string>Generate Texture</string>
+              </property>
+            </widget>
+          </item>
+
+       </layout>
+      </widget>
+     </item>
+
+
+
+    </layout>
+   </widget>
+  </widget>
+
+  
   <widget class="QDockWidget" name="dockWidgetSpectralColorGradientSettings">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">

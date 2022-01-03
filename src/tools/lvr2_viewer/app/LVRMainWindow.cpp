@@ -203,6 +203,12 @@ LVRMainWindow::LVRMainWindow()
     this->dockWidgetSpectralColorGradientSettings->close();
     this->dockWidgetPointPreview->close();
     this->dockWidgetLabel->close();
+    this->dockWidgetTextureSelector->close();
+
+    this->lineEdit_spectralChannel->setText("0");
+    this->lineEdit_spectralChannel->setValidator(new QIntValidator(0, 300, this));
+    this->lineEdit_texelSize->setText("0.1");
+    this->lineEdit_texelSize->setValidator(new QDoubleValidator(0.001, 4.0, 4, this));
  
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
@@ -482,7 +488,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowSpectralColorGradient, SIGNAL(triggered()), dockWidgetSpectralColorGradientSettings, SLOT(show()));
     QObject::connect(m_actionShowSpectralPointPreview, SIGNAL(triggered()), dockWidgetPointPreview, SLOT(show()));
     QObject::connect(m_actionShowSpectralHistogram, SIGNAL(triggered()), this, SLOT(showHistogramDialog()));
-    QObject::connect(m_actionShowSpectralIndexSelect, SIGNAL(triggered()), this, SLOT(showSpectralIndexSelectDialog()));
+    QObject::connect(m_actionShowSpectralIndexSelect, SIGNAL(triggered()), dockWidgetTextureSelector, SLOT(show()));
 
 //    QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
 //    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
@@ -569,6 +575,10 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(radioButtonUseSpectralGradient, SIGNAL(toggled(bool)), this, SLOT(updateSpectralGradientEnabled(bool)));
 
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
+
+    // QObject::connect(this, SIGNAL(pressed()), this, SLOT(loadTexture()));
+    QObject::connect(this->textureSelectorLoadButton, SIGNAL(clicked()), this, SLOT(loadTexture()));
+    QObject::connect(this->textureSelectorGenButton, SIGNAL(clicked()), this, SLOT(generateTexture()));
 }
 
 void LVRMainWindow::toggleLabelDock(bool checkBoxState)
@@ -3235,21 +3245,61 @@ void LVRMainWindow::showHistogramDialog()
     }
 }
 
-void LVRMainWindow::showSpectralIndexSelectDialog()
+void LVRMainWindow::loadTexture()
 {
-    auto items = getSelectedMeshItems();
-    if(items.empty())
+
+    if(this->textureSelectorComboBox->currentText().isEmpty())
     {
-        std::cout << "please slelect a mesh item!" << std::endl;
+        std::cout << "No texture selected" << std::endl;
         return;
     }
-    for (LVRMeshItem* item : items)
+
+    std::cout << "Loading texture: " << this->textureSelectorComboBox->currentText().toStdString() << std::endl;
+
+    ModelPtr model = ModelPtr(new Model(m_meshBuffer));
+
+    vector<Material> &materials = m_meshBuffer->getMaterials();
+    for(size_t i = 0; i < materials.size(); i++)
     {
+        Material &m = materials[i];
+        if(m.m_layers.empty())
+        {
+            continue;
+        }
+        m.m_texture = m.m_layers.at(this->textureSelectorComboBox->currentText().toStdString()); 
     }
-    // TODO: implement spectral index selection
-    std::cout << "TODOS: " << std::endl;
-    std::cout << "1. figure out how to switch between spectral textures in the new mesh data structure" << std::endl;
-    std::cout << "2. if the mesh doesnt have a specific texture channel create it using the materializer and render it" << std::endl;
+
+    m_modelBridge->removeActors(m_renderer);
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
+    m_modelBridge = bridge;
+    std::cout << "Finished Loading texture" << std::endl;
+}
+
+void LVRMainWindow::generateTexture()
+{
+    std::cout << "Generating texture for spectral channel " << this->lineEdit_spectralChannel->text().toStdString() << std::endl;
+
+    // create hdf5 kernel and schema 
+    FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(m_hdf5FileName));
+    ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
+    
+    HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel);
+    HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
+    
+    // create io object for hdf5 files
+    auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
+    // load panorama from hdf5 file
+    auto panorama = hdf5IO.HyperspectralPanoramaIO::load(0, 0, 0);
+    
+    if(this->lineEdit_spectralChannel->text().toInt() >= panorama->num_channels)
+    {
+        std::cout << "Invalid channel number" << std::endl;
+        return;
+    }
+
+
+
 }
 
 void LVRMainWindow::showPointPreview(vtkActor* actor, int point)
@@ -3923,19 +3973,43 @@ void LVRMainWindow::openScanProject()
 void LVRMainWindow::openHDF5(std::string fileName)
 {
     boost::filesystem::path selectedFile(fileName);
-    std::string extension = selectedFile.extension().string();
-
+    m_hdf5FileName = fileName;
     HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(fileName));
     MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
-    
+
     auto mesh_io = meshio::HDF5IO(kernel, schema);
 
     // this->treeWidget->add
     MeshBufferPtr buffer = mesh_io.loadMesh("Mesh0");
+    m_meshBuffer = buffer;
     ModelPtr model = ModelPtr(new Model(buffer));
+
+
+    // switch texture to hyperspectral_grayscale
+    bool layerNamesSet = false;
+
+    vector<Material> &materials = buffer->getMaterials();
+    for(size_t i = 0; i < materials.size(); i++)
+    {
+        Material &m = materials[i];
+        if(m.m_layers.empty())
+        {
+            continue;
+        }
+        if(!layerNamesSet)
+        {
+            for(std::map<string, TextureHandle>::iterator it = m.m_layers.begin(); it != m.m_layers.end(); it++)
+            {
+                this->textureSelectorComboBox->addItem(QString::fromStdString(it->first));
+            }
+            layerNamesSet = true;
+        }
+        m.m_texture = m.m_layers.at("hyperspectral_grayscale_1"); 
+    }
 
     ModelBridgePtr bridge(new LVRModelBridge(model));
     bridge->addActors(m_renderer);
+    m_modelBridge = bridge;
 
 
 

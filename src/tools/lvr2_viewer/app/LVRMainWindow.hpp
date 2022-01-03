@@ -191,7 +191,8 @@ public Q_SLOTS:
     void showErrorDialog();
     /// Shows a Popup Dialog with the average Intensity per Spectral Channel
     void showHistogramDialog();
-    void showSpectralIndexSelectDialog();
+    void loadTexture();
+    void generateTexture();
     void renameModelItem();
     void estimateNormals();
     void reconstructUsingMarchingCubes();
@@ -440,6 +441,10 @@ private:
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
+
+    MeshBufferPtr                      m_meshBuffer;
+    ModelBridgePtr                    m_modelBridge;
+    std::string                       m_hdf5FileName;
 
 #ifdef LVR2_USE_VTK8
     QVTKOpenGLWidget* qvtkWidget;
