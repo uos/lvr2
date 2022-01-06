@@ -34,6 +34,7 @@
 
 #include "lvr2/algorithm/pmp/SurfaceHoleFilling.h"
 #include "lvr2/algorithm/pmp/SurfaceSmoothing.h"
+#include "lvr2/algorithm/pmp/SurfaceSimplification.h"
 #include "lvr2/util/Progress.hpp"
 
 #include <unordered_set>
@@ -406,7 +407,7 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
     {
         for (pmp::Halfedge contour_heH : contours)
         {
-            ++progress
+            ++progress;
             try
             {
                 std::unordered_set<pmp::Vertex> seen;
@@ -558,6 +559,13 @@ std::pair<BaseVecT, float> PMPMesh<BaseVecT>::triCircumCenter(FaceHandle faceH)
     radius = (circumCenter-a).length();
 
     return std::make_pair(circumCenter, radius);
+}
+
+template<typename BaseVecT>
+void PMPMesh<BaseVecT>::simplify(size_t targetNumVertices)
+{
+    pmp::SurfaceSimplification simplification(m_mesh);
+    simplification.simplify(targetNumVertices);
 }
 
 

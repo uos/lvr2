@@ -181,6 +181,12 @@ public:
     vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void splitVertex(EdgeHandle eH, VertexHandle vH, pmp::Point pos1, pmp::Point pos2);
     std::pair<BaseVecT, float> triCircumCenter(FaceHandle faceH);
+    /**
+     * @brief Decimates the Mesh with repeated Edge Collapses until the target number of vertices is reached
+     * 
+     * @param targetNumVertices the target number of vertices
+     */
+    void simplify(size_t targetNumVertices);
 
     pmp::SurfaceMesh& getSurfaceMesh()
     { return m_mesh; }
