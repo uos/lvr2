@@ -20,306 +20,7 @@ namespace pmp {
 //! \addtogroup core
 //!@{
 
-//! Base class for MxN matrix
-template <typename Scalar, int M, int N>
-class Matrix
-{
-public:
-    //! the scalar type of the vector
-    typedef Scalar value_type;
-
-    //! returns number of rows of the matrix
-    static constexpr int rows() { return M; }
-    //! returns number of columns of the matrix
-    static constexpr int cols() { return N; }
-    //! returns the dimension of the vector (or size of the matrix, rows*cols)
-    static constexpr int size() { return M * N; }
-
-    //! empty default constructor
-    Matrix() {}
-
-    //! construct with all entries being a given scalar (matrix and vector)
-    explicit Matrix(Scalar s)
-    {
-        for (int i = 0; i < size(); ++i)
-            data_[i] = s;
-    }
-
-    //! constructor with row-wise initializer list of M*N entries
-    explicit Matrix(const std::initializer_list<Scalar>&& values)
-    {
-        assert(values.size() == M * N);
-        int i = 0;
-        for (Scalar v : values)
-        {
-            // convert row-wise initializer list to
-            // column-wise matrix storage
-            data_[M * (i % N) + i / N] = v;
-            ++i;
-        }
-    }
-
-    //! constructor with N column vectors of dimension M
-    explicit Matrix(const std::initializer_list<Matrix<Scalar, M, 1>>&& columns)
-    {
-        assert(columns.size() == N);
-        int j = 0, i;
-        for (const Matrix<Scalar, M, 1>& v : columns)
-        {
-            for (i = 0; i < M; ++i)
-                data_[M * j + i] = v[i];
-            ++j;
-        }
-    }
-
-    //! constructor for 2D vectors
-    explicit Matrix(Scalar x, Scalar y)
-    {
-        static_assert(M == 2 && N == 1, "only for 2D vectors");
-        data_[0] = x;
-        data_[1] = y;
-    }
-
-    //! constructor for 3D vectors
-    explicit Matrix(Scalar x, Scalar y, Scalar z)
-    {
-        static_assert(M == 3 && N == 1, "only for 3D vectors");
-        data_[0] = x;
-        data_[1] = y;
-        data_[2] = z;
-    }
-
-    //! constructor for 4D vectors
-    explicit Matrix(Scalar x, Scalar y, Scalar z, Scalar w)
-    {
-        static_assert(M == 4 && N == 1, "only for 4D vectors");
-        data_[0] = x;
-        data_[1] = y;
-        data_[2] = z;
-        data_[3] = w;
-    }
-
-    //! constructor for 4D vectors
-    explicit Matrix(Matrix<Scalar, 3, 1> xyz, Scalar w)
-    {
-        static_assert(M == 4 && N == 1, "only for 4D vectors");
-        data_[0] = xyz[0];
-        data_[1] = xyz[1];
-        data_[2] = xyz[2];
-        data_[3] = w;
-    }
-
-    //! construct 3x3 matrix from 3 column vectors
-    // clang-format off
-    Matrix(Matrix<Scalar, 3, 1> c0,
-           Matrix<Scalar, 3, 1> c1,
-           Matrix<Scalar, 3, 1> c2)
-    {
-        static_assert(M == 3 && N == 3, "only for 3x3 matrices");
-        (*this)(0,0) = c0[0]; (*this)(0,1) = c1[0]; (*this)(0,2) = c2[0];
-        (*this)(1,0) = c0[1]; (*this)(1,1) = c1[1]; (*this)(1,2) = c2[1];
-        (*this)(2,0) = c0[2]; (*this)(2,1) = c1[2]; (*this)(2,2) = c2[2];
-    }
-    // clang-format on
-
-    //! construct 4x4 matrix from 4 column vectors
-    // clang-format off
-    Matrix(Matrix<Scalar, 4, 1> c0,
-           Matrix<Scalar, 4, 1> c1,
-           Matrix<Scalar, 4, 1> c2,
-           Matrix<Scalar, 4, 1> c3)
-    {
-        static_assert(M == 4 && N == 4, "only for 4x4 matrices");
-        (*this)(0,0) = c0[0]; (*this)(0,1) = c1[0]; (*this)(0,2) = c2[0]; (*this)(0,3) = c3[0];
-        (*this)(1,0) = c0[1]; (*this)(1,1) = c1[1]; (*this)(1,2) = c2[1]; (*this)(1,3) = c3[1];
-        (*this)(2,0) = c0[2]; (*this)(2,1) = c1[2]; (*this)(2,2) = c2[2]; (*this)(2,3) = c3[2];
-        (*this)(3,0) = c0[3]; (*this)(3,1) = c1[3]; (*this)(3,2) = c2[3]; (*this)(3,3) = c3[3];
-    }
-    // clang-format on
-
-    //! construct 4x4 matrix from 16 (row-wise) entries
-    // clang-format off
-    Matrix(Scalar m00, Scalar m01, Scalar m02, Scalar m03,
-           Scalar m10, Scalar m11, Scalar m12, Scalar m13,
-           Scalar m20, Scalar m21, Scalar m22, Scalar m23,
-           Scalar m30, Scalar m31, Scalar m32, Scalar m33)
-    {
-        static_assert(M == 4 && N == 4, "only for 4x4 matrices");
-        (*this)(0,0) = m00; (*this)(0,1) = m01; (*this)(0,2) = m02; (*this)(0,3) = m03;
-        (*this)(1,0) = m10; (*this)(1,1) = m11; (*this)(1,2) = m12; (*this)(1,3) = m13;
-        (*this)(2,0) = m20; (*this)(2,1) = m21; (*this)(2,2) = m22; (*this)(2,3) = m23;
-        (*this)(3,0) = m30; (*this)(3,1) = m31; (*this)(3,2) = m32; (*this)(3,3) = m33;
-    }
-    // clang-format on
-
-    //! construct from Eigen
-    template <typename Derived>
-    Matrix(const Eigen::MatrixBase<Derived>& m)
-    {
-        // don't distinguish between row and column vectors
-        if (m.rows() == 1 || m.cols() == 1)
-        {
-            assert(m.size() == size());
-            for (int i = 0; i < size(); ++i)
-                (*this)[i] = m(i);
-        }
-        else
-        {
-            assert(m.rows() == rows() && m.cols() == cols());
-            for (int i = 0; i < rows(); ++i)
-                for (int j = 0; j < cols(); ++j)
-                    (*this)(i, j) = m(i, j);
-        }
-    }
-
-    //! copy constructor from other scalar type
-    //! is also invoked for type-casting
-    template <typename OtherScalarType>
-    explicit Matrix(const Matrix<OtherScalarType, M, N>& m)
-    {
-        for (int i = 0; i < size(); ++i)
-            data_[i] = static_cast<Scalar>(m[i]);
-    }
-
-    //! assign from Eigen
-    template <typename Derived>
-    Matrix<Scalar, M, N>& operator=(const Eigen::MatrixBase<Derived>& m)
-    {
-        // don't distinguish between row and column vectors
-        if (m.rows() == 1 || m.cols() == 1)
-        {
-            assert(m.size() == size());
-            for (int i = 0; i < size(); ++i)
-                (*this)[i] = m(i);
-        }
-        else
-        {
-            assert(m.rows() == rows() && m.cols() == cols());
-            for (int i = 0; i < rows(); ++i)
-                for (int j = 0; j < cols(); ++j)
-                    (*this)(i, j) = m(i, j);
-        }
-        return *this;
-    }
-
-    //! cast to Eigen
-    template <typename OtherScalar>
-    operator Eigen::Matrix<OtherScalar, M, N>() const
-    {
-        Eigen::Matrix<OtherScalar, M, N> m;
-        for (int i = 0; i < rows(); ++i)
-            for (int j = 0; j < cols(); ++j)
-                m(i, j) = static_cast<OtherScalar>((*this)(i, j));
-        return m;
-    }
-
-    //! return identity matrix (only for square matrices, N==M)
-    static Matrix<Scalar, M, N> identity();
-
-    //! access entry at row i and column j
-    Scalar& operator()(unsigned int i, unsigned int j)
-    {
-        assert(i < M && j < N);
-        return data_[M * j + i];
-    }
-
-    //! const-access entry at row i and column j
-    const Scalar& operator()(unsigned int i, unsigned int j) const
-    {
-        assert(i < M && j < N);
-        return data_[M * j + i];
-    }
-
-    //! access i'th entry (use for vectors)
-    Scalar& operator[](unsigned int i)
-    {
-        assert(i < M * N);
-        return data_[i];
-    }
-
-    //! const-access i'th entry (use for vectors)
-    Scalar operator[](unsigned int i) const
-    {
-        assert(i < M * N);
-        return data_[i];
-    }
-
-    //! const-access as scalar array
-    const Scalar* data() const { return data_; }
-
-    //! access as scalar array
-    Scalar* data() { return data_; }
-
-    //! normalize matrix/vector by dividing through Frobenius/Euclidean norm
-    void normalize()
-    {
-        Scalar n = norm(*this);
-        n = (n > std::numeric_limits<Scalar>::min()) ? 1.0 / n : 0.0;
-        *this *= n;
-    }
-
-    //! divide matrix by scalar
-    Matrix<Scalar, M, N>& operator/=(const Scalar s)
-    {
-        for (int i = 0; i < size(); ++i)
-            data_[i] /= s;
-        return *this;
-    }
-
-    //! multply matrix by scalar
-    Matrix<Scalar, M, N>& operator*=(const Scalar s)
-    {
-        for (int i = 0; i < size(); ++i)
-            data_[i] *= s;
-        return *this;
-    }
-
-    // add other matrix to this matrix
-    Matrix<Scalar, M, N>& operator+=(const Matrix<Scalar, M, N>& m)
-    {
-        for (int i = 0; i < size(); ++i)
-            data_[i] += m.data_[i];
-        return *this;
-    }
-
-    //! subtract other matrix from this matrix
-    Matrix<Scalar, M, N>& operator-=(const Matrix<Scalar, M, N>& m)
-    {
-        for (int i = 0; i < size(); ++i)
-            data_[i] -= m.data_[i];
-        return *this;
-    }
-
-    //! component-wise comparison
-    bool operator==(const Matrix<Scalar, M, N>& other) const
-    {
-        for (int i = 0; i < size(); ++i)
-            if (data_[i] != other.data_[i])
-                return false;
-        return true;
-    }
-
-    //! component-wise comparison
-    bool operator!=(const Matrix<Scalar, M, N>& other) const
-    {
-        for (int i = 0; i < size(); ++i)
-            if (data_[i] != other.data_[i])
-                return true;
-        return false;
-    }
-
-    //! \return true if all elements are finite, i.e. not NaN or +/- inf
-    bool allFinite() const
-    {
-        for (int i = 0; i < size(); ++i)
-            if (!std::isfinite(data_[i]))
-                return false;
-        return true;
-    }
-
-protected:
-    Scalar data_[N * M];
-};
+using Eigen::Matrix;
 
 //! template specialization for Vector as Nx1 matrix
 template <typename Scalar, int M>
@@ -393,184 +94,6 @@ typedef Mat3<double> dmat3;
 typedef Mat4<float> mat4;
 //! template specialization for a 4x4 matrix of double values
 typedef Mat4<double> dmat4;
-
-//! output a matrix by printing its space-separated compontens
-template <typename Scalar, int M, int N>
-inline std::ostream& operator<<(std::ostream& os, const Matrix<Scalar, M, N>& m)
-{
-    for (int i = 0; i < M; ++i)
-    {
-        for (int j = 0; j < N; ++j)
-            os << m(i, j) << " ";
-        os << std::endl;
-    }
-    return os;
-}
-
-//! matrix-matrix multiplication
-template <typename Scalar, int M, int N, int K>
-Matrix<Scalar, M, N> operator*(const Matrix<Scalar, M, K>& m1,
-                               const Matrix<Scalar, K, N>& m2)
-{
-    Matrix<Scalar, M, N> m;
-    int i, j, k;
-
-    for (i = 0; i < M; ++i)
-    {
-        for (j = 0; j < N; ++j)
-        {
-            m(i, j) = Scalar(0);
-            for (k = 0; k < K; ++k)
-                m(i, j) += m1(i, k) * m2(k, j);
-        }
-    }
-
-    return m;
-}
-
-//! component-wise multiplication
-template <typename Scalar, int M, int N>
-Matrix<Scalar, M, N> cmult(const Matrix<Scalar, M, N>& m1,
-                           const Matrix<Scalar, M, N>& m2)
-{
-    Matrix<Scalar, M, N> m;
-    int i, j;
-
-    for (i = 0; i < M; ++i)
-        for (j = 0; j < N; ++j)
-            m(i, j) = m1(i, j) * m2(i, j);
-
-    return m;
-}
-
-//! transpose MxN matrix to NxM matrix
-template <typename Scalar, int M, int N>
-Matrix<Scalar, N, M> transpose(const Matrix<Scalar, M, N>& m)
-{
-    Matrix<Scalar, N, M> result;
-
-    for (int j = 0; j < M; ++j)
-        for (int i = 0; i < N; ++i)
-            result(i, j) = m(j, i);
-
-    return result;
-}
-
-//! identity matrix (work only for square matrices)
-template <typename Scalar, int M, int N>
-Matrix<Scalar, M, N> Matrix<Scalar, M, N>::identity()
-{
-    static_assert(M == N, "only for square matrices");
-
-    Matrix<Scalar, M, M> m;
-
-    for (int j = 0; j < M; ++j)
-        for (int i = 0; i < M; ++i)
-            m(i, j) = 0.0;
-
-    for (int i = 0; i < M; ++i)
-        m(i, i) = 1.0;
-
-    return m;
-}
-
-//! matrix addition: m1 + m2
-template <typename Scalar, int M, int N>
-inline Matrix<Scalar, M, N> operator+(const Matrix<Scalar, M, N>& m1,
-                                      const Matrix<Scalar, M, N>& m2)
-{
-    return Matrix<Scalar, M, N>(m1) += m2;
-}
-
-//! matrix subtraction: m1 - m2
-template <typename Scalar, int M, int N>
-inline Matrix<Scalar, M, N> operator-(const Matrix<Scalar, M, N>& m1,
-                                      const Matrix<Scalar, M, N>& m2)
-{
-    return Matrix<Scalar, M, N>(m1) -= m2;
-}
-
-//! matrix negation: -m
-template <typename Scalar, int M, int N>
-inline Matrix<Scalar, M, N> operator-(const Matrix<Scalar, M, N>& m)
-{
-    Matrix<Scalar, M, N> result;
-    for (int i = 0; i < result.size(); ++i)
-        result[i] = -m[i];
-    return result;
-}
-
-//! scalar multiplication of matrix: s*m
-template <typename Scalar, typename Scalar2, int M, int N>
-inline Matrix<Scalar, M, N> operator*(const Scalar2 s,
-                                      const Matrix<Scalar, M, N>& m)
-{
-    return Matrix<Scalar, M, N>(m) *= s;
-}
-
-//! scalar multiplication of matrix: m*s
-template <typename Scalar, typename Scalar2, int M, int N>
-inline Matrix<Scalar, M, N> operator*(const Matrix<Scalar, M, N>& m,
-                                      const Scalar2 s)
-{
-    return Matrix<Scalar, M, N>(m) *= s;
-}
-
-//! divide matrix by scalar: m/s
-template <typename Scalar, typename Scalar2, int M, int N>
-inline Matrix<Scalar, M, N> operator/(const Matrix<Scalar, M, N>& m,
-                                      const Scalar2 s)
-{
-    return Matrix<Scalar, M, N>(m) /= s;
-}
-
-//! compute the Frobenius norm of a matrix (or Euclidean norm of a vector)
-template <typename Scalar, int M, int N>
-inline Scalar norm(const Matrix<Scalar, M, N>& m)
-{
-    return sqrt(sqrnorm(m));
-}
-
-//! compute the squared Frobenius norm of a matrix (or squared Euclidean norm of a vector)
-template <typename Scalar, int M, int N>
-inline Scalar sqrnorm(const Matrix<Scalar, M, N>& m)
-{
-    Scalar s(0.0);
-    for (int i = 0; i < m.size(); ++i)
-        s += m[i] * m[i];
-    return s;
-}
-
-//! return a normalized copy of a matrix or a vector
-template <typename Scalar, int M, int N>
-inline Matrix<Scalar, M, N> normalize(const Matrix<Scalar, M, N>& m)
-{
-    Scalar n = norm(m);
-    n = (n > std::numeric_limits<Scalar>::min()) ? 1.0 / n : 0.0;
-    return m * n;
-}
-
-//! return component-wise minimum
-template <typename Scalar, int M, int N>
-inline Matrix<Scalar, M, N> min(const Matrix<Scalar, M, N>& m1,
-                                const Matrix<Scalar, M, N>& m2)
-{
-    Matrix<Scalar, M, N> result;
-    for (int i = 0; i < result.size(); ++i)
-        result[i] = std::min(m1[i], m2[i]);
-    return result;
-}
-
-//! return component-wise maximum
-template <typename Scalar, int M, int N>
-inline Matrix<Scalar, M, N> max(const Matrix<Scalar, M, N>& m1,
-                                const Matrix<Scalar, M, N>& m2)
-{
-    Matrix<Scalar, M, N> result;
-    for (int i = 0; i < result.size(); ++i)
-        result[i] = std::max(m1[i], m2[i]);
-    return result;
-}
 
 //! OpenGL viewport matrix with parameters left, bottom, width, height
 template <typename Scalar>
@@ -699,15 +222,15 @@ Mat4<Scalar> look_at_matrix(const Vector<Scalar, 3>& eye,
                             const Vector<Scalar, 3>& center,
                             const Vector<Scalar, 3>& up)
 {
-    Vector<Scalar, 3> z = normalize(eye - center);
-    Vector<Scalar, 3> x = normalize(cross(up, z));
-    Vector<Scalar, 3> y = normalize(cross(z, x));
+    Vector<Scalar, 3> z = (eye - center).normalized();
+    Vector<Scalar, 3> x = up.cross(z).normalized();
+    Vector<Scalar, 3> y = z.cross(x).normalized();
 
     // clang-format off
     Mat4<Scalar> m;
-    m(0, 0) = x[0]; m(0, 1) = x[1]; m(0, 2) = x[2]; m(0, 3) = -dot(x, eye);
-    m(1, 0) = y[0]; m(1, 1) = y[1]; m(1, 2) = y[2]; m(1, 3) = -dot(y, eye);
-    m(2, 0) = z[0]; m(2, 1) = z[1]; m(2, 2) = z[2]; m(2, 3) = -dot(z, eye);
+    m(0, 0) = x[0]; m(0, 1) = x[1]; m(0, 2) = x[2]; m(0, 3) = -x.dot(eye);
+    m(1, 0) = y[0]; m(1, 1) = y[1]; m(1, 2) = y[2]; m(1, 3) = -y.dot(eye);
+    m(2, 0) = z[0]; m(2, 1) = z[1]; m(2, 2) = z[2]; m(2, 3) = -z.dot(eye);
     m(3, 0) = 0.0;  m(3, 1) = 0.0;  m(3, 2) = 0.0;  m(3, 3) = 1.0;
     // clang-format on
 
@@ -814,7 +337,7 @@ Mat4<Scalar> rotation_matrix(const Vector<Scalar, 3>& axis, Scalar angle)
     Scalar c = cosf(a);
     Scalar s = sinf(a);
     Scalar one_m_c = Scalar(1) - c;
-    Vector<Scalar, 3> ax = normalize(axis);
+    Vector<Scalar, 3> ax = axis.normalized();
 
     m(0, 0) = ax[0] * ax[0] * one_m_c + c;
     m(0, 1) = ax[0] * ax[1] * one_m_c - ax[2] * s;
@@ -963,7 +486,7 @@ Mat4<Scalar> inverse(const Mat4<Scalar>& m)
                            Inverse(3, 0));
     Vector<Scalar, 4> Col0(m(0, 0), m(0, 1), m(0, 2), m(0, 3));
 
-    Scalar Determinant = dot(Col0, Row0);
+    Scalar Determinant = Col0.dot(Row0);
 
     Inverse /= Determinant;
 
@@ -1013,7 +536,7 @@ bool symmetric_eigendecomposition(const Mat3<Scalar>& m, Scalar& eval1,
 {
     unsigned int i, j;
     Scalar theta, t, c, s;
-    Mat3<Scalar> V = Mat3<Scalar>::identity();
+    Mat3<Scalar> V = Mat3<Scalar>::Identity();
     Mat3<Scalar> R;
     Mat3<Scalar> A = m;
     const Scalar eps = 1e-10; //0.000001;
@@ -1058,12 +581,12 @@ bool symmetric_eigendecomposition(const Mat3<Scalar>& m, Scalar& eval1,
         c = 1.0 / sqrt(1.0 + t * t);
         s = t * c;
 
-        R = Mat3<Scalar>::identity();
+        R = Mat3<Scalar>::Identity();
         R(i, i) = R(j, j) = c;
         R(i, j) = s;
         R(j, i) = -s;
 
-        A = transpose(R) * A * R;
+        A = R.transpose() * A * R;
         V = V * R;
     }
 
@@ -1118,7 +641,7 @@ bool symmetric_eigendecomposition(const Mat3<Scalar>& m, Scalar& eval1,
                                   V(2, sorted[0]));
         evec2 = Vector<Scalar, 3>(V(0, sorted[1]), V(1, sorted[1]),
                                   V(2, sorted[1]));
-        evec3 = normalize(cross(evec1, evec2));
+        evec3 = evec1.cross(evec2).normalized();
 
         return true;
     }
@@ -1135,55 +658,11 @@ inline std::istream& operator>>(std::istream& is, Vector<Scalar, N>& vec)
     return is;
 }
 
-//! output a vector by printing its space-separated compontens
-template <typename Scalar, int N>
-inline std::ostream& operator<<(std::ostream& os, const Vector<Scalar, N>& vec)
-{
-    for (int i = 0; i < N - 1; ++i)
-        os << vec[i] << " ";
-    os << vec[N - 1];
-    return os;
-}
-
-//! compute the dot product of two vectors
-template <typename Scalar, int N>
-inline Scalar dot(const Vector<Scalar, N>& v0, const Vector<Scalar, N>& v1)
-{
-    Scalar p = v0[0] * v1[0];
-    for (int i = 1; i < N; ++i)
-        p += v0[i] * v1[i];
-    return p;
-}
-
-//! compute the Euclidean distance between two points
-template <typename Scalar, int N>
-inline Scalar distance(const Vector<Scalar, N>& v0, const Vector<Scalar, N>& v1)
-{
-    Scalar dist(0), d;
-    for (int i = 0; i < N; ++i)
-    {
-        d = v0[i] - v1[i];
-        d *= d;
-        dist += d;
-    }
-    return (Scalar)sqrt(dist);
-}
-
 //! compute perpendicular vector (rotate vector counter-clockwise by 90 degrees)
 template <typename Scalar>
 inline Vector<Scalar, 2> perp(const Vector<Scalar, 2>& v)
 {
     return Vector<Scalar, 2>(-v[1], v[0]);
-}
-
-//! compute the cross product of two vectors (only valid for 3D vectors)
-template <typename Scalar>
-inline Vector<Scalar, 3> cross(const Vector<Scalar, 3>& v0,
-                               const Vector<Scalar, 3>& v1)
-{
-    return Vector<Scalar, 3>(v0[1] * v1[2] - v0[2] * v1[1],
-                             v0[2] * v1[0] - v0[0] * v1[2],
-                             v0[0] * v1[1] - v0[1] * v1[0]);
 }
 
 //!@}

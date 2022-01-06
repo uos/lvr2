@@ -15,7 +15,7 @@ void project_to_unit_sphere(SurfaceMesh& mesh)
     for (auto v : mesh.vertices())
     {
         auto p = mesh.position(v);
-        auto n = norm(p);
+        auto n = p.norm();
         mesh.position(v) = (1.0 / n) * p;
     }
 }

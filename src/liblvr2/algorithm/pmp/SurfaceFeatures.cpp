@@ -51,7 +51,7 @@ size_t SurfaceFeatures::detect_angle(Scalar angle)
             const Normal n0 = SurfaceNormals::compute_face_normal(mesh_, f0);
             const Normal n1 = SurfaceNormals::compute_face_normal(mesh_, f1);
 
-            if (dot(n0, n1) < feature_cosine)
+            if (n0.dot(n1) < feature_cosine)
             {
                 efeature_[e] = true;
                 vfeature_[mesh_.vertex(e, 0)] = true;

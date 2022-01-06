@@ -20,7 +20,7 @@ Normal SurfaceNormals::compute_face_normal(const SurfaceMesh& mesh, Face f)
 
     if (mesh.next_halfedge(h) == hend) // face is a triangle
     {
-        return normalize(cross(p2 -= p1, p0 -= p1));
+        return (p2 - p1).cross(p0 - p1).normalized();
     }
     else // face is a general polygon
     {
@@ -34,10 +34,10 @@ Normal SurfaceNormals::compute_face_normal(const SurfaceMesh& mesh, Face f)
         // This vector then has to be normalized.
         for (auto h : mesh.halfedges(f))
         {
-            n += cross(vpoint[mesh.from_vertex(h)], vpoint[mesh.to_vertex(h)]);
+            n += vpoint[mesh.from_vertex(h)].cross(vpoint[mesh.to_vertex(h)]);
         }
 
-        return normalize(n);
+        return n.normalized();
     }
 }
 
@@ -65,10 +65,10 @@ Normal SurfaceNormals::compute_vertex_normal(const SurfaceMesh& mesh, Vertex v)
                 p2 -= p0;
 
                 // check whether we can robustly compute angle
-                denom = sqrt(dot(p1, p1) * dot(p2, p2));
+                denom = sqrt(p1.dot(p1) * p2.dot(p2));
                 if (denom > std::numeric_limits<Scalar>::min())
                 {
-                    cosine = dot(p1, p2) / denom;
+                    cosine = p1.dot(p2) / denom;
                     if (cosine < -1.0)
                         cosine = -1.0;
                     else if (cosine > 1.0)
@@ -78,7 +78,7 @@ Normal SurfaceNormals::compute_vertex_normal(const SurfaceMesh& mesh, Vertex v)
                     // compute triangle or polygon normal
                     is_triangle = (mesh.next_halfedge(mesh.next_halfedge(
                                        mesh.next_halfedge(h))) == h);
-                    n = is_triangle ? normalize(cross(p1, p2))
+                    n = is_triangle ? p1.cross(p2).normalized()
                                     : compute_face_normal(mesh, mesh.face(h));
 
                     n *= angle;
@@ -87,7 +87,7 @@ Normal SurfaceNormals::compute_vertex_normal(const SurfaceMesh& mesh, Vertex v)
             }
         }
 
-        nn = normalize(nn);
+        nn.normalize();
     }
 
     return nn;
@@ -137,17 +137,17 @@ Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh,
                 // compute triangle or polygon normal
                 is_triangle = (mesh.next_halfedge(mesh.next_halfedge(
                                    mesh.next_halfedge(h))) == h);
-                n = is_triangle ? normalize(cross(p1, p2))
+                n = is_triangle ? p1.cross(p2).normalized()
                                 : compute_face_normal(mesh, mesh.face(h));
 
                 // check whether normal is withing crease_angle bound
-                if (dot(n, nf) >= cos_crease_angle)
+                if (n.dot(nf) >= cos_crease_angle)
                 {
                     // check whether we can robustly compute angle
-                    denom = sqrt(dot(p1, p1) * dot(p2, p2));
+                    denom = sqrt(p1.dot(p1) * p2.dot(p2));
                     if (denom > std::numeric_limits<Scalar>::min())
                     {
-                        cosine = dot(p1, p2) / denom;
+                        cosine = p1.dot(p2) / denom;
                         if (cosine < -1.0)
                             cosine = -1.0;
                         else if (cosine > 1.0)
@@ -163,7 +163,7 @@ Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh,
             h = mesh.opposite_halfedge(mesh.next_halfedge(h));
         } while (h != hend);
 
-        nn = normalize(nn);
+        nn.normalize();
     }
 
     return nn;

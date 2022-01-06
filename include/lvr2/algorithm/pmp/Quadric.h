@@ -36,7 +36,7 @@ public: // clang-format off
     //! construct from point and normal specifying a plane
     Quadric(const Normal& n, const Point& p)
     {
-        *this = Quadric(n[0], n[1], n[2], -dot(n,p));
+        *this = Quadric(n[0], n[1], n[2], -n.dot(p));
     }
 
     //! set all matrix entries to zero
