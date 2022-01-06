@@ -54,17 +54,17 @@ public:
     template<typename ...Tp>
     void save(  std::string groupName,
                 std::string datasetName,
-                const VariantChannel<Tp...>& vchannel);
+                const VariantChannel<Tp...>& vchannel) const;
     
     template<typename VariantChannelT>
     boost::optional<VariantChannelT> load(
                 std::string groupName,
-                std::string datasetName);
+                std::string datasetName) const;
     
     template<typename VariantChannelT>
     boost::optional<VariantChannelT> loadVariantChannel(
                 std::string groupName, 
-                std::string datasetName);
+                std::string datasetName) const;
 
 protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
