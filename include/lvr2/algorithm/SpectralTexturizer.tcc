@@ -33,7 +33,7 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
     int correctSizeCount = 0;
     int visibleCount = 0;
 
-    // #pragma omp parallel for collapse(2)
+    #pragma omp parallel for collapse(2)
     for (int y = 0; y < sizeY; y++) {
         for (int x = 0; x < sizeX; x++) {
             BaseVecT currentPos =

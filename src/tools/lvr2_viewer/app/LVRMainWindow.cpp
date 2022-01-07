@@ -54,6 +54,8 @@
 #include "lvr2/util/Util.hpp"
 #include "lvr2/util/IOUtils.hpp"
 #include "lvr2/util/TransformUtils.hpp"
+#include "lvr2/algorithm/SpectralTexturizer.hpp"
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
 
 #include "../widgets/LVRLabelInstanceTreeItem.hpp"
 
@@ -576,7 +578,6 @@ void LVRMainWindow::connectSignalsAndSlots()
 
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
 
-    // QObject::connect(this, SIGNAL(pressed()), this, SLOT(loadTexture()));
     QObject::connect(this->textureSelectorLoadButton, SIGNAL(clicked()), this, SLOT(loadTexture()));
     QObject::connect(this->textureSelectorGenButton, SIGNAL(clicked()), this, SLOT(generateTexture()));
 }
@@ -3256,9 +3257,8 @@ void LVRMainWindow::loadTexture()
 
     std::cout << "Loading texture: " << this->textureSelectorComboBox->currentText().toStdString() << std::endl;
 
-    ModelPtr model = ModelPtr(new Model(m_meshBuffer));
-
     vector<Material> &materials = m_meshBuffer->getMaterials();
+
     for(size_t i = 0; i < materials.size(); i++)
     {
         Material &m = materials[i];
@@ -3266,20 +3266,24 @@ void LVRMainWindow::loadTexture()
         {
             continue;
         }
-        m.m_texture = m.m_layers.at(this->textureSelectorComboBox->currentText().toStdString()); 
+        m.m_texture = m.m_layers.at(this->textureSelectorComboBox->currentText().toStdString());
     }
 
+    ModelPtr model = ModelPtr(new Model(m_meshBuffer));
+
     m_modelBridge->removeActors(m_renderer);
+
     ModelBridgePtr bridge(new LVRModelBridge(model));
     bridge->addActors(m_renderer);
     m_modelBridge = bridge;
+
+    updateView();
+
     std::cout << "Finished Loading texture" << std::endl;
 }
 
 void LVRMainWindow::generateTexture()
 {
-    std::cout << "Generating texture for spectral channel " << this->lineEdit_spectralChannel->text().toStdString() << std::endl;
-
     // create hdf5 kernel and schema 
     FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(m_hdf5FileName));
     ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
@@ -3298,8 +3302,75 @@ void LVRMainWindow::generateTexture()
         return;
     }
 
+    // create texturizer
+    float texelSize = this->lineEdit_texelSize->text().toFloat();
+    int minClusersize = 100;
+    int maxClusersize = 0;
+    SpectralTexturizer<Vec> spec_texter(texelSize, minClusersize, maxClusersize);
+    spec_texter.init_image_data(panorama, std::max(this->lineEdit_spectralChannel->text().toInt(), 0));
 
+    // Create HalfEdgeMesh
+    lvr2::HalfEdgeMesh<Vec> mesh(m_meshBuffer);
 
+    // Create ClusterBiMap
+    ClusterBiMap<FaceHandle> clusterBiMap;
+    auto faceNormals = calcFaceNormals(mesh);
+    clusterBiMap = planarClusterGrowing(mesh, faceNormals, 0.85);
+    
+    // Create Finalizer
+    TextureFinalizer<Vec> finalize(clusterBiMap);
+
+    // Create Surface
+    PointsetSurfacePtr<Vec> surface;
+
+    // load hdf5 pointcloud
+    auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
+    std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
+    ReductionAlgorithmPtr reduction = ReductionAlgorithmPtr(new NoReductionAlgorithm());
+    ScanPositionPtr scanPos = scanProjectIo->loadScanPosition(0, reduction);
+    LIDARPtr lidar = scanPos->lidars.at(0);
+    ScanPtr scan = lidar->scans.at(0);
+    PointBufferPtr buffer = scan->points;
+
+    // create surface from buffer
+    surface = make_shared<AdaptiveKSearchSurface<Vec>>(
+        buffer,
+        "FLANN",
+        600,
+        600,
+        600,
+        0,
+        ""
+    );
+
+    // Create Materializer
+    Materializer<Vec> materializer(
+        mesh,
+        clusterBiMap,
+        faceNormals,
+        *surface
+    );
+    // Set Texturizer ang generate Materializer Result
+    materializer.setTexturizer(spec_texter);
+    MaterializerResult<Vec> matResult = materializer.generateMaterials();
+
+    // apply finalizer result to mesh
+    finalize.setMaterializerResult(matResult);
+    auto meshBuffer = finalize.apply(mesh);
+
+    // remove the old meshActor
+    m_modelBridge->removeActors(m_renderer);
+
+    // Create new meshActor
+    ModelPtr model = ModelPtr(new Model(meshBuffer));
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
+    m_modelBridge = bridge;
+
+    // Update the view to show the new mesh
+    updateView();
+
+    std::cout << "Finished generating texture" << std::endl;
 }
 
 void LVRMainWindow::showPointPreview(vtkActor* actor, int point)
@@ -3981,6 +4052,7 @@ void LVRMainWindow::openHDF5(std::string fileName)
 
     // this->treeWidget->add
     MeshBufferPtr buffer = mesh_io.loadMesh("Mesh0");
+
     m_meshBuffer = buffer;
     ModelPtr model = ModelPtr(new Model(buffer));
 

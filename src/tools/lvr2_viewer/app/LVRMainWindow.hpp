@@ -34,6 +34,7 @@
 #ifndef MAINWINDOW_HPP_
 #define MAINWINDOW_HPP_
 
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include <vtkSmartPointer.h>
 #include <vtkCamera.h>
 #include <vtkCameraRepresentation.h>
