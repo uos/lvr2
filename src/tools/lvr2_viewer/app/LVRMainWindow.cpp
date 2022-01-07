@@ -3295,6 +3295,7 @@ void LVRMainWindow::generateTexture()
     auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
     // load panorama from hdf5 file
     auto panorama = hdf5IO.HyperspectralPanoramaIO::load(0, 0, 0);
+    auto lidar = hdf5IO.LIDARIO::load(0, 0);
     
     if(this->lineEdit_spectralChannel->text().toInt() >= panorama->num_channels)
     {
@@ -3323,12 +3324,6 @@ void LVRMainWindow::generateTexture()
     // Create Surface
     PointsetSurfacePtr<Vec> surface;
 
-    // load hdf5 pointcloud
-    auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
-    std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
-    ReductionAlgorithmPtr reduction = ReductionAlgorithmPtr(new NoReductionAlgorithm());
-    ScanPositionPtr scanPos = scanProjectIo->loadScanPosition(0, reduction);
-    LIDARPtr lidar = scanPos->lidars.at(0);
     ScanPtr scan = lidar->scans.at(0);
     PointBufferPtr buffer = scan->points;
 

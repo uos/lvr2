@@ -51,9 +51,7 @@
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
 #include "lvr2/algorithm/Materializer.hpp"
 #include "lvr2/algorithm/Texturizer.hpp"
-// #include "lvr2/algorithm/ImageTexturizer.hpp"
 #include "lvr2/algorithm/SpectralTexturizer.hpp"
-
 
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/BilinearFastBox.hpp"
@@ -144,9 +142,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
         std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
 
-        ReductionAlgorithmPtr reduction = ReductionAlgorithmPtr(new NoReductionAlgorithm());
-        ScanPositionPtr scanPos = scanProjectIo->loadScanPosition(options.getScanPositionIndex(), reduction);
-        LIDARPtr lidar = scanPos->lidars.at(0);
+        // load scan from hdf5 file
+        auto lidar = hdf5IO.LIDARIO::load(options.getScanPositionIndex(), 0);
         ScanPtr scan = lidar->scans.at(0);
 
         buffer = scan->points;
