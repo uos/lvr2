@@ -106,10 +106,15 @@ CameraImagePtr CameraImageIO<FeatureBase>::load(
 
     // should we load the data here?
     // we could pass the loader as link to the storage instead of the data now
-    std::function<cv::Mat()> image_loader = [this,d]()
+    std::function<cv::Mat()> image_loader = [
+        schema = m_featureBase->m_description,
+        kernel = m_featureBase->m_kernel,
+        d]()
     {
+        FeatureBuild<CameraImageIO> io(kernel, schema, false);
+
         cv::Mat ret;
-        boost::optional<cv::Mat> opt_img = this->m_imageIO->loadImage(*d.dataRoot, *d.data);
+        boost::optional<cv::Mat> opt_img = io.ImageIO::load(*d.dataRoot, *d.data);
         if(opt_img)
         {
             ret = *opt_img;
