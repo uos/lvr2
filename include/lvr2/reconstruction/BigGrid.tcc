@@ -562,6 +562,8 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         //iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < project->changed.size(); i++)
         {
+            cout << "ScanNr: " << i << endl;
+
             ScanPositionPtr pos = project->project->positions.at(i);
             assert(pos->lidars.size() > 0);
 
@@ -573,7 +575,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             
             ScanPtr p = hdf5io.ScanIO::load(i, 0, 0);
             p->load();
-
+            cout << *(p->points) << endl;
             std::cout << p->points->numPoints() << std::endl;
 
             size_t numPoints = p->points->numPoints();
@@ -581,8 +583,8 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             cout << numPoints << endl;
             BoundingBox<BaseVecT> box;
 
-            boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
-            Transformd finalPose_n = pos->lidars[0]->scans[0]->transformation;
+            boost::shared_array<float> points = p->points->getPointArray();
+            Transformd finalPose_n = p->transformation;
 
             Transformd finalPose = finalPose_n;
 
