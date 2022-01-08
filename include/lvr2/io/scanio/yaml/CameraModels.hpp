@@ -116,12 +116,12 @@ struct convert<lvr2::CylindricalModel>
         node["kind"] = lvr2::CylindricalModel::kind;
 
         node["principal"] = Load("[]");
-        node["principal"].push_back(model.principal(0));
-        node["principal"].push_back(model.principal(1));
+        node["principal"].push_back(model.principal[0]);
+        node["principal"].push_back(model.principal[1]);
 
         node["focal_length"] = Load("[]");
-        node["focal_length"] = model.focalLength(0);
-        node["focal_length"] = model.focalLength(1);
+        node["focal_length"] = model.focalLength[0];
+        node["focal_length"] = model.focalLength[1];
 
         node["distortion"] = Load("[]");
         for(size_t i=0; i<model.distortion.size(); i++)
@@ -134,36 +134,19 @@ struct convert<lvr2::CylindricalModel>
 
     static bool decode(const Node& node, lvr2::CylindricalModel& camera)
     {
-        if (node["type"].as<std::string>() != lvr2::CylindricalModel::type)
+        if(node["camera_fov"])
         {
-            // different hierarchy level
-            return false;
-        }
-
-        if(node["kind"].as<std::string>() != lvr2::CylindricalModel::kind)
-        {
-            // different sensor type
-            return false;
-        }
-
-        if(node["camera_model"])
-        {
-            const Node& camNode = node["camera_model"];
-
-            if(camNode["camera_fov"]) 
-            {
-                camera.fov = camNode["camera_fov"].as<lvr2::Vector2d>();;
-            }
+            camera.fov = node["camera_fov"].as<std::vector<double>>();
         }
 
         // TODO: cannot load values???
         // camera.fov = node["camera_model/camera_fov"].as<lvr2::Vector2d>();
 
-        camera.principal = node["camera_model/principal_point"].as<lvr2::Vector2d>();
+        camera.principal = node["principal_point"].as<std::vector<double>>();
 
-        camera.focalLength = node["camera_model/focal_length"].as<lvr2::Vector2d>();
+        camera.focalLength = node["focal_lengths"].as<std::vector<double>>();
 
-        camera.distortion = node["camera_model/distortion"].as<std::vector<double>>();
+        camera.distortion = node["distortion"].as<std::vector<double>>();
 
 
 

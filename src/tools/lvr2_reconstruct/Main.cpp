@@ -117,8 +117,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Parse loaded data
     if (!model)
     {
-
-        // TODO: TEMPORARILY loading the whole file 
         boost::filesystem::path selectedFile( options.getInputFileName());
         std::string extension = selectedFile.extension().string();
         std::string filePath = selectedFile.generic_path().string();

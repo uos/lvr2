@@ -76,20 +76,22 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
 template<typename BaseVecT>
 void SpectralTexturizer<BaseVecT>::init_image_data(HyperspectralPanoramaPtr pano, int channelIndex)
 {
+    // Init camera parameters
+    principal_point = Vector2d(pano->model.principal[0], pano->model.principal[1]);
+    focal_length = Vector2d(pano->model.focalLength[0], pano->model.focalLength[1]);
+    camera_fov = Vector2d(pano->model.fov[0], pano->model.fov[1]);
 
-    // TODO: load data from h5 file (after h5 rework is implemented!!)
-    principal_point = Vector2d(-0.01985554, 0.0);
-    focal_length = Vector2d(0,0);
-    camera_fov = Vector2d(0.82903139,6.28318531);
-
-    distortions.push_back(-0.15504703);
-    distortions.push_back(-0.14184141);
-    distortions.push_back(0.0);
-
+    for(size_t i = 0; i < pano->model.distortion.size(); i++)
+    {
+        distortions.push_back(pano->model.distortion[i]);
+    }
+    
+    // init panorama channel image
     this->channelIndex = channelIndex;
     HyperspectralPanoramaChannelPtr panoChannel = pano->channels[channelIndex];
     spectralPanorama = panoChannel->channel;
 
+    // recalibrate camera paramaters
     prepare_camera_data();
     this->image_data_initialized = true;
 }

@@ -54,16 +54,16 @@ struct CylindricalModel : CameraModel
     static constexpr char           kind[] = "CylindricalModel";
 
     /// Principal x, y
-    Vector2d                        principal;
+    std::vector<double>              principal;
 
     /// Focal Length fx, fy
-    Vector2d                        focalLength;
+    std::vector<double>              focalLength;
 
     /// FoV
-    Vector2d                        fov;
+    std::vector<double>              fov;
 
     /// Distortion
-    std::vector<double>             distortion;
+    std::vector<double>              distortion;
 };
 
 using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;

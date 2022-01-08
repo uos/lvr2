@@ -169,14 +169,14 @@ struct convert<lvr2::HyperspectralPanorama>
             }
         }
 
-        if(node["type"] && node["type"].as<std::string>() != lvr2::HyperspectralPanorama::type)
-        {
-            // different hierarchy level
-            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] " 
-                        << "Nodes type '" << node["type"].as<std::string>()
-                        << "' is not '" <<  lvr2::HyperspectralPanorama::type << "'" << std::endl; 
-            return false;
-        }
+        // if(node["type"] && node["type"].as<std::string>() != lvr2::HyperspectralPanorama::type)
+        // {
+        //     // different hierarchy level
+        //     std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] " 
+        //                 << "Nodes type '" << node["type"].as<std::string>()
+        //                 << "' is not '" <<  lvr2::HyperspectralPanorama::type << "'" << std::endl; 
+        //     return false;
+        // }
 
         if(node["kind"])
         {
