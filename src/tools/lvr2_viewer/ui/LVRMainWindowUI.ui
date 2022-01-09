@@ -340,7 +340,7 @@
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>200</height>
+     <height>400</height>
     </size>
    </property>
    <property name="features">
@@ -391,6 +391,51 @@
          </layout>
         </item>
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_Texture">
+            <property name="text">
+             <string>ColorMap:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="comboBox_colorMap_load">
+            <item>
+             <property name="text">
+              <string>Default</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>HSV</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Jet</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hot</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>SHSV</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Simpsons</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
           <widget class="QPushButton" name="textureSelectorLoadButton">
             <property name="text">
               <string>Load Texture</string>
@@ -400,8 +445,6 @@
        </layout>
       </widget>
      </item>
-     
-
      <item>
       <widget class="QFrame" name="frameTextureGenerator">
        <property name="frameShape">
@@ -414,8 +457,6 @@
         <property name="sizeConstraint">
          <enum>QLayout::SetDefaultConstraint</enum>
         </property>
-
-
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
@@ -437,7 +478,6 @@
           </item>
          </layout>
         </item>
-
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
@@ -459,7 +499,51 @@
           </item>
          </layout>
         </item>
-
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_Texture">
+            <property name="text">
+             <string>ColorMap:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="comboBox_colorMap_gen">
+            <item>
+             <property name="text">
+              <string>Default</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>HSV</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Jet</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hot</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>SHSV</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Simpsons</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item>
             <widget class="QPushButton" name="textureSelectorGenButton">
               <property name="text">
@@ -467,18 +551,12 @@
               </property>
             </widget>
           </item>
-
        </layout>
       </widget>
      </item>
-
-
-
     </layout>
    </widget>
   </widget>
-
-  
   <widget class="QDockWidget" name="dockWidgetSpectralColorGradientSettings">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">

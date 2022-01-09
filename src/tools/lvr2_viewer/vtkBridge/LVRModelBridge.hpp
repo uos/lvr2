@@ -90,6 +90,11 @@ public:
      * @brief       Removes the generated actors from the given renderer
      */
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
+    
+    /**
+     * @brief       Removes the TexturedActors from the given renderer
+     */
+    void        removeTexturedActors(vtkSmartPointer<vtkRenderer> renderer);
 
     void        setPose(const Pose& pose);
     void        setTransform(const Transformd& transform);
