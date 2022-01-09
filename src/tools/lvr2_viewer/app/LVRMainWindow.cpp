@@ -4099,7 +4099,6 @@ void LVRMainWindow::openHDF5(std::string fileName)
     m_meshBuffer = buffer;
     ModelPtr model = ModelPtr(new Model(buffer));
 
-
     // switch texture to hyperspectral_grayscale
     bool layerNamesSet = false;
 
@@ -4125,7 +4124,10 @@ void LVRMainWindow::openHDF5(std::string fileName)
     ModelBridgePtr bridge(new LVRModelBridge(model));
     bridge->addActors(m_renderer);
     m_modelBridge = bridge;
-
+    QString base = QString::fromStdString(fileName);
+    LVRModelItem* item = new LVRModelItem(bridge, base);
+    this->treeWidget->addTopLevelItem(item);
+    item->setExpanded(true);
 
 
     std::cout << "Labeled opening currently not working" << std::endl;
