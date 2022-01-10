@@ -211,6 +211,8 @@ LVRMainWindow::LVRMainWindow()
     this->lineEdit_spectralChannel->setValidator(new QIntValidator(0, 300, this));
     this->lineEdit_texelSize->setText("0.1");
     this->lineEdit_texelSize->setValidator(new QDoubleValidator(0.001, 4.0, 4, this));
+    this->lineEdit_scanPosition->setText("0");
+    this->lineEdit_scanPosition->setValidator(new QIntValidator(0, 10, this));
  
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
@@ -3318,8 +3320,12 @@ void LVRMainWindow::generateTexture()
     // create io object for hdf5 files
     auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
     // load panorama from hdf5 file
-    auto panorama = hdf5IO.HyperspectralPanoramaIO::load(0, 0, 0);
-    auto lidar = hdf5IO.LIDARIO::load(0, 0);
+    auto panorama = hdf5IO.HyperspectralPanoramaIO::load(this->lineEdit_scanPosition->text().toInt(), 0, 0);
+    if(!panorama) {
+        std::cout << "Could not load panorama. Make sure you choose a valid scanPosition." << std::endl;
+        return;
+    }
+    auto lidar = hdf5IO.LIDARIO::load(this->lineEdit_scanPosition->text().toInt(), 0);
     
     if(this->lineEdit_spectralChannel->text().toInt() >= panorama->num_channels)
     {

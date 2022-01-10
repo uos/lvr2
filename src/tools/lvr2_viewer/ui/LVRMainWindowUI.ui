@@ -545,6 +545,27 @@
          </layout>
         </item>
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_scanPosition">
+            <property name="text">
+             <string>ScanPosition:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_scanPosition">
+            <property name="maximumSize">
+             <size>
+              <width>500</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
             <widget class="QPushButton" name="textureSelectorGenButton">
               <property name="text">
                 <string>Generate Texture</string>

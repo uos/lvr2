@@ -138,17 +138,27 @@ struct convert<lvr2::CylindricalModel>
         {
             camera.fov = node["camera_fov"].as<std::vector<double>>();
         }
+        else
+        {
+            std::cout << lvr2::timestamp << "[YAML::convert<CylindricalModel> - decode] "
+                     << "WARNING: CylindricalModel has no key 'camera_fov'. Make sure the cameramodel is configured correctly." << std::endl;
+            return false;
+        }
 
-        // TODO: cannot load values???
-        // camera.fov = node["camera_model/camera_fov"].as<lvr2::Vector2d>();
+        if(node["principal_point"])
+        {
+            camera.principal = node["principal_point"].as<std::vector<double>>();
+        }
 
-        camera.principal = node["principal_point"].as<std::vector<double>>();
+        if(node["focal_lengths"])
+        {
+            camera.focalLength = node["focal_lengths"].as<std::vector<double>>();
+        }
 
-        camera.focalLength = node["focal_lengths"].as<std::vector<double>>();
-
-        camera.distortion = node["distortion"].as<std::vector<double>>();
-
-
+        if(node["distortion"])
+        {
+            camera.distortion = node["distortion"].as<std::vector<double>>();
+        }
 
         return true;
     }
