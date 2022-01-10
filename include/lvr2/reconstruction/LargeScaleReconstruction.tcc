@@ -41,6 +41,7 @@
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/Tesselator.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 
 #include "LargeScaleReconstruction.hpp"
@@ -91,7 +92,7 @@ namespace lvr2
     m_fillHoles(0), m_optimizePlanes(false), m_planeNormalThreshold(0.85), m_planeIterations(3), m_minPlaneSize(7), m_smallRegionThreshold(0),
     m_retesselate(false), m_lineFusionThreshold(0.01)
     {
-        std::cout << "Reconstruction Instance generated..." << std::endl;
+        std::cout << timestamp << "Reconstruction Instance generated..." << std::endl;
     }
 
     template<typename BaseVecT>
@@ -114,7 +115,7 @@ namespace lvr2
               m_minPlaneSize(minPlaneSize), m_smallRegionThreshold(smallRegionThreshold),
               m_retesselate(retesselate), m_lineFusionThreshold(lineFusionThreshold),m_bigMesh(bigMesh), m_debugChunks(debugChunks), m_useGPU(useGPU)
     {
-        std::cout << "Reconstruction Instance generated..." << std::endl;
+        std::cout << timestamp << "Reconstruction Instance generated..." << std::endl;
     }
 
     template<typename BaseVecT>
@@ -167,9 +168,9 @@ namespace lvr2
                        << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
         }
 
-        cout << lvr2::timestamp << "finished tree" << endl;
-        std::cout << lvr2::timestamp << "got: " << partitionBoxes->size() << " leafs, saving leafs"
-                  << std::endl;
+        cout << lvr2::timestamp << "Finished tree" << endl;
+        std::cout << lvr2::timestamp << "Got " << partitionBoxes->size() << " leafs." << std::endl;
+        std::cout << lvr2::timestamp << "Saving leafs..." << std::endl;
 
         uint partitionBoxesSkipped = 0;
 
@@ -401,7 +402,7 @@ namespace lvr2
 
 
         BoundingBox<BaseVecT> partbb = bg.getpartialBB();
-        cout << lvr2::timestamp << "generating VGrid" << endl;
+        cout << lvr2::timestamp << "Generating VGrid" << endl;
 
         VirtualGrid<BaseVecT> vGrid(
                     bg.getpartialBB(), m_chunkSize, m_bgVoxelSize);
@@ -411,9 +412,8 @@ namespace lvr2
         BaseVecT addMax = BaseVecT(std::ceil(partbb.getMax().x / m_chunkSize) * m_chunkSize, std::ceil(partbb.getMax().y / m_chunkSize) * m_chunkSize, std::ceil(partbb.getMax().z / m_chunkSize) * m_chunkSize);
         newChunksBB.expand(addMin);
         newChunksBB.expand(addMax);
-        cout << lvr2::timestamp << "finished vGrid" << endl;
-        std::cout << lvr2::timestamp << "got: " << partitionBoxes->size() << " Chunks"
-                      << std::endl;
+        std::cout << lvr2::timestamp << "Ginished vGrid" << endl;
+        std::cout << lvr2::timestamp << "got: " << partitionBoxes->size() << " chunks." << std::endl;
 
         // we use the BB of all scans (including old ones) they are already hashed in the cm
         // and we can't make the BB smaller
@@ -481,7 +481,7 @@ namespace lvr2
                                     partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3);
                 BoundingBox<BaseVecT> gridbb(gridbb_min, gridbb_max);
 
-                cout << "\n" <<  lvr2::timestamp <<"grid: " << i << "/" << partitionBoxes->size() - 1 << endl;
+                cout <<  lvr2::timestamp <<"Processed Partitions: " << i << "/" << partitionBoxes->size() - 1 << endl;
 
                 lvr2::PointBufferPtr p_loader(new lvr2::PointBuffer);
                 p_loader->setPointArray(points, numPoints);

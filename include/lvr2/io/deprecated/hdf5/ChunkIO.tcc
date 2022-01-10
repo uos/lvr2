@@ -63,8 +63,8 @@ BaseVector<size_t> ChunkIO<Derived>::loadAmount()
         = m_array_io->template load<size_t>(m_chunkName, m_amountName, dimensionAmount);
     if (dimensionAmount != 3)
     {
-        std::cout << "Error loading chunk data: amount has not the right "
-                     "dimension. Real: "
+        std::cout << "Error loading chunk data: amount has not the correct "
+                     "dimensions. Dimensions: "
                   << dimensionAmount << "; Expected: 3" << std::endl;
     }
     else
@@ -83,8 +83,8 @@ float ChunkIO<Derived>::loadChunkSize()
         = m_array_io->template load<float>(m_chunkName, m_chunkSizeName, dimensionChunkSize);
     if (dimensionChunkSize != 1)
     {
-        std::cout << "Error loading chunk data: chunkSize has not the right "
-                     "dimension. Real: "
+        std::cout << "Error loading chunk data: chunkSize has not the correct "
+                     "dimensions. Dimensions: "
                   << dimensionChunkSize << "; Expected: 1" << std::endl;
         chunkSize = 0;
     }

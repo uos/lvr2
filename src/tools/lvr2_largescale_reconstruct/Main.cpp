@@ -121,8 +121,6 @@ int main(int argc, char** argv)
         project->kernel = hdf5kernel;
         project->schema = schema;
 
-        std::cout << timestamp << hdf5kernel->fileResource() << std::endl;
-
         auto scanProjectPtr = hdf5io.ScanProjectIO::load();
 
         project->project = scanProjectPtr;

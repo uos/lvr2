@@ -175,8 +175,12 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
     m_maxIndexY += 2;
     m_maxIndexZ += 3;
     m_maxIndexSquare = m_maxIndex * m_maxIndex;
-    std::cout << "BG: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|"
-                << m_maxIndexZ << std::endl;
+
+    std::cout << timestamp << "BigGrid - Max Squared indices: " 
+              << "\t" << m_maxIndexSquare << "\t " 
+              << m_maxIndexX << "\t " 
+              << m_maxIndexY << "\t "
+              << m_maxIndexZ << std::endl;
 
     string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
     lvr2::ProgressBar progress(this->m_numPoints, comment);
@@ -562,29 +566,25 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         //iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < project->changed.size(); i++)
         {
-            cout << "ScanNr: " << i << endl;
-
             ScanPositionPtr pos = project->project->positions.at(i);
             assert(pos->lidars.size() > 0);
 
-            cout << "Lidars: " << pos->lidars.size() << endl;
-            cout << "Scans: " << pos->lidars[0]->scans.size() << endl;
-            
             // Load points
-            cout << timestamp << "Loading points from scan position " << i << endl;
-            
+            cout << std::endl << timestamp << "Loading points from scan position " << i << endl;
             ScanPtr p = hdf5io.ScanIO::load(i, 0, 0);
             p->load();
-            cout << *(p->points) << endl;
-            std::cout << p->points->numPoints() << std::endl;
-
             size_t numPoints = p->points->numPoints();
 
-            cout << numPoints << endl;
+
             BoundingBox<BaseVecT> box;
 
+            // Get point array
             boost::shared_array<float> points = p->points->getPointArray();
-            Transformd finalPose_n = p->transformation;
+
+            // Get transformation from scan position
+            Transformd finalPose_n = pos->transformation;
+
+            std::cout << timestamp << finalPose_n << std::endl;
 
             Transformd finalPose = finalPose_n;
 
@@ -605,8 +605,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             }
             scan_boxes.push_back(box);
 
-            if(!timestamp.isQuiet())
-                ++progress;
+            if(!timestamp.isQuiet()) ++progress;
         }
 
 
@@ -640,16 +639,18 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         {
             if ((!project->changed.at(i)) && m_partialbb.isValid() && !m_partialbb.overlap(scan_boxes.at(i)))
             {
-                cout << "Scan No. " << i << " ignored!" << endl;
+                cout << timestamp << "Scan No. " << i << " ignored!" << endl;
             }
             else
-            {
-
+            {   
                 ScanPositionPtr pos = project->project->positions.at(i);
-                size_t numPoints = pos->lidars[0]->scans[0]->points->numPoints();
+                
+                pos->lidars[0]->scans[0]->load();
+                size_t numPoints =  pos->lidars[0]->scans[0]->points->numPoints();
+
                 boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
                 m_numPoints += numPoints;
-                Transformd finalPose_n = pos->lidars[0]->scans[0]->transformation;
+                Transformd finalPose_n = pos->transformation;
                 Transformd finalPose = finalPose_n;
                 int dx, dy, dz;
                 for (int k = 0; k < numPoints; k++)
@@ -674,7 +675,9 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                         dz = HGCreateTable[j][2];
                         size_t h = hashValue(idx + dx, idy + dy, idz + dz);
                         if (j == 0)
+                        {
                             m_gridNumPoints[h].size++;
+                        }
                         else
                         {
                             auto it = m_gridNumPoints.find(h);
@@ -727,7 +730,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         {
             if ((project->changed.at(i) != true) && m_partialbb.isValid() && !m_partialbb.overlap(scan_boxes.at(i)))
             {
-                cout << "Scan No. " << i << " ignored!" << endl;
+                cout << timestamp << "Scan No. " << i << " ignored!" << endl;
             }
             else{
                 ScanPositionPtr pos = project->project->positions.at(i);
@@ -735,7 +738,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
 
                 boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
-                Transformd finalPose_n = pos->lidars[0]->scans[0]->transformation;
+                Transformd finalPose_n = pos->transformation;
                 Transformd finalPose = finalPose_n;
                 for (int k = 0; k < numPoints; k++) {
                     Eigen::Vector4d point(
@@ -816,20 +819,20 @@ BigGrid<BaseVecT>::BigGrid(std::string path)
     size_t gridSize;
     ifs.read((char*)&gridSize, sizeof(gridSize));
 
-    std::cout << "LOADING OLD GRID: " << std::endl;
-    std::cout << "m_maxIndexSquare: \t\t\t" << m_maxIndexSquare << std::endl;
-    std::cout << "m_maxIndex: \t\t\t" << m_maxIndex << std::endl;
-    std::cout << "m_maxIndexX: \t\t\t" << m_maxIndexX << std::endl;
-    std::cout << "m_maxIndexY: \t\t\t" << m_maxIndexY << std::endl;
-    std::cout << "m_maxIndexZ: \t\t\t" << m_maxIndexZ << std::endl;
-    std::cout << "m_numPoints: \t\t\t" << m_numPoints << std::endl;
-    std::cout << "m_pointBufferSize: \t\t\t" << m_pointBufferSize << std::endl;
-    std::cout << "m_voxelSize: \t\t\t" << m_voxelSize << std::endl;
-    std::cout << "m_extrude: \t\t\t" << m_extrude << std::endl;
-    std::cout << "m_has_normal: \t\t\t" << m_has_normal << std::endl;
-    std::cout << "m_scale: \t\t\t" << m_scale << std::endl;
-    std::cout << "m_bb: \t\t\t" << m_bb << std::endl;
-    std::cout << "gridSize: \t\t\t" << gridSize << std::endl;
+    std::cout << timestamp << "\tLoading Exisiting Grid: " << std::endl;
+    std::cout << timestamp << "\tm_maxIndexSquare: \t\t\t" << m_maxIndexSquare << std::endl;
+    std::cout << timestamp << "\tm_maxIndex: \t\t\t" << m_maxIndex << std::endl;
+    std::cout << timestamp << "\tm_maxIndexX: \t\t\t" << m_maxIndexX << std::endl;
+    std::cout << timestamp << "\tm_maxIndexY: \t\t\t" << m_maxIndexY << std::endl;
+    std::cout << timestamp << "\tm_maxIndexZ: \t\t\t" << m_maxIndexZ << std::endl;
+    std::cout << timestamp << "\tm_numPoints: \t\t\t" << m_numPoints << std::endl;
+    std::cout << timestamp << "\tm_pointBufferSize: \t\t\t" << m_pointBufferSize << std::endl;
+    std::cout << timestamp << "\tm_voxelSize: \t\t\t" << m_voxelSize << std::endl;
+    std::cout << timestamp << "\tm_extrude: \t\t\t" << m_extrude << std::endl;
+    std::cout << timestamp << "\tm_has_normal: \t\t\t" << m_has_normal << std::endl;
+    std::cout << timestamp << "\tm_scale: \t\t\t" << m_scale << std::endl;
+    std::cout << timestamp << "\tm_bb: \t\t\t" << m_bb << std::endl;
+    std::cout << timestamp << "\tGridSize: \t\t\t" << gridSize << std::endl;
 
     for (size_t i = 0; i < gridSize; i++)
     {

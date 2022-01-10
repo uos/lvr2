@@ -394,9 +394,9 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
     {
         YAML::Node meta;
 
-        cout << m_featureBase << endl;
-        cout << m_featureBase->m_kernel << endl;
-        cout << m_featureBase->m_kernel->fileResource() << endl;  
+        // cout << m_featureBase << endl;
+        // cout << m_featureBase->m_kernel << endl;
+        // cout << m_featureBase->m_kernel->fileResource() << endl;  
 
         m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
 
@@ -495,9 +495,13 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
         {
             reduction->setPointBuffer(ret->points);
             ret->points = reduction->getReducedPoints();
-        } else if(ret->points_loader_reduced) {
+        } 
+        else if(ret->points_loader_reduced) 
+        {
             ret->points = ret->points_loader_reduced(reduction);
-        } else if(ret->points_loader) {
+        } 
+        else if(ret->points_loader) 
+        {
             ret->load();
             if(ret->points)
             {
