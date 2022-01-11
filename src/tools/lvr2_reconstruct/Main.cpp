@@ -364,11 +364,7 @@ int main(int argc, char** argv)
     if(options.getFillHoles())
     {
         mesh.fillHoles(options.getFillHoles());
-        // naiveFillSmallHoles(mesh, options.getFillHoles(), false);
     }
-
-    // Calculate initial face normals
-    auto faceNormals = calcFaceNormals(mesh);
 
     // Reduce mesh complexity
     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
@@ -379,17 +375,15 @@ int main(int argc, char** argv)
             throw "The reduction ratio needs to be between 0 and 1!";
         }
 
-        // // Each edge collapse removes two faces in the general case.
-        // // TODO: maybe we should calculate this differently...
-        // const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
-        // auto collapsedCount = simpleMeshReduction(mesh, count, faceNormals);
-
         size_t old = mesh.numVertices();
         size_t target = old * (1.0 - reductionRatio);
         std::cout << timestamp << "Trying to remove " << old - target << " / " << old << " vertices." << std::endl;
         mesh.simplify(target);
         std::cout << timestamp << "Removed " << old - mesh.numVertices() << " vertices." << std::endl;
     }
+
+    // Calculate face normals
+    auto faceNormals = calcFaceNormals(mesh);
 
     ClusterBiMap<FaceHandle> clusterBiMap;
     if(options.optimizePlanes())
@@ -409,7 +403,7 @@ int main(int argc, char** argv)
 
         if(options.getFillHoles())
         {
-            naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+            mesh.fillHoles(options.getFillHoles());
         }
 
         cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
