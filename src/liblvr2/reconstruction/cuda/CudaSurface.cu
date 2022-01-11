@@ -737,12 +737,13 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
         float n_z = 0.0;
 
         float weight_sum = 0.0;
-
+        float gaussian_factor = 1.0;
         for(int i=0; i<k; i++)
         {
             unsigned int point_position =  nn[i];
 
-            float gaussian_factor = getGaussianFactor(i, k/2, k, 5.0);
+            //gaussian_factor = getGaussianFactor(i, k/2, k, 5.0);
+
             weight_sum += gaussian_factor;
 
             if(point_position > 0 && point_position < D_V.width)

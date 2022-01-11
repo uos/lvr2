@@ -520,6 +520,12 @@ namespace lvr2
                                                                          m_ki,
                                                                          m_kd,
                                                                          m_useRansac);
+
+
+                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(m_voxelSizes[h], surface, gridbb, true, m_extrude);
+                ps_grid->setBB(gridbb);
+                ps_grid->calcIndices();
+
                 //calculate important stuff for reconstruction
                 if (!bg.hasNormals())
                 {
@@ -540,8 +546,14 @@ namespace lvr2
                     gpu_surface.calculateNormals();
                     gpu_surface.getNormals(normals);
 
+                    auto query_points = ps_grid->getQueryPoints();
+
+                    std::cout << timestamp << "Computing distances on GPU..." << std::endl;
+                    gpu_surface.distances(query_points, m_voxelSizes[h]);
+                    std::cout << timestamp << "Done." << std::endl;
+
                     p_loader_reduced->setNormalArray(normals, num_points);
-                    gpu_surface.freeGPU();
+                    //gpu_surface.freeGPU();
     #else
 
                         std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
@@ -551,20 +563,13 @@ namespace lvr2
                     else
                     {
                         surface->calculateSurfaceNormals();
+                        ps_grid->calcDistanceValues();
                     }
                 }
-
-
-
-                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
-                        m_voxelSizes[h], surface, gridbb, true, m_extrude);
-
-                ps_grid->setBB(gridbb);
-                ps_grid->calcIndices();
-                ps_grid->calcDistanceValues();
-
-
-
+                else
+                {
+                    ps_grid->calcDistanceValues();
+                }
 
                 unsigned long timeStart = lvr2::timestamp.getCurrentTimeInMs();
                 int x = (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize);
