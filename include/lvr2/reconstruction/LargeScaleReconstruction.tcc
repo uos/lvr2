@@ -541,6 +541,7 @@ namespace lvr2
 
                     gpu_surface.setKn(m_kn);
                     gpu_surface.setKi(m_ki);
+                    gpu_surface.setKd(m_kd);
                     gpu_surface.setFlippoint(m_flipPoint[0], m_flipPoint[1], m_flipPoint[2]);
 
                     gpu_surface.calculateNormals();
@@ -553,7 +554,7 @@ namespace lvr2
                     std::cout << timestamp << "Done." << std::endl;
 
                     p_loader_reduced->setNormalArray(normals, num_points);
-                    //gpu_surface.freeGPU();
+                    gpu_surface.freeGPU();
     #else
 
                         std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;

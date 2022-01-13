@@ -693,7 +693,7 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
 
     if(tid < qp_size)
     {
-        k = 1;
+        //k = 1;
         if(tid == 5)
         {
             printf("TEEST\n");
@@ -759,6 +759,12 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
 
         }
 
+        if(tid == 5)
+        {
+            printf("Weight Sum: %f \n",weight_sum);
+            printf("Summed-up vector: %f %f %f\n", x, y, z);    
+        }
+
         x = x / weight_sum;
         y = y / weight_sum;
         z = z / weight_sum;
@@ -771,7 +777,7 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
 
         calculateDistance(x, y, z, n_x, n_y, n_z, qp_x, qp_y, qp_z, euklidean_distance, projected_distance, tid );
 
-        D_Query_Points[tid].m_distance = projected_distance/15.0;
+        D_Query_Points[tid].m_distance = projected_distance;
         D_Query_Points[tid].m_invalid = false;
 
         // if (euklidean_distance > 2 * 1.7320 * voxel_size)

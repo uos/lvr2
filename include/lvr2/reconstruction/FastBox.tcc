@@ -130,18 +130,23 @@ float FastBox<BaseVecT>::calcIntersection(float x1, float x2, float d1, float d2
     // and check for different signs of the given distance values.
     // If for some reason there was no sign change, return the
     // middle point
-    if( (d1 < 0 && d2 >= 0) || (d2 < 0 && d1 >= 0) )
+    if ((d1 < 0 && d2 >= 0) || (d2 < 0 && d1 >= 0))
     {
-      float interpolation = x2 - d2 * (x1 - x2) / (d1 - d2);
-      if(compareFloat(interpolation, x1))
-        interpolation += 0.01;
-      else if(compareFloat(interpolation, x2))
-        interpolation -= 0.01;
-      return  interpolation;
+        float interpolation = x2 - d2 * (x1 - x2) / (d1 - d2);
+        if (compareFloat(interpolation, x1))
+        {
+            interpolation += 0.01;
+        }
+        else if (compareFloat(interpolation, x2))
+        {
+            interpolation -= 0.01;
+        }
+
+        return interpolation;
     }
     else
     {
-      return  (x2 + x1) / 2.0;
+        return (x2 + x1) / 2.0;
     }
 }
 
