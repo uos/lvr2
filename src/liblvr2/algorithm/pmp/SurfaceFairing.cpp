@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceFairing.h"
 

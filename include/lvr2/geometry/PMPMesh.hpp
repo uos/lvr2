@@ -25,15 +25,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
+/**
  * PMPMesh.hpp
  *
- *  @date 06.12.2021
- *  @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
+ * @date   06.12.2021
+ * @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
-#ifndef LVR2_GEOMETRY_PMPMesh_H_
-#define LVR2_GEOMETRY_PMPMesh_H_
+#ifndef LVR2_GEOMETRY_PMPMESH_HPP_
+#define LVR2_GEOMETRY_PMPMESH_HPP_
 
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/geometry/pmp/SurfaceMesh.h"
@@ -44,7 +44,7 @@ namespace lvr2
 {
 
 /**
- * @brief Wrapper around the SurfaceMesh class to provide a BaseMesh interface
+ * @brief Wrapper around the pmp::SurfaceMesh class to provide a lvr2::BaseMesh interface
  * 
  */
 template<typename BaseVecT>
@@ -201,4 +201,4 @@ private:
 
 #include "lvr2/geometry/PMPMesh.tcc"
 
-#endif /* LVR2_GEOMETRY_PMPMesh_H_ */
+#endif /* LVR2_GEOMETRY_PMPMESH_HPP_ */
