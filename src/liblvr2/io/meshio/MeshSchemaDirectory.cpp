@@ -30,32 +30,95 @@ Description MeshSchemaDirectory::vertexChannel(std::string mesh_name, std::strin
     d.meta = channel_name + ".yaml";
     return d;
 }
-
-Description MeshSchemaDirectory::surface(std::string name, size_t surface_index) const
+Description MeshSchemaDirectory::faces(std::string name) const
 {
     auto d = mesh(name);
-    auto sstr = std::stringstream();
-    sstr << std::setw(8) << std::setfill('0') << surface_index;
 
-    d.dataRoot = *d.dataRoot + "/surfaces/" + sstr.str();
+    d.dataRoot = *d.dataRoot + "/faces";
     d.metaRoot = d.dataRoot;
 
     return d;
 }
 
-Description MeshSchemaDirectory::surfaceIndices(std::string name, size_t surface_index) const
+Description MeshSchemaDirectory::faceIndices(std::string name) const
 {
-    auto d = surface(name, surface_index);
+    auto d = faces(name);
+
     d.data = "indices";
-    d.meta = "indices.yaml";
+    d.meta = *d.data + ".yaml";
+
     return d;
 }
 
-Description MeshSchemaDirectory::textureCoordinates(std::string name, size_t surface_index) const
+Description MeshSchemaDirectory::faceNormals(std::string name) const
 {
-    auto d = surface(name, surface_index);
+    auto d = faces(name);
+
+    d.data = "normals";
+    d.meta = *d.data + ".yaml";
+
+    return d;
+}
+
+Description MeshSchemaDirectory::faceColors(std::string name) const
+{
+    auto d = faces(name);
+
+    d.data = "colors";
+    d.meta = *d.data + ".yaml";
+
+    return d;
+}
+
+Description MeshSchemaDirectory::faceMaterialIndices(std::string name) const
+{
+    auto d = faces(name);
+
+    d.data = "materials";
+    d.meta = *d.data + ".yaml";
+
+    return d;
+}
+
+Description MeshSchemaDirectory::surfaces(std::string name) const
+{
+    auto d = mesh(name);
+
+    d.dataRoot = *d.dataRoot + "/surfaces";
+    d.metaRoot = d.dataRoot;
+
+    return d;
+}
+
+Description MeshSchemaDirectory::surfaceCombinedFaceIndices(std::string name) const
+{
+    auto d = surfaces(name);
+    d.data = "combined_face_indices";
+    d.meta = *d.data + ".yaml";
+    return d;
+}
+
+Description MeshSchemaDirectory::surfaceFaceIndexRanges(std::string name) const
+{
+    auto d = surfaces(name);
+    d.data = "face_index_ranges";
+    d.meta = *d.data + ".yaml";
+    return d;
+}
+
+Description MeshSchemaDirectory::surfaceTextureCoordinates(std::string name) const
+{
+    auto d = surfaces(name);
     d.data = "texture_coordinates";
-    d.meta = "texture_coordinates.yaml";
+    d.meta = *d.data + ".yaml";
+    return d;
+}
+
+Description MeshSchemaDirectory::surfaceMaterialIndices(std::string name) const
+{
+    auto d = surfaces(name);
+    d.data = "material_indices";
+    d.meta = *d.data + ".yaml";
     return d;
 }
 

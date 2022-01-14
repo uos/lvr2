@@ -18,11 +18,25 @@ class MeshSchemaHDF5 : public MeshSchema
 
     virtual Description vertexChannel(std::string mesh_name, std::string channel_name) const;
 
-    virtual Description surface(std::string name, size_t surface_index) const;
+    virtual Description surfaces(std::string name) const;
 
-    virtual Description surfaceIndices(std::string name, size_t surface_index) const;
+    virtual Description faces(std::string name) const;
 
-    virtual Description textureCoordinates(std::string name, size_t surface_index) const;
+    virtual Description faceIndices(std::string name) const;
+
+    virtual Description faceNormals(std::string name) const;
+
+    virtual Description faceColors(std::string name) const;
+
+    virtual Description faceMaterialIndices(std::string name) const;
+
+    virtual Description surfaceCombinedFaceIndices(std::string name) const;
+
+    virtual Description surfaceFaceIndexRanges(std::string name) const;
+
+    virtual Description surfaceTextureCoordinates(std::string name) const;
+
+    virtual Description surfaceMaterialIndices(std::string name) const;
 
     virtual Description material(std::string name, size_t material_index) const;
 

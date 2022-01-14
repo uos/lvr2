@@ -4,6 +4,7 @@
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/meshio/MaterialIO.hpp>
 #include <lvr2/io/meshio/ClusterIO.hpp>
+#include <lvr2/io/meshio/FaceIO.hpp>
 
 namespace lvr2
 {
@@ -38,15 +39,6 @@ private:
      */
     void loadVertices(std::string mesh_name, MeshBufferPtr mesh) const;
 
-    /**
-     * @brief Loads all clusters associated with \p mesh_name
-     * 
-     * @param mesh_name The name of the Mesh in the h5 file
-     * @param[out] mesh The surfaces will be added to this Mesh 
-     * @return size_t The number of surfaces read
-     */
-    size_t loadSurfaces(const std::string& mesh_name, MeshBufferPtr mesh) const;
-
 protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
@@ -55,6 +47,9 @@ protected:
 
     ClusterIO<FeatureBase>* m_clusterIO 
         = static_cast<ClusterIO<FeatureBase>*>(m_featureBase);
+    
+    FaceIO<FeatureBase>* m_faceIO
+        = static_cast<FaceIO<FeatureBase>*>(m_featureBase);
 
 };
 
@@ -64,8 +59,9 @@ struct meshio::FeatureConstruct<MeshIO, FeatureBase>
     // Dependencies
     using dep1 = typename FeatureConstruct<MaterialIO, FeatureBase>::type;
     using dep2 = typename FeatureConstruct<ClusterIO, FeatureBase>::type;
+    using dep3 = typename FeatureConstruct<FaceIO, FeatureBase>::type;
 
-    using deps = typename dep1::template Merge<dep2>;
+    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
 
     // Add the feature
     using type = typename deps::template add_features<MeshIO>::type;

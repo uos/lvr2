@@ -429,10 +429,13 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 
     if (m_materializerResult)
     {
-        // Copy all the textures
-        for (auto texH: m_materializerResult->m_textures.get())
+        // Copy all the textures if they exist
+        if (m_materializerResult->m_textures)
         {
-            textures.push_back(m_materializerResult->m_textures.get()[texH]);
+            for (auto texH: m_materializerResult->m_textures.get())
+            {
+                textures.push_back(m_materializerResult->m_textures.get()[texH]);
+            }
         }
 
         vector<Material> &mats = buffer->getMaterials();

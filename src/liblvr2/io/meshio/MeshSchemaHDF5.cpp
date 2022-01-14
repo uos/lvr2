@@ -31,30 +31,94 @@ Description MeshSchemaHDF5::vertexChannel(std::string mesh_name, std::string cha
     return d;
 }
 
-Description MeshSchemaHDF5::surface(std::string name, size_t surface_index) const
+Description MeshSchemaHDF5::faces(std::string name) const
 {
     auto d = mesh(name);
-    auto sstr = std::stringstream();
-    sstr << std::setw(8) << std::setfill('0') << surface_index;
 
-    d.dataRoot = *d.dataRoot + "/surfaces/" + sstr.str();
+    d.dataRoot = *d.dataRoot + "/faces";
     d.metaRoot = d.dataRoot;
 
     return d;
 }
 
-Description MeshSchemaHDF5::surfaceIndices(std::string name, size_t surface_index) const
+Description MeshSchemaHDF5::faceIndices(std::string name) const
 {
-    auto d = surface(name, surface_index);
+    auto d = faces(name);
+
     d.data = "indices";
+    d.meta = d.data;
+
+    return d;
+}
+
+Description MeshSchemaHDF5::faceNormals(std::string name) const
+{
+    auto d = faces(name);
+
+    d.data = "normals";
+    d.meta = d.data;
+
+    return d;
+}
+
+Description MeshSchemaHDF5::faceColors(std::string name) const
+{
+    auto d = faces(name);
+
+    d.data = "colors";
+    d.meta = d.data;
+
+    return d;
+}
+
+Description MeshSchemaHDF5::faceMaterialIndices(std::string name) const
+{
+    auto d = faces(name);
+
+    d.data = "materials";
+    d.meta = d.data;
+
+    return d;
+}
+
+Description MeshSchemaHDF5::surfaces(std::string name) const
+{
+    auto d = mesh(name);
+
+    d.dataRoot = *d.dataRoot + "/surfaces";
+    d.metaRoot = d.dataRoot;
+
+    return d;
+}
+
+Description MeshSchemaHDF5::surfaceCombinedFaceIndices(std::string name) const
+{
+    auto d = surfaces(name);
+    d.data = "combined_face_indices";
     d.meta = d.data;
     return d;
 }
 
-Description MeshSchemaHDF5::textureCoordinates(std::string name, size_t surface_index) const
+Description MeshSchemaHDF5::surfaceFaceIndexRanges(std::string name) const
 {
-    auto d = surface(name, surface_index);
+    auto d = surfaces(name);
+    d.data = "face_index_ranges";
+    d.meta = d.data;
+    return d;
+}
+
+Description MeshSchemaHDF5::surfaceTextureCoordinates(std::string name) const
+{
+    auto d = surfaces(name);
     d.data = "texture_coordinates";
+    d.meta = d.data;
+    return d;
+}
+
+Description MeshSchemaHDF5::surfaceMaterialIndices(std::string name) const
+{
+    auto d = surfaces(name);
+    d.data = "material_indices";
     d.meta = d.data;
     return d;
 }

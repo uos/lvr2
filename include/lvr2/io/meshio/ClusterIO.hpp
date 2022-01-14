@@ -19,20 +19,21 @@ class ClusterIO
 {
 public:
 
-    void saveCluster(
+    void saveClusters(
         const std::string& mesh_name,
-        const size_t& cluster_idx,
-        const MeshBufferPtr& mesh,
-        const IndexChannel& index_channel
+        const MeshBufferPtr mesh
     );
 
-    boost::optional<ClusterIOData> loadCluster(
+    /**
+     * @brief 
+     * 
+     * @param mesh_name 
+     * @param[out] mesh The MeshBuffer the data is written to
+     */
+    void loadClusters(
         const std::string& mesh_name,
-        const size_t& cluster_idx,
-        floatArr tex_coords,
-        std::vector<indexArray::element_type>& faces,
-        std::vector<indexArray::element_type>& faceToMaterial
-    ) const;
+        MeshBufferPtr mesh
+    );
 
 protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
