@@ -99,9 +99,9 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
 template <typename FeatureBase>
 void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh) const
 {
-    std::cout << timestamp << "[MeshIO] Mesh has vertex coordinates: " << (mesh->hasVertices() ? "yes" : "no") << std::endl;
-    std::cout << timestamp << "[MeshIO] Mesh has vertex normals:     " << (mesh->hasVertexNormals() ? "yes" : "no") << std::endl;
-    std::cout << timestamp << "[MeshIO] Mesh has vertex colors:      " << (mesh->hasVertexColors() ? "yes" : "no") << std::endl;
+    std::cout << timestamp << "[MeshIO] Mesh has vertex coordinates:  " << (mesh->hasVertices() ? "yes" : "no") << std::endl;
+    std::cout << timestamp << "[MeshIO] Mesh has vertex normals:      " << (mesh->hasVertexNormals() ? "yes" : "no") << std::endl;
+    std::cout << timestamp << "[MeshIO] Mesh has vertex colors:       " << (mesh->hasVertexColors() ? "yes" : "no") << std::endl;
 
     if (mesh->hasVertices())
     {
@@ -180,6 +180,29 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
         );
     }
 
+    if (mesh->getTextureCoordinates())
+    {
+        auto desc = m_featureBase->m_schema->vertexChannel(mesh_name, "texture_coordinates");
+        // Write the vertices
+        m_featureBase->m_kernel->saveFloatArray(
+        *desc.dataRoot,
+        *desc.data,
+        {mesh->numVertices(), 2},
+        mesh->getTextureCoordinates());
+    
+        meshio::ArrayMeta meta;
+        meta.data_type = "float",
+        meta.shape = {mesh->numVertices(), 2};
+
+        YAML::Node node;
+        node = meta;
+        m_featureBase->m_kernel->saveMetaYAML(
+            *desc.metaRoot,
+            *desc.meta,
+            node
+        );
+    }
+
 }
 
 template <typename FeatureBase>
@@ -189,14 +212,17 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
     auto coord_desc = m_featureBase->m_schema->vertexChannel(mesh_name, "coordinates");
     auto normal_desc = m_featureBase->m_schema->vertexChannel(mesh_name, "normals");
     auto color_desc = m_featureBase->m_schema->vertexChannel(mesh_name, "colors");
+    auto tex_coord_desc = m_featureBase->m_schema->vertexChannel(mesh_name, "texture_coordinates");
 
-    bool hasCoords  = false;
-    bool hasNormals = false;
-    bool hasColors  = false;
+    bool hasCoords      = false;
+    bool hasNormals     = false;
+    bool hasColors      = false;
+    bool hasTexCoords   = false;
 
     if (m_featureBase->m_kernel->exists(*coord_desc.dataRoot, *coord_desc.data)) hasCoords     = true;
     if (m_featureBase->m_kernel->exists(*normal_desc.dataRoot, *normal_desc.data)) hasNormals    = true;
     if (m_featureBase->m_kernel->exists(*color_desc.dataRoot, *color_desc.data)) hasColors     = true;
+    if (m_featureBase->m_kernel->exists(*tex_coord_desc.dataRoot, *tex_coord_desc.data)) hasTexCoords     = true;
 
     std::cout << timestamp << "[MeshIO] Mesh has vertex coordinates: " << (hasCoords  ? "yes" : "no") << "\n";
     std::cout << timestamp << "[MeshIO] Mesh has vertex normals:     " << (hasNormals ? "yes" : "no") << "\n";
@@ -289,6 +315,33 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
         else
         {
             std::cout << timestamp << "[MeshIO] Array 'colors' data type '" << meta.data_type << "' is not 'uchar'" << std::endl; 
+        }
+    }
+
+    // === Texture Coordinates === //
+    if (hasTexCoords)
+    {
+        YAML::Node node;
+        // Load meta
+        m_featureBase->m_kernel->loadMetaYAML(
+            *tex_coord_desc.metaRoot,
+            *tex_coord_desc.meta,
+            node
+        );
+        meshio::ArrayMeta meta = node.as<meshio::ArrayMeta>();
+        if (meta.data_type == "float")
+        {
+            // Load texture coordinates
+            auto coords = m_featureBase->m_kernel->loadFloatArray(
+                *tex_coord_desc.dataRoot,
+                *tex_coord_desc.data,
+                meta.shape
+            );
+            mesh->setTextureCoordinates(std::move(coords));
+        }
+        else
+        {
+            std::cout << timestamp << "[MeshIO] Array 'texture_coordinates' data type '" << meta.data_type << "' is not 'float'" << std::endl; 
         }
     }
     
