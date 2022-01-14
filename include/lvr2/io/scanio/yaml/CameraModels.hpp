@@ -150,9 +150,9 @@ struct convert<lvr2::CylindricalModel>
             camera.principal = node["principal_point"].as<std::vector<double>>();
         }
 
-        if(node["focal_lengths"])
+        if(node["focal_length"])
         {
-            camera.focalLength = node["focal_lengths"].as<std::vector<double>>();
+            camera.focalLength = node["focal_length"].as<std::vector<double>>();
         }
 
         if(node["distortion"])

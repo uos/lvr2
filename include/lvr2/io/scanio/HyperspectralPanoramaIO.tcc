@@ -67,7 +67,7 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
         }
 
         ret = std::make_shared<HyperspectralPanorama>(meta.as<HyperspectralPanorama>());
-        ret->model = meta.as<CylindricalModel>();
+        ret->model = meta["camera_model"].as<CylindricalModel>();
     } else {
         
         // no meta name specified but scan position is there: 
