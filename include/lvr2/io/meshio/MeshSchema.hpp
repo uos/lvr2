@@ -32,8 +32,6 @@ public:
 
     virtual Description surfaceFaceIndexRanges(std::string name) const = 0;
 
-    virtual Description surfaceTextureCoordinates(std::string name) const = 0;
-
     virtual Description surfaceMaterialIndices(std::string name) const = 0;
 
     virtual Description material(std::string name, size_t material_index) const = 0;

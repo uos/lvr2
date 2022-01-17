@@ -3,7 +3,6 @@ project(LAS_VEGAS VERSION 2)
 
 # OPTIONS
 option(BUILD_EXAMPLES "Build the examples" OFF)
-option(BUILD_TESTS "Build the unit tests" OFF)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
@@ -632,10 +631,6 @@ endif()
 
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
-endif()
-
-if(BUILD_TESTS)
-    add_subdirectory(src/tests/MeshIOSchema)
 endif()
 
 

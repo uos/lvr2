@@ -34,8 +34,6 @@ class MeshSchemaHDF5 : public MeshSchema
 
     virtual Description surfaceFaceIndexRanges(std::string name) const;
 
-    virtual Description surfaceTextureCoordinates(std::string name) const;
-
     virtual Description surfaceMaterialIndices(std::string name) const;
 
     virtual Description material(std::string name, size_t material_index) const;

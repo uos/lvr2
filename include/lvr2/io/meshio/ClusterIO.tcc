@@ -69,11 +69,12 @@ void ClusterIO<FeatureBase>::saveClusters(
     }
 
     // Save cluster face index ranges
+    shape = {cluster_idx, 2};
     desc = m_featureBase->m_schema->surfaceFaceIndexRanges(mesh_name);
     m_featureBase->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
-        {cluster_idx, 2},
+        shape,
         Util::convert_vector_to_shared_array(cluster_ranges)
         );
     {

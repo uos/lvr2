@@ -107,14 +107,6 @@ Description MeshSchemaHDF5::surfaceFaceIndexRanges(std::string name) const
     return d;
 }
 
-Description MeshSchemaHDF5::surfaceTextureCoordinates(std::string name) const
-{
-    auto d = surfaces(name);
-    d.data = "texture_coordinates";
-    d.meta = d.data;
-    return d;
-}
-
 Description MeshSchemaHDF5::surfaceMaterialIndices(std::string name) const
 {
     auto d = surfaces(name);

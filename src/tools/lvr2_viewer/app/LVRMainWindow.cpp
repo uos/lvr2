@@ -4124,7 +4124,7 @@ void LVRMainWindow::openHDF5(std::string fileName)
             }
             layerNamesSet = true;
         }
-        m.m_texture = m.m_layers.at("hyperspectral_grayscale_1"); 
+        m.m_texture = m.m_layers.at(m.m_layers.begin()->first); 
     }
 
     ModelBridgePtr bridge(new LVRModelBridge(model));

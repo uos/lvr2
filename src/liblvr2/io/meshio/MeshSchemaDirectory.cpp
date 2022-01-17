@@ -44,8 +44,8 @@ Description MeshSchemaDirectory::faceIndices(std::string name) const
 {
     auto d = faces(name);
 
-    d.data = "indices";
-    d.meta = *d.data + ".yaml";
+    d.data = "indices.data";
+    d.meta = "indices.yaml";
 
     return d;
 }
@@ -54,8 +54,8 @@ Description MeshSchemaDirectory::faceNormals(std::string name) const
 {
     auto d = faces(name);
 
-    d.data = "normals";
-    d.meta = *d.data + ".yaml";
+    d.data = "normals.data";
+    d.meta = "normals.yaml";
 
     return d;
 }
@@ -64,8 +64,8 @@ Description MeshSchemaDirectory::faceColors(std::string name) const
 {
     auto d = faces(name);
 
-    d.data = "colors";
-    d.meta = *d.data + ".yaml";
+    d.data = "colors.data";
+    d.meta = "colors.yaml";
 
     return d;
 }
@@ -74,8 +74,8 @@ Description MeshSchemaDirectory::faceMaterialIndices(std::string name) const
 {
     auto d = faces(name);
 
-    d.data = "materials";
-    d.meta = *d.data + ".yaml";
+    d.data = "materials.data";
+    d.meta = "materials.yaml";
 
     return d;
 }
@@ -93,32 +93,24 @@ Description MeshSchemaDirectory::surfaces(std::string name) const
 Description MeshSchemaDirectory::surfaceCombinedFaceIndices(std::string name) const
 {
     auto d = surfaces(name);
-    d.data = "combined_face_indices";
-    d.meta = *d.data + ".yaml";
+    d.data = "combined_face_indices.data";
+    d.meta = "combined_face_indices.yaml";
     return d;
 }
 
 Description MeshSchemaDirectory::surfaceFaceIndexRanges(std::string name) const
 {
     auto d = surfaces(name);
-    d.data = "face_index_ranges";
-    d.meta = *d.data + ".yaml";
-    return d;
-}
-
-Description MeshSchemaDirectory::surfaceTextureCoordinates(std::string name) const
-{
-    auto d = surfaces(name);
-    d.data = "texture_coordinates";
-    d.meta = *d.data + ".yaml";
+    d.data = "face_index_ranges.data";
+    d.meta = "face_index_ranges.yaml";
     return d;
 }
 
 Description MeshSchemaDirectory::surfaceMaterialIndices(std::string name) const
 {
     auto d = surfaces(name);
-    d.data = "material_indices";
-    d.meta = *d.data + ".yaml";
+    d.data = "material_indices.data";
+    d.meta = "material_indices.yaml";
     return d;
 }
 
