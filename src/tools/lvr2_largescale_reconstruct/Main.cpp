@@ -114,9 +114,12 @@ int main(int argc, char** argv)
     //reconstruction from hdf5
     if (extension == ".h5")
     {
+        std::cout << timestamp << "Reading project from HDF5 file" << std::endl;
         HDF5KernelPtr hdf5kernel(new HDF5Kernel(in));
         HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
         lvr2::scanio::HDF5IO hdf5io(hdf5kernel, schema);
+        project->kernel = hdf5kernel;
+        project->schema = schema;
 
         auto scanProjectPtr = hdf5io.ScanProjectIO::load();
 
