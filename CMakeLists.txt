@@ -435,6 +435,12 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
     endif()
 endif()
 
+# Cesium-native
+if(EXISTS ${PROJECT_SOURCE_DIR}/ext/cesium-native/CMakeLists.txt)
+    add_subdirectory(ext/cesium-native)
+    set(CESIUM_NATIVE_FOUND TRUE)
+endif()
+
 ###############################################################################
 # ADD LVR DEFINITIONS
 ###############################################################################
@@ -649,6 +655,7 @@ add_subdirectory(src/tools/lvr2_scanproject_parser)
 add_subdirectory(src/tools/lvr2_ground_level_extractor)
 # add_subdirectory(src/tools/lvr2_hdf5_convert_old)
 add_subdirectory(src/tools/lvr2_hdf5_inspect)
+add_subdirectory(src/tools/lvr2_3dtiles)
 
 
 
