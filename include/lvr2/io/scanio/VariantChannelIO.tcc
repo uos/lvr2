@@ -61,7 +61,7 @@ template<typename ...Tp>
 void VariantChannelIO<Derived>::save(
     std::string groupName,
     std::string channelName,
-    const VariantChannel<Tp...>& vchannel)
+    const VariantChannel<Tp...>& vchannel) const
 {
     // std::cout << "[VariantChannelIO - save] " << groupName << "; " << channelName << "; " << vchannel.typeName() << std::endl;
 
@@ -189,7 +189,7 @@ template<typename Derived>
 template<typename VariantChannelT>
 boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
     std::string groupName,
-    std::string datasetName)
+    std::string datasetName) const
 {
     // std::cout << "[VariantChannelIO - load] " << groupName << ", " << datasetName << std::endl;
 
@@ -227,7 +227,7 @@ template<typename Derived>
 template<typename VariantChannelT>
 boost::optional<VariantChannelT> VariantChannelIO<Derived>::loadVariantChannel(
     std::string groupName,
-    std::string datasetName)
+    std::string datasetName) const
 {
     return load<VariantChannelT>(groupName, datasetName);
 }

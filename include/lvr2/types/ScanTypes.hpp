@@ -1,13 +1,16 @@
-#ifndef LVR2_TYPES_SCANTYPES_HPP
-#define LVR2_TYPES_SCANTYPES_HPP
+#ifndef SCANTYPES
+#define SCANTYPES
+
 
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/CameraModels.hpp"
 #include "lvr2/types/Variant.hpp"
-
 #include "lvr2/registration/ReductionAlgorithm.hpp"
+
+#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/scanio/ScanProjectSchema.hpp"
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
@@ -571,9 +574,12 @@ using LabelRootPtr = std::shared_ptr<LabelRoot>;
  *****************************************************************************/
 struct ScanProjectEditMark
 {
-    ScanProjectEditMark(){}
+    ScanProjectEditMark() = default;
     ScanProjectEditMark(ScanProjectPtr _project):project(project){}
     ScanProjectPtr project;
+    HDF5KernelPtr kernel;
+    HDF5SchemaPtr schema;
+    
     /// True if scan pose has been changed, one bool for each scan position
     std::vector<bool> changed;
 };
@@ -600,4 +606,4 @@ using LabeledScanProjectEditMarkPtr = std::shared_ptr<LabeledScanProjectEditMark
 
 } // namespace lvr2
 
-#endif // LVR2_TYPES_SCANTYPES_HPP
+#endif // SCANTYPES
