@@ -43,7 +43,8 @@
 #include <Cesium3DTiles/Tileset.h>
 #include <Cesium3DTiles/Tile.h>
 #include <Cesium3DTilesWriter/TilesetWriter.h>
-#include <CesiumGltfWriter/Writer.h>
+#include <CesiumGltf/Model.h>
+#include <CesiumGltfWriter/GltfWriter.h>
 
 using namespace lvr2;
 using namespace Cesium3DTiles;
@@ -54,7 +55,7 @@ using Vec = BaseVector<float>;
 
 /**
  * @brief converts mesh to b3dm format and writes it to a file
- * 
+ *
  * @param filename the name of the file to write to
  * @param mesh the mesh to convert
  */
@@ -62,7 +63,7 @@ void write_b3dm(const path& filename, const PMPMesh<Vec>& mesh);
 
 /**
  * @brief writes a uint32_t to an output stream in binary format
- * 
+ *
  * @param file the output stream
  * @param value the value to write
  */
@@ -73,7 +74,7 @@ inline void write_uint32(std::ofstream& file, uint32_t value)
 
 /**
  * @brief creates a new value at the end of a vector and returns its index and a reference to that value
- * 
+ *
  * @param vec the vector to append to
  * @return std::tuple<size_t, T&> the index and reference to the new value
  */
@@ -87,9 +88,9 @@ inline std::tuple<size_t, T&> push_and_get_index(std::vector<T>& vec)
 
 int main(int argc, char** argv)
 {
-    if (argc < 3)
+    if (argc < 2)
     {
-        std::cerr << "Usage: " << argv[0] << " <input_file> <output_directory>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <input_file> [<output_directory>]" << std::endl;
         return 1;
     }
 
@@ -107,7 +108,7 @@ int main(int argc, char** argv)
     }
     PMPMesh<Vec> mesh(model->m_mesh);
 
-    path outpath(argv[2]);
+    path outpath(argc >= 3 ? argv[2] : "chunk.3dtiles");
     if (!boost::filesystem::exists(outpath))
     {
         boost::filesystem::create_directories(outpath);
@@ -116,11 +117,11 @@ int main(int argc, char** argv)
     path mesh_file = "mesh.b3dm";
 
     Cesium3DTiles::Tileset tileset;
-    tileset.geometricError = 100.0;
+    tileset.geometricError = 500.0;
     tileset.asset.version = "1.0";
     auto& root = tileset.root;
     root.refine = Cesium3DTiles::Tile::Refine::REPLACE;
-    root.geometricError = 100.0;
+    root.geometricError = 500.0;
     root.transform =
     {
         // 4x4 matrix to place the object somewhere on the globe
@@ -279,14 +280,18 @@ void write_b3dm(const path& filename, const PMPMesh<Vec>& mesh)
 
     auto [ node_id, node ] = push_and_get_index(model.nodes);
     node.mesh = out_mesh_id;
+    // gltf uses y-up, but 3d tiles uses z-up and automatically transforms gltf data.
+    // So we need to pre-undo that transformation to maintain consistency.
+    // See the "Implementation note" section in https://github.com/CesiumGS/3d-tiles/tree/main/specification#gltf-transforms
+    node.matrix = {1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
 
     auto [ scene_id, scene ] = push_and_get_index(model.scenes);
     scene.nodes.push_back(node_id);
 
     model.scene = scene_id;
 
-    CesiumGltfWriter::WriteModelOptions options;
-    auto gltf = CesiumGltfWriter::writeModelAsEmbeddedBytes(model, options);
+    CesiumGltfWriter::GltfWriter writer;
+    auto gltf = writer.writeGlb(model, buffer);
     if (!gltf.warnings.empty())
     {
         std::cerr << "Warnings writing gltf: " << std::endl;
@@ -330,7 +335,7 @@ void write_b3dm(const path& filename, const PMPMesh<Vec>& mesh)
         header_length++;
     }
 
-    byte_length = header_length + gltf.gltfAssetBytes.size();
+    byte_length = header_length + gltf.gltfBytes.size();
 
     file << magic;
     write_uint32(file, version);
@@ -342,5 +347,5 @@ void write_b3dm(const path& filename, const PMPMesh<Vec>& mesh)
 
     file << feature_table;
 
-    file.write((char*)gltf.gltfAssetBytes.data(), gltf.gltfAssetBytes.size());
+    file.write((char*)gltf.gltfBytes.data(), gltf.gltfBytes.size());
 }
