@@ -40,7 +40,7 @@
 #include <boost/optional.hpp>
 
 
-
+#include "lvr2/types/ColorTypes.hpp"
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/geometry/Normal.hpp"
 #include "lvr2/attrmaps/AttrMaps.hpp"
@@ -68,7 +68,7 @@ template<typename BaseVecT>
 class SimpleFinalizer
 {
 private:
-    boost::optional<const VertexMap<Rgb8Color>&> m_colorData;
+    boost::optional<const VertexMap<RGB8Color>&> m_colorData;
     boost::optional<const VertexMap<Normal<typename BaseVecT::CoordType>>&> m_normalData;
 
 public:
@@ -87,7 +87,7 @@ public:
      *
      * @param colorData color values for all vertices in the mesh which will be passed to apply
      */
-    void setColorData(const VertexMap<Rgb8Color>& colorData);
+    void setColorData(const VertexMap<RGB8Color>& colorData);
 
     /**
      * Sets vertex normals for the apply method. This has to be done before apply is called.
@@ -124,14 +124,14 @@ public:
      *
      * @param colors color data for all clusters in the mesh which will be passed to apply
      */
-    void setClusterColors(const ClusterMap<Rgb8Color>& colors);
+    void setClusterColors(const ClusterMap<RGB8Color>& colors);
 
     /**
      * Sets vertex colors for the apply method. This has to be done before apply is called.
      *
      * @param vertexColors color values for all vertices in the mesh which will be passed to apply
      */
-    void setVertexColors(const VertexMap<Rgb8Color>& vertexColors);
+    void setVertexColors(const VertexMap<RGB8Color>& vertexColors);
 
     /**
      * Sets the materializer result for the apply method. This has to be done before apply is called.
@@ -159,11 +159,11 @@ private:
     // Basic colors
     // Cluster colors will color each vertex in the color of its corresponding cluster
     // These have lower priority when cluster colors, as only one mode can be used
-    boost::optional<const ClusterMap<Rgb8Color>&> m_clusterColors;
+    boost::optional<const ClusterMap<RGB8Color>&> m_clusterColors;
 
     // Vertex colors will color each vertex individually
     // These have a higher priority than cluster colors
-    boost::optional<const VertexMap<Rgb8Color>&> m_vertexColors;
+    boost::optional<const VertexMap<RGB8Color>&> m_vertexColors;
 
     // Materials and textures
     boost::optional<const MaterializerResult<BaseVecT>&> m_materializerResult;

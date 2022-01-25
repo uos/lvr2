@@ -132,7 +132,7 @@ MeshBufferPtr SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 }
 
 template<typename BaseVecT>
-void SimpleFinalizer<BaseVecT>::setColorData(const VertexMap<Rgb8Color>& colorData)
+void SimpleFinalizer<BaseVecT>::setColorData(const VertexMap<RGB8Color>& colorData)
 {
     m_colorData = colorData;
 }
@@ -157,13 +157,13 @@ void TextureFinalizer<BaseVecT>::setVertexNormals(const VertexMap<Normal<typenam
 }
 
 template<typename BaseVecT>
-void TextureFinalizer<BaseVecT>::setClusterColors(const ClusterMap<Rgb8Color>& colors)
+void TextureFinalizer<BaseVecT>::setClusterColors(const ClusterMap<RGB8Color>& colors)
 {
     m_clusterColors = colors;
 }
 
 template<typename BaseVecT>
-void TextureFinalizer<BaseVecT>::setVertexColors(const VertexMap<Rgb8Color>& vertexColors)
+void TextureFinalizer<BaseVecT>::setVertexColors(const VertexMap<RGB8Color>& vertexColors)
 {
     m_vertexColors = vertexColors;
 }
@@ -222,7 +222,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
     std::map<int, unsigned int> textureMaterialMap; // Stores the ID of the material for each textureIndex
     textureMaterialMap[-1] = 0; // texIndex -1 => no texture => default material with index 0
 
-    std::map<Rgb8Color, int> colorMaterialMap;
+    std::map<RGB8Color, int> colorMaterialMap;
 
     // Create face buffer
     vector<unsigned int> faces;
@@ -345,7 +345,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
             else if (clusterHasColor)
             {
                 // Else: does this face have a color?
-                Rgb8Color c = m.m_color.get();
+                RGB8Color c = m.m_color.get();
                 if (colorMaterialMap.count(c))
                 {
                     materialIndex = colorMaterialMap[c];

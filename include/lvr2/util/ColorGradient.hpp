@@ -37,52 +37,66 @@
 
 #include <iostream>
 
+#include "lvr2/types/ColorTypes.hpp"
+
+namespace lvr2
+{
+
+
 /***
  * @brief Class to generate and handle color gradients
  *
  * @TODO: Integrated from show.
  */
-
-namespace lvr2
-{
-
-/// Identifies a color gradient
-enum GradientType
-{
-    SOLID = 0,
-    GREY = 1,
-    HSV = 2,
-    JET = 3,
-    HOT = 4,
-    SHSV = 5,
-    SIMPSONS = 6
-};
-
-class ColorMap
+class ColorGradient
 {
 public:
 
-    /**
-     * @brief Ctor. Constructs a color gradient with the given number
-     *       of buckets
-     *
-     * @param buckets   Number of colors in current gradient
-     */
-    ColorMap(size_t buckets) : m_numBuckets(buckets) {}
+    /// Identifies a color gradient
+    enum GradientType
+    {
+        SOLID = 0,
+        GREY,
+        HSV,
+        JET,
+        HOT,
+        SHSV,
+        SIMPSONS,
+        WHITE,
+        BLACK
+    };
 
     /**
-     * @brief Dtor.
+     * @brief Constructs a color gradient with the given number of buckets
+     * @param buckets   Number of colors in current gradient. Default is 256.
      */
-    virtual ~ColorMap() {};
+    ColorGradient(size_t buckets = 256) : m_numBuckets(buckets) {}
 
     /**
-     * @brief Returns three float values for the color of the given bucket
+     * @brief Destructor
+     */
+    virtual ~ColorGradient() = default;
+
+    /**
+     * @brief Returns three float values to represent the color of the given bucket
      *
      * @param color     The three color components
      * @param bucket    The bucket index
      * @param gradient  The type of gradient (default grey)
      */
-    void getColor(float* color, size_t bucket, GradientType gradient = GREY);
+    void getColor(RGBFColor& color, size_t bucket, GradientType gradient = ColorGradient::GREY) const;
+
+    /**
+     * @brief Returns three uint8_t values to represent the color of the given bucket
+     *
+     * @param color     The three color components
+     * @param bucket    The bucket index
+     * @param gradient  The type of gradient (default grey)
+     */
+    void getColor(RGB8Color& color, size_t bucket, GradientType gradient = ColorGradient::GREY) const;
+
+    /// Gets a gradient type from given string 
+    static GradientType gradientFromString(const std::string& string);
 
 private:
 
@@ -96,7 +110,7 @@ private:
      * @param g         Converted green component
      * @param b         Converted blue component
      */
-    void convertHSVToRGB(float hue, float s, float v, float &r, float &g, float &b);
+    void convertHSVToRGB(float hue, float s, float v, float &r, float &g, float &b) const;
 
     /**
      * @brief Returns a color from a gray gradient
@@ -104,7 +118,7 @@ private:
      * @param color     The three color components
      * @param bucket    The bucket index
      */
-    void calcColorGrey(float* color, size_t bucket);
+    void calcColorGrey(RGBFColor& color, size_t bucket) const;
 
     /**
      * @brief Returns a color from a HSV gradient
@@ -112,7 +126,7 @@ private:
      * @param color     The three color components
      * @param bucket    The bucket index
      */
-    void calcColorHSV(float* color, size_t bucket);
+    void calcColorHSV(RGBFColor& color, size_t bucket) const;
 
     /**
      * @brief Returns a color from a Jet gradient
@@ -120,7 +134,7 @@ private:
      * @param color     The three color components
      * @param bucket    The bucket index
      */
-    void calcColorJet(float* color, size_t bucket);
+    void calcColorJet(RGBFColor& color, size_t bucket) const;
 
     /**
      * @brief Returns a color from a hot gradient
@@ -128,7 +142,7 @@ private:
      * @param color     The three color components
      * @param bucket    The bucket index
      */
-    void calcColorHot(float* color, size_t bucket);
+    void calcColorHot(RGBFColor& color, size_t bucket) const;
 
     /**
      * @brief Returns a color from a SHSV gradient
@@ -136,7 +150,7 @@ private:
      * @param color     The three color components
      * @param bucket    The bucket index
      */
-    void calcColorSHSV(float* color, size_t bucket);
+    void calcColorSHSV(RGBFColor& color, size_t bucket) const;
 
     /**
          * @brief Returns a color from a Simpsons gradient
@@ -144,7 +158,7 @@ private:
          * @param color     The three color components
          * @param bucket    The bucket index
          */
-    void calcColorSimpsons(float* color, size_t bucket);
+    void calcColorSimpsons(RGBFColor& color, size_t bucket) const;
 
     /// Number of colors in the color gradient
     size_t      m_numBuckets;

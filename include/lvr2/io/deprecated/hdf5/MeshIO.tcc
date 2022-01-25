@@ -63,7 +63,7 @@ void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
         size_t numMaterials = buffer->getMaterials().size();
         boost::shared_array<int> textureHandles(new int[numMaterials]);
 
-        boost::shared_array<int16_t> rgb8Color(new int16_t[numMaterials * 3]);
+        boost::shared_array<int16_t> RGB8Color(new int16_t[numMaterials * 3]);
         lvr2::Material material;
         for (int i = 0; i < numMaterials; i++)
         {
@@ -74,15 +74,15 @@ void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
 
             if (material.m_color)
             {
-                rgb8Color.get()[3 * i    ] = static_cast<int16_t>(material.m_color.get()[0]);
-                rgb8Color.get()[3 * i + 1] = static_cast<int16_t>(material.m_color.get()[1]);
-                rgb8Color.get()[3 * i + 2] = static_cast<int16_t>(material.m_color.get()[2]);
+                RGB8Color.get()[3 * i    ] = static_cast<int16_t>(material.m_color.get()[0]);
+                RGB8Color.get()[3 * i + 1] = static_cast<int16_t>(material.m_color.get()[1]);
+                RGB8Color.get()[3 * i + 2] = static_cast<int16_t>(material.m_color.get()[2]);
             }
             else
             {
-                rgb8Color.get()[3 * i    ] = -1;
-                rgb8Color.get()[3 * i + 1] = -1;
-                rgb8Color.get()[3 * i + 2] = -1;
+                RGB8Color.get()[3 * i    ] = -1;
+                RGB8Color.get()[3 * i + 1] = -1;
+                RGB8Color.get()[3 * i + 2] = -1;
             }
         }
 
@@ -91,7 +91,7 @@ void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
         std::vector <size_t> dimensionsRgb{numMaterials, 3};
         std::vector <hsize_t> chunkRgb{numMaterials, 3};
         m_array_io->save(materialsGroup, "texture_handles", numMat, chunkMat, textureHandles);
-        m_array_io->save(materialsGroup, "rgb_color", dimensionsRgb, chunkRgb, rgb8Color);
+        m_array_io->save(materialsGroup, "rgb_color", dimensionsRgb, chunkRgb, RGB8Color);
     }
 }
 
@@ -226,7 +226,7 @@ MeshBufferPtr MeshIO<Derived>::load(HighFive::Group& group)
                     lvr2::Material nextMat;
                     if(materialColor.get()[i * 3] != -1)
                     {
-                        nextMat.m_color = boost::optional<lvr2::Rgb8Color>(
+                        nextMat.m_color = boost::optional<lvr2::RGB8Color>(
                                 {static_cast<uint8_t>(materialColor.get()[i * 3    ]),
                                  static_cast<uint8_t>(materialColor.get()[i * 3 + 1]),
                                  static_cast<uint8_t>(materialColor.get()[i * 3 + 2])});

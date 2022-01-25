@@ -422,8 +422,11 @@ int main(int argc, char** argv)
     // Finalize mesh
     // =======================================================================
     // Prepare color data for finalizing
+
+    ColorGradient::GradientType t = ColorGradient::gradientFromString(options.getClassifier());
+
     ClusterPainter painter(clusterBiMap);
-    auto clusterColors = boost::optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
+    auto clusterColors = boost::optional<DenseClusterMap<RGB8Color>>(painter.colorize(mesh, t));
     auto vertexColors = calcColorFromPointCloud(mesh, surface);
 
     // Calc normals for vertices
@@ -432,11 +435,6 @@ int main(int argc, char** argv)
     // Prepare finalize algorithm
     TextureFinalizer<Vec> finalize(clusterBiMap);
     finalize.setVertexNormals(vertexNormals);
-
-    // TODO:
-    // Vielleicht sollten indv. vertex und cluster colors mit in den Materializer aufgenommen werden
-    // Dafür spricht: alles mit Farben findet dann an derselben Stelle statt
-    // dagegen spricht: Materializer macht aktuell nur face colors und keine vertex colors
 
     // Vertex colors:
     // If vertex colors should be generated from pointcloud:

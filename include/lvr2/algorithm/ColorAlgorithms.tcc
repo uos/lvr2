@@ -41,7 +41,7 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-boost::optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
+boost::optional<DenseVertexMap<RGB8Color>> calcColorFromPointCloud(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurfacePtr<BaseVecT> surface
 )
@@ -52,7 +52,7 @@ boost::optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
         return boost::none;
     }
 
-    DenseVertexMap<Rgb8Color> vertexMap;
+    DenseVertexMap<RGB8Color> vertexMap;
     vertexMap.reserve(mesh.numVertices());
 
     // k-nearest-neighbors
@@ -91,7 +91,7 @@ boost::optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
     return vertexMap;
 }
 
-static Rgb8Color floatToRainbowColor(float value)
+static RGB8Color floatToRainbowColor(float value)
 {
     value = std::min(value, 1.0f);
     value = std::max(value, 0.0f);
@@ -135,7 +135,7 @@ static Rgb8Color floatToRainbowColor(float value)
     }
 }
 
-static Rgb8Color floatToGrayScaleColor(float value)
+static RGB8Color floatToGrayScaleColor(float value)
 {
     if(value > 1)
     {
@@ -156,7 +156,7 @@ static Rgb8Color floatToGrayScaleColor(float value)
 
 
 template<typename BaseVecT>
-Rgb8Color calcColorForFaceCentroid(
+RGB8Color calcColorForFaceCentroid(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurface<BaseVecT>& surface,
     FaceHandle faceH
@@ -185,7 +185,7 @@ Rgb8Color calcColorForFaceCentroid(
 
         // "Smooth" colors: convert 0:255 to 0:1, round to 2 decimal places, convert back
         // For better re-using of a single color later on
-        Rgb8Color color = {
+        RGB8Color color = {
             static_cast<uint8_t>((floor((((float)r)/255.0)*100.0+0.5)/100.0) * 255.0),
             static_cast<uint8_t>((floor((((float)g)/255.0)*100.0+0.5)/100.0) * 255.0),
             static_cast<uint8_t>((floor((((float)b)/255.0)*100.0+0.5)/100.0) * 255.0)
@@ -195,7 +195,7 @@ Rgb8Color calcColorForFaceCentroid(
     }
     else
     {
-        Rgb8Color color = {0,0,0};
+        RGB8Color color = {0,0,0};
         return color;
     }
 }

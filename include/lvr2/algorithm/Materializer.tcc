@@ -125,15 +125,15 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 
 
             // Calculate (a sorta-kinda not really) median value
-            std::map<Rgb8Color, int> colorMap;
+            std::map<RGB8Color, int> colorMap;
             int maxColorCount = 0;
-            Rgb8Color mostUsedColor;
+            RGB8Color mostUsedColor;
 
             // For each face ...
             for (auto faceH : cluster.handles)
             {
                 // Calculate color of centroid
-                Rgb8Color color = calcColorForFaceCentroid(m_mesh, m_surface, faceH);
+                RGB8Color color = calcColorForFaceCentroid(m_mesh, m_surface, faceH);
                 if (colorMap.count(color))
                 {
                     colorMap[color]++;

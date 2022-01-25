@@ -42,20 +42,23 @@ using std::array;
 
 #include "lvr2/geometry/Handles.hpp"
 #include "lvr2/util/ClusterBiMap.hpp"
+#include "lvr2/util/ColorGradient.hpp"
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/attrmaps/AttrMaps.hpp"
-#include "lvr2/algorithm/ColorAlgorithms.hpp"
 
 namespace lvr2
 {
 
 /**
- * @brief Algorithm which generates the same color for all vertices, which are in the same cluster.
+ * @brief Algorithm that assignd the same color for all 
+ *        vertices in a cluster.
  */
 class ClusterPainter
 {
 public:
-    ClusterPainter(const ClusterBiMap<FaceHandle>& clusterBiMap) : m_clusterBiMap(clusterBiMap) {};
+
+    ClusterPainter(const ClusterBiMap<FaceHandle>& clusterBiMap) : 
+        m_clusterBiMap(clusterBiMap) {}
 
     /**
      * @brief Assign a pseudo-color to each cluster.
@@ -63,25 +66,16 @@ public:
      * The color is deterministically determined by the cluster id.
      */
     template<typename BaseVecT>
-    DenseClusterMap<Rgb8Color> simpsons(const BaseMesh<BaseVecT>& mesh) const;
+    DenseClusterMap<RGB8Color> colorize(
+        const BaseMesh<BaseVecT>& mesh, 
+        ColorGradient::GradientType gradient = ColorGradient::GREY) const;
 
-private:
-    ClusterBiMap<FaceHandle> m_clusterBiMap;
-    inline Rgb8Color getSimpsonColorForIdx(size_t idx) const
-    {
-    //   return {
-    //       static_cast<uint8_t>(fabs(cos(idx)) * 255),
-    //       static_cast<uint8_t>(fabs(sin(idx * 30)) * 255),
-    //       static_cast<uint8_t>(fabs(sin(idx * 2)) * 255)
-    //   };
+protected:
+    /// Map of cluster handles
+    ClusterBiMap<FaceHandle>    m_clusterBiMap;
 
-     return {
-          static_cast<uint8_t>(128),
-          static_cast<uint8_t>(128),
-          static_cast<uint8_t>(128)
-      };
-
-    }
+    /// Color gradient to compute the cluster colors
+    ColorGradient               m_colorGradient;          
 };
 
 } // namespace lvr2

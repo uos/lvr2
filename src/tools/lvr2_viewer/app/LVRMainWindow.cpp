@@ -1053,7 +1053,7 @@ void LVRMainWindow::restoreSliders()
         color<bool> use_channel;
         size_t n_channels, gradient_channel;
         bool use_ndvi, normalize_gradient;
-        GradientType gradient_type;
+        ColorGradient::GradientType gradient_type;
 
         pointCloudItem->getPointBufferBridge()->getSpectralChannels(channels, use_channel);
         pointCloudItem->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
@@ -3454,7 +3454,7 @@ void LVRMainWindow::changeGradientColor()
 
     for(LVRPointCloudItem* item : items)
     {
-        item->getPointBufferBridge()->setSpectralColorGradient((GradientType)type, channel, normalized, useNDVI);
+        item->getPointBufferBridge()->setSpectralColorGradient((ColorGradient::GradientType)type, channel, normalized, useNDVI);
     }
     m_gradientLineEdit->setText(QString("%1").arg(wavelength));
     m_gradientSlider->setEnabled(!useNDVI);

@@ -44,7 +44,7 @@ struct Material
     /// Optional texture handle
     boost::optional<TextureHandle> m_texture;
     /// Optional color
-    boost::optional<Rgb8Color> m_color;
+    boost::optional<RGB8Color> m_color;
 };
 
 } // namespace lvr2
