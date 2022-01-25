@@ -479,8 +479,8 @@ __global__ void InterpolationKernel(const LBPointArray<float> D_kd_tree_values, 
     {
         // Interpolate to the Left
         int c = 0;
-        unsigned int offset = D_kd_tree_splits.width;
 
+        unsigned int offset = D_kd_tree_splits.width;
         unsigned int query_index = static_cast<unsigned int>(D_kd_tree_values.elements[offset + tid]+ 0.5);
         unsigned int nearest_index;
 
@@ -678,6 +678,7 @@ __device__ void calculateDistance(const float& x, const float& y, const float& z
     if(tid == 5)
     {
         printf("qp - nn: %f %f %f\n", vec_x, vec_y, vec_z);
+        printf("n: %f %f %f\n", n_x, n_y, n_z);
     }
 
     projected_distance = vec_x * n_x + vec_y * n_y + vec_z * n_z;
@@ -693,15 +694,16 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
 
     if(tid < qp_size)
     {
-        //k = 1;
-        if(tid == 5)
-        {
-            printf("TEEST\n");
-        }
+        // //k = 1;
+        // if(tid == 5)
+        // {
+        //     printf("TEEST\n");
+        // }
 
         unsigned int kd_pos;
-        // nearest neighbors;
-        unsigned int* nn = (unsigned int*)malloc(sizeof(unsigned int)*3*k );
+
+        // // nearest neighbors;
+        // unsigned int* nn = (unsigned int*)malloc(sizeof(unsigned int)*3*k );
 
         float qp_x = D_Query_Points[tid].m_position.x;
         float qp_y = D_Query_Points[tid].m_position.y;
@@ -709,24 +711,17 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
 
         getApproximatedKdTreePosition(D_kd_tree_values, D_kd_tree_splits, D_V,
                 qp_x,
-                 qp_y,
+                qp_y,
                 qp_z,
-                 kd_pos , tid );
+                kd_pos , tid );
 
-        getNNFromIndex(D_kd_tree_values,D_kd_tree_splits, kd_pos, nn, k);
+        //getNNFromIndex(D_kd_tree_values,D_kd_tree_splits, kd_pos, nn, k);
 
-        if(tid == 5)
-        {
-            printf("Query Point: %f %f %f\n",qp_x, qp_y, qp_z);
-            for(int i=0; i<k; i++)
-            {
-                printf("Nearest Point %d: %f %f %f\n",i, D_V.elements[ nn[i] * 3 + 0], D_V.elements[ nn[i] * 3 + 1],D_V.elements[ nn[i] * 3 + 2]);
-            }
+        unsigned int start = kd_pos - (k / 2);
+        unsigned int index_curr_nn = 0;
 
-        }
-
-        float projected_distance;
-        float euklidean_distance;
+        float projected_distance = 0.0;
+        float euklidean_distance = 0.0;
 
         float x = 0.0;
         float y = 0.0;
@@ -736,63 +731,97 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
         float n_y = 0.0;
         float n_z = 0.0;
 
-        float weight_sum = 0.0;
-        float gaussian_factor = 1.0;
-        for(int i=0; i<k; i++)
+        int c = 0;
+
+        unsigned int i_nn = 0;
+
+        for (unsigned int i = start; i_nn < k; i++, i_nn++)
         {
-            unsigned int point_position =  nn[i];
+            // if (i >= D_kd_tree_values.width)
+            // {
+            //     index_curr_nn = static_cast<unsigned int>(D_kd_tree_values.elements[D_kd_tree_values.width - 1] + 0.5);
+            // }
+            // else if (i < D_kd_tree_splits.width)
+            // {
+            //     index_curr_nn = static_cast<unsigned int>(D_kd_tree_values.elements[D_kd_tree_splits.width] + 0.5);         }
+            // else
+            // {
+            //     index_curr_nn = static_cast<unsigned int>(D_kd_tree_values.elements[i] + 0.5);
+            // }
+            
+            unsigned int index = index_curr_nn * 3;
 
-            //gaussian_factor = getGaussianFactor(i, k/2, k, 5.0);
-
-            weight_sum += gaussian_factor;
-
-            if(point_position > 0 && point_position < D_V.width)
+            if(index > 0 && index_curr_nn < D_V.width)
             {
-                x += gaussian_factor * D_V.elements[ point_position * 3 + 0];
-                y += gaussian_factor * D_V.elements[ point_position * 3 + 1];
-                z += gaussian_factor * D_V.elements[ point_position * 3 + 2];
+                x += D_V.elements[index + 0];
+                y += D_V.elements[index + 1];
+                z += D_V.elements[index + 2];
 
-                n_x += gaussian_factor * D_Normals.elements[ point_position * 3 + 0 ];
-                n_y += gaussian_factor * D_Normals.elements[ point_position * 3 + 1 ];
-                n_z += gaussian_factor * D_Normals.elements[ point_position * 3 + 2 ];
+                n_x += D_Normals.elements[index + 0];
+                n_y += D_Normals.elements[index + 1];
+                n_z += D_Normals.elements[index + 2];
+
+                if (tid == 5)
+                {
+                    printf("NN_Normal: %f %f %f\n", D_Normals.elements[index + 0], D_Normals.elements[index + 1], D_Normals.elements[index + 2]);
+                }
+
+                c++;
             }
-
         }
+
+        x = x / c;
+        y = y / c;
+        z = z / c;
+
+        // float n_norm = sqrt(n_x * n_x + n_y * n_y + n_z * n_z);
+
+        // n_x = n_x / n_norm;
+        // n_y = n_y / n_norm;
+        // n_z = n_z / n_norm;
 
         if(tid == 5)
         {
-            printf("Weight Sum: %f \n",weight_sum);
-            printf("Summed-up vector: %f %f %f\n", x, y, z);    
+            printf("Normalsum: %f %f %f\n", n_x, n_y, n_z);
         }
 
-        x = x / weight_sum;
-        y = y / weight_sum;
-        z = z / weight_sum;
+        n_x = n_x / c;
+        n_y = n_y / c;
+        n_z = n_z / c;
 
-        float n_norm = sqrt(n_x*n_x + n_y*n_y + n_z*n_z );
+        calculateDistance(x, y, z, n_x, n_y, n_z, qp_x, qp_y, qp_z, euklidean_distance, projected_distance, tid);
 
-        n_x = n_x / n_norm;
-        n_y = n_y / n_norm;
-        n_z = n_z / n_norm;
-
-        calculateDistance(x, y, z, n_x, n_y, n_z, qp_x, qp_y, qp_z, euklidean_distance, projected_distance, tid );
-
-        D_Query_Points[tid].m_distance = projected_distance;
         D_Query_Points[tid].m_invalid = false;
+        D_Query_Points[tid].m_distance = projected_distance;
 
-        // if (euklidean_distance > 2 * 1.7320 * voxel_size)
+        // if(tid == 5)
         // {
-        //     D_Query_Points[tid].m_invalid = true;
+        //     printf("Query Point: %f %f %f\n",qp_x, qp_y, qp_z);
+        //     for(int i=0; i<k; i++)
+        //     {
+        //         printf("Nearest Point %d: %f %f %f\n",i, D_V.elements[ nn[i] * 3 + 0], D_V.elements[ nn[i] * 3 + 1],D_V.elements[ nn[i] * 3 + 2]);
+        //     }
+
         // }
 
+    
+
+
+        // if(tid == 5)
+        // {
+        //     printf("Weight Sum: %f \n",weight_sum);
+        //     printf("Summed-up vector: %f %f %f\n", x, y, z);    
+        // }
+
+
+
         if(tid == 5)
         {
+            printf("C: %d\n", c);
             printf("Projected Distance: %f\n", projected_distance);
             printf("Euklidean Distance: %f\n", euklidean_distance);
             printf("Distance in Kernel: %f\n", D_Query_Points[tid].m_distance);
         }
-
-        free(nn);
 
     }
 
@@ -1084,11 +1113,11 @@ void CudaSurface::setReconstructionMode(bool mode)
 
 void CudaSurface::distances(std::vector<QueryPoint<Vec> >& query_points, float voxel_size)
 {
-    std::cout << "Calculate Distances..." << std::endl;
-    std::cout << "Size of entry" << int(sizeof(query_points[0]) ) << std::endl;
-    std::cout << "Example query point: " << query_points[5].m_position.x << "|" << query_points[5].m_position.y << "|" << query_points[5].m_position.z << std::endl;
-    std::cout << "Distance: " << query_points[5].m_distance << std::endl;
-    std::cout << "Invalid: " << query_points[5].m_invalid << std::endl;
+    // std::cout << "Calculate Distances..." << std::endl;
+    // std::cout << "Size of entry" << int(sizeof(query_points[0]) ) << std::endl;
+    // std::cout << "Example query point: " << query_points[5].m_position.x << "|" << query_points[5].m_position.y << "|" << query_points[5].m_position.z << std::endl;
+    // std::cout << "Distance: " << query_points[5].m_distance << std::endl;
+    // std::cout << "Invalid: " << query_points[5].m_invalid << std::endl;
 
     // thrust::device_vector< QueryPointC > d_query_points = query_points;
 
@@ -1120,11 +1149,11 @@ void CudaSurface::distances(std::vector<QueryPoint<Vec> >& query_points, float v
         }
     }
 
-    std::cout << "Num invalid: " << num_invalid << std::endl;
-    std::cout << "Example query point: " << query_points[5].m_position.x << "|" << query_points[5].m_position.y << "|" << query_points[5].m_position.z << std::endl;
-    std::cout << "Distance: " << query_points[5].m_distance << std::endl;
-    std::cout << "Invalid: " << query_points[5].m_invalid << std::endl;
-    std::cout << "Distance Calculation finished" << std::endl;
+    // std::cout << "Num invalid: " << num_invalid << std::endl;
+    // std::cout << "Example query point: " << query_points[5].m_position.x << "|" << query_points[5].m_position.y << "|" << query_points[5].m_position.z << std::endl;
+    // std::cout << "Distance: " << query_points[5].m_distance << std::endl;
+    // std::cout << "Invalid: " << query_points[5].m_invalid << std::endl;
+    // std::cout << "Distance Calculation finished" << std::endl;
 }
 
 

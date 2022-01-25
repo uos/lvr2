@@ -547,18 +547,23 @@ namespace lvr2
                     gpu_surface.calculateNormals();
                     gpu_surface.getNormals(normals);
 
-                    auto query_points = ps_grid->getQueryPoints();
+                    auto& query_points = ps_grid->getQueryPoints();
 
                     std::cout << timestamp << "Computing distances on GPU..." << std::endl;
                     gpu_surface.distances(query_points, m_voxelSizes[h]);
                     std::cout << timestamp << "Done." << std::endl;
 
+                    // for(auto i : query_points)
+                    // {
+                    //      cout << i.m_distance << endl;
+                    // }
+
                     p_loader_reduced->setNormalArray(normals, num_points);
                     gpu_surface.freeGPU();
     #else
-
                         std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
                         surface->calculateSurfaceNormals();
+                        ps_grid->calcDistanceValues();
     #endif
                     }
                     else
