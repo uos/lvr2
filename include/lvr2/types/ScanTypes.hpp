@@ -577,8 +577,8 @@ struct ScanProjectEditMark
     ScanProjectEditMark() = default;
     ScanProjectEditMark(ScanProjectPtr _project):project(project){}
     ScanProjectPtr project;
-    HDF5KernelPtr kernel;
-    HDF5SchemaPtr schema;
+    FileKernelPtr kernel;
+    ScanProjectSchemaPtr schema;
     
     /// True if scan pose has been changed, one bool for each scan position
     std::vector<bool> changed;
