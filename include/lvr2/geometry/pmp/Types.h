@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 
 #include "MatVec.h"
 
@@ -52,13 +53,8 @@ typedef Vector<Scalar, 3> Color;
 typedef Vector<Scalar, 2> TexCoord;
 
 // define index type to be used
-#ifdef PMP_INDEX_TYPE_64
-typedef std::uint_least64_t IndexType;
-#define PMP_MAX_INDEX UINT_LEAST64_MAX
-#else
-typedef std::uint_least32_t IndexType;
-#define PMP_MAX_INDEX UINT_LEAST32_MAX
-#endif
+typedef uint32_t IndexType;
+constexpr IndexType PMP_MAX_INDEX = std::numeric_limits<IndexType>::max();
 
 //! Common IO flags for reading and writing
 struct IOFlags

@@ -48,6 +48,9 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
     size_t numFaces = ptr->numFaces();
     size_t numVertices = ptr->numVertices();
 
+    size_t expected_edges = (numFaces + numVertices) * 1.1; // Euler's formula + extra just to be safe
+    m_mesh.reserve(numVertices, expected_edges, numFaces);
+
     auto vertices = ptr->getVertices();
     size_t i = 0;
     auto src_vertices = vertices.get();
@@ -101,7 +104,17 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
         VertexHandle v0(src_indices[0]);
         VertexHandle v1(src_indices[1]);
         VertexHandle v2(src_indices[2]);
-        addFace(v0, v1, v2);
+        try
+        {
+            addFace(v0, v1, v2);
+        }
+        catch (pmp::TopologyException& e)
+        {}
+    }
+
+    if (this->numFaces() < numFaces)
+    {
+        std::cout << "Warning: " << numFaces - this->numFaces() << " faces could not be added." << std::endl;
     }
 
     if (ptr->hasFaceNormals())

@@ -26,9 +26,9 @@
  */
 
 /**
- * B3dmWriter.hpp
+ * Segmenter.hpp
  *
- * @date   24.01.2022
+ * @date   03.02.2022
  * @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
@@ -36,40 +36,29 @@
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
-#include "Segmenter.hpp"
-
-#include <boost/filesystem.hpp>
 
 namespace lvr2
 {
 
-/**
- * @brief converts mesh to b3dm format and writes it to a file
- *
- * @param filename the name of the file to write to
- * @param mesh the mesh to convert
- * @param bb the bounding box of the mesh
- * @param num_vertices the number of vertices in this segment
- * @param segments the segments of the mesh to write
- */
-void write_b3dm_segment(const boost::filesystem::path& filename,
-                        const PMPMesh<BaseVector<float>>& mesh,
-                        const pmp::BoundingBox& bb,
-                        size_t num_faces,
-                        const std::vector<bool>& segments);
+constexpr uint32_t INVALID_SEGMENT = std::numeric_limits<uint32_t>::max();
+
+struct Segment
+{
+    uint32_t id = INVALID_SEGMENT;
+    size_t num_faces = 0;
+    pmp::BoundingBox bb;
+};
 
 /**
- * @brief converts mesh to b3dm format and writes it to a file
+ * @brief partitions and indexes all connected regions of a mesh
  *
- * @param filename the name of the file to write to
- * @param mesh the mesh to convert
- * @param bb the bounding box of the mesh
+ * Writes the index of each partition into the properties "v:segment" for vertices and "f:segment"
+ * for faces. Both are of uint32_t.
+ *
+ * @param input_mesh the mesh to partition
+ * @param out_segments a vector to store the segments in
  */
-inline void write_b3dm(const boost::filesystem::path& filename,
-                       const PMPMesh<BaseVector<float>>& mesh,
-                       const pmp::BoundingBox& bb)
-{
-    write_b3dm_segment(filename, mesh, bb, mesh.numFaces(), std::vector<bool>());
-}
+void segment_mesh(PMPMesh<BaseVector<float>>& input_mesh,
+                  std::vector<Segment>& out_segments);
 
 } // namespace lvr2

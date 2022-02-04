@@ -26,50 +26,76 @@
  */
 
 /**
- * B3dmWriter.hpp
+ * Segmenter.cpp
  *
- * @date   24.01.2022
+ * @date   03.02.2022
  * @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
-#pragma once
-
-#include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/geometry/PMPMesh.hpp"
 #include "Segmenter.hpp"
-
-#include <boost/filesystem.hpp>
 
 namespace lvr2
 {
 
-/**
- * @brief converts mesh to b3dm format and writes it to a file
- *
- * @param filename the name of the file to write to
- * @param mesh the mesh to convert
- * @param bb the bounding box of the mesh
- * @param num_vertices the number of vertices in this segment
- * @param segments the segments of the mesh to write
- */
-void write_b3dm_segment(const boost::filesystem::path& filename,
-                        const PMPMesh<BaseVector<float>>& mesh,
-                        const pmp::BoundingBox& bb,
-                        size_t num_faces,
-                        const std::vector<bool>& segments);
-
-/**
- * @brief converts mesh to b3dm format and writes it to a file
- *
- * @param filename the name of the file to write to
- * @param mesh the mesh to convert
- * @param bb the bounding box of the mesh
- */
-inline void write_b3dm(const boost::filesystem::path& filename,
-                       const PMPMesh<BaseVector<float>>& mesh,
-                       const pmp::BoundingBox& bb)
+void segment_mesh(PMPMesh<BaseVector<float>>& input_mesh,
+                  std::vector<Segment>& out_segments)
 {
-    write_b3dm_segment(filename, mesh, bb, mesh.numFaces(), std::vector<bool>());
+    out_segments.clear();
+
+    auto& mesh = input_mesh.getSurfaceMesh();
+
+    auto f_prop = mesh.face_property<uint32_t>("f:segment", INVALID_SEGMENT);
+
+    std::vector<FaceHandle> queue;
+
+    for (auto fH : mesh.faces())
+    {
+        if (f_prop[fH] != INVALID_SEGMENT)
+        {
+            continue;
+        }
+
+        // start new segment
+        Segment segment;
+        segment.id = out_segments.size();
+
+        f_prop[fH] = segment.id;
+        segment.num_faces++;
+        queue.push_back(fH);
+
+        while (!queue.empty())
+        {
+            FaceHandle fH = queue.back();
+            queue.pop_back();
+
+            for (auto heH : mesh.halfedges(fH))
+            {
+                segment.bb += mesh.position(mesh.to_vertex(heH));
+
+                FaceHandle ofH = mesh.face(mesh.opposite_halfedge(heH));
+                if (ofH.is_valid() && f_prop[ofH] != segment.id)
+                {
+                    f_prop[ofH] = segment.id;
+                    segment.num_faces++;
+                    queue.push_back(ofH);
+                }
+            }
+        }
+
+        out_segments.push_back(segment);
+    }
+
+    // consistency check
+    size_t total_faces = 0;
+    for (auto& segment : out_segments)
+    {
+        total_faces += segment.num_faces;
+    }
+    if (total_faces != mesh.n_faces())
+    {
+        throw std::runtime_error(std::string("Segmenter: inconsistent number of faces: ") +
+                                 std::to_string(total_faces) + " != " + std::to_string(mesh.n_faces()));
+    }
 }
 
 } // namespace lvr2

@@ -10,6 +10,7 @@ endif()
 set(TILES_SOURCES
     Main.cpp
     B3dmWriter.cpp
+    Segmenter.cpp
 )
 
 #####################################################################################

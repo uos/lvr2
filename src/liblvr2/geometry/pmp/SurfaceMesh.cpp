@@ -294,6 +294,22 @@ Face SurfaceMesh::add_face(const std::vector<Vertex>& vertices)
     next_cache.reserve(3 * n);
 
     // test for topological errors
+    for (i = 0; i < n; ++i)
+    {
+        if (!is_valid(vertices[i]))
+        {
+            auto what = "SurfaceMesh::add_face: Invalid vertex.";
+            throw TopologyException(what);
+        }
+        for (ii = i + 1; ii < n; ++ii)
+        {
+            if (vertices[i] == vertices[ii])
+            {
+                auto what = "SurfaceMesh::add_face: Duplicate vertices in face.";
+                throw TopologyException(what);
+            }
+        }
+    }
     for (i = 0, ii = 1; i < n; ++i, ++ii, ii %= n)
     {
         if (!is_boundary(vertices[i]))

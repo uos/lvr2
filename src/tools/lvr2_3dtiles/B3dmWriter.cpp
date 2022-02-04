@@ -34,8 +34,6 @@
 
 #include "B3dmWriter.hpp"
 
-#include "lvr2/algorithm/pmp/SurfaceNormals.h"
-
 #include <CesiumGltf/Model.h>
 #include <CesiumGltfWriter/GltfWriter.h>
 
@@ -122,11 +120,23 @@ inline void write_uint32(std::ofstream& file, uint32_t value)
     file.write(reinterpret_cast<char*>(&value), sizeof(uint32_t));
 }
 
-
-void write_b3dm(const boost::filesystem::path& filename, PMPMesh<BaseVector<float>>& mesh, pmp::BoundingBox& bb)
+uint32_t get_or_insert(DenseVertexMap<uint32_t>& map, VertexHandle vH, uint32_t& next_index)
 {
-    std::cout << timestamp << "Writing " << filename << std::endl;
+    uint32_t& entry = map[vH];
+    if (entry == std::numeric_limits<uint32_t>::max())
+    {
+        entry = next_index++;
+    }
+    return entry;
+}
 
+
+void write_b3dm_segment(const boost::filesystem::path& filename,
+                        const PMPMesh<BaseVector<float>>& mesh,
+                        const pmp::BoundingBox& bb,
+                        size_t num_faces,
+                        const std::vector<bool>& segments)
+{
     std::ofstream file(filename, std::ios::binary);
     if (!file)
     {
@@ -159,90 +169,42 @@ void write_b3dm(const boost::filesystem::path& filename, PMPMesh<BaseVector<floa
     auto& buffer = raw_buffer.cesium.data;
 
     auto& surface_mesh = mesh.getSurfaceMesh();
-    size_t num_vertices = surface_mesh.n_vertices();
 
-    // vertices might have been deleted, so map from VertexHandle to buffer index
-    DenseVertexMap<size_t> vertex_id_map(surface_mesh.vertices_size());
+    // vertices might have been deleted and segments aren't in order, so map from VertexHandle to buffer index
+    DenseVertexMap<uint32_t> vertex_id_map(surface_mesh.vertices_size(), std::numeric_limits<uint32_t>::max());
 
-    if (!surface_mesh.has_vertex_property("v:normal"))
+    uint32_t num_vertices = 0;
+
+    // Add face indices
     {
-        pmp::SurfaceNormals::compute_vertex_normals(surface_mesh);
-    }
-    const auto& normals = surface_mesh.get_vertex_property<pmp::Normal>("v:normal");
+        bool has_segments = !segments.empty();
+        const auto& f_segment = surface_mesh.get_face_property<uint32_t>("f:segment");
 
-    bool has_color = surface_mesh.has_vertex_property("v:color");
-    const auto& colors = surface_mesh.get_vertex_property<pmp::Color>("v:color"); // might be invalid
-
-    bool has_tex = surface_mesh.has_vertex_property("v:tex");
-    const auto& tex = surface_mesh.get_vertex_property<pmp::TexCoord>("v:tex"); // might be invalid
-
-    {
-        size_t vertex_byte_offset = add_vertex_attribute(buffer, model, primitive, "POSITION", num_vertices, bb.min(), bb.max());
-
-        size_t normal_byte_offset = add_vertex_attribute(buffer, model, primitive, "NORMAL", num_vertices, pmp::Point(-1, -1, -1), pmp::Point(1, 1, 1));
-
-        size_t color_byte_offset;
-        if (has_color)
-        {
-            color_byte_offset = add_vertex_attribute(buffer, model, primitive, "COLOR_0", num_vertices, pmp::Color(0, 0, 0), pmp::Color(1, 1, 1));
-        }
-
-        size_t tex_byte_offset;
-        if (has_tex)
-        {
-            tex_byte_offset = add_vertex_attribute<2>(buffer, model, primitive, "TEXCOORD_0", num_vertices, pmp::TexCoord(0, 0), pmp::TexCoord(1, 1));
-        }
-
-        float* vertex_out = (float*)(buffer.data() + vertex_byte_offset);
-        float* normals_out = (float*)(buffer.data() + normal_byte_offset);
-        float* colors_out = nullptr;
-        float* tex_out = nullptr;
-        if (has_color)
-        {
-            colors_out = (float*)(buffer.data() + color_byte_offset);
-        }
-        if (has_tex)
-        {
-            tex_out = (float*)(buffer.data() + tex_byte_offset);
-        }
-
-        auto it = surface_mesh.vertices_begin();
-        for (size_t i = 0; i < num_vertices; ++i, ++it)
-        {
-            vertex_id_map[*it] = i;
-            std::copy_n(surface_mesh.position(*it).data(), 3, vertex_out);
-            vertex_out += 3;
-
-            std::copy_n(normals[*it].data(), 3, normals_out);
-            normals_out += 3;
-
-            if (has_color)
-            {
-                std::copy_n(colors[*it].data(), 3, colors_out);
-                colors_out += 3;
-            }
-
-            if (has_tex)
-            {
-                std::copy_n(tex[*it].data(), 2, tex_out);
-                tex_out += 2;
-            }
-        }
-    }
-
-    {
-        size_t num_triangles = mesh.numFaces();
         size_t byte_offset = buffer.size();
-        size_t byte_length = num_triangles * 3 * sizeof(uint32_t);
+        size_t byte_length = num_faces * 3 * sizeof(uint32_t);
         buffer.resize(byte_offset + byte_length);
         uint32_t* out = (uint32_t*)(buffer.data() + byte_offset);
-        for (const auto fH : surface_mesh.faces())
+        size_t count = 0;
+        for (auto fH : surface_mesh.faces())
         {
+            if (has_segments && !segments[f_segment[fH]])
+            {
+                continue;
+            }
+            if (++count > num_faces)
+            {
+                continue;
+            }
             auto vertex_iter = mesh.getSurfaceMesh().vertices(fH);
-            out[0] = vertex_id_map[*vertex_iter];
-            out[1] = vertex_id_map[*(++vertex_iter)];
-            out[2] = vertex_id_map[*(++vertex_iter)];
+            out[0] = get_or_insert(vertex_id_map, *vertex_iter, num_vertices);
+            out[1] = get_or_insert(vertex_id_map, *(++vertex_iter), num_vertices);
+            out[2] = get_or_insert(vertex_id_map, *(++vertex_iter), num_vertices);
             out += 3;
+        }
+        if (count != num_faces)
+        {
+            std::cerr << "Expected " << num_faces << " faces, but found " << count << std::endl;
+            return;
         }
 
         auto [ buffer_view_id, buffer_view ] = push_and_get_index(model.bufferViews);
@@ -253,13 +215,83 @@ void write_b3dm(const boost::filesystem::path& filename, PMPMesh<BaseVector<floa
 
         auto [ accessor_id, accessor ] = push_and_get_index(model.accessors);
         accessor.bufferView = buffer_view_id;
-        accessor.count = num_triangles * 3;
+        accessor.count = num_faces * 3;
         accessor.componentType = CesiumGltf::Accessor::ComponentType::UNSIGNED_INT;
         accessor.type = CesiumGltf::Accessor::Type::SCALAR;
         accessor.min = { 0 };
         accessor.max = { (double)num_vertices - 1 };
 
         primitive.indices = accessor_id;
+    }
+
+    // Add vertices and attributes
+    {
+        size_t vertex_byte_offset = add_vertex_attribute(buffer, model, primitive, "POSITION", num_vertices, bb.min(), bb.max());
+
+        bool has_normal = surface_mesh.has_vertex_property("v:normal");
+        const auto& normals = surface_mesh.get_vertex_property<pmp::Normal>("v:normal");
+        size_t normal_byte_offset;
+        if (has_normal)
+        {
+            normal_byte_offset = add_vertex_attribute(buffer, model, primitive, "NORMAL", num_vertices, pmp::Point(-1, -1, -1), pmp::Point(1, 1, 1));
+        }
+
+        bool has_color = surface_mesh.has_vertex_property("v:color");
+        const auto& colors = surface_mesh.get_vertex_property<pmp::Color>("v:color");
+        size_t color_byte_offset;
+        if (has_color)
+        {
+            color_byte_offset = add_vertex_attribute(buffer, model, primitive, "COLOR_0", num_vertices, pmp::Color(0, 0, 0), pmp::Color(1, 1, 1));
+        }
+
+        bool has_tex = surface_mesh.has_vertex_property("v:tex");
+        const auto& tex = surface_mesh.get_vertex_property<pmp::TexCoord>("v:tex");
+        size_t tex_byte_offset;
+        if (has_tex)
+        {
+            tex_byte_offset = add_vertex_attribute<2>(buffer, model, primitive, "TEXCOORD_0", num_vertices, pmp::TexCoord(0, 0), pmp::TexCoord(1, 1));
+        }
+
+        float* vertex_out = (float*)(buffer.data() + vertex_byte_offset);
+        float* normals_out = nullptr;
+        float* colors_out = nullptr;
+        float* tex_out = nullptr;
+        if (has_normal)
+        {
+            normals_out = (float*)(buffer.data() + normal_byte_offset);
+        }
+        if (has_color)
+        {
+            colors_out = (float*)(buffer.data() + color_byte_offset);
+        }
+        if (has_tex)
+        {
+            tex_out = (float*)(buffer.data() + tex_byte_offset);
+        }
+
+        for (auto vH : surface_mesh.vertices())
+        {
+            uint32_t index = vertex_id_map[vH];
+            if (index == std::numeric_limits<uint32_t>::max())
+            {
+                continue;
+            }
+
+            std::copy_n(surface_mesh.position(vH).data(), 3, vertex_out + 3 * index);
+
+            if (has_normal)
+            {
+                std::copy_n(normals[vH].data(), 3, normals_out + 3 * index);
+            }
+            if (has_color)
+            {
+                std::copy_n(colors[vH].data(), 3, colors_out + 3 * index);
+            }
+            if (has_tex)
+            {
+                std::copy_n(tex[vH].data(), 2, tex_out + 2 * index);
+            }
+        }
     }
 
     CesiumGltfWriter::GltfWriter writer;

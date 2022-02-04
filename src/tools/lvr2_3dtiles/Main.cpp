@@ -35,11 +35,15 @@
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
+#include "lvr2/geometry/pmp/SurfaceMeshIO.h"
+#include "lvr2/algorithm/pmp/SurfaceNormals.h"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "B3dmWriter.hpp"
+#include "Segmenter.hpp"
 
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
 #include <Cesium3DTiles/Tileset.h>
 #include <Cesium3DTiles/Tile.h>
@@ -50,35 +54,144 @@ using namespace Cesium3DTiles;
 
 using boost::filesystem::path;
 
+void convert_bounding_box(const pmp::BoundingBox& in, Cesium3DTiles::BoundingVolume& out)
+{
+    auto center = in.center();
+    auto half_vector = in.max() - center;
+    out.box =
+    {
+        center.x(), center.y(), center.z(),
+        half_vector.x(), 0, 0,
+        0, half_vector.y(), 0,
+        0, 0, half_vector.z()
+    };
+}
+
+void write_segments(const PMPMesh<BaseVector<float>>& input_mesh,
+                    std::vector<Segment>& segments,
+                    Tile& root,
+                    const path& output_dir,
+                    size_t max_num_faces);
+
 int main(int argc, char** argv)
 {
-    if (argc < 2)
+    path input_file;
+    path output_dir;
+    bool calc_normals = false;
+    bool segment = false;
+    size_t max_faces_per_leaf;
+
+    try
     {
-        std::cerr << "Usage: " << argv[0] << " <input_file> [<output_directory>]" << std::endl;
-        return 1;
+        using namespace boost::program_options;
+
+        bool help = false;
+
+        options_description options("General Options");
+        options.add_options()
+        ("calcNormals,N", bool_switch(&calc_normals),
+         "Calculate normals if there are none in the input")
+
+        ("segment,s", bool_switch(&segment),
+         "Segment the mesh into connected regions")
+
+        ("maxFacesPerLeaf", value<size_t>(&max_faces_per_leaf)->default_value(100'000),
+         "Maximum number of faces per leaf")
+
+        ("help,h", bool_switch(&help),
+         "Print this message here")
+        ;
+
+        options_description hidden_options("hidden_options");
+        hidden_options.add_options()
+        ("input_file", value<path>(&input_file))
+        ("output_dir", value<path>(&output_dir))
+        ;
+
+        positional_options_description pos;
+        pos.add("input_file", 1);
+        pos.add("output_dir", 1);
+
+        options_description all_options("options");
+        all_options.add(options).add(hidden_options);
+
+        variables_map variables;
+        store(command_line_parser(argc, argv).options(all_options).positional(pos).run(), variables);
+        notify(variables);
+
+        if (help)
+        {
+            std::cout << "The Scan Registration Tool" << std::endl;
+            std::cout << "Usage: " << std::endl;
+            std::cout << "\tlvr2_3dtiles [OPTIONS] <input_file> [<output_dir>]" << std::endl;
+            std::cout << std::endl;
+            options.print(std::cout);
+            std::cout << std::endl;
+            std::cout << "<input_file> is the file where the input mesh is stored" << std::endl;
+            std::cout << "<output_dir> is the directory to create the output in. Should be empty" << std::endl;
+            return EXIT_SUCCESS;
+        }
+
+        if (variables.count("input_file") != 1)
+        {
+            throw error("Missing <input_file> Parameter");
+        }
+
+        if (variables.count("output_dir") == 0)
+        {
+            output_dir = "chunk.3dtiles";
+        }
+    }
+    catch (const boost::program_options::error& ex)
+    {
+        std::cerr << ex.what() << std::endl;
+        std::cerr << std::endl;
+        std::cerr << "Use '--help' to see the list of possible options" << std::endl;
+        return EXIT_FAILURE;
     }
 
-    std::cout << timestamp << "Reading model " << argv[1] << std::endl;
-    ModelPtr model = ModelFactory::readModel(argv[1]);
-    if (!model)
+    std::cout << timestamp << "Reading mesh " << input_file << std::endl;
+    PMPMesh<BaseVector<float>> mesh;
+    try
     {
-        std::cerr << "Error reading model" << std::endl;
-        return 1;
+        pmp::SurfaceMeshIO io(input_file.string(), pmp::IOFlags());
+        io.read(mesh.getSurfaceMesh());
     }
-    if (!model->m_mesh)
+    catch (std::exception& e)
     {
-        std::cerr << "Model has no mesh" << std::endl;
-        return 1;
-    }
-    PMPMesh<BaseVector<float>> mesh(model->m_mesh);
+        std::cerr << "SurfaceMeshIO failed: " << e.what() << std::endl;
+        std::cout << "Trying ModelFactory next" << std::endl;
 
-    path outpath(argc >= 3 ? argv[2] : "chunk.3dtiles");
-    if (!boost::filesystem::exists(outpath))
-    {
-        boost::filesystem::create_directories(outpath);
+        ModelPtr model = ModelFactory::readModel(input_file.string());
+        if (!model)
+        {
+            std::cerr << "Error reading model" << std::endl;
+            return EXIT_FAILURE;
+        }
+        if (!model->m_mesh)
+        {
+            std::cerr << "Model has no mesh" << std::endl;
+            return EXIT_FAILURE;
+        }
+        std::cout << timestamp << "Converting to PMPMesh" << std::endl;
+        mesh = PMPMesh<BaseVector<float>>(model->m_mesh);
     }
-    path tileset_file = outpath / "tileset.json";
-    path mesh_file = "mesh.b3dm";
+
+    auto& surface_mesh = mesh.getSurfaceMesh();
+
+    if (calc_normals)
+    {
+        std::cout << timestamp << "Calculating normals" << std::endl;
+        pmp::SurfaceNormals::compute_vertex_normals(surface_mesh);
+    }
+
+    std::cout << timestamp << "Creating 3D Tiles" << std::endl;
+
+    if (!boost::filesystem::exists(output_dir))
+    {
+        boost::filesystem::create_directories(output_dir);
+    }
+    path tileset_file = output_dir / "tileset.json";
 
     Cesium3DTiles::Tileset tileset;
     tileset.geometricError = 500.0;
@@ -95,22 +208,28 @@ int main(int argc, char** argv)
         1215107.7612304366, -4736682.902037748, 4081926.095098698, 1
     };
 
-    pmp::BoundingBox bb = mesh.getSurfaceMesh().bounds();
-    auto center = bb.center();
-    auto half_vector = bb.max() - center;
-    root.boundingVolume.box =
+    pmp::BoundingBox bb = surface_mesh.bounds();
+    convert_bounding_box(bb, root.boundingVolume);
+
+    if (segment)
     {
-        center.x(), center.y(), center.z(),
-        half_vector.x(), 0, 0,
-        0, half_vector.y(), 0,
-        0, 0, half_vector.z()
-    };
+        std::cout << timestamp << "Segmenting mesh" << std::endl;
+        std::vector<Segment> segments;
+        segment_mesh(mesh, segments);
+        std::cout << timestamp << "Segmented mesh into " << segments.size() << " parts" << std::endl;
 
-    write_b3dm(outpath / mesh_file, mesh, bb);
+        write_segments(mesh, segments, root, output_dir, max_faces_per_leaf);
+    }
+    else
+    {
+        path mesh_file = "mesh.b3dm";
+        std::cout << timestamp << "Writing " << mesh_file << std::endl;
+        write_b3dm(output_dir / mesh_file, mesh, bb);
 
-    Cesium3DTiles::Content content;
-    content.uri = mesh_file.string();
-    root.content = content;
+        Cesium3DTiles::Content content;
+        content.uri = mesh_file.string();
+        root.content = content;
+    }
 
     Cesium3DTilesWriter::TilesetWriter writer;
     auto result = writer.writeTileset(tileset);
@@ -130,7 +249,7 @@ int main(int argc, char** argv)
         {
             std::cerr << e << std::endl;
         }
-        return 1;
+        return EXIT_FAILURE;
     }
 
     std::cout << timestamp << "Writing " << tileset_file << std::endl;
@@ -141,4 +260,82 @@ int main(int argc, char** argv)
     std::cout << timestamp << "Finished" << std::endl;
 
     return 0;
+}
+
+void split_recursive(Segment* start,
+                     Segment* end,
+                     std::string current_path,
+                     Tile& tile,
+                     const PMPMesh<BaseVector<float>>& input_mesh,
+                     const path& output_dir,
+                     size_t num_segments,
+                     size_t max_num_faces)
+{
+    size_t n = end - start;
+    if (n == 0)
+    {
+        return;
+    }
+
+    pmp::BoundingBox bb;
+    size_t num_faces = 0;
+    for (auto it = start; it != end; ++it)
+    {
+        bb += it->bb;
+        num_faces += it->num_faces;
+    }
+
+    tile.geometricError = num_faces;
+    tile.refine = Cesium3DTiles::Tile::Refine::ADD;
+    convert_bounding_box(bb, tile.boundingVolume);
+
+    if (num_faces < max_num_faces || n == 1)
+    {
+        // leaf node
+        std::vector<bool> segments(num_segments, false);
+        for (auto it = start; it != end; ++it)
+        {
+            segments[it->id] = true;
+        }
+        std::string segment_name = current_path + ".b3dm";
+        path segment_file = output_dir / segment_name;
+
+        write_b3dm_segment(segment_file, input_mesh, bb, num_faces, segments);
+
+        Cesium3DTiles::Content content;
+        content.uri = segment_name;
+        tile.content = content;
+    }
+    else
+    {
+        pmp::Point size = bb.max() - bb.min();
+        size_t longest_axis = std::max_element(size.data(), size.data() + 3) - size.data();
+
+        Segment* mid = start + n / 2;
+        std::nth_element(start, mid, end, [longest_axis](const Segment & a, const Segment & b)
+        {
+            return a.bb.center()[longest_axis] < b.bb.center()[longest_axis];
+        });
+
+        constexpr char NAME[3][2] = { { 'x', 'X' }, { 'y', 'Y' }, { 'z', 'Z' } };
+
+        tile.children.resize(2);
+        split_recursive(start, mid, current_path + NAME[longest_axis][0], tile.children[0], input_mesh, output_dir, num_segments, max_num_faces);
+        split_recursive(mid, end, current_path + NAME[longest_axis][1], tile.children[1], input_mesh, output_dir, num_segments, max_num_faces);
+    }
+}
+
+void write_segments(const PMPMesh<BaseVector<float>>& input_mesh,
+                    std::vector<Segment>& segments,
+                    Tile& root,
+                    const path& output_dir,
+                    size_t max_num_faces)
+{
+    if (boost::filesystem::exists(output_dir / "segments"))
+    {
+        boost::filesystem::remove_all(output_dir / "segments");
+    }
+    boost::filesystem::create_directories(output_dir / "segments");
+
+    split_recursive(segments.data(), segments.data() + segments.size(), "segments/t", root, input_mesh, output_dir, segments.size(), max_num_faces);
 }
