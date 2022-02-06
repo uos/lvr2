@@ -34,7 +34,6 @@ struct convert<lvr2::HyperspectralCamera>
         node["type"] = lvr2::HyperspectralCamera::type;
         node["name"] = camera.name;
         node["transformation"] = camera.transformation;
-        node["model"] = camera.model;
 
 
         return node;
@@ -82,6 +81,9 @@ struct convert<lvr2::HyperspectralCamera>
         } else {
             std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
                 << "WARNING: Hyperspectral camera has no sensor model in meta file." << std::endl;
+        if(node["sensor_name"])
+        {
+            camera.name = node["sensor_name"].as<decltype(camera.name)>();
         }
 
         return true;
@@ -137,10 +139,14 @@ struct convert<lvr2::HyperspectralPanorama>
             return false;
         }
 
-        if(node["transformation"])
-        {
-            pano.transformation = node["transformation"].as<lvr2::Transformd>();
-        }
+        // if(node["type"] && node["type"].as<std::string>() != lvr2::HyperspectralPanorama::type)
+        // {
+        //     // different hierarchy level
+        //     std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralPanorama> - decode] " 
+        //                 << "Nodes type '" << node["type"].as<std::string>()
+        //                 << "' is not '" <<  lvr2::HyperspectralPanorama::type << "'" << std::endl; 
+        //     return false;
+        // }
 
         if(node["frames_resolution"])
         {
@@ -154,32 +160,14 @@ struct convert<lvr2::HyperspectralPanorama>
             pano.bandAxis = node["band_axis"].as<unsigned int>();
         }
 
-        if(node["frame_axis"])
-        {
-            pano.frameAxis = node["frame_axis"].as<unsigned int>();
+        if(node["width"]) {
+            pano.resolution[0] = node["width"].as<size_t>();
         }
 
-        if(node["data_type"])
-        {
-            pano.dataType = node["data_type"].as<std::string>();
+        if(node["height"]) {
+            pano.resolution[1] = node["height"].as<size_t>();
         }
-
-        if(node["panorama_resolution"])
-        {
-            pano.panoramaResolution[0] = node["panorama_resolution"][0].as<unsigned int>();
-            pano.panoramaResolution[1] = node["panorama_resolution"][1].as<unsigned int>();
-            pano.panoramaResolution[2] = node["panorama_resolution"][1].as<unsigned int>();
-        }
-
-        if(node["model"])
-        {
-            pano.model = node["model"].as<lvr2::CylindricalModel>();
-        }
-
-        if(node["preview_type"])
-        {
-            pano.previewType = node["preview_type"].as<std::string>();
-        }
+    
 
         return true;
     }

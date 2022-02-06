@@ -6,9 +6,10 @@
 #include <memory>
 #include "MatrixTypes.hpp"
 
-namespace lvr2 {
+namespace lvr2
+{
 
-/**
+    /**
  * @brief Interface for all CameraModels e.g. projection Models
  * 
  * Could be used to interface functions like 
@@ -17,85 +18,86 @@ namespace lvr2 {
  * - etc
  * 
  */
-struct CameraModel 
-{
-    static constexpr char           entity[] = "model";
-    // /**
-    //  * @brief Project point from camera coordinate system (3D) onto image coordinate system (2D)
-    //  * 
-    //  * @param p 
-    //  * @return Eigen::Vector2d 
-    //  */
-    // virtual Eigen::Vector2d projectPoint(const Eigen::Vector3d& P) const 
-    // {
-    //     Eigen::Vector2d pixel;
-    //     return pixel;
-    // }
-};
+    struct CameraModel
+    {
+        static constexpr char entity[] = "model";
+        // /**
+        //  * @brief Project point from camera coordinate system (3D) onto image coordinate system (2D)
+        //  *
+        //  * @param p
+        //  * @return Eigen::Vector2d
+        //  */
+        // virtual Eigen::Vector2d projectPoint(const Eigen::Vector3d& P) const
+        // {
+        //     Eigen::Vector2d pixel;
+        //     return pixel;
+        // }
+    };
 
-struct PinholeModel : CameraModel
-{
-    static constexpr char           type[] = "pinhole";
+    struct PinholeModel : CameraModel
+    {
+        static constexpr char type[] = "pinhole";
 
-    double fx = 0;
-    double fy = 0;
-    double cx = 0;
-    double cy = 0;
-    unsigned width = 0;
-    unsigned height = 0;
-    
-    /// Distortion
-    std::vector<double> distortionCoefficients;
-    std::string distortionModel = "opencv";
-};
+        double fx = 0;
+        double fy = 0;
+        double cx = 0;
+        double cy = 0;
+        unsigned width = 0;
+        unsigned height = 0;
 
-using PinholeModelPtr = std::shared_ptr<PinholeModel>;
-using PinholeModelOptional = boost::optional<PinholeModel>;
+        /// Distortion
+        std::vector<double> distortionCoefficients;
+        std::string distortionModel = "opencv";
+    };
 
-struct CylindricalModel : CameraModel 
-{
-    static constexpr char           type[] = "cylindrical";
+    using PinholeModelPtr = std::shared_ptr<PinholeModel>;
+    using PinholeModelOptional = boost::optional<PinholeModel>;
 
-    /// Principal x, y
-    Vector2d                        principal;
+    struct CylindricalModel : CameraModel
+    {
+        static constexpr char type[] = "cylindrical";
 
-    /// Focal Length fx, fy
-    Vector2d                        focalLength;
+        /// Principal x, y
+        std::vector<double> principal;
 
-    /// FoV
-    Vector2d                        fov;
+        /// Focal Length fx, fy
+        std::vector<double> focalLength;
 
-    /// Distortion
-    std::vector<double>             distortionCoefficients;
-    std::string                     distortionModel = "schneider_maass";
-};
+        /// FoV
+        std::vector<double> fov;
 
-using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;
-using CylindricalModelOptional = boost::optional<CylindricalModel>;
+        /// Distortion
+        std::vector<double> distortionCoefficients;
+        std::string distortionModel = "schneider_maass";
+        std::vector<double> distortion;
+    };
 
-struct SphericalModel : CameraModel {
-    static constexpr char           type[] = "spherical";
+    using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;
+    using CylindricalModelOptional = boost::optional<CylindricalModel>;
 
-    /// Phi: min, max, inc
-    double                          phi[3] = {0.0, 0.0, 0.0};
+    struct SphericalModel : CameraModel
+    {
+        static constexpr char type[] = "spherical";
 
-    /// Theta: min, max, inc
-    double                          theta[3] = {0.0, 0.0, 0.0};
+        /// Phi: min, max, inc
+        double phi[3] = {0.0, 0.0, 0.0};
 
-    /// Range: min, max, inc
-    double                          range[3] = {0.0, 0.0, 0.0};
+        /// Theta: min, max, inc
+        double theta[3] = {0.0, 0.0, 0.0};
 
-    /// Principal x, y, z
-    Vector3d                        principal = Vector3d(0.0, 0.0, 0.0);
+        /// Range: min, max, inc
+        double range[3] = {0.0, 0.0, 0.0};
 
-    /// Distortion
-    std::vector<double>             distortionCoefficients;
-    std::string                     distortionModel = "unknown";
-};
+        /// Principal x, y, z
+        Vector3d principal = Vector3d(0.0, 0.0, 0.0);
 
-using SphericalModelPtr = std::shared_ptr<SphericalModel>;
-using SphericalModelOptional = boost::optional<SphericalModel>;
+        /// Distortion
+        std::vector<double> distortionCoefficients;
+        std::string distortionModel = "unknown";
+    };
 
+    using SphericalModelPtr = std::shared_ptr<SphericalModel>;
+    using SphericalModelOptional = boost::optional<SphericalModel>;
 
 } // namespace lvr2
 

@@ -37,6 +37,7 @@
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/display/TexturedMesh.hpp"
 #include "lvr2/display/GlTexture.hpp"
+#include "lvr2/display/ColorMap.hpp"
 
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -71,6 +72,7 @@ public:
     MeshBufferPtr getMeshBuffer();
     void setVisibility(bool visible);
     void setShading(int shader);
+    void setColorGradient(GradientType gradient);
 
     size_t									getNumColoredFaces();
     size_t									getNumTexturedFaces();
@@ -88,6 +90,8 @@ protected:
     size_t							m_numColoredFaces;
     size_t							m_numTexturedFaces;
     size_t							m_numTextures;
+
+    GradientType                    m_colorGradient = GradientType::SOLID;
 
     void computeMaterialGroups(vector<MaterialGroup*>& matGroups, vector<MaterialGroup*>& colorMatGroups);
     void remapTexturedIndices(MaterialGroup* g, vector<Vec >& vertices, vector<Vec >& texCoords, vector<int>& indices);

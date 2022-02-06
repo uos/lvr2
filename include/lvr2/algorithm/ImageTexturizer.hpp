@@ -38,7 +38,7 @@
 #include "lvr2/algorithm/Texturizer.hpp"
 #include "lvr2/geometry/Normal.hpp"
 
-#include "lvr2/registration/TransformUtils.hpp"
+#include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 

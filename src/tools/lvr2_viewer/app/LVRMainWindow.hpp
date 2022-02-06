@@ -34,6 +34,7 @@
 #ifndef MAINWINDOW_HPP_
 #define MAINWINDOW_HPP_
 
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include <vtkSmartPointer.h>
 #include <vtkCamera.h>
 #include <vtkCameraRepresentation.h>
@@ -191,6 +192,8 @@ public Q_SLOTS:
     void showErrorDialog();
     /// Shows a Popup Dialog with the average Intensity per Spectral Channel
     void showHistogramDialog();
+    void loadTexture();
+    void generateTexture();
     void renameModelItem();
     void estimateNormals();
     void reconstructUsingMarchingCubes();
@@ -387,6 +390,7 @@ private:
     QAction*                            m_actionShowSpectralColorGradient;
     QAction*                            m_actionShowSpectralPointPreview;
     QAction*                            m_actionShowSpectralHistogram;
+    QAction*                            m_actionShowSpectralIndexSelect;
     // Sliders below tree widget
     QSlider*                            m_horizontalSliderPointSize;
     QSlider*                            m_horizontalSliderTransparency;
@@ -438,6 +442,10 @@ private:
     LVRPickingInteractor*               m_pickingInteractor;
     LVRLabelInteractorStyle*		m_labelInteractor; 
     LVRTreeWidgetHelper*                m_treeWidgetHelper;
+
+    MeshBufferPtr                      m_meshBuffer;
+    ModelBridgePtr                    m_modelBridge;
+    std::string                       m_hdf5FileName;
 
 #ifdef LVR2_USE_VTK8
     QVTKOpenGLWidget* qvtkWidget;

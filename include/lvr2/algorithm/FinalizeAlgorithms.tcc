@@ -323,7 +323,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
                 auto texOptional = m_materializerResult.get()
                     .m_textures.get()
                     .get(texHandle);
-                const Texture& texture = texOptional.get();
+                Texture texture = texOptional.get();
                 int textureIndex = texture.m_index;
 
                 // Material for this texture already created?
@@ -336,7 +336,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
                 {
                     // No: create material with texture
                     materials.push_back(m);
-                    textures.push_back(texture);
+                    //textures.push_back(std::move(texture));
                     textureMaterialMap[textureIndex] = globalMaterialIndex;
                     materialIndex = globalMaterialIndex;
                     globalMaterialIndex++;
@@ -429,6 +429,15 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 
     if (m_materializerResult)
     {
+        // Copy all the textures if they exist
+        if (m_materializerResult->m_textures)
+        {
+            for (auto texH: m_materializerResult->m_textures.get())
+            {
+                textures.push_back(m_materializerResult->m_textures.get()[texH]);
+            }
+        }
+
         vector<Material> &mats = buffer->getMaterials();
         vector<Texture> &texts = buffer->getTextures();
         mats.insert(mats.end(), materials.begin(), materials.end());

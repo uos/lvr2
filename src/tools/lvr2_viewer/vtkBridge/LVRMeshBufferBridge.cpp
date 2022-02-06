@@ -273,6 +273,11 @@ namespace lvr2
         m_meshActor->SetProperty(p);
     }
 
+    void LVRMeshBufferBridge::setColorGradient(GradientType gradient)
+    {
+        m_colorGradient = gradient;
+    }
+
     vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getWireframeActor()
     {
         return m_wireframeActor;
@@ -599,6 +604,7 @@ namespace lvr2
 #else
         data->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
 #endif
+        ColorMap c_map(255);
         int c = 0;
         for(int i = 0; i < h; i++)
         {
@@ -606,9 +612,25 @@ namespace lvr2
             {
                 unsigned char* pixel = static_cast<unsigned char*>(data->GetScalarPointer(i,j,0));
                 size_t index = numChannels * numBytesPerChan * c;
-                pixel[0] = texData[index                      ];
-                pixel[1] = texData[index + 1 * numBytesPerChan];
-                pixel[2] = texData[index + 2 * numBytesPerChan];
+                if(m_colorGradient == GradientType::SOLID) {
+                    pixel[0] = texData[index                      ];
+                    pixel[1] = texData[index + 1 * numBytesPerChan];
+                    pixel[2] = texData[index + 2 * numBytesPerChan];
+                } else {
+                    // if the selected color gradient is not SOLID, use the color gradient for the textures
+                    float pixelColors[3] = {};
+                    c_map.getColor(pixelColors, texData[index], m_colorGradient);
+                    unsigned char newColors[3] = {
+                        static_cast<unsigned char>(pixelColors[0] * 255),
+                        static_cast<unsigned char>(pixelColors[1] * 255),
+                        static_cast<unsigned char>(pixelColors[2] * 255)
+                    };
+                
+                    pixel[0] = newColors[0];
+                    pixel[1] = newColors[1];
+                    pixel[2] = newColors[2];
+                }
+                
                 c++;
             }
         }

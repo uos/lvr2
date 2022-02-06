@@ -13,7 +13,7 @@ template<typename FeatureBase>
 class ImageIO {
 public:
 
-    void save(      
+    void save(
         std::string groupName, 
         std::string datasetName, 
         const cv::Mat& img

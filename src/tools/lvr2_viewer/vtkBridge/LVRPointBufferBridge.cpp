@@ -123,6 +123,10 @@ void LVRPointBufferBridge::refreshSpectralChannel()
     size_t n_channels;
     ucharArr spec = m_pointBuffer->getUCharArray("spectral_channels", n, n_channels);
 
+    if(!spec) {
+        spec = m_pointBuffer->getUCharArray("spectral", n, n_channels);
+    }
+
     // check if we have spectral data
     if (!spec)
     {
@@ -186,6 +190,10 @@ void LVRPointBufferBridge::refreshSpectralGradient()
     size_t n;
     size_t n_channels;
     ucharArr spec = m_pointBuffer->getUCharArray("spectral_channels", n, n_channels);
+
+    if (!spec) {
+        spec = m_pointBuffer->getUCharArray("spectral", n, n_channels);
+    }
 
     // check if we have spectral data
     if (!spec)

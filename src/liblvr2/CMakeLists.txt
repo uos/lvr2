@@ -76,6 +76,8 @@ set(LVR2_SOURCES
     io/scanio/ScanProjectSchema.cpp
     io/scanio/HDF5Kernel.cpp
     # io/scanio/HDF5MetaDescriptionV2.cpp
+    io/meshio/MeshSchemaDirectory.cpp
+    io/meshio/MeshSchemaHDF5.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp

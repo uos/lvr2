@@ -31,6 +31,8 @@
 #include <boost/optional.hpp>
 #include "lvr2/algorithm/ColorAlgorithms.hpp"
 #include "lvr2/geometry/Handles.hpp"
+#include <map>
+#include <string>
 
 namespace lvr2
 {
@@ -41,10 +43,14 @@ namespace lvr2
  */
 struct Material
 {
+    using LayerMap = std::map<std::string, TextureHandle>;
+
     /// Optional texture handle
     boost::optional<TextureHandle> m_texture;
     /// Optional color
-    boost::optional<RGB8Color> m_color;
+    boost::optional<Rgb8Color> m_color;
+    /// Map from texture layer to texture
+    LayerMap m_layers;
 };
 
 } // namespace lvr2
