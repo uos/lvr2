@@ -145,6 +145,17 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         auto lidar = hdf5IO.LIDARIO::load(options.getScanPositionIndex(), 0);
         ScanPtr scan = lidar->scans.at(0);
 
+        if (!scan->loaded() && scan->loadable())
+        {
+            scan->load();
+        }
+        else
+        {
+            std::cout << timestamp << "[Main - loadPointCloud] Unable to load points of scan " << 0 << std::endl;
+        }
+
+        
+
         buffer = scan->points;
     }
     else {

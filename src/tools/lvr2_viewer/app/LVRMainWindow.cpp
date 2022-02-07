@@ -3275,30 +3275,7 @@ void LVRMainWindow::loadTexture()
 
     m_modelBridge->removeActors(m_renderer);
     m_modelBridge->removeTexturedActors(m_renderer);
-    // get gradient from ui combobox
-    std::string gradient = this->comboBox_colorMap_load->currentText().toStdString();
-    GradientType gradientType = GradientType::SOLID;
-    if(gradient == "Default")
-    {
-        gradientType = GradientType::SOLID;
-    } else if(gradient == "HSV")
-    {
-        gradientType = GradientType::HSV;
-    } else if(gradient == "Jet")
-    {
-        gradientType = GradientType::JET;
-    } else if(gradient == "Hot")
-    {
-        gradientType = GradientType::HOT;
-    } else if(gradient == "SHSV")
-    {
-        gradientType = GradientType::SHSV;
-    } else if(gradient == "Simpsons")
-    {
-        gradientType = GradientType::SIMPSONS;
-    }
 
-    model->m_colorGradient = gradientType;
     ModelBridgePtr bridge(new LVRModelBridge(model));
     bridge->addActors(m_renderer);
     m_modelBridge = bridge;
@@ -3386,32 +3363,10 @@ void LVRMainWindow::generateTexture()
     // remove the old meshActor
     m_modelBridge->removeActors(m_renderer);
     m_modelBridge->removeTexturedActors(m_renderer);
-    // get gradient from ui combobox
-    std::string gradient = this->comboBox_colorMap_gen->currentText().toStdString();
-    GradientType gradientType = GradientType::SOLID;
-    if(gradient == "Default")
-    {
-        gradientType = GradientType::SOLID;
-    } else if(gradient == "HSV")
-    {
-        gradientType = GradientType::HSV;
-    } else if(gradient == "Jet")
-    {
-        gradientType = GradientType::JET;
-    } else if(gradient == "Hot")
-    {
-        gradientType = GradientType::HOT;
-    } else if(gradient == "SHSV")
-    {
-        gradientType = GradientType::SHSV;
-    } else if(gradient == "Simpsons")
-    {
-        gradientType = GradientType::SIMPSONS;
-    }
+    
 
     // Create new meshActor
     ModelPtr model = ModelPtr(new Model(meshBuffer));
-    model->m_colorGradient = gradientType;
     ModelBridgePtr bridge(new LVRModelBridge(model));
     bridge->addActors(m_renderer);
     m_modelBridge = bridge;

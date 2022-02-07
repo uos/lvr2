@@ -55,7 +55,7 @@ LVRModelBridge::LVRModelBridge(ModelPtr model) :
     m_pose.y = 0.0;
     m_pose.z = 0.0;
     if(validMeshBridge()) {
-        m_meshBridge->setColorGradient(model->m_colorGradient);
+
         if (!m_meshBridge->hasTextures())
         {
             m_meshBridge->getMeshActor()->GetProperty()->BackfaceCullingOff();
