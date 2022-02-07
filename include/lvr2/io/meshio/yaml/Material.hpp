@@ -6,9 +6,9 @@
 namespace YAML {
 
 template<>
-struct convert<lvr2::Rgb8Color> 
+struct convert<lvr2::RGB8Color> 
 {
-    static Node encode(const lvr2::Rgb8Color& color) 
+    static Node encode(const lvr2::RGB8Color& color) 
     {
         
         Node node;
@@ -19,7 +19,7 @@ struct convert<lvr2::Rgb8Color>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::Rgb8Color& color) 
+    static bool decode(const Node& node, lvr2::RGB8Color& color) 
     {
         if (!node["r"])
         {
@@ -62,7 +62,7 @@ struct convert<lvr2::Material>
         }
         else
         {
-            node["color"] = lvr2::Rgb8Color({255, 255, 255});
+            node["color"] = lvr2::RGB8Color({255, 255, 255});
         }
         
 
@@ -78,7 +78,7 @@ struct convert<lvr2::Material>
             return false;
         }
 
-        lvr2::Rgb8Color color = node["color"].as<lvr2::Rgb8Color>();
+        lvr2::RGB8Color color = node["color"].as<lvr2::RGB8Color>();
         material.m_color = color;
 
         return true;

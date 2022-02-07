@@ -52,9 +52,9 @@
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
 #include "lvr2/algorithm/Materializer.hpp"
 #include "lvr2/algorithm/Texturizer.hpp"
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp" // Has to be included before anything includes opencv stuff, see https://github.com/flann-lib/flann/issues/214 
 #include "lvr2/algorithm/SpectralTexturizer.hpp"
 
-#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/BilinearFastBox.hpp"
 #include "lvr2/reconstruction/TetraederBox.hpp"
 #include "lvr2/reconstruction/FastReconstruction.hpp"

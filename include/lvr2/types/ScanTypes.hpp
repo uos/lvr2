@@ -418,7 +418,7 @@ namespace lvr2
         static constexpr char kind[] = "SpectralImage";
 
         /// Camera model
-        CylindricalModel model;
+        //CylindricalModel model;
 
         /// preview generated from channels (optional: check if preview.empty())
         // cv::Mat                                        preview;

@@ -37,7 +37,6 @@
 
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/display/ColorMap.hpp"
 
 #include <boost/shared_ptr.hpp>
 
@@ -80,9 +79,6 @@ public:
 
     PointBufferPtr         m_pointCloud;
     MeshBufferPtr          m_mesh;
-
-    GradientType                    m_colorGradient = GradientType::SOLID;
-    
 };
 
 using ModelPtr = std::shared_ptr<Model>;

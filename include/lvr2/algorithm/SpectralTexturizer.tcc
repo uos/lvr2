@@ -1,4 +1,5 @@
 #include <math.h>
+#include "lvr2/util/Panic.hpp"
 
 namespace lvr2
 {
@@ -76,14 +77,19 @@ TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
 template<typename BaseVecT>
 void SpectralTexturizer<BaseVecT>::init_image_data(HyperspectralPanoramaPtr pano, int channelIndex)
 {
-    // Init camera parameters
-    principal_point = Vector2d(pano->model.principal[0], pano->model.principal[1]);
-    focal_length = Vector2d(pano->model.focalLength[0], pano->model.focalLength[1]);
-    camera_fov = Vector2d(pano->model.fov[0], pano->model.fov[1]);
-
-    for(size_t i = 0; i < pano->model.distortion.size(); i++)
+    if (!pano->model)
     {
-        distortions.push_back(pano->model.distortion[i]);
+        panic("Hyperspectral Panorama not set! Cannot continue!");
+    }
+
+    // Init camera parameters
+    principal_point = Vector2d(pano->model->principal[0], pano->model->principal[1]);
+    focal_length = Vector2d(pano->model->focalLength[0], pano->model->focalLength[1]);
+    camera_fov = Vector2d(pano->model->fov[0], pano->model->fov[1]);
+
+    for(size_t i = 0; i < pano->model->distortion.size(); i++)
+    {
+        distortions.push_back(pano->model->distortion[i]);
     }
     
     // init panorama channel image
