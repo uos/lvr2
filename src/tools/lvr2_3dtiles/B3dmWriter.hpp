@@ -56,7 +56,8 @@ void write_b3dm_segment(const boost::filesystem::path& filename,
                         const PMPMesh<BaseVector<float>>& mesh,
                         const pmp::BoundingBox& bb,
                         size_t num_faces,
-                        const std::vector<bool>& segments);
+                        size_t num_vertices,
+                        uint32_t segment_id);
 
 /**
  * @brief converts mesh to b3dm format and writes it to a file
@@ -69,7 +70,7 @@ inline void write_b3dm(const boost::filesystem::path& filename,
                        const PMPMesh<BaseVector<float>>& mesh,
                        const pmp::BoundingBox& bb)
 {
-    write_b3dm_segment(filename, mesh, bb, mesh.numFaces(), std::vector<bool>());
+    write_b3dm_segment(filename, mesh, bb, mesh.numFaces(), mesh.numVertices(), std::numeric_limits<uint32_t>::max());
 }
 
 } // namespace lvr2

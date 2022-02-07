@@ -46,6 +46,7 @@ struct Segment
 {
     uint32_t id = INVALID_SEGMENT;
     size_t num_faces = 0;
+    size_t num_vertices = 0;
     pmp::BoundingBox bb;
 };
 

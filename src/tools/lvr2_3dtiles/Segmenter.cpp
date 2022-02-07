@@ -45,12 +45,13 @@ void segment_mesh(PMPMesh<BaseVector<float>>& input_mesh,
     auto& mesh = input_mesh.getSurfaceMesh();
 
     auto f_prop = mesh.face_property<uint32_t>("f:segment", INVALID_SEGMENT);
+    auto v_prop = mesh.vertex_property<uint32_t>("v:segment", INVALID_SEGMENT);
 
-    std::vector<FaceHandle> queue;
+    std::vector<VertexHandle> queue;
 
-    for (auto fH : mesh.faces())
+    for (auto vH : mesh.vertices())
     {
-        if (f_prop[fH] != INVALID_SEGMENT)
+        if (v_prop[vH] != INVALID_SEGMENT)
         {
             continue;
         }
@@ -59,25 +60,30 @@ void segment_mesh(PMPMesh<BaseVector<float>>& input_mesh,
         Segment segment;
         segment.id = out_segments.size();
 
-        f_prop[fH] = segment.id;
-        segment.num_faces++;
-        queue.push_back(fH);
+        v_prop[vH] = segment.id;
+        queue.push_back(vH);
 
         while (!queue.empty())
         {
-            FaceHandle fH = queue.back();
+            VertexHandle vH = queue.back();
             queue.pop_back();
+            segment.num_vertices++;
+            segment.bb += mesh.position(vH);
 
-            for (auto heH : mesh.halfedges(fH))
+            for (auto heH : mesh.halfedges(vH))
             {
-                segment.bb += mesh.position(mesh.to_vertex(heH));
-
-                FaceHandle ofH = mesh.face(mesh.opposite_halfedge(heH));
-                if (ofH.is_valid() && f_prop[ofH] != segment.id)
+                VertexHandle ovH = mesh.to_vertex(heH);
+                if (v_prop[ovH] == INVALID_SEGMENT)
                 {
-                    f_prop[ofH] = segment.id;
+                    v_prop[ovH] = segment.id;
+                    queue.push_back(ovH);
+                }
+
+                FaceHandle fH = mesh.face(heH);
+                if (fH.is_valid() && f_prop[fH] == INVALID_SEGMENT)
+                {
+                    f_prop[fH] = segment.id;
                     segment.num_faces++;
-                    queue.push_back(ofH);
                 }
             }
         }
@@ -87,14 +93,21 @@ void segment_mesh(PMPMesh<BaseVector<float>>& input_mesh,
 
     // consistency check
     size_t total_faces = 0;
+    size_t total_vertices = 0;
     for (auto& segment : out_segments)
     {
         total_faces += segment.num_faces;
+        total_vertices += segment.num_vertices;
     }
     if (total_faces != mesh.n_faces())
     {
         throw std::runtime_error(std::string("Segmenter: inconsistent number of faces: ") +
                                  std::to_string(total_faces) + " != " + std::to_string(mesh.n_faces()));
+    }
+    if (total_vertices != mesh.n_vertices())
+    {
+        throw std::runtime_error(std::string("Segmenter: inconsistent number of vertices: ") +
+                                 std::to_string(total_vertices) + " != " + std::to_string(mesh.n_vertices()));
     }
 }
 

@@ -120,22 +120,13 @@ inline void write_uint32(std::ofstream& file, uint32_t value)
     file.write(reinterpret_cast<char*>(&value), sizeof(uint32_t));
 }
 
-uint32_t get_or_insert(DenseVertexMap<uint32_t>& map, VertexHandle vH, uint32_t& next_index)
-{
-    uint32_t& entry = map[vH];
-    if (entry == std::numeric_limits<uint32_t>::max())
-    {
-        entry = next_index++;
-    }
-    return entry;
-}
-
 
 void write_b3dm_segment(const boost::filesystem::path& filename,
                         const PMPMesh<BaseVector<float>>& mesh,
                         const pmp::BoundingBox& bb,
                         size_t num_faces,
-                        const std::vector<bool>& segments)
+                        size_t num_vertices,
+                        uint32_t segment_id)
 {
     std::ofstream file(filename, std::ios::binary);
     if (!file)
@@ -171,61 +162,13 @@ void write_b3dm_segment(const boost::filesystem::path& filename,
     auto& surface_mesh = mesh.getSurfaceMesh();
 
     // vertices might have been deleted and segments aren't in order, so map from VertexHandle to buffer index
-    DenseVertexMap<uint32_t> vertex_id_map(surface_mesh.vertices_size(), std::numeric_limits<uint32_t>::max());
-
-    uint32_t num_vertices = 0;
-
-    // Add face indices
-    {
-        bool has_segments = !segments.empty();
-        const auto& f_segment = surface_mesh.get_face_property<uint32_t>("f:segment");
-
-        size_t byte_offset = buffer.size();
-        size_t byte_length = num_faces * 3 * sizeof(uint32_t);
-        buffer.resize(byte_offset + byte_length);
-        uint32_t* out = (uint32_t*)(buffer.data() + byte_offset);
-        size_t count = 0;
-        for (auto fH : surface_mesh.faces())
-        {
-            if (has_segments && !segments[f_segment[fH]])
-            {
-                continue;
-            }
-            if (++count > num_faces)
-            {
-                continue;
-            }
-            auto vertex_iter = mesh.getSurfaceMesh().vertices(fH);
-            out[0] = get_or_insert(vertex_id_map, *vertex_iter, num_vertices);
-            out[1] = get_or_insert(vertex_id_map, *(++vertex_iter), num_vertices);
-            out[2] = get_or_insert(vertex_id_map, *(++vertex_iter), num_vertices);
-            out += 3;
-        }
-        if (count != num_faces)
-        {
-            std::cerr << "Expected " << num_faces << " faces, but found " << count << std::endl;
-            return;
-        }
-
-        auto [ buffer_view_id, buffer_view ] = push_and_get_index(model.bufferViews);
-        buffer_view.buffer = buffer_id;
-        buffer_view.byteOffset = byte_offset;
-        buffer_view.byteLength = byte_length;
-        buffer_view.target = CesiumGltf::BufferView::Target::ELEMENT_ARRAY_BUFFER;
-
-        auto [ accessor_id, accessor ] = push_and_get_index(model.accessors);
-        accessor.bufferView = buffer_view_id;
-        accessor.count = num_faces * 3;
-        accessor.componentType = CesiumGltf::Accessor::ComponentType::UNSIGNED_INT;
-        accessor.type = CesiumGltf::Accessor::Type::SCALAR;
-        accessor.min = { 0 };
-        accessor.max = { (double)num_vertices - 1 };
-
-        primitive.indices = accessor_id;
-    }
+    std::vector<uint32_t> vertex_id_map(surface_mesh.vertices_size(), std::numeric_limits<uint32_t>::max());
 
     // Add vertices and attributes
     {
+        bool has_segments = segment_id != std::numeric_limits<uint32_t>::max();
+        const auto& v_segment = surface_mesh.get_vertex_property<uint32_t>("v:segment");
+
         size_t vertex_byte_offset = add_vertex_attribute(buffer, model, primitive, "POSITION", num_vertices, bb.min(), bb.max());
 
         bool has_normal = surface_mesh.has_vertex_property("v:normal");
@@ -252,6 +195,8 @@ void write_b3dm_segment(const boost::filesystem::path& filename,
             tex_byte_offset = add_vertex_attribute<2>(buffer, model, primitive, "TEXCOORD_0", num_vertices, pmp::TexCoord(0, 0), pmp::TexCoord(1, 1));
         }
 
+        // it is important that all calls to add_vertex_attribute are done before buffer.data() is
+        // used, in case the buffer is reallocated
         float* vertex_out = (float*)(buffer.data() + vertex_byte_offset);
         float* normals_out = nullptr;
         float* colors_out = nullptr;
@@ -269,29 +214,89 @@ void write_b3dm_segment(const boost::filesystem::path& filename,
             tex_out = (float*)(buffer.data() + tex_byte_offset);
         }
 
+        uint32_t next_index = 0;
         for (auto vH : surface_mesh.vertices())
         {
-            uint32_t index = vertex_id_map[vH];
-            if (index == std::numeric_limits<uint32_t>::max())
+            if (has_segments && v_segment[vH] != segment_id)
             {
                 continue;
             }
+            uint32_t index = next_index++;
+            vertex_id_map[vH.idx()] = index;
 
-            std::copy_n(surface_mesh.position(vH).data(), 3, vertex_out + 3 * index);
+            std::copy_n(surface_mesh.position(vH).data(), 3, vertex_out);
+            vertex_out += 3;
 
             if (has_normal)
             {
-                std::copy_n(normals[vH].data(), 3, normals_out + 3 * index);
+                std::copy_n(normals[vH].data(), 3, normals_out);
+                normals_out += 3;
             }
             if (has_color)
             {
-                std::copy_n(colors[vH].data(), 3, colors_out + 3 * index);
+                std::copy_n(colors[vH].data(), 3, colors_out);
+                colors_out += 3;
             }
             if (has_tex)
             {
-                std::copy_n(tex[vH].data(), 2, tex_out + 2 * index);
+                std::copy_n(tex[vH].data(), 2, tex_out);
+                tex_out += 2;
             }
         }
+        if (next_index != num_vertices)
+        {
+            std::cerr << "Expected " << num_vertices << " vertices, but found " << next_index << std::endl;
+            return;
+        }
+    }
+
+    // Add face indices
+    {
+        bool has_segments = segment_id != std::numeric_limits<uint32_t>::max();
+        const auto& f_segment = surface_mesh.get_face_property<uint32_t>("f:segment");
+
+        size_t byte_offset = buffer.size();
+        size_t byte_length = num_faces * 3 * sizeof(uint32_t);
+        buffer.resize(byte_offset + byte_length);
+        uint32_t* out = (uint32_t*)(buffer.data() + byte_offset);
+        size_t count = 0;
+        for (auto fH : surface_mesh.faces())
+        {
+            if (has_segments && f_segment[fH] != segment_id)
+            {
+                continue;
+            }
+            if (++count > num_faces)
+            {
+                continue;
+            }
+            auto vertex_iter = mesh.getSurfaceMesh().vertices(fH);
+            out[0] = vertex_id_map[(*vertex_iter).idx()];
+            out[1] = vertex_id_map[(*(++vertex_iter)).idx()];
+            out[2] = vertex_id_map[(*(++vertex_iter)).idx()];
+            out += 3;
+        }
+        if (count != num_faces)
+        {
+            std::cerr << "Expected " << num_faces << " faces, but found " << count << std::endl;
+            return;
+        }
+
+        auto [ buffer_view_id, buffer_view ] = push_and_get_index(model.bufferViews);
+        buffer_view.buffer = buffer_id;
+        buffer_view.byteOffset = byte_offset;
+        buffer_view.byteLength = byte_length;
+        buffer_view.target = CesiumGltf::BufferView::Target::ELEMENT_ARRAY_BUFFER;
+
+        auto [ accessor_id, accessor ] = push_and_get_index(model.accessors);
+        accessor.bufferView = buffer_view_id;
+        accessor.count = num_faces * 3;
+        accessor.componentType = CesiumGltf::Accessor::ComponentType::UNSIGNED_INT;
+        accessor.type = CesiumGltf::Accessor::Type::SCALAR;
+        accessor.min = { 0 };
+        accessor.max = { (double)num_vertices - 1 };
+
+        primitive.indices = accessor_id;
     }
 
     CesiumGltfWriter::GltfWriter writer;
