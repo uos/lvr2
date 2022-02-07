@@ -154,8 +154,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             std::cout << timestamp << "[Main - loadPointCloud] Unable to load points of scan " << 0 << std::endl;
         }
 
-        
-
         buffer = scan->points;
     }
     else {
