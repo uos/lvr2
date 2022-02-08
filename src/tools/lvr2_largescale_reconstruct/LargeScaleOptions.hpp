@@ -80,6 +80,11 @@ class Options : public lvr2::BaseOption
      */
     bool useGPU() const;
 
+        /**
+     * @brief   Returns if the GPU shuold be used for the normal estimation
+     */
+    bool useGPUDistances() const;
+
     /**
      * @brief   Returns all voxelsizes as a vector
      */

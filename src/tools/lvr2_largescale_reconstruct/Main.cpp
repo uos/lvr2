@@ -97,12 +97,29 @@ int main(int argc, char** argv)
 
     OpenMPConfig::setNumThreads(options.getNumThreads());
 
-    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(),
-                                      options.getNodeSize(), options.getPartMethod(), options.getKi(), options.getKd(), options.getKn(),
-                                      options.useRansac(), options.getFlippoint(), options.extrude(), options.getDanglingArtifacts(),
-                                      options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
-                                      options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
-                                      options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(), options.getDebugChunks(), options.useGPU());
+    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), 
+    
+    options.getBGVoxelsize(), options.getScaling(),
+                                      options.getNodeSize(), 
+                                      options.getPartMethod(), 
+                                      options.getKi(), options.getKd(), options.getKn(),
+                                      options.useRansac(), 
+                                      options.getFlippoint(), 
+                                      options.extrude(), 
+                                      options.getDanglingArtifacts(),
+                                      options.getCleanContourIterations(), 
+                                      options.getFillHoles(), 
+                                      options.optimizePlanes(),
+                                      options.getNormalThreshold(), 
+                                      options.getPlaneIterations(), 
+                                      options.getMinPlaneSize(), 
+                                      options.getSmallRegionThreshold(),
+                                      options.retesselate(), 
+                                      options.getLineFusionThreshold(), 
+                                      options.getBigMesh(), 
+                                      options.getDebugChunks(), 
+                                      options.useGPU(), 
+                                      options.useGPUDistances());
 
     
 

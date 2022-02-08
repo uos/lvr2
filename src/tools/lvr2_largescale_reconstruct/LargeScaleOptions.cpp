@@ -62,133 +62,62 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("useRansac", "Set this flag for RANSAC based normal estimation.")
     ("decomposition,d",value<string>(&m_pcm)->default_value("PMC"),"Defines the type of decomposition that is used for the voxels (Standard Marching Cubes "
         "(MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection "
-        "(SF) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")(
-        "optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")(
-        "clusterPlanes,c",
-        "Cluster planar regions based on normal threshold, do not shift vertices into regression "
-        "plane.")("cleanContours",
-                  value<int>(&m_cleanContourIterations)->default_value(0),
-                  "Remove noise artifacts from contours. Same values are between 2 and 4")(
-        "planeIterations",
-        value<int>(&m_planeIterations)->default_value(3),
-        "Number of iterations for plane optimization")(
-        "fillHoles,f", value<int>(&m_fillHoles)->default_value(0), "Maximum size for hole filling")(
-        "removeDanglingArtifacts,rda",
-        value<int>(&m_removeDanglingArtifacts)->default_value(0),
-        "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")(
-        "planeNormalThreshold,pnt",
-        value<float>(&m_planeNormalThreshold)->default_value(0.85),
-        "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals "
-        "about 3 degrees.")("smallRegionThreshold",
-                            value<int>(&m_smallRegionThreshold)->default_value(0),
-                            "Threshold for small region removal. If 0 nothing will be deleted.")(
-        "writeClassificationResult,w", "Write classification results to file 'clusters.clu'")(
-        "exportPointNormals,e",
-        "Exports original point cloud data together with normals into a single file called "
-        "'pointnormals.ply'")("saveGrid,g",
-                              "Writes the generated grid to a file called 'fastgrid.grid. The "
-                              "result can be rendered with qviewer.")(
-        "saveOriginalData,s",
-        "Save the original points and the estimated normals together with the reconstruction into "
-        "one file ('triangle_mesh.ply')")(
-        "scanPoseFile",
-        value<string>()->default_value(""),
-        "ASCII file containing scan positions that can be used to flip normals")(
-        "kd",
-        value<int>(&m_kd)->default_value(5),
-        "Number of normals used for distance function evaluation")(
-        "ki",
-        value<int>(&m_ki)->default_value(10),
-        "Number of normals used in the normal interpolation process")(
-        "kn",
-        value<int>(&m_kn)->default_value(10),
-        "Size of k-neighborhood used for normal estimation")(
-        "minPlaneSize,mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")(
-        "retesselate,t",
-        "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")(
-        "lineFusionThreshold,lft",
-        value<float>(&m_lineFusionThreshold)->default_value(0.01),
-        "(Line Fusion Threshold) Threshold for fusing line segments while tesselating.")(
-        "generateTextures", "Generate textures during finalization.")(
-        "textureAnalysis", "Enable texture analysis features for texture matchung.")(
-        "texelSize",
-        value<float>(&m_texelSize)->default_value(1),
-        "Texel size that determines texture resolution.")(
-        "classifier",
-        value<string>(&m_classifier)->default_value("PlaneSimpsons"),
-        "Classfier object used to color the mesh.")("depth",
-                                                    value<int>(&m_depth)->default_value(100),
-                                                    "Maximum recursion depth for region growing.")(
-        "recalcNormals,r", "Always estimate normals, even if given in .ply file.")(
-        "threads",
-        value<int>(&m_numThreads)->default_value(lvr2::OpenMPConfig::getNumThreads()),
-        "Number of threads")("sft",
-                             value<float>(&m_sft)->default_value(0.9),
-                             "Sharp feature threshold when using sharp feature decomposition")(
-        "sct",
-        value<float>(&m_sct)->default_value(0.7),
-        "Sharp corner threshold when using sharp feature decomposition")(
-        "ecm",
-        value<string>(&m_ecm)->default_value("QUADRIC"),
-        "Edge collapse method for mesh reduction. Choose from QUADRIC, QUADRIC_TRI, MELAX, "
-        "SHORTEST")("ecc",
-                    value<int>(&m_numEdgeCollapses)->default_value(0),
-                    "Edge collapse count. Number of edges to collapse for mesh reduction.")(
-        "tp", value<string>(&m_texturePack)->default_value(""), "Path to texture pack")(
-        "co",
-        value<string>(&m_statsCoeffs)->default_value(""),
-        "Coefficents file for texture matching based on statistics")(
-        "nsc",
-        value<unsigned int>(&m_numStatsColors)->default_value(16),
-        "Number of colors for texture statistics")(
-        "nccv",
-        value<unsigned int>(&m_numCCVColors)->default_value(64),
-        "Number of colors for texture matching based on color information")(
-        "ct",
-        value<unsigned int>(&m_coherenceThreshold)->default_value(50),
-        "Coherence threshold for texture matching based on color information")(
-        "colt",
-        value<float>(&m_colorThreshold)->default_value(FLT_MAX),
-        "Threshold for texture matching based on colors")(
-        "stat",
-        value<float>(&m_statsThreshold)->default_value(FLT_MAX),
-        "Threshold for texture matching based on statistics")(
-        "feat",
-        value<float>(&m_featuresThreshold)->default_value(FLT_MAX),
-        "Threshold for texture matching based on features")(
-        "cro", "Use texture matching based on cross correlation.")(
-        "patt",
-        value<float>(&m_patternThreshold)->default_value(100),
-        "Threshold for pattern extraction from textures")(
-        "mtv",
-        value<int>(&m_minimumTransformationVotes)->default_value(3),
-        "Minimum number of votes to consider a texture transformation as correct")(
-        "buff",
-        value<unsigned int>(&m_bufferSize)->default_value(30000000),
-        "Minimum number of votes to consider a texture transformation as correct")(
-        "nodeSize, ns",
-        value<unsigned int>(&m_octreeNodeSize)->default_value(1000000),
-        "Max. Number of Points in a leaf (used to devide pointcloud)")(
-        "outputFolder",
-        value<string>(&m_outputFolderPath)->default_value(""),
-        "Output Folder Path")("useGPU", "Use GPU for normal estimation")(
-        "flipPoint", value<vector<float>>()->multitoken(), "Flippoint, used for GPU normal calculation, multitoken option: use it like this: --flipPoint x y z")(
-        "lineReaderBuffer",
-        value<size_t>(&m_lineReaderBuffer)->default_value(1024),
-        "Size of input stream buffer when parsing point cloud files")(
-        "interpolateBoxes", "Interpolate Boxes in intersection BoundingBox of two Grids")(
-        "useNormals",
-        "the ply file contains normals")
-        ("bigMesh", value<bool>(&m_bigMesh)->default_value(true),"generate a .ply file of the reconstructed mesh")
-            ("debugChunks", value<bool>(&m_debugChunks)->default_value(false), "generate .ply file for every chunk")
-            ("scale",
-                                         value<float>(&m_scaling)->default_value(1),
-                                         "Scaling factor, applied to all input points")(
-        "volumenSize",
-        value<size_t>(&m_volumenSize)->default_value(0),
-        "The volumen of the partitions. Volume = (voxelsize*volumenSize)^3 if not set kd-tree will "
-        "be used")("onlyNormals", "If true, only normals will be generated");
-
+        "(SF) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")
+    ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
+    ("clusterPlanes,c", "Cluster planar regions based on normal threshold, do not shift vertices into regression plane.")
+    ("cleanContours", value<int>(&m_cleanContourIterations)->default_value(0), "Remove noise artifacts from contours. Same values are between 2 and 4")
+    ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
+    ("fillHoles,f", value<int>(&m_fillHoles)->default_value(0), "Maximum size for hole filling")
+    ("removeDanglingArtifacts,rda", value<int>(&m_removeDanglingArtifacts)->default_value(0), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
+    ("planeNormalThreshold,pnt", value<float>(&m_planeNormalThreshold)->default_value(0.85), "Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
+    ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(0), "Threshold for small region removal. If 0 nothing will be deleted.")
+    ("writeClassificationResult,w", "Write classification results to file 'clusters.clu'")
+    ("exportPointNormals,e", "Exports original point cloud data together with normals into a single file called 'pointnormals.ply'")
+    ("saveGrid,g", "Writes the generated grid to a file called 'fastgrid.grid. The result can be rendered with qviewer.")
+    ("saveOriginalData,s", "Save the original points and the estimated normals together with the reconstruction into one file ('triangle_mesh.ply')")
+    ("scanPoseFile", value<string>()->default_value(""), "ASCII file containing scan positions that can be used to flip normals")
+    ("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
+    ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
+    ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
+    ("minPlaneSize,mp", value<int>(&m_minPlaneSize)->default_value(7), "Minimum value for plane optimzation")
+    ("retesselate,t", "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")
+    ("lineFusionThreshold,lft", value<float>(&m_lineFusionThreshold)->default_value(0.01), "Threshold for fusing line segments while tesselating.")
+    ("generateTextures", "Generate textures during finalization.")
+    ("textureAnalysis", "Enable texture analysis features for texture matchung.")
+    ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
+    ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"), "Classfier object used to color the mesh.")
+    ("depth", value<int>(&m_depth)->default_value(100), "Maximum recursion depth for region growing.")
+    ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
+    ("threads", value<int>(&m_numThreads)->default_value(lvr2::OpenMPConfig::getNumThreads()), "Number of threads")
+    ("sft", value<float>(&m_sft)->default_value(0.9),"Sharp feature threshold when using sharp feature decomposition")
+    ("sct", value<float>(&m_sct)->default_value(0.7), "Sharp corner threshold when using sharp feature decomposition")
+    ("ecm", value<string>(&m_ecm)->default_value("QUADRIC"),"Edge collapse method for mesh reduction. Choose from QUADRIC, QUADRIC_TRI, MELAX, SHORTEST")
+    ("ecc", value<int>(&m_numEdgeCollapses)->default_value(0),"Edge collapse count. Number of edges to collapse for mesh reduction.")
+    ("tp", value<string>(&m_texturePack)->default_value(""), "Path to texture pack")
+    ("co", value<string>(&m_statsCoeffs)->default_value(""), "Coefficents file for texture matching based on statistics")
+    ("nsc", value<unsigned int>(&m_numStatsColors)->default_value(16), "Number of colors for texture statistics")
+    ("nccv", value<unsigned int>(&m_numCCVColors)->default_value(64), "Number of colors for texture matching based on color information")
+    ("ct", value<unsigned int>(&m_coherenceThreshold)->default_value(50), "Coherence threshold for texture matching based on color information")
+    ("colt", value<float>(&m_colorThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on colors")
+    ("stat", value<float>(&m_statsThreshold)->default_value(FLT_MAX),"Threshold for texture matching based on statistics")
+    ("feat", value<float>(&m_featuresThreshold)->default_value(FLT_MAX), "Threshold for texture matching based on features")
+    ("cro", "Use texture matching based on cross correlation.")
+    ("patt",value<float>(&m_patternThreshold)->default_value(100), "Threshold for pattern extraction from textures")
+    ("mtv",value<int>(&m_minimumTransformationVotes)->default_value(3),"Minimum number of votes to consider a texture transformation as correct")
+    ("buff",value<unsigned int>(&m_bufferSize)->default_value(30000000), "Minimum number of votes to consider a texture transformation as correct")
+    ("nodeSize, ns",value<unsigned int>(&m_octreeNodeSize)->default_value(1000000),"Max. Number of Points in a leaf (used to devide pointcloud)")
+    ("outputFolder", value<string>(&m_outputFolderPath)->default_value(""), "Output Folder Path")
+    ("useGPU", "Use GPU for normal estimation")
+    ("useGPUDistances", "Use GPU for signed distance computation")
+    ("flipPoint", value<vector<float>>()->multitoken(), "Flippoint, used for GPU normal calculation, multitoken option: use it like this: --flipPoint x y z")
+    ("lineReaderBuffer", value<size_t>(&m_lineReaderBuffer)->default_value(1024), "Size of input stream buffer when parsing point cloud files")
+    ("interpolateBoxes", "Interpolate Boxes in intersection BoundingBox of two Grids")
+    ("useNormals", "the ply file contains normals")
+    ("bigMesh", value<bool>(&m_bigMesh)->default_value(true),"generate a .ply file of the reconstructed mesh")
+    ("debugChunks", value<bool>(&m_debugChunks)->default_value(false), "generate .ply file for every chunk")
+    ("scale", value<float>(&m_scaling)->default_value(1), "Scaling factor, applied to all input points")
+    ( "volumenSize", value<size_t>(&m_volumenSize)->default_value(0), "The volumen of the partitions. Volume = (voxelsize*volumenSize)^3 if not set kd-tree will be used")
+    ("onlyNormals", "If set, only normals will be computed");
     setup();
 }
 bool Options::printUsage() const
@@ -214,6 +143,8 @@ bool Options::getBigMesh() const { return m_variables["bigMesh"].as<bool>();}
 bool Options::getDebugChunks() const { return m_variables["debugChunks"].as<bool>();}
 
 bool Options::useGPU() const { return m_variables.count("useGPU"); }
+
+bool Options::useGPUDistances() const { return m_variables.count("useGPUDistances"); }
 
 vector<float> Options::getVoxelSizes() const
 {

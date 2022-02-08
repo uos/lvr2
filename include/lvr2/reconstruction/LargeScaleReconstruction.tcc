@@ -98,22 +98,44 @@ namespace lvr2
     template<typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction( vector<float> voxelSizes, float bgVoxelSize,
                                                                  float scale, uint nodeSize,
-                                                                 int partMethod, int ki, int kd, int kn, bool useRansac,
+                                                                 int partMethod, int ki, int kd, int kn, 
+                                                                 bool useRansac,
                                                                  std::vector<float> flipPoint,
-                                                                 bool extrude, int removeDanglingArtifacts,
-                                                                 int cleanContours, int fillHoles, bool optimizePlanes,
-                                                                 float planeNormalThreshold, int planeIterations,
-                                                                 int minPlaneSize, int smallRegionThreshold,
-                                                                 bool retesselate, float lineFusionThreshold,
-                                                                 bool bigMesh, bool debugChunks, bool useGPU)
+                                                                 bool extrude, 
+                                                                 int removeDanglingArtifacts,
+                                                                 int cleanContours, int fillHoles, 
+                                                                 bool optimizePlanes,
+                                                                 float planeNormalThreshold, 
+                                                                 int planeIterations,
+                                                                 int minPlaneSize, 
+                                                                 int smallRegionThreshold,
+                                                                 bool retesselate, 
+                                                                 float lineFusionThreshold,
+                                                                 bool bigMesh, 
+                                                                 bool debugChunks, 
+                                                                 bool useGPU, 
+                                                                 bool useGPUDistances)
             : m_voxelSizes(voxelSizes), m_bgVoxelSize(bgVoxelSize),
               m_scale(scale),m_nodeSize(nodeSize),
-              m_partMethod(partMethod), m_ki(ki), m_kd(kd), m_kn(kn), m_useRansac(useRansac),
-              m_flipPoint(flipPoint), m_extrude(extrude), m_removeDanglingArtifacts(removeDanglingArtifacts),
-              m_cleanContours(cleanContours), m_fillHoles(fillHoles), m_optimizePlanes(optimizePlanes),
-              m_planeNormalThreshold(planeNormalThreshold), m_planeIterations(planeIterations),
-              m_minPlaneSize(minPlaneSize), m_smallRegionThreshold(smallRegionThreshold),
-              m_retesselate(retesselate), m_lineFusionThreshold(lineFusionThreshold),m_bigMesh(bigMesh), m_debugChunks(debugChunks), m_useGPU(useGPU)
+              m_partMethod(partMethod), 
+              m_ki(ki), m_kd(kd), m_kn(kn), 
+              m_useRansac(useRansac),
+              m_flipPoint(flipPoint), 
+              m_extrude(extrude), 
+              m_removeDanglingArtifacts(removeDanglingArtifacts),
+              m_cleanContours(cleanContours), 
+              m_fillHoles(fillHoles), 
+              m_optimizePlanes(optimizePlanes),
+              m_planeNormalThreshold(planeNormalThreshold), 
+              m_planeIterations(planeIterations),
+              m_minPlaneSize(minPlaneSize), 
+              m_smallRegionThreshold(smallRegionThreshold),
+              m_retesselate(retesselate), 
+              m_lineFusionThreshold(lineFusionThreshold),
+              m_bigMesh(bigMesh), 
+              m_debugChunks(debugChunks), 
+              m_useGPU(useGPU),
+              m_useGPUDistances(useGPUDistances)
     {
         std::cout << timestamp << "Reconstruction Instance generated..." << std::endl;
     }
@@ -122,12 +144,25 @@ namespace lvr2
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
             : LargeScaleReconstruction(options.voxelSizes, options.bgVoxelSize,
               options.scale,options.nodeSize,
-              options.partMethod, options.ki, options.kd, options.kn, options.useRansac,
-              options.getFlipPoint(), options.extrude, options.removeDanglingArtifacts,
-              options.cleanContours, options.fillHoles, options.optimizePlanes,
-              options.planeNormalThreshold, options.planeIterations,
-              options.minPlaneSize, options.smallRegionThreshold,
-              options.retesselate, options.lineFusionThreshold, options.bigMesh, options.debugChunks, options.useGPU)
+              options.partMethod, 
+              options.ki, options.kd, options.kn, 
+              options.useRansac,
+              options.getFlipPoint(), 
+              options.extrude, 
+              options.removeDanglingArtifacts,
+              options.cleanContours, 
+              options.fillHoles, 
+              options.optimizePlanes,
+              options.planeNormalThreshold, 
+              options.planeIterations,
+              options.minPlaneSize, 
+              options.smallRegionThreshold,
+              options.retesselate, 
+              options.lineFusionThreshold, 
+              options.bigMesh, 
+              options.debugChunks, 
+              options.useGPU, 
+              options.useGPUDistances)
     {
     }
 
@@ -553,24 +588,25 @@ namespace lvr2
                     gpu_surface.calculateNormals();
                     gpu_surface.getNormals(normals);
 
-                    // for(size_t i = 0; i < num_points; i++)
-                    // {
-                    //     std::cout << normals[i * 3] << normals[i * 3 + 1] << " " << normals[i * 3 +2] << std::endl;
-                    // }
+                    p_loader_reduced->setNormalArray(normals, num_points);
 
                     auto& query_points = ps_grid->getQueryPoints();
 
-                    std::cout << timestamp << "Computing distances on GPU..." << std::endl;
-                    gpu_surface.distances(query_points, m_voxelSizes[h]);
-                    std::cout << timestamp << "Done." << std::endl;
+                    if(m_useGPUDistances)
+                    {
+                        std::cout << timestamp << "Computing distances on GPU..." << std::endl;
+                        gpu_surface.distances(query_points, m_voxelSizes[h]);
+                        std::cout << timestamp << "Done." << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << timestamp << "Computing signed distances with brute force kernel (kd = 5)." << std::endl;
+                        std::cout << timestamp << "This might take a while...." << std::endl;
+                        ps_grid->calcDistanceValues();
+                    }
 
-                    // for(auto i : query_points)
-                    // {
-                    //      cout << i.m_distance << endl;
-                    // }
-
-                    p_loader_reduced->setNormalArray(normals, num_points);
                     gpu_surface.freeGPU();
+
     #else
                         std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
                         surface->calculateSurfaceNormals();

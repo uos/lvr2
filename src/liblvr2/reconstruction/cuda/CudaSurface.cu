@@ -897,13 +897,13 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
         //     printf("TEEST\n");
         // }
 
-        unsigned int kd_pos;
+        //unsigned int kd_pos;
 
         // // nearest neighbors;
         //unsigned int* nn = (unsigned int*)malloc(sizeof(unsigned int)*3* );
         k = 5;  
         unsigned int nn[5] = {0};
-        bool valid[5];
+        //bool valid[5];
 
         float qp_x = D_Query_Points[tid].m_position.x;
         float qp_y = D_Query_Points[tid].m_position.y;
