@@ -662,20 +662,32 @@ __device__ void getApproximatedKdTreePosition(
             if(x <= D_kd_tree_values.elements[pos] )
             {
                 pos = pos*2+1;
-            } else {
+            } 
+            else 
+            {
                 pos = pos*2+2;
             }
-        } else if(current_dim == 1) {
+        } 
+        else if(current_dim == 1) 
+        {
 
-            if(y <= D_kd_tree_values.elements[pos] ){
+            if(y <= D_kd_tree_values.elements[pos] )
+            {
                 pos = pos*2+1;
-            }else{
+            }
+            else
+            {
                 pos = pos*2+2;
             }
-        } else {
-            if(z <= D_kd_tree_values.elements[pos] ){
+        } 
+        else 
+        {
+            if(z <= D_kd_tree_values.elements[pos] )
+            {
                 pos = pos*2+1;
-            }else{
+            }
+            else
+            {
                 pos = pos*2+2;
             }
         }
@@ -778,6 +790,67 @@ __device__ void calculateDistance(const float& x, const float& y, const float& z
     euklidean_distance = sqrt( vec_x * vec_x + vec_y * vec_y + vec_z * vec_z );
 }
 
+__device__ void findNNApproximateBF(
+    unsigned int start_index,  
+    const LBPointArray<float>& D_kd_tree_values,
+    const LBPointArray<unsigned char>& D_kd_tree_splits,
+    const LBPointArray<float>& D_V,
+    unsigned int* closest, bool* valid, unsigned int k, unsigned int range)
+{
+    float dst[5];
+
+    float q_x = D_V.elements[3 * start_index];
+    float q_y = D_V.elements[3 * start_index + 1];
+    float q_z = D_V.elements[3 * start_index + 2];
+
+    for(unsigned int i = 0; i < k; i++)
+    {
+        valid[i] = false;
+    }
+
+    for(unsigned int i = 0; i < k; i++)
+    {
+        dst[i] = 1e10;
+    }
+
+    for (unsigned int i = start_index - (range / 2); i < start_index + (range / 2); i++)
+    {
+        unsigned int nn;
+
+        if (i >= D_kd_tree_values.width)
+        {
+            nn = static_cast<unsigned int>(D_kd_tree_values.elements[D_kd_tree_values.width - 1] + 0.5);
+        }
+        else if (i < D_kd_tree_splits.width)
+        {
+            nn = static_cast<unsigned int>(D_kd_tree_values.elements[D_kd_tree_splits.width] + 0.5);
+        }
+        else
+        {
+            nn = static_cast<unsigned int>(D_kd_tree_values.elements[i] + 0.5);
+        }
+
+        unsigned int index = nn * 3;
+
+        float dx = q_x - D_V.elements[index];
+        float dy = q_y - D_V.elements[index + 1];
+        float dz = q_z - D_V.elements[index + 2];
+
+        float c_dst = sqrt(dx * dx + dy * dy + dz * dz);
+
+        for(unsigned int j = 0; j < k; j++)
+        {
+            if(c_dst < dst[j])
+            {
+                dst[j] = c_dst;
+                closest[j] = nn;
+                valid[j] = true;
+                break;
+            }
+        }
+    }
+}
+
 __device__ void findNNBF(float x, float y, float z, 
                          const LBPointArray<float>& D_V,
                          unsigned int* closest, unsigned int k)
@@ -786,7 +859,7 @@ __device__ void findNNBF(float x, float y, float z,
 
     for(unsigned int i = 0; i < k; i++)
     {
-        dst[i] = 10e7;
+        dst[i] = 10e10;
     }
 
     for(unsigned int i = 0; i < D_V.width; i++)
@@ -824,26 +897,29 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
         //     printf("TEEST\n");
         // }
 
-        //unsigned int kd_pos;
+        unsigned int kd_pos;
 
         // // nearest neighbors;
         //unsigned int* nn = (unsigned int*)malloc(sizeof(unsigned int)*3* );
         k = 5;  
         unsigned int nn[5] = {0};
+        bool valid[5];
 
         float qp_x = D_Query_Points[tid].m_position.x;
         float qp_y = D_Query_Points[tid].m_position.y;
         float qp_z = D_Query_Points[tid].m_position.z;
 
         // getApproximatedKdTreePosition(D_kd_tree_values, D_kd_tree_splits, D_V,
-        //         qp_x,
-        //         qp_y,
-        //         qp_z,
-        //         kd_pos, tid );
+        //          qp_x,
+        //          qp_y,
+        //          qp_z,
+        //          kd_pos, tid );
 
         //getNNFromIndex(D_kd_tree_values,D_kd_tree_splits, D_V, kd_pos, nn, k);
 
         findNNBF(qp_x, qp_y, qp_z, D_V, nn, 5);
+
+        //findNNApproximateBF(kd_pos, D_kd_tree_values, D_kd_tree_splits, D_V, nn, valid, 5, 6);
 
         //unsigned int start = kd_pos - (k / 2);
         //unsigned int index_curr_nn = 0;
