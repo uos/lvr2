@@ -625,7 +625,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             std::cout << timestamp << finalPose_n << std::endl;
 
             Transformd finalPose = finalPose_n;
-            #pragma omp parallel for
+            //#pragma omp parallel for
             for (int k = 0; k < numPoints; k++)
             {
                 Eigen::Vector4d point(
@@ -633,7 +633,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 Eigen::Vector4d transPoint = finalPose * point;
 
                 BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
-                #pragma omp critical
+                //#pragma omp critical
                 {
                     m_bb.expand(temp);
                     box.expand(temp);
@@ -694,7 +694,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 Transformd finalPose_n = pos->transformation;
                 Transformd finalPose = finalPose_n;
                 int dx, dy, dz;
-                #pragma omp parallel for
+                //#pragma omp parallel for
                 for (int k = 0; k < numPoints; k++)
                 {
                     Eigen::Vector4d point(
@@ -718,7 +718,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                         size_t h = hashValue(idx + dx, idy + dy, idz + dz);
                         if (j == 0)
                         {
-                            #pragma omp critical
+                            //#pragma omp critical
                             {
                                 m_gridNumPoints[h].size++;
                             }
@@ -728,7 +728,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                             auto it = m_gridNumPoints.find(h);
                             if (it == m_gridNumPoints.end())
                             {
-                                #pragma omp critical
+                                //#pragma omp critical
                                 {
                                     m_gridNumPoints[h].size = 0;
                                 }
@@ -1031,7 +1031,7 @@ lvr2::floatArr BigGrid<BaseVecT>::points(
             size_t cSize = it->second.size;
             for (size_t x = 0; x < cSize; x++)
             {
-                points.get()[p_index] = mmfdata[(it->second.offset + x) * 3];
+                points.get()[p_index]     = mmfdata[(it->second.offset + x) * 3];
                 points.get()[p_index + 1] = mmfdata[(it->second.offset + x) * 3 + 1];
                 points.get()[p_index + 2] = mmfdata[(it->second.offset + x) * 3 + 2];
                 p_index += 3;

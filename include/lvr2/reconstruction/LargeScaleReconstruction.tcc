@@ -458,12 +458,12 @@ namespace lvr2
 
                 size_t numPoints;
 
-                floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3,
+                floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] * 3,
+                                            partitionBoxes->at(i).getMin().y - m_voxelSizes[h] * 3,
+                                            partitionBoxes->at(i).getMin().z - m_voxelSizes[h] * 3,
+                                            partitionBoxes->at(i).getMax().x + m_voxelSizes[h] * 3,
+                                            partitionBoxes->at(i).getMax().y + m_voxelSizes[h] * 3,
+                                            partitionBoxes->at(i).getMax().z + m_voxelSizes[h] * 3,
                                             numPoints);
 
                 // remove chunks with less than 50 points
@@ -535,6 +535,12 @@ namespace lvr2
                     // std::vector<float> flipPoint = std::vector<float>{100, 100, 100};
                     size_t num_points = p_loader_reduced->numPoints();
                     floatArr points = p_loader_reduced->getPointArray();
+
+                    // for(size_t i = 0; i < num_points; i++)
+                    // {
+                    //     std::cout << points[i * 3] << " " << points[i * 3 + 1] << " " << points[i * 3 + 2] << std::endl; 
+                    // }
+
                     floatArr normals = floatArr(new float[num_points * 3]);
                     std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
                     GpuSurface gpu_surface(points, num_points);
@@ -546,6 +552,11 @@ namespace lvr2
 
                     gpu_surface.calculateNormals();
                     gpu_surface.getNormals(normals);
+
+                    // for(size_t i = 0; i < num_points; i++)
+                    // {
+                    //     std::cout << normals[i * 3] << normals[i * 3 + 1] << " " << normals[i * 3 +2] << std::endl;
+                    // }
 
                     auto& query_points = ps_grid->getQueryPoints();
 

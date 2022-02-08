@@ -174,6 +174,11 @@ __global__ void KNNKernel1(const LBPointArray<float> D_V,
                         float ry = D_V.elements[ curr_nn_index + 1 ] - vertex_y;
                         float rz = D_V.elements[ curr_nn_index + 2 ] - vertex_z;
 
+                        // if(tid == 5)
+                        // {
+                        //     printf("R: %i %f %f %f\n", curr_nn_index, rx, ry, rz);
+                        // }   
+
                         if(rx != 0.0 || ry != 0.0 || rz != 0.0)
                         {
                             // ilikebigbits.com/blog/2015/3/2/plane-from-points
@@ -193,9 +198,14 @@ __global__ void KNNKernel1(const LBPointArray<float> D_V,
                     leaf_reached = true;
                     if( leaf_value != vertex_index && i_nn <= k*3 )
                     {
-                        float rx    = D_V.elements[ curr_nn_index ] - vertex_x;
-                        float ry     = D_V.elements[ curr_nn_index + 1 ] - vertex_y;
+                        float rx     = D_V.elements[ curr_nn_index ] - vertex_x;
+                        float ry     = D_V.elements[ curr_nn_index + 1] - vertex_y;
                         float rz     = D_V.elements[ curr_nn_index + 2] - vertex_z;
+
+                        //             if(tid == 5)
+                        // {
+                        //     printf("R: %i %f %f %f\n", curr_nn_index, rx, ry, rz);
+                        // }         
 
                         // instant PCA!
                         xx += rx * rx;
@@ -215,6 +225,11 @@ __global__ void KNNKernel1(const LBPointArray<float> D_V,
         float det_x = yy * zz - yz * yz;
         float det_y = xx * zz - xz * xz;
         float det_z = xx * yy - xy * xy;
+
+        if(tid == 5)
+        {
+            printf("DET: %f %f %f\n", det_x, det_y, det_z);
+        }
 
         float dir_x;
         float dir_y;
@@ -250,8 +265,14 @@ __global__ void KNNKernel1(const LBPointArray<float> D_V,
             dir_z = 1.0;
         }
 
-        float invnorm = 1/sqrtf( dir_x * dir_x + dir_y * dir_y + dir_z * dir_z );
+        float norm = sqrtf( dir_x * dir_x + dir_y * dir_y + dir_z * dir_z );
+        float invnorm = 1.0f;
 
+        if(fabsf(norm > 0.00001))
+        {
+            invnorm = 1.0f/norm;
+        }
+      
         result_x = dir_x * invnorm;
         result_y = dir_y * invnorm;
         result_z = dir_z * invnorm;
@@ -492,6 +513,9 @@ __global__ void InterpolationKernel(const LBPointArray<float> D_kd_tree_values, 
             float n_y = D_Normals.elements[query_index * D_Normals.dim + 1];
             float n_z = D_Normals.elements[query_index * D_Normals.dim + 2];
 
+
+
+
             if(tid > 1)
             {
                 for(unsigned int i = tid-1; i > 0 && c < ki/2; i--,c++ )
@@ -529,9 +553,19 @@ __global__ void InterpolationKernel(const LBPointArray<float> D_kd_tree_values, 
             }
 
             float norm = sqrtf(powf(n_x,2) + powf(n_y,2) + powf(n_z,2));
-            n_x = n_x/norm;
-            n_y = n_y/norm;
-            n_z = n_z/norm;
+
+            // if(tid == 5)
+            // {
+            //     printf("Norm: %f\n", norm);
+            // }
+
+            if(fabsf(norm) > 0.00001)
+            {
+                n_x = n_x/norm;
+                n_y = n_y/norm;
+                n_z = n_z/norm;
+            }
+           
             D_Normals.elements[query_index * D_Normals.dim + 0] = n_x;
             D_Normals.elements[query_index * D_Normals.dim + 1] = n_y;
             D_Normals.elements[query_index * D_Normals.dim + 2] = n_z;
@@ -609,11 +643,16 @@ __device__ void getApproximatedKdTreePositionFromSubtree(const LBPointArray<floa
     }
 }
 
-__device__ void getApproximatedKdTreePosition(const LBPointArray<float>& D_kd_tree_values, const LBPointArray<unsigned char>& D_kd_tree_splits, const LBPointArray<float>& D_V, float x, float y, float z, unsigned int &pos, unsigned int tid)
+__device__ void getApproximatedKdTreePosition(
+    const LBPointArray<float>& D_kd_tree_values, 
+    const LBPointArray<unsigned char>& D_kd_tree_splits, 
+    const LBPointArray<float>& D_V, 
+    float x, float y, float z, 
+    unsigned int &pos, unsigned int tid)
 {
     pos = 0;
     unsigned int current_dim = 0;
-
+   
     while(pos < D_kd_tree_splits.width)
     {
         current_dim = static_cast<unsigned int>(D_kd_tree_splits.elements[pos]);
@@ -644,10 +683,11 @@ __device__ void getApproximatedKdTreePosition(const LBPointArray<float>& D_kd_tr
     }
 }
 
-__device__ void getNNFromIndex(const LBPointArray<float>& D_kd_tree_values, const LBPointArray<unsigned char>& D_kd_tree_splits,
+__device__ void getNNFromIndex(const LBPointArray<float>& D_kd_tree_values, const LBPointArray<unsigned char>& D_kd_tree_splits, const LBPointArray<float>& D_V,
              const unsigned int& kd_pos, unsigned int *nn, int k)
 {
-
+    
+    k = k * 3;
     unsigned int start = kd_pos - (k/2);
     unsigned int i_nn = 0;
 
@@ -656,14 +696,66 @@ __device__ void getNNFromIndex(const LBPointArray<float>& D_kd_tree_values, cons
         if(i >= D_kd_tree_values.width )
         {
             nn[i_nn] = static_cast<unsigned int>(D_kd_tree_values.elements[D_kd_tree_values.width-1]+0.5);
-        }else if(i < D_kd_tree_splits.width)
+        }
+        else if(i < D_kd_tree_splits.width)
         {
             nn[i_nn] = static_cast<unsigned int>(D_kd_tree_values.elements[D_kd_tree_splits.width]+0.5);
-        }else{
-            nn[i_nn] = static_cast<unsigned int>(D_kd_tree_values.elements[i]+0.5);
+        }
+        else
+        {
+            nn[i_nn] = static_cast<unsigned int>(D_kd_tree_values.elements[i]+0.5);   
         }
     }
 
+    // unsigned int pos = kd_pos;
+    // unsigned int vertex_index = static_cast<unsigned int>(D_kd_tree_values.elements[pos]+ 0.5);
+
+    // unsigned int subtree_pos = pos;
+    // unsigned int i;
+    // for (i = 1; i < (k + 1) && subtree_pos > 0; i *= 2)
+    // {
+    //     subtree_pos = static_cast<unsigned int>((subtree_pos - 1) / 2);
+    // }
+
+    // unsigned int iterator = subtree_pos;
+    // unsigned int max_nodes = 1;
+    // bool leaf_reached = false;
+    // unsigned int i_nn = 0;
+
+    // const unsigned int num_values = D_kd_tree_values.width;
+    // for (; iterator < num_values; iterator = iterator * 2 + 1, max_nodes *= 2)
+    // {
+    //     // collect nodes from current height
+    //     for (unsigned int i = 0; i < max_nodes && iterator + i < num_values; i++)
+    //     {
+    //         unsigned int current_pos = iterator + i;
+    //         unsigned int leaf_value = static_cast<unsigned int>(D_kd_tree_values.elements[current_pos] + 0.5);
+
+    //         if (leaf_reached && i_nn <= k)
+    //         {
+    //             if (leaf_value != vertex_index && leaf_value < D_V.width)
+    //             {
+    //                 unsigned int curr_nn_index = leaf_value * 3;
+
+    //                 nn[i_nn] = curr_nn_index;
+    //                 i_nn++;
+                    
+    //             }
+    //         }
+    //         else if (current_pos * 2 + 1 >= num_values)
+    //         {
+
+    //             unsigned int curr_nn_index = leaf_value * 3;
+    //             //first leaf reached
+    //             leaf_reached = true;
+    //             if (leaf_value != vertex_index && i_nn <= k * 3)
+    //             {
+    //                 nn[i_nn] = curr_nn_index;
+    //                 i_nn++;
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 __device__ void calculateDistance(const float& x, const float& y, const float& z,
@@ -675,15 +767,47 @@ __device__ void calculateDistance(const float& x, const float& y, const float& z
     float vec_y = (qp_y - y);
     float vec_z = (qp_z - z);
 
-    if(tid == 5)
-    {
-        printf("qp - nn: %f %f %f\n", vec_x, vec_y, vec_z);
-        printf("n: %f %f %f\n", n_x, n_y, n_z);
-    }
+    // if(tid == 5)
+    // {
+    //     printf("qp - nn: %f %f %f\n", vec_x, vec_y, vec_z);
+    //     printf("n: %f %f %f\n", n_x, n_y, n_z);
+    // }
 
     projected_distance = vec_x * n_x + vec_y * n_y + vec_z * n_z;
 
     euklidean_distance = sqrt( vec_x * vec_x + vec_y * vec_y + vec_z * vec_z );
+}
+
+__device__ void findNNBF(float x, float y, float z, 
+                         const LBPointArray<float>& D_V,
+                         unsigned int* closest, unsigned int k)
+{
+    float dst[5];
+
+    for(unsigned int i = 0; i < k; i++)
+    {
+        dst[i] = 10e7;
+    }
+
+    for(unsigned int i = 0; i < D_V.width; i++)
+    {
+        unsigned int index = 3 * i;
+        float dx = x - D_V.elements[index];
+        float dy = y - D_V.elements[index + 1];
+        float dz = z - D_V.elements[index + 2];
+
+        float c_dst  = sqrt( dx * dx + dy * dy + dz * dz );
+
+        for(unsigned int j = 0; j < k; j++)
+        {
+            if(c_dst < dst[j])
+            {
+                dst[j] = c_dst;
+                closest[j] = i;
+                break;
+            }
+        }
+    }
 }
 
 //distance function without transformation
@@ -700,25 +824,29 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
         //     printf("TEEST\n");
         // }
 
-        unsigned int kd_pos;
+        //unsigned int kd_pos;
 
         // // nearest neighbors;
-        // unsigned int* nn = (unsigned int*)malloc(sizeof(unsigned int)*3*k );
+        //unsigned int* nn = (unsigned int*)malloc(sizeof(unsigned int)*3* );
+        k = 5;  
+        unsigned int nn[5] = {0};
 
         float qp_x = D_Query_Points[tid].m_position.x;
         float qp_y = D_Query_Points[tid].m_position.y;
         float qp_z = D_Query_Points[tid].m_position.z;
 
-        getApproximatedKdTreePosition(D_kd_tree_values, D_kd_tree_splits, D_V,
-                qp_x,
-                qp_y,
-                qp_z,
-                kd_pos , tid );
+        // getApproximatedKdTreePosition(D_kd_tree_values, D_kd_tree_splits, D_V,
+        //         qp_x,
+        //         qp_y,
+        //         qp_z,
+        //         kd_pos, tid );
 
-        //getNNFromIndex(D_kd_tree_values,D_kd_tree_splits, kd_pos, nn, k);
+        //getNNFromIndex(D_kd_tree_values,D_kd_tree_splits, D_V, kd_pos, nn, k);
 
-        unsigned int start = kd_pos - (k / 2);
-        unsigned int index_curr_nn = 0;
+        findNNBF(qp_x, qp_y, qp_z, D_V, nn, 5);
+
+        //unsigned int start = kd_pos - (k / 2);
+        //unsigned int index_curr_nn = 0;
 
         float projected_distance = 0.0;
         float euklidean_distance = 0.0;
@@ -733,40 +861,30 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
 
         int c = 0;
 
-        unsigned int i_nn = 0;
+        //unsigned int i_nn = 0;
 
-        for (unsigned int i = start; i_nn < k; i++, i_nn++)
+        for (unsigned int i = 0; i < k; i++)
         {
-            // if (i >= D_kd_tree_values.width)
+            // if(tid == 5)
+            // // if(tid % 100 == 0)
             // {
-            //     index_curr_nn = static_cast<unsigned int>(D_kd_tree_values.elements[D_kd_tree_values.width - 1] + 0.5);
+            //      printf("nn %u %u %u: %u\n", kd_pos, i, nn[i], D_V.width);
             // }
-            // else if (i < D_kd_tree_splits.width)
-            // {
-            //     index_curr_nn = static_cast<unsigned int>(D_kd_tree_values.elements[D_kd_tree_splits.width] + 0.5);         }
-            // else
-            // {
-            //     index_curr_nn = static_cast<unsigned int>(D_kd_tree_values.elements[i] + 0.5);
-            // }
-            
-            unsigned int index = index_curr_nn * 3;
-
-            if(index > 0 && index_curr_nn < D_V.width)
+            unsigned int index = nn[i] * 3;
+            if(index > 0 && nn[i] < D_V.width)
             {
-                x += D_V.elements[index + 0];
+                
+
+                x += D_V.elements[index];
                 y += D_V.elements[index + 1];
                 z += D_V.elements[index + 2];
 
-                n_x += D_Normals.elements[index + 0];
+                n_x += D_Normals.elements[index];
                 n_y += D_Normals.elements[index + 1];
                 n_z += D_Normals.elements[index + 2];
 
-                if (tid == 5)
-                {
-                    printf("NN_Normal: %f %f %f\n", D_Normals.elements[index + 0], D_Normals.elements[index + 1], D_Normals.elements[index + 2]);
-                }
-
                 c++;
+                
             }
         }
 
@@ -774,21 +892,13 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
         y = y / c;
         z = z / c;
 
-        // float n_norm = sqrt(n_x * n_x + n_y * n_y + n_z * n_z);
+        float n_norm = sqrt(n_x * n_x + n_y * n_y + n_z * n_z);
 
-        // n_x = n_x / n_norm;
-        // n_y = n_y / n_norm;
-        // n_z = n_z / n_norm;
+        n_x = n_x / n_norm;
+        n_y = n_y / n_norm;
+        n_z = n_z / n_norm;
 
-        if(tid == 5)
-        {
-            printf("Normalsum: %f %f %f\n", n_x, n_y, n_z);
-        }
-
-        n_x = n_x / c;
-        n_y = n_y / c;
-        n_z = n_z / c;
-
+  
         calculateDistance(x, y, z, n_x, n_y, n_z, qp_x, qp_y, qp_z, euklidean_distance, projected_distance, tid);
 
         D_Query_Points[tid].m_invalid = false;
@@ -804,9 +914,6 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
 
         // }
 
-    
-
-
         // if(tid == 5)
         // {
         //     printf("Weight Sum: %f \n",weight_sum);
@@ -815,13 +922,10 @@ __global__ void GridDistanceKernel(const LBPointArray<float> D_V, const LBPointA
 
 
 
-        if(tid == 5)
-        {
-            printf("C: %d\n", c);
-            printf("Projected Distance: %f\n", projected_distance);
-            printf("Euklidean Distance: %f\n", euklidean_distance);
-            printf("Distance in Kernel: %f\n", D_Query_Points[tid].m_distance);
-        }
+        // if(tid % 50 == 0)
+        // {
+        //     printf("P: %f E: %f K: \n", projected_distance, euklidean_distance, D_Query_Points[tid].m_distance);
+        // }
 
     }
 
@@ -978,7 +1082,6 @@ void CudaSurface::GPU_NN()
 
     // kNN-search and Normal calculation
     // Flip directly in kernel
-
     KNNKernel1<<<blocksPerGrid, threadsPerBlock  >>>(this->D_V, this->D_kd_tree_values, this->D_kd_tree_splits, this->D_Normals,
                                                  this->m_k, this->m_calc_method, this->m_vx, this->m_vy, this->m_vz);
     cudaDeviceSynchronize();
@@ -1123,6 +1226,7 @@ void CudaSurface::distances(std::vector<QueryPoint<Vec> >& query_points, float v
 
     // QueryPointC* qpArray = thrust::raw_pointer_cast( &d_query_points[0] );
 
+
     QueryPointC *d_query_points;
     cudaMalloc((void**)&d_query_points, sizeof(QueryPointC)*query_points.size() );
 
@@ -1158,6 +1262,8 @@ void CudaSurface::distances(std::vector<QueryPoint<Vec> >& query_points, float v
 
 
 CudaSurface::~CudaSurface() {
+
+    std::cout << "Free Surface" << std::endl;
 
     // clearn up resulting normals and kd_tree
     // Pointcloud has to be cleaned up by user
