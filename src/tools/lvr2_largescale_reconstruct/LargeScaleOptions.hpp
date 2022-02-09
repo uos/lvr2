@@ -109,7 +109,7 @@ class Options : public lvr2::BaseOption
      * @brief   Returns the chunksize
      */
      // TODO data types don't match!!
-    int getChunkSize() const;
+    float getChunkSize() const;
 
     /**
      * @brief   Only used in kd-tree (partMethod=0). Returns the maximum number of points in a leaf.
@@ -408,7 +408,7 @@ class Options : public lvr2::BaseOption
     float m_scaling;
 
     /// gridsize for virtual grid
-    int m_chunkSize;
+    float m_chunkSize;
 
     /// sets partition method to kd-tree or virtual grid
     int m_partMethod;

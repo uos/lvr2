@@ -142,7 +142,9 @@ namespace lvr2
 
     template<typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
-            : LargeScaleReconstruction(options.voxelSizes, options.bgVoxelSize,
+            : LargeScaleReconstruction(
+              options.voxelSizes, 
+              options.bgVoxelSize,
               options.scale,options.nodeSize,
               options.partMethod, 
               options.ki, options.kd, options.kn, 
@@ -594,14 +596,14 @@ namespace lvr2
 
                     if(m_useGPUDistances)
                     {
-                        std::cout << timestamp << "Computing distances on GPU..." << std::endl;
+                        std::cout << timestamp << "Computing signed distances in GPU with brute force kernel (kd = 5)." << std::endl;
+                        std::cout << timestamp << "This might take a while...." << std::endl;
                         gpu_surface.distances(query_points, m_voxelSizes[h]);
                         std::cout << timestamp << "Done." << std::endl;
                     }
                     else
                     {
-                        std::cout << timestamp << "Computing signed distances with brute force kernel (kd = 5)." << std::endl;
-                        std::cout << timestamp << "This might take a while...." << std::endl;
+                        std::cout << timestamp << "Computing signed distances..w." << std::endl;
                         ps_grid->calcDistanceValues();
                     }
 
