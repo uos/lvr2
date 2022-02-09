@@ -32,6 +32,8 @@
 #include <stdlib.h>
 
 #include <boost/optional.hpp>
+#include <boost/shared_array.hpp>
+#include <boost/smart_ptr/make_shared_array.hpp>
 
 #include "lvr2/config/lvropenmp.hpp"
 
@@ -108,6 +110,110 @@ using namespace lvr2;
 using Vec = BaseVector<float>;
 using PsSurface = lvr2::PointsetSurface<Vec>;
 
+
+template <typename IteratorType>
+IteratorType concatenate(
+    IteratorType output_,
+    IteratorType begin0,
+    IteratorType end0,
+    IteratorType begin1,
+    IteratorType end1)
+{
+    output_ = std::copy(
+        begin0,
+        end0,
+        output_);
+    output_ = std::copy(
+        begin1,
+        end1,
+        output_);
+
+    return output_;
+}
+
+
+/**
+ * @brief Merges two PointBuffers by copying the data into a new PointBuffer
+ * 
+ * The function does not modify its arguments, but its not possible to access the PointBuffers data
+ * 
+ * @param b0 A buffer to copy points from
+ * @param b1 A buffer to copy points from
+ * @return PointBuffer the merged result of b0 and b1
+ */
+PointBuffer mergePointBuffers(PointBuffer& b0, PointBuffer& b1)
+{
+    // number of points in new buffer
+    PointBuffer::size_type npoints_total = b0.numPoints() + b1.numPoints();
+    // new point array
+    floatArr merged_points = floatArr(new float[npoints_total * 3]);
+
+    auto output_it = merged_points.get();
+    
+    // Copy the points to the new array
+    output_it = concatenate(
+        output_it,
+        b0.getPointArray().get(),
+        b0.getPointArray().get() + (b0.numPoints() * 3),
+        b1.getPointArray().get(),
+        b1.getPointArray().get() + (b1.numPoints() * 3));
+
+    // output iterator should be at the end of the array
+    assert(output_it == merged_points.get() + (npoints_total * 3));
+
+    PointBuffer ret(merged_points, npoints_total);
+
+    // Copy colors 
+    // TODO: Support merging when only one buffer has colors
+    if (b0.hasColors() && b1.hasColors())
+    {
+        // nbytes of a color
+        size_t w0, w1;
+        b0.getColorArray(w0);
+        b1.getColorArray(w1);
+        if (w0 != w1)
+        {
+            panic("PointBuffer colors must have the same width!");
+        }
+        // Number of bytes needed for the colors. Assumes that both color widths are the same
+        size_t nbytes = npoints_total * w0;
+        ucharArr colors_total = ucharArr(new unsigned char[nbytes]);
+        auto output_it = colors_total.get();
+
+        output_it = concatenate(
+            output_it,
+            b0.getColorArray(w0).get(),
+            b0.getColorArray(w0).get() + (b0.numPoints() * w0),
+            b1.getColorArray(w1).get(),
+            b1.getColorArray(w1).get() + (b1.numPoints() * w1)
+        );
+        
+        ret.setColorArray(colors_total, npoints_total, w0);
+    }
+
+    // Copy normals
+    // TODO: Support merging when only one buffer has normals
+     if (b0.hasNormals() && b1.hasNormals())
+    {
+        // Number of bytes needed for the normals
+        size_t nbytes = npoints_total * 3;
+        floatArr normals_total = floatArr(new float[nbytes]);
+        auto output_it = normals_total.get();
+
+        output_it = concatenate(
+            output_it,
+            b0.getNormalArray().get(),
+            b0.getNormalArray().get() + (b0.numPoints() * 3),
+            b1.getNormalArray().get(),
+            b1.getNormalArray().get() + (b1.numPoints() * 3)
+        );
+        
+        ret.setNormalArray(normals_total,npoints_total);
+    }
+
+    return std::move(ret);
+}
+
 template <typename BaseVecT>
 PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
 {   
@@ -139,22 +245,71 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
 
         auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
-        std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
+        std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIO = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
 
-        // load scan from hdf5 file
-        auto lidar = hdf5IO.LIDARIO::load(options.getScanPositionIndex(), 0);
-        ScanPtr scan = lidar->scans.at(0);
-
-        if (!scan->loaded() && scan->loadable())
+        if (options.hasScanPositionIndex())
         {
+            auto project = scanProjectIO->loadScanProject();
+            auto pos = scanProjectIO->loadScanPosition(options.getScanPositionIndex());
+            auto lidar = pos->lidars.at(0);
+            auto scan = lidar->scans.at(0); 
+
+            // Load scan
             scan->load();
+            ModelPtr model = std::make_shared<Model>();
+            model->m_pointCloud = scan->points;
+            scan->release();
+
+            // Transform pointcloud
+            transformPointCloud<float>(
+                model,
+                (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>()
+                 );
+            buffer = model->m_pointCloud;
         }
         else
-        {
-            std::cout << timestamp << "[Main - loadPointCloud] Unable to load points of scan " << 0 << std::endl;
+        {    
+            // === Build the PointCloud ===
+            ScanProjectPtr project = scanProjectIO->loadScanProject();
+            // The aggregated scans
+            ModelPtr model = std::make_shared<Model>();
+            model->m_pointCloud = std::make_shared<PointBuffer>();
+
+            for (ScanPositionPtr pos: project->positions)
+            {
+                for (LIDARPtr lidar: pos->lidars)
+                {
+                    for (ScanPtr scan: lidar->scans)
+                    {
+                        // Load scan
+                        bool was_loaded = scan->loaded();
+                        if (!scan->loaded())
+                        {
+                            scan->load();
+                        }
+                        size_t npoints_old = model->m_pointCloud->numPoints();
+
+                        // Transform the new pointcloud
+                        transformPointCloud<float>(
+                            std::make_shared<Model>(scan->points),
+                            (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>());
+                        
+                        // Merge pointcloud and new scan 
+                        // TODO: Maybe merge by allocation all needed memory first instead of constant allocations
+                        *model->m_pointCloud = mergePointBuffers(*model->m_pointCloud, *scan->points);
+                        
+                        // If not previously loaded unload
+                        if (!was_loaded)
+                        {
+                            scan->release();
+                        }
+                    }
+                }
+            }
+
+            buffer = model->m_pointCloud;
         }
 
-        buffer = scan->points;
     }
     else {
         buffer = model->m_pointCloud;

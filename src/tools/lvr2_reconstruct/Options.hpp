@@ -330,6 +330,8 @@ public:
 
     string getProjectDir() const;
 
+    bool hasScanPositionIndex() const;
+
     int getScanPositionIndex() const;
 
     int getMinSpectralChannel() const;
