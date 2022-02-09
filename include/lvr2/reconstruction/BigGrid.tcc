@@ -565,6 +565,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         //iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < project->changed.size(); i++)
         {
+            std::cout << timestamp << "Loading scan position " << i << " from " << project->changed.size() << std::endl;
             ScanPositionPtr pos = project->project->positions.at(i);
             if(pos && pos->lidars.size())
             {
@@ -622,10 +623,8 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             // Get transformation from scan position
             Transformd finalPose_n = pos->transformation;
 
-            std::cout << timestamp << finalPose_n << std::endl;
-
             Transformd finalPose = finalPose_n;
-            //#pragma omp parallel for
+            #pragma omp parallel for
             for (int k = 0; k < numPoints; k++)
             {
                 Eigen::Vector4d point(
@@ -633,7 +632,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 Eigen::Vector4d transPoint = finalPose * point;
 
                 BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
-                //#pragma omp critical
+                #pragma omp critical
                 {
                     m_bb.expand(temp);
                     box.expand(temp);
@@ -694,11 +693,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 Transformd finalPose_n = pos->transformation;
                 Transformd finalPose = finalPose_n;
                 int dx, dy, dz;
-                //#pragma omp parallel for
+                #pragma omp parallel for
                 for (int k = 0; k < numPoints; k++)
                 {
-                    Eigen::Vector4d point(
-                            points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                    Eigen::Vector4d point(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
                     Eigen::Vector4d transPoint = finalPose * point;
                     BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
                     // m_bb.expand(temp);
@@ -718,20 +716,15 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                         size_t h = hashValue(idx + dx, idy + dy, idz + dz);
                         if (j == 0)
                         {
-                            //#pragma omp critical
-                            {
-                                m_gridNumPoints[h].size++;
-                            }
+                            m_gridNumPoints[h].size++;
+
                         }
                         else
                         {
                             auto it = m_gridNumPoints.find(h);
                             if (it == m_gridNumPoints.end())
                             {
-                                //#pragma omp critical
-                                {
-                                    m_gridNumPoints[h].size = 0;
-                                }
+                                m_gridNumPoints[h].size = 0;
                             }
                         }
                     }
@@ -777,7 +770,8 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             {
                 cout << timestamp << "Scan No. " << i << " ignored!" << endl;
             }
-            else{
+            else
+            {
                 ScanPositionPtr pos = project->project->positions.at(i);
                 size_t numPoints = pos->lidars[0]->scans[0]->points->numPoints();
 
@@ -785,7 +779,8 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
                 Transformd finalPose_n = pos->transformation;
                 Transformd finalPose = finalPose_n;
-                //#pragma omp parallel for
+                
+                #pragma omp parallel for
                 for (int k = 0; k < numPoints; k++) 
                 {
                     Eigen::Vector4d point(
@@ -811,11 +806,16 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 }
             }
             if(!timestamp.isQuiet())
+            {
                 ++progress;
+            }
         }
 
         if(!timestamp.isQuiet())
+        {
             cout << endl;
+        }
+            
         
         m_PointFile.close();
         m_NomralFile.close();

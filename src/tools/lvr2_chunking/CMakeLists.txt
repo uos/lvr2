@@ -13,6 +13,7 @@ set(LVR2_CHUNKING_SOURCES
 
 set(LVR2_CHUNKING_DEPENDENCIES
     lvr2_static
+    TBB::tbb
     ${LVR2_LIB_DEPENDENCIES}
 )
 
