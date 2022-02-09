@@ -767,7 +767,7 @@ int main(int argc, char** argv)
             auto mesh_io = meshio::HDF5IO(kernel, schema);
 
             mesh_io.saveMesh(
-                "Mesh0",
+                options.getMeshName(),
                 buffer
                 );
 
@@ -785,7 +785,7 @@ int main(int argc, char** argv)
             auto mesh_io = meshio::DirectoryIO(kernel, schema);
 
             mesh_io.saveMesh(
-                "Mesh0",
+                options.getMeshName(),
                 buffer
                 );
 

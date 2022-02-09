@@ -117,6 +117,7 @@ Options::Options(int argc, char** argv)
         ("minSpectralChannel", value<int>(&m_minSpectralChannel)->default_value(0), "Minimum Spectral Channel Index for Ranged Texture Generation")
         ("maxSpectralChannel", value<int>(&m_maxSpectralChannel)->default_value(0), "Maximum Spectral Channel Index for Ranged Texture Generation")
         ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
+        ("meshName", value<string>(&m_meshName)->default_value("default"), "The name of the mesh")
     ;
 
     setup();
@@ -495,6 +496,11 @@ int Options::getMaxSpectralChannel() const
 string Options::getProjectDir() const
 {
     return m_variables["projectDir"].as<string>();
+}
+
+std::string Options::getMeshName() const
+{
+    return m_meshName;
 }
 
 Options::~Options() {

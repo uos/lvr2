@@ -338,6 +338,8 @@ public:
     
     int getMaxSpectralChannel() const;
 
+    std::string getMeshName() const;
+
 private:
 
     /// The set voxelsize
@@ -465,6 +467,9 @@ private:
 
     // Flippoint for gpu normal calculation
     vector<float> m_flippoint;
+
+    ///Name of the generated mesh
+    std::string m_meshName;
 
 };
 
