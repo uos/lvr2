@@ -58,6 +58,7 @@
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 
 #include "../widgets/LVRLabelInstanceTreeItem.hpp"
+#include "../widgets/LVRMeshOpenDialog.hpp"
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
@@ -1900,7 +1901,6 @@ void LVRMainWindow::loadModel()
 {
     QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open Model"), "", tr("Model Files (*.ply *.obj *.pts *.3d *.txt *.h5)"));
     loadModels(filenames);
-    
 }
 
 void LVRMainWindow::loadChunkedMesh()
@@ -4054,20 +4054,35 @@ void LVRMainWindow::openHDF5(std::string fileName)
 {
     boost::filesystem::path selectedFile(fileName);
     m_hdf5FileName = fileName;
-    HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(fileName));
-    MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
-
+    // Setup IO obj
+    HDF5KernelPtr       kernel = std::make_shared<HDF5Kernel>(fileName);
+    MeshSchemaHDF5Ptr   schema = std::make_shared<MeshSchemaHDF5>();
     auto mesh_io = meshio::HDF5IO(kernel, schema);
 
-    // this->treeWidget->add
-    MeshBufferPtr buffer = mesh_io.loadMesh(mesh_io.getAvailableMeshes()[0]);
+    // Ask the user which mesh should be loaded
+    LVRMeshOpenDialog* dialog = new LVRMeshOpenDialog(this);
 
+    dialog->setAvailableMeshes(mesh_io.getAvailableMeshes());
+    dialog->exec();
+
+    // If not successful for any reason abort the loading
+    if (!dialog->dialogSuccessful())
+    {
+        std::cout << timestamp << "Mesh loading aborted. Reason: " << dialog->getFailureReason() << std::endl;
+        return;
+    }
+    // If successful continue loading the mesh
+    std::string selected_mesh = dialog->getSelectedMesh();
+    MeshBufferPtr buffer = mesh_io.loadMesh(selected_mesh);
     m_meshBuffer = buffer;
-    ModelPtr model = ModelPtr(new Model(buffer));
+
+    // Add mesh to model obj
+    ModelPtr model = std::make_shared<Model>(buffer);
 
     // switch texture to hyperspectral_grayscale
     bool layerNamesSet = false;
 
+    // Do some texture loading magic
     vector<Material> &materials = buffer->getMaterials();
     for(size_t i = 0; i < materials.size(); i++)
     {
@@ -4087,11 +4102,13 @@ void LVRMainWindow::openHDF5(std::string fileName)
         m.m_texture = m.m_layers.at(m.m_layers.begin()->first); 
     }
 
-    ModelBridgePtr bridge(new LVRModelBridge(model));
-    bridge->addActors(m_renderer);
-    m_modelBridge = bridge;
+    // Create new ModelBridge for our model
+    m_modelBridge = boost::make_shared<LVRModelBridge>(model);
+    m_modelBridge->addActors(m_renderer);
+    
+    // Add model item to treeWidget
     QString base = QString::fromStdString(fileName);
-    LVRModelItem* item = new LVRModelItem(bridge, base);
+    LVRModelItem* item = new LVRModelItem(m_modelBridge, base);
     this->treeWidget->addTopLevelItem(item);
     item->setExpanded(true);
 
