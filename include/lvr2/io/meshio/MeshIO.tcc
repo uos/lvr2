@@ -347,4 +347,13 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
     
 }
 
+template <typename FeatureBase>
+std::vector<std::string> MeshIO<FeatureBase>::getAvailableMeshes() const
+{
+    std::vector<std::string> ret;
+    m_featureBase->m_kernel->subGroupNames( "meshes", ret);
+
+    return ret;
+}
+
 } // namespace lvr2

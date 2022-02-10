@@ -4060,7 +4060,7 @@ void LVRMainWindow::openHDF5(std::string fileName)
     auto mesh_io = meshio::HDF5IO(kernel, schema);
 
     // this->treeWidget->add
-    MeshBufferPtr buffer = mesh_io.loadMesh("Mesh0");
+    MeshBufferPtr buffer = mesh_io.loadMesh(mesh_io.getAvailableMeshes()[0]);
 
     m_meshBuffer = buffer;
     ModelPtr model = ModelPtr(new Model(buffer));
