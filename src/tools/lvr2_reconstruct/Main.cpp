@@ -164,7 +164,6 @@ PointBuffer mergePointBuffers(PointBuffer& b0, PointBuffer& b1)
     PointBuffer ret(merged_points, npoints_total);
 
     // Copy colors 
-    // TODO: Support merging when only one buffer has colors
     if (b0.hasColors() && b1.hasColors())
     {
         // nbytes of a color
@@ -192,7 +191,6 @@ PointBuffer mergePointBuffers(PointBuffer& b0, PointBuffer& b1)
     }
 
     // Copy normals
-    // TODO: Support merging when only one buffer has normals
      if (b0.hasNormals() && b1.hasNormals())
     {
         // Number of bytes needed for the normals
@@ -261,10 +259,13 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             scan->release();
 
             // Transform pointcloud
-            transformPointCloud<float>(
-                model,
-                (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>()
-                 );
+            if (options.transformScanPosition())
+            {
+                transformPointCloud<float>(
+                    model,
+                    (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>()
+                    );
+            }
             buffer = model->m_pointCloud;
         }
         else

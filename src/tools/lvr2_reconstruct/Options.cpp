@@ -118,6 +118,7 @@ Options::Options(int argc, char** argv)
         ("maxSpectralChannel", value<int>(&m_maxSpectralChannel)->default_value(0), "Maximum Spectral Channel Index for Ranged Texture Generation")
         ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
         ("meshName", value<string>(&m_meshName)->default_value("default"), "The name of the mesh")
+        ("transformScanPosition", "Transform the scan with the scanpositions pose when using --scanPositionIndex")
     ;
 
     setup();
@@ -501,6 +502,11 @@ string Options::getProjectDir() const
 std::string Options::getMeshName() const
 {
     return m_meshName;
+}
+
+bool Options::transformScanPosition() const
+{
+    return m_variables.count("transformScanPosition");
 }
 
 Options::~Options() {

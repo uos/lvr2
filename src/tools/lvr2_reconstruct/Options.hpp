@@ -340,6 +340,8 @@ public:
 
     std::string getMeshName() const;
 
+    bool transformScanPosition() const;
+
 private:
 
     /// The set voxelsize
