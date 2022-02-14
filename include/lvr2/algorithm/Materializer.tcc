@@ -56,14 +56,14 @@ Materializer<BaseVecT>::Materializer(
 }
 
 template<typename BaseVecT>
-void Materializer<BaseVecT>::setTexturizer(Texturizer<BaseVecT>& texturizer)
+void Materializer<BaseVecT>::setTexturizer(std::shared_ptr<Texturizer<BaseVecT>> texturizer)
 {
-    m_texturizers = TexturizerRefVec();
+    m_texturizers = TexturizerPtrVec();
     m_texturizers->push_back(texturizer);
 }
 
 template<typename BaseVecT>
-void Materializer<BaseVecT>::addTexturizer(Texturizer<BaseVecT>& texturizer)
+void Materializer<BaseVecT>::addTexturizer(std::shared_ptr<Texturizer<BaseVecT>> texturizer)
 {
     if (!m_texturizers)
     {
@@ -80,9 +80,9 @@ void Materializer<BaseVecT>::saveTextures()
 {
     if (m_texturizers)
     {
-        for (auto& texturizer_ref: *m_texturizers)
+        for (auto texturizer_ptr: *m_texturizers)
         {
-            texturizer_ref.get().saveTextures();
+            texturizer_ptr->saveTextures();
         }
     }
 }
@@ -117,10 +117,10 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 
         // Texturizers have to have the same settings for minClusterSize/maxClusterSize
         if (!m_texturizers
-            || (m_texturizers && numFacesInCluster < m_texturizers.get()[0].get().m_texMinClusterSize
-                && m_texturizers.get()[0].get().m_texMinClusterSize != 0)
-            || (m_texturizers && numFacesInCluster > m_texturizers.get()[0].get().m_texMaxClusterSize
-                && m_texturizers.get()[0].get().m_texMaxClusterSize != 0)
+            || (m_texturizers && numFacesInCluster < m_texturizers.get()[0]->m_texMinClusterSize
+                && m_texturizers.get()[0]->m_texMinClusterSize != 0)
+            || (m_texturizers && numFacesInCluster > m_texturizers.get()[0]->m_texMaxClusterSize
+                && m_texturizers.get()[0]->m_texMaxClusterSize != 0)
         )
         {
             // No textures, or using textures and texture is too small/large
@@ -130,11 +130,11 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             if (m_texturizers)
             {
                 // If using textures, count whether this cluster was too small or too large
-                if (numFacesInCluster < m_texturizers.get()[0].get().m_texMinClusterSize)
+                if (numFacesInCluster < m_texturizers.get()[0]->m_texMinClusterSize)
                 {
                     numClustersTooSmall++;
                 }
-                else if (numFacesInCluster > m_texturizers.get()[0].get().m_texMaxClusterSize)
+                else if (numFacesInCluster > m_texturizers.get()[0]->m_texMaxClusterSize)
                 {
                     numClustersTooLarge++;
                 }
@@ -194,7 +194,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 m_mesh,
                 cluster,
                 m_normals,
-                m_texturizers.get()[0].get().m_texelSize,
+                m_texturizers.get()[0]->m_texelSize,
                 clusterH
             );
 
@@ -203,11 +203,10 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             boost::optional<TextureHandle> first_opt;
             Material::LayerMap layers;
             // Use each texturizer once for this cluster
-            for (auto& texturizer_ref: *m_texturizers)
+            for (auto texturizer: *m_texturizers)
             {
-                auto& texturizer = texturizer_ref.get();
                 // Create texture
-                TextureHandle texH = texturizer.generateTexture(
+                TextureHandle texH = texturizer->generateTexture(
                 textureCount,
                 m_surface,
                 boundingRect
@@ -218,17 +217,17 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 // (The combined list will be created at the end)
                 layers.insert(
                     std::pair(
-                    texturizer.getTexture(texH).m_layerName,
+                    texturizer->getTexture(texH).m_layerName,
                     TextureHandle(textureCount))
                     );
 
                 std::vector<cv::KeyPoint> keypoints;
                 cv::Mat descriptors;
                 cv::Ptr<cv::AKAZE> detector = cv::AKAZE::create();
-                texturizer.findKeyPointsInTexture(texH,
+                texturizer->findKeyPointsInTexture(texH,
                     boundingRect, detector, keypoints, descriptors);
                 std::vector<BaseVecT> features3d =
-                    texturizer.keypoints23d(keypoints, boundingRect, texH);
+                    texturizer->keypoints23d(keypoints, boundingRect, texH);
 
                 // Transform descriptor from matrix row to float vector
                 for (unsigned int row = 0; row < features3d.size(); ++row)
@@ -265,9 +264,9 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             for (auto vertexH : verticesOfCluster)
             {
                 // Use the first texturizer for mapping coordinates
-                auto& texturizer = m_texturizers.get()[0].get();
+                auto texturizer = m_texturizers.get()[0];
                 // Calculate tex coords
-                TexCoords texCoords = texturizer.calculateTexCoords(
+                TexCoords texCoords = texturizer->calculateTexCoords(
                     *first_opt,
                     boundingRect,
                     m_mesh.getVertexPosition(vertexH)
@@ -307,12 +306,11 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
         StableVector<TextureHandle, Texture> combined_textures;
         combined_textures.increaseSize(TextureHandle(textureCount));
 
-        for (auto tex_ref: *m_texturizers)
+        for (auto texturizer: *m_texturizers)
         {
-            auto& texturizer = tex_ref.get();
-            for (const auto texH: texturizer.getTextures())
+            for (const auto texH: texturizer->getTextures())
             {
-                auto tex = texturizer.getTextures()[texH];
+                auto tex = texturizer->getTextures()[texH];
                 combined_textures.set(TextureHandle(tex.m_index), std::move(tex));
             }
         }

@@ -151,14 +151,14 @@ public:
      * @brief Sets the texturizer
      * @param texturizer The texturizer
      */
-    void setTexturizer(Texturizer<BaseVecT>& texturizer);
+    void setTexturizer(std::shared_ptr<Texturizer<BaseVecT>> texturizer);
 
     /**
      * @brief Adds another texturizer
      * 
      * @param texturizer The texturizer
      */
-    void addTexturizer(Texturizer<BaseVecT>& texturizer);
+    void addTexturizer(std::shared_ptr<Texturizer<BaseVecT>> texturizer);
 
     /**
      * @brief Generates materials
@@ -196,8 +196,8 @@ private:
     const PointsetSurface<BaseVecT>& m_surface;
 
     /// Texturizers
-    using TexturizerRefVec = std::vector<std::reference_wrapper<Texturizer<BaseVecT>>>;
-    boost::optional<TexturizerRefVec> m_texturizers;
+    using TexturizerPtrVec = std::vector<std::shared_ptr<Texturizer<BaseVecT>>>;
+    boost::optional<TexturizerPtrVec> m_texturizers;
 
 };
 
