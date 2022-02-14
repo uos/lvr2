@@ -235,6 +235,7 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
     size_t numPoints = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
 
+    #pragma omp parallel for
     for(int i = 0; i < numPoints; i++)
     {
         float x = arr[3 * i];
