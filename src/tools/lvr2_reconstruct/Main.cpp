@@ -56,6 +56,7 @@
 #include "lvr2/algorithm/Texturizer.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp" // Has to be included before anything includes opencv stuff, see https://github.com/flann-lib/flann/issues/214 
 #include "lvr2/algorithm/SpectralTexturizer.hpp"
+#include "lvr2/algorithm/RayCastingTexturizer.hpp"
 
 #include "lvr2/reconstruction/BilinearFastBox.hpp"
 #include "lvr2/reconstruction/TetraederBox.hpp"
@@ -492,6 +493,70 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     return make_pair(nullptr, nullptr);
 }
 
+template <typename Vec>
+void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materializer<Vec>& materializer)
+{
+    if (!options.hasScanPositionIndex())
+    {
+        return;
+    }
+
+    // TODO: Check if the scanproject has spectral data
+    boost::filesystem::path selectedFile( options.getInputFileName());
+    std::string filePath = selectedFile.generic_path().string();
+
+    // create hdf5 kernel and schema 
+    HDF5KernelPtr hdfKernel = std::make_shared<HDF5Kernel>(filePath);
+    HDF5SchemaPtr hdfSchema = std::make_shared<ScanProjectSchemaHDF5>();
+    
+    // create io object for hdf5 files
+    auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
+    // load panorama from hdf5 file
+    auto panorama = hdf5IO.HyperspectralPanoramaIO::load(options.getScanPositionIndex(), 0, 0);
+
+    // If there is no spectral data
+    if (!panorama)
+    {
+        return;
+    }
+
+    int texturizer_count = options.getMaxSpectralChannel() - options.getMinSpectralChannel();
+    texturizer_count = std::max(texturizer_count, 0);
+
+    // go through all spectralTexturizers of the vector
+    for(int i = 0; i < texturizer_count; i++)
+    {
+        // if the spectralChannel doesnt exist, skip it
+        if(panorama->num_channels < options.getMinSpectralChannel() + i)
+        {
+            continue;
+        }
+
+        auto spec_text = std::make_shared<SpectralTexturizer<Vec>>(
+            options.getTexelSize(),
+            options.getTexMinClusterSize(),
+            options.getTexMaxClusterSize()
+        );
+
+        // set the spectral texturizer with the current spectral channel
+        spec_text->init_image_data(panorama, std::max(options.getMinSpectralChannel(), 0) + i);
+        // set the texturizer for the current spectral channel
+        materializer.addTexturizer(spec_text);
+    }
+}
+
+template <typename Vec>
+void addRGBTexturizer(const reconstruct::Options& options, lvr2::Materializer<Vec>& materializer)
+{
+    auto texturizer = std::make_shared<RayCastingTexturizer<Vec>>(
+        options.getTexelSize(),
+        options.getTexMinClusterSize(),
+        options.getTexMaxClusterSize()
+    );
+
+    materializer.addTexturizer(texturizer);
+}
+
 int main(int argc, char** argv)
 {
     // =======================================================================
@@ -658,28 +723,14 @@ int main(int argc, char** argv)
         *surface
     );
 
-    Texturizer<Vec> texturizer(
+    auto texturizer = std::make_shared<Texturizer<Vec>>(
         options.getTexelSize(),
         options.getTexMinClusterSize(),
         options.getTexMaxClusterSize()
     );
 
 
-    std::vector<SpectralTexturizer<Vec>> spec_texters;
-    // calculate how many spectral texturizers should be created
-    int texturizer_count = options.getMaxSpectralChannel() - options.getMinSpectralChannel();
-    texturizer_count = std::max(texturizer_count, 1);
-    // initialize the SpectralTexturizers
-    for(int i = 0; i < texturizer_count; i++)
-    {
-        SpectralTexturizer<Vec> spec_text(
-            options.getTexelSize(),
-            options.getTexMinClusterSize(),
-            options.getTexMaxClusterSize()
-        );
 
-        spec_texters.push_back(spec_text);
-    }
 
     // When using textures ...
     if (options.generateTextures())
@@ -693,36 +744,16 @@ int main(int argc, char** argv)
         } 
         else 
         {
-            // create hdf5 kernel and schema 
-            FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
-            ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
-            
-            HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel);
-            HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
-            
-            // create io object for hdf5 files
-            auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
-            // load panorama from hdf5 file
-            auto panorama = hdf5IO.HyperspectralPanoramaIO::load(options.getScanPositionIndex(), 0, 0);
+            addSpectralTexturizers(options, materializer);
 
-            // go through all spectralTexturizers of the vector
-            for(int i = 0; i < texturizer_count; i++)
-            {
-                // if the spectralChannel doesnt exist, skip it
-                if(panorama->num_channels < options.getMinSpectralChannel() + i)
-                {
-                    continue;
-                }
-                // set the spectral texturizer with the current spectral channel
-                spec_texters[i].init_image_data(panorama, std::max(options.getMinSpectralChannel(), 0) + i);
-                // set the texturizer for the current spectral channel
-                materializer.addTexturizer(spec_texters[i]);
-            }
+            addRGBTexturizer(options, materializer);
         }
     }
 
     // Generate materials
     MaterializerResult<Vec> matResult = materializer.generateMaterials();
+
+    materializer.saveTextures();
 
     // Add material data to finalize algorithm
     finalize.setMaterializerResult(matResult);
