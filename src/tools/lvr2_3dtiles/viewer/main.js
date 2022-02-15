@@ -24,12 +24,7 @@ var viewer = new Cesium.Viewer("cesiumContainer", {
 window['viewer'] = viewer;
 
 var args = new URLSearchParams(window.location.search);
-var url;
-if (args.has('url')) {
-    url = args.get('url');
-} else {
-    url = "/build/chunk.3dtiles";
-}
+var url = args.get('url') || "/build/chunk.3dtiles";
 if (!url.endsWith("tileset.json")) {
     if (!url.endsWith("/")) {
         url += "/";
@@ -37,12 +32,18 @@ if (!url.endsWith("tileset.json")) {
     url += "tileset.json";
 }
 
+var lower_args = new URLSearchParams(window.location.search.toLowerCase().replace(/[-_]/, ''));
+
+var debug = ['debug', 'showdebug', 'debugdisplay'].some(x => lower_args.has(x));
+
+var show_bb = debug || ['bb', 'boundingbox', 'showbb', 'showboundingbox'].some(x => lower_args.has(x));
+
 var tileset = viewer.scene.primitives.add(
     new Cesium.Cesium3DTileset({
         url,
-        debugShowBoundingVolume: true,
-        // debugShowRenderingStatistics: true,
-        // debugShowMemoryUsage: true,
+        debugShowBoundingVolume: show_bb,
+        debugShowRenderingStatistics: debug,
+        debugShowMemoryUsage: debug,
         backFaceCulling: false,
     })
 );

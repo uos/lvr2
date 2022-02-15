@@ -37,6 +37,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 
 using std::stringstream;
 using std::cout;
@@ -55,6 +56,9 @@ ProgressBar::ProgressBar(size_t max_val, string prefix)
 	m_maxVal = max_val;
     m_currentVal = 0;
 	m_percent = 0;
+	m_start = std::chrono::system_clock::now();
+
+	cout << "\r" << m_prefix << "   0%" << flush;
 
 	if(m_titleCallback)
 	{
@@ -132,7 +136,22 @@ void ProgressBar::operator+=(size_t n)
 
 void ProgressBar::print_bar()
 {
-	cout <<  "\r" << m_prefix << " " << m_percent << "%" << flush;
+	using namespace std::chrono;
+
+	// calculate eta based on time difference since m_start
+	auto now = system_clock::now();
+	auto diff = now - m_start;
+	auto eta = diff * (m_maxVal - m_currentVal) / m_currentVal;
+
+	auto h = duration_cast<hours>(eta); eta -= h;
+	auto m = duration_cast<minutes>(eta); eta -= m;
+	auto s = duration_cast<seconds>(eta);
+
+	cout << '\r' << m_prefix << ' ' << std::setfill(' ') << std::setw(3) << m_percent << "% eta: "
+		 << h.count() << ':'
+		 << std::setfill('0') << std::setw(2) << m.count() << ':'
+		 << std::setw(2) << s.count()
+	     << "        " << flush;
 }
 
 ProgressCounter::ProgressCounter(int stepVal, string prefix)

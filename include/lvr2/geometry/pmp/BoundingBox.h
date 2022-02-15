@@ -61,6 +61,18 @@ public:
     //! Get center point.
     Point center() const { return 0.5f * (min_ + max_); }
 
+    size_t longest_axis() const
+    {
+        Point size = max_ - min_;
+        return std::max_element(size.data(), size.data() + 3) - size.data();
+    }
+
+    Scalar longest_axis_size() const
+    {
+        Point size = max_ - min_;
+        return *std::max_element(size.data(), size.data() + 3);
+    }
+
     //! Indicate if the bounding box is empty.
     bool is_empty() const
     {

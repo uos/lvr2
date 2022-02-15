@@ -40,6 +40,8 @@
 namespace lvr2
 {
 
+using DynVector = Eigen::Matrix<float, Eigen::Dynamic, 1>;
+
 /**
  * @brief creates a new value at the end of a vector and returns its index and a reference to that value
  *
@@ -55,61 +57,6 @@ inline std::tuple<size_t, T&> push_and_get_index(std::vector<T>& vec)
 }
 
 /**
- * @brief Adds a vertex attribute channel to the model
- *
- * @tparam N the number of components of the attribute (1 - 4)
- * @param buffer the buffer to add the attribute to
- * @param model the model to add the attribute to
- * @param primitive the primitive to add the attribute to
- * @param name the name of the attribute
- * @param num_vertices the number of elements in the attribute
- * @param min the component-wise minimum value of the attribute
- * @param max the component-wise maximum value of the attribute
- * @return size_t the byte offset in the buffer where the attribute starts
- */
-template<int N = 3>
-size_t add_vertex_attribute(std::vector<std::byte>& buffer,
-                            CesiumGltf::Model& model,
-                            CesiumGltf::MeshPrimitive& primitive,
-                            std::string name,
-                            size_t num_vertices,
-                            Eigen::Matrix<float, N, 1> min,
-                            Eigen::Matrix<float, N, 1> max)
-{
-    static_assert(N <= 4 && N >= 1);
-
-    size_t byte_offset = buffer.size();
-    size_t byte_length = num_vertices * N * sizeof(float);
-    buffer.resize(byte_offset + byte_length);
-
-    auto [ buffer_view_id, buffer_view ] = push_and_get_index(model.bufferViews);
-    buffer_view.buffer = 0;
-    buffer_view.byteOffset = byte_offset;
-    buffer_view.byteLength = byte_length;
-    buffer_view.byteStride = N * sizeof(float);
-    buffer_view.target = CesiumGltf::BufferView::Target::ARRAY_BUFFER;
-
-    auto [ accessor_id, accessor ] = push_and_get_index(model.accessors);
-    accessor.bufferView = buffer_view_id;
-    accessor.count = num_vertices;
-    accessor.componentType = CesiumGltf::Accessor::ComponentType::FLOAT;
-    accessor.type = (N == 4 ? CesiumGltf::Accessor::Type::VEC4 :
-                     N == 3 ? CesiumGltf::Accessor::Type::VEC3 :
-                     N == 2 ? CesiumGltf::Accessor::Type::VEC2 :
-                     CesiumGltf::Accessor::Type::SCALAR);
-
-    for (int i = 0; i < N; i++)
-    {
-        accessor.min.push_back(min[i]);
-        accessor.max.push_back(max[i]);
-    }
-
-    primitive.attributes[name] = accessor_id;
-
-    return byte_offset;
-}
-
-/**
  * @brief writes a uint32_t to an output stream in binary format
  *
  * @param file the output stream
@@ -120,243 +67,337 @@ inline void write_uint32(std::ofstream& file, uint32_t value)
     file.write(reinterpret_cast<char*>(&value), sizeof(uint32_t));
 }
 
-
-void write_b3dm_segment(const boost::filesystem::path& filename,
-                        const PMPMesh<BaseVector<float>>& mesh,
-                        const pmp::BoundingBox& bb,
-                        size_t num_faces,
-                        size_t num_vertices,
-                        uint32_t segment_id)
+struct PropertyWriter
 {
-    std::ofstream file(filename, std::ios::binary);
-    if (!file)
+    std::string name;
+    size_t byte_offset;
+    size_t byte_length;
+    size_t num_vertices;
+    size_t elements_per_vertex;
+    DynVector min, max;
+    float* data_out = nullptr;
+    const float* data_in;
+
+    PropertyWriter(std::string name, size_t elements_per_vertex, const float* data_in,
+                   size_t byte_offset, size_t num_vertices,
+                   DynVector min, DynVector max)
+        : name(name), byte_offset(byte_offset), data_in(data_in), num_vertices(num_vertices),
+          elements_per_vertex(elements_per_vertex), min(min), max(max)
     {
-        std::cerr << "Error opening file " << filename << std::endl;
-        return;
+        if (elements_per_vertex < 1 || elements_per_vertex > 4)
+        {
+            throw std::invalid_argument("PropertyWriter: elements_per_vertex must be between 1 and 4");
+        }
+        byte_length = num_vertices * elements_per_vertex * sizeof(float);
     }
 
-    CesiumGltf::Model model;
-    model.asset.generator = "lvr2";
-    model.asset.version = "2.0";
-
-    auto [ out_mesh_id, out_mesh ] = push_and_get_index(model.meshes);
-
-    auto [ primitive_id, primitive ] = push_and_get_index(out_mesh.primitives);
-    primitive.mode = CesiumGltf::MeshPrimitive::Mode::TRIANGLES;
-
-    auto [ node_id, node ] = push_and_get_index(model.nodes);
-    node.mesh = out_mesh_id;
-    // gltf uses y-up, but 3d tiles uses z-up and automatically transforms gltf data.
-    // So we need to pre-undo that transformation to maintain consistency.
-    // See the "Implementation note" section in https://github.com/CesiumGS/3d-tiles/tree/main/specification#gltf-transforms
-    node.matrix = {1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
-
-    auto [ scene_id, scene ] = push_and_get_index(model.scenes);
-    scene.nodes.push_back(node_id);
-
-    model.scene = scene_id;
-
-    auto [ buffer_id, raw_buffer ] = push_and_get_index(model.buffers);
-    auto& buffer = raw_buffer.cesium.data;
-
-    auto& surface_mesh = mesh.getSurfaceMesh();
-
-    // vertices might have been deleted and segments aren't in order, so map from VertexHandle to buffer index
-    std::vector<uint32_t> vertex_id_map(surface_mesh.vertices_size(), std::numeric_limits<uint32_t>::max());
-
-    // Add vertices and attributes
+    void add_metadata(std::vector<std::byte>& buffer,
+                      CesiumGltf::Model& model,
+                      CesiumGltf::MeshPrimitive& primitive)
     {
-        bool has_segments = segment_id != std::numeric_limits<uint32_t>::max();
-        const auto& v_segment = surface_mesh.get_vertex_property<uint32_t>("v:segment");
-
-        size_t vertex_byte_offset = add_vertex_attribute(buffer, model, primitive, "POSITION", num_vertices, bb.min(), bb.max());
-
-        bool has_normal = surface_mesh.has_vertex_property("v:normal");
-        const auto& normals = surface_mesh.get_vertex_property<pmp::Normal>("v:normal");
-        size_t normal_byte_offset;
-        if (has_normal)
-        {
-            normal_byte_offset = add_vertex_attribute(buffer, model, primitive, "NORMAL", num_vertices, pmp::Point(-1, -1, -1), pmp::Point(1, 1, 1));
-        }
-
-        bool has_color = surface_mesh.has_vertex_property("v:color");
-        const auto& colors = surface_mesh.get_vertex_property<pmp::Color>("v:color");
-        size_t color_byte_offset;
-        if (has_color)
-        {
-            color_byte_offset = add_vertex_attribute(buffer, model, primitive, "COLOR_0", num_vertices, pmp::Color(0, 0, 0), pmp::Color(1, 1, 1));
-        }
-
-        bool has_tex = surface_mesh.has_vertex_property("v:tex");
-        const auto& tex = surface_mesh.get_vertex_property<pmp::TexCoord>("v:tex");
-        size_t tex_byte_offset;
-        if (has_tex)
-        {
-            tex_byte_offset = add_vertex_attribute<2>(buffer, model, primitive, "TEXCOORD_0", num_vertices, pmp::TexCoord(0, 0), pmp::TexCoord(1, 1));
-        }
-
-        // it is important that all calls to add_vertex_attribute are done before buffer.data() is
-        // used, in case the buffer is reallocated
-        float* vertex_out = (float*)(buffer.data() + vertex_byte_offset);
-        float* normals_out = nullptr;
-        float* colors_out = nullptr;
-        float* tex_out = nullptr;
-        if (has_normal)
-        {
-            normals_out = (float*)(buffer.data() + normal_byte_offset);
-        }
-        if (has_color)
-        {
-            colors_out = (float*)(buffer.data() + color_byte_offset);
-        }
-        if (has_tex)
-        {
-            tex_out = (float*)(buffer.data() + tex_byte_offset);
-        }
-
-        uint32_t next_index = 0;
-        for (auto vH : surface_mesh.vertices())
-        {
-            if (has_segments && v_segment[vH] != segment_id)
-            {
-                continue;
-            }
-            uint32_t index = next_index++;
-            vertex_id_map[vH.idx()] = index;
-
-            std::copy_n(surface_mesh.position(vH).data(), 3, vertex_out);
-            vertex_out += 3;
-
-            if (has_normal)
-            {
-                std::copy_n(normals[vH].data(), 3, normals_out);
-                normals_out += 3;
-            }
-            if (has_color)
-            {
-                std::copy_n(colors[vH].data(), 3, colors_out);
-                colors_out += 3;
-            }
-            if (has_tex)
-            {
-                std::copy_n(tex[vH].data(), 2, tex_out);
-                tex_out += 2;
-            }
-        }
-        if (next_index != num_vertices)
-        {
-            std::cerr << "Expected " << num_vertices << " vertices, but found " << next_index << std::endl;
-            return;
-        }
-    }
-
-    // Add face indices
-    {
-        bool has_segments = segment_id != std::numeric_limits<uint32_t>::max();
-        const auto& f_segment = surface_mesh.get_face_property<uint32_t>("f:segment");
-
-        size_t byte_offset = buffer.size();
-        size_t byte_length = num_faces * 3 * sizeof(uint32_t);
-        buffer.resize(byte_offset + byte_length);
-        uint32_t* out = (uint32_t*)(buffer.data() + byte_offset);
-        size_t count = 0;
-        for (auto fH : surface_mesh.faces())
-        {
-            if (has_segments && f_segment[fH] != segment_id)
-            {
-                continue;
-            }
-            if (++count > num_faces)
-            {
-                continue;
-            }
-            auto vertex_iter = mesh.getSurfaceMesh().vertices(fH);
-            out[0] = vertex_id_map[(*vertex_iter).idx()];
-            out[1] = vertex_id_map[(*(++vertex_iter)).idx()];
-            out[2] = vertex_id_map[(*(++vertex_iter)).idx()];
-            out += 3;
-        }
-        if (count != num_faces)
-        {
-            std::cerr << "Expected " << num_faces << " faces, but found " << count << std::endl;
-            return;
-        }
+        data_out = reinterpret_cast<float*>(buffer.data() + byte_offset);
 
         auto [ buffer_view_id, buffer_view ] = push_and_get_index(model.bufferViews);
-        buffer_view.buffer = buffer_id;
+        buffer_view.buffer = 0;
         buffer_view.byteOffset = byte_offset;
         buffer_view.byteLength = byte_length;
-        buffer_view.target = CesiumGltf::BufferView::Target::ELEMENT_ARRAY_BUFFER;
+        buffer_view.byteStride = elements_per_vertex * sizeof(float);
+        buffer_view.target = CesiumGltf::BufferView::Target::ARRAY_BUFFER;
 
         auto [ accessor_id, accessor ] = push_and_get_index(model.accessors);
         accessor.bufferView = buffer_view_id;
-        accessor.count = num_faces * 3;
-        accessor.componentType = CesiumGltf::Accessor::ComponentType::UNSIGNED_INT;
-        accessor.type = CesiumGltf::Accessor::Type::SCALAR;
-        accessor.min = { 0 };
-        accessor.max = { (double)num_vertices - 1 };
+        accessor.count = num_vertices;
+        accessor.componentType = CesiumGltf::Accessor::ComponentType::FLOAT;
+        accessor.type = (elements_per_vertex == 4 ? CesiumGltf::Accessor::Type::VEC4 :
+                         elements_per_vertex == 3 ? CesiumGltf::Accessor::Type::VEC3 :
+                         elements_per_vertex == 2 ? CesiumGltf::Accessor::Type::VEC2 :
+                         CesiumGltf::Accessor::Type::SCALAR);
 
-        primitive.indices = accessor_id;
+        for (int i = 0; i < elements_per_vertex; i++)
+        {
+            accessor.min.push_back(min[i]);
+            accessor.max.push_back(max[i]);
+        }
+
+        primitive.attributes[name] = accessor_id;
     }
 
-    CesiumGltfWriter::GltfWriter writer;
-    auto gltf = writer.writeGlb(model, buffer);
-    if (!gltf.warnings.empty())
+    void add_value(size_t id_in, size_t id_out)
     {
-        std::cerr << "Warnings writing gltf: " << std::endl;
-        for (auto& e : gltf.warnings)
+        std::copy_n(data_in + id_in * elements_per_vertex,
+                    elements_per_vertex,
+                    data_out + id_out * elements_per_vertex);
+    }
+};
+
+
+void write_b3dm(const boost::filesystem::path& output_dir,
+                const pmp::SurfaceMesh& mesh,
+                const std::vector<Segment>& segments)
+{
+    std::vector<std::ofstream> b3dm_files;
+    std::vector<std::ofstream> bin_files;
+    std::vector<std::string> local_bin_filenames;
+    for (const auto& segment : segments)
+    {
+        boost::filesystem::path b3dm_file = output_dir / segment.filename;
+        b3dm_files.emplace_back(b3dm_file, std::ios::binary);
+        if (!b3dm_files.back().is_open())
         {
-            std::cerr << e << std::endl;
+            throw std::runtime_error("Could not open file " + b3dm_file.string());
+        }
+        boost::filesystem::path bin_file = b3dm_file;
+        bin_file.replace_extension(".bin");
+        bin_files.emplace_back(bin_file, std::ios::binary);
+        if (!bin_files.back().is_open())
+        {
+            throw std::runtime_error("Could not open file " + bin_file.string());
+        }
+        local_bin_filenames.emplace_back(bin_file.filename().string());
+    }
+
+    size_t num_segments = segments.size();
+
+    const auto& positions = mesh.get_vertex_property<pmp::Point>("v:point");
+
+    bool has_normal = mesh.has_vertex_property("v:normal");
+    const auto& normals = mesh.get_vertex_property<pmp::Normal>("v:normal");
+
+    bool has_color = mesh.has_vertex_property("v:color");
+    const auto& colors = mesh.get_vertex_property<pmp::Color>("v:color");
+
+    bool has_tex = mesh.has_vertex_property("v:tex");
+    const auto& tex = mesh.get_vertex_property<pmp::TexCoord>("v:tex");
+
+    auto f_segment = mesh.get_face_property<SegmentId>("f:segment");
+
+    std::vector<CesiumGltf::Model> models(num_segments);
+    std::vector<std::vector<std::byte>> buffers(num_segments);
+    std::vector<std::unordered_map<VertexHandle, VertexHandle>> vertex_maps(num_segments);
+    std::vector<std::vector<PropertyWriter>> property_writers(num_segments);
+    std::vector<uint32_t*> face_outs(num_segments);
+
+    for (size_t i = 0; i < num_segments; i++)
+    {
+        auto& model = models[i];
+        auto& writers = property_writers[i];
+        auto& vertex_map = vertex_maps[i];
+        auto& segment = segments[i];
+
+        model.asset.generator = "lvr2";
+        model.asset.version = "2.0";
+
+        auto [ out_mesh_id, out_mesh ] = push_and_get_index(model.meshes);
+
+        auto [ primitive_id, primitive ] = push_and_get_index(out_mesh.primitives);
+        primitive.mode = CesiumGltf::MeshPrimitive::Mode::TRIANGLES;
+
+        auto [ node_id, node ] = push_and_get_index(model.nodes);
+        node.mesh = out_mesh_id;
+        // gltf uses y-up, but 3d tiles uses z-up and automatically transforms gltf data.
+        // So we need to pre-undo that transformation to maintain consistency.
+        // See the "Implementation note" section in https://github.com/CesiumGS/3d-tiles/tree/main/specification#gltf-transforms
+        node.matrix = {1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
+
+        auto [ scene_id, scene ] = push_and_get_index(model.scenes);
+        scene.nodes.push_back(node_id);
+
+        model.scene = scene_id;
+
+        auto [ buffer_id, raw_buffer ] = push_and_get_index(model.buffers);
+        raw_buffer.uri = local_bin_filenames[i];
+
+        size_t byte_offset = 0;
+
+        writers.emplace_back("POSITION", 3, (float*)positions.data(),
+                             byte_offset, segment.num_vertices,
+                             segment.bb.min(), segment.bb.max());
+        byte_offset += writers.back().byte_length;
+
+        if (has_normal)
+        {
+            writers.emplace_back("NORMAL", 3, (float*)normals.data(),
+                                 byte_offset, segment.num_vertices,
+                                 pmp::Point(-1, -1, -1), pmp::Point(1, 1, 1));
+            byte_offset += writers.back().byte_length;
+        }
+
+        if (has_color)
+        {
+            writers.emplace_back("COLOR_0", 3, (float*)colors.data(),
+                                 byte_offset, segment.num_vertices,
+                                 pmp::Color(0, 0, 0), pmp::Color(1, 1, 1));
+            byte_offset += writers.back().byte_length;
+        }
+
+        if (has_tex)
+        {
+            writers.emplace_back("TEXCOORD_0", 2, (float*)tex.data(),
+                                 byte_offset, segment.num_vertices,
+                                 pmp::TexCoord(0, 0), pmp::TexCoord(1, 1));
+            byte_offset += writers.back().byte_length;
+        }
+
+        // add face metadata
+        size_t face_byte_offset = byte_offset;
+        size_t face_byte_length = segment.num_faces * 3 * sizeof(uint32_t);
+        byte_offset += face_byte_length;
+
+        auto [ face_buffer_view_id, face_buffer_view ] = push_and_get_index(model.bufferViews);
+        face_buffer_view.buffer = 0;
+        face_buffer_view.byteOffset = face_byte_offset;
+        face_buffer_view.byteLength = face_byte_length;
+        face_buffer_view.target = CesiumGltf::BufferView::Target::ELEMENT_ARRAY_BUFFER;
+
+        auto [ face_accessor_id, face_accessor ] = push_and_get_index(model.accessors);
+        face_accessor.bufferView = face_buffer_view_id;
+        face_accessor.count = segment.num_faces * 3;
+        face_accessor.componentType = CesiumGltf::Accessor::ComponentType::UNSIGNED_INT;
+        face_accessor.type = CesiumGltf::Accessor::Type::SCALAR;
+        face_accessor.min = { 0 };
+        face_accessor.max = { (double)segment.num_vertices - 1 };
+
+        primitive.indices = face_accessor_id;
+
+
+        size_t total_byte_length = byte_offset;
+        raw_buffer.byteLength = total_byte_length;
+
+        auto& buffer = buffers[i];
+        buffer.resize(total_byte_length);
+
+        for (auto& writer : writers)
+        {
+            writer.add_metadata(buffer, model, primitive);
+        }
+        face_outs[i] = (uint32_t*)(buffer.data() + face_byte_offset);
+
+        vertex_map.reserve(segment.num_vertices);
+    }
+
+    ProgressBar progress(mesh.n_faces(), "Writing Data");
+    std::vector<size_t> added_faces(num_segments, 0);
+    for (auto fH : mesh.faces())
+    {
+        SegmentId segment_id = f_segment[fH];
+
+        auto& face_out = face_outs[segment_id];
+        if (face_out == nullptr)
+        {
+            std::cerr << "Added too many faces for segment " << segment_id << std::endl;
+            return;
+        }
+        auto& vertex_map = vertex_maps[segment_id];
+        for (auto vH : mesh.vertices(fH))
+        {
+            auto it = vertex_map.find(vH);
+            if (it == vertex_map.end())
+            {
+                size_t new_vH = vertex_map.size();
+                vertex_map[vH] = VertexHandle(new_vH);
+                *face_out++ = new_vH;
+                for (auto& writer : property_writers[segment_id])
+                {
+                    writer.add_value(vH.idx(), new_vH);
+                }
+            }
+            else
+            {
+                *face_out++ = it->second.idx();
+            }
+        }
+
+        if (++added_faces[segment_id] == segments[segment_id].num_faces)
+        {
+            auto& file = bin_files[segment_id];
+            auto& buffer = buffers[segment_id];
+            file.write((char*)buffer.data(), buffer.size());
+            file.close();
+            buffer = {};
+            face_outs[segment_id] = nullptr;
+        }
+        ++progress;
+    }
+    std::cout << std::endl;
+
+    // consistency check
+    for (size_t i = 0; i < num_segments; i++)
+    {
+        if (added_faces[i] != segments[i].num_faces)
+        {
+            std::cerr << "Segment " << i << " has " << added_faces[i] << " faces, but "
+                      << segments[i].num_faces << " faces were expected." << std::endl;
         }
     }
-    if (!gltf.errors.empty())
+
+
+    for (size_t i = 0; i < num_segments; i++)
     {
-        std::cerr << "Errors writing gltf: " << std::endl;
-        for (auto& e : gltf.errors)
+        auto& file = b3dm_files[i];
+        auto& model = models[i];
+
+        CesiumGltfWriter::GltfWriter writer;
+        auto gltf = writer.writeGlb(model, gsl::span<std::byte>());
+        if (!gltf.warnings.empty())
         {
-            std::cerr << e << std::endl;
+            std::cerr << "Warnings writing gltf: " << std::endl;
+            for (auto& e : gltf.warnings)
+            {
+                std::cerr << e << std::endl;
+            }
         }
-        throw std::runtime_error("Failed to write gltf");
+        if (!gltf.errors.empty())
+        {
+            std::cerr << "Errors writing gltf: " << std::endl;
+            for (auto& e : gltf.errors)
+            {
+                std::cerr << e << std::endl;
+            }
+            throw std::runtime_error("Failed to write gltf");
+        }
+
+        std::string feature_table = "{\"BATCH_LENGTH\":0}";
+
+        std::string magic = "b3dm";
+        uint32_t version = 1;
+        uint32_t byte_length = 0;
+        uint32_t feature_table_json_length = feature_table.length();
+        uint32_t feature_table_byte_length = 0;
+        uint32_t batch_table_json_length = 0;
+        uint32_t batch_table_byte_length = 0;
+
+        size_t header_length = magic.length()
+                               + 6 * sizeof(uint32_t)
+                               + feature_table_json_length
+                               + feature_table_byte_length
+                               + batch_table_json_length
+                               + batch_table_byte_length;
+
+        while (header_length % 8 != 0)
+        {
+            // gltf has to start on a multiple of 8 bytes, so pad the feature table to match
+            feature_table += ' ';
+            feature_table_json_length++;
+            header_length++;
+        }
+
+        byte_length = header_length + gltf.gltfBytes.size();
+
+        file << magic;
+        write_uint32(file, version);
+        write_uint32(file, byte_length);
+        write_uint32(file, feature_table_json_length);
+        write_uint32(file, feature_table_byte_length);
+        write_uint32(file, batch_table_json_length);
+        write_uint32(file, batch_table_byte_length);
+
+        file << feature_table;
+
+        file.write((char*)gltf.gltfBytes.data(), gltf.gltfBytes.size());
+        file.close();
+
+        model = {};
     }
-
-    std::string feature_table = "{\"BATCH_LENGTH\":0}";
-
-    std::string magic = "b3dm";
-    uint32_t version = 1;
-    uint32_t byte_length = 0;
-    uint32_t feature_table_json_length = feature_table.length();
-    uint32_t feature_table_byte_length = 0;
-    uint32_t batch_table_json_length = 0;
-    uint32_t batch_table_byte_length = 0;
-
-    size_t header_length = magic.length()
-                           + 6 * sizeof(uint32_t)
-                           + feature_table_json_length
-                           + feature_table_byte_length
-                           + batch_table_json_length
-                           + batch_table_byte_length;
-
-    while (header_length % 8 != 0)
-    {
-        // gltf has to start on a multiple of 8 bytes, so pad the feature table to match
-        feature_table += ' ';
-        feature_table_json_length++;
-        header_length++;
-    }
-
-    byte_length = header_length + gltf.gltfBytes.size();
-
-    file << magic;
-    write_uint32(file, version);
-    write_uint32(file, byte_length);
-    write_uint32(file, feature_table_json_length);
-    write_uint32(file, feature_table_byte_length);
-    write_uint32(file, batch_table_json_length);
-    write_uint32(file, batch_table_byte_length);
-
-    file << feature_table;
-
-    file.write((char*)gltf.gltfBytes.data(), gltf.gltfBytes.size());
 }
 
 } // namespace lvr2

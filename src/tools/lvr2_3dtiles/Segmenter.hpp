@@ -40,26 +40,30 @@
 namespace lvr2
 {
 
-constexpr uint32_t INVALID_SEGMENT = std::numeric_limits<uint32_t>::max();
+typedef uint32_t SegmentId;
+constexpr SegmentId INVALID_SEGMENT = std::numeric_limits<SegmentId>::max();
 
 struct Segment
 {
-    uint32_t id = INVALID_SEGMENT;
+    SegmentId id = INVALID_SEGMENT;
     size_t num_faces = 0;
     size_t num_vertices = 0;
     pmp::BoundingBox bb;
+    std::string filename = "";
 };
 
 /**
- * @brief partitions and indexes all connected regions of a mesh
- *
- * Writes the index of each partition into the properties "v:segment" for vertices and "f:segment"
- * for faces. Both are of uint32_t.
+ * @brief partitions all connected regions of a mesh, and bundles small segments into chunks
+ * 
+ * Adds a face property called "f:segment" to the mesh containing the SegmentId of the face.
  *
  * @param input_mesh the mesh to partition
  * @param out_segments a vector to store the segments in
+ * @param chunk_size the size of a chunk to determine and bundle small segments
  */
-void segment_mesh(PMPMesh<BaseVector<float>>& input_mesh,
-                  std::vector<Segment>& out_segments);
+void segment_mesh(pmp::SurfaceMesh& input_mesh,
+                  std::vector<Segment>& out_segments,
+                  const pmp::BoundingBox& bb,
+                  float chunk_size);
 
 } // namespace lvr2

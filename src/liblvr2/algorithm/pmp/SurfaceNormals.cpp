@@ -172,8 +172,15 @@ Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh,
 void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh)
 {
     auto vnormal = mesh.vertex_property<Normal>("v:normal");
-    for (auto v : mesh.vertices())
-        vnormal[v] = compute_vertex_normal(mesh, v);
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < mesh.vertices_size(); i++)
+    {
+        Vertex v(i);
+        if (mesh.is_valid(v) && !mesh.is_deleted(v))
+        {
+            vnormal[v] = compute_vertex_normal(mesh, v);
+        }
+    }
 }
 
 void SurfaceNormals::compute_face_normals(SurfaceMesh& mesh)

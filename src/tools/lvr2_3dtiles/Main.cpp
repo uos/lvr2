@@ -35,7 +35,6 @@
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
-#include "lvr2/geometry/pmp/SurfaceMeshIO.h"
 #include "lvr2/algorithm/pmp/SurfaceNormals.h"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Timestamp.hpp"
@@ -55,7 +54,7 @@ using namespace Cesium3DTiles;
 
 using boost::filesystem::path;
 
-constexpr double FACE_TO_ERROR_FACTOR = 1.0 / 1000.0;
+constexpr double FACE_TO_ERROR_FACTOR = 1.0 / 2000.0;
 
 void convert_bounding_box(const pmp::BoundingBox& in, Cesium3DTiles::BoundingVolume& out)
 {
@@ -70,12 +69,7 @@ void convert_bounding_box(const pmp::BoundingBox& in, Cesium3DTiles::BoundingVol
     };
 }
 
-void write_segments(const PMPMesh<BaseVector<float>>& input_mesh,
-                    std::vector<Segment>& segments,
-                    Tile& root,
-                    const path& output_dir,
-                    const pmp::BoundingBox& bb,
-                    float chunk_size);
+void write_segments(std::vector<Segment>& segments, Tile& root, const path& output_dir);
 
 int main(int argc, char** argv)
 {
@@ -84,6 +78,7 @@ int main(int argc, char** argv)
     bool calc_normals = false;
     bool segment = false;
     float chunk_size = -1;
+    path mesh_out_file;
 
     try
     {
@@ -101,6 +96,9 @@ int main(int argc, char** argv)
 
         ("chunkSize", value<float>(&chunk_size)->default_value(chunk_size),
          "Size of the chunks, only needed if segment is set")
+
+        ("write,w", value<path>(&mesh_out_file),
+         "Save the mesh to the given file")
 
         ("help,h", bool_switch(&help),
          "Print this message here")
@@ -163,8 +161,7 @@ int main(int argc, char** argv)
     PMPMesh<BaseVector<float>> mesh;
     try
     {
-        pmp::SurfaceMeshIO io(input_file.string(), pmp::IOFlags());
-        io.read(mesh.getSurfaceMesh());
+        mesh.getSurfaceMesh().read(input_file.string());
     }
     catch (std::exception& e)
     {
@@ -194,6 +191,14 @@ int main(int argc, char** argv)
         pmp::SurfaceNormals::compute_vertex_normals(surface_mesh);
     }
 
+    if (!mesh_out_file.empty())
+    {
+        std::cout << timestamp << "Writing mesh to " << mesh_out_file << std::endl;
+        pmp::IOFlags flags;
+        flags.use_binary = true;
+        surface_mesh.write(mesh_out_file.string(), flags);
+    }
+
     std::cout << timestamp << "Creating 3D Tiles" << std::endl;
 
     if (!boost::filesystem::exists(output_dir))
@@ -218,26 +223,44 @@ int main(int argc, char** argv)
     pmp::BoundingBox bb = surface_mesh.bounds();
     convert_bounding_box(bb, root.boundingVolume);
 
+    std::vector<Segment> segments;
     if (segment)
     {
         std::cout << timestamp << "Segmenting mesh" << std::endl;
-        std::vector<Segment> segments;
-        segment_mesh(mesh, segments);
-        std::cout << timestamp << "Segmented mesh into " << segments.size() << " parts" << std::endl;
+        segment_mesh(surface_mesh, segments, bb, chunk_size);
 
-        write_segments(mesh, segments, root, output_dir, bb, chunk_size);
+        path segment_path = output_dir / "segments";
+        if (boost::filesystem::exists(segment_path))
+        {
+            boost::filesystem::remove_all(segment_path);
+        }
+        boost::filesystem::create_directories(segment_path);
+
+        write_segments(segments, root, "segments");
     }
     else
     {
         path mesh_file = "mesh.b3dm";
         std::cout << timestamp << "Writing " << mesh_file << std::endl;
-        write_b3dm(output_dir / mesh_file, mesh, bb);
 
         Cesium3DTiles::Content content;
         content.uri = mesh_file.string();
         root.content = content;
         root.geometricError = mesh.numFaces() * FACE_TO_ERROR_FACTOR;
+
+        // add a fake segment containing the whole mesh
+        surface_mesh.add_vertex_property<SegmentId>("v:segment", 0);
+        surface_mesh.add_face_property<SegmentId>("f:segment", 0);
+
+        segments.emplace_back();
+        auto& segment = segments.back();
+        segment.id = 0;
+        segment.num_faces = surface_mesh.n_faces();
+        segment.num_vertices = surface_mesh.n_vertices();
+        segment.bb = bb;
+        segment.filename = "mesh.b3dm";
     }
+    write_b3dm(output_dir, surface_mesh, segments);
 
     tileset.geometricError = root.geometricError;
 
@@ -272,13 +295,11 @@ int main(int argc, char** argv)
     return 0;
 }
 
-void split_recursive(Segment* start,
-                     Segment* end,
-                     std::string current_path,
+void split_recursive(Segment** start,
+                     Segment** end,
+                     const std::string& filename,
                      Tile& tile,
-                     const PMPMesh<BaseVector<float>>& input_mesh,
-                     const path& output_dir,
-                     ProgressBar& progress)
+                     const path& output_dir)
 {
     size_t n = end - start;
     if (n == 0)
@@ -288,20 +309,15 @@ void split_recursive(Segment* start,
 
     if (n == 1)
     {
-        // leaf node
-        std::string segment_name = current_path + ".b3dm";
-        path segment_file = output_dir / segment_name;
+        auto& segment = **start;
+        segment.filename = (output_dir / (filename + ".b3dm")).string();
 
-        Segment& segment = *start;
         convert_bounding_box(segment.bb, tile.boundingVolume);
 
         tile.geometricError = segment.num_faces * FACE_TO_ERROR_FACTOR;
 
-        ++progress;
-        write_b3dm_segment(segment_file, input_mesh, segment.bb, segment.num_faces, segment.num_vertices, segment.id);
-
         Cesium3DTiles::Content content;
-        content.uri = segment_name;
+        content.uri = segment.filename;
         tile.content = content;
     }
     else
@@ -309,113 +325,40 @@ void split_recursive(Segment* start,
         pmp::BoundingBox bb;
         for (auto it = start; it != end; ++it)
         {
-            bb += it->bb;
+            bb += (**it).bb;
         }
         convert_bounding_box(bb, tile.boundingVolume);
 
         pmp::Point size = bb.max() - bb.min();
         size_t longest_axis = std::max_element(size.data(), size.data() + 3) - size.data();
 
-        Segment* mid = start + n / 2;
-        std::nth_element(start, mid, end, [longest_axis](const Segment & a, const Segment & b)
+        Segment** mid = start + n / 2;
+        std::nth_element(start, mid, end, [longest_axis](const Segment* a, const Segment* b)
         {
-            return a.bb.center()[longest_axis] < b.bb.center()[longest_axis];
+            return a->bb.center()[longest_axis] < b->bb.center()[longest_axis];
         });
 
         constexpr char NAME[3][2] = { { 'x', 'X' }, { 'y', 'Y' }, { 'z', 'Z' } };
 
         tile.children.resize(2);
-        split_recursive(start, mid, current_path + NAME[longest_axis][0], tile.children[0], input_mesh, output_dir, progress);
-        split_recursive(mid, end, current_path + NAME[longest_axis][1], tile.children[1], input_mesh, output_dir, progress);
+
+        split_recursive(start, mid, filename + NAME[longest_axis][0], tile.children[0], output_dir);
+        split_recursive(mid, end, filename + NAME[longest_axis][1], tile.children[1], output_dir);
 
         tile.geometricError = tile.children[0].geometricError + tile.children[1].geometricError;
     }
 }
 
-void write_segments(const PMPMesh<BaseVector<float>>& input_mesh,
-                    std::vector<Segment>& segments,
-                    Tile& root,
-                    const path& output_dir,
-                    const pmp::BoundingBox& bb,
-                    float chunk_size)
+void write_segments(std::vector<Segment>& segments, Tile& root, const path& output_dir)
 {
-    if (boost::filesystem::exists(output_dir / "segments"))
-    {
-        boost::filesystem::remove_all(output_dir / "segments");
-    }
-    boost::filesystem::create_directories(output_dir / "segments");
-
-    std::vector<uint32_t> segment_map(segments.size());
-    for (size_t i = 0; i < segment_map.size(); i++)
-    {
-        segment_map[i] = i;
-    }
-
-    std::unordered_map<size_t, uint32_t> chunk_map;
-    pmp::Point size = bb.max() - bb.min();
-    size_t num_chunks_x = std::ceil(size.x() / chunk_size);
-    size_t num_chunks_y = std::ceil(size.y() / chunk_size);
-    size_t num_chunks_z = std::ceil(size.z() / chunk_size);
-
-    std::vector<Segment> new_segments;
-    for (auto& segment : segments)
-    {
-        pmp::Point size = segment.bb.max() - segment.bb.min();
-        size_t longest_axis = std::max_element(size.data(), size.data() + 3) - size.data();
-        if (size[longest_axis] >= chunk_size)
-        {
-            size_t new_id = new_segments.size();
-            segment_map[segment.id] = new_id;
-            segment.id = new_id;
-            new_segments.push_back(segment);
-            continue;
-        }
-
-        pmp::Point pos = segment.bb.center();
-        pmp::Point chunk_index = (pos - bb.min()) / chunk_size;
-        size_t chunk_id = std::floor(chunk_index.x())
-                          + std::floor(chunk_index.y()) * num_chunks_x
-                          + std::floor(chunk_index.z()) * num_chunks_x * num_chunks_y;
-        auto elem = chunk_map.find(chunk_id);
-        if (elem == chunk_map.end())
-        {
-            size_t new_id = new_segments.size();
-            segment_map[segment.id] = new_id;
-            segment.id = new_id;
-            new_segments.push_back(segment);
-            chunk_map[chunk_id] = new_id;
-        }
-        else
-        {
-            segment_map[segment.id] = elem->second;
-
-            Segment& target = new_segments[elem->second];
-            target.num_faces += segment.num_faces;
-            target.num_vertices += segment.num_vertices;
-            target.bb += segment.bb;
-        }
-    }
-
-    std::cout << timestamp << "Reduced to " << new_segments.size() << " parts" << std::endl;
-
-    auto& mesh = input_mesh.getSurfaceMesh();
-    auto f_prop = mesh.get_face_property<uint32_t>("f:segment");
-    for (auto fH : mesh.faces())
-    {
-        f_prop[fH] = segment_map[f_prop[fH]];
-    }
-    auto v_prop = mesh.get_vertex_property<uint32_t>("v:segment");
-    for (auto vH : mesh.vertices())
-    {
-        v_prop[vH] = segment_map[v_prop[vH]];
-    }
-
     root.refine = Cesium3DTiles::Tile::Refine::ADD;
 
-    ProgressBar progress(new_segments.size(), "Writing segments");
+    std::vector<Segment*> temp_segments(segments.size());
+    for (size_t i = 0; i < segments.size(); ++i)
+    {
+        temp_segments[i] = &segments[i];
+    }
 
-    split_recursive(new_segments.data(), new_segments.data() + new_segments.size(),
-                    "segments/t", root, input_mesh, output_dir, progress);
-
-    std::cout << std::endl;
+    split_recursive(temp_segments.data(), temp_segments.data() + temp_segments.size(),
+                    "t", root, output_dir);
 }

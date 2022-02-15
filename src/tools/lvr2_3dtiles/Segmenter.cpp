@@ -33,82 +33,163 @@
  */
 
 #include "Segmenter.hpp"
+#include "lvr2/util/Progress.hpp"
 
 namespace lvr2
 {
 
-void segment_mesh(PMPMesh<BaseVector<float>>& input_mesh,
-                  std::vector<Segment>& out_segments)
+struct consistency_error : public std::runtime_error
 {
-    out_segments.clear();
+    consistency_error(size_t expected, size_t found, const char* name)
+        : std::runtime_error(std::string("Segmenter: inconsistent number of ") + name + ": "
+                             + "expected " + std::to_string(expected)
+                             + ", found " + std::to_string(found))
+    {}
+};
 
-    auto& mesh = input_mesh.getSurfaceMesh();
+void segment_mesh(pmp::SurfaceMesh& mesh,
+                  std::vector<Segment>& out_segments,
+                  const pmp::BoundingBox& bb,
+                  float chunk_size)
+{
+    auto f_prop = mesh.add_face_property<SegmentId>("f:segment", INVALID_SEGMENT);
+    auto v_prop = mesh.add_vertex_property<SegmentId>("v:segment", INVALID_SEGMENT);
 
-    auto f_prop = mesh.face_property<uint32_t>("f:segment", INVALID_SEGMENT);
-    auto v_prop = mesh.vertex_property<uint32_t>("v:segment", INVALID_SEGMENT);
+    std::vector<Segment> segments;
 
-    std::vector<VertexHandle> queue;
+    std::vector<FaceHandle> queue;
+    ProgressBar progress(mesh.n_faces(), "Segmenting mesh");
 
-    for (auto vH : mesh.vertices())
+    for (FaceHandle fH : mesh.faces())
     {
-        if (v_prop[vH] != INVALID_SEGMENT)
+        if (f_prop[fH] != INVALID_SEGMENT)
         {
             continue;
         }
 
-        // start new segment
         Segment segment;
-        segment.id = out_segments.size();
+        segment.id = segments.size();
 
-        v_prop[vH] = segment.id;
-        queue.push_back(vH);
+        f_prop[fH] = segment.id;
+        queue.push_back(fH);
 
         while (!queue.empty())
         {
-            VertexHandle vH = queue.back();
+            FaceHandle fH = queue.back();
             queue.pop_back();
-            segment.num_vertices++;
-            segment.bb += mesh.position(vH);
+            segment.num_faces++;
+            ++progress;
 
-            for (auto heH : mesh.halfedges(vH))
+            for (auto heH : mesh.halfedges(fH))
             {
-                VertexHandle ovH = mesh.to_vertex(heH);
-                if (v_prop[ovH] == INVALID_SEGMENT)
+                auto vH = mesh.to_vertex(heH);
+                if (v_prop[vH] != segment.id)
                 {
-                    v_prop[ovH] = segment.id;
-                    queue.push_back(ovH);
+                    v_prop[vH] = segment.id;
+                    segment.bb += mesh.position(vH);
+                    segment.num_vertices++;
                 }
 
-                FaceHandle fH = mesh.face(heH);
-                if (fH.is_valid() && f_prop[fH] == INVALID_SEGMENT)
+                FaceHandle ofH = mesh.face(mesh.opposite_halfedge(heH));
+                if (!ofH.is_valid())
                 {
-                    f_prop[fH] = segment.id;
-                    segment.num_faces++;
+                    continue;
+                }
+                SegmentId& oid = f_prop[ofH];
+                if (oid != segment.id)
+                {
+                    if (oid != INVALID_SEGMENT)
+                    {
+                        throw std::runtime_error("Segmenter: inconsistent neighborhood of faces");
+                    }
+                    oid = segment.id;
+                    queue.push_back(ofH);
                 }
             }
         }
 
-        out_segments.push_back(segment);
+        segments.push_back(segment);
     }
+    std::cout << "\r" << timestamp << "Found " << segments.size() << " initial segments" << std::endl;
 
     // consistency check
     size_t total_faces = 0;
-    size_t total_vertices = 0;
-    for (auto& segment : out_segments)
+    for (auto& segment : segments)
     {
         total_faces += segment.num_faces;
-        total_vertices += segment.num_vertices;
     }
     if (total_faces != mesh.n_faces())
     {
-        throw std::runtime_error(std::string("Segmenter: inconsistent number of faces: ") +
-                                 std::to_string(total_faces) + " != " + std::to_string(mesh.n_faces()));
+        throw consistency_error(mesh.n_faces(), total_faces, "faces");
     }
-    if (total_vertices != mesh.n_vertices())
+
+    // ==================== merge small segments within a chunk together ====================
+
+    std::unordered_map<uint64_t, SegmentId> chunk_map;
+    pmp::Point size = bb.max() - bb.min();
+    uint64_t num_chunks_x = std::ceil(size.x() / chunk_size);
+    uint64_t num_chunks_y = std::ceil(size.y() / chunk_size);
+
+    std::vector<SegmentId> segment_map(segments.size(), INVALID_SEGMENT);
+
+    out_segments.clear();
+
+    for (auto& segment : segments)
     {
-        throw std::runtime_error(std::string("Segmenter: inconsistent number of vertices: ") +
-                                 std::to_string(total_vertices) + " != " + std::to_string(mesh.n_vertices()));
+        if (segment.bb.longest_axis_size() >= chunk_size)
+        {
+            SegmentId new_id = out_segments.size();
+            segment_map[segment.id] = new_id;
+            segment.id = new_id;
+            out_segments.push_back(segment);
+            continue;
+        }
+
+        pmp::Point pos = segment.bb.center();
+        pmp::Point chunk_index = (pos - bb.min()) / chunk_size;
+        uint64_t chunk_id = std::floor(chunk_index.x())
+                            + std::floor(chunk_index.y()) * num_chunks_x
+                            + std::floor(chunk_index.z()) * num_chunks_x * num_chunks_y;
+        auto elem = chunk_map.find(chunk_id);
+        if (elem == chunk_map.end())
+        {
+            SegmentId new_id = out_segments.size();
+            segment_map[segment.id] = new_id;
+            chunk_map[chunk_id] = new_id;
+            segment.id = new_id;
+            out_segments.push_back(segment);
+        }
+        else
+        {
+            SegmentId new_id = elem->second;
+            segment_map[segment.id] = new_id;
+
+            Segment& target = out_segments[new_id];
+            target.num_faces += segment.num_faces;
+            target.num_vertices += segment.num_vertices;
+            target.bb += segment.bb;
+        }
     }
+
+    std::cout << timestamp << "Reduced to " << out_segments.size() << " segments" << std::endl;
+
+    // consistency check
+    total_faces = 0;
+    for (auto& segment : out_segments)
+    {
+        total_faces += segment.num_faces;
+    }
+    if (total_faces != mesh.n_faces())
+    {
+        throw consistency_error(mesh.n_faces(), total_faces, "faces");
+    }
+
+    for (auto fH : mesh.faces())
+    {
+        f_prop[fH] = segment_map[f_prop[fH]];
+    }
+
+    mesh.remove_vertex_property(v_prop);
 }
 
 } // namespace lvr2
