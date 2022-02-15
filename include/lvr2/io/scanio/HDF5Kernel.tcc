@@ -140,6 +140,13 @@ static std::vector<hsize_t> autoComputeChunkSize(
     {
         current_elems_per_chunk *= dims[dim_id];
         chunk_sizes[dim_id] = dims[dim_id];
+        // If all dimensions were processed return early, otherwise dim_id will wrap because its unsigned
+        // this can lead to invalid memory access
+        if (dim_id == 0)
+        {
+            return chunk_sizes;
+        }
+
         dim_id -= 1;
     }
 
