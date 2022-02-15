@@ -3314,8 +3314,8 @@ void LVRMainWindow::generateTexture()
     float texelSize = this->lineEdit_texelSize->text().toFloat();
     int minClusersize = 100;
     int maxClusersize = 0;
-    SpectralTexturizer<Vec> spec_texter(texelSize, minClusersize, maxClusersize);
-    spec_texter.init_image_data(panorama, std::max(this->lineEdit_spectralChannel->text().toInt(), 0));
+    auto spec_texter = std::make_shared<SpectralTexturizer<Vec>>(texelSize, minClusersize, maxClusersize);
+    spec_texter->init_image_data(panorama, std::max(this->lineEdit_spectralChannel->text().toInt(), 0));
 
     // Create HalfEdgeMesh
     lvr2::HalfEdgeMesh<Vec> mesh(m_meshBuffer);
