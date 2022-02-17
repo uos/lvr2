@@ -538,13 +538,17 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
 
 template <typename BaseVecT>
 BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale)
-        : m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0),
-          m_numPoints(0), m_extrude(true), m_scale(scale), m_has_normal(false), m_has_color(false)
+        : m_maxIndex(0), 
+          m_maxIndexSquare(0), 
+          m_maxIndexX(0), 
+          m_maxIndexY(0), 
+          m_maxIndexZ(0),
+          m_numPoints(0), 
+          m_extrude(true), 
+          m_scale(scale), 
+          m_has_normal(false), 
+          m_has_color(false)
 {
-    /// 
-// #ifdef LVR2_USE_OPEN_MP
-//     omp_init_lock(&m_lock);
-// #endif
     m_voxelSize = voxelsize;
 
     if (project->changed.size() <= 0)
@@ -558,11 +562,12 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
         string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
         lvr2::ProgressBar progress(project->changed.size() * 3, comment);
-        // bounding box of all scans in .h5
+        
+        // Vector of all computed bounding boxes
         std::vector<BoundingBox<BaseVecT>> scan_boxes;
 
 
-        //iterate through ALL points to calculate transformed boundingboxes of scans
+        // Iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < project->changed.size(); i++)
         {
             std::cout << timestamp << "Loading scan position " << i << " from " << project->changed.size() << std::endl;
@@ -627,8 +632,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             #pragma omp parallel for
             for (int k = 0; k < numPoints; k++)
             {
-                Eigen::Vector4d point(
-                    points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                Eigen::Vector4d point(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
                 Eigen::Vector4d transPoint = finalPose * point;
 
                 BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
@@ -661,7 +665,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         m_bb.expand(BaseVecT(center.x - xsize / 2, center.y - ysize / 2, center.z - zsize / 2));
         longestSide = ceil(longestSide / voxelsize) * voxelsize;
 
-        // calculate max indices
+        // Calculate max indices
 
         // m_maxIndex = (size_t)(longestSide/voxelsize);
         m_maxIndexX = (size_t)(xsize / voxelsize);
@@ -737,6 +741,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
         size_t num_cells = 0;
         size_t offset = 0;
+
         for (auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); ++it)
         {
             it->second.offset = offset;
@@ -1023,17 +1028,17 @@ lvr2::floatArr BigGrid<BaseVecT>::points(
     boost::iostreams::mapped_file_source mmfs("points.mmf");
     float* mmfdata = (float*)mmfs.data();
 
-    for (auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); it++)
+    for (auto it : m_gridNumPoints)
     {
-        if (it->second.ix >= idxmin && it->second.iy >= idymin && it->second.iz >= idzmin &&
-            it->second.ix <= idxmax && it->second.iy <= idymax && it->second.iz <= idzmax)
+        if (it.second.ix >= idxmin && it.second.iy >= idymin && it.second.iz >= idzmin &&
+            it.second.ix <= idxmax && it.second.iy <= idymax && it.second.iz <= idzmax)
         {
-            size_t cSize = it->second.size;
+            size_t cSize = it.second.size;
             for (size_t x = 0; x < cSize; x++)
             {
-                points.get()[p_index]     = mmfdata[(it->second.offset + x) * 3];
-                points.get()[p_index + 1] = mmfdata[(it->second.offset + x) * 3 + 1];
-                points.get()[p_index + 2] = mmfdata[(it->second.offset + x) * 3 + 2];
+                points.get()[p_index]     = mmfdata[(it.second.offset + x) * 3];
+                points.get()[p_index + 1] = mmfdata[(it.second.offset + x) * 3 + 1];
+                points.get()[p_index + 2] = mmfdata[(it.second.offset + x) * 3 + 2];
                 p_index += 3;
             }
         }
@@ -1134,7 +1139,7 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(
             size_t cSize = it->second.size;
             for (size_t x = 0; x < cSize; x++)
             {
-                points.get()[p_index] = mmfdata[(it->second.offset + x) * 3];
+                points.get()[p_index]     = mmfdata[(it->second.offset + x) * 3];
                 points.get()[p_index + 1] = mmfdata[(it->second.offset + x) * 3 + 1];
                 points.get()[p_index + 2] = mmfdata[(it->second.offset + x) * 3 + 2];
                 p_index += 3;

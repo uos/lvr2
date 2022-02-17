@@ -226,11 +226,6 @@ __global__ void KNNKernel1(const LBPointArray<float> D_V,
         float det_y = xx * zz - xz * xz;
         float det_z = xx * yy - xy * xy;
 
-        if(tid == 5)
-        {
-            printf("DET: %f %f %f\n", det_x, det_y, det_z);
-        }
-
         float dir_x;
         float dir_y;
         float dir_z;
@@ -1338,8 +1333,6 @@ void CudaSurface::distances(std::vector<QueryPoint<Vec> >& query_points, float v
 
 
 CudaSurface::~CudaSurface() {
-
-    std::cout << "Free Surface" << std::endl;
 
     // clearn up resulting normals and kd_tree
     // Pointcloud has to be cleaned up by user

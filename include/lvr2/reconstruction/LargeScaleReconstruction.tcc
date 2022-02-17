@@ -222,6 +222,7 @@ namespace lvr2
 
                 size_t numPoints;
 
+                // Get all points within current chunk, overlapped by 3 x voxelsiue
                 floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] * 3,
                                             partitionBoxes->at(i).getMin().y - m_voxelSizes[h] * 3,
                                             partitionBoxes->at(i).getMin().z - m_voxelSizes[h] * 3,
@@ -411,9 +412,10 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
-            BoundingBox<BaseVecT>& newChunksBB,
-            std::shared_ptr<ChunkHashGrid> chunkManager)
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(
+        ScanProjectEditMarkPtr project,
+        BoundingBox<BaseVecT>& newChunksBB,
+        std::shared_ptr<ChunkHashGrid> chunkManager)
     {
         unsigned long timeStart1 = lvr2::timestamp.getCurrentTimeInMs();
         unsigned long timeSum = 0;
@@ -426,7 +428,7 @@ namespace lvr2
         }
 
         cout << lvr2::timestamp << "Starting BigGrid" << endl;
-        BigGrid<BaseVecT> bg( m_bgVoxelSize ,project, m_scale);
+        BigGrid<BaseVecT> bg(m_bgVoxelSize, project, m_scale);
         cout << lvr2::timestamp << "BigGrid finished " << endl;
 
         BoundingBox<BaseVecT> bb = bg.getBB();
@@ -441,8 +443,7 @@ namespace lvr2
         BoundingBox<BaseVecT> partbb = bg.getpartialBB();
         cout << lvr2::timestamp << "Generating VGrid" << endl;
 
-        VirtualGrid<BaseVecT> vGrid(
-                    bg.getpartialBB(), m_chunkSize, m_bgVoxelSize);
+        VirtualGrid<BaseVecT> vGrid(bg.getpartialBB(), m_chunkSize, m_bgVoxelSize);
         vGrid.calculateBoxes();
         partitionBoxes = vGrid.getBoxes();
         BaseVecT addMin = BaseVecT(std::floor(partbb.getMin().x / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().y / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().z / m_chunkSize) * m_chunkSize);
@@ -603,7 +604,7 @@ namespace lvr2
                     }
                     else
                     {
-                        std::cout << timestamp << "Computing signed distances..w." << std::endl;
+                        std::cout << timestamp << "Computing signed distances..." << std::endl;
                         ps_grid->calcDistanceValues();
                     }
 
