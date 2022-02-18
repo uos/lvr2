@@ -76,7 +76,6 @@ int main(int argc, char** argv)
     path input_file;
     path output_dir;
     bool calc_normals = false;
-    bool segment = false;
     float chunk_size = -1;
     path mesh_out_file;
 
@@ -91,11 +90,8 @@ int main(int argc, char** argv)
         ("calcNormals,N", bool_switch(&calc_normals),
          "Calculate normals if there are none in the input")
 
-        ("segment,s", bool_switch(&segment),
-         "Segment the mesh into connected regions")
-
-        ("chunkSize", value<float>(&chunk_size)->default_value(chunk_size),
-         "Size of the chunks, only needed if segment is set")
+        ("segment,s", value<float>(&chunk_size),
+         "Segment the mesh into connected regions with the given chunk size")
 
         ("write,w", value<path>(&mesh_out_file),
          "Save the mesh to the given file")
@@ -142,11 +138,6 @@ int main(int argc, char** argv)
         if (variables.count("output_dir") == 0)
         {
             output_dir = "chunk.3dtiles";
-        }
-
-        if (segment && chunk_size < 0)
-        {
-            throw error("Chunk size needs to be set if segment is set");
         }
     }
     catch (const boost::program_options::error& ex)
@@ -224,7 +215,7 @@ int main(int argc, char** argv)
     convert_bounding_box(bb, root.boundingVolume);
 
     std::vector<Segment> segments;
-    if (segment)
+    if (chunk_size > 0)
     {
         std::cout << timestamp << "Segmenting mesh" << std::endl;
         segment_mesh(surface_mesh, segments, bb, chunk_size);

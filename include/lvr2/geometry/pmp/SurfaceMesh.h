@@ -1863,8 +1863,15 @@ public:
     BoundingBox bounds() const
     {
         BoundingBox bb;
-        for (auto v : vertices())
-            bb += position(v);
+        #pragma omp parallel for schedule(static) reduction(+:bb)
+        for (size_t i = 0; i < vertices_size(); i++)
+        {
+            Vertex v(i);
+            if (is_valid(v) && !is_deleted(v))
+            {
+                bb += position(v);
+            }
+        }
         return bb;
     }
 

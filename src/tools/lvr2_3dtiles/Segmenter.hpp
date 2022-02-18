@@ -50,6 +50,8 @@ struct Segment
     size_t num_vertices = 0;
     pmp::BoundingBox bb;
     std::string filename = "";
+    FaceHandle start_face;
+    std::shared_ptr<pmp::SurfaceMesh> mesh = nullptr;
 };
 
 /**

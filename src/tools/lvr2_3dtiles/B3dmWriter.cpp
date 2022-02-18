@@ -135,25 +135,29 @@ void write_b3dm(const boost::filesystem::path& output_dir,
                 const pmp::SurfaceMesh& mesh,
                 const std::vector<Segment>& segments)
 {
-    std::vector<std::ofstream> b3dm_files;
-    std::vector<std::ofstream> bin_files;
+    std::vector<std::string> b3dm_files;
+    std::vector<std::string> bin_files;
     std::vector<std::string> local_bin_filenames;
     for (const auto& segment : segments)
     {
-        boost::filesystem::path b3dm_file = output_dir / segment.filename;
-        b3dm_files.emplace_back(b3dm_file, std::ios::binary);
-        if (!b3dm_files.back().is_open())
+        boost::filesystem::path b3dm_file_name = output_dir / segment.filename;
+        b3dm_files.push_back(b3dm_file_name.string());
+        boost::filesystem::path bin_file_name = b3dm_file_name;
+        bin_file_name.replace_extension(".bin");
+        bin_files.push_back(bin_file_name.string());
+        local_bin_filenames.push_back(bin_file_name.filename().string());
+
+        // create the files to ensure all the paths exist and are possible
+        std::ofstream b3dm_file(b3dm_files.back(), std::ios::binary);
+        std::ofstream bin_file(bin_files.back(), std::ios::binary);
+        if (!b3dm_file)
         {
-            throw std::runtime_error("Could not open file " + b3dm_file.string());
+            throw std::runtime_error("Could not open " + b3dm_files.back());
         }
-        boost::filesystem::path bin_file = b3dm_file;
-        bin_file.replace_extension(".bin");
-        bin_files.emplace_back(bin_file, std::ios::binary);
-        if (!bin_files.back().is_open())
+        if (!bin_file)
         {
-            throw std::runtime_error("Could not open file " + bin_file.string());
+            throw std::runtime_error("Could not open " + bin_files.back());
         }
-        local_bin_filenames.emplace_back(bin_file.filename().string());
     }
 
     size_t num_segments = segments.size();
@@ -196,7 +200,7 @@ void write_b3dm(const boost::filesystem::path& output_dir,
         node.mesh = out_mesh_id;
         // gltf uses y-up, but 3d tiles uses z-up and automatically transforms gltf data.
         // So we need to pre-undo that transformation to maintain consistency.
-        // See the "Implementation note" section in https://github.com/CesiumGS/3d-tiles/tree/main/specification#gltf-transforms
+        // See the "Implementation note" section in https://github.com/CesiumGS/3d-tiles/tree/main/specification#y-up-to-z-up
         node.matrix = {1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
 
         auto [ scene_id, scene ] = push_and_get_index(model.scenes);
@@ -309,16 +313,15 @@ void write_b3dm(const boost::filesystem::path& output_dir,
 
         if (++added_faces[segment_id] == segments[segment_id].num_faces)
         {
-            auto& file = bin_files[segment_id];
+            std::ofstream bin_file(bin_files[segment_id], std::ios::binary);
             auto& buffer = buffers[segment_id];
-            file.write((char*)buffer.data(), buffer.size());
-            file.close();
+            bin_file.write((char*)buffer.data(), buffer.size());
             buffer = {};
             face_outs[segment_id] = nullptr;
         }
         ++progress;
     }
-    std::cout << std::endl;
+    std::cout << "\r";
 
     // consistency check
     for (size_t i = 0; i < num_segments; i++)
@@ -326,7 +329,13 @@ void write_b3dm(const boost::filesystem::path& output_dir,
         if (added_faces[i] != segments[i].num_faces)
         {
             std::cerr << "Segment " << i << " has " << added_faces[i] << " faces, but "
-                      << segments[i].num_faces << " faces were expected." << std::endl;
+                      << segments[i].num_faces << " were expected." << std::endl;
+        }
+        // there might be fewer vertices because of segment mergin, but more would cause a buffer overflow
+        if (vertex_maps[i].size() > segments[i].num_vertices)
+        {
+            std::cerr << "Segment " << i << " has " << vertex_maps[i].size() << " vertices, but only "
+                      << segments[i].num_vertices << " were expected." << std::endl;
         }
     }
 
@@ -383,18 +392,19 @@ void write_b3dm(const boost::filesystem::path& output_dir,
 
         byte_length = header_length + gltf.gltfBytes.size();
 
-        file << magic;
-        write_uint32(file, version);
-        write_uint32(file, byte_length);
-        write_uint32(file, feature_table_json_length);
-        write_uint32(file, feature_table_byte_length);
-        write_uint32(file, batch_table_json_length);
-        write_uint32(file, batch_table_byte_length);
+        std::ofstream b3dm_file(b3dm_files[i], std::ios::binary);
 
-        file << feature_table;
+        b3dm_file << magic;
+        write_uint32(b3dm_file, version);
+        write_uint32(b3dm_file, byte_length);
+        write_uint32(b3dm_file, feature_table_json_length);
+        write_uint32(b3dm_file, feature_table_byte_length);
+        write_uint32(b3dm_file, batch_table_json_length);
+        write_uint32(b3dm_file, batch_table_byte_length);
 
-        file.write((char*)gltf.gltfBytes.data(), gltf.gltfBytes.size());
-        file.close();
+        b3dm_file << feature_table;
+
+        b3dm_file.write((char*)gltf.gltfBytes.data(), gltf.gltfBytes.size());
 
         model = {};
     }

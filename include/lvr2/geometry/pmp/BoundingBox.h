@@ -86,4 +86,8 @@ private:
     Point min_, max_;
 };
 
+// Add + operator for BoundingBox in openMP reductions.
+#pragma omp declare reduction(+: BoundingBox : omp_out += omp_in ) \
+           initializer(omp_priv(BoundingBox()))
+
 } // namespace pmp

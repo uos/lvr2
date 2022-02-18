@@ -47,6 +47,38 @@ struct consistency_error : public std::runtime_error
     {}
 };
 
+/**
+ * @brief Calculates a 1D Chunk-index from a 3D position
+ * 
+ * @param p the 3D position
+ * @param chunk_size the size of a chunk
+ * @param num_chunks the number of chunks along each axis
+ * @return uint64_t the 1D Chunk-index
+ */
+uint64_t chunk_index(pmp::Point p, float chunk_size, Eigen::Vector3i num_chunks)
+{
+    return std::floor(p.x() / chunk_size)
+           + std::floor(p.y() / chunk_size) * num_chunks.x()
+           + std::floor(p.z() / chunk_size) * num_chunks.x() * num_chunks.y();
+}
+
+/**
+ * @brief Splits large segments into chunks
+ * 
+ * @param mesh the input mesh
+ * @param segments a list of all existing segments
+ * @param to_be_split to_be_split[segment.id] == true <=> segment should be split
+ * @param out_segments the resulting new segments
+ * @param segment_map maps old segment ids to new segment ids
+ * @param chunk_size the size of a chunk
+ */
+void partition_large_segments(pmp::SurfaceMesh& mesh,
+                              const std::vector<Segment>& segments,
+                              const std::vector<bool>& to_be_split,
+                              std::vector<Segment>& out_segments,
+                              std::vector<SegmentId>& segment_map,
+                              float chunk_size);
+
 void segment_mesh(pmp::SurfaceMesh& mesh,
                   std::vector<Segment>& out_segments,
                   const pmp::BoundingBox& bb,
@@ -69,6 +101,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
 
         Segment segment;
         segment.id = segments.size();
+        segment.start_face = fH;
 
         f_prop[fH] = segment.id;
         queue.push_back(fH);
@@ -113,6 +146,8 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
     std::cout << "\r" << timestamp << "Found " << segments.size() << " initial segments" << std::endl;
 
     // consistency check
+    // each face should be assigned to exactly one segment
+    // vertices might be shared between segments or isolated, so we don't count them
     size_t total_faces = 0;
     for (auto& segment : segments)
     {
@@ -126,33 +161,31 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
     // ==================== merge small segments within a chunk together ====================
 
     std::unordered_map<uint64_t, SegmentId> chunk_map;
-    pmp::Point size = bb.max() - bb.min();
-    uint64_t num_chunks_x = std::ceil(size.x() / chunk_size);
-    uint64_t num_chunks_y = std::ceil(size.y() / chunk_size);
+    pmp::Point size = (bb.max() - bb.min()) / chunk_size;
+    Eigen::Vector3i num_chunks(std::ceil(size.x()), std::ceil(size.y()), std::ceil(size.z()));
 
     std::vector<SegmentId> segment_map(segments.size(), INVALID_SEGMENT);
+    std::vector<bool> to_be_split(segments.size(), false);
+    size_t to_be_split_count = 0;
 
     out_segments.clear();
 
     for (auto& segment : segments)
     {
+        // Segments that are larger than a chunk are split in the next step
         if (segment.bb.longest_axis_size() >= chunk_size)
         {
-            SegmentId new_id = out_segments.size();
-            segment_map[segment.id] = new_id;
-            segment.id = new_id;
-            out_segments.push_back(segment);
+            to_be_split[segment.id] = true;
+            to_be_split_count++;
             continue;
         }
 
-        pmp::Point pos = segment.bb.center();
-        pmp::Point chunk_index = (pos - bb.min()) / chunk_size;
-        uint64_t chunk_id = std::floor(chunk_index.x())
-                            + std::floor(chunk_index.y()) * num_chunks_x
-                            + std::floor(chunk_index.z()) * num_chunks_x * num_chunks_y;
+        // all other segments are merged based on the chunk that their center lies in
+        uint64_t chunk_id = chunk_index(segment.bb.center() - bb.min(), chunk_size, num_chunks);
         auto elem = chunk_map.find(chunk_id);
         if (elem == chunk_map.end())
         {
+            // start a new chunk with this segment
             SegmentId new_id = out_segments.size();
             segment_map[segment.id] = new_id;
             chunk_map[chunk_id] = new_id;
@@ -161,6 +194,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
         }
         else
         {
+            // merge this segment with the existing chunk
             SegmentId new_id = elem->second;
             segment_map[segment.id] = new_id;
 
@@ -171,11 +205,23 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
         }
     }
 
-    std::cout << timestamp << "Reduced to " << out_segments.size() << " segments" << std::endl;
+    std::cout << timestamp << "Merged " << (segments.size() - to_be_split_count) << " small segments into "
+              << out_segments.size() << " chunks" << std::endl;
+
+    if (to_be_split_count > 0)
+    {
+        size_t old_size = out_segments.size();
+
+        partition_large_segments(mesh, segments, to_be_split, out_segments, segment_map, chunk_size);
+
+        std::cout << timestamp << "Partitioned " << to_be_split_count << " large segments into "
+                  << (out_segments.size() - old_size) << " chunks" << std::endl;
+    }
+
 
     // consistency check
     total_faces = 0;
-    for (auto& segment : out_segments)
+    for (const auto& segment : out_segments)
     {
         total_faces += segment.num_faces;
     }
@@ -184,12 +230,131 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
         throw consistency_error(mesh.n_faces(), total_faces, "faces");
     }
 
-    for (auto fH : mesh.faces())
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < mesh.faces_size(); i++)
     {
-        f_prop[fH] = segment_map[f_prop[fH]];
+        FaceHandle fH(i);
+        if (mesh.is_valid(fH) && !mesh.is_deleted(fH))
+        {
+            f_prop[fH] = segment_map[f_prop[fH]];
+        }
     }
 
     mesh.remove_vertex_property(v_prop);
+}
+
+void partition_large_segments(pmp::SurfaceMesh& mesh,
+                              const std::vector<Segment>& segments,
+                              const std::vector<bool>& to_be_split,
+                              std::vector<Segment>& out_segments,
+                              std::vector<SegmentId>& segment_map,
+                              float chunk_size)
+{
+    auto f_prop = mesh.get_face_property<SegmentId>("f:segment");
+    auto v_prop = mesh.get_vertex_property<SegmentId>("v:segment");
+
+    std::vector<pmp::Point> offsets(segments.size());
+    std::vector<Eigen::Vector3i> num_chunks(segments.size());
+    size_t faces_in_split_segments = 0;
+
+    for (auto& segment : segments)
+    {
+        if (!to_be_split[segment.id])
+        {
+            continue;
+        }
+
+        pmp::Point size_of_segment = segment.bb.max() - segment.bb.min();
+        pmp::Point size = size_of_segment / chunk_size;
+        Eigen::Vector3i num(std::ceil(size.x()), std::ceil(size.y()), std::ceil(size.z()));
+
+        // align the chunking to the center of the segment:
+        // modify the offset so that there is equal overlap on all sides
+        pmp::Point size_of_chunks = num.cast<float>() * chunk_size;
+        pmp::Point offset = segment.bb.min() - (size_of_chunks - size_of_segment) / 2.0f;
+
+        offsets[segment.id] = offset;
+        num_chunks[segment.id] = num;
+        faces_in_split_segments += segment.num_faces;
+    }
+
+    auto f_chunk_id = mesh.add_face_property<uint64_t>("f:chunk_id");
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < mesh.faces_size(); i++)
+    {
+        FaceHandle fH(i);
+        if (!mesh.is_valid(fH) || mesh.is_deleted(fH) || !to_be_split[f_prop[fH]])
+        {
+            continue;
+        }
+        pmp::Point pos(0, 0, 0);
+        size_t count = 0;
+        for (auto vH : mesh.vertices(fH))
+        {
+            pos += mesh.position(vH);
+            count++;
+        }
+        assert(count == 3);
+        pos /= count;
+
+        SegmentId segment_id = f_prop[fH];
+        f_chunk_id[fH] = chunk_index(pos - offsets[segment_id], chunk_size, num_chunks[segment_id]);
+    }
+
+    ProgressBar progress(faces_in_split_segments, "Splitting large segments");
+
+    std::vector<std::unordered_map<uint64_t, SegmentId>> chunk_maps(segments.size());
+
+    for (auto fH : mesh.faces())
+    {
+        if (!to_be_split[f_prop[fH]])
+        {
+            continue;
+        }
+
+        SegmentId in_id, out_id;
+        auto& chunk_map = chunk_maps[f_prop[fH]];
+        uint64_t chunk_id = f_chunk_id[fH];
+        auto elem = chunk_map.find(chunk_id);
+        if (elem == chunk_map.end())
+        {
+            // all faces in this segment will first get the fake id in_id to avoid overlap with existing segments
+            // the real id will be assigned in the segment mapping step
+            in_id = segment_map.size();
+            out_id = out_segments.size();
+            segment_map.push_back(out_id);
+            auto& new_segment = out_segments.emplace_back();
+            new_segment.id = out_id;
+            new_segment.start_face = fH;
+
+            chunk_map[chunk_id] = in_id;
+        }
+        else
+        {
+            in_id = elem->second;
+            out_id = segment_map[in_id];
+        }
+
+        f_prop[fH] = in_id;
+
+        auto& segment = out_segments[out_id];
+        segment.num_faces++;
+
+        for (auto vH : mesh.vertices(fH))
+        {
+            if (v_prop[vH] != in_id)
+            {
+                v_prop[vH] = in_id;
+                segment.num_vertices++;
+                segment.bb += mesh.position(vH);
+            }
+        }
+
+        ++progress;
+    }
+    std::cout << "\r";
+
+    mesh.remove_face_property(f_chunk_id);
 }
 
 } // namespace lvr2

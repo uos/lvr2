@@ -186,8 +186,15 @@ void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh)
 void SurfaceNormals::compute_face_normals(SurfaceMesh& mesh)
 {
     auto fnormal = mesh.face_property<Normal>("f:normal");
-    for (auto f : mesh.faces())
-        fnormal[f] = compute_face_normal(mesh, f);
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < mesh.faces_size(); i++)
+    {
+        Face f(i);
+        if (mesh.is_valid(f) && !mesh.is_deleted(f))
+        {
+            fnormal[f] = compute_face_normal(mesh, f);
+        }
+    }
 }
 
 } // namespace pmp
