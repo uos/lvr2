@@ -80,7 +80,7 @@ LVRPointCloudItem::LVRPointCloudItem(PointBufferBridgePtr ptr, QTreeWidgetItem* 
 
     m_specItem = new QTreeWidgetItem(this);
     m_specItem->setText(0, "Has Spectraldata:");
-    if(ptr->getPointBuffer()->getUCharChannel("spectral_channels"))
+    if(ptr->getPointBuffer()->getUCharChannel("spectral_channels") || ptr->getPointBuffer()->getUCharChannel("spectral"))
     {
         m_specItem->setText(1, "yes");
     }
@@ -120,7 +120,7 @@ void LVRPointCloudItem::update()
     }
 
     // hyperspectral update
-    if(m_pointBridge->getPointBuffer()->getUCharChannel("spectral_channels")) {
+    if(m_pointBridge->getPointBuffer()->getUCharChannel("spectral_channels") || m_pointBridge->getPointBuffer()->getUCharChannel("spectral")) {
         m_specItem->setText(1, "yes");
     } else {
         m_specItem->setText(1, "no");

@@ -48,6 +48,7 @@ Texture::Texture()
     this->m_numChannels          = 0;
     this->m_numBytesPerChan      = 0;
     this->m_texelSize            = 1.0;
+    this->m_layerName            = "default";
 }
 
 // Texture::Texture(unsigned short int width, unsigned short int height, unsigned char numChannels,
@@ -79,7 +80,8 @@ Texture::Texture(
     unsigned char numChannels,
     unsigned char numBytesPerChan,
     float texelSize,
-    unsigned char* data
+    unsigned char* data,
+    std::string layer
 ) :
     m_index(index),
     m_width(width),
@@ -87,7 +89,8 @@ Texture::Texture(
     m_numChannels(numChannels),
     m_numBytesPerChan(numBytesPerChan),
     m_texelSize(texelSize),
-    m_data(new unsigned char[width * height * numChannels * numBytesPerChan])
+    m_data(new unsigned char[width * height * numChannels * numBytesPerChan]),
+    m_layerName(layer)
 {
     if(data)
     {
@@ -99,16 +102,19 @@ Texture::Texture(Texture &&other) {
     this->m_index = other.m_index;
     this->m_width = other.m_width;
     this->m_height = other.m_height;
-    this->m_data = other.m_data;
     this->m_numChannels = other.m_numChannels;
     this->m_numBytesPerChan = other.m_numBytesPerChan;
     this->m_texelSize = other.m_texelSize;
+    this->m_data = std::exchange(other.m_data, nullptr);
+    this->m_layerName = std::move(other.m_layerName);
 
-    other.m_data = nullptr;
-    other.m_width = 0;
-    other.m_height = 0;
-    other.m_numChannels = 0;
-    other.m_numBytesPerChan = 0;
+    other.m_width                = 0;
+    other.m_height               = 0;
+    other.m_numChannels          = 0;
+    other.m_numBytesPerChan      = 0;
+    other.m_texelSize            = 1.0;
+    other.m_layerName            = "default";
+
 }
 
 Texture::Texture(const Texture& other)
@@ -120,6 +126,7 @@ Texture::Texture(const Texture& other)
     this->m_numChannels = other.m_numChannels;
     this->m_numBytesPerChan = other.m_numBytesPerChan;
     this->m_texelSize = other.m_texelSize;
+    this->m_layerName = other.m_layerName;
 
     size_t data_size = m_width * m_height * m_numChannels * m_numBytesPerChan;
     m_data = new unsigned char[data_size];
@@ -143,15 +150,43 @@ Texture & Texture::operator=(const Texture &other)
         this->m_numChannels = other.m_numChannels;
         this->m_numBytesPerChan = other.m_numBytesPerChan;
         this->m_texelSize = other.m_texelSize;
+        this->m_layerName = other.m_layerName;
 
         size_t data_size = m_width * m_height * m_numChannels * m_numBytesPerChan;
         m_data = new unsigned char[data_size];
         std::copy(other.m_data, other.m_data + data_size, m_data);
     }
-
     return *this;
 }
 
+Texture& Texture::operator=(Texture &&other)
+{
+    if (this != &other)
+    {
+        if (this->m_data)
+        {
+            delete[] m_data;
+        }
+
+        this->m_index = other.m_index;
+        this->m_width = other.m_width;
+        this->m_height = other.m_height;
+        this->m_numChannels = other.m_numChannels;
+        this->m_numBytesPerChan = other.m_numBytesPerChan;
+        this->m_texelSize = other.m_texelSize;
+        this->m_layerName = std::move(other.m_layerName);
+        this->m_data = std::exchange(other.m_data, nullptr);
+
+        other.m_width                = 0;
+        other.m_height               = 0;
+        other.m_numChannels          = 0;
+        other.m_numBytesPerChan      = 0;
+        other.m_texelSize            = 1.0;
+        other.m_layerName            = "default";
+    }
+
+    return *this;
+}
 
 Texture::Texture(
     int index,
@@ -166,7 +201,8 @@ Texture::Texture(
     m_data(new unsigned char[oldTexture->m_width
                     * oldTexture->m_height
                     * 3
-                    * sizeof(unsigned char)])
+                    * sizeof(unsigned char)]),
+    m_layerName("default")
 {
     size_t copy_len = m_width * m_height * m_numChannels * m_numBytesPerChan;
     std::copy(oldTexture->m_pixels, oldTexture->m_pixels + copy_len, m_data);

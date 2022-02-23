@@ -330,6 +330,12 @@ public:
 
     string getProjectDir() const;
 
+    int getScanPositionIndex() const;
+
+    int getMinSpectralChannel() const;
+    
+    int getMaxSpectralChannel() const;
+
 private:
 
     /// The set voxelsize
@@ -406,6 +412,12 @@ private:
 
     /// Reduction ratio for mesh reduction via edge collapse
     float                           m_edgeCollapseReductionRatio;
+
+    // h5 scan position used for reconstruction
+    int m_scanPositionIndex;
+    // defines which spectralChannels should be used for hyperspectral texture generation
+    int m_minSpectralChannel;
+    int m_maxSpectralChannel;
 
 
     ///Path to texture pack

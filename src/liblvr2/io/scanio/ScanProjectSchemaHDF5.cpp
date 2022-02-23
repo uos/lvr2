@@ -172,7 +172,6 @@ Description ScanProjectSchemaHDF5::hyperspectralPanorama(
 
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << panoNo;
-
     Description d;
     d.dataRoot = *dp.dataRoot + "/" + sstr.str();
     d.metaRoot = d.dataRoot;
@@ -210,8 +209,9 @@ Description ScanProjectSchemaHDF5::hyperspectralPanoramaChannel(
     Description d;
     d.dataRoot = dp.dataRoot;
     d.metaRoot = dp.metaRoot;
-    d.meta = sstr.str();
-    d.data = sstr.str();
+
+    d.meta = "frames";
+    d.data = "frames";
 
     return d;
 }

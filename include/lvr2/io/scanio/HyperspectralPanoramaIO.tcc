@@ -72,7 +72,9 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
         {
             return ret;
         }
+
         ret = std::make_shared<HyperspectralPanorama>(meta.as<HyperspectralPanorama>());
+        ret->model = meta["camera_model"].as<CylindricalModel>();
     } else {
         
         // no meta name specified but scan position is there: 
@@ -89,21 +91,22 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
 
     /// DATA
 
-    // Load Hyperspectral Channels
-    size_t channelNo = 0;
-    while(true)
+    // Load Hyperspectral Frame
+    HyperspectralPanoramaChannelPtr hchannel = m_hyperspectralPanoramaChannelIO->load(scanPosNo, hCamNo, hPanoNo, 0);
+
+    // hchannel contains matrix of whole spectral area 
+    cv::Mat channels[hchannel->channel.channels()];
+
+    // split hchannel into channels
+    cv::split(hchannel->channel, channels);
+
+    for(int i = 0; i < hchannel->channel.channels(); i++)
     {
-        HyperspectralPanoramaChannelPtr hchannel = m_hyperspectralPanoramaChannelIO->load(scanPosNo, hCamNo, hPanoNo, channelNo);
-        if(hchannel)
-        {
-            ret->channels.push_back(hchannel);
-        } else {
-            break;
-        }
-        channelNo++;
+        auto newChannel = std::make_shared<HyperspectralPanoramaChannel>();
+        newChannel->channel = channels[i];
+        ret->channels.push_back(newChannel);
     }
-
-
+    ret->num_channels = hchannel->channel.channels();
     return ret;
 }
 
