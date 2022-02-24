@@ -555,7 +555,12 @@ set(LVR2_LIB_DEPENDENCIES
     ${TIFF_LIBRARY}
     ${YAML_CPP_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
-    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
+    lvr2rply
+    lvr2rply_static
+    lvr2las
+    lvr2las_static 
+    )
 else()
 set(LVR2_LIB_DEPENDENCIES
     ${Boost_PROGRAM_OPTIONS_LIBRARY}

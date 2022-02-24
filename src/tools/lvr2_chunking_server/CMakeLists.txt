@@ -15,7 +15,7 @@ set(LVR2_CHUNKING_SERVER_SOURCES
 #####################################################################################
 
 set(LVR2_CHUNKING_SERVER_DEPENDENCIES
-    lvr2_static
+    lvr2
     lvr2las_static
     lvr2rply_static
     ${Boost_LIBRARIES}
