@@ -753,8 +753,6 @@ int main(int argc, char** argv)
     // Generate materials
     MaterializerResult<Vec> matResult = materializer.generateMaterials();
 
-    materializer.saveTextures();
-
     // Add material data to finalize algorithm
     finalize.setMaterializerResult(matResult);
     // Run finalize algorithm

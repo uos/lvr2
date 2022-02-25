@@ -32,16 +32,22 @@
 
 // lvr2 includes
 #include "lvr2/algorithm/Texturizer.hpp"
+#include "lvr2/algorithm/raycasting/EmbreeRaycaster.hpp"
+#include "lvr2/algorithm/raycasting/Intersection.hpp"
 
 
 namespace lvr2
 {
+
+template <typename HandleT>
+using ClusterBiMapPtr = std::shared_ptr<ClusterBiMap<HandleT>>;
 
 template <typename BaseVecT>
 class RayCastingTexturizer: public Texturizer<BaseVecT>
 {
 public:
     using Ptr = std::shared_ptr<RayCastingTexturizer<BaseVecT>>;
+    using IntersectionT = Intersection<intelem::Face, intelem::Point>;
     
     /**
      * @brief Construct a new Ray Casting Texturizer object
@@ -53,7 +59,9 @@ public:
     RayCastingTexturizer(
         float texelMinSize,
         int texMinClusterSize,
-        int texMaxClusterSize
+        int texMaxClusterSize,
+        const BaseMesh<BaseVector<float>>& geometry,
+        const ClusterBiMapPtr<FaceHandle> clusters
     );
 
     /**
@@ -76,6 +84,20 @@ public:
         const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
     );
 
+    void setGeometry(const BaseMesh<BaseVecT>& mesh);
+
+    void setClusters(const ClusterBiMapPtr<FaceHandle> clusters);
+
+private:
+
+    // The Raycaster which is used while raycasting
+    RaycasterBasePtr<IntersectionT> m_tracer;
+
+    // The clusters of faces
+    ClusterBiMapPtr<FaceHandle> m_clusters;
+
+    // Maps the face indices given to embree to FaceHandles
+    std::map<size_t, FaceHandle> m_embreeToHandle;
 };
 
 } // namespace lvr2
