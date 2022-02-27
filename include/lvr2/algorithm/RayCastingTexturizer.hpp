@@ -34,6 +34,7 @@
 #include "lvr2/algorithm/Texturizer.hpp"
 #include "lvr2/algorithm/raycasting/EmbreeRaycaster.hpp"
 #include "lvr2/algorithm/raycasting/Intersection.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 
 
 namespace lvr2
@@ -47,8 +48,10 @@ class RayCastingTexturizer: public Texturizer<BaseVecT>
 {
 public:
     using Ptr = std::shared_ptr<RayCastingTexturizer<BaseVecT>>;
-    using IntersectionT = Intersection<intelem::Face, intelem::Point>;
+    using IntersectionT = Intersection<intelem::Face, intelem::Point, intelem::Distance>;
     
+    RayCastingTexturizer() = delete;
+
     /**
      * @brief Construct a new Ray Casting Texturizer object
      * 
@@ -61,7 +64,8 @@ public:
         int texMinClusterSize,
         int texMaxClusterSize,
         const BaseMesh<BaseVector<float>>& geometry,
-        const ClusterBiMapPtr<FaceHandle> clusters
+        const ClusterBiMapPtr<FaceHandle> clusters,
+        ScanProjectPtr project
     );
 
     /**
@@ -81,12 +85,31 @@ public:
     virtual TextureHandle generateTexture(
         int index,
         const PointsetSurface<BaseVecT>& surface,
-        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
-    );
+        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect,
+        ClusterHandle cluster
+    ) override;
 
     void setGeometry(const BaseMesh<BaseVecT>& mesh);
 
     void setClusters(const ClusterBiMapPtr<FaceHandle> clusters);
+
+private:
+    template <typename... Args>
+    Texture initTexture(Args&&... args) const;
+
+    /**
+     * @brief Calculates the uv coordinates for each pixel of the Texture
+     * 
+     * @param tex The Texture to calculate the uv coordinates for
+     * @return std::vector<TexCoords> 
+     */
+    std::vector<TexCoords> calculateUVCoordsPerPixel(const Texture& tex) const;
+
+    std::vector<BaseVecT> calculate3DPointsPerPixel(const std::vector<TexCoords>&, const BoundingRectangle<typename BaseVecT::CoordType>&);
+
+    std::vector<bool> calculateVisibilityPerPixel(const Vector3f from, const std::vector<BaseVecT>& to, const ClusterHandle cluster) const;
+
+    void DEBUGDrawBorder(TextureHandle texH, const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect, ClusterHandle clusterH);
 
 private:
 
@@ -98,6 +121,11 @@ private:
 
     // Maps the face indices given to embree to FaceHandles
     std::map<size_t, FaceHandle> m_embreeToHandle;
+
+    // The ScanProject containing the cameras
+    ScanProjectPtr m_project;
+
+    const BaseMesh<BaseVector<float>>& m_debug;
 };
 
 } // namespace lvr2
