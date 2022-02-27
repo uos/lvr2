@@ -10,7 +10,7 @@
 namespace lvr2
 {
 
-const Vector3f DEBUG_ORIGIN(0, 0, 10);
+const Vector3f DEBUG_ORIGIN(0, 0, 1);
 
 template <typename BaseVecT>
 RayCastingTexturizer<BaseVecT>::RayCastingTexturizer(
@@ -100,8 +100,6 @@ void RayCastingTexturizer<BaseVecT>::DEBUGDrawBorder(TextureHandle texH, const B
 
             if (m_clusters->getClusterH(FaceHandle(intersection.face_id)) != clusterH) continue;
             
-
-            
             TexCoords uv = this->calculateTexCoords(texH, boundingRect, pos);
             uint16_t x = uv.u * (tex.m_width - 1);
             uint16_t y = uv.v * (tex.m_height - 1);
@@ -144,51 +142,25 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
     if (!m_project)
     {
         std::cout << timestamp << "[RaycastingTexturizer] No scan project set, cannot texturize cluster" << std::endl;
-        //TODO: add return back in // return texH;
+        return texH;
     }
-
-    // if (index != 38)
-    // return texH;
 
     // List of uv coordinates
     std::vector<TexCoords> uvCoords = this->calculateUVCoordsPerPixel(tex);
     // List of 3D points corresponding to uv coords
     std::vector<BaseVecT> points = this->calculate3DPointsPerPixel(uvCoords, boundingRect);
     // A list of booleans indicating wether the point is visible
-    std::vector<bool> visible = this->calculateVisibilityPerPixel(Vector3f(0, 0, 10), points, clusterH);
+    std::vector<bool> visible = this->calculateVisibilityPerPixel(DEBUG_ORIGIN, points, clusterH);
     
     this->DEBUGDrawBorder(texH, boundingRect, clusterH);
 
-    cv::namedWindow("debug", cv::WINDOW_NORMAL);
-    cv::Mat cvTex(tex.m_height, tex.m_width, CV_8UC3, tex.m_data);
-    cv::imshow("debug", cvTex);
-    cv::waitKey(0);
-
     for (size_t i = 0; i < num_pixel; i++)
     {
-        //get pixel coords
-        uint16_t pX = i % tex.m_width;
-        uint16_t pY = i / tex.m_width;
-
-        float u = (float) pX / (tex.m_width - 1);
-        float v = (float) pY / (tex.m_height - 1);
-
-        BaseVecT point = this->calculateTexCoordsInv( texH, boundingRect, TexCoords(u,v));
-        Vector3f direction = (Vector3f(point.x, point.y, point.z) - DEBUG_ORIGIN).normalized();
-
-        IntersectionT intersection;
-        if (this->m_tracer->castRay(DEBUG_ORIGIN, direction, intersection))
+        if (visible[i])
         {
-            if (m_clusters->getClusterH(FaceHandle(intersection.face_id)) == clusterH)
-            {
-                setPixel(pX, pY, tex, 0, 255, 0);
-            }
+            setPixel(i, tex, 0, 255, 0);
         }
     }
-
-    cvTex = cv::Mat(tex.m_height, tex.m_width, CV_8UC3, tex.m_data);
-    cv::imshow("debug", cvTex);
-    cv::waitKey(0);
 
     return texH;
 }
@@ -219,12 +191,12 @@ std::vector<TexCoords> RayCastingTexturizer<BaseVecT>::calculateUVCoordsPerPixel
     std::vector<TexCoords> ret;
     ret.reserve(tex.m_width * tex.m_height);
 
-    for (size_t x = 0; x < tex.m_width; x++)
+    for (size_t y = 0; y < tex.m_height; y++)
     {
-        for (size_t y = 0; y < tex.m_height; y++)
+        for (size_t x = 0; x < tex.m_width; x++)
         {
-            float u = (float) x / tex.m_width;
-            float v = (float) y / tex.m_height;
+            float u = ((float) x + 0.5f) / (tex.m_width - 1);
+            float v = ((float) y + 0.5f) / (tex.m_height - 1);
             ret.push_back(TexCoords(u, v));
         }
     }
