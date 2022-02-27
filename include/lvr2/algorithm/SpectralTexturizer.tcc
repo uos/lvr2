@@ -8,7 +8,8 @@ template<typename BaseVecT>
 TextureHandle SpectralTexturizer<BaseVecT>::generateTexture(
     int index,
     const PointsetSurface<BaseVecT>& surface,
-    const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
+    const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect,
+    ClusterHandle
 )
 {
     // Calculate texture size

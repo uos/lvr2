@@ -209,7 +209,8 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 TextureHandle texH = texturizer->generateTexture(
                 textureCount,
                 m_surface,
-                boundingRect
+                boundingRect,
+                clusterH
                 );
 
                 if (!first_opt) first_opt = texH;

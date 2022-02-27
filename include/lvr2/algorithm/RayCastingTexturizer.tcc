@@ -18,7 +18,7 @@ RayCastingTexturizer<BaseVecT>::RayCastingTexturizer(
     int texMinClusterSize,
     int texMaxClusterSize,
     const BaseMesh<BaseVector<float>>& mesh,
-    const ClusterBiMapPtr<FaceHandle> clusters,
+    const ClusterBiMap<FaceHandle>& clusters,
     ScanProjectPtr project
 ): Texturizer<BaseVecT>(texelMinSize, texMinClusterSize, texMaxClusterSize)
  , m_project(project), m_debug(mesh)
@@ -65,7 +65,7 @@ void RayCastingTexturizer<BaseVecT>::setGeometry(const BaseMesh<BaseVecT>& mesh)
 }
 
 template <typename BaseVecT>
-void RayCastingTexturizer<BaseVecT>::setClusters(const ClusterBiMapPtr<FaceHandle> clusters)
+void RayCastingTexturizer<BaseVecT>::setClusters(const ClusterBiMap<FaceHandle>& clusters)
 {
     this->m_clusters = clusters;
 }
@@ -89,7 +89,7 @@ void RayCastingTexturizer<BaseVecT>::DEBUGDrawBorder(TextureHandle texH, const B
 {
     Texture& tex = this->m_textures[texH];
     // Draw in vertices of cluster
-    for (auto face: m_clusters->getCluster(clusterH))
+    for (auto face: m_clusters.getCluster(clusterH))
     {
         for (auto vertex: m_debug.getVerticesOfFace(face))
         {
@@ -98,7 +98,7 @@ void RayCastingTexturizer<BaseVecT>::DEBUGDrawBorder(TextureHandle texH, const B
             Vector3f direction = (Vector3f(pos.x, pos.y, pos.z) - DEBUG_ORIGIN).normalized();
             if (!m_tracer->castRay(DEBUG_ORIGIN, direction, intersection)) continue;
 
-            if (m_clusters->getClusterH(FaceHandle(intersection.face_id)) != clusterH) continue;
+            if (m_clusters.getClusterH(FaceHandle(intersection.face_id)) != clusterH) continue;
             
             TexCoords uv = this->calculateTexCoords(texH, boundingRect, pos);
             uint16_t x = uv.u * (tex.m_width - 1);
@@ -260,7 +260,7 @@ std::vector<bool> RayCastingTexturizer<BaseVecT>::calculateVisibilityPerPixel(
         {
             // check if the hit face belongs to the cluster we are texturzing
             FaceHandle              fHandle = m_embreeToHandle.at(int_it->face_id);
-            ClusterHandle           cHandle = m_clusters->getClusterH(fHandle);
+            ClusterHandle           cHandle = m_clusters.getClusterH(fHandle);
             if (cHandle == cluster)
             {
                 *ret_it = true;

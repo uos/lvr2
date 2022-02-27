@@ -545,13 +545,34 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
     }
 }
 
-template <typename Vec>
-void addRGBTexturizer(const reconstruct::Options& options, lvr2::Materializer<Vec>& materializer)
+template <typename MeshVec, typename ClusterVec>
+void addRGBTexturizer(const reconstruct::Options& options, lvr2::Materializer<Vec>& materializer, const BaseMesh<MeshVec>& mesh, const ClusterBiMap<ClusterVec> clusters)
 {
+    boost::filesystem::path selectedFile( options.getInputFileName());
+    std::string extension = selectedFile.extension().string();
+    std::string filePath = selectedFile.generic_path().string();
+
+    if (extension != ".h5")
+    {
+        std::cout << timestamp << "Cannot add RGB Texturizer because the scanproject is not a HDF5 file" << std::endl;
+        return;
+    }
+
+    HDF5KernelPtr kernel = std::make_shared<HDF5Kernel>(filePath);
+    HDF5SchemaPtr schema = std::make_shared<ScanProjectSchemaHDF5>();
+    
+    // create io object for hdf5 files
+    auto hdf5IO = scanio::HDF5IO(kernel, schema);
+
+    ScanProjectPtr project = hdf5IO.loadScanProject();
+
     auto texturizer = std::make_shared<RayCastingTexturizer<Vec>>(
         options.getTexelSize(),
         options.getTexMinClusterSize(),
-        options.getTexMaxClusterSize()
+        options.getTexMaxClusterSize(),
+        mesh,
+        clusters,
+        project
     );
 
     materializer.addTexturizer(texturizer);
@@ -746,7 +767,7 @@ int main(int argc, char** argv)
         {
             addSpectralTexturizers(options, materializer);
 
-            addRGBTexturizer(options, materializer);
+            addRGBTexturizer(options, materializer, mesh, clusterBiMap);
         }
     }
 

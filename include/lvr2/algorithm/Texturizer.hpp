@@ -139,13 +139,15 @@ public:
      * @param index The index the texture will get
      * @param surface The point cloud
      * @param boundingRect The bounding rectangle of the cluster
+     * @param cluster The cluster being texturized
      *
      * @return Texture handle of the generated texture
      */
     virtual TextureHandle generateTexture(
         int index,
         const PointsetSurface<BaseVecT>& surface,
-        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
+        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect,
+        ClusterHandle cluster
     );
 
     /**

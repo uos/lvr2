@@ -40,9 +40,6 @@
 namespace lvr2
 {
 
-template <typename HandleT>
-using ClusterBiMapPtr = std::shared_ptr<ClusterBiMap<HandleT>>;
-
 template <typename BaseVecT>
 class RayCastingTexturizer: public Texturizer<BaseVecT>
 {
@@ -64,7 +61,7 @@ public:
         int texMinClusterSize,
         int texMaxClusterSize,
         const BaseMesh<BaseVector<float>>& geometry,
-        const ClusterBiMapPtr<FaceHandle> clusters,
+        const ClusterBiMap<FaceHandle>& clusters,
         ScanProjectPtr project
     );
 
@@ -91,7 +88,7 @@ public:
 
     void setGeometry(const BaseMesh<BaseVecT>& mesh);
 
-    void setClusters(const ClusterBiMapPtr<FaceHandle> clusters);
+    void setClusters(const ClusterBiMap<FaceHandle>& clusters);
 
 private:
     template <typename... Args>
@@ -117,7 +114,7 @@ private:
     RaycasterBasePtr<IntersectionT> m_tracer;
 
     // The clusters of faces
-    ClusterBiMapPtr<FaceHandle> m_clusters;
+    ClusterBiMap<FaceHandle> m_clusters;
 
     // Maps the face indices given to embree to FaceHandles
     std::map<size_t, FaceHandle> m_embreeToHandle;
