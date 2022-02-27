@@ -6,6 +6,7 @@
 #include "lvr2/io/baseio/PLYIO.hpp"
 #include <fstream>
 #include <numeric>
+#include <variant>
 
 namespace lvr2
 {
@@ -149,18 +150,47 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
     std::vector<TexCoords> uvCoords = this->calculateUVCoordsPerPixel(tex);
     // List of 3D points corresponding to uv coords
     std::vector<BaseVecT> points = this->calculate3DPointsPerPixel(uvCoords, boundingRect);
-    // A list of booleans indicating wether the point is visible
-    std::vector<bool> visible = this->calculateVisibilityPerPixel(DEBUG_ORIGIN, points, clusterH);
-    
-    this->DEBUGDrawBorder(texH, boundingRect, clusterH);
+    // List of booleans indicating if a texel is already Texturized
+    std::vector<bool> texturized(num_pixel, false);
 
-    for (size_t i = 0; i < num_pixel; i++)
+    for (ScanPositionPtr pos: m_project->positions)
     {
-        if (visible[i])
-        {
-            setPixel(i, tex, 0, 255, 0);
+        for (CameraPtr cam: pos->cameras)
+        {   
+            for (CameraImageOrGroup imgOrGroup: cam->images)
+            {
+                for (CameraImageOrGroup imgOrGroup2: imgOrGroup.get<CameraImageGroupPtr>()->images)
+                {
+                    if (imgOrGroup2.is_type<CameraImagePtr>())
+                    {
+                        // TODO: Check cluster normal against view vector
+
+                        // TODO: Create one vector containing all images directly
+                        
+
+                        CameraImagePtr img = imgOrGroup2.get<CameraImagePtr>();
+                        // Calculate camera point
+                        Transformd totalTransform = m_project->transformation * pos->transformation * cam->transformation * img->transformation;
+                        auto pt = totalTransform * Vector4d(0, 0, 0, 1);
+                        // The position of the camera
+                        Vector3f cameraOrigin = Vector3f(pt.x(), pt.y(), pt.z());
+                        // A list of booleans indicating wether the point is visible
+                        std::vector<bool> visible = this->calculateVisibilityPerPixel(cameraOrigin, points, clusterH);
+
+                        for (size_t i = 0; i < num_pixel; i++)
+                        {
+                            if (!texturized[i] && visible[i])
+                            {
+                                texturized[i] = true;
+                                setPixel(i, tex, 0, 255, 0);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
+   
 
     return texH;
 }
@@ -174,7 +204,7 @@ Texture RayCastingTexturizer<BaseVecT>::initTexture(Args&&... args) const
     ret.m_layerName = "RGB";
     size_t num_pixel = ret.m_width * ret.m_height;
 
-    // Init white
+    // Init red
     for (int i = 0; i < num_pixel; i++)
     {
         ret.m_data[i * 3 + 0] = 255;
