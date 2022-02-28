@@ -188,6 +188,27 @@ public:
     string  getInputFileName() const;
 
     /**
+     * @brief Get the Input Mesh Name
+     * 
+     * @return string 
+     */
+    string getInputMeshName() const;
+
+    /**
+     * @brief Load mesh from file instead of reconstructing
+     * 
+     * @return true 
+     * @return false 
+     */
+    bool useExistingMesh() const;
+
+    /**
+     * @brief Get the file to load the mesh from
+     * 
+     * @return string 
+     */
+    string getInputMeshFile() const;
+    /**
      * @brief   Returns the output file name
      */
     string  getOutputFileName() const;
@@ -472,6 +493,12 @@ private:
 
     ///Name of the generated mesh
     std::string m_meshName;
+
+    ///Name of the input mesh
+    std::string m_inputMeshName;
+
+    ///Filename to load the mesh from
+    std::string m_inputMeshFile;
 
 };
 

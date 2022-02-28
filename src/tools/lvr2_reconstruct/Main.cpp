@@ -578,35 +578,14 @@ void addRGBTexturizer(const reconstruct::Options& options, lvr2::Materializer<Ve
     materializer.addTexturizer(texturizer);
 }
 
-int main(int argc, char** argv)
+template <typename BaseMeshT>
+auto loadAndReconstructMesh(reconstruct::Options options)
 {
-    // =======================================================================
-    // Parse and print command line parameters
-    // =======================================================================
-    // Parse command line arguments
-    reconstruct::Options options(argc, argv);
-
-    options.printLogo();
-
-    // Exit if options had to generate a usage message
-    // (this means required parameters are missing)
-    if (options.printUsage())
-    {
-        return EXIT_SUCCESS;
-    }
-
-    std::cout << options << std::endl;
-
-    // =======================================================================
-    // Load (and potentially store) point cloud
-    // =======================================================================
-    OpenMPConfig::setNumThreads(options.getNumThreads());
-
     auto surface = loadPointCloud<Vec>(options);
     if (!surface)
     {
         cout << "Failed to create pointcloud. Exiting." << endl;
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     // Save points and normals only
@@ -620,7 +599,7 @@ int main(int argc, char** argv)
     // Reconstruct mesh from point cloud data
     // =======================================================================
     // Create an empty mesh
-    lvr2::PMPMesh<Vec> mesh;
+    BaseMeshT mesh;
 
     shared_ptr<GridBase> grid;
     unique_ptr<FastReconstructionBase<Vec>> reconstruction;
@@ -667,6 +646,74 @@ int main(int argc, char** argv)
         std::cout << timestamp << "Trying to remove " << old - target << " / " << old << " vertices." << std::endl;
         mesh.simplify(target);
         std::cout << timestamp << "Removed " << old - mesh.numVertices() << " vertices." << std::endl;
+    }
+
+    return std::make_tuple(std::move(mesh), surface);
+}
+
+template <typename BaseMeshT>
+auto loadExistingMesh(reconstruct::Options options)
+{
+    meshio::HDF5IO io(
+        std::make_shared<HDF5Kernel>(options.getInputMeshFile()),
+        std::make_shared<MeshSchemaHDF5>()
+    );
+
+    std::cout << timestamp << "Loading existing mesh '" << options.getInputMeshName() << "' from file '" << options.getInputFileName() << "'" << std::endl;
+
+    BaseMeshT mesh(io.loadMesh(options.getInputMeshName()));
+    
+    PointBufferPtr buffer = std::make_shared<PointBuffer>();
+    floatArr points(new float[3]);
+    buffer->setPointArray(points, 1);
+    PointsetSurfacePtr<Vec> surface = std::make_shared<AdaptiveKSearchSurface<Vec>>(
+            buffer,
+            options.getPCM(),
+            options.getKn(),
+            options.getKi(),
+            options.getKd(),
+            0,
+            options.getScanPoseFile());
+
+    
+
+    return std::make_tuple(std::move(mesh), surface);
+}
+
+int main(int argc, char** argv)
+{
+    // =======================================================================
+    // Parse and print command line parameters
+    // =======================================================================
+    // Parse command line arguments
+    reconstruct::Options options(argc, argv);
+
+    options.printLogo();
+
+    // Exit if options had to generate a usage message
+    // (this means required parameters are missing)
+    if (options.printUsage())
+    {
+        return EXIT_SUCCESS;
+    }
+
+    std::cout << options << std::endl;
+
+    // =======================================================================
+    // Load (and potentially store) point cloud
+    // =======================================================================
+    OpenMPConfig::setNumThreads(options.getNumThreads());
+
+    lvr2::PMPMesh<Vec> mesh;
+    PointsetSurfacePtr<Vec> surface;
+
+    if (options.useExistingMesh())
+    {
+        std::tie(mesh, surface) = loadExistingMesh<lvr2::PMPMesh<Vec>>(options);
+    }
+    else
+    {
+        std::tie(mesh, surface) = loadAndReconstructMesh<lvr2::PMPMesh<Vec>>(options);
     }
 
     // Calculate face normals

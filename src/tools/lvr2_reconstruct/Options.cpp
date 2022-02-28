@@ -117,8 +117,10 @@ Options::Options(int argc, char** argv)
         ("minSpectralChannel", value<int>(&m_minSpectralChannel)->default_value(0), "Minimum Spectral Channel Index for Ranged Texture Generation")
         ("maxSpectralChannel", value<int>(&m_maxSpectralChannel)->default_value(0), "Maximum Spectral Channel Index for Ranged Texture Generation")
         ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
-        ("meshName", value<string>(&m_meshName)->default_value("default"), "The name of the mesh")
         ("transformScanPosition", "Transform the scan with the scanpositions pose when using --scanPositionIndex")
+        ("outputMeshName", value<string>(&m_meshName)->default_value("default"), "The name of the saved mesh")
+        ("inputMeshName", value<string>(&m_inputMeshName), "The name of the mesh to load from the file")
+        ("inputMeshFile", value<string>(&m_inputMeshFile), "The file to load the mesh from")
     ;
 
     setup();
@@ -507,6 +509,21 @@ std::string Options::getMeshName() const
 bool Options::transformScanPosition() const
 {
     return m_variables.count("transformScanPosition");
+}
+
+bool Options::useExistingMesh() const
+{
+    return m_variables.count("inputMeshName");
+}
+
+string Options::getInputMeshName() const
+{
+    return m_inputMeshName;
+}
+
+string Options::getInputMeshFile() const
+{
+    return m_inputMeshFile;
 }
 
 Options::~Options() {
