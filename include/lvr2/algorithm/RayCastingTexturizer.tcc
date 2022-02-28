@@ -36,8 +36,11 @@ void RayCastingTexturizer<BaseVecT>::setGeometry(const BaseMesh<BaseVecT>& mesh)
     std::vector<float> vertices;
     std::vector<unsigned int> faceIndices;
 
+    std::map<VertexHandle, size_t> vertexHToIndex;
+
     for (auto vertexH: mesh.vertices())
     {
+        vertexHToIndex.insert({vertexH, vertices.size() / 3});
         auto v = mesh.getVertexPosition(vertexH);
         vertices.push_back(v.x);
         vertices.push_back(v.y);
@@ -48,14 +51,10 @@ void RayCastingTexturizer<BaseVecT>::setGeometry(const BaseMesh<BaseVecT>& mesh)
     for (auto face: mesh.faces())
     {
         m_embreeToHandle.insert({faceIndices.size() / 3, face});
-        if ((faceIndices.size() / 3) != face.idx())
-        {
-            std::cout << "FaceIndex to Handle missmatch: " << faceIndices.size()/3 << " vs. " << face.idx() << std::endl;
-        }
         auto faceVertices = mesh.getVerticesOfFace(face);
-        for (auto vertex: faceVertices)
+        for (auto vertexH: faceVertices)
         {
-            faceIndices.push_back(vertex.idx());
+            faceIndices.push_back(vertexHToIndex.at(vertexH));
         }
     }
 
@@ -177,6 +176,40 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
                         // A list of booleans indicating wether the point is visible
                         std::vector<bool> visible = this->calculateVisibilityPerPixel(cameraOrigin, points, clusterH);
 
+                        // if(!img->loaded())
+                        // {
+                        //     img->load();
+                        // }
+                        // cv::Mat camMat(3, 3, CV_64F);
+                        // camMat.at<double>(0, 0) = cam->model.fx;
+                        // camMat.at<double>(0, 1) = 0;
+                        // camMat.at<double>(0, 2) = cam->model.cx;
+                        
+                        // camMat.at<double>(1, 0) = 0;
+                        // camMat.at<double>(1, 1) = cam->model.fy;
+                        // camMat.at<double>(1, 2) = cam->model.cy;
+
+                        // camMat.at<double>(2, 0) = 0;
+                        // camMat.at<double>(2, 1) = 0;
+                        // camMat.at<double>(2, 2) = 1;
+
+                        // cv::Mat distKoeffs(cam->model.distortionCoefficients.size(), 1, CV_64F);
+                        // for (int i = 0; i < cam->model.distortionCoefficients.size(); i++)
+                        // {
+                        //     distKoeffs.at<double>(i, 0) = cam->model.distortionCoefficients[i];
+                        // }
+                        
+                        // cv::Mat undistImg;
+                        // cv::undistort(
+                        //     img->image,
+                        //     undistImg,
+                        //     camMat,
+                        //     distKoeffs
+                        // );
+
+                        // cv::namedWindow("debug", cv::WINDOW_NORMAL);
+                        // cv::imshow("debug", undistImg);
+                        // cv::waitKey(0);
                         for (size_t i = 0; i < num_pixel; i++)
                         {
                             if (!texturized[i] && visible[i])
