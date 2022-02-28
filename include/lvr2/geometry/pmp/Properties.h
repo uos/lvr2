@@ -38,8 +38,14 @@ public:
     //! Let two elements swap their storage place.
     virtual void swap(size_t i0, size_t i1) = 0;
 
+    //! Copy an element from another array.
+    virtual void copy_prop(BasePropertyArray* src, size_t src_i, size_t dst_i) = 0;
+
     //! Return a deep copy of self.
     virtual BasePropertyArray* clone() const = 0;
+
+    //! Return an empty copy of self.
+    virtual BasePropertyArray* empty_copy() const = 0;
 
     //! Return the type_info of the property
     virtual const std::type_info& type() = 0;
@@ -76,9 +82,14 @@ public: // virtual interface of BasePropertyArray
 
     virtual void swap(size_t i0, size_t i1)
     {
-        T d(data_[i0]);
-        data_[i0] = data_[i1];
-        data_[i1] = d;
+        std::swap(data_[i0], data_[i1]);
+    }
+
+    virtual void copy_prop(BasePropertyArray* src, size_t src_i, size_t dst_i)
+    {
+        PropertyArray<T>* src_prop = dynamic_cast<PropertyArray<T>*>(src);
+        assert(src_prop);
+        data_[dst_i] = src_prop->data_[src_i];
     }
 
     virtual BasePropertyArray* clone() const
@@ -88,11 +99,16 @@ public: // virtual interface of BasePropertyArray
         return p;
     }
 
+    virtual BasePropertyArray* empty_copy() const
+    {
+        return new PropertyArray<T>(name_, value_);
+    }
+
     virtual const std::type_info& type() { return typeid(T); }
 
 public:
-    //! Get pointer to array (does not work for T==bool)
-    const T* data() const { return &data_[0]; }
+    //! Get pointer to array
+    const T* data() const { return data_.data(); }
 
     //! Get reference to the underlying vector
     std::vector<T>& vector() { return data_; }
@@ -115,14 +131,6 @@ private:
     VectorType data_;
     ValueType value_;
 };
-
-// specialization for bool properties
-template <>
-inline const bool* PropertyArray<bool>::data() const
-{
-    assert(false);
-    return nullptr;
-}
 
 template <class T>
 class Property
@@ -193,6 +201,9 @@ public:
 
     // copy constructor: performs deep copy of property arrays
     PropertyContainer(const PropertyContainer& rhs) { operator=(rhs); }
+
+    // move constructor
+    PropertyContainer(PropertyContainer&& rhs) = default;
 
     // assignment: performs deep copy of property arrays
     PropertyContainer& operator=(const PropertyContainer& rhs)
@@ -347,6 +358,25 @@ public:
     {
         for (size_t i = 0; i < parrays_.size(); ++i)
             parrays_[i]->swap(i0, i1);
+    }
+
+    void copy(const PropertyContainer& src)
+    {
+        for (size_t i = parrays_.size(); i < src.parrays_.size(); ++i)
+        {
+            BasePropertyArray* p = src.parrays_[i]->empty_copy();
+            p->resize(size_);
+            parrays_.push_back(p);
+        }
+    }
+
+    void copy_props(const PropertyContainer& src, size_t src_i, size_t target_i, size_t offset)
+    {
+        assert(n_properties() == src.n_properties());
+        for (size_t i = offset; i < parrays_.size(); ++i)
+        {
+            parrays_[i]->copy_prop(src.parrays_[i], src_i, target_i);
+        }
     }
 
 private:

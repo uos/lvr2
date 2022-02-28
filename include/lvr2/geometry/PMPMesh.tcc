@@ -48,8 +48,7 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
     size_t numFaces = ptr->numFaces();
     size_t numVertices = ptr->numVertices();
 
-    size_t expected_edges = (numFaces + numVertices) * 1.1; // Euler's formula + extra just to be safe
-    m_mesh.reserve(numVertices, expected_edges, numFaces);
+    m_mesh.reserve(numVertices, 0, numFaces);
 
     auto vertices = ptr->getVertices();
     size_t i = 0;

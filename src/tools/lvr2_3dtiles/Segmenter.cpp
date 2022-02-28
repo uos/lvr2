@@ -49,7 +49,7 @@ struct consistency_error : public std::runtime_error
 
 /**
  * @brief Calculates a 1D Chunk-index from a 3D position
- * 
+ *
  * @param p the 3D position
  * @param chunk_size the size of a chunk
  * @param num_chunks the number of chunks along each axis
@@ -62,27 +62,21 @@ uint64_t chunk_index(pmp::Point p, float chunk_size, Eigen::Vector3i num_chunks)
            + std::floor(p.z() / chunk_size) * num_chunks.x() * num_chunks.y();
 }
 
-/**
- * @brief Splits large segments into chunks
- * 
- * @param mesh the input mesh
- * @param segments a list of all existing segments
- * @param to_be_split to_be_split[segment.id] == true <=> segment should be split
- * @param out_segments the resulting new segments
- * @param segment_map maps old segment ids to new segment ids
- * @param chunk_size the size of a chunk
- */
-void partition_large_segments(pmp::SurfaceMesh& mesh,
-                              const std::vector<Segment>& segments,
-                              const std::vector<bool>& to_be_split,
-                              std::vector<Segment>& out_segments,
-                              std::vector<SegmentId>& segment_map,
-                              float chunk_size);
+void distribute_segments(pmp::SurfaceMesh& mesh,
+                         std::vector<Segment>& segments,
+                         std::vector<SegmentId>& segment_map,
+                         std::vector<bool> to_be_split,
+                         size_t to_be_split_count,
+                         std::vector<pmp::SurfaceMesh>& out_meshes,
+                         std::vector<pmp::BoundingBox>& out_bounds,
+                         std::vector<Segment>& small_segments);
 
 void segment_mesh(pmp::SurfaceMesh& mesh,
-                  std::vector<Segment>& out_segments,
                   const pmp::BoundingBox& bb,
-                  float chunk_size)
+                  float chunk_size,
+                  std::vector<Segment>& small_segments,
+                  std::vector<pmp::SurfaceMesh>& large_segments,
+                  std::vector<pmp::BoundingBox>& large_segment_bounds)
 {
     auto f_prop = mesh.add_face_property<SegmentId>("f:segment", INVALID_SEGMENT);
     auto v_prop = mesh.add_vertex_property<SegmentId>("v:segment", INVALID_SEGMENT);
@@ -101,7 +95,6 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
 
         Segment segment;
         segment.id = segments.size();
-        segment.start_face = fH;
 
         f_prop[fH] = segment.id;
         queue.push_back(fH);
@@ -143,6 +136,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
 
         segments.push_back(segment);
     }
+    mesh.remove_vertex_property(v_prop);
     std::cout << "\r" << timestamp << "Found " << segments.size() << " initial segments" << std::endl;
 
     // consistency check
@@ -168,11 +162,10 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
     std::vector<bool> to_be_split(segments.size(), false);
     size_t to_be_split_count = 0;
 
-    out_segments.clear();
+    small_segments.clear();
 
     for (auto& segment : segments)
     {
-        // Segments that are larger than a chunk are split in the next step
         if (segment.bb.longest_axis_size() >= chunk_size)
         {
             to_be_split[segment.id] = true;
@@ -186,11 +179,10 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
         if (elem == chunk_map.end())
         {
             // start a new chunk with this segment
-            SegmentId new_id = out_segments.size();
+            auto [ new_id, new_segment ] = push_and_get_index(small_segments, std::move(segment));
+            new_segment.id = new_id;
             segment_map[segment.id] = new_id;
             chunk_map[chunk_id] = new_id;
-            segment.id = new_id;
-            out_segments.push_back(segment);
         }
         else
         {
@@ -198,7 +190,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
             SegmentId new_id = elem->second;
             segment_map[segment.id] = new_id;
 
-            Segment& target = out_segments[new_id];
+            Segment& target = small_segments[new_id];
             target.num_faces += segment.num_faces;
             target.num_vertices += segment.num_vertices;
             target.bb += segment.bb;
@@ -206,41 +198,163 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
     }
 
     std::cout << timestamp << "Merged " << (segments.size() - to_be_split_count) << " small segments into "
-              << out_segments.size() << " chunks" << std::endl;
+              << small_segments.size() << " chunks" << std::endl;
 
-    if (to_be_split_count > 0)
+    if (to_be_split_count == 0)
     {
-        size_t old_size = out_segments.size();
-
-        partition_large_segments(mesh, segments, to_be_split, out_segments, segment_map, chunk_size);
-
-        std::cout << timestamp << "Partitioned " << to_be_split_count << " large segments into "
-                  << (out_segments.size() - old_size) << " chunks" << std::endl;
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < mesh.faces_size(); i++)
+        {
+            FaceHandle fH(i);
+            if (!mesh.is_deleted(fH))
+            {
+                f_prop[fH] = segment_map[f_prop[fH]];
+            }
+        }
     }
-
+    else
+    {
+        distribute_segments(mesh, segments, segment_map, to_be_split, to_be_split_count, large_segments, large_segment_bounds, small_segments);
+    }
 
     // consistency check
     total_faces = 0;
-    for (const auto& segment : out_segments)
+    for (const auto& segment : small_segments)
     {
         total_faces += segment.num_faces;
     }
     if (total_faces != mesh.n_faces())
     {
-        throw consistency_error(mesh.n_faces(), total_faces, "faces");
+        std::cerr << consistency_error(mesh.n_faces(), total_faces, "faces").what() << std::endl;
     }
+}
 
-    #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < mesh.faces_size(); i++)
+bool add_face(pmp::SurfaceMesh& target,
+              FaceHandle fH,
+              std::unordered_map<VertexHandle, VertexHandle>& vertex_map,
+              const pmp::SurfaceMesh& src)
+{
+    static std::vector<VertexHandle> face_vertices;
+    face_vertices.clear();
+    for (VertexHandle vH : src.vertices(fH))
     {
-        FaceHandle fH(i);
-        if (mesh.is_valid(fH) && !mesh.is_deleted(fH))
+        auto it = vertex_map.find(vH);
+        if (it == vertex_map.end())
         {
-            f_prop[fH] = segment_map[f_prop[fH]];
+            VertexHandle new_vH = target.add_vertex(src.position(vH));
+            target.copy_vprops(src, vH, new_vH);
+            vertex_map[vH] = new_vH;
+            face_vertices.push_back(new_vH);
+        }
+        else
+        {
+            face_vertices.push_back(it->second);
+        }
+    }
+    try
+    {
+        FaceHandle new_fH = target.add_face(face_vertices);
+        target.copy_fprops(src, fH, new_fH);
+    }
+    catch (pmp::TopologyException& e)
+    {
+        return false;
+    }
+    return true;
+}
+
+void distribute_segments(pmp::SurfaceMesh& mesh,
+                         std::vector<Segment>& segments,
+                         std::vector<SegmentId>& segment_map,
+                         std::vector<bool> to_be_split,
+                         size_t to_be_split_count,
+                         std::vector<pmp::SurfaceMesh>& out_meshes,
+                         std::vector<pmp::BoundingBox>& out_bounds,
+                         std::vector<Segment>& small_segments)
+{
+    out_meshes.clear();
+    out_bounds.clear();
+    std::vector<std::unordered_map<VertexHandle, VertexHandle>> vertex_maps(to_be_split_count);
+
+    SegmentId biggest_id = INVALID_SEGMENT;
+    pmp::FaceProperty<bool> f_biggest_delete;
+
+    auto f_prop = mesh.get_face_property<SegmentId>("f:segment");
+    auto f_delete = mesh.add_face_property<bool>("f:flag_delete", false);
+
+
+    for (auto& segment : segments)
+    {
+        if (!to_be_split[segment.id])
+        {
+            continue;
+        }
+
+        SegmentId new_id = out_meshes.size();
+        segment_map[segment.id] = new_id;
+        vertex_maps[new_id].reserve(segment.num_vertices);
+        out_bounds.push_back(segment.bb);
+
+        if (segment.num_faces < mesh.n_faces() / 2)
+        {
+            auto& out_mesh = out_meshes.emplace_back();
+            out_mesh.reserve(segment.num_vertices, 0, segment.num_faces);
+            out_mesh.copy_properties(mesh);
+        }
+        else
+        {
+            // segment is too large, just copy the original the mesh
+            auto& out_mesh = out_meshes.emplace_back(mesh);
+            biggest_id = new_id;
+            f_biggest_delete = out_mesh.get_face_property<bool>("f:flag_delete");
         }
     }
 
-    mesh.remove_vertex_property(v_prop);
+    ProgressBar progress(mesh.n_faces(), "Extracting large segments");
+    size_t fail_count = 0;
+    for (FaceHandle fH : mesh.faces())
+    {
+        ++progress;
+        SegmentId& id = f_prop[fH];
+        SegmentId new_id = segment_map[id];
+        if (!to_be_split[id])
+        {
+            id = new_id;
+            continue;
+        }
+        f_delete[fH] = true;
+        if (new_id != biggest_id)
+        {
+            if (!add_face(out_meshes[new_id], fH, vertex_maps[new_id], mesh))
+            {
+                fail_count++;
+            }
+            if (f_biggest_delete)
+            {
+                f_biggest_delete[fH] = true;
+            }
+        }
+    }
+    std::cout << "\r";
+    if (fail_count > 0)
+    {
+        std::cout << fail_count << " broken faces removed" << std::endl;
+    }
+    mesh.delete_many_faces(f_delete);
+    mesh.remove_face_property(f_delete);
+    mesh.garbage_collection();
+
+    if (f_biggest_delete)
+    {
+        out_meshes[biggest_id].delete_many_faces(f_biggest_delete);
+        // out_meshes[biggest_id].garbage_collection();
+    }
+
+    for (auto& out_mesh : out_meshes)
+    {
+        out_mesh.remove_face_property<SegmentId>("f:segment");
+        out_mesh.remove_face_property<bool>("f:flag_delete");
+    }
 }
 
 void partition_large_segments(pmp::SurfaceMesh& mesh,
@@ -283,7 +397,7 @@ void partition_large_segments(pmp::SurfaceMesh& mesh,
     for (size_t i = 0; i < mesh.faces_size(); i++)
     {
         FaceHandle fH(i);
-        if (!mesh.is_valid(fH) || mesh.is_deleted(fH) || !to_be_split[f_prop[fH]])
+        if (mesh.is_deleted(fH) || !to_be_split[f_prop[fH]])
         {
             continue;
         }
@@ -325,7 +439,6 @@ void partition_large_segments(pmp::SurfaceMesh& mesh,
             segment_map.push_back(out_id);
             auto& new_segment = out_segments.emplace_back();
             new_segment.id = out_id;
-            new_segment.start_face = fH;
 
             chunk_map[chunk_id] = in_id;
         }

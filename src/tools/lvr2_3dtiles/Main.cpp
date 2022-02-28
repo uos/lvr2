@@ -69,7 +69,7 @@ void convert_bounding_box(const pmp::BoundingBox& in, Cesium3DTiles::BoundingVol
     };
 }
 
-void write_segments(std::vector<Segment>& segments, Tile& root, const path& output_dir);
+void partition_chunks(std::vector<Segment>& segments, Tile& root, const path& output_dir);
 
 int main(int argc, char** argv)
 {
@@ -192,10 +192,11 @@ int main(int argc, char** argv)
 
     std::cout << timestamp << "Creating 3D Tiles" << std::endl;
 
-    if (!boost::filesystem::exists(output_dir))
+    if (boost::filesystem::exists(output_dir))
     {
-        boost::filesystem::create_directories(output_dir);
+        boost::filesystem::remove_all(output_dir);
     }
+    boost::filesystem::create_directories(output_dir);
     path tileset_file = output_dir / "tileset.json";
 
     Cesium3DTiles::Tileset tileset;
@@ -217,41 +218,62 @@ int main(int argc, char** argv)
     std::vector<Segment> segments;
     if (chunk_size > 0)
     {
+        std::vector<pmp::SurfaceMesh> large_segments;
+        std::vector<pmp::BoundingBox> large_segment_bounds;
+
         std::cout << timestamp << "Segmenting mesh" << std::endl;
-        segment_mesh(surface_mesh, segments, bb, chunk_size);
+        segment_mesh(surface_mesh, bb, chunk_size, segments, large_segments, large_segment_bounds);
 
-        path segment_path = output_dir / "segments";
-        if (boost::filesystem::exists(segment_path))
+        path chunk_path = output_dir / "chunks";
+        boost::filesystem::create_directories(chunk_path);
+
+        std::cout << timestamp << "Writing chunks                " << std::endl;
+        partition_chunks(segments, root, "chunks");
+        write_b3dm_segments(output_dir, surface_mesh, segments);
+
+        std::vector<std::string> filenames;
+        size_t biggest = 0;
+
+        for (size_t i = 0; i < large_segments.size(); i++)
         {
-            boost::filesystem::remove_all(segment_path);
-        }
-        boost::filesystem::create_directories(segment_path);
+            auto& mesh = large_segments[i];
+            std::string filename = "segments/s" + std::to_string(i) + "/mesh.b3dm";
+            std::cout << timestamp << "Writing segment " << i << " to " << filename << std::endl;
+            filenames.push_back(filename);
 
-        write_segments(segments, root, "segments");
+            boost::filesystem::create_directories((output_dir / filename).parent_path());
+
+            Tile& tile = root.children.emplace_back();
+            tile.geometricError = mesh.n_faces() * FACE_TO_ERROR_FACTOR;
+            convert_bounding_box(large_segment_bounds[i], tile.boundingVolume);
+
+            Cesium3DTiles::Content content;
+            content.uri = filename;
+            tile.content = content;
+
+            if (mesh.n_faces() > large_segments[biggest].n_faces())
+            {
+                biggest = i;
+            }
+        }
+        #pragma omp parallel for
+        for (size_t i = 0; i < large_segments.size(); i++)
+        {
+            write_b3dm(output_dir, filenames[i], large_segments[i], large_segment_bounds[i], i == biggest);
+        }
     }
     else
     {
-        path mesh_file = "mesh.b3dm";
+        std::string mesh_file = "mesh.b3dm";
         std::cout << timestamp << "Writing " << mesh_file << std::endl;
 
         Cesium3DTiles::Content content;
-        content.uri = mesh_file.string();
+        content.uri = mesh_file;
         root.content = content;
         root.geometricError = mesh.numFaces() * FACE_TO_ERROR_FACTOR;
 
-        // add a fake segment containing the whole mesh
-        surface_mesh.add_vertex_property<SegmentId>("v:segment", 0);
-        surface_mesh.add_face_property<SegmentId>("f:segment", 0);
-
-        segments.emplace_back();
-        auto& segment = segments.back();
-        segment.id = 0;
-        segment.num_faces = surface_mesh.n_faces();
-        segment.num_vertices = surface_mesh.n_vertices();
-        segment.bb = bb;
-        segment.filename = "mesh.b3dm";
+        write_b3dm(output_dir, mesh_file, surface_mesh, bb);
     }
-    write_b3dm(output_dir, surface_mesh, segments);
 
     tileset.geometricError = root.geometricError;
 
@@ -286,61 +308,80 @@ int main(int argc, char** argv)
     return 0;
 }
 
-void split_recursive(Segment** start,
-                     Segment** end,
-                     const std::string& filename,
-                     Tile& tile,
-                     const path& output_dir)
+pmp::BoundingBox split_recursive(Segment** start,
+                                 Segment** end,
+                                 std::string& filename,
+                                 Tile& tile,
+                                 const std::string& output_dir)
 {
     size_t n = end - start;
-    if (n == 0)
+    pmp::BoundingBox bb;
+
+    if (n <= 8)
     {
-        return;
-    }
+        tile.children.resize(n);
+        for (size_t i = 0; i < n; i++)
+        {
+            auto& segment = start[i];
+            auto& child_tile = tile.children[i];
 
-    if (n == 1)
-    {
-        auto& segment = **start;
-        segment.filename = (output_dir / (filename + ".b3dm")).string();
+            filename.push_back('0' + i);
+            segment->filename = output_dir + filename + ".b3dm";
+            filename.pop_back();
 
-        convert_bounding_box(segment.bb, tile.boundingVolume);
+            convert_bounding_box(segment->bb, child_tile.boundingVolume);
+            bb += segment->bb;
 
-        tile.geometricError = segment.num_faces * FACE_TO_ERROR_FACTOR;
+            child_tile.geometricError = segment->num_faces * FACE_TO_ERROR_FACTOR;
+            tile.geometricError += child_tile.geometricError;
 
-        Cesium3DTiles::Content content;
-        content.uri = segment.filename;
-        tile.content = content;
+            Cesium3DTiles::Content content;
+            content.uri = segment->filename;
+            child_tile.content = content;
+        }
     }
     else
     {
-        pmp::BoundingBox bb;
-        for (auto it = start; it != end; ++it)
+        auto split_fn = [](int axis)
         {
-            bb += (**it).bb;
+            return [axis](const Segment * a, const Segment * b)
+            {
+                return a->bb.center()[axis] < b->bb.center()[axis];
+            };
+        };
+
+        Segment** starts[9];
+        starts[0] = start;
+        starts[8] = end; // fake past-the-end start for easier indexing
+
+        for (size_t axis = 0; axis < 3; axis++)
+        {
+            size_t step = 1 << (3 - axis); // values 8 -> 4 -> 2
+            for (size_t i = 0; i < 8; i += step)
+            {
+                auto& a = starts[i];
+                auto& b = starts[i + step];
+                auto& mid = starts[i + step / 2];
+                mid = a + (b - a) / 2;
+                std::nth_element(a, mid, b, split_fn(axis));
+            }
         }
-        convert_bounding_box(bb, tile.boundingVolume);
 
-        pmp::Point size = bb.max() - bb.min();
-        size_t longest_axis = std::max_element(size.data(), size.data() + 3) - size.data();
-
-        Segment** mid = start + n / 2;
-        std::nth_element(start, mid, end, [longest_axis](const Segment* a, const Segment* b)
+        tile.children.resize(8);
+        for (size_t i = 0; i < 8; i++)
         {
-            return a->bb.center()[longest_axis] < b->bb.center()[longest_axis];
-        });
+            filename.push_back('0' + i);
+            bb += split_recursive(starts[i], starts[i + 1], filename, tile.children[i], output_dir);
+            filename.pop_back();
 
-        constexpr char NAME[3][2] = { { 'x', 'X' }, { 'y', 'Y' }, { 'z', 'Z' } };
-
-        tile.children.resize(2);
-
-        split_recursive(start, mid, filename + NAME[longest_axis][0], tile.children[0], output_dir);
-        split_recursive(mid, end, filename + NAME[longest_axis][1], tile.children[1], output_dir);
-
-        tile.geometricError = tile.children[0].geometricError + tile.children[1].geometricError;
+            tile.geometricError += tile.children[i].geometricError;
+        }
     }
+    convert_bounding_box(bb, tile.boundingVolume);
+    return bb;
 }
 
-void write_segments(std::vector<Segment>& segments, Tile& root, const path& output_dir)
+void partition_chunks(std::vector<Segment>& segments, Tile& root, const path& output_dir)
 {
     root.refine = Cesium3DTiles::Tile::Refine::ADD;
 
@@ -350,6 +391,13 @@ void write_segments(std::vector<Segment>& segments, Tile& root, const path& outp
         temp_segments[i] = &segments[i];
     }
 
+    std::string output = output_dir.string();
+    if (output.back() != '/')
+    {
+        output.push_back('/');
+    }
+
+    std::string filename = "t";
     split_recursive(temp_segments.data(), temp_segments.data() + temp_segments.size(),
-                    "t", root, output_dir);
+                    filename, root, output);
 }

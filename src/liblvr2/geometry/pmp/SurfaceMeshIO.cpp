@@ -871,11 +871,11 @@ static int vertexCallback(p_ply_argument argument)
     ply_get_argument_user_data(argument, &pdata, &idx);
 
     auto* mesh = (pmp::SurfaceMesh*)pdata;
-    auto point = mesh->get_object_property<pmp::Point>("g:point");
-    point[0][idx] = ply_get_argument_value(argument);
+    static Point point;
+    point[idx] = ply_get_argument_value(argument);
 
     if (idx == 2)
-        mesh->add_vertex(point[0]);
+        mesh->add_vertex(point);
 
     return 1;
 }
@@ -890,27 +890,22 @@ static int faceCallback(p_ply_argument argument)
     ply_get_argument_property(argument, nullptr, &length, &value_index);
 
     auto* mesh = (pmp::SurfaceMesh*)pdata;
-    auto vertices =
-        mesh->get_object_property<std::vector<pmp::Vertex>>("g:vertices");
+    static std::vector<Vertex> vertices;
 
     if (value_index == 0)
-        vertices[0].clear();
+        vertices.clear();
 
     pmp::IndexType idx = (pmp::IndexType)ply_get_argument_value(argument);
-    vertices[0].push_back(pmp::Vertex(idx));
+    vertices.push_back(pmp::Vertex(idx));
 
     if (value_index == length - 1)
-        mesh->add_face(vertices[0]);
+        mesh->add_face(vertices);
 
     return 1;
 }
 
 void SurfaceMeshIO::read_ply(SurfaceMesh& mesh)
 {
-    // add object properties to hold temporary data
-    auto point = mesh.add_object_property<Point>("g:point");
-    auto vertices = mesh.add_object_property<std::vector<Vertex>>("g:vertices");
-
     // open file, read header
     p_ply ply = ply_open(filename_.c_str(), nullptr, 0, nullptr);
 
@@ -932,10 +927,6 @@ void SurfaceMeshIO::read_ply(SurfaceMesh& mesh)
         throw IOException("Failed to read PLY data!");
 
     ply_close(ply);
-
-    // clean-up properties
-    mesh.remove_object_property(point);
-    mesh.remove_object_property(vertices);
 }
 
 void SurfaceMeshIO::write_ply(const SurfaceMesh& mesh)

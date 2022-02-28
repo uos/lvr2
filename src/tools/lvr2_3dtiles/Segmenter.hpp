@@ -37,6 +37,8 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
 
+#include <Cesium3DTiles/Tile.h>
+
 namespace lvr2
 {
 
@@ -50,22 +52,42 @@ struct Segment
     size_t num_vertices = 0;
     pmp::BoundingBox bb;
     std::string filename = "";
-    FaceHandle start_face;
-    std::shared_ptr<pmp::SurfaceMesh> mesh = nullptr;
 };
 
 /**
+ * @brief creates a new value at the end of a vector and returns its index and a reference to that value
+ *
+ * @param vec the vector to append to
+ * @return std::pair<size_t, T&> the index and reference to the new value
+ */
+template<typename T>
+inline std::pair<size_t, T&> push_and_get_index(std::vector<T>& vec, T&& value = T())
+{
+    size_t index = vec.size();
+    vec.push_back(std::move(value));
+    return std::make_pair(index, std::ref(vec.back()));
+}
+
+/**
  * @brief partitions all connected regions of a mesh, and bundles small segments into chunks
- * 
+ *
  * Adds a face property called "f:segment" to the mesh containing the SegmentId of the face.
  *
  * @param input_mesh the mesh to partition
- * @param out_segments a vector to store the segments in
+ * @param small_segments a vector to store the segments in
+ * @param large_segments a vector to store extracted segments in
  * @param chunk_size the size of a chunk to determine and bundle small segments
  */
 void segment_mesh(pmp::SurfaceMesh& input_mesh,
-                  std::vector<Segment>& out_segments,
                   const pmp::BoundingBox& bb,
-                  float chunk_size);
+                  float chunk_size,
+                  std::vector<Segment>& small_segments,
+                  std::vector<pmp::SurfaceMesh>& large_segments,
+                  std::vector<pmp::BoundingBox>& large_segment_bounds);
+
+void split_mesh(pmp::SurfaceMesh& input_mesh,
+                const pmp::BoundingBox& bb,
+                float chunk_size,
+                Cesium3DTiles::Tile& tile);
 
 } // namespace lvr2

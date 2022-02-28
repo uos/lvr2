@@ -1034,6 +1034,9 @@ public:
     //! properties.
     SurfaceMesh(const SurfaceMesh& rhs) { operator=(rhs); }
 
+    //! move constructor: moves \p rhs to \p *this.
+    SurfaceMesh(SurfaceMesh&& rhs) = default;
+
     //! assign \p rhs to \p *this. performs a deep copy of all properties.
     SurfaceMesh& operator=(const SurfaceMesh& rhs);
 
@@ -1137,8 +1140,10 @@ public:
     //! remove unused memory from vectors
     void free_memory();
 
-    //! reserve memory (mainly used in file readers)
-    void reserve(size_t nvertices, size_t nedges, size_t nfaces);
+    //! \brief reserve memory (mainly used in file readers)
+    //! \details Passing in zero for any parameter will attempt to calculate
+    //! that value using Euler's formula.
+    void reserve(size_t nvertices = 0, size_t nedges = 0, size_t nfaces = 0);
 
     //! remove deleted elements
     void garbage_collection();
@@ -1368,6 +1373,12 @@ public:
     {
         oprops_.remove(p);
     }
+    template <class T>
+    void remove_object_property(const std::string& name)
+    {
+        auto p = get_object_property<T>(name);
+        remove_object_property(p);
+    }
 
     //! get the type_info \p T of face property named \p name. returns an
     //! typeid(void) if the property does not exist or if the type does not
@@ -1417,6 +1428,12 @@ public:
     void remove_vertex_property(VertexProperty<T>& p)
     {
         vprops_.remove(p);
+    }
+    template <class T>
+    void remove_vertex_property(const std::string& name)
+    {
+        auto p = get_vertex_property<T>(name);
+        remove_vertex_property(p);
     }
 
     //! does the mesh have a vertex property with name \p name?
@@ -1489,6 +1506,12 @@ public:
     {
         hprops_.remove(p);
     }
+    template <class T>
+    void remove_halfedge_property(const std::string& name)
+    {
+        auto p = get_halfedge_property<T>(name);
+        remove_halfedge_property(p);
+    }
 
     //! does the mesh have a halfedge property with name \p name?
     bool has_halfedge_property(const std::string& name) const
@@ -1501,6 +1524,12 @@ public:
     void remove_edge_property(EdgeProperty<T>& p)
     {
         eprops_.remove(p);
+    }
+    template <class T>
+    void remove_edge_property(const std::string& name)
+    {
+        auto p = get_edge_property<T>(name);
+        remove_edge_property(p);
     }
 
     //! does the mesh have an edge property with name \p name?
@@ -1583,6 +1612,12 @@ public:
     {
         fprops_.remove(p);
     }
+    template <class T>
+    void remove_face_property(const std::string& name)
+    {
+        auto p = get_face_property<T>(name);
+        remove_face_property(p);
+    }
 
     //! does the mesh have a face property with name \p name?
     bool has_face_property(const std::string& name) const
@@ -1606,6 +1641,27 @@ public:
 
     //! prints the names of all properties
     void property_stats() const;
+
+    void copy_properties(const SurfaceMesh& src)
+    {
+        oprops_.copy(src.oprops_);
+        vprops_.copy(src.vprops_);
+        hprops_.copy(src.hprops_);
+        eprops_.copy(src.eprops_);
+        fprops_.copy(src.fprops_);
+    }
+
+    void copy_vprops(const SurfaceMesh& src, Vertex src_v, Vertex target_v)
+    {
+        constexpr size_t OFFSET = 3; // point, connectivity, deleted
+        vprops_.copy_props(src.vprops_, src_v.idx(), target_v.idx(), OFFSET);
+    }
+
+    void copy_fprops(const SurfaceMesh& src, Face src_f, Face target_f)
+    {
+        constexpr size_t OFFSET = 2; // connectivity, deleted
+        fprops_.copy_props(src.fprops_, src_f.idx(), target_f.idx(), OFFSET);
+    }
 
     //!@}
     //! \name Iterators and circulators
@@ -1846,6 +1902,20 @@ public:
     //! deletes the face \p f from the mesh
     void delete_face(Face f);
 
+    //! \brief deletes all flagged faces and restores consistency
+    //! \details this is _a lot_ faster for deleting large, preferably connected regions of the
+    //! mesh than individually calling delete_face for each face. This is because delete_face
+    //! needs to return a consistent halfedge structure after every single remove, even if the
+    //! restored parts will be removed during a later call.
+    //! This method can remove all removable parts first, and only then restore consistency
+    //! where it is actually necessary.
+    //! Another advantage is that most parts of this can be parallelized with OpenMP, which would
+    //! not work for delete_face.
+    void delete_many_faces(const FaceProperty<bool>& faces);
+
+    //! are there any deleted entities?
+    inline bool has_garbage() const { return has_garbage_; }
+
     //!@}
     //! \name Geometry-related Functions
     //!@{
@@ -1860,20 +1930,7 @@ public:
     std::vector<Point>& positions() { return vpoint_.vector(); }
 
     //! compute the bounding box of the object
-    BoundingBox bounds() const
-    {
-        BoundingBox bb;
-        #pragma omp parallel for schedule(static) reduction(+:bb)
-        for (size_t i = 0; i < vertices_size(); i++)
-        {
-            Vertex v(i);
-            if (is_valid(v) && !is_deleted(v))
-            {
-                bb += position(v);
-            }
-        }
-        return bb;
-    }
+    BoundingBox bounds() const;
 
     //! compute the length of edge \p e.
     Scalar edge_length(Edge e) const
@@ -2007,9 +2064,6 @@ private:
 
     //! Helper for halfedge collapse
     void remove_loop_helper(Halfedge h);
-
-    //! are there any deleted entities?
-    inline bool has_garbage() const { return has_garbage_; }
 
     //!@}
     //! \name Private members

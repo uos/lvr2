@@ -172,26 +172,51 @@ Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh,
 void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh)
 {
     auto vnormal = mesh.vertex_property<Normal>("v:normal");
-    #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < mesh.vertices_size(); i++)
+    if (mesh.has_garbage())
     {
-        Vertex v(i);
-        if (mesh.is_valid(v) && !mesh.is_deleted(v))
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < mesh.vertices_size(); i++)
         {
+            Vertex v(i);
+            if (!mesh.is_deleted(v))
+            {
+                vnormal[v] = compute_vertex_normal(mesh, v);
+            }
+        }
+    }
+    else
+    {
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < mesh.vertices_size(); i++)
+        {
+            Vertex v(i);
             vnormal[v] = compute_vertex_normal(mesh, v);
         }
+
     }
 }
 
 void SurfaceNormals::compute_face_normals(SurfaceMesh& mesh)
 {
     auto fnormal = mesh.face_property<Normal>("f:normal");
-    #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < mesh.faces_size(); i++)
+    if (mesh.has_garbage())
     {
-        Face f(i);
-        if (mesh.is_valid(f) && !mesh.is_deleted(f))
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < mesh.faces_size(); i++)
         {
+            Face f(i);
+            if (!mesh.is_deleted(f))
+            {
+                fnormal[f] = compute_face_normal(mesh, f);
+            }
+        }
+    }
+    else
+    {
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < mesh.faces_size(); i++)
+        {
+            Face f(i);
             fnormal[f] = compute_face_normal(mesh, f);
         }
     }

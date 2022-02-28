@@ -46,12 +46,38 @@ namespace lvr2
 /**
  * @brief converts mesh to b3dm format and writes it to a file
  *
- * @param filename the name of the file to write to
+ * @param output_dir the directory that filenames are relative to
  * @param mesh the mesh to convert
  * @param segments the metadata of the segments
  */
-void write_b3dm(const boost::filesystem::path& output_dir,
-                const pmp::SurfaceMesh& mesh,
-                const std::vector<Segment>& segments);
+void write_b3dm_segments(const boost::filesystem::path& output_dir,
+                         const pmp::SurfaceMesh& mesh,
+                         const std::vector<Segment>& segments,
+                         bool print_progress = true);
+
+/**
+ * @brief converts mesh to b3dm format and writes it to a file
+ *
+ * @param output_dir the directory that filename is relative to
+ * @param filename the name of the file to write to
+ * @param mesh the mesh to convert
+ * @param bb the bounding box of the mesh
+ */
+inline void write_b3dm(const boost::filesystem::path& output_dir,
+                       const std::string& filename,
+                       const pmp::SurfaceMesh& mesh,
+                       const pmp::BoundingBox& bb,
+                       bool print_progress = true)
+{
+    std::vector<Segment> segments;
+    auto& segment = segments.emplace_back();
+    segment.id = 0;
+    segment.num_faces = mesh.n_faces();
+    segment.num_vertices = mesh.n_vertices();
+    segment.bb = bb;
+    segment.filename = filename;
+
+    write_b3dm_segments(output_dir, mesh, segments, print_progress);
+}
 
 } // namespace lvr2
