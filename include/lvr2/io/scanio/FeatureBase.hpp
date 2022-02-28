@@ -27,8 +27,8 @@ struct FeatureConstruct;
  * 
  */
 
-template<template<typename> typename ...Features>
-class FeatureBase : public Features<FeatureBase<Features...> >...
+template<typename SchemaPtrT, template<typename> typename ...Features>
+class FeatureBase : public Features<FeatureBase<SchemaPtrT, Features...> >...
 {
 protected:
     template <typename T, typename Tuple>
@@ -45,7 +45,7 @@ protected:
 
 public:
     static constexpr std::size_t N = sizeof...(Features);
-    using features = std::tuple<Features<FeatureBase<Features...> >...>;
+    using features = std::tuple<Features<FeatureBase<SchemaPtrT, Features...> >...>;
 
     template<template<typename> typename F> 
     struct has_feature {
@@ -71,9 +71,9 @@ public:
     >
     struct add_features<F> {
         using type = typename std::conditional<
-            FeatureBase<Features...>::has_feature<F>::value,
-            FeatureBase<Features...>,
-            FeatureBase<Features...,F>
+            FeatureBase<SchemaPtrT, Features...>::has_feature<F>::value,
+            FeatureBase<SchemaPtrT, Features...>,
+            FeatureBase<SchemaPtrT, Features...,F>
             >::type;
     };
 
@@ -98,7 +98,7 @@ public:
 
     template<template<typename> typename F>
     struct add_features_with_deps<F> {
-        using type = typename FeatureConstruct<F, FeatureBase<Features...> >::type;
+        using type = typename FeatureConstruct<F, FeatureBase<SchemaPtrT, Features...> >::type;
     };
 
     /////////////////////////////////////////////
@@ -121,11 +121,11 @@ public:
     //     #pragma message("using Tp::save... needs c++17 at least or a newer compiler")
     // #endif
 
-    using Features<FeatureBase<Features...> >::save...;
+    //using Features<FeatureBase<SchemaPtrT, Features...> >::save...;
 
     FeatureBase(
         const FileKernelPtr inKernel, 
-        const ScanProjectSchemaPtr inDesc,
+        const SchemaPtrT inDesc,
         const bool load_data = false) 
     : m_kernel(inKernel)
     , m_description(inDesc)
@@ -146,19 +146,23 @@ public:
     F<FeatureBase>* dcast();
 
     const FileKernelPtr             m_kernel;
-    const ScanProjectSchemaPtr      m_description;
+    const SchemaPtrT                m_description;
 
     const bool                      m_load_data;
 
 };
 
-template<template<typename> typename Feature, typename Derived = FeatureBase<> >
+template<template<typename> typename Feature, typename Derived>
 struct FeatureConstruct {
     using type = typename Derived::template add_features<Feature>::type;
 };
 
-template<template<typename> typename Feature>
-using FeatureBuild = typename FeatureConstruct<Feature>::type;
+// SchemaPtrT defaults to ScanProjectSchemaPtr for compatibility
+// If your schema is not a subclass of ScanProjectSchema you will need to specify the schema ptr type
+// MeshIO example: FeatureBuild<MeshIO, MeshSchemaPtr>
+// ScanProjectIO example: FeatureBuild<ScanProjectIO>
+template<template<typename> typename Feature, typename SchemaPtrT = ScanProjectSchemaPtr>
+using FeatureBuild = typename FeatureConstruct<Feature, FeatureBase<SchemaPtrT>>::type;
 
 
 } // namespace lvr2

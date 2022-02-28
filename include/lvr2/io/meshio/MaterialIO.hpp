@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lvr2/io/meshio/FeatureBase.hpp>
+#include <lvr2/io/scanio/FeatureBase.hpp>
 #include <lvr2/io/meshio/TextureIO.hpp>
 #include <lvr2/texture/Material.hpp>
 
@@ -48,7 +48,7 @@ protected:
 };
 
 template <typename FeatureBase>
-struct meshio::FeatureConstruct<MaterialIO, FeatureBase>
+struct FeatureConstruct<MaterialIO, FeatureBase>
 {
     // Dependencies
     using dep1 = typename FeatureConstruct<TextureIO, FeatureBase>::type;

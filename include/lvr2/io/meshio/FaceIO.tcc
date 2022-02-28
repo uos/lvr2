@@ -57,7 +57,7 @@ bool FaceIO<FeatureBase>::saveFaceIndices(
 
     // Save face indices
     std::vector<size_t> shape = {mesh->numFaces(), 3};
-    auto desc = m_featureBase->m_schema->faceIndices(mesh_name);
+    auto desc = m_featureBase->m_description->faceIndices(mesh_name);
     m_featureBase->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
@@ -92,7 +92,7 @@ bool FaceIO<FeatureBase>::saveFaceColors(
     size_t color_width;
     const auto& face_colors = mesh->getFaceColors(color_width);
     std::vector<size_t> shape = {mesh->numFaces(), color_width};
-    Description desc = m_featureBase->m_schema->faceColors(mesh_name);
+    Description desc = m_featureBase->m_description->faceColors(mesh_name);
     m_featureBase->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
@@ -125,7 +125,7 @@ bool FaceIO<FeatureBase>::saveFaceNormals(
 
     // Save face normals
     std::vector<size_t> shape = {mesh->numFaces(), 3};
-    Description desc = m_featureBase->m_schema->faceNormals(mesh_name);
+    Description desc = m_featureBase->m_description->faceNormals(mesh_name);
     m_featureBase->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
@@ -160,7 +160,7 @@ bool FaceIO<FeatureBase>::saveFaceMaterialIndices(
 
     // Save face materials
     std::vector<size_t> shape = {mesh->numFaces(), 1};
-    Description desc = m_featureBase->m_schema->faceMaterialIndices(mesh_name);
+    Description desc = m_featureBase->m_description->faceMaterialIndices(mesh_name);
     m_featureBase->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
@@ -186,7 +186,7 @@ bool FaceIO<FeatureBase>::loadFaceIndices(
     const std::string& mesh_name,
     MeshBufferPtr mesh) const
 {
-    Description desc = m_featureBase->m_schema->faceIndices(mesh_name);
+    Description desc = m_featureBase->m_description->faceIndices(mesh_name);
     // Check if the data exists
     if (!m_featureBase->m_kernel->exists(
         *desc.dataRoot,
@@ -222,7 +222,7 @@ bool FaceIO<FeatureBase>::loadFaceColors(
     const std::string& mesh_name,
     MeshBufferPtr mesh) const
 {
-    Description desc = m_featureBase->m_schema->faceColors(mesh_name);
+    Description desc = m_featureBase->m_description->faceColors(mesh_name);
     // Check if the data exists
     if (!m_featureBase->m_kernel->exists(
         *desc.dataRoot,
@@ -258,7 +258,7 @@ bool FaceIO<FeatureBase>::loadFaceNormals(
     const std::string& mesh_name,
     MeshBufferPtr mesh) const
 {
-    Description desc = m_featureBase->m_schema->faceNormals(mesh_name);
+    Description desc = m_featureBase->m_description->faceNormals(mesh_name);
     // Check if the data exists
     if (!m_featureBase->m_kernel->exists(
         *desc.dataRoot,
@@ -294,7 +294,7 @@ bool FaceIO<FeatureBase>::loadFaceMaterialIndices(
     const std::string& mesh_name,
     MeshBufferPtr mesh) const
 {
-    Description desc = m_featureBase->m_schema->faceMaterialIndices(mesh_name);
+    Description desc = m_featureBase->m_description->faceMaterialIndices(mesh_name);
     // Check if the data exists
     if (!m_featureBase->m_kernel->exists(
         *desc.dataRoot,

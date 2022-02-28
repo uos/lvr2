@@ -1,21 +1,21 @@
 namespace lvr2 {
 
-template<template<typename> typename ...Features>
+template<typename SchemaPtrT, template<typename> typename ...Features>
 template<template<typename> typename F>
-bool FeatureBase<Features...>::has() {
-    return FeatureBase<Features...>::template has_feature<F>::value;
+bool FeatureBase<SchemaPtrT, Features...>::has() {
+    return FeatureBase<SchemaPtrT, Features...>::template has_feature<F>::value;
 }
 
-template<template<typename> typename ...Features>
+template<typename SchemaPtrT, template<typename> typename ...Features>
 template<template<typename> typename F>
-F<FeatureBase<Features...> >* FeatureBase<Features...>::scast() {
-    return static_cast< F<FeatureBase<Features...> >* >(this);
+F<FeatureBase<SchemaPtrT, Features...> >* FeatureBase<SchemaPtrT, Features...>::scast() {
+    return static_cast< F<FeatureBase<SchemaPtrT, Features...> >* >(this);
 }
 
-template<template<typename> typename ...Features>
+template<typename SchemaPtrT, template<typename> typename ...Features>
 template<template<typename> typename F>
-F<FeatureBase<Features...> >* FeatureBase<Features...>::dcast() {
-    return dynamic_cast< F<FeatureBase<Features...> >* >(this);
+F<FeatureBase<SchemaPtrT, Features...> >* FeatureBase<SchemaPtrT, Features...>::dcast() {
+    return dynamic_cast< F<FeatureBase<SchemaPtrT, Features...> >* >(this);
 }
 
 } // namespace lvr2

@@ -21,7 +21,7 @@ void MeshIO<FeatureBase>::saveMesh(
     // Step 0: Write Mesh meta 
     // TODO: write YAML conversion
     {
-        Description desc = m_featureBase->m_schema->mesh(mesh_name);
+        Description desc = m_featureBase->m_description->mesh(mesh_name);
         YAML::Node node;
         node["n_materials"] = (uint64_t) mesh->getMaterials().size();
         node["n_textures"]  = (uint64_t) mesh->getTextures().size();
@@ -56,7 +56,7 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
 {
 
     auto ret = MeshBufferPtr(new MeshBuffer); // Buffer for the loaded mesh 
-    Description desc = m_featureBase->m_schema->mesh(name);
+    Description desc = m_featureBase->m_description->mesh(name);
 
     // Check if the mesh exists
     if (!m_featureBase->m_kernel->exists(*desc.dataRoot))
@@ -78,7 +78,7 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
 
     // Load num_materials and num_textures to allocate memory
     {
-        Description desc = m_featureBase->m_schema->mesh(name);
+        Description desc = m_featureBase->m_description->mesh(name);
         YAML::Node node;
         m_featureBase->m_kernel->loadMetaYAML(
             *desc.metaRoot,
@@ -105,7 +105,7 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
     if (mesh->hasVertices())
     {
-        auto desc = m_featureBase->m_schema->vertexChannel(mesh_name, "coordinates");
+        auto desc = m_featureBase->m_description->vertexChannel(mesh_name, "coordinates");
 
         // Write the vertices
         m_featureBase->m_kernel->saveFloatArray(
@@ -131,7 +131,7 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
     if (mesh->hasVertexNormals())
     {
-        auto desc = m_featureBase->m_schema->vertexChannel(mesh_name, "normals");
+        auto desc = m_featureBase->m_description->vertexChannel(mesh_name, "normals");
 
         // Write the vertices
         m_featureBase->m_kernel->saveFloatArray(
@@ -157,7 +157,7 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
     if (mesh->hasVertexColors())
     {
-        auto desc = m_featureBase->m_schema->vertexChannel(mesh_name, "colors");
+        auto desc = m_featureBase->m_description->vertexChannel(mesh_name, "colors");
         size_t color_w;
         auto colors = mesh->getVertexColors(color_w);
         // Write the vertices
@@ -182,7 +182,7 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
     if (mesh->getTextureCoordinates())
     {
-        auto desc = m_featureBase->m_schema->vertexChannel(mesh_name, "texture_coordinates");
+        auto desc = m_featureBase->m_description->vertexChannel(mesh_name, "texture_coordinates");
         // Write the vertices
         m_featureBase->m_kernel->saveFloatArray(
         *desc.dataRoot,
@@ -209,10 +209,10 @@ template <typename FeatureBase>
 void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh) const
 {
     // Check which channels exist
-    auto coord_desc = m_featureBase->m_schema->vertexChannel(mesh_name, "coordinates");
-    auto normal_desc = m_featureBase->m_schema->vertexChannel(mesh_name, "normals");
-    auto color_desc = m_featureBase->m_schema->vertexChannel(mesh_name, "colors");
-    auto tex_coord_desc = m_featureBase->m_schema->vertexChannel(mesh_name, "texture_coordinates");
+    auto coord_desc = m_featureBase->m_description->vertexChannel(mesh_name, "coordinates");
+    auto normal_desc = m_featureBase->m_description->vertexChannel(mesh_name, "normals");
+    auto color_desc = m_featureBase->m_description->vertexChannel(mesh_name, "colors");
+    auto tex_coord_desc = m_featureBase->m_description->vertexChannel(mesh_name, "texture_coordinates");
 
     bool hasCoords      = false;
     bool hasNormals     = false;

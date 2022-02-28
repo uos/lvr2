@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lvr2/io/meshio/FeatureBase.hpp>
+#include <lvr2/io/scanio/FeatureBase.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/meshio/MaterialIO.hpp>
 #include <lvr2/io/meshio/ClusterIO.hpp>
@@ -54,7 +54,7 @@ protected:
 };
 
 template <typename FeatureBase>
-struct meshio::FeatureConstruct<MeshIO, FeatureBase>
+struct FeatureConstruct<MeshIO, FeatureBase>
 {
     // Dependencies
     using dep1 = typename FeatureConstruct<MaterialIO, FeatureBase>::type;

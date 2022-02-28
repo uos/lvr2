@@ -51,7 +51,7 @@ void ClusterIO<FeatureBase>::saveClusters(
     // TODO: Meta data
     // Save combined cluster indices
     std::vector<size_t> shape = {combined_face_indices.size(), 1};
-    Description desc = m_featureBase->m_schema->surfaceCombinedFaceIndices(mesh_name);
+    Description desc = m_featureBase->m_description->surfaceCombinedFaceIndices(mesh_name);
     m_featureBase->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
@@ -70,7 +70,7 @@ void ClusterIO<FeatureBase>::saveClusters(
 
     // Save cluster face index ranges
     shape = {cluster_idx, 2};
-    desc = m_featureBase->m_schema->surfaceFaceIndexRanges(mesh_name);
+    desc = m_featureBase->m_description->surfaceFaceIndexRanges(mesh_name);
     m_featureBase->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
@@ -92,7 +92,7 @@ void ClusterIO<FeatureBase>::saveClusters(
 
     if (channel_opt)
     {
-        Description desc = m_featureBase->m_schema->surfaceMaterialIndices(mesh_name);
+        Description desc = m_featureBase->m_description->surfaceMaterialIndices(mesh_name);
         std::vector<size_t> shape = {channel_opt->numElements(), channel_opt->width()};
 
         m_featureBase->m_kernel->saveArray(
@@ -122,14 +122,14 @@ void ClusterIO<FeatureBase>::loadClusters(
 {
     std::vector<size_t> shape;
     // Load combined face indices
-    Description desc = m_featureBase->m_schema->surfaceCombinedFaceIndices(mesh_name);
+    Description desc = m_featureBase->m_description->surfaceCombinedFaceIndices(mesh_name);
     indexArray combined_face_indices = m_featureBase->m_kernel->template loadArray<indexArray::element_type>(
         *desc.dataRoot,
         *desc.data,
         shape
     );
 
-    desc = m_featureBase->m_schema->surfaceFaceIndexRanges(mesh_name);
+    desc = m_featureBase->m_description->surfaceFaceIndexRanges(mesh_name);
     indexArray face_index_ranges = m_featureBase->m_kernel->template loadArray<indexArray::element_type>(
         *desc.dataRoot,
         *desc.data,
@@ -161,7 +161,7 @@ void ClusterIO<FeatureBase>::loadClusters(
         );
     }
 
-    desc = m_featureBase->m_schema->surfaceMaterialIndices(mesh_name);
+    desc = m_featureBase->m_description->surfaceMaterialIndices(mesh_name);
     if (m_featureBase->m_kernel->exists(*desc.dataRoot, *desc.data))
     {
         std::vector<size_t> shape;

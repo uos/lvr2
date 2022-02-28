@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lvr2/io/meshio/FeatureBase.hpp>
+#include <lvr2/io/scanio/FeatureBase.hpp>
 #include <lvr2/texture/Texture.hpp>
 
 namespace lvr2
@@ -30,7 +30,7 @@ protected:
 };
 
 template <typename FeatureBase>
-struct meshio::FeatureConstruct<TextureIO, FeatureBase>
+struct FeatureConstruct<TextureIO, FeatureBase>
 {
     using type = typename FeatureBase::template add_features<TextureIO>::type;
 };
