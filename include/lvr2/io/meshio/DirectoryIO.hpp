@@ -3,14 +3,14 @@
 #include "lvr2/io/scanio/DirectoryKernel.hpp"
 #include <lvr2/io/meshio/MeshSchemaDirectory.hpp>
 #include <lvr2/io/meshio/MeshIO.hpp>
-#include <lvr2/io/meshio/FeatureBase.hpp>
+#include <lvr2/io/scanio/FeatureBase.hpp>
 
 namespace lvr2
 {
 namespace meshio
 {
 
-using DirectoryIOBase = FeatureBuild<MeshIO>;
+using DirectoryIOBase = FeatureBuild<MeshIO, MeshSchemaDirectoryPtr>;
 
 class DirectoryIO : public DirectoryIOBase
 {

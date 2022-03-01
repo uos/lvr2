@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lvr2/io/meshio/FeatureBase.hpp>
+#include <lvr2/io/scanio/FeatureBase.hpp>
 #include <lvr2/io/meshio/TextureIO.hpp>
 #include <lvr2/texture/Material.hpp>
 
@@ -48,11 +48,11 @@ namespace lvr2
 
         };
 
-        template <typename FeatureBase>
-        struct meshio::FeatureConstruct<MaterialIO, FeatureBase>
+        template <typename FB>
+        struct FeatureConstruct<MaterialIO, FB>
         {
             // Dependencies
-            using dep1 = typename FeatureConstruct<TextureIO, FeatureBase>::type;
+            using dep1 = typename FeatureConstruct<TextureIO, FB>::type;
 
             // Add the feature
             using type = typename dep1::template add_features<MaterialIO>::type;

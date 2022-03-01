@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lvr2/io/meshio/FeatureBase.hpp>
+#include <lvr2/io/scanio/FeatureBase.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/meshio/MaterialIO.hpp>
 #include <lvr2/io/meshio/ClusterIO.hpp>
@@ -54,19 +54,19 @@ namespace lvr2
 
         };
 
-        template <typename FeatureBase>
-        struct meshio::FeatureConstruct<MeshIO, FeatureBase>
-        {
-            // Dependencies
-            using dep1 = typename FeatureConstruct<MaterialIO, FeatureBase>::type;
-            using dep2 = typename FeatureConstruct<ClusterIO, FeatureBase>::type;
-            using dep3 = typename FeatureConstruct<FaceIO, FeatureBase>::type;
+template <typename FB>
+struct FeatureConstruct<MeshIO, FB>
+{
+    // Dependencies
+    using dep1 = typename FeatureConstruct<MaterialIO, FB>::type;
+    using dep2 = typename FeatureConstruct<ClusterIO, FB>::type;
+    using dep3 = typename FeatureConstruct<FaceIO, FB>::type;
 
             using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
 
             // Add the feature
             using type = typename deps::template add_features<MeshIO>::type;
-        };
+};
 
 } // namespace meshio 
 } // namespace lvr2

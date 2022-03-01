@@ -16,7 +16,7 @@ void MaterialIO<FeatureBase>::saveMaterial(
     const auto& materials = mesh->getMaterials();
     const auto& textures = mesh->getTextures();
     
-    Description desc = m_featureBase->m_schema->material(mesh_name, material_index);
+    Description desc = m_featureBase->m_description->material(mesh_name, material_index);
     const Material& mat = materials[material_index];
 
     // Write metadata
@@ -62,7 +62,7 @@ std::pair<MaterialOptional, TextureVectorOpt> MaterialIO<FeatureBase>::loadMater
         const size_t& material_index
     ) const
 {
-    Description desc = m_featureBase->m_schema->material(
+    Description desc = m_featureBase->m_description->material(
         mesh_name,
         material_index
     );
@@ -126,7 +126,7 @@ size_t MaterialIO<FeatureBase>::loadMaterials(
     size_t count = 0;
     while(true)
     {
-        Description desc = m_featureBase->m_schema->material(mesh_name, count);
+        Description desc = m_featureBase->m_description->material(mesh_name, count);
         if (!m_featureBase->m_kernel->exists(
             *desc.dataRoot,
             *desc.data

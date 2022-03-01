@@ -18,7 +18,7 @@ void TextureIO<FeatureBase>::saveTexture(
     const Texture& tex
 ) const
 {
-    Description desc = m_featureBase->m_schema->texture(mesh_name, material_index, tex_name);
+    Description desc = m_featureBase->m_description->texture(mesh_name, material_index, tex_name);
 
     size_t byte_count = tex.m_width * tex.m_height * tex.m_numChannels * tex.m_numBytesPerChan;
     ucharArr copy(new uint8_t[byte_count]);
@@ -79,7 +79,7 @@ TextureOptional TextureIO<FeatureBase>::loadTexture(
 ) const
 {
     Texture ret;
-    Description desc = m_featureBase->m_schema->texture(
+    Description desc = m_featureBase->m_description->texture(
         mesh_name,
         material_index,
         texture_name
