@@ -5,7 +5,8 @@
 
 namespace lvr2
 {
-
+namespace meshio
+{
 template <typename FeatureBase>
 void ClusterIO<FeatureBase>::saveClusters(
     const std::string& mesh_name,
@@ -179,4 +180,5 @@ void ClusterIO<FeatureBase>::loadClusters(
     
 }
 
+} // namespace meshio
 } // namespace lvr2

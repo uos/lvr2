@@ -12,7 +12,7 @@ set(LS_RECONSTRUCT_SOURCES
 #####################################################################################
 
 set(LVR2_LS_RECONSTRUCT_DEPENDENCIES
-    lvr2
+    lvr2_static
     lvr2_static
     lvr2las_static
     lvr2rply_static
@@ -26,6 +26,7 @@ set(LVR2_LS_RECONSTRUCT_DEPENDENCIES
 add_executable( lvr2_largescale_reconstruct ${LS_RECONSTRUCT_SOURCES} )
 
 target_link_libraries(lvr2_largescale_reconstruct ${LVR2_LS_RECONSTRUCT_DEPENDENCIES} )
+
 
 if(CUDA_FOUND)
         target_link_libraries(lvr2_largescale_reconstruct lvr2cuda TBB::tbb)

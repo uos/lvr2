@@ -199,10 +199,9 @@ target_link_libraries(
 # Build shared library
 #####################################################################################
 
-if( NOT MSVC )
-  message(STATUS "Building shared library")
-  add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
-  target_link_libraries(
+message(STATUS "Building shared library")
+ add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
+ target_link_libraries(
     lvr2 
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
     ${LVR2_LIB_DEPENDENCIES})
@@ -212,7 +211,7 @@ install(TARGETS lvr2_static lvr2
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-endif( NOT MSVC)
+
 
 #####################################################################################
 # CUDA

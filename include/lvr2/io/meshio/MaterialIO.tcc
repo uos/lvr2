@@ -4,6 +4,8 @@
 namespace lvr2
 {
 
+namespace meshio
+{
 template <typename FeatureBase>
 void MaterialIO<FeatureBase>::saveMaterial(
     const std::string& mesh_name,
@@ -191,4 +193,5 @@ void MaterialIO<FeatureBase>::saveMaterials(
     std::cout << std::endl;
 }
 
+} // namespace meshio
 } // namespace lvr2

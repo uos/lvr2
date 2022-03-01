@@ -6,7 +6,8 @@
 
 namespace lvr2
 {
-
+namespace meshio
+{
 template <typename FeatureBase>
 void FaceIO<FeatureBase>::saveFaces(
     const std::string& mesh_name,
@@ -325,5 +326,5 @@ bool FaceIO<FeatureBase>::loadFaceMaterialIndices(
     return true;
 }
 
-
+} // namespace meshio
 } // namespace lvr2

@@ -62,6 +62,8 @@ if(MSVC)
     set(HAVE_CXX_ATOMICS_WITHOUT_LIB True)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
   add_compile_definitions(_HAS_STD_BYTE=0)
+  add_compile_definitions(__TBB_NO_IMPLICIT_LINKAGE)
+  #add_compile_definitions(__TBBMALLOC_NO_IMPLICIT_LINKAGE=1)
   add_compile_definitions(_USE_MATH_DEFINES)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
@@ -562,7 +564,12 @@ set(LVR2_LIB_DEPENDENCIES
     ${TIFF_LIBRARY}
     ${YAML_CPP_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
-    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
+    lvr2rply
+    lvr2rply_static
+    lvr2las
+    lvr2las_static 
+    )
 else()
 set(LVR2_LIB_DEPENDENCIES
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -615,6 +622,9 @@ if(MPI_FOUND)
   set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${MPI_LIBRARIES})
 endif()
 
+if(MSVC)
+    list(APPEND LVR2_LIB_DEPENDENCIES yaml-cpp)
+endif()
 if(YAML_CPP_LIBRARIES)
 list(APPEND LVR2_LIB_DEPENDENCIES ${YAML_CPP_LIBRARIES})
 endif()
@@ -634,10 +644,13 @@ add_subdirectory(src/liblvr2)
 # BINARIES
 ###############################################################################
 
+if(NOT MSVC)
+add_subdirectory(src/tools/lvr2_largescale_reconstruct)
+endif(NOT MSVC)
+
 add_subdirectory(src/tools/lvr2_reconstruct)
 add_subdirectory(src/tools/lvr2_dmc_reconstruction)
 add_subdirectory(src/tools/lvr2_gs_reconstruction)
-add_subdirectory(src/tools/lvr2_largescale_reconstruct)
 add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
 add_subdirectory(src/tools/lvr2_kaboom)

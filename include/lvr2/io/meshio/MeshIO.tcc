@@ -9,6 +9,8 @@
 
 namespace lvr2
 {
+namespace meshio
+{
 
 template <typename FeatureBase>
 void MeshIO<FeatureBase>::saveMesh(
@@ -347,4 +349,5 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
     
 }
 
+} // namespace meshio
 } // namespace lvr2
