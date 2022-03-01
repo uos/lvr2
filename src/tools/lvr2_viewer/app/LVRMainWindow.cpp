@@ -48,11 +48,14 @@
 #include "lvr2/io/scanio/LabelScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
 #include "lvr2/io/scanio/DirectoryIO.hpp"
+#include "lvr2/io/meshio/HDF5IO.hpp"
 #include "lvr2/io/Polygon.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/util/Util.hpp"
 #include "lvr2/util/IOUtils.hpp"
 #include "lvr2/util/TransformUtils.hpp"
+#include "lvr2/algorithm/SpectralTexturizer.hpp"
+#include "lvr2/algorithm/NormalAlgorithms.hpp"
 
 #include "../widgets/LVRLabelInstanceTreeItem.hpp"
 
@@ -202,6 +205,14 @@ LVRMainWindow::LVRMainWindow()
     this->dockWidgetSpectralColorGradientSettings->close();
     this->dockWidgetPointPreview->close();
     this->dockWidgetLabel->close();
+    this->dockWidgetTextureSelector->close();
+
+    this->lineEdit_spectralChannel->setText("0");
+    this->lineEdit_spectralChannel->setValidator(new QIntValidator(0, 300, this));
+    this->lineEdit_texelSize->setText("0.1");
+    this->lineEdit_texelSize->setValidator(new QDoubleValidator(0.001, 4.0, 4, this));
+    this->lineEdit_scanPosition->setText("0");
+    this->lineEdit_scanPosition->setValidator(new QIntValidator(0, 10, this));
  
     // Toolbar item "File"
     m_actionOpen = this->actionOpen;
@@ -249,6 +260,7 @@ LVRMainWindow::LVRMainWindow()
     m_actionShowSpectralColorGradient = this->actionShow_SpectralColorGradient;
     m_actionShowSpectralPointPreview = this->actionShow_SpectralPointPreview;
     m_actionShowSpectralHistogram = this->actionShow_SpectralHistogram;
+    m_actionShowSpectralIndexSelect = this->actionShow_SpectralIndexSelect;
 
     // Slider below tree widget
 //    m_horizontalSliderPointSize = this->horizontalSliderPointSize;
@@ -480,6 +492,7 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(m_actionShowSpectralColorGradient, SIGNAL(triggered()), dockWidgetSpectralColorGradientSettings, SLOT(show()));
     QObject::connect(m_actionShowSpectralPointPreview, SIGNAL(triggered()), dockWidgetPointPreview, SLOT(show()));
     QObject::connect(m_actionShowSpectralHistogram, SIGNAL(triggered()), this, SLOT(showHistogramDialog()));
+    QObject::connect(m_actionShowSpectralIndexSelect, SIGNAL(triggered()), dockWidgetTextureSelector, SLOT(show()));
 
 //    QObject::connect(m_horizontalSliderPointSize, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
 //    QObject::connect(m_horizontalSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(changeTransparency(int)));
@@ -566,6 +579,9 @@ void LVRMainWindow::connectSignalsAndSlots()
     QObject::connect(radioButtonUseSpectralGradient, SIGNAL(toggled(bool)), this, SLOT(updateSpectralGradientEnabled(bool)));
 
     QObject::connect(this, SIGNAL(correspondenceDialogOpened()), m_pickingInteractor, SLOT(correspondenceSearchOn()));
+
+    QObject::connect(this->textureSelectorLoadButton, SIGNAL(clicked()), this, SLOT(loadTexture()));
+    QObject::connect(this->textureSelectorGenButton, SIGNAL(clicked()), this, SLOT(generateTexture()));
 }
 
 void LVRMainWindow::toggleLabelDock(bool checkBoxState)
@@ -1053,7 +1069,7 @@ void LVRMainWindow::restoreSliders()
         color<bool> use_channel;
         size_t n_channels, gradient_channel;
         bool use_ndvi, normalize_gradient;
-        GradientType gradient_type;
+        ColorGradient::GradientType gradient_type;
 
         pointCloudItem->getPointBufferBridge()->getSpectralChannels(channels, use_channel);
         pointCloudItem->getPointBufferBridge()->getSpectralColorGradient(gradient_type, gradient_channel, normalize_gradient, use_ndvi);
@@ -1061,14 +1077,19 @@ void LVRMainWindow::restoreSliders()
         PointBufferPtr p = pointCloudItem->getPointBuffer();
         UCharChannelOptional spec_channels = p->getUCharChannel("spectral_channels");
 
+        // if the channel "spectral_channels" could not get loaded, try with the channel "spectral"
+        if(!spec_channels) {
+            spec_channels = p->getUCharChannel("spectral");
+        } 
+
         if (spec_channels)
         {
-            n_channels = spec_channels->width();
+            n_channels = spec_channels->width();   
             int wavelength_min = *p->getIntAtomic("spectral_wavelength_min");
             int wavelength_max = *p->getIntAtomic("spectral_wavelength_max");
 
             this->dockWidgetSpectralSliderSettingsContents->setEnabled(false); // disable to stop changeSpectralColor from re-rendering 6 times
-            for (int i = 0; i < 3; i++)
+                for (int i = 0; i < 3; i++)
             {
                 m_spectralSliders[i]->setMaximum(wavelength_max - 1);
                 m_spectralSliders[i]->setMinimum(wavelength_min);
@@ -1079,7 +1100,7 @@ void LVRMainWindow::restoreSliders()
                 m_spectralLineEdits[i]->setEnabled(use_channel[i]);
 
                 m_spectralCheckboxes[i]->setChecked(use_channel[i]);
-
+                
                 m_spectralLineEdits[i]->setText(QString("%1").arg(Util::getSpectralWavelength(channels[i], p)));
             }
             this->dockWidgetSpectralSliderSettingsContents->setEnabled(true);
@@ -3213,7 +3234,7 @@ void LVRMainWindow::showHistogramDialog()
     for (LVRPointCloudItem* item : pointCloudItems)
     {
         PointBufferPtr points = item->getPointBuffer();
-        if (!points->getUCharChannel("spectral_channels"))
+        if (!points->getUCharChannel("spectral_channels") && !points->getUCharChannel("spectral"))
         {
             showErrorDialog();
             return;
@@ -3225,6 +3246,135 @@ void LVRMainWindow::showHistogramDialog()
         }
         m_histograms[item]->show();
     }
+}
+
+void LVRMainWindow::loadTexture()
+{
+
+    if(this->textureSelectorComboBox->currentText().isEmpty())
+    {
+        std::cout << "No texture selected" << std::endl;
+        return;
+    }
+
+    std::cout << "Loading texture: " << this->textureSelectorComboBox->currentText().toStdString() << std::endl;
+
+    vector<Material> &materials = m_meshBuffer->getMaterials();
+
+    for(size_t i = 0; i < materials.size(); i++)
+    {
+        Material &m = materials[i];
+        if(m.m_layers.empty())
+        {
+            continue;
+        }
+        m.m_texture = m.m_layers.at(this->textureSelectorComboBox->currentText().toStdString());
+    }
+
+    ModelPtr model = ModelPtr(new Model(m_meshBuffer));
+
+    m_modelBridge->removeActors(m_renderer);
+    m_modelBridge->removeTexturedActors(m_renderer);
+
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
+    m_modelBridge = bridge;
+
+    updateView();
+
+    std::cout << "Finished Loading texture" << std::endl;
+}
+
+void LVRMainWindow::generateTexture()
+{
+    // create hdf5 kernel and schema 
+    FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(m_hdf5FileName));
+    ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
+    
+    HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel);
+    HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
+    
+    // create io object for hdf5 files
+    auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
+    // load panorama from hdf5 file
+    auto panorama = hdf5IO.HyperspectralPanoramaIO::load(this->lineEdit_scanPosition->text().toInt(), 0, 0);
+    if(!panorama) {
+        std::cout << "Could not load panorama. Make sure you choose a valid scanPosition." << std::endl;
+        return;
+    }
+    auto lidar = hdf5IO.LIDARIO::load(this->lineEdit_scanPosition->text().toInt(), 0);
+    
+    if(this->lineEdit_spectralChannel->text().toInt() >= panorama->num_channels)
+    {
+        std::cout << "Invalid channel number" << std::endl;
+        return;
+    }
+
+    // create texturizer
+    float texelSize = this->lineEdit_texelSize->text().toFloat();
+    int minClusersize = 100;
+    int maxClusersize = 0;
+    SpectralTexturizer<Vec> spec_texter(texelSize, minClusersize, maxClusersize);
+    spec_texter.init_image_data(panorama, std::max(this->lineEdit_spectralChannel->text().toInt(), 0));
+
+    // Create HalfEdgeMesh
+    lvr2::HalfEdgeMesh<Vec> mesh(m_meshBuffer);
+
+    // Create ClusterBiMap
+    ClusterBiMap<FaceHandle> clusterBiMap;
+    auto faceNormals = calcFaceNormals(mesh);
+    clusterBiMap = planarClusterGrowing(mesh, faceNormals, 0.85);
+    
+    // Create Finalizer
+    TextureFinalizer<Vec> finalize(clusterBiMap);
+
+    // Create Surface
+    PointsetSurfacePtr<Vec> surface;
+
+    ScanPtr scan = lidar->scans.at(0);
+    PointBufferPtr buffer = scan->points;
+
+    // create surface from buffer
+    surface = make_shared<AdaptiveKSearchSurface<Vec>>(
+        buffer,
+        "FLANN",
+        600,
+        600,
+        600,
+        0,
+        ""
+    );
+
+    // Create Materializer
+    Materializer<Vec> materializer(
+        mesh,
+        clusterBiMap,
+        faceNormals,
+        *surface
+    );
+    // Set Texturizer ang generate Materializer Result
+    materializer.setTexturizer(spec_texter);
+    MaterializerResult<Vec> matResult = materializer.generateMaterials();
+
+    // apply finalizer result to mesh
+    finalize.setMaterializerResult(matResult);
+    auto meshBuffer = finalize.apply(mesh);
+
+    // remove the old meshActor
+    m_modelBridge->removeActors(m_renderer);
+    m_modelBridge->removeTexturedActors(m_renderer);
+    
+
+    // Create new meshActor
+    ModelPtr model = ModelPtr(new Model(meshBuffer));
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
+    m_modelBridge = bridge;
+
+    // Update the view to show the new mesh
+    updateView();
+
+    std::cout << "Finished generating texture" << std::endl;
 }
 
 void LVRMainWindow::showPointPreview(vtkActor* actor, int point)
@@ -3383,7 +3533,7 @@ void LVRMainWindow::onSpectralLineEditChanged()
         PointBufferPtr points = (*items.begin())->getPointBuffer();
         int min = *points->getIntAtomic("spectral_wavelength_min");
         int max = *points->getIntAtomic("spectral_wavelength_max");
-
+        
         for (int i = 0; i < 3; i++)
         {
             QString test = m_spectralLineEdits[i]-> text();
@@ -3454,7 +3604,7 @@ void LVRMainWindow::changeGradientColor()
 
     for(LVRPointCloudItem* item : items)
     {
-        item->getPointBufferBridge()->setSpectralColorGradient((GradientType)type, channel, normalized, useNDVI);
+        item->getPointBufferBridge()->setSpectralColorGradient((ColorGradient::GradientType)type, channel, normalized, useNDVI);
     }
     m_gradientLineEdit->setText(QString("%1").arg(wavelength));
     m_gradientSlider->setEnabled(!useNDVI);
@@ -3473,6 +3623,10 @@ void LVRMainWindow::updatePointPreview(int pointId, PointBufferPtr points)
 
     size_t n_spec, n_channels;
     UCharChannelOptional spectral_channels = points->getUCharChannel("spectral_channels");
+
+    if(!spectral_channels) {
+        spectral_channels = points->getUCharChannel("spectral");
+    }
 
     if (spectral_channels)
     {
@@ -3882,6 +4036,7 @@ void LVRMainWindow::openScanProject()
         }
         case LVRScanProjectOpenDialog::HDF5:
         {
+            // use this for reconstruct?
             HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel); 
             HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
             auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
@@ -3897,6 +4052,50 @@ void LVRMainWindow::openScanProject()
  
 void LVRMainWindow::openHDF5(std::string fileName)
 {
+    boost::filesystem::path selectedFile(fileName);
+    m_hdf5FileName = fileName;
+    HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(fileName));
+    MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
+
+    auto mesh_io = meshio::HDF5IO(kernel, schema);
+
+    // this->treeWidget->add
+    MeshBufferPtr buffer = mesh_io.loadMesh("Mesh0");
+
+    m_meshBuffer = buffer;
+    ModelPtr model = ModelPtr(new Model(buffer));
+
+    // switch texture to hyperspectral_grayscale
+    bool layerNamesSet = false;
+
+    vector<Material> &materials = buffer->getMaterials();
+    for(size_t i = 0; i < materials.size(); i++)
+    {
+        Material &m = materials[i];
+        if(m.m_layers.empty())
+        {
+            continue;
+        }
+        if(!layerNamesSet)
+        {
+            for(std::map<string, TextureHandle>::iterator it = m.m_layers.begin(); it != m.m_layers.end(); it++)
+            {
+                this->textureSelectorComboBox->addItem(QString::fromStdString(it->first));
+            }
+            layerNamesSet = true;
+        }
+        m.m_texture = m.m_layers.at(m.m_layers.begin()->first); 
+    }
+
+    ModelBridgePtr bridge(new LVRModelBridge(model));
+    bridge->addActors(m_renderer);
+    m_modelBridge = bridge;
+    QString base = QString::fromStdString(fileName);
+    LVRModelItem* item = new LVRModelItem(bridge, base);
+    this->treeWidget->addTopLevelItem(item);
+    item->setExpanded(true);
+
+
     std::cout << "Labeled opening currently not working" << std::endl;
     // LabelHDF5SchemaPtr hdf5Schema(new LabelScanProjectSchemaHDF5V2);
     // HDF5KernelPtr hdf5Kernel(new HDF5Kernel(fileName));

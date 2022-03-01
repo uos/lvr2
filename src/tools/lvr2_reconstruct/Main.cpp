@@ -52,9 +52,9 @@
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
 #include "lvr2/algorithm/Materializer.hpp"
 #include "lvr2/algorithm/Texturizer.hpp"
-//#include "lvr2/algorithm/ImageTexturizer.hpp"
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp" // Has to be included before anything includes opencv stuff, see https://github.com/flann-lib/flann/issues/214 
+#include "lvr2/algorithm/SpectralTexturizer.hpp"
 
-#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/BilinearFastBox.hpp"
 #include "lvr2/reconstruction/TetraederBox.hpp"
 #include "lvr2/reconstruction/FastReconstruction.hpp"
@@ -68,9 +68,17 @@
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/PlutoMapIO.hpp"
+#include "lvr2/io/meshio/HDF5IO.hpp"
+#include "lvr2/io/meshio/DirectoryIO.hpp"
 #include "lvr2/util/Factories.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
+
+#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/scanio/HDF5IO.hpp"
+#include "lvr2/io/scanio/ScanProjectIO.hpp"
+#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
 
 #include "lvr2/geometry/BVH.hpp"
 
@@ -102,18 +110,55 @@ using PsSurface = lvr2::PointsetSurface<Vec>;
 
 template <typename BaseVecT>
 PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
-{
+{   
+
     // Create a point loader object
     ModelPtr model = ModelFactory::readModel(options.getInputFileName());
-
+    PointBufferPtr buffer;
     // Parse loaded data
     if (!model)
     {
-        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
-        return nullptr;
-    }
+        boost::filesystem::path selectedFile( options.getInputFileName());
+        std::string extension = selectedFile.extension().string();
+        std::string filePath = selectedFile.generic_path().string();
 
-    PointBufferPtr buffer = model->m_pointCloud;
+        if(selectedFile.extension().string() != ".h5") {
+            cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+            return nullptr;
+        }
+        cout << "loading h5 scanproject from " << filePath << endl;
+
+        // create hdf5 kernel and schema 
+        FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
+        ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
+        
+        HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel);
+        HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
+        
+        // create io object for hdf5 files
+        auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
+
+        auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
+        std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
+
+        // load scan from hdf5 file
+        auto lidar = hdf5IO.LIDARIO::load(options.getScanPositionIndex(), 0);
+        ScanPtr scan = lidar->scans.at(0);
+
+        if (!scan->loaded() && scan->loadable())
+        {
+            scan->load();
+        }
+        else
+        {
+            std::cout << timestamp << "[Main - loadPointCloud] Unable to load points of scan " << 0 << std::endl;
+        }
+
+        buffer = scan->points;
+    }
+    else {
+        buffer = model->m_pointCloud;
+    }
 
     // Create a point cloud manager
     string pcm_name = options.getPCM();
@@ -364,11 +409,7 @@ int main(int argc, char** argv)
     if(options.getFillHoles())
     {
         mesh.fillHoles(options.getFillHoles());
-        // naiveFillSmallHoles(mesh, options.getFillHoles(), false);
     }
-
-    // Calculate initial face normals
-    auto faceNormals = calcFaceNormals(mesh);
 
     // Reduce mesh complexity
     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
@@ -379,11 +420,15 @@ int main(int argc, char** argv)
             throw "The reduction ratio needs to be between 0 and 1!";
         }
 
-        // Each edge collapse removes two faces in the general case.
-        // TODO: maybe we should calculate this differently...
-        const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
-        auto collapsedCount = simpleMeshReduction(mesh, count, faceNormals);
+        size_t old = mesh.numVertices();
+        size_t target = old * (1.0 - reductionRatio);
+        std::cout << timestamp << "Trying to remove " << old - target << " / " << old << " vertices." << std::endl;
+        mesh.simplify(target);
+        std::cout << timestamp << "Removed " << old - mesh.numVertices() << " vertices." << std::endl;
     }
+
+    // Calculate face normals
+    auto faceNormals = calcFaceNormals(mesh);
 
     ClusterBiMap<FaceHandle> clusterBiMap;
     if(options.optimizePlanes())
@@ -403,7 +448,7 @@ int main(int argc, char** argv)
 
         if(options.getFillHoles())
         {
-            naiveFillSmallHoles(mesh, options.getFillHoles(), false);
+            mesh.fillHoles(options.getFillHoles());
         }
 
         cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
@@ -422,8 +467,11 @@ int main(int argc, char** argv)
     // Finalize mesh
     // =======================================================================
     // Prepare color data for finalizing
+
+    ColorGradient::GradientType t = ColorGradient::gradientFromString(options.getClassifier());
+
     ClusterPainter painter(clusterBiMap);
-    auto clusterColors = boost::optional<DenseClusterMap<Rgb8Color>>(painter.simpsons(mesh));
+    auto clusterColors = boost::optional<DenseClusterMap<RGB8Color>>(painter.colorize(mesh, t));
     auto vertexColors = calcColorFromPointCloud(mesh, surface);
 
     // Calc normals for vertices
@@ -432,11 +480,6 @@ int main(int argc, char** argv)
     // Prepare finalize algorithm
     TextureFinalizer<Vec> finalize(clusterBiMap);
     finalize.setVertexNormals(vertexNormals);
-
-    // TODO:
-    // Vielleicht sollten indv. vertex und cluster colors mit in den Materializer aufgenommen werden
-    // Dafür spricht: alles mit Farben findet dann an derselben Stelle statt
-    // dagegen spricht: Materializer macht aktuell nur face colors und keine vertex colors
 
     // Vertex colors:
     // If vertex colors should be generated from pointcloud:
@@ -459,44 +502,66 @@ int main(int argc, char** argv)
         *surface
     );
 
-    // ImageTexturizer<Vec> img_texter(
-    //     options.getTexelSize(),
-    //     options.getTexMinClusterSize(),
-    //     options.getTexMaxClusterSize()
-    // );
-
     Texturizer<Vec> texturizer(
         options.getTexelSize(),
         options.getTexMinClusterSize(),
         options.getTexMaxClusterSize()
     );
 
+
+    std::vector<SpectralTexturizer<Vec>> spec_texters;
+    // calculate how many spectral texturizers should be created
+    int texturizer_count = options.getMaxSpectralChannel() - options.getMinSpectralChannel();
+    texturizer_count = std::max(texturizer_count, 1);
+    // initialize the SpectralTexturizers
+    for(int i = 0; i < texturizer_count; i++)
+    {
+        SpectralTexturizer<Vec> spec_text(
+            options.getTexelSize(),
+            options.getTexMinClusterSize(),
+            options.getTexMaxClusterSize()
+        );
+
+        spec_texters.push_back(spec_text);
+    }
+
     // When using textures ...
     if (options.generateTextures())
     {
-        if (!options.texturesFromImages())
-        {
+
+        boost::filesystem::path selectedFile( options.getInputFileName());
+        std::string filePath = selectedFile.generic_path().string();
+
+        if(selectedFile.extension().string() != ".h5") {
             materializer.setTexturizer(texturizer);
-        }
-        else
+        } 
+        else 
         {
-            // cout << "ScanProject" << endl;
-            // ScanprojectIO project;
+            // create hdf5 kernel and schema 
+            FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
+            ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
+            
+            HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel);
+            HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
+            
+            // create io object for hdf5 files
+            auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
+            // load panorama from hdf5 file
+            auto panorama = hdf5IO.HyperspectralPanoramaIO::load(options.getScanPositionIndex(), 0, 0);
 
-            // if (options.getProjectDir().empty())
-            // {
-            //     cout << "Empty" << endl;
-            //     project.parse_project(options.getInputFileName());
-            // }
-            // else
-            // {
-            //     cout << "Not empty" << endl;
-            //     project.parse_project(options.getProjectDir());
-            // }
-
-            // img_texter.set_project(project.get_project());
-
-            // materializer.setTexturizer(img_texter);
+            // go through all spectralTexturizers of the vector
+            for(int i = 0; i < texturizer_count; i++)
+            {
+                // if the spectralChannel doesnt exist, skip it
+                if(panorama->num_channels < options.getMinSpectralChannel() + i)
+                {
+                    continue;
+                }
+                // set the spectral texturizer with the current spectral channel
+                spec_texters[i].init_image_data(panorama, std::max(options.getMinSpectralChannel(), 0) + i);
+                // set the texturizer for the current spectral channel
+                materializer.addTexturizer(spec_texters[i]);
+            }
         }
     }
 
@@ -512,7 +577,7 @@ int main(int argc, char** argv)
     if (options.generateTextures())
     {
         // Set optioins to save them to disk
-        materializer.saveTextures();
+        //materializer.saveTextures();
         buffer->addIntAtomic(1, "mesh_save_textures");
         buffer->addIntAtomic(1, "mesh_texture_image_extension");
     }
@@ -532,7 +597,46 @@ int main(int argc, char** argv)
 
     for(const std::string& output_filename : options.getOutputFileNames())
     {
+        boost::filesystem::path selectedFile( output_filename );
+        std::string extension = selectedFile.extension().string();
         cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
+
+        if (extension == ".h5")
+        {
+            /* TODO: TESTING IO move this to a part of this program where it makes sense*/
+
+            std::cout << timestamp << "[Experimental] Saving using MeshIO" << std::endl;
+
+            HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(output_filename));
+            MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
+            auto mesh_io = meshio::HDF5IO(kernel, schema);
+
+            mesh_io.saveMesh(
+                "Mesh0",
+                buffer
+                );
+
+            continue;
+        }
+
+        if (extension == "")
+        {
+            /* TODO: TESTING IO move this to a part of this program where it makes sense*/
+
+            std::cout << timestamp << "[Experimental] Saving using MeshIO" << std::endl;
+
+            DirectoryKernelPtr kernel = DirectoryKernelPtr(new DirectoryKernel(output_filename));
+            MeshSchemaDirectoryPtr schema = MeshSchemaDirectoryPtr(new MeshSchemaDirectory());
+            auto mesh_io = meshio::DirectoryIO(kernel, schema);
+
+            mesh_io.saveMesh(
+                "Mesh0",
+                buffer
+                );
+
+            continue;
+        }
+
         ModelFactory::saveModel(m, output_filename);
     }
 

@@ -73,7 +73,7 @@ template<typename BaseVecT>
 void writeDebugMesh(
     const BaseMesh<BaseVecT>& mesh,
     string filename = "debug.ply",
-    Rgb8Color color = {255, 0, 0}
+    RGB8Color color = {255, 0, 0}
 );
 
 /**
@@ -98,9 +98,9 @@ template<typename BaseVecT>
 void writeDebugContourMesh(
     const BaseMesh<BaseVecT>& mesh,
     string filename = "debug-contours.ply",
-    Rgb8Color connectedColor = {0, 255, 0},
-    Rgb8Color contourColor = {0, 0, 255},
-    Rgb8Color bugColor = {255, 0, 0}
+    RGB8Color connectedColor = {0, 255, 0},
+    RGB8Color contourColor = {0, 0, 255},
+    RGB8Color bugColor = {255, 0, 0}
 );
 
 #ifdef NDEBUG

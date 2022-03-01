@@ -128,16 +128,16 @@ struct convert<lvr2::CylindricalModel>
         node["type"] = lvr2::CylindricalModel::type;
 
         node["principal_point"] = Load("[]");
-        node["principal_point"].push_back(model.principal(0));
-        node["principal_point"].push_back(model.principal(1));
+        node["principal_point"].push_back(model.principal[0]);
+        node["principal_point"].push_back(model.principal[1]);
 
         node["focal_lengths"] = Load("[]");
-        node["focal_lengths"].push_back(model.focalLength(0));
-        node["focal_lengths"].push_back(model.focalLength(1));
+        node["focal_lengths"].push_back(model.focalLength[0]);
+        node["focal_lengths"].push_back(model.focalLength[1]);
 
         node["camera_fov"] = Load("[]");
-        node["camera_fov"].push_back(model.fov(0));
-        node["camera_fov"].push_back(model.fov(1));
+        node["camera_fov"].push_back(model.fov[0]);
+        node["camera_fov"].push_back(model.fov[1]);
 
         node["distortion_model"] = model.distortionModel;
         node["distortion_coefficients"] = Load("[]");
@@ -160,14 +160,14 @@ struct convert<lvr2::CylindricalModel>
             return false;
         }
 
-        model.principal(0) = node["principal_point"][0].as<double>();
-        model.principal(1) = node["principal_point"][1].as<double>();
+        model.principal[0] = node["principal_point"][0].as<double>();
+        model.principal[1] = node["principal_point"][1].as<double>();
 
-        model.focalLength(0) = node["focal_lengths"][0].as<double>();
-        model.focalLength(1) = node["focal_lengths"][1].as<double>();
+        model.focalLength[0] = node["focal_lengths"][0].as<double>();
+        model.focalLength[1] = node["focal_lengths"][1].as<double>();
 
-        model.fov(0) = node["camera_fov"][0].as<double>();
-        model.fov(1) = node["camera_fov"][1].as<double>();
+        model.fov[0] = node["camera_fov"][0].as<double>();
+        model.fov[1] = node["camera_fov"][1].as<double>();
 
         
         

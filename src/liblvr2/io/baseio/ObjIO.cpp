@@ -113,7 +113,7 @@ void ObjIO::parseMtlFile(
                 if(it == matNames.end())
                 {
                     Material m;
-                    m.m_color = boost::optional<Rgb8Color>({128, 128, 128});
+                    m.m_color = boost::optional<RGB8Color>({128, 128, 128});
                     m.m_texture = boost::none;
                     materials.push_back(m);
                     matNames[matName] = matIndex;
@@ -131,7 +131,7 @@ void ObjIO::parseMtlFile(
                 float r, g, b;
                 ss >> r >> g >> b;
                 Material& current = materials.back();
-                current.m_color = boost::optional<Rgb8Color>({
+                current.m_color = boost::optional<RGB8Color>({
                     static_cast<unsigned char>(r * 255 + 0.5),
                     static_cast<unsigned char>(g * 255 + 0.5),
                     static_cast<unsigned char>(b * 255 + 0.5)

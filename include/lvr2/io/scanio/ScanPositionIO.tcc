@@ -152,6 +152,7 @@ ScanPositionPtr ScanPositionIO<FeatureBase>::load(
         HyperspectralCameraPtr cam = m_hyperspectralCameraIO->load(scanPosNo, hCamNo);
         if(cam)
         {
+            // HERE
             ret->hyperspectral_cameras.push_back(cam);
         } else {
             break;

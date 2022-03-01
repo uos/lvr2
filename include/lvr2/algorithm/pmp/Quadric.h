@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #pragma once
 
@@ -36,7 +36,7 @@ public: // clang-format off
     //! construct from point and normal specifying a plane
     Quadric(const Normal& n, const Point& p)
     {
-        *this = Quadric(n[0], n[1], n[2], -dot(n,p));
+        *this = Quadric(n[0], n[1], n[2], -n.dot(p));
     }
 
     //! set all matrix entries to zero

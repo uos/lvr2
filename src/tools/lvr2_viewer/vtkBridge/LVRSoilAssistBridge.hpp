@@ -34,7 +34,7 @@
 #ifndef LVRPOLYGONBRIDGE_HPP_
 #define LVRPOLYGONBRIDGE_HPP_
 
-#include "lvr2/display/ColorMap.hpp"
+#include "lvr2/util/ColorGradient.hpp"
 #include "lvr2/io/Polygon.hpp"
 #include "lvr2/io/SoilAssistField.hpp"
 #include <vtkPolyData.h>

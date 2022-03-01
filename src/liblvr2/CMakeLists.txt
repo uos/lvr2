@@ -31,7 +31,6 @@ set(LVR2_SOURCES
     display/PointCloud.cpp
     display/InteractivePointCloud.cpp
     display/CoordinateAxes.cpp
-    display/ColorMap.cpp
     display/GlTexture.cpp
     display/PointCorrespondences.cpp
     # display/Arrow.cpp
@@ -77,6 +76,8 @@ set(LVR2_SOURCES
     io/scanio/ScanProjectSchema.cpp
     io/scanio/HDF5Kernel.cpp
     # io/scanio/HDF5MetaDescriptionV2.cpp
+    io/meshio/MeshSchemaDirectory.cpp
+    io/meshio/MeshSchemaHDF5.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
@@ -92,6 +93,7 @@ set(LVR2_SOURCES
     types/CustomChannelTypes.cpp
     texture/Texture.cpp
     texture/TextureFactory.cpp
+    util/ColorGradient.cpp
     util/CoordinateTransform.cpp
     util/Hdf5Util.cpp
     util/IOUtils.cpp

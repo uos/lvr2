@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceSimplification.h"
 
@@ -302,7 +302,7 @@ bool SurfaceSimplification::is_collapse_legal(const CollapseData& cd)
         {
             if (v != cd.v1 && v != cd.vl && v != cd.vr)
             {
-                if (norm(vpoint_[v] - p1) > edge_length_)
+                if ((vpoint_[v] - p1).norm() > edge_length_)
                     return false;
             }
         }
@@ -318,7 +318,7 @@ bool SurfaceSimplification::is_collapse_legal(const CollapseData& cd)
             {
                 Normal n0 = fnormal_[f];
                 Normal n1 = SurfaceNormals::compute_face_normal(mesh_, f);
-                if (dot(n0, n1) < 0.0)
+                if (n0.dot(n1) < 0.0)
                 {
                     vpoint_[cd.v0] = p0;
                     return false;
@@ -540,15 +540,15 @@ Scalar SurfaceSimplification::aspect_ratio(Face f) const
     const Point d1 = p1 - p2;
     const Point d2 = p2 - p0;
 
-    const Scalar l0 = sqrnorm(d0);
-    const Scalar l1 = sqrnorm(d1);
-    const Scalar l2 = sqrnorm(d2);
+    const Scalar l0 = d0.squaredNorm();
+    const Scalar l1 = d1.squaredNorm();
+    const Scalar l2 = d2.squaredNorm();
 
     // max squared edge length
     const Scalar l = std::max(l0, std::max(l1, l2));
 
     // triangle area
-    Scalar a = norm(cross(d0, d1));
+    Scalar a = d0.cross(d1).norm();
 
     return l / a;
 }

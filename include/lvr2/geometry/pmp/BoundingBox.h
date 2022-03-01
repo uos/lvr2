@@ -1,5 +1,5 @@
 // Copyright 2013-2021 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #pragma once
 
@@ -14,8 +14,8 @@ class BoundingBox
 public:
     //! Construct infinite/invalid bounding box.
     BoundingBox()
-        : min_(std::numeric_limits<Scalar>::max()),
-          max_(-std::numeric_limits<Scalar>::max())
+        : min_(Point::Constant(std::numeric_limits<Scalar>::max())),
+          max_(Point::Constant(-std::numeric_limits<Scalar>::max()))
     {
     }
 
@@ -64,7 +64,7 @@ public:
     }
 
     //! Get the size of the bounding box.
-    Scalar size() const { return is_empty() ? 0.0 : distance(max_, min_); }
+    Scalar size() const { return is_empty() ? 0.0 : (max_ - min_).norm(); }
 
 private:
     Point min_, max_;

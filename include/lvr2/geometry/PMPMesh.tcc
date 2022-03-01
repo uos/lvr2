@@ -34,6 +34,7 @@
 
 #include "lvr2/algorithm/pmp/SurfaceHoleFilling.h"
 #include "lvr2/algorithm/pmp/SurfaceSmoothing.h"
+#include "lvr2/algorithm/pmp/SurfaceSimplification.h"
 #include "lvr2/util/Progress.hpp"
 
 #include <unordered_set>
@@ -47,25 +48,87 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
     size_t numFaces = ptr->numFaces();
     size_t numVertices = ptr->numVertices();
 
-    floatArr vertices = ptr->getVertices();
-    indexArray indices = ptr->getFaceIndices();
-
-    for(size_t i = 0; i < numVertices; i++)
+    auto vertices = ptr->getVertices();
+    size_t i = 0;
+    auto src_vertices = vertices.get();
+    for (size_t i = 0; i < numVertices; i++, src_vertices += 3)
     {
-        size_t pos = 3 * i;
-        this->addVertex(BaseVecT(
-                            vertices[pos],
-                            vertices[pos + 1],
-                            vertices[pos + 2]));
+        addVertex(BaseVecT(src_vertices[0], src_vertices[1], src_vertices[2]));
     }
 
-    for(size_t i = 0; i < numFaces; i++)
+    if (ptr->hasVertexNormals())
     {
-        size_t pos = 3 * i;
-        VertexHandle v1(indices[pos]);
-        VertexHandle v2(indices[pos + 1]);
-        VertexHandle v3(indices[pos + 2]);
-        this->addFace(v1, v2, v3);
+        auto src_normals = ptr->getVertexNormals();
+        auto dest_normals = m_mesh.vertex_property<pmp::Normal>("v:normal");
+        auto src = src_normals.get();
+        for (auto vH : m_mesh.vertices())
+        {
+            dest_normals[vH] = pmp::Normal(src[0], src[1], src[2]);
+            src += 3;
+        }
+    }
+    if (ptr->hasChannel<float>("texture_coordinates"))
+    {
+        auto src_texcoords = ptr->getTextureCoordinates();
+        auto dest_texcoords = m_mesh.vertex_property<pmp::TexCoord>("v:tex");
+        auto src = src_texcoords.get();
+        for (auto vH : m_mesh.vertices())
+        {
+            dest_texcoords[vH] = pmp::TexCoord(src[0], src[1]);
+            src += 2;
+        }
+    }
+    if (ptr->hasVertexColors())
+    {
+        size_t w;
+        auto src_colors = ptr->getVertexColors(w);
+        if (w == 3 || w == 4)
+        {
+            auto dest_colors = m_mesh.vertex_property<pmp::Color>("v:color");
+            auto src = src_colors.get();
+            for (auto vH : m_mesh.vertices())
+            {
+                dest_colors[vH] = pmp::Color(src[0] / 255.0f, src[1] / 255.0f, src[2] / 255.0f);
+                src += w;
+            }
+        }
+    }
+
+    auto indices = ptr->getFaceIndices();
+    auto src_indices = indices.get();
+    for (size_t i = 0; i < numFaces; i++, src_indices += 3)
+    {
+        VertexHandle v0(src_indices[0]);
+        VertexHandle v1(src_indices[1]);
+        VertexHandle v2(src_indices[2]);
+        addFace(v0, v1, v2);
+    }
+
+    if (ptr->hasFaceNormals())
+    {
+        auto src_normals = ptr->getFaceNormals();
+        auto dest_normals = m_mesh.face_property<pmp::Normal>("f:normal");
+        auto src = src_normals.get();
+        for (auto fH : m_mesh.faces())
+        {
+            dest_normals[fH] = pmp::Normal(src[0], src[1], src[2]);
+            src += 3;
+        }
+    }
+    if (ptr->hasFaceColors())
+    {
+        size_t w;
+        auto src_colors = ptr->getFaceColors(w);
+        if (w == 3 || w == 4)
+        {
+            auto dest_colors = m_mesh.face_property<pmp::Color>("f:color");
+            auto src = src_colors.get();
+            for (auto fH : m_mesh.faces())
+            {
+                dest_colors[fH] = pmp::Color(src[0] / 255.0f, src[1] / 255.0f, src[2] / 255.0f);
+                src += w;
+            }
+        }
     }
 }
 
@@ -261,11 +324,11 @@ MeshHandleIteratorPtr<EdgeHandle> PMPMesh<BaseVecT>::edgesEnd() const
 }
 
 template<typename BaseVecT>
-VertexSplitResult PMPMesh<BaseVecT>::splitVertex(VertexHandle vH)
+VertexSplitResult PMPMesh<BaseVecT>::splitVertex(VertexHandle split_vH)
 {
     pmp::Halfedge longest_heH;
     double longest_length = -1;
-    for (const pmp::Halfedge heH : m_mesh.halfedges(vH))
+    for (const pmp::Halfedge heH : m_mesh.halfedges(split_vH))
     {
         double length = m_mesh.edge_length(m_mesh.edge(heH));
         if (length > longest_length)
@@ -279,11 +342,48 @@ VertexSplitResult PMPMesh<BaseVecT>::splitVertex(VertexHandle vH)
         panic("Called splitVertex on vertex with no edges");
     }
 
-    EdgeSplitResult splitResult = this->splitEdge(m_mesh.edge(longest_heH));
-    VertexSplitResult result(splitResult.edgeCenter);
-    result.addedFaces.assign(splitResult.addedFaces.begin(), splitResult.addedFaces.end());
+    // do an edge flip on the neighboring edges if the local delaunay criteria is not met
+    vector<pmp::Vertex> commonVertexHandles = findCommonNeigbours(split_vH, m_mesh.to_vertex(longest_heH));
 
-    // TODO: Check and fix Delaunay
+    EdgeSplitResult split_result = this->splitEdge(m_mesh.edge(longest_heH));
+    VertexSplitResult result(split_result.edgeCenter);
+    result.addedFaces = split_result.addedFaces;
+
+    // check delaunay and flip edges if necessary
+    for(pmp::Vertex vertex : commonVertexHandles)
+    {
+        OptionalEdgeHandle opt_eH = this->getEdgeBetween(vertex, split_vH);
+        if (!opt_eH)
+        {
+            continue;
+        }
+        EdgeHandle eH = opt_eH.unwrap();
+        if (!m_mesh.is_flip_ok(eH))
+        {
+            continue;
+        }
+        pmp::Halfedge heH = m_mesh.halfedge(eH, 0);
+        pmp::Halfedge oH = m_mesh.opposite_halfedge(heH);
+
+        //calculate the circumcenter of each triangle, look whether the local delaunay criteria is fulfilled
+        auto circumCenterPair1 = triCircumCenter(m_mesh.face(heH));
+        auto circumCenterPair2 = triCircumCenter(m_mesh.face(oH));
+
+        BaseVecT circumCenter1 = circumCenterPair1.first;
+        BaseVecT circumCenter2 = circumCenterPair2.first;
+
+        float radius1 = circumCenterPair1.second;
+        float radius2 = circumCenterPair2.second;
+
+        BaseVecT opposite_vertex1 = getVertexPosition(m_mesh.to_vertex(m_mesh.next_halfedge(heH)));
+        BaseVecT opposite_vertex2 = getVertexPosition(m_mesh.to_vertex(m_mesh.next_halfedge(oH)));
+
+        // flip only, if one of the single vertices is inside the circumcircle of the other triangle
+        if((opposite_vertex1-circumCenter2).length() <= radius2 || (opposite_vertex2-circumCenter1).length() <= radius1)
+        {
+            m_mesh.flip(eH);
+        }
+    }
 
     return result;
 }
@@ -310,7 +410,7 @@ EdgeSplitResult PMPMesh<BaseVecT>::splitEdge(EdgeHandle eH)
 }
 
 template<typename BaseVecT>
-void PMPMesh<BaseVecT>::fillHoles(size_t maxSize)
+void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
 {
     DenseEdgeMap<bool> visitedEdges(m_mesh.edges_size(), false);
     std::vector<pmp::Halfedge> contours;
@@ -365,24 +465,99 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize)
     size_t filled = 0;
 
     // now fill the found holes
-    for (pmp::Halfedge contour_heH : contours)
+    if (simple)
     {
-        ++progress; // advance the progress bar
-        try
+        for (pmp::Halfedge contour_heH : contours)
         {
-            holeFilling.fill_hole(contour_heH);
-            filled++;
-        }
-        catch(pmp::InvalidInputException exception)
-        {
-            if (strcmp(exception.what(), "SurfaceHoleFilling: Non-manifold hole.") == 0)
+            ++progress;
+            try
             {
-                // ignore non-manifold holes
-                continue;
+                std::unordered_set<pmp::Vertex> seen;
+                vector<pmp::Vertex> contour;
+                pmp::Halfedge heH = contour_heH;
+                do
+                {
+                    pmp::Vertex vH = m_mesh.to_vertex(heH);
+                    if (seen.find(vH) != seen.end())
+                    {
+                        // broken hole: contains a loop
+                        contour.clear();
+                        break;
+                    }
+                    seen.insert(vH);
+                    contour.push_back(vH);
+                    heH = m_mesh.next_halfedge(heH);
+                    assert(!m_mesh.face(heH).is_valid());
+                } while (heH != contour_heH);
+
+                if (contour.empty())
+                {
+                    continue;
+                }
+
+                //if the hole constist of three edges, we can instantly fill it by adding a face
+                if (contour.size() == 3)
+                {
+                    addFace(contour[0], contour[1], contour[2]);
+                    continue;
+                }
+
+                // calculate the averge point of the contour and adding it to the mesh
+                pmp::Point middle = m_mesh.position(contour[0]);
+                for (size_t i = 1; i < contour.size(); i++)
+                {
+                    middle += m_mesh.position(contour[i]);
+                }
+                middle /= contour.size();
+                pmp::Vertex middle_vH = m_mesh.add_vertex(middle);
+
+                pmp::Vertex prevH = contour.back();
+
+                // add Triangles from adjacent vertices to the middle
+                for (const auto& vH : contour)
+                {
+                    addFace(middle_vH, prevH, vH);
+                    prevH = vH;
+                }
+
+                // apply a contour size dependent number of vertex splits to the mesh to add vertices to make the hole filling more smooth and consistent.
+                for(int i = 0; i < contour.size(); i++)
+                {
+                    this->splitVertex(middle_vH);
+                }
+                filled++;
             }
-            else
+            catch(PanicException exception)
             {
-                std::cerr << "Error while filling hole: " << exception.what() << std::endl;
+                std::cerr << "Error filling a hole: " << exception.what() << endl;
+            }
+            catch(pmp::TopologyException exception)
+            {
+                std::cerr << "Error filling a hole: " << exception.what() << endl;
+            }
+        }
+    }
+    else
+    {
+        for (pmp::Halfedge contour_heH : contours)
+        {
+            ++progress; // advance the progress bar
+            try
+            {
+                holeFilling.fill_hole(contour_heH);
+                filled++;
+            }
+            catch(pmp::InvalidInputException exception)
+            {
+                if (strcmp(exception.what(), "SurfaceHoleFilling: Non-manifold hole.") == 0)
+                {
+                    // ignore non-manifold holes
+                    continue;
+                }
+                else
+                {
+                    std::cerr << "Error while filling hole: " << exception.what() << std::endl;
+                }
             }
         }
     }
@@ -446,6 +621,13 @@ std::pair<BaseVecT, float> PMPMesh<BaseVecT>::triCircumCenter(FaceHandle faceH)
     radius = (circumCenter-a).length();
 
     return std::make_pair(circumCenter, radius);
+}
+
+template<typename BaseVecT>
+void PMPMesh<BaseVecT>::simplify(size_t targetNumVertices)
+{
+    pmp::SurfaceSimplification simplification(m_mesh);
+    simplification.simplify(targetNumVertices);
 }
 
 

@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #pragma once
 
@@ -60,12 +60,12 @@ private:
 
     bool is_too_long(Vertex v0, Vertex v1) const
     {
-        return distance(points_[v0], points_[v1]) >
+        return (points_[v0] - points_[v1]).norm() >
                4.0 / 3.0 * std::min(vsizing_[v0], vsizing_[v1]);
     }
     bool is_too_short(Vertex v0, Vertex v1) const
     {
-        return distance(points_[v0], points_[v1]) <
+        return (points_[v0] - points_[v1]).norm() <
                4.0 / 5.0 * std::min(vsizing_[v0], vsizing_[v1]);
     }
 

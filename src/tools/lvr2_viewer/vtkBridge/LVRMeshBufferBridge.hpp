@@ -38,6 +38,7 @@
 #include "lvr2/display/TexturedMesh.hpp"
 #include "lvr2/display/GlTexture.hpp"
 
+
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 #include <vtkActorCollection.h>

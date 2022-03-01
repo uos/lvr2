@@ -37,6 +37,7 @@
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/config/lvropenmp.hpp"
+#include "lvr2/io/scanio/FeatureBase.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
 #include "lvr2/io/scanio/DirectoryIO.hpp"
 #include "lvr2/io/scanio/DirectoryKernel.hpp"
@@ -114,9 +115,12 @@ int main(int argc, char** argv)
     //reconstruction from hdf5
     if (extension == ".h5")
     {
+        std::cout << timestamp << "Reading project from HDF5 file" << std::endl;
         HDF5KernelPtr hdf5kernel(new HDF5Kernel(in));
         HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
         lvr2::scanio::HDF5IO hdf5io(hdf5kernel, schema);
+        project->kernel = hdf5kernel;
+        project->schema = schema;
 
         auto scanProjectPtr = hdf5io.ScanProjectIO::load();
 
@@ -137,9 +141,12 @@ int main(int argc, char** argv)
         DirectorySchemaPtr dirSchema(new ScanProjectSchemaRaw(in));
         lvr2::scanio::DirectoryIO dirio(dirKernel, dirSchema);
         dirScanProject = dirio.ScanProjectIO::load();
+        project->kernel = dirKernel;
+        project->schema = dirSchema;
 
         //reconstruction from ScanProject Folder
-        if(dirScanProject) {
+        if(dirScanProject) 
+        {
             project->project = dirScanProject;
             std::vector<bool> init(dirScanProject->positions.size(), true);
             project->changed = init;
@@ -147,19 +154,20 @@ int main(int argc, char** argv)
         //reconstruction from a .ply file
         else if(!boost::filesystem::is_directory(selectedFile))
         {
+            std::cout << timestamp << "Reading single file: " << selectedFile.string() << std::endl;
             project->project = ScanProjectPtr(new ScanProject);
             ModelPtr model = ModelFactory::readModel(in);
 
-            // Create new scan object
+            // Create new scan object and mark scan data as
+            // loaded
             ScanPtr scan(new Scan);
             scan->points = model->m_pointCloud;
-
+            
             // Create new lidar object
             LIDARPtr lidar(new LIDAR);
 
             // Create new scan position
             ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
-            scanPosPtr->lidars.push_back(lidar);
 
             // Buildup scan project structure
             project->project->positions.push_back(scanPosPtr);

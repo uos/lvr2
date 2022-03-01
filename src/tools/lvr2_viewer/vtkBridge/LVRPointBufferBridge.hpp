@@ -34,7 +34,7 @@
 #ifndef LVRPOINTBUFFERBRIDGE_HPP_
 #define LVRPOINTBUFFERBRIDGE_HPP_
 
-#include "lvr2/display/ColorMap.hpp"
+#include "lvr2/util/ColorGradient.hpp"
 #include "lvr2/io/PointBuffer.hpp"
 
 #include <vtkPolyData.h>
@@ -67,15 +67,21 @@ public:
     void setVisibility(bool visible);
     void setNormalsVisibility(bool visible);
     void setColorsVisibility(bool visible);
+    
     /// set the spectral channel for (r, g, b) and set if it is used
     void setSpectralChannels(color<size_t> channels, color<bool> use_channel);
+    
     /// get spectral channel mappings
     void getSpectralChannels(color<size_t> &channels, color<bool> &use_channel) const;
+    
     /// set the gradienttype, desired channel, if the outputcolor should be normalized and if the NDVI should be used instead of the channel
-    void setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized = false, bool ndvi = false);
+    void setSpectralColorGradient(ColorGradient::GradientType gradient, size_t channel, bool normalized = false, bool ndvi = false);
+    
     /// get the gradienttype, channel, normalizend and ndvi flags
-    void getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized, bool &useNDVI) const;
+    void getSpectralColorGradient(ColorGradient::GradientType &gradient, size_t &channel, bool &normalized, bool &useNDVI) const;
+    
     /// switch between spectral mapping and gradient
+    
     void useGradient(bool useGradient);
     /// get the point buffer
     PointBufferPtr getPointBuffer();
@@ -107,7 +113,7 @@ protected:
     bool                            m_useNormalizedGradient;
     color<size_t>                   m_spectralChannels;
     color<bool>                     m_useSpectralChannel;
-    GradientType                    m_spectralGradient;
+    ColorGradient::GradientType     m_spectralGradient;
     size_t                          m_spectralGradientChannel;
     bool                            m_useNDVI;
     vtkSmartPointer<vtkDoubleArray> m_vtk_normals;

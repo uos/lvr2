@@ -32,7 +32,8 @@
  *  @author Thomas Wiemann
  */
 
-#include "lvr2/display/ColorMap.hpp"
+#include "lvr2/util/ColorGradient.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -40,10 +41,8 @@
 namespace lvr2
 {
 
-void ColorMap::getColor(float* color, size_t bucket, GradientType gradient )
+void ColorGradient::getColor(RGBFColor& color, size_t bucket, ColorGradient::GradientType gradient ) const
 {
-    assert(color);
-
     switch(gradient)
     {
     case GREY:
@@ -64,6 +63,12 @@ void ColorMap::getColor(float* color, size_t bucket, GradientType gradient )
     case SIMPSONS:
     	calcColorSimpsons(color, bucket);
     	break;
+    case BLACK:
+        color[0] = 0.0;
+        color[1] = 0.0;
+        color[2] = 0.0;
+        break;
+    case WHITE:
     default:
         color[0] = 1.0;
         color[1] = 1.0;
@@ -73,36 +78,50 @@ void ColorMap::getColor(float* color, size_t bucket, GradientType gradient )
     }
 }
 
-void ColorMap::calcColorSimpsons(float* color, size_t bucket)
+void ColorGradient::getColor(RGB8Color& color, size_t bucket, ColorGradient::GradientType gradient) const
+{
+    RGBFColor fc;
+    getColor(fc, bucket, gradient);
+    color[0] = static_cast<uint8_t>(fc[0] * 255);
+    color[1] = static_cast<uint8_t>(fc[1] * 255); 
+    color[2] = static_cast<uint8_t>(fc[2] * 255);
+}
+
+void ColorGradient::calcColorSimpsons(RGBFColor& color, size_t bucket) const
 {
 	color[0] = fabs( cos( bucket )  );
 	color[1] = fabs( sin( bucket * 30 ) );
 	color[2] = fabs( sin( bucket * 2 ) );
+    //std::cout << bucket << " " << color[0] << " " << color[1] << " " << color[2] << std::endl;
 }
 
-void ColorMap::calcColorGrey(float *d, size_t i)
+void ColorGradient::calcColorGrey(RGBFColor& d, size_t i) const
 {
-    d[0] = (float)i/(float)m_numBuckets;
-    d[1] = (float)i/(float)m_numBuckets;
-    d[2] = (float)i/(float)m_numBuckets;
+    int s = i % m_numBuckets;
+    d[0] = (float)s/(float)m_numBuckets;
+    d[1] = (float)s/(float)m_numBuckets;
+    d[2] = (float)s/(float)m_numBuckets;
 }
 
-void ColorMap::calcColorHSV(float *d, size_t i)
+void ColorGradient::calcColorHSV(RGBFColor& d, size_t i) const
 {
-    float t = (float)i/(float)m_numBuckets;
+    int s = i % m_numBuckets;
+    float t = (float)s/(float)m_numBuckets;
     convertHSVToRGB(360.0*t, 1.0, 1.0,  d[0], d[1], d[2]);
 
 }
 
-void ColorMap::calcColorSHSV(float *d, size_t i)
+void ColorGradient::calcColorSHSV(RGBFColor& d, size_t i) const
 {
-    float t = (float)i/(float)m_numBuckets;
+    int s = i % m_numBuckets;
+    float t = (float)s/(float)m_numBuckets;
     convertHSVToRGB(360.0*t, 1.0, 1.0,  d[0], d[1], d[2]);
 }
 
-void  ColorMap::calcColorHot(float *d, size_t i)
+void  ColorGradient::calcColorHot(RGBFColor& d, size_t i) const
 {
-    float t = (float)i/(float)m_numBuckets;
+    int s = i % m_numBuckets;
+    float t = (float)s/(float)m_numBuckets;
     if (t <= 1.0/3.0) {
         d[1] = d[2] = 0.0; d[0] = t/(1.0/3.0);
     } else if (t <= 2.0/3.0) {
@@ -112,9 +131,10 @@ void  ColorMap::calcColorHot(float *d, size_t i)
     }
 }
 
-void ColorMap::calcColorJet(float *d, size_t i)
+void ColorGradient::calcColorJet(RGBFColor& d, size_t i) const
 {
-    float t = (float)i/(float)m_numBuckets;
+    int s = i % m_numBuckets;
+    float t = (float)s/(float)m_numBuckets;
     if (t <= 0.125) {
       d[0] = d[1] = 0.0; d[2] = 0.5 + 0.5*(t/0.125);
     } else if (t < 0.375) {
@@ -128,7 +148,7 @@ void ColorMap::calcColorJet(float *d, size_t i)
     }
 }
 
-void ColorMap::convertHSVToRGB(float hue, float s, float v, float &r, float &g, float &b)
+void ColorGradient::convertHSVToRGB(float hue, float s, float v, float &r, float &g, float &b) const
 {
     float p1, p2, p3, i, f;
     float xh;
@@ -175,6 +195,47 @@ void ColorMap::convertHSVToRGB(float hue, float s, float v, float &r, float &g, 
         g = p1;
         b = p2;
         break;
+    }
+}
+
+ColorGradient::GradientType ColorGradient::gradientFromString(const std::string& s)
+{
+    if(s == "Simpsons" || s == "simpsons" || s == "SIMPSONS")
+    {
+        return SIMPSONS;
+    }
+    else if(s == "GREY" || s == "grey" || s == "Grey")
+    {
+        return GREY;
+    } 
+    else if(s == "HSV" || s == "hsv" || s == "Hsv")
+    {
+        return HSV;
+    }
+    else if(s == "JET" || s == "jet" || s =="Jet")
+    {
+        return JET;
+    }
+    else if(s == "HOT" || s == "hot" || s =="Hot")
+    {
+        return HOT;
+    }
+    else if(s == "SHSV" || s == "shsv" || s =="Shsv")
+    {
+        return SHSV;
+    }
+    else if(s == "BLACK" || s == "black" || s =="Black")
+    {
+        return BLACK;
+    }
+    else if(s == "White" || s == "WHITE" || s =="white")
+    {
+        return WHITE;
+    }
+    else
+    {
+        std::cout << timestamp << "Warning: Unknown color graditent type: '" << s << "'" << std::endl;
+        return GREY;
     }
 }
 

@@ -1,6 +1,6 @@
 // Copyright 2011-2021 the Polygon Mesh Processing Library developers.
 // Copyright 2001-2005 by Computer Graphics Group, RWTH Aachen
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #pragma once
 
@@ -1871,7 +1871,7 @@ public:
     //! compute the length of edge \p e.
     Scalar edge_length(Edge e) const
     {
-        return norm(vpoint_[vertex(e, 0)] - vpoint_[vertex(e, 1)]);
+        return (vpoint_[vertex(e, 0)] - vpoint_[vertex(e, 1)]).norm();
     }
 
     //!@}

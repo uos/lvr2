@@ -212,23 +212,38 @@ ScanPtr ScanIO<FeatureBase>::load(
         };
     } else {
 
-        points_loader = [this, d, Dgen, scanPosNo, sensorNo, scanNo]() 
+        points_loader = [
+            schema = m_featureBase->m_description,
+            kernel = m_featureBase->m_kernel,
+            scanPosNo,
+            sensorNo,
+            scanNo
+        ] ()
         {
             PointBufferPtr points;
 
-            // Try to find some meta information first
-            // key: channel_name, value: meta information
-            auto channel_metas = loadChannelMetas(scanPosNo, sensorNo, scanNo);
+            if(!schema)
+            {
+                std::cout << "Schema empty" << std::endl;
+            }
+
+            if(!kernel)
+            {
+                std::cout << "Kernel empty" << std::endl;
+            }
+
+            FeatureBuild<ScanIO> io(kernel, schema, false);
+
+            auto channel_metas = io.loadChannelMetas(scanPosNo, sensorNo, scanNo);
 
             if(!channel_metas.empty())
             {
-                // std::cout << "Found channel metas " << std::endl;
                 for(auto elem : channel_metas)
                 {
                     // check if element was added already
                     if(!points || points->find(elem.first) == points->end() )
                     {
-                        Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
+                        Description dc = schema->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
 
                         // data is at dc.dataRoot / dc.data
 
@@ -239,7 +254,7 @@ ScanPtr ScanIO<FeatureBase>::load(
                             // channels in file
                             std::string group, name;
                             std::tie(group, name) = hdf5util::validateGroupDataset("", proot.string());
-                            PointBufferPtr points_ = m_featureBase->m_kernel->loadPointBuffer(group, name);
+                            PointBufferPtr points_ = kernel->loadPointBuffer(group, name);
 
                             // merge to complete map
                             if(!points)
@@ -253,7 +268,7 @@ ScanPtr ScanIO<FeatureBase>::load(
                             }
                         } else {
                             // channels in folder
-                            auto vo = m_vchannel_io->template load<typename PointBuffer::val_type>(*dc.dataRoot, *dc.data);
+                            auto vo = io.template loadVariantChannel<typename PointBuffer::val_type>(*dc.dataRoot, *dc.data);
                             if(vo)
                             {
                                 if(!points)
@@ -275,7 +290,7 @@ ScanPtr ScanIO<FeatureBase>::load(
                 // could be in case of datasets cannot be 
 
                 // but we know that points must be there
-                Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, "points");
+                Description dc = schema->scanChannel(scanPosNo, sensorNo, scanNo, "points");
 
                 // search for data root
                 boost::filesystem::path proot(*dc.dataRoot);
@@ -284,7 +299,7 @@ ScanPtr ScanIO<FeatureBase>::load(
                 {
                     std::string group, dataset;
                     std::tie(group, dataset) = hdf5util::validateGroupDataset("", proot.string());
-                    points = m_featureBase->m_kernel->loadPointBuffer(group, dataset);
+                    points = kernel->loadPointBuffer(group, dataset);
                 } else {
                     // search
                     if(dc.data)
@@ -293,9 +308,9 @@ ScanPtr ScanIO<FeatureBase>::load(
                         if(pdata.extension() != "")
                         {
                             // found potential file to filter for
-                            for(auto name : m_featureBase->m_kernel->listDatasets(proot.string()) )
+                            for(auto name : kernel->listDatasets(proot.string()) )
                             {
-                                PointBufferPtr points_ = m_featureBase->m_kernel->loadPointBuffer(proot.string(), name);
+                                PointBufferPtr points_ = kernel->loadPointBuffer(proot.string(), name);
 
                                 if(!points)
                                 {
@@ -312,7 +327,6 @@ ScanPtr ScanIO<FeatureBase>::load(
                             // situation:
                             // no extension of group and no extension of dataset
                             // no meta data
-
                             // there are two options what happend here
                             // 1. Used Hdf5 schema and did not find any meta data
                             //    - this should not happen. meta data must be available
@@ -379,6 +393,11 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
     if(d.meta)
     {
         YAML::Node meta;
+
+        // cout << m_featureBase << endl;
+        // cout << m_featureBase->m_kernel << endl;
+        // cout << m_featureBase->m_kernel->fileResource() << endl;  
+
         m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
 
         // std::cout << "loadChannelMetas - Loaded Meta: " << std::endl;
@@ -476,9 +495,13 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
         {
             reduction->setPointBuffer(ret->points);
             ret->points = reduction->getReducedPoints();
-        } else if(ret->points_loader_reduced) {
+        } 
+        else if(ret->points_loader_reduced) 
+        {
             ret->points = ret->points_loader_reduced(reduction);
-        } else if(ret->points_loader) {
+        } 
+        else if(ret->points_loader) 
+        {
             ret->load();
             if(ret->points)
             {

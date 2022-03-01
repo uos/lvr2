@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceParameterization.h"
 
@@ -66,7 +66,7 @@ void SurfaceParameterization::setup_boundary_constraints()
 
     // compute length of boundary loop
     for (i = 0, length = 0.0; i < n; ++i)
-        length += distance(points[loop[i]], points[loop[(i + 1) % n]]);
+        length += (points[loop[i]] - points[loop[(i + 1) % n]]).norm();
 
     // map length intervalls to unit circle intervals
     for (i = 0, l = 0.0; i < n;)
@@ -82,7 +82,7 @@ void SurfaceParameterization::setup_boundary_constraints()
         ++i;
         if (i < n)
         {
-            l += distance(points[loop[i]], points[loop[(i + 1) % n]]);
+            l += (points[loop[i]] - points[loop[(i + 1) % n]]).norm();
         }
     }
 }
@@ -132,7 +132,7 @@ void SurfaceParameterization::harmonic(bool use_uniform_weights)
         v = free_vertices[i];
 
         // rhs row
-        b = dvec2(0.0);
+        b.fill(0.0);
 
         // lhs row
         ww = 0.0;
@@ -145,7 +145,7 @@ void SurfaceParameterization::harmonic(bool use_uniform_weights)
 
             if (mesh_.is_boundary(vv))
             {
-                b -= -w * static_cast<dvec2>(tex[vv]);
+                b -= -w * tex[vv].cast<double>();
             }
             else
             {
@@ -175,7 +175,7 @@ void SurfaceParameterization::harmonic(bool use_uniform_weights)
         // copy solution
         for (i = 0; i < n; ++i)
         {
-            tex[free_vertices[i]] = X.row(i);
+            tex[free_vertices[i]] = X.row(i).cast<TexCoord::value_type>();
         }
     }
 
@@ -207,7 +207,7 @@ void SurfaceParameterization::setup_lscm_boundary()
     {
         for (auto vv2 : boundary)
         {
-            d = distance(pos[vv1], pos[vv2]);
+            d = (pos[vv1] - pos[vv2]).norm();
             if (d > diam)
             {
                 diam = d;
@@ -254,23 +254,23 @@ void SurfaceParameterization::lscm()
         auto hc = *fh_it;
 
         // collect face vertices
-        dvec3 a = (dvec3)pos[mesh_.to_vertex(ha)];
-        dvec3 b = (dvec3)pos[mesh_.to_vertex(hb)];
-        dvec3 c = (dvec3)pos[mesh_.to_vertex(hc)];
+        dvec3 a = pos[mesh_.to_vertex(ha)].cast<double>();
+        dvec3 b = pos[mesh_.to_vertex(hb)].cast<double>();
+        dvec3 c = pos[mesh_.to_vertex(hc)].cast<double>();
 
         // calculate local coordinate system
-        dvec3 z = normalize(cross(normalize(c - b), normalize(a - b)));
-        dvec3 x = normalize(b - a);
-        dvec3 y = normalize(cross(z, x));
+        dvec3 z = (c - b).normalized().cross((a - b).normalized()).normalized();
+        dvec3 x = (b - a).normalized();
+        dvec3 y = z.cross(x).normalized();
 
         // calculate local vertex coordinates
         dvec2 a2d(0.0, 0.0);
-        dvec2 b2d(norm(b - a), 0.0);
-        dvec2 c2d(dot(c - a, x), dot(c - a, y));
+        dvec2 b2d((b - a).norm(), 0.0);
+        dvec2 c2d((c - a).dot(x), (c - a).dot(y));
 
         // calculate double triangle area
-        z = cross(c - b, a - b);
-        double area = norm(z);
+        z = (c - b).cross(a - b);
+        double area = z.norm();
         if (area)
             area = 1.0 / area;
 
@@ -411,8 +411,8 @@ void SurfaceParameterization::lscm()
     TexCoord bbmin(1, 1), bbmax(0, 0);
     for (auto v : mesh_.vertices())
     {
-        bbmin = min(bbmin, tex[v]);
-        bbmax = max(bbmax, tex[v]);
+        bbmin = bbmin.cwiseMin(tex[v]);
+        bbmax = bbmax.cwiseMax(tex[v]);
     }
     bbmax -= bbmin;
     Scalar s = std::max(bbmax[0], bbmax[1]);
