@@ -100,7 +100,7 @@ Integrate in Visual Studio
 .\vcpkg\vcpkg.exe integrate install
 ```
 
-6.) Setup toolchain in Visual Studio in CMakeSettings.json:
+6.) (Optional) Verify toolchain in Visual Studio in CMakeSettings.json:
 i) -> Toolset:
 	clang_cl_x64
 ii) ->Advanced settings:
