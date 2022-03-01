@@ -7,6 +7,9 @@
 namespace lvr2
 {
 
+namespace meshio
+{
+
 template <typename FeatureBase>
 void TextureIO<FeatureBase>::saveTexture(   
     const std::string& mesh_name,
@@ -128,4 +131,6 @@ TextureOptional TextureIO<FeatureBase>::loadTexture(
 
     return std::move(ret);
 }
+
+} // namespace meshio
 } // namespace lvr2
