@@ -36,6 +36,8 @@
 #include "lvr2/algorithm/raycasting/Intersection.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
+// Eigen
+#include <Eigen/Dense>
 
 namespace lvr2
 {
@@ -123,7 +125,11 @@ private:
 
     std::vector<Vector3f> calculate3DPointsPerPixel(const std::vector<TexCoords>&, const BoundingRectangle<typename BaseVecT::CoordType>&);
 
-    std::vector<bool> calculateVisibilityPerPixel(const Vector3f from, const std::vector<Vector3f>& to, const ClusterHandle cluster) const;
+    std::vector<bool> calculateVisibilityPerPixel(
+        const Vector3f from, 
+        const std::vector<Vector3f>& to,
+        const std::vector<bool>& texturized,
+        const ClusterHandle cluster) const;
 
     void DEBUGDrawBorder(TextureHandle texH, const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect, ClusterHandle clusterH);
 
@@ -131,8 +137,8 @@ private:
 
     struct ImageInfo
     {
-        Transformf ImageToWorld;
-        Transformf WorldToImage;
+        Eigen::Quaternionf rotation;
+        Eigen::Translation3f translation;
         CameraImagePtr image;
         PinholeModel model;
     };

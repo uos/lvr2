@@ -1,15 +1,25 @@
+// lvr2 includes
 #include "RayCastingTexturizer.hpp"
 #include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
 #include "lvr2/util/Util.hpp"
 #include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/io/baseio/PLYIO.hpp"
+#include "lvr2/util/Util.hpp"
+
+// opencv includes
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+// std includes
 #include <fstream>
 #include <numeric>
 #include <variant>
-#include <opencv2/imgproc.hpp>
-#include <lvr2/util/Util.hpp>
+
+using Eigen::Quaterniond;
+using Eigen::Quaternionf;
+using Eigen::AngleAxisd;
+using Eigen::Translation3f;
 
 namespace lvr2
 {
@@ -87,9 +97,7 @@ void RayCastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
             for (auto elem: camera->images)
             {
                 ImageInfo info;
-                // info.ImageToWorld = (position->transformation * camera->transformation).cast<float>();
-                // info.WorldToImage = (camera->transformation.inverse() * position->transformation.inverse()).cast<float>();
-                info.model         = camera->model;
+                info.model = camera->model;
                 auto pair = std::make_pair(elem, info);
                 processList.push(pair);
             }
@@ -112,9 +120,29 @@ void RayCastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                 // If its an image add the transform, the image and the camera model to the list
                 if (imgOrGrp.template is_type<CameraImagePtr>())
                 {
+                    // Set the image
                     info.image = imgOrGrp.template get<CameraImagePtr>();
-                    info.ImageToWorld = (position->transformation * info.image->transformation * camera->transformation).template cast<float>();
-                    info.WorldToImage = (camera->transformation.inverse() * info.image->transformation.inverse() * position->transformation.inverse()).template cast<float>();
+
+                    // Calculate rotation of the image in world space
+                    Quaterniond positionR(position->transformation.template topLeftCorner<3,3>());
+                    Quaterniond cameraR(camera->transformation.template topLeftCorner<3,3>());
+                    Quaterniond imageR(info.image->transformation.template topLeftCorner<3,3>());
+                    /**
+                     * The extra rotation around the z axis needs to be there because the camera is mounted 180 degrees reversed.
+                     * The camera and image transformations are out of order because the image camera transform puts the Z axis straight ahead
+                     * but the image rotation assumes Z is up.
+                     */
+                    Quaterniond rotation = positionR * imageR * cameraR;
+                    info.rotation = rotation.cast<float>().normalized();
+
+                    // Calculate Translation
+                    Vector3d positionT(position->transformation.template topRightCorner<3,1>());
+                    Vector3d cameraT(camera->transformation.template topRightCorner<3,1>());
+                    Vector3d imageT(info.image->transformation.template topRightCorner<3,1>());
+                    // Rotate current translation with the rotation from the next level and add the new translation part
+                    Vector3d translation = (imageR * cameraT) + imageT;
+                    translation = (positionR * translation) + positionT;
+                    info.translation = Translation3f(translation.cast<float>());
                     
                     m_images.push_back(info);
                 }   
@@ -205,7 +233,6 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
     ClusterHandle clusterH
 )
 {
-
     // Calculate the texture size
     unsigned short int sizeX = ceil(abs(boundingRect.m_maxDistA - boundingRect.m_minDistA) / this->m_texelSize);
     unsigned short int sizeY = ceil(abs(boundingRect.m_maxDistB - boundingRect.m_minDistB) / this->m_texelSize);
@@ -247,127 +274,111 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
     std::vector<Vector3f> points = this->calculate3DPointsPerPixel(uvCoords, boundingRect);
     // List of booleans indicating if a texel is already Texturized
     std::vector<bool> texturized(num_pixel, false);
-    int DEBUGimageIndex = 0;
+
     for (auto& imageInfo : m_images)
     {
         // TODO: Check cluster normal against view vector
-        
-        // The position of the camera
-        Vector3f cameraOrigin;
-        Vector3f tmp;
-        matrixToPose<float>(imageInfo.ImageToWorld, cameraOrigin, tmp);
+     
         // Cluster normal transformed to camera frame
-        Vector3f clusterNormal = imageInfo.WorldToImage.template topLeftCorner<3, 3>().inverse().transpose() * Vector3f(
+        Vector3f clusterNormal = (imageInfo.rotation.inverse() * Vector3f(
             boundingRect.m_normal.getX(),
             boundingRect.m_normal.getY(),
             boundingRect.m_normal.getZ()
-        );
-        {
-            std::stringstream sstr;
-            sstr << "Cluster" << DEBUGimageIndex++ << "ImageFrame.xyz";
-            std::ofstream out;
-            out.open(sstr.str());
-            for (Vector3f point: points)
-            {
-                Vector3f proj = (imageInfo.WorldToImage * Vector4f(point.x(), point.y(), point.z(), 1)).template head<3>();
-                out << proj.x() << " " << proj.y() << " " << proj.z() << "\n";
-            }
-            out << std::flush;
-        }
+        )).normalized();
 
         // Camera view vector
         Vector3f viewVec(0, 0, 1);
-        // TODO: Maybe flip the condition if the normals are consistantly on the wrong side
+        // If the Normal and the view vector point in opposite directions skip this image
         if (clusterNormal.dot(viewVec) < 0)
         {
             continue;
         }
 
         // A list of booleans indicating wether the point is visible
-        std::vector<bool> visible = this->calculateVisibilityPerPixel(cameraOrigin, points, clusterH);
+        std::vector<bool> visible = this->calculateVisibilityPerPixel(imageInfo.translation.vector(), points, texturized, clusterH);
         
-        cv::Mat camMat(3, 3, CV_64F);
-        camMat.at<double>(0, 0) = imageInfo.model.fx;
-        camMat.at<double>(0, 1) = 0;
-        camMat.at<double>(0, 2) = imageInfo.model.cx;
-        
-        camMat.at<double>(1, 0) = 0;
-        camMat.at<double>(1, 1) = imageInfo.model.fy;
-        camMat.at<double>(1, 2) = imageInfo.model.cy;
+        // === The camera intrinsics in the ringlok ScanProject are wrong === //
+        // === These are the correct values for the Riegl camera === //
+        imageInfo.model.fx = 2395.4336550315002;
+        imageInfo.model.fy = 2393.3126174899603;
 
-        camMat.at<double>(2, 0) = 0;
-        camMat.at<double>(2, 1) = 0;
-        camMat.at<double>(2, 2) = 1;
+        imageInfo.model.cx = 3027.8728609530291;
+        imageInfo.model.cy = 2031.02743729632;
+
+        // cv::Mat camMat(3, 3, CV_64F, cv::Scalar(0));
+        Eigen::Matrix3f camMat = Eigen::Matrix3f::Zero();
+        camMat(0, 0) = imageInfo.model.fx;
+        camMat(0, 2) = imageInfo.model.cx;
+        camMat(1, 1) = imageInfo.model.fy;
+        camMat(1, 2) = imageInfo.model.cy;
+        camMat(2, 2) = 1;
 
         if(!imageInfo.image->loaded())
         {
             imageInfo.image->load();
         }
 
+        // Precalculate the inverse rotation to be used in the loop
+        Quaternionf inverseRotation = imageInfo.rotation.inverse();
+
+        #pragma omp parallel for
         for (size_t i = 0; i < num_pixel; i++)
         {
-            if (!texturized[i] && visible[i])
+            if (texturized[i] || !visible[i])
             {
-                Vector4f point = imageInfo.WorldToImage * Vector4f(points[i].x(), points[i].y(), points[i].z(), 1);
-                // Skip if the point is behind the camera
-                if (point[2] <= 0)
-                {
-                    continue;
-                }
+                continue;
+            }
+            Vector3f point = inverseRotation * (points[i] - imageInfo.translation.vector());
+            // Skip if the point is behind the camera
+            if (point[2] <= 0)
+            {
+                continue;
+            }
 
-                cv::Mat in(3, 1, CV_32F);
-                std::vector<cv::Point2f> out;
+            Vector3f projected = camMat * point;
+            projected /= projected.z();
 
-                in.at<float>(0) = point[0];
-                in.at<float>(1) = point[1];
-                in.at<float>(2) = point[2];
+            // cv::Mat in(3, 1, CV_32F);
+            // std::vector<cv::Point2f> out;
 
-                cv::projectPoints(
-                    in,
-                    cv::Vec3f::zeros(),
-                    cv::Vec3f::zeros(),
-                    camMat,
-                    cv::noArray(),
-                    out
-                );
+            // in.at<float>(0) = point.x();
+            // in.at<float>(1) = point.y();
+            // in.at<float>(2) = point.z();
 
-                cv::Point2f uv = out[0];
-                double u, v;
-                u = uv.x;
-                v = uv.y;
-                undistorted_to_distorted_uv(u, v, imageInfo.model);
-                uv.x = u;
-                uv.y = v;
-                // Skip out of bounds pixels
-                if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1)
-                {
-                    continue;
-                }
+            // cv::projectPoints(
+            //     in,
+            //     cv::Vec3f::zeros(),
+            //     cv::Vec3f::zeros(),
+            //     camMat,
+            //     cv::noArray(),
+            //     out
+            // );
 
-                // Calc pixel in image
-                int x = std::floor((uv.x * (imageInfo.image->image.cols - 1)) - 0.5f);
-                int y = std::floor((uv.y * (imageInfo.image->image.rows - 1)) - 0.5f);
-                // Skip pixel outside the img coordinates
-                if (x < 0 || y < 0 || x >= imageInfo.image->image.cols || y >= imageInfo.image->image.rows)
-                {
-                    continue;
-                }
+            // cv::Point2f uv = out[0];
 
-                cv::Vec3b red;
-                red[0] = 0;
-                red[1] = 0;
-                red[2] = 255;
+            double u, v;
+            u = projected.x();
+            v = projected.y();
+            undistorted_to_distorted_uv(u, v, imageInfo.model);
 
-                // Retrieve the color
-                cv::Vec3b color = imageInfo.image->image.template at<cv::Vec3b>(y, x);
-                imageInfo.image->image.template at<cv::Vec3b>(y, x) = red;
-                // Opencv uses BGR instead of RGB
-                uint8_t r = color[0];
-                uint8_t g = color[1];
-                uint8_t b = color[2];
-                setPixel(i, tex, r, g, b);
-                texturized[i] = true;
-            }                        
+            // Calc pixel in image
+            int x = std::floor(u);
+            int y = std::floor(v);
+            // Skip pixel outside the img coordinates
+            if (x < 0 || y < 0 || x >= imageInfo.image->image.cols || y >= imageInfo.image->image.rows)
+            {
+                continue;
+            }
+
+            // Retrieve the color
+            const cv::Vec3b& color = imageInfo.image->image.template at<cv::Vec3b>(y, x);
+
+            // Extract the color
+            uint8_t r = color[0];
+            uint8_t g = color[1];
+            uint8_t b = color[2];
+            setPixel(i, tex, r, g, b);
+            texturized[i] = true;               
         }  
     }
 
@@ -443,6 +454,7 @@ template <typename BaseVecT>
 std::vector<bool> RayCastingTexturizer<BaseVecT>::calculateVisibilityPerPixel(
     const Vector3f from,
     const std::vector<Vector3f>& to,
+    const std::vector<bool>& texturized,
     const ClusterHandle cluster) const
 {
     std::vector<bool> ret(to.size());
@@ -461,15 +473,26 @@ std::vector<bool> RayCastingTexturizer<BaseVecT>::calculateVisibilityPerPixel(
         }
     );
     // Cast Rays from Camera to points and check for visibility
-    this->m_tracer->castRays(from, directions, intersections, hits);
+    // this->m_tracer->castRays(from, directions, intersections, hits);
+    #pragma omp parallel for
+    for (size_t i = 0; i < to.size(); i++)
+    {
+        if (texturized[i])
+        {
+            hits[i] = false;
+            continue;
+        }
+        
+        hits[i] = this->m_tracer->castRay(from, directions[i], intersections[i]);
+    }
+
 
     auto ret_it = ret.begin();
     auto int_it = intersections.begin();
     auto hit_it = hits.begin();
-    auto dir_it = directions.begin();
 
     // For each
-    for(;ret_it != ret.end(); ++ret_it, ++int_it, ++hit_it, ++dir_it)
+    for(;ret_it != ret.end(); ++ret_it, ++int_it, ++hit_it)
     {
         if (*hit_it)
         {
