@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018, University Osnabrück
+ * Copyright (c) 2022, University Osnabrück
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,17 +39,30 @@
 // Eigen
 #include <Eigen/Dense>
 
+/**
+ * @file RaycastingTexturizer.hpp
+ * @date 11.02.2022
+ * 
+ * @author Justus Braun
+ * 
+ */
+
 namespace lvr2
 {
 
+/**
+ * @brief This class implements the Texturizer interface. It uses Raycasting for the calculation of the texture pixels.
+ * 
+ * @tparam BaseVecT 
+ */
 template <typename BaseVecT>
-class RayCastingTexturizer: public Texturizer<BaseVecT>
+class RaycastingTexturizer: public Texturizer<BaseVecT>
 {
 public:
-    using Ptr = std::shared_ptr<RayCastingTexturizer<BaseVecT>>;
+    using Ptr = std::shared_ptr<RaycastingTexturizer<BaseVecT>>;
     using IntersectionT = Intersection<intelem::Face, intelem::Point, intelem::Distance>;
     
-    RayCastingTexturizer() = delete;
+    RaycastingTexturizer() = delete;
 
     /**
      * @brief Construct a new Ray Casting Texturizer object
@@ -58,7 +71,7 @@ public:
      * @param texMinClusterSize The minimum number of faces a cluster needs to be texturized
      * @param texMaxClusterSize The maximum number of faces a cluster needs to be texturized
      */
-    RayCastingTexturizer(
+    RaycastingTexturizer(
         float texelMinSize,
         int texMinClusterSize,
         int texMaxClusterSize,
@@ -94,7 +107,7 @@ public:
 
     void setScanProject(const ScanProjectPtr project);
 
-    virtual ~RayCastingTexturizer()
+    virtual ~RaycastingTexturizer()
     {
         cv::namedWindow("debug", cv::WINDOW_NORMAL);
         int i = 0;
@@ -160,4 +173,4 @@ private:
 
 } // namespace lvr2
 
-#include "RayCastingTexturizer.tcc"
+#include "RaycastingTexturizer.tcc"

@@ -56,7 +56,7 @@
 #include "lvr2/algorithm/Texturizer.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp" // Has to be included before anything includes opencv stuff, see https://github.com/flann-lib/flann/issues/214 
 #include "lvr2/algorithm/SpectralTexturizer.hpp"
-#include "lvr2/algorithm/RayCastingTexturizer.hpp"
+#include "lvr2/algorithm/RaycastingTexturizer.hpp"
 
 #include "lvr2/reconstruction/BilinearFastBox.hpp"
 #include "lvr2/reconstruction/TetraederBox.hpp"
@@ -566,7 +566,7 @@ void addRGBTexturizer(const reconstruct::Options& options, lvr2::Materializer<Ve
 
     ScanProjectPtr project = hdf5IO.loadScanProject();
 
-    auto texturizer = std::make_shared<RayCastingTexturizer<Vec>>(
+    auto texturizer = std::make_shared<RaycastingTexturizer<Vec>>(
         options.getTexelSize(),
         options.getTexMinClusterSize(),
         options.getTexMaxClusterSize(),

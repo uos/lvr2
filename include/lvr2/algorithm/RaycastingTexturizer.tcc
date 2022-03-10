@@ -1,6 +1,5 @@
 // lvr2 includes
-#include "RayCastingTexturizer.hpp"
-#include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
+#include "RaycastingTexturizer.hpp"
 #include "lvr2/util/Util.hpp"
 #include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/io/baseio/PLYIO.hpp"
@@ -21,13 +20,15 @@ using Eigen::Quaternionf;
 using Eigen::AngleAxisd;
 using Eigen::Translation3f;
 
+std::ofstream timings("timings.log");
+
 namespace lvr2
 {
 
 const Vector3f DEBUG_ORIGIN(0, 0, 1);
 
 template <typename BaseVecT>
-RayCastingTexturizer<BaseVecT>::RayCastingTexturizer(
+RaycastingTexturizer<BaseVecT>::RaycastingTexturizer(
     float texelMinSize,
     int texMinClusterSize,
     int texMaxClusterSize,
@@ -43,7 +44,7 @@ RayCastingTexturizer<BaseVecT>::RayCastingTexturizer(
 }
 
 template <typename BaseVecT>
-void RayCastingTexturizer<BaseVecT>::setGeometry(const BaseMesh<BaseVecT>& mesh)
+void RaycastingTexturizer<BaseVecT>::setGeometry(const BaseMesh<BaseVecT>& mesh)
 {
     m_embreeToHandle.clear();
     MeshBufferPtr buffer = std::make_shared<MeshBuffer>();
@@ -79,13 +80,13 @@ void RayCastingTexturizer<BaseVecT>::setGeometry(const BaseMesh<BaseVecT>& mesh)
 }
 
 template <typename BaseVecT>
-void RayCastingTexturizer<BaseVecT>::setClusters(const ClusterBiMap<FaceHandle>& clusters)
+void RaycastingTexturizer<BaseVecT>::setClusters(const ClusterBiMap<FaceHandle>& clusters)
 {
     this->m_clusters = clusters;
 }
 
 template <typename BaseVecT>
-void RayCastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project)
+void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project)
 {
     m_images.clear();
     // Iterate all Images and add them to the m_images
@@ -168,7 +169,7 @@ void setPixel(uint16_t x, uint16_t y, Texture& tex, uint8_t r, uint8_t g, uint8_
 }
 
 template <typename BaseVecT>
-void RayCastingTexturizer<BaseVecT>::DEBUGDrawBorder(TextureHandle texH, const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect, ClusterHandle clusterH)
+void RaycastingTexturizer<BaseVecT>::DEBUGDrawBorder(TextureHandle texH, const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect, ClusterHandle clusterH)
 {
     Texture& tex = this->m_textures[texH];
     // Draw in vertices of cluster
@@ -226,13 +227,14 @@ void undistorted_to_distorted_uv(
 
 
 template <typename BaseVecT>
-TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
+TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
     int index,
     const PointsetSurface<BaseVecT>&,
     const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect,
     ClusterHandle clusterH
 )
 {
+    Timestamp time_func;
     // Calculate the texture size
     unsigned short int sizeX = ceil(abs(boundingRect.m_maxDistA - boundingRect.m_minDistA) / this->m_texelSize);
     unsigned short int sizeY = ceil(abs(boundingRect.m_maxDistB - boundingRect.m_minDistB) / this->m_texelSize);
@@ -251,16 +253,9 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
         )
     );
 
-    // DEBUG
-    // if (index != 10)
-    // {
-    //     return texH;
-    // }
-    // this->DEBUGDrawBorder(texH, boundingRect, clusterH);
-
     Texture& tex = this->m_textures[texH];
-
-    size_t num_pixel = sizeX * sizeY;
+    // Number of pixels in the texture
+    size_t numPixel = sizeX * sizeY;
 
     if (m_images.size() == 0)
     {
@@ -273,14 +268,15 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
     // List of 3D points corresponding to uv coords
     std::vector<Vector3f> points = this->calculate3DPointsPerPixel(uvCoords, boundingRect);
     // List of booleans indicating if a texel is already Texturized
-    std::vector<bool> texturized(num_pixel, false);
+    std::vector<bool> texturized(numPixel, false);
 
     for (auto& imageInfo : m_images)
     {
-        // TODO: Check cluster normal against view vector
+        // Precalculate the inverse rotation to be used in the loop
+        Quaternionf inverseRotation = imageInfo.rotation.inverse();
      
         // Cluster normal transformed to camera frame
-        Vector3f clusterNormal = (imageInfo.rotation.inverse() * Vector3f(
+        Vector3f clusterNormal = (inverseRotation * Vector3f(
             boundingRect.m_normal.getX(),
             boundingRect.m_normal.getY(),
             boundingRect.m_normal.getZ()
@@ -293,10 +289,12 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
         {
             continue;
         }
-
+        // Timing
+        Timestamp time_raycasting;
         // A list of booleans indicating wether the point is visible
         std::vector<bool> visible = this->calculateVisibilityPerPixel(imageInfo.translation.vector(), points, texturized, clusterH);
-        
+        timings << "[" << index << "] " << "Raycasting took " << time_raycasting.getElapsedTimeInMs() << "ms (" << time_raycasting.getElapsedTimeInS() << "s)" << std::endl;
+
         // === The camera intrinsics in the ringlok ScanProject are wrong === //
         // === These are the correct values for the Riegl camera === //
         imageInfo.model.fx = 2395.4336550315002;
@@ -318,11 +316,10 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
             imageInfo.image->load();
         }
 
-        // Precalculate the inverse rotation to be used in the loop
-        Quaternionf inverseRotation = imageInfo.rotation.inverse();
-
+        
+        Timestamp time_pixel_loop;
         #pragma omp parallel for
-        for (size_t i = 0; i < num_pixel; i++)
+        for (size_t i = 0; i < numPixel; i++)
         {
             if (texturized[i] || !visible[i])
             {
@@ -337,24 +334,6 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
 
             Vector3f projected = camMat * point;
             projected /= projected.z();
-
-            // cv::Mat in(3, 1, CV_32F);
-            // std::vector<cv::Point2f> out;
-
-            // in.at<float>(0) = point.x();
-            // in.at<float>(1) = point.y();
-            // in.at<float>(2) = point.z();
-
-            // cv::projectPoints(
-            //     in,
-            //     cv::Vec3f::zeros(),
-            //     cv::Vec3f::zeros(),
-            //     camMat,
-            //     cv::noArray(),
-            //     out
-            // );
-
-            // cv::Point2f uv = out[0];
 
             double u, v;
             u = projected.x();
@@ -379,15 +358,16 @@ TextureHandle RayCastingTexturizer<BaseVecT>::generateTexture(
             uint8_t b = color[2];
             setPixel(i, tex, r, g, b);
             texturized[i] = true;               
-        }  
+        }
+        timings << "[" << index << "] Iterating pixels took " << time_pixel_loop.getElapsedTimeInMs() << "ms (" << time_pixel_loop.getElapsedTimeInS() << "s)" << std::endl;  
     }
-
+    timings << "[" << index << "] Generation took " << time_func.getElapsedTimeInMs() << "ms ("  << time_func.getElapsedTimeInS() << "s)" << std::endl;
     return texH;
 }
 
 template <typename BaseVecT>
 template <typename... Args>
-Texture RayCastingTexturizer<BaseVecT>::initTexture(Args&&... args) const
+Texture RaycastingTexturizer<BaseVecT>::initTexture(Args&&... args) const
 {
     Texture ret(std::forward<Args>(args)...);
 
@@ -406,7 +386,7 @@ Texture RayCastingTexturizer<BaseVecT>::initTexture(Args&&... args) const
 }
 
 template <typename BaseVecT>
-std::vector<TexCoords> RayCastingTexturizer<BaseVecT>::calculateUVCoordsPerPixel(const Texture& tex) const
+std::vector<TexCoords> RaycastingTexturizer<BaseVecT>::calculateUVCoordsPerPixel(const Texture& tex) const
 {
     std::vector<TexCoords> ret;
     ret.reserve(tex.m_width * tex.m_height);
@@ -425,7 +405,7 @@ std::vector<TexCoords> RayCastingTexturizer<BaseVecT>::calculateUVCoordsPerPixel
 }
 
 template <typename BaseVecT>
-std::vector<Vector3f> RayCastingTexturizer<BaseVecT>::calculate3DPointsPerPixel(
+std::vector<Vector3f> RaycastingTexturizer<BaseVecT>::calculate3DPointsPerPixel(
     const std::vector<TexCoords>& texel,
     const BoundingRectangle<typename BaseVecT::CoordType>& bb)
 {
@@ -451,7 +431,7 @@ std::vector<Vector3f> RayCastingTexturizer<BaseVecT>::calculate3DPointsPerPixel(
 }
 
 template <typename BaseVecT>
-std::vector<bool> RayCastingTexturizer<BaseVecT>::calculateVisibilityPerPixel(
+std::vector<bool> RaycastingTexturizer<BaseVecT>::calculateVisibilityPerPixel(
     const Vector3f from,
     const std::vector<Vector3f>& to,
     const std::vector<bool>& texturized,
