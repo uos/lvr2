@@ -166,22 +166,26 @@ void SurfaceMesh::free_memory()
 
 void SurfaceMesh::reserve(size_t nvertices, size_t nedges, size_t nfaces)
 {
-    // Euler's formula: V - E + F ~= 0
     // Always give 10% extra space to be on the safe side
+    nvertices *= 1.1;
+    nedges *= 1.1;
+    nfaces *= 1.1;
+
+    // Euler's formula: V - E + F ~= 0
     if (nvertices == 0 && nedges != 0 && nfaces != 0)
     {
         // V = E - F
-        nvertices = (nedges - nfaces) * 1.1;
+        nvertices = nedges - nfaces;
     }
     else if (nvertices != 0 && nedges == 0 && nfaces != 0)
     {
         // E = V + F
-        nedges = (nvertices + nfaces) * 1.1;
+        nedges = nvertices + nfaces;
     }
     else if (nvertices != 0 && nedges != 0 && nfaces == 0)
     {
         // F = E - V
-        nfaces = (nedges - nvertices) * 1.1;
+        nfaces = nedges - nvertices;
     }
 
     oprops_.reserve(1);
@@ -220,18 +224,9 @@ Halfedge SurfaceMesh::find_halfedge(Vertex start, Vertex end) const
 {
     assert(is_valid(start) && is_valid(end));
 
-    Halfedge h = halfedge(start);
-    const Halfedge hh = h;
-
-    if (h.is_valid())
-    {
-        do
-        {
-            if (to_vertex(h) == end)
-                return h;
-            h = cw_rotated_halfedge(h);
-        } while (h != hh);
-    }
+    for (Halfedge h : halfedges(start))
+        if (to_vertex(h) == end)
+            return h;
 
     return Halfedge();
 }
@@ -244,20 +239,13 @@ Edge SurfaceMesh::find_edge(Vertex a, Vertex b) const
 
 void SurfaceMesh::adjust_outgoing_halfedge(Vertex v)
 {
-    Halfedge h = halfedge(v);
-    const Halfedge hh = h;
-
-    if (h.is_valid())
+    for (Halfedge h : halfedges(v))
     {
-        do
+        if (is_boundary(h))
         {
-            if (is_boundary(h))
-            {
-                set_halfedge(v, h);
-                return;
-            }
-            h = cw_rotated_halfedge(h);
-        } while (h != hh);
+            set_halfedge(v, h);
+            return;
+        }
     }
 }
 
@@ -520,10 +508,8 @@ BoundingBox SurfaceMesh::bounds() const
         for (size_t i = 0; i < vertices_size(); i++)
         {
             Vertex v(i);
-            if (!is_deleted(v))
-            {
+            if (!vdeleted_[v])
                 bb += position(v);
-            }
         }
     }
     else
@@ -546,10 +532,8 @@ bool SurfaceMesh::is_triangle_mesh() const
         for (size_t i = 0; i < faces_size(); i++)
         {
             Face f(i);
-            if (!is_deleted(f))
-            {
+            if (!fdeleted_[f])
                 is_triangle_mesh = is_triangle_mesh && (valence(f) == 3);
-            }
         }
     }
     else
@@ -589,6 +573,93 @@ bool SurfaceMesh::is_quad_mesh() const
     }
 
     return is_quad_mesh;
+}
+
+void SurfaceMesh::duplicate_non_manifold_vertices()
+{
+    auto reachable = add_halfedge_property<uint8_t>("h:reachable", false);
+    // reachable should be HalfedgeProperty<bool>, but std::vector<bool> is specialized as a
+    // bit-vector, which would break when using OpenMP.
+
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < vertices_size(); i++)
+    {
+        Vertex v(i);
+        if (!is_deleted(v))
+            for (Halfedge h : halfedges(v))
+                reachable[h] = true;
+    }
+    size_t count = 0;
+    #pragma omp parallel reduction(+:count)
+    {
+        std::vector<Halfedge> unreachable;
+        #pragma omp for schedule(dynamic,64) nowait
+        for (size_t i = 0; i < halfedges_size(); i++)
+        {
+            Halfedge h(i);
+            if (!is_deleted(h) && !reachable[h])
+                unreachable.push_back(h);
+        }
+        #pragma omp critical
+        {
+            for (Halfedge h : unreachable)
+            {
+                if (reachable[h])
+                {
+                    continue;
+                }
+                Vertex v = from_vertex(h);
+                Point p = position(v);
+                Vertex new_v = add_vertex(p);
+                copy_vprops(*this, v, new_v);
+                set_halfedge(new_v, h);
+                for (Halfedge h : halfedges(new_v))
+                {
+                    set_vertex(opposite_halfedge(h), new_v);
+                    reachable[h] = true;
+                }
+                adjust_outgoing_halfedge(new_v);
+                ++count;
+            }
+        }
+    }
+    if (count > 0)
+    {
+        std::cout << "Duplicated " << count << " non-manifold vertices" << std::endl;
+    }
+
+    remove_halfedge_property(reachable);
+}
+
+void SurfaceMesh::remove_degenerate_faces()
+{
+    size_t nf = n_faces(), ne = n_edges();
+
+    #pragma omp parallel
+    {
+        std::vector<Halfedge> broken;
+        #pragma omp for schedule(dynamic,64) nowait
+        for (size_t i = 0; i < halfedges_size(); i++)
+        {
+            Halfedge h(i);
+            if (!is_deleted(h) && next_halfedge(next_halfedge(h)) == h)
+                broken.push_back(h);
+        }
+        #pragma omp critical
+        {
+            for (Halfedge h : broken)
+                if (!is_deleted(h) && next_halfedge(next_halfedge(h)) == h)
+                    remove_loop_helper(h);
+        }
+    }
+
+    // remove_loop_helper removes one edge and possibly one face
+    size_t f_diff = nf - n_faces();
+    if (f_diff > 0)
+        std::cout << "Removed " << f_diff << " degenerate faces" << std::endl;
+    size_t e_diff = ne - n_edges() - f_diff;
+    if (e_diff > 0)
+        std::cout << "Removed " << e_diff << " degenerate edges without a face" << std::endl;
 }
 
 void SurfaceMesh::split(Face f, Vertex v)
@@ -891,12 +962,188 @@ void SurfaceMesh::flip(Edge e)
         set_halfedge(vb0, b1);
 }
 
+void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
+                             FaceProperty<IndexType>& face_dist,
+                             VertexProperty<IndexType>& vertex_dist,
+                             HalfedgeProperty<IndexType>& halfedge_dist)
+{
+    for (auto& mesh : output)
+    {
+        mesh.copy_properties(*this);
+    }
+
+    auto f_map = add_face_property<Face>("f:split_map");
+    auto v_map = add_vertex_property<Vertex>("v:split_map");
+    auto h_map = add_halfedge_property<Halfedge>("h:split_map");
+
+    std::thread f_thread([&]()
+    {
+        for (auto f : faces())
+            if (face_dist[f] < output.size())
+                f_map[f] = output[face_dist[f]].new_face();
+    });
+    std::thread v_thread([&]()
+    {
+        for (auto v : vertices())
+            if (vertex_dist[v] < output.size())
+                v_map[v] = output[vertex_dist[v]].new_vertex();
+    });
+    for (auto e : edges())
+    {
+        Halfedge h0 = halfedge(e, 0);
+        Halfedge h1 = halfedge(e, 1);
+        if (halfedge_dist[h0] < output.size())
+        {
+            h_map[h0] = output[halfedge_dist[h0]].new_edge();
+            if (halfedge_dist[h0] == halfedge_dist[h1])
+            {
+                h_map[h1] = opposite_halfedge(h_map[h0]);
+                continue;
+            }
+        }
+        if (halfedge_dist[h1] < output.size())
+        {
+            h_map[h1] = opposite_halfedge(output[halfedge_dist[h1]].new_edge());
+        }
+    }
+
+    f_thread.join();
+    v_thread.join();
+
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < faces_size(); i++)
+    {
+        Face f(i);
+        if (is_deleted(f) || face_dist[f] >= output.size())
+            continue;
+        auto& mesh = output[face_dist[f]];
+        mesh.copy_fprops(*this, f, f_map[f]);
+        mesh.set_halfedge(f_map[f], h_map[halfedge(f)]);
+    }
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < vertices_size(); i++)
+    {
+        Vertex v(i);
+        if (is_deleted(v) || vertex_dist[v] >= output.size())
+            continue;
+        auto& mesh = output[vertex_dist[v]];
+        mesh.copy_vprops(*this, v, v_map[v]);
+        mesh.position(v_map[v]) = position(v);
+        Halfedge h = halfedge(v);
+        if (h.is_valid())
+            mesh.set_halfedge(v_map[v], h_map[h]);
+    }
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < halfedges_size(); i++)
+    {
+        Halfedge h(i);
+        if (is_deleted(h) || halfedge_dist[h] >= output.size())
+            continue;
+        auto& mesh = output[halfedge_dist[h]];
+        mesh.copy_hprops(*this, h, h_map[h]);
+        mesh.copy_eprops(*this, edge(h), edge(h_map[h]));
+        auto& in = hconn_[h];
+        auto& out = mesh.hconn_[h_map[h]];
+        out.vertex_ = v_map[in.vertex_];
+        out.next_halfedge_ = h_map[in.next_halfedge_];
+        out.prev_halfedge_ = h_map[in.prev_halfedge_];
+        if (in.face_.is_valid())
+            out.face_ = f_map[in.face_];
+    }
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < output.size(); i++)
+    {
+        output[i].remove_degenerate_faces();
+    }
+
+    remove_face_property(f_map);
+    remove_vertex_property(v_map);
+    remove_halfedge_property(h_map);
+    for (auto& mesh : output)
+    {
+        mesh.remove_face_property<IndexType>(face_dist.name());
+        mesh.remove_vertex_property<IndexType>(vertex_dist.name());
+        mesh.remove_halfedge_property<IndexType>(halfedge_dist.name());
+    }
+}
+
+void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
+{
+    size_t added_faces = 0, added_vertices = 0, added_edges = 0;
+    std::vector<IndexType> face_offsets = { 0 };
+    std::vector<IndexType> vertex_offsets = { 0 };
+    std::vector<IndexType> halfedge_offsets = { 0 };
+    for (auto mesh : input)
+    {
+        copy_properties(*mesh);
+
+        mesh->garbage_collection();
+        added_faces += mesh->n_faces();
+        added_vertices += mesh->n_vertices();
+        added_edges += mesh->n_edges();
+
+        if (face_offsets.size() < input.size())
+        {
+            face_offsets.push_back(face_offsets.back() + mesh->n_faces());
+            vertex_offsets.push_back(vertex_offsets.back() + mesh->n_vertices());
+            halfedge_offsets.push_back(halfedge_offsets.back() + mesh->n_halfedges());
+        }
+    }
+
+    new_faces(added_faces);
+    new_vertices(added_vertices);
+    new_edges(added_edges);
+
+    for (size_t i = 0; i < input.size(); i++)
+    {
+        auto& mesh = *input[i];
+        IndexType face_offset = face_offsets[i];
+        IndexType vertex_offset = vertex_offsets[i];
+        IndexType halfedge_offset = halfedge_offsets[i];
+        #pragma omp parallel for schedule(static)
+        for (size_t j = 0; j < mesh.faces_size(); j++)
+        {
+            Face f(j), fm(face_offset + j);
+            copy_fprops(mesh, f, fm);
+            set_halfedge(fm, Halfedge(halfedge_offset + mesh.halfedge(f).idx()));
+        }
+        #pragma omp parallel for schedule(static)
+        for (size_t j = 0; j < mesh.vertices_size(); j++)
+        {
+            Vertex v(j), vm(vertex_offset + j);
+            copy_vprops(mesh, v, vm);
+            position(vm) = mesh.position(v);
+            Halfedge h = mesh.halfedge(v);
+            if (h.is_valid())
+                set_halfedge(vm, Halfedge(halfedge_offset + h.idx()));
+        }
+        #pragma omp parallel for schedule(static)
+        for (size_t j = 0; j < mesh.halfedges_size(); j++)
+        {
+            Halfedge h(j), hm(halfedge_offset + j);
+            copy_hprops(mesh, h, hm);
+            if (h == mesh.halfedge(mesh.edge(h), 0))
+                copy_eprops(mesh, mesh.edge(h), edge(hm));
+            auto& in = mesh.hconn_[h];
+            auto& out = hconn_[hm];
+            out.vertex_ = Vertex(vertex_offset + in.vertex_.idx());
+            out.next_halfedge_ = Halfedge(halfedge_offset + in.next_halfedge_.idx());
+            out.prev_halfedge_ = Halfedge(halfedge_offset + in.prev_halfedge_.idx());
+            if (in.face_.is_valid())
+                out.face_ = Face(face_offset + in.face_.idx());
+        }
+    }
+
+    remove_degenerate_faces();
+}
+
 bool SurfaceMesh::is_collapse_ok(Halfedge v0v1)
 {
     Halfedge v1v0(opposite_halfedge(v0v1));
     Vertex v0(to_vertex(v1v0));
     Vertex v1(to_vertex(v0v1));
-    Vertex vv, vl, vr;
+    Vertex vl, vr;
     Halfedge h1, h2;
 
     // the edges v1-vl and vl-v0 must not be both boundary edges
@@ -931,15 +1178,12 @@ bool SurfaceMesh::is_collapse_ok(Halfedge v0v1)
         return false;
 
     // test intersection of the one-rings of v0 and v1
-    VertexAroundVertexCirculator vvit, vvend;
-    vvit = vvend = vertices(v0);
-    do
+    for (Vertex vv : vertices(v0))
     {
-        vv = *vvit;
         if (vv != v1 && vv != vl && vv != vr)
             if (find_halfedge(vv, v1).is_valid())
                 return false;
-    } while (++vvit != vvend);
+    }
 
     // passed all tests
     return true;
@@ -1052,12 +1296,8 @@ void SurfaceMesh::remove_edge_helper(Halfedge h)
     Vertex vo = to_vertex(o);
 
     // halfedge -> vertex
-    HalfedgeAroundVertexCirculator vhit, vhend;
-    vhit = vhend = halfedges(vo);
-    do
-    {
-        set_vertex(opposite_halfedge(*vhit), vh);
-    } while (++vhit != vhend);
+    for (Halfedge hh : halfedges(vo))
+        set_vertex(opposite_halfedge(hh), vh);
 
     // halfedge -> halfedge
     set_next_halfedge(hp, hn);
@@ -1191,19 +1431,15 @@ void SurfaceMesh::delete_face(Face f)
     //   1) invalidate face handle.
     //   2) collect all boundary halfedges, set them deleted
     //   3) store vertex handles
-    HalfedgeAroundFaceCirculator hc, hcend;
-    hc = hcend = halfedges(f);
-
-    do
+    for (Halfedge hc : halfedges(f))
     {
-        set_face(*hc, Face());
+        set_face(hc, Face());
 
-        if (is_boundary(opposite_halfedge(*hc)))
-            deletedEdges.push_back(edge(*hc));
+        if (is_boundary(opposite_halfedge(hc)))
+            deletedEdges.push_back(edge(hc));
 
-        vertices.push_back(to_vertex(*hc));
-
-    } while (++hc != hcend);
+        vertices.push_back(to_vertex(hc));
+    }
 
     // delete all collected (half)edges
     // delete isolated vertices
@@ -1280,107 +1516,116 @@ void SurfaceMesh::delete_face(Face f)
 void SurfaceMesh::delete_many_faces(const FaceProperty<bool>& faces)
 {
     size_t deleted = 0;
-    #pragma omp parallel for schedule(static) reduction(+:deleted)
-    for (size_t i = 0; i < faces_size(); i++)
+    #pragma omp parallel
     {
-        Face f(i);
-        if (!fdeleted_[f] && faces[f])
+        std::vector<Face> delete_faces;
+        #pragma omp for schedule(dynamic,64) nowait
+        for (size_t i = 0; i < faces_size(); i++)
         {
-            fdeleted_[f] = true;
-            deleted++;
+            Face f(i);
+            if (!fdeleted_[f] && faces[f])
+                delete_faces.push_back(f);
+        }
+        #pragma omp critical
+        {
+            deleted += delete_faces.size();
+            // this has to be done in a critical section, because fdeleted_ is std::vector<bool>
+            // and we cannot assign to elements in a parallel loop
+            for (Face f : delete_faces)
+                fdeleted_[f] = true;
         }
     }
     deleted_faces_ += deleted;
     if (deleted == 0)
-    {
         return;
-    }
     has_garbage_ = true;
-
-    auto edges = add_edge_property<bool>("e:flag_deleted");
-    deleted = 0;
-    #pragma omp parallel for schedule(static) reduction(+:deleted)
-    for (size_t i = 0; i < edges_size(); i++)
-    {
-        Edge e(i);
-        if (edeleted_[e])
-        {
-            continue;
-        }
-        Halfedge h0 = halfedge(e, 0);
-        Halfedge h1 = halfedge(e, 1);
-        Face f0(face(h0));
-        Face f1(face(h1));
-        bool changed = false;
-        if (f0.is_valid() && fdeleted_[f0])
-        {
-            set_face(h0, Face());
-            f0 = Face();
-            changed = true;
-        }
-        if (f1.is_valid() && fdeleted_[f1])
-        {
-            set_face(h1, Face());
-            f1 = Face();
-            changed = true;
-        }
-        if (!f0.is_valid() && !f1.is_valid())
-        {
-            edeleted_[e] = true;
-            deleted++;
-        }
-        else if (changed)
-        {
-            // only one was updated
-            edges[e] = true;
-        }
-    }
-    deleted_edges_ += deleted;
-    if (deleted == 0)
-    {
-        return;
-    }
-
-    deleted = 0;
-    #pragma omp parallel for schedule(dynamic,64) reduction(+:deleted)
-    for (size_t i = 0; i < vertices_size(); i++)
-    {
-        Vertex v(i);
-        if (vdeleted_[v] || !edeleted_[edge(halfedge(v))])
-        {
-            continue;
-        }
-        // find new outgoing halfedge for v
-        bool found = false;
-        for (Halfedge h : halfedges(v))
-        {
-            if (!edeleted_[edge(h)])
-            {
-                set_halfedge(v, h);
-                found = true;
-                break;
-            }
-        }
-        if (!found)
-        {
-            vdeleted_[v] = true;
-            deleted++;
-        }
-    }
-    deleted_vertices_ += deleted;
 
     #pragma omp parallel
     {
-        std::vector<std::pair<Halfedge, Halfedge>> next_cache;
-
-        #pragma omp for schedule(dynamic,64)
+        std::vector<Edge> delete_edges;
+        std::vector<Edge> update_edges;
+        #pragma omp for schedule(dynamic,64) nowait
         for (size_t i = 0; i < edges_size(); i++)
         {
             Edge e(i);
-            if (!edges[e])
+            if (edeleted_[e])
             {
                 continue;
             }
+            Halfedge h0 = halfedge(e, 0);
+            Halfedge h1 = halfedge(e, 1);
+            Face f0(face(h0));
+            Face f1(face(h1));
+            bool changed = false;
+            if (f0.is_valid() && fdeleted_[f0])
+            {
+                set_face(h0, Face());
+                f0 = Face();
+                changed = true;
+            }
+            if (f1.is_valid() && fdeleted_[f1])
+            {
+                set_face(h1, Face());
+                f1 = Face();
+                changed = true;
+            }
+            if (!f0.is_valid() && !f1.is_valid())
+            {
+                delete_edges.push_back(e);
+            }
+            else if (changed)
+            {
+                // only one was updated
+                update_edges.push_back(e);
+            }
+        }
+        #pragma omp critical
+        {
+            deleted_edges_ += delete_edges.size();
+            for (Edge e : delete_edges)
+                edeleted_[e] = true;
+        }
+        #pragma omp barrier
+
+        std::vector<Vertex> delete_vertices;
+        std::vector<Vertex> update_vertices;
+        #pragma omp for schedule(dynamic,64) nowait
+        for (size_t i = 0; i < vertices_size(); i++)
+        {
+            Vertex v(i);
+            if (vdeleted_[v] || !edeleted_[edge(halfedge(v))])
+            {
+                continue;
+            }
+            // find new outgoing halfedge for v
+            bool found = false;
+            for (Halfedge h : halfedges(v))
+            {
+                if (!edeleted_[edge(h)])
+                {
+                    set_halfedge(v, h);
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+                update_vertices.push_back(v);
+            else
+                delete_vertices.push_back(v);
+        }
+        #pragma omp critical
+        {
+            deleted_vertices_ += delete_vertices.size();
+            for (Vertex v : delete_vertices)
+            {
+                vdeleted_[v] = true;
+            }
+        }
+        #pragma omp barrier
+
+        NextCache next_cache;
+        for (Edge e : update_edges)
+        {
             Halfedge h0 = halfedge(e, 0);
             Halfedge h1 = halfedge(e, 1);
             Halfedge h = !face(h0).is_valid() ? h0 : h1;
@@ -1392,11 +1637,7 @@ void SurfaceMesh::delete_many_faces(const FaceProperty<bool>& faces)
             }
             if (next_candidate != next_halfedge(h))
             {
-                Edge en = edge(next_candidate);
-                if (!edges[en] || en.idx() > e.idx())
-                {
-                    next_cache.emplace_back(h, next_candidate);
-                }
+                next_cache.emplace_back(h, next_candidate);
             }
             Halfedge prev_candidate = prev_halfedge(h);
             while (edeleted_[edge(prev_candidate)])
@@ -1405,52 +1646,23 @@ void SurfaceMesh::delete_many_faces(const FaceProperty<bool>& faces)
             }
             if (prev_candidate != prev_halfedge(h))
             {
-                Edge ep = edge(prev_candidate);
-                if (!edges[ep] || ep.idx() > e.idx())
-                {
-                    next_cache.emplace_back(prev_candidate, h);
-                }
+                next_cache.emplace_back(prev_candidate, h);
             }
         }
+        #pragma omp barrier
 
         for (auto& p : next_cache)
         {
             set_next_halfedge(p.first, p.second);
         }
-    }
 
-    remove_edge_property(edges);
+        #pragma omp barrier
 
-    // non-manifold meshes might have a Vertex shared with a face that is not part
-    // of the Vertex's one-ring. These might have been deleted before for not finding
-    // a new outgoing halfedge, but need to be re-added.
-    size_t re_added = 0;
-    #pragma omp parallel for schedule(dynamic,64) reduction(+:re_added)
-    for (size_t i = 0; i < edges_size(); i++)
-    {
-        Edge e(i);
-        if (edeleted_[e])
+        for (Vertex v : update_vertices)
         {
-            continue;
-        }
-        Halfedge h0 = halfedge(e, 0);
-        Halfedge h1 = halfedge(e, 1);
-        Vertex v0 = to_vertex(h0);
-        Vertex v1 = to_vertex(h1);
-        if (vdeleted_[v0])
-        {
-            vdeleted_[v0] = false;
-            re_added++;
-            set_halfedge(v0, h1);
-        }
-        if (vdeleted_[v1])
-        {
-            vdeleted_[v1] = false;
-            re_added++;
-            set_halfedge(v1, h0);
+            adjust_outgoing_halfedge(v);
         }
     }
-    deleted_vertices_ -= re_added;
 }
 
 void SurfaceMesh::garbage_collection()
@@ -1533,7 +1745,6 @@ void SurfaceMesh::garbage_collection()
     });
 
     // remove deleted faces
-    std::thread f_thread([&]()
     {
         int i0 = 0;
         int i1 = nF - 1;
@@ -1554,11 +1765,10 @@ void SurfaceMesh::garbage_collection()
 
         // remember new size
         nF = fdeleted_[Face(i0)] ? i0 : i0 + 1;
-    });
+    }
 
     v_thread.join();
     e_thread.join();
-    f_thread.join();
 
     // update vertex connectivity
     #pragma omp parallel for schedule(static)

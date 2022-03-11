@@ -236,55 +236,8 @@ inline std::ostream& operator<<(std::ostream& os, const OptionalClusterHandle& h
 
 namespace std
 {
-
-template<>
-struct hash<lvr2::EdgeHandle> {
-    size_t operator()(const lvr2::EdgeHandle& h) const
-    {
-        return std::hash<lvr2::Index>()(h.idx());
-    }
-};
-
-template<>
-struct hash<lvr2::FaceHandle> {
-    size_t operator()(const lvr2::FaceHandle& h) const
-    {
-        return std::hash<lvr2::Index>()(h.idx());
-    }
-};
-
-template<>
-struct hash<lvr2::VertexHandle> {
-    size_t operator()(const lvr2::VertexHandle& h) const
-    {
-        return std::hash<lvr2::Index>()(h.idx());
-    }
-};
-
-template<>
-struct less<lvr2::VertexHandle> {
-    bool operator()(const lvr2::VertexHandle& l, const lvr2::VertexHandle& r) const
-    {
-        return std::less<lvr2::Index>()(l.idx(), r.idx());
-    }
-};
-
-template<>
-struct hash<lvr2::ClusterHandle> {
-    size_t operator()(const lvr2::ClusterHandle& h) const
-    {
-        return std::hash<lvr2::Index>()(h.idx());
-    }
-};
-
-template<>
-struct hash<lvr2::TextureHandle> {
-    size_t operator()(const lvr2::TextureHandle& h) const
-    {
-        return std::hash<lvr2::Index>()(h.idx());
-    }
-};
-
+    IMPL_HANDLE_HASH(lvr2::ClusterHandle);
+    IMPL_HANDLE_HASH(lvr2::TextureHandle);
 } // namespace std
 
 #endif /* LVR2_GEOMETRY_HANDLES_H_ */

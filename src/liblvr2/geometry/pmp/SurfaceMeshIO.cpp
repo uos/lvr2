@@ -692,6 +692,40 @@ void SurfaceMeshIO::write_off(const SurfaceMesh& mesh)
     fclose(out);
 }
 
+template<int N>
+void read_pmp_property(FILE* in, SurfaceMesh& mesh, const std::string& name)
+{
+    auto prefix = name.substr(0, 2);
+    int n;
+    char* data = nullptr;
+    if (prefix == "v:")
+    {
+        data = (char*)mesh.add_vertex_property<Eigen::Matrix<Scalar, N, 1>>(name).data();
+        n = mesh.n_vertices();
+    }
+    else if (prefix == "f:")
+    {
+        data = (char*)mesh.add_face_property<Eigen::Matrix<Scalar, N, 1>>(name).data();
+        n = mesh.n_faces();
+    }
+    else if (prefix == "e:")
+    {
+        data = (char*)mesh.add_edge_property<Eigen::Matrix<Scalar, N, 1>>(name).data();
+        n = mesh.n_edges();
+    }
+    else if (prefix == "h:")
+    {
+        data = (char*)mesh.add_halfedge_property<Eigen::Matrix<Scalar, N, 1>>(name).data();
+        n = mesh.n_halfedges();
+    }
+    else
+    {
+        throw IOException("Error: unknown property type: " + name);
+    }
+    size_t nread = fread(data, sizeof(Scalar) * N, n, in);
+    PMP_ASSERT(nread == n);
+}
+
 void SurfaceMeshIO::read_pmp(SurfaceMesh& mesh)
 {
     // open file (in binary mode)
@@ -700,15 +734,41 @@ void SurfaceMeshIO::read_pmp(SurfaceMesh& mesh)
         throw IOException("Failed to open file: " + filename_);
 
     // how many elements?
-    unsigned int nv(0), ne(0), nh(0), nf(0);
+    uint32_t nv(0), ne(0), nh(0), nf(0);
     tfread(in, nv);
     tfread(in, ne);
     tfread(in, nf);
     nh = 2 * ne;
 
-    // texture coordinates?
-    bool has_htex(false);
-    tfread(in, has_htex);
+    // this used to be a bool called htex, indicating if the h:tex property exists.
+    // => version values of 0 or 1 are false or true, 2 and above are actual version numbers
+    uint8_t version;
+    tfread(in, version);
+
+    uint32_t nprops = 0;
+    std::vector<std::pair<std::string, uint32_t>> props;
+    if (version == 0)
+    {
+        // bool htex was false, no properties
+    }
+    else if (version == 1)
+    {
+        // bool htex is true, add h:tex property
+        props.emplace_back("h:tex", 2);
+    }
+    else if (version == 2)
+    {
+        tfread(in, nprops);
+        for (uint32_t i = 0; i < nprops; ++i)
+        {
+            uint32_t len;
+            tfread(in, len);
+            auto& prop = props.emplace_back();
+            tfread(in, prop.second);
+            prop.first.resize(len);
+            fread((char*)prop.first.data(), sizeof(char), len, in);
+        }
+    }
 
     // resize containers
     mesh.vprops_.resize(nv);
@@ -738,8 +798,24 @@ void SurfaceMeshIO::read_pmp(SurfaceMesh& mesh)
     PMP_ASSERT(nfc == nf);
     PMP_ASSERT(np == nv);
 
-    // read texture coordiantes
-    if (has_htex)
+    // read other properties
+    for (auto [ name, num_elements ] : props)
+    {
+        switch (num_elements)
+        {
+        case 1: read_pmp_property<1>(in, mesh, name); break;
+        case 2: read_pmp_property<2>(in, mesh, name); break;
+        case 3: read_pmp_property<3>(in, mesh, name); break;
+        case 4: read_pmp_property<4>(in, mesh, name); break;
+        case 5: read_pmp_property<5>(in, mesh, name); break;
+        case 6: read_pmp_property<6>(in, mesh, name); break;
+        case 7: read_pmp_property<7>(in, mesh, name); break;
+        case 8: read_pmp_property<8>(in, mesh, name); break;
+        case 9: read_pmp_property<9>(in, mesh, name); break;
+        }
+    }
+
+    if (version == 1)
     {
         auto htex = mesh.halfedge_property<TexCoord>("h:tex");
         size_t nhtc = fread((char*)htex.data(), sizeof(TexCoord), nh, in);
@@ -820,6 +896,9 @@ void SurfaceMeshIO::read_agi(SurfaceMesh& mesh)
 
 void SurfaceMeshIO::write_pmp(const SurfaceMesh& mesh)
 {
+    if (mesh.has_garbage())
+        throw IOException("Cannot write mesh with garbage");
+
     // open file (in binary mode)
     FILE* out = fopen(filename_.c_str(), "wb");
     if (!out)
@@ -833,20 +912,44 @@ void SurfaceMeshIO::write_pmp(const SurfaceMesh& mesh)
     auto fconn =
         mesh.get_face_property<SurfaceMesh::FaceConnectivity>("f:connectivity");
     auto point = mesh.get_vertex_property<Point>("v:point");
-    auto htex = mesh.get_halfedge_property<TexCoord>("h:tex");
 
     // how many elements?
-    unsigned int nv, ne, nh, nf;
+    uint32_t nv, ne, nh, nf;
     nv = mesh.n_vertices();
     ne = mesh.n_edges();
     nh = mesh.n_halfedges();
     nf = mesh.n_faces();
 
+    std::vector<std::tuple<std::string, uint32_t, char*, uint32_t>> props;
+    uint32_t num_props = 0;
+    #define ADD_PROP(name, target, N, n) { \
+            auto prop = mesh.get_##target##_property<Eigen::Matrix<Scalar, N, 1>>(name); \
+            if (prop) props.emplace_back(name, n, (char*)prop.data(), N); \
+        }
+    ADD_PROP("v:normal", vertex, 3, nv);
+    ADD_PROP("v:color", vertex, 3, nv);
+    ADD_PROP("v:tex", vertex, 2, nv);
+    ADD_PROP("f:normal", face, 3, nf);
+    ADD_PROP("f:color", face, 3, nf);
+    ADD_PROP("h:tex", halfedge, 2, nh);
+
     // write header
     tfwrite(out, nv);
     tfwrite(out, ne);
     tfwrite(out, nf);
-    tfwrite(out, (bool)htex);
+
+    uint8_t version = 2;
+    tfwrite(out, version);
+
+    // write property names and sizes
+    tfwrite(out, (uint32_t)props.size());
+    for (auto [ name, n, data, num_elements ] : props)
+    {
+        uint32_t len = name.size();
+        tfwrite(out, len);
+        tfwrite(out, num_elements);
+        fwrite(name.c_str(), sizeof(char), len, out);
+    }
 
     // write properties to file
     fwrite((char*)vconn.data(), sizeof(SurfaceMesh::VertexConnectivity), nv,
@@ -856,9 +959,11 @@ void SurfaceMeshIO::write_pmp(const SurfaceMesh& mesh)
     fwrite((char*)fconn.data(), sizeof(SurfaceMesh::FaceConnectivity), nf, out);
     fwrite((char*)point.data(), sizeof(Point), nv, out);
 
-    // texture coordinates
-    if (htex)
-        fwrite((char*)htex.data(), sizeof(TexCoord), nh, out);
+    // write other properties
+    for (auto [ name, n, data, num_elements ] : props)
+    {
+        fwrite(data, sizeof(Scalar) * num_elements, n, out);
+    }
 
     fclose(out);
 }

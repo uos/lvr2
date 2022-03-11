@@ -38,21 +38,115 @@
 #include "lvr2/geometry/PMPMesh.hpp"
 
 #include <Cesium3DTiles/Tile.h>
+#include <boost/filesystem.hpp>
 
 namespace lvr2
 {
 
-typedef uint32_t SegmentId;
-constexpr SegmentId INVALID_SEGMENT = std::numeric_limits<SegmentId>::max();
+typedef pmp::IndexType SegmentId;
+constexpr SegmentId INVALID_SEGMENT = pmp::PMP_MAX_INDEX;
 
-struct Segment
+struct MeshSegment
 {
-    SegmentId id = INVALID_SEGMENT;
-    size_t num_faces = 0;
-    size_t num_vertices = 0;
+    std::shared_ptr<pmp::SurfaceMesh> mesh = nullptr;
     pmp::BoundingBox bb;
     std::string filename = "";
 };
+
+class SegmentTree
+{
+public:
+    using Ptr = std::unique_ptr<SegmentTree>;
+
+    static Ptr octree_partition(std::vector<MeshSegment>& segments, Cesium3DTiles::Tile& root,
+                                const boost::filesystem::path& path, int combine_depth = -1);
+    void simplify(Cesium3DTiles::Tile& root);
+    virtual void collect_segments(std::vector<MeshSegment>& segments) = 0;
+    virtual void print(size_t depth = 0) = 0;
+
+    virtual bool combine_if_possible() = 0;
+    virtual void simplify_if_possible(Cesium3DTiles::Tile& tile) = 0;
+    virtual MeshSegment& get_segment() = 0;
+
+    size_t depth = 0;
+    bool skipped = false;
+    bool simplified = false;
+
+private:
+    static Ptr octree_split_recursive(MeshSegment** start, MeshSegment** end,
+                                      const std::string& filename, Cesium3DTiles::Tile& tile,
+                                      int combine_depth);
+};
+
+class SegmentTreeNode : public SegmentTree
+{
+public:
+    void add_child(SegmentTree::Ptr child);
+    void collect_segments(std::vector<MeshSegment>& segments) override;
+    void print(size_t depth = 0) override;
+
+    bool combine_if_possible() override;
+    void simplify_if_possible(Cesium3DTiles::Tile& tile) override;
+    virtual MeshSegment& get_segment() override
+    {
+        return meta_segment;
+    }
+
+private:
+    MeshSegment meta_segment;
+    std::vector<SegmentTree::Ptr> children;
+};
+class SegmentTreeLeaf : public SegmentTree
+{
+public:
+    SegmentTreeLeaf(const MeshSegment& segment)
+        : segment(segment)
+    {}
+    void collect_segments(std::vector<MeshSegment>& segments) override
+    {
+        segments.push_back(segment);
+    }
+    void print(size_t depth = 0) override;
+
+    bool combine_if_possible() override
+    {
+        return true;
+    }
+    void simplify_if_possible(Cesium3DTiles::Tile& tile) override
+    {
+        simplified = true;
+    }
+    virtual MeshSegment& get_segment() override
+    {
+        return segment;
+    }
+
+private:
+    MeshSegment segment;
+};
+
+inline double geometric_error(size_t num_faces)
+{
+    return std::sqrt((double)num_faces) / 10000.0;
+}
+inline double geometric_error(double child_sum, size_t old_num_faces, size_t new_num_faces)
+{
+    double factor = old_num_faces / (double)new_num_faces;
+    return child_sum * factor * factor * 1000.0;
+}
+
+inline void convert_bounding_box(const pmp::BoundingBox& in, Cesium3DTiles::BoundingVolume& out)
+{
+    auto center = in.center();
+    auto half_vector = in.max() - center;
+    out.box =
+    {
+        center.x(), center.y(), center.z(),
+        half_vector.x(), 0, 0,
+        0, half_vector.y(), 0,
+        0, 0, half_vector.z()
+    };
+}
 
 /**
  * @brief creates a new value at the end of a vector and returns its index and a reference to that value
@@ -81,13 +175,11 @@ inline std::pair<size_t, T&> push_and_get_index(std::vector<T>& vec, T&& value =
 void segment_mesh(pmp::SurfaceMesh& input_mesh,
                   const pmp::BoundingBox& bb,
                   float chunk_size,
-                  std::vector<Segment>& small_segments,
-                  std::vector<pmp::SurfaceMesh>& large_segments,
-                  std::vector<pmp::BoundingBox>& large_segment_bounds);
+                  std::vector<MeshSegment>& chunks,
+                  std::vector<MeshSegment>& large_segments);
 
-void split_mesh(pmp::SurfaceMesh& input_mesh,
-                const pmp::BoundingBox& bb,
+void split_mesh(MeshSegment& mesh,
                 float chunk_size,
-                Cesium3DTiles::Tile& tile);
+                std::vector<MeshSegment>& out_meshes);
 
 } // namespace lvr2

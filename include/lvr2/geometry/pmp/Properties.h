@@ -32,8 +32,8 @@ public:
     //! Free unused memory.
     virtual void free_memory() = 0;
 
-    //! Extend the number of elements by one.
-    virtual void push_back() = 0;
+    //! Extend the number of elements by n.
+    virtual void push_back(size_t n = 1) = 0;
 
     //! Let two elements swap their storage place.
     virtual void swap(size_t i0, size_t i1) = 0;
@@ -71,43 +71,43 @@ public:
     {
     }
 
-public: // virtual interface of BasePropertyArray
-    virtual void reserve(size_t n) { data_.reserve(n); }
+public: // interface of BasePropertyArray
+    void reserve(size_t n) override { data_.reserve(n); }
 
-    virtual void resize(size_t n) { data_.resize(n, value_); }
+    void resize(size_t n) override { data_.resize(n, value_); }
 
-    virtual void push_back() { data_.push_back(value_); }
+    void push_back(size_t n = 1) override { data_.insert(data_.end(), n, value_); }
 
-    virtual void free_memory() { data_.shrink_to_fit(); }
+    void free_memory() override { data_.shrink_to_fit(); }
 
-    virtual void swap(size_t i0, size_t i1)
+    void swap(size_t i0, size_t i1) override
     {
         std::swap(data_[i0], data_[i1]);
     }
 
-    virtual void copy_prop(BasePropertyArray* src, size_t src_i, size_t dst_i)
+    void copy_prop(BasePropertyArray* src, size_t src_i, size_t dst_i) override
     {
         PropertyArray<T>* src_prop = dynamic_cast<PropertyArray<T>*>(src);
         assert(src_prop);
         data_[dst_i] = src_prop->data_[src_i];
     }
 
-    virtual BasePropertyArray* clone() const
+    BasePropertyArray* clone() const override
     {
         PropertyArray<T>* p = new PropertyArray<T>(name_, value_);
         p->data_ = data_;
         return p;
     }
 
-    virtual BasePropertyArray* empty_copy() const
+    BasePropertyArray* empty_copy() const override
     {
         return new PropertyArray<T>(name_, value_);
     }
 
-    virtual const std::type_info& type() { return typeid(T); }
+    const std::type_info& type() override { return typeid(T); }
 
 public:
-    //! Get pointer to array
+    //! Get pointer to array (does not work for T==bool)
     const T* data() const { return data_.data(); }
 
     //! Get reference to the underlying vector
@@ -131,6 +131,19 @@ private:
     VectorType data_;
     ValueType value_;
 };
+
+// specialization for bool properties
+// std::vector<bool> is a specialization that uses one bit per element, which does not allow data() access
+template <>
+inline const bool* PropertyArray<bool>::data() const
+{
+    throw std::runtime_error("PropertyArray<bool>::data() not supported");
+}
+template <>
+inline void PropertyArray<bool>::swap(size_t i0, size_t i1)
+{
+    data_.swap(data_[i0], data_[i1]);
+}
 
 template <class T>
 class Property
@@ -171,6 +184,12 @@ public:
     {
         assert(parray_ != nullptr);
         return parray_->vector();
+    }
+
+    const std::string& name() const
+    {
+        assert(parray_ != nullptr);
+        return parray_->name();
     }
 
 private:
@@ -218,6 +237,9 @@ public:
         }
         return *this;
     }
+
+    // move assignment
+    PropertyContainer& operator=(PropertyContainer&& rhs) = default;
 
     // returns the current size of the property arrays
     size_t size() const { return size_; }
@@ -346,11 +368,11 @@ public:
     }
 
     // add a new element to each vector
-    void push_back()
+    void push_back(size_t n = 1)
     {
         for (size_t i = 0; i < parrays_.size(); ++i)
-            parrays_[i]->push_back();
-        ++size_;
+            parrays_[i]->push_back(n);
+        size_ += n;
     }
 
     // swap elements i0 and i1 in all arrays

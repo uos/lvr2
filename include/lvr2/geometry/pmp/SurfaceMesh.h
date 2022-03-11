@@ -9,6 +9,7 @@
 #include <limits>
 #include <numeric>
 #include <memory>
+#include <unordered_set>
 
 #include "Types.h"
 #include "Properties.h"
@@ -49,7 +50,7 @@ public:
     using HandleType = HandleT;
 };
 
-/// A wrapper for the MeshHandleIterator to save beloved future programmers from dereferencing too much <3
+/// A wrapper for the MeshHandleIterator
 template<typename HandleT>
 class MeshHandleIteratorPtr
 {
@@ -67,7 +68,8 @@ private:
 
 } // namespace lvr2
 
-namespace pmp {
+namespace pmp
+{
 
 class SurfaceMeshIO;
 
@@ -156,6 +158,33 @@ inline std::ostream& operator<<(std::ostream& os, Face f)
 {
     return (os << 'f' << f.idx());
 }
+
+} // namespace pmp
+
+// hash functions
+namespace std
+{
+#define IMPL_HANDLE_HASH(Type) \
+    template<> struct hash<Type> \
+    { \
+        std::size_t operator()(const Type& h) const \
+        { return std::hash<pmp::IndexType>()(h.idx()); } \
+    }; \
+    template<> struct less<Type> \
+    { \
+        bool operator()(const Type& l, const Type& r) const \
+        { return std::less<pmp::IndexType>()(l.idx(), r.idx()); } \
+    };
+
+    IMPL_HANDLE_HASH(pmp::Handle);
+    IMPL_HANDLE_HASH(pmp::Vertex);
+    IMPL_HANDLE_HASH(pmp::Halfedge);
+    IMPL_HANDLE_HASH(pmp::Edge);
+    IMPL_HANDLE_HASH(pmp::Face);
+} // namespace std
+
+namespace pmp
+{
 
 // Property Types
 
@@ -276,376 +305,172 @@ public:
     //! \name Iterator Types
     //!@{
 
-    //! An iterator class to iterate linearly over all vertices
-    class VertexIterator : public lvr2::MeshHandleIterator<Vertex>
+    template<class HandleT>
+    class HandleIterator : public lvr2::MeshHandleIterator<HandleT>
     {
     public:
         //! Default constructor
-        VertexIterator(Vertex v = Vertex(), const SurfaceMesh* m = nullptr)
-            : handle_(v), mesh_(m)
+        HandleIterator(HandleT handle, const SurfaceMesh* m)
+            : handle_(handle), mesh_(m)
         {
-            if (mesh_ && mesh_->has_garbage())
-                while (mesh_->is_valid(handle_) && mesh_->is_deleted(handle_))
-                    ++handle_.idx_;
+            while (mesh_->is_valid(handle_) && mesh_->is_deleted(handle_))
+                ++handle_.idx_;
         }
 
-        //! get the vertex the iterator refers to
-        Vertex operator*() const { return handle_; }
+        //! get the handle the iterator refers to
+        HandleT operator*() const { return handle_; }
 
         //! are two iterators equal?
-        bool operator==(const VertexIterator& rhs) const
+        bool operator==(const HandleIterator<HandleT>& rhs) const
         {
-            return (handle_ == rhs.handle_);
+            assert(mesh_ == rhs.mesh_);
+            return handle_ == rhs.handle_;
         }
-        bool operator==(const MeshHandleIterator& other) const override
+        bool operator==(const lvr2::MeshHandleIterator<HandleT>& other) const override
         {
-            auto cast = dynamic_cast<const VertexIterator*>(&other);
-            return cast && handle_ == cast->handle_;
+            auto cast = dynamic_cast<const HandleIterator<HandleT>*>(&other);
+            return cast && operator==(*cast);
         }
 
         //! are two iterators different?
-        bool operator!=(const VertexIterator& rhs) const
+        bool operator!=(const HandleIterator<HandleT>& rhs) const
         {
             return !operator==(rhs);
         }
-        bool operator!=(const MeshHandleIterator& other) const override
+        bool operator!=(const lvr2::MeshHandleIterator<HandleT>& other) const override
         {
-            auto cast = dynamic_cast<const VertexIterator*>(&other);
-            return !cast || handle_ != cast->handle_;
+            auto cast = dynamic_cast<const HandleIterator<HandleT>*>(&other);
+            return !cast || operator!=(*cast);
         }
 
         //! pre-increment iterator
-        VertexIterator& operator++()
+        HandleIterator& operator++()
         {
             ++handle_.idx_;
-            assert(mesh_);
-            while (mesh_->has_garbage() && mesh_->is_valid(handle_) &&
-                   mesh_->is_deleted(handle_))
+            while (mesh_->is_valid(handle_) && mesh_->is_deleted(handle_))
                 ++handle_.idx_;
             return *this;
         }
 
         //! post-increment iterator
-        VertexIterator operator++(int)
+        HandleIterator operator++(int)
         {
-            VertexIterator tmp = *this;
+            HandleIterator tmp = *this;
             ++(*this);
             return tmp;
         }
 
         //! pre-decrement iterator
-        VertexIterator& operator--()
+        HandleIterator& operator--()
         {
             --handle_.idx_;
-            assert(mesh_);
-            while (mesh_->has_garbage() && mesh_->is_valid(handle_) &&
-                   mesh_->is_deleted(handle_))
+            while (mesh_->is_valid(handle_) && mesh_->is_deleted(handle_))
                 --handle_.idx_;
             return *this;
         }
 
-    private:
-        Vertex handle_;
+    protected:
+        HandleT handle_;
         const SurfaceMesh* mesh_;
     };
+
+    //! this class iterates linearly over all vertices
+    //! \sa vertices_begin(), vertices_end()
+    //! \sa HalfedgeIterator, EdgeIterator, FaceIterator
+    using VertexIterator = HandleIterator<Vertex>;
 
     //! this class iterates linearly over all halfedges
     //! \sa halfedges_begin(), halfedges_end()
     //! \sa VertexIterator, EdgeIterator, FaceIterator
-    class HalfedgeIterator : public lvr2::MeshHandleIterator<Halfedge>
-    {
-    public:
-        //! Default constructor
-        HalfedgeIterator(Halfedge h = Halfedge(),
-                         const SurfaceMesh* mesh = nullptr)
-            : handle_(h), mesh_(mesh)
-        {
-            if (mesh_ && mesh_->has_garbage())
-                while (mesh_->is_valid(handle_) && mesh_->is_deleted(handle_))
-                    ++handle_.idx_;
-        }
-
-        //! get the halfedge the iterator refers to
-        Halfedge operator*() const { return handle_; }
-
-        //! are two iterators equal?
-        bool operator==(const HalfedgeIterator& rhs) const
-        {
-            return (handle_ == rhs.handle_);
-        }
-        bool operator==(const MeshHandleIterator& other) const override
-        {
-            auto cast = dynamic_cast<const HalfedgeIterator*>(&other);
-            return cast && handle_ == cast->handle_;
-        }
-
-        //! are two iterators different?
-        bool operator!=(const HalfedgeIterator& rhs) const
-        {
-            return !operator==(rhs);
-        }
-        bool operator!=(const MeshHandleIterator& other) const override
-        {
-            auto cast = dynamic_cast<const HalfedgeIterator*>(&other);
-            return !cast || handle_ != cast->handle_;
-        }
-
-        //! pre-increment iterator
-        HalfedgeIterator& operator++()
-        {
-            ++handle_.idx_;
-            assert(mesh_);
-            while (mesh_->has_garbage() && mesh_->is_valid(handle_) &&
-                   mesh_->is_deleted(handle_))
-                ++handle_.idx_;
-            return *this;
-        }
-
-        //! post-increment iterator
-        HalfedgeIterator operator++(int)
-        {
-            HalfedgeIterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        //! pre-decrement iterator
-        HalfedgeIterator& operator--()
-        {
-            --handle_.idx_;
-            assert(mesh_);
-            while (mesh_->has_garbage() && mesh_->is_valid(handle_) &&
-                   mesh_->is_deleted(handle_))
-                --handle_.idx_;
-            return *this;
-        }
-
-    private:
-        Halfedge handle_;
-        const SurfaceMesh* mesh_;
-    };
+    using HalfedgeIterator = HandleIterator<Halfedge>;
 
     //! this class iterates linearly over all edges
     //! \sa edges_begin(), edges_end()
     //! \sa VertexIterator, HalfedgeIterator, FaceIterator
-    class EdgeIterator : public lvr2::MeshHandleIterator<Edge>
-    {
-    public:
-        //! Default constructor
-        EdgeIterator(Edge e = Edge(), const SurfaceMesh* mesh = nullptr)
-            : handle_(e), mesh_(mesh)
-        {
-            if (mesh_ && mesh_->has_garbage())
-                while (mesh_->is_valid(handle_) && mesh_->is_deleted(handle_))
-                    ++handle_.idx_;
-        }
-
-        //! get the edge the iterator refers to
-        Edge operator*() const { return handle_; }
-
-        //! are two iterators equal?
-        bool operator==(const EdgeIterator& rhs) const
-        {
-            return (handle_ == rhs.handle_);
-        }
-        bool operator==(const MeshHandleIterator& other) const override
-        {
-            auto cast = dynamic_cast<const EdgeIterator*>(&other);
-            return cast && handle_ == cast->handle_;
-        }
-
-        //! are two iterators different?
-        bool operator!=(const EdgeIterator& rhs) const
-        {
-            return !operator==(rhs);
-        }
-        bool operator!=(const MeshHandleIterator& other) const override
-        {
-            auto cast = dynamic_cast<const EdgeIterator*>(&other);
-            return !cast || handle_ != cast->handle_;
-        }
-
-        //! pre-increment iterator
-        EdgeIterator& operator++()
-        {
-            ++handle_.idx_;
-            assert(mesh_);
-            while (mesh_->has_garbage() && mesh_->is_valid(handle_) &&
-                   mesh_->is_deleted(handle_))
-                ++handle_.idx_;
-            return *this;
-        }
-
-        //! post-increment iterator
-        EdgeIterator operator++(int)
-        {
-            EdgeIterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        //! pre-decrement iterator
-        EdgeIterator& operator--()
-        {
-            --handle_.idx_;
-            assert(mesh_);
-            while (mesh_->has_garbage() && mesh_->is_valid(handle_) &&
-                   mesh_->is_deleted(handle_))
-                --handle_.idx_;
-            return *this;
-        }
-
-    private:
-        Edge handle_;
-        const SurfaceMesh* mesh_;
-    };
+    using EdgeIterator = HandleIterator<Edge>;
 
     //! this class iterates linearly over all faces
     //! \sa faces_begin(), faces_end()
     //! \sa VertexIterator, HalfedgeIterator, EdgeIterator
-    class FaceIterator : public lvr2::MeshHandleIterator<Face>
-    {
-    public:
-        //! Default constructor
-        FaceIterator(Face f = Face(), const SurfaceMesh* m = nullptr)
-            : handle_(f), mesh_(m)
-        {
-            if (mesh_ && mesh_->has_garbage())
-                while (mesh_->is_valid(handle_) && mesh_->is_deleted(handle_))
-                    ++handle_.idx_;
-        }
-
-        //! get the face the iterator refers to
-        Face operator*() const { return handle_; }
-
-        //! are two iterators equal?
-        bool operator==(const FaceIterator& rhs) const
-        {
-            return (handle_ == rhs.handle_);
-        }
-        bool operator==(const MeshHandleIterator& other) const override
-        {
-            auto cast = dynamic_cast<const FaceIterator*>(&other);
-            return cast && handle_ == cast->handle_;
-        }
-
-        //! are two iterators different?
-        bool operator!=(const FaceIterator& rhs) const
-        {
-            return !operator==(rhs);
-        }
-        bool operator!=(const MeshHandleIterator& other) const override
-        {
-            auto cast = dynamic_cast<const FaceIterator*>(&other);
-            return !cast || handle_ != cast->handle_;
-        }
-
-        //! pre-increment iterator
-        FaceIterator& operator++()
-        {
-            ++handle_.idx_;
-            assert(mesh_);
-            while (mesh_->has_garbage() && mesh_->is_valid(handle_) &&
-                   mesh_->is_deleted(handle_))
-                ++handle_.idx_;
-            return *this;
-        }
-
-        //! post-increment iterator
-        FaceIterator operator++(int)
-        {
-            FaceIterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        //! pre-decrement iterator
-        FaceIterator& operator--()
-        {
-            --handle_.idx_;
-            assert(mesh_);
-            while (mesh_->has_garbage() && mesh_->is_valid(handle_) &&
-                   mesh_->is_deleted(handle_))
-                --handle_.idx_;
-            return *this;
-        }
-
-    private:
-        Face handle_;
-        const SurfaceMesh* mesh_;
-    };
+    using FaceIterator = HandleIterator<Face>;
 
     //!@}
     //! \name Container Types
     //!@{
 
-    //! helper class for iterating through all vertices using range-based
-    //! for-loops.
-    class VertexContainer
+    template<class HandleT>
+    class HandleContainer
     {
     public:
-        VertexContainer(VertexIterator begin, VertexIterator end)
+        HandleContainer(HandleIterator<HandleT> begin, HandleIterator<HandleT> end)
             : begin_(begin), end_(end)
         {
         }
-        VertexIterator begin() const { return begin_; }
-        VertexIterator end() const { return end_; }
+        HandleIterator<HandleT> begin() const { return begin_; }
+        HandleIterator<HandleT> end() const { return end_; }
 
     private:
-        VertexIterator begin_, end_;
+        HandleIterator<HandleT> begin_, end_;
     };
+
+    //! helper class for iterating through all vertices using range-based
+    //! for-loops. \sa vertices()
+    using VertexContainer = HandleContainer<Vertex>;
 
     //! helper class for iterating through all halfedges using range-based
     //! for-loops. \sa halfedges()
-    class HalfedgeContainer
-    {
-    public:
-        HalfedgeContainer(HalfedgeIterator begin, HalfedgeIterator end)
-            : begin_(begin), end_(end)
-        {
-        }
-        HalfedgeIterator begin() const { return begin_; }
-        HalfedgeIterator end() const { return end_; }
-
-    private:
-        HalfedgeIterator begin_, end_;
-    };
+    using HalfedgeContainer = HandleContainer<Halfedge>;
 
     //! helper class for iterating through all edges using range-based
     //! for-loops. \sa edges()
-    class EdgeContainer
-    {
-    public:
-        EdgeContainer(EdgeIterator begin, EdgeIterator end)
-            : begin_(begin), end_(end)
-        {
-        }
-        EdgeIterator begin() const { return begin_; }
-        EdgeIterator end() const { return end_; }
-
-    private:
-        EdgeIterator begin_, end_;
-    };
+    using EdgeContainer = HandleContainer<Edge>;
 
     //! helper class for iterating through all faces using range-based
     //! for-loops. \sa faces()
-    class FaceContainer
-    {
-    public:
-        FaceContainer(FaceIterator begin, FaceIterator end)
-            : begin_(begin), end_(end)
-        {
-        }
-        FaceIterator begin() const { return begin_; }
-        FaceIterator end() const { return end_; }
-
-    private:
-        FaceIterator begin_, end_;
-    };
+    using FaceContainer = HandleContainer<Face>;
 
     //!@}
     //! \name Circulator Types
     //!@{
+
+    class CirculatorLoopDetector
+    {
+    public:
+        CirculatorLoopDetector(Halfedge start)
+            : iter_count_(0), start_(start)
+        {
+        }
+        void set_start(Halfedge new_start)
+        {
+            start_ = new_start;
+            cancel();
+        }
+        void loop_detection(Halfedge current)
+        {
+            if (current == start_)
+            {
+                // Circulators are expected to circulate around start_
+                cancel();
+            }
+            else if (++iter_count_ > 100 && !visited_.insert(current).second)
+            {
+                // any loops that don't contain start_ are an error in the mesh
+                throw TopologyException("Loop detected in mesh!");
+            }
+        }
+        void cancel()
+        {
+            if (iter_count_ > 0)
+            {
+                iter_count_ = 0;
+                visited_.clear();
+            }
+        }
+    private:
+        size_t iter_count_;
+        Halfedge start_;
+        std::unordered_set<Halfedge> visited_;
+    };
 
     //! this class circulates through all one-ring neighbors of a vertex.
     //! it also acts as a container-concept for C++11 range-based for loops.
@@ -654,18 +479,14 @@ public:
     {
     public:
         //! default constructor
-        VertexAroundVertexCirculator(const SurfaceMesh* mesh = nullptr,
-                                     Vertex v = Vertex())
-            : mesh_(mesh), is_active_(true)
+        VertexAroundVertexCirculator(const SurfaceMesh* mesh, Vertex v)
+            : mesh_(mesh), halfedge_(mesh_->halfedge(v)), is_active_(true), loop_helper_(halfedge_)
         {
-            if (mesh_)
-                halfedge_ = mesh_->halfedge(v);
         }
 
         //! are two circulators equal?
         bool operator==(const VertexAroundVertexCirculator& rhs) const
         {
-            assert(mesh_);
             assert(mesh_ == rhs.mesh_);
             return (is_active_ && (halfedge_ == rhs.halfedge_));
         }
@@ -679,24 +500,25 @@ public:
         //! pre-increment (rotate couter-clockwise)
         VertexAroundVertexCirculator& operator++()
         {
-            assert(mesh_);
+            assert(halfedge_.is_valid());
             halfedge_ = mesh_->ccw_rotated_halfedge(halfedge_);
             is_active_ = true;
+            loop_helper_.loop_detection(halfedge_);
             return *this;
         }
 
         //! pre-decrement (rotate clockwise)
         VertexAroundVertexCirculator& operator--()
         {
-            assert(mesh_);
+            assert(halfedge_.is_valid());
             halfedge_ = mesh_->cw_rotated_halfedge(halfedge_);
+            loop_helper_.cancel();
             return *this;
         }
 
         //! get the vertex the circulator refers to
         Vertex operator*() const
         {
-            assert(mesh_);
             return mesh_->to_vertex(halfedge_);
         }
 
@@ -723,6 +545,7 @@ public:
         const SurfaceMesh* mesh_;
         Halfedge halfedge_;
         bool is_active_; // helper for C++11 range-based for-loops
+        CirculatorLoopDetector loop_helper_;
     };
 
     //! this class circulates through all outgoing halfedges of a vertex.
@@ -732,18 +555,14 @@ public:
     {
     public:
         //! default constructor
-        HalfedgeAroundVertexCirculator(const SurfaceMesh* mesh = nullptr,
-                                       Vertex v = Vertex())
-            : mesh_(mesh), is_active_(true)
+        HalfedgeAroundVertexCirculator(const SurfaceMesh* mesh, Vertex v)
+            : mesh_(mesh), halfedge_(mesh_->halfedge(v)), is_active_(true), loop_helper_(halfedge_)
         {
-            if (mesh_)
-                halfedge_ = mesh_->halfedge(v);
         }
 
         //! are two circulators equal?
         bool operator==(const HalfedgeAroundVertexCirculator& rhs) const
         {
-            assert(mesh_);
             assert(mesh_ == rhs.mesh_);
             return (is_active_ && (halfedge_ == rhs.halfedge_));
         }
@@ -757,17 +576,19 @@ public:
         //! pre-increment (rotate couter-clockwise)
         HalfedgeAroundVertexCirculator& operator++()
         {
-            assert(mesh_);
+            assert(halfedge_.is_valid());
             halfedge_ = mesh_->ccw_rotated_halfedge(halfedge_);
             is_active_ = true;
+            loop_helper_.loop_detection(halfedge_);
             return *this;
         }
 
         //! pre-decrement (rotate clockwise)
         HalfedgeAroundVertexCirculator& operator--()
         {
-            assert(mesh_);
+            assert(halfedge_.is_valid());
             halfedge_ = mesh_->cw_rotated_halfedge(halfedge_);
+            loop_helper_.cancel();
             return *this;
         }
 
@@ -794,6 +615,7 @@ public:
         const SurfaceMesh* mesh_;
         Halfedge halfedge_;
         bool is_active_; // helper for C++11 range-based for-loops
+        CirculatorLoopDetector loop_helper_;
     };
 
     //! this class circulates through all incident faces of a vertex.
@@ -803,22 +625,19 @@ public:
     {
     public:
         //! construct with mesh and vertex (vertex should not be isolated!)
-        FaceAroundVertexCirculator(const SurfaceMesh* m = nullptr,
-                                   Vertex v = Vertex())
-            : mesh_(m), is_active_(true)
+        FaceAroundVertexCirculator(const SurfaceMesh* m, Vertex v)
+            : mesh_(m), halfedge_(mesh_->halfedge(v)), is_active_(true), loop_helper_(halfedge_)
         {
-            if (mesh_)
+            if (halfedge_.is_valid() && mesh_->is_boundary(halfedge_))
             {
-                halfedge_ = mesh_->halfedge(v);
-                if (halfedge_.is_valid() && mesh_->is_boundary(halfedge_))
-                    operator++();
+                operator++();
+                loop_helper_.set_start(halfedge_);
             }
         }
 
         //! are two circulators equal?
         bool operator==(const FaceAroundVertexCirculator& rhs) const
         {
-            assert(mesh_);
             assert(mesh_ == rhs.mesh_);
             return (is_active_ && (halfedge_ == rhs.halfedge_));
         }
@@ -832,29 +651,31 @@ public:
         //! pre-increment (rotates counter-clockwise)
         FaceAroundVertexCirculator& operator++()
         {
-            assert(mesh_ && halfedge_.is_valid());
+            assert(halfedge_.is_valid());
             do
             {
                 halfedge_ = mesh_->ccw_rotated_halfedge(halfedge_);
             } while (mesh_->is_boundary(halfedge_));
             is_active_ = true;
+            loop_helper_.loop_detection(halfedge_);
             return *this;
         }
 
         //! pre-decrement (rotate clockwise)
         FaceAroundVertexCirculator& operator--()
         {
-            assert(mesh_ && halfedge_.is_valid());
+            assert(halfedge_.is_valid());
             do
                 halfedge_ = mesh_->cw_rotated_halfedge(halfedge_);
             while (mesh_->is_boundary(halfedge_));
+            loop_helper_.cancel();
             return *this;
         }
 
         //! get the face the circulator refers to
         Face operator*() const
         {
-            assert(mesh_ && halfedge_.is_valid());
+            assert(halfedge_.is_valid());
             return mesh_->face(halfedge_);
         }
 
@@ -878,6 +699,7 @@ public:
         const SurfaceMesh* mesh_;
         Halfedge halfedge_;
         bool is_active_; // helper for C++11 range-based for-loops
+        CirculatorLoopDetector loop_helper_;
     };
 
     //! this class circulates through the vertices of a face.
@@ -887,18 +709,14 @@ public:
     {
     public:
         //! default constructor
-        VertexAroundFaceCirculator(const SurfaceMesh* m = nullptr,
-                                   Face f = Face())
-            : mesh_(m), is_active_(true)
+        VertexAroundFaceCirculator(const SurfaceMesh* m, Face f)
+            : mesh_(m), halfedge_(mesh_->halfedge(f)), is_active_(true), loop_helper_(halfedge_)
         {
-            if (mesh_)
-                halfedge_ = mesh_->halfedge(f);
         }
 
         //! are two circulators equal?
         bool operator==(const VertexAroundFaceCirculator& rhs) const
         {
-            assert(mesh_);
             assert(mesh_ == rhs.mesh_);
             return (is_active_ && (halfedge_ == rhs.halfedge_));
         }
@@ -912,24 +730,26 @@ public:
         //! pre-increment (rotates counter-clockwise)
         VertexAroundFaceCirculator& operator++()
         {
-            assert(mesh_ && halfedge_.is_valid());
+            assert(halfedge_.is_valid());
             halfedge_ = mesh_->next_halfedge(halfedge_);
             is_active_ = true;
+            loop_helper_.loop_detection(halfedge_);
             return *this;
         }
 
         //! pre-decrement (rotates clockwise)
         VertexAroundFaceCirculator& operator--()
         {
-            assert(mesh_ && halfedge_.is_valid());
+            assert(halfedge_.is_valid());
             halfedge_ = mesh_->prev_halfedge(halfedge_);
+            loop_helper_.cancel();
             return *this;
         }
 
         //! get the vertex the circulator refers to
         Vertex operator*() const
         {
-            assert(mesh_ && halfedge_.is_valid());
+            assert(halfedge_.is_valid());
             return mesh_->to_vertex(halfedge_);
         }
 
@@ -950,6 +770,7 @@ public:
         const SurfaceMesh* mesh_;
         Halfedge halfedge_;
         bool is_active_; // helper for C++11 range-based for-loops
+        CirculatorLoopDetector loop_helper_;
     };
 
     //! this class circulates through all halfedges of a face.
@@ -959,18 +780,14 @@ public:
     {
     public:
         //! default constructur
-        HalfedgeAroundFaceCirculator(const SurfaceMesh* m = nullptr,
-                                     Face f = Face())
-            : mesh_(m), is_active_(true)
+        HalfedgeAroundFaceCirculator(const SurfaceMesh* m, Face f)
+            : mesh_(m), halfedge_(mesh_->halfedge(f)), is_active_(true), loop_helper_(halfedge_)
         {
-            if (mesh_)
-                halfedge_ = mesh_->halfedge(f);
         }
 
         //! are two circulators equal?
         bool operator==(const HalfedgeAroundFaceCirculator& rhs) const
         {
-            assert(mesh_);
             assert(mesh_ == rhs.mesh_);
             return (is_active_ && (halfedge_ == rhs.halfedge_));
         }
@@ -984,17 +801,19 @@ public:
         //! pre-increment (rotates counter-clockwise)
         HalfedgeAroundFaceCirculator& operator++()
         {
-            assert(mesh_ && halfedge_.is_valid());
+            assert(halfedge_.is_valid());
             halfedge_ = mesh_->next_halfedge(halfedge_);
             is_active_ = true;
+            loop_helper_.loop_detection(halfedge_);
             return *this;
         }
 
         //! pre-decrement (rotates clockwise)
         HalfedgeAroundFaceCirculator& operator--()
         {
-            assert(mesh_ && halfedge_.is_valid());
+            assert(halfedge_.is_valid());
             halfedge_ = mesh_->prev_halfedge(halfedge_);
+            loop_helper_.cancel();
             return *this;
         }
 
@@ -1018,6 +837,7 @@ public:
         const SurfaceMesh* mesh_;
         Halfedge halfedge_;
         bool is_active_; // helper for C++11 range-based for-loops
+        CirculatorLoopDetector loop_helper_;
     };
 
     //!@}
@@ -1039,6 +859,9 @@ public:
 
     //! assign \p rhs to \p *this. performs a deep copy of all properties.
     SurfaceMesh& operator=(const SurfaceMesh& rhs);
+
+    //! move assign \p rhs to \p *this.
+    SurfaceMesh& operator=(SurfaceMesh&& rhs) = default;
 
     //! assign \p rhs to \p *this. does not copy custom properties.
     SurfaceMesh& assign(const SurfaceMesh& rhs);
@@ -1262,7 +1085,7 @@ public:
     //! returns the opposite halfedge of \p h
     inline Halfedge opposite_halfedge(Halfedge h) const
     {
-        return Halfedge((h.idx() & 1) ? h.idx() - 1 : h.idx() + 1);
+        return Halfedge(h.idx() ^ 1);
     }
 
     //! returns the halfedge that is rotated counter-clockwise around the
@@ -1651,16 +1474,25 @@ public:
         fprops_.copy(src.fprops_);
     }
 
+    void copy_fprops(const SurfaceMesh& src, Face src_f, Face target_f)
+    {
+        constexpr size_t OFFSET = 2; // connectivity, deleted
+        fprops_.copy_props(src.fprops_, src_f.idx(), target_f.idx(), OFFSET);
+    }
     void copy_vprops(const SurfaceMesh& src, Vertex src_v, Vertex target_v)
     {
         constexpr size_t OFFSET = 3; // point, connectivity, deleted
         vprops_.copy_props(src.vprops_, src_v.idx(), target_v.idx(), OFFSET);
     }
-
-    void copy_fprops(const SurfaceMesh& src, Face src_f, Face target_f)
+    void copy_eprops(const SurfaceMesh& src, Edge src_e, Edge target_e)
     {
-        constexpr size_t OFFSET = 2; // connectivity, deleted
-        fprops_.copy_props(src.fprops_, src_f.idx(), target_f.idx(), OFFSET);
+        constexpr size_t OFFSET = 1; // deleted
+        eprops_.copy_props(src.eprops_, src_e.idx(), target_e.idx(), OFFSET);
+    }
+    void copy_hprops(const SurfaceMesh& src, Halfedge src_h, Halfedge target_h)
+    {
+        constexpr size_t OFFSET = 1; // connectivity
+        hprops_.copy_props(src.hprops_, src_h.idx(), target_h.idx(), OFFSET);
     }
 
     //!@}
@@ -1893,6 +1725,12 @@ public:
     //! returns the valence of face \p f (its number of vertices)
     size_t valence(Face f) const;
 
+    //! attempts to fix non-manifold vertices by inserting a new vertex per connected patch
+    void duplicate_non_manifold_vertices();
+
+    //! removes any broken faces
+    void remove_degenerate_faces();
+
     //! deletes the vertex \p v from the mesh
     void delete_vertex(Vertex v);
 
@@ -1912,6 +1750,13 @@ public:
     //! Another advantage is that most parts of this can be parallelized with OpenMP, which would
     //! not work for delete_face.
     void delete_many_faces(const FaceProperty<bool>& faces);
+
+    void split_mesh(std::vector<SurfaceMesh>& output,
+                    FaceProperty<IndexType>& face_dist,
+                    VertexProperty<IndexType>& vertex_dist,
+                    HalfedgeProperty<IndexType>& halfedge_dist);
+
+    void join_mesh(const std::vector<SurfaceMesh*>& input);
 
     //! are there any deleted entities?
     inline bool has_garbage() const { return has_garbage_; }
@@ -1978,13 +1823,16 @@ public:
     //! \throw AllocationException in case of failure to allocate a new vertex.
     Vertex new_vertex()
     {
-        if (vertices_size() == PMP_MAX_INDEX - 1)
+        return new_vertices(1);
+    }
+    Vertex new_vertices(size_t n)
+    {
+        if (PMP_MAX_INDEX - 1 - n <= vertices_size())
         {
-            auto what =
-                "SurfaceMesh: cannot allocate vertex, max. index reached";
+            auto what = "SurfaceMesh: cannot allocate vertex, max. index reached";
             throw AllocationException(what);
         }
-        vprops_.push_back();
+        vprops_.push_back(n);
         return Vertex(vertices_size() - 1);
     }
 
@@ -1992,20 +1840,20 @@ public:
     //! \throw AllocationException in case of failure to allocate a new edge.
     Halfedge new_edge()
     {
-        if (halfedges_size() == PMP_MAX_INDEX - 1)
+        return new_edges(1);
+    }
+    Halfedge new_edges(size_t n)
+    {
+        if (PMP_MAX_INDEX - 1 - 2 * n <= halfedges_size())
         {
             auto what = "SurfaceMesh: cannot allocate edge, max. index reached";
             throw AllocationException(what);
         }
 
-        eprops_.push_back();
-        hprops_.push_back();
-        hprops_.push_back();
+        eprops_.push_back(n);
+        hprops_.push_back(2 * n);
 
-        Halfedge h0(halfedges_size() - 2);
-        Halfedge h1(halfedges_size() - 1);
-
-        return h0;
+        return halfedge(Edge(edges_size() - 1), 0);
     }
 
     //! \brief Allocate a new edge, resize edge and halfedge properties accordingly.
@@ -2016,18 +1864,8 @@ public:
     {
         assert(start != end);
 
-        if (halfedges_size() == PMP_MAX_INDEX - 1)
-        {
-            auto what = "SurfaceMesh: cannot allocate edge, max. index reached";
-            throw AllocationException(what);
-        }
-
-        eprops_.push_back();
-        hprops_.push_back();
-        hprops_.push_back();
-
-        Halfedge h0(halfedges_size() - 2);
-        Halfedge h1(halfedges_size() - 1);
+        Halfedge h0(new_edge());
+        Halfedge h1(opposite_halfedge(h0));
 
         set_vertex(h0, end);
         set_vertex(h1, start);
@@ -2039,13 +1877,16 @@ public:
     //! \throw AllocationException in case of failure to allocate a new face.
     Face new_face()
     {
-        if (faces_size() == PMP_MAX_INDEX - 1)
+        return new_faces(1);
+    }
+    Face new_faces(size_t n)
+    {
+        if (PMP_MAX_INDEX - 1 - n <= faces_size())
         {
             auto what = "SurfaceMesh: cannot allocate face, max. index reached";
             throw AllocationException(what);
         }
-
-        fprops_.push_back();
+        fprops_.push_back(n);
         return Face(faces_size() - 1);
     }
 

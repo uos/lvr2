@@ -36,7 +36,7 @@ void SurfaceParameterization::setup_boundary_constraints()
     auto points = mesh_.vertex_property<Point>("v:point");
     auto tex = mesh_.vertex_property<TexCoord>("v:tex");
 
-    SurfaceMesh::VertexIterator vit, vend = mesh_.vertices_end();
+    SurfaceMesh::VertexIterator vit = mesh_.vertices_begin(), vend = mesh_.vertices_end();
     Vertex vh;
     Halfedge hh;
     std::vector<Vertex> loop;
@@ -46,7 +46,7 @@ void SurfaceParameterization::setup_boundary_constraints()
         tex[v] = TexCoord(0.5, 0.5);
 
     // find 1st boundary vertex
-    for (vit = mesh_.vertices_begin(); vit != vend; ++vit)
+    for (; vit != vend; ++vit)
         if (mesh_.is_boundary(*vit))
             break;
 

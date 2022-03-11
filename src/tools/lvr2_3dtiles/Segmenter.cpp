@@ -33,7 +33,11 @@
  */
 
 #include "Segmenter.hpp"
+#include "B3dmWriter.hpp"
 #include "lvr2/util/Progress.hpp"
+#include "lvr2/algorithm/pmp/SurfaceNormals.h"
+
+#include <thread>
 
 namespace lvr2
 {
@@ -45,6 +49,15 @@ struct consistency_error : public std::runtime_error
                              + "expected " + std::to_string(expected)
                              + ", found " + std::to_string(found))
     {}
+};
+
+struct SegmentMetaData
+{
+    SegmentId id = INVALID_SEGMENT;
+    size_t num_faces = 0;
+    size_t num_vertices = 0;
+    pmp::BoundingBox bb;
+    std::string filename = "";
 };
 
 /**
@@ -62,81 +75,67 @@ uint64_t chunk_index(pmp::Point p, float chunk_size, Eigen::Vector3i num_chunks)
            + std::floor(p.z() / chunk_size) * num_chunks.x() * num_chunks.y();
 }
 
-void distribute_segments(pmp::SurfaceMesh& mesh,
-                         std::vector<Segment>& segments,
-                         std::vector<SegmentId>& segment_map,
-                         std::vector<bool> to_be_split,
-                         size_t to_be_split_count,
-                         std::vector<pmp::SurfaceMesh>& out_meshes,
-                         std::vector<pmp::BoundingBox>& out_bounds,
-                         std::vector<Segment>& small_segments);
-
 void segment_mesh(pmp::SurfaceMesh& mesh,
                   const pmp::BoundingBox& bb,
                   float chunk_size,
-                  std::vector<Segment>& small_segments,
-                  std::vector<pmp::SurfaceMesh>& large_segments,
-                  std::vector<pmp::BoundingBox>& large_segment_bounds)
+                  std::vector<MeshSegment>& chunks,
+                  std::vector<MeshSegment>& large_segments)
 {
     auto f_prop = mesh.add_face_property<SegmentId>("f:segment", INVALID_SEGMENT);
     auto v_prop = mesh.add_vertex_property<SegmentId>("v:segment", INVALID_SEGMENT);
+    auto h_prop = mesh.add_halfedge_property<SegmentId>("h:segment", INVALID_SEGMENT);
 
-    std::vector<Segment> segments;
+    std::vector<SegmentMetaData> segments;
 
-    std::vector<FaceHandle> queue;
-    ProgressBar progress(mesh.n_faces(), "Segmenting mesh");
+    std::vector<pmp::Vertex> queue;
+    ProgressBar progress(mesh.n_vertices(), "Segmenting mesh");
 
-    for (FaceHandle fH : mesh.faces())
+    for (auto vH : mesh.vertices())
     {
-        if (f_prop[fH] != INVALID_SEGMENT)
+        if (v_prop[vH] != INVALID_SEGMENT)
         {
             continue;
         }
 
-        Segment segment;
-        segment.id = segments.size();
+        auto [ id, segment ] = push_and_get_index(segments);
+        segment.id = id;
 
-        f_prop[fH] = segment.id;
-        queue.push_back(fH);
+        v_prop[vH] = segment.id;
+        queue.push_back(vH);
 
         while (!queue.empty())
         {
-            FaceHandle fH = queue.back();
+            pmp::Vertex vH = queue.back();
             queue.pop_back();
-            segment.num_faces++;
+            segment.num_vertices++;
+            segment.bb += mesh.position(vH);
             ++progress;
 
-            for (auto heH : mesh.halfedges(fH))
+            for (auto heH : mesh.halfedges(vH))
             {
-                auto vH = mesh.to_vertex(heH);
-                if (v_prop[vH] != segment.id)
+                auto ovH = mesh.to_vertex(heH);
+                auto& ovH_id = v_prop[ovH];
+                if (ovH_id != segment.id)
                 {
-                    v_prop[vH] = segment.id;
-                    segment.bb += mesh.position(vH);
-                    segment.num_vertices++;
+                    if (ovH_id != INVALID_SEGMENT)
+                    {
+                        throw std::runtime_error("Segmenter: found vertex with multiple segments");
+                    }
+                    ovH_id = segment.id;
+                    queue.push_back(ovH);
                 }
 
-                FaceHandle ofH = mesh.face(mesh.opposite_halfedge(heH));
-                if (!ofH.is_valid())
+                h_prop[heH] = segment.id;
+
+                FaceHandle fH = mesh.face(heH);
+                if (fH.is_valid() && f_prop[fH] != segment.id)
                 {
-                    continue;
-                }
-                SegmentId& oid = f_prop[ofH];
-                if (oid != segment.id)
-                {
-                    if (oid != INVALID_SEGMENT)
-                    {
-                        throw std::runtime_error("Segmenter: inconsistent neighborhood of faces");
-                    }
-                    oid = segment.id;
-                    queue.push_back(ofH);
+                    f_prop[fH] = segment.id;
+                    segment.num_faces++;
                 }
             }
         }
-
-        segments.push_back(segment);
     }
-    mesh.remove_vertex_property(v_prop);
     std::cout << "\r" << timestamp << "Found " << segments.size() << " initial segments" << std::endl;
 
     // consistency check
@@ -149,40 +148,49 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
     }
     if (total_faces != mesh.n_faces())
     {
-        throw consistency_error(mesh.n_faces(), total_faces, "faces");
+        throw consistency_error(mesh.n_faces(), total_faces, "SegmentMetaData faces");
     }
 
     // ==================== merge small segments within a chunk together ====================
 
     std::unordered_map<uint64_t, SegmentId> chunk_map;
-    pmp::Point size = (bb.max() - bb.min()) / chunk_size;
+    pmp::Point total_size = bb.max() - bb.min();
+    pmp::Point size = total_size / chunk_size;
     Eigen::Vector3i num_chunks(std::ceil(size.x()), std::ceil(size.y()), std::ceil(size.z()));
 
-    std::vector<SegmentId> segment_map(segments.size(), INVALID_SEGMENT);
-    std::vector<bool> to_be_split(segments.size(), false);
-    size_t to_be_split_count = 0;
+    // align the chunking to the center of the segment:
+    // modify the offset so that there is equal overlap on all sides
+    pmp::Point size_of_chunks = num_chunks.cast<float>() * chunk_size;
+    pmp::Point chunk_offset = bb.min() - (size_of_chunks - total_size) / 2.0f;
 
-    small_segments.clear();
+    std::vector<SegmentId> segment_map(segments.size(), INVALID_SEGMENT);
+    std::vector<SegmentMetaData> meta_data;
+    std::vector<bool> is_large;
 
     for (auto& segment : segments)
     {
         if (segment.bb.longest_axis_size() >= chunk_size)
         {
-            to_be_split[segment.id] = true;
-            to_be_split_count++;
+            SegmentId id = segment.id;
+            auto [ new_id, meta ] = push_and_get_index(meta_data, std::move(segment));
+            meta.id = new_id;
+            segment_map[id] = new_id;
+            is_large.push_back(true);
             continue;
         }
 
         // all other segments are merged based on the chunk that their center lies in
-        uint64_t chunk_id = chunk_index(segment.bb.center() - bb.min(), chunk_size, num_chunks);
+        uint64_t chunk_id = chunk_index(segment.bb.center() - chunk_offset, chunk_size, num_chunks);
         auto elem = chunk_map.find(chunk_id);
         if (elem == chunk_map.end())
         {
             // start a new chunk with this segment
-            auto [ new_id, new_segment ] = push_and_get_index(small_segments, std::move(segment));
-            new_segment.id = new_id;
-            segment_map[segment.id] = new_id;
+            SegmentId id = segment.id;
+            auto [ new_id, meta ] = push_and_get_index(meta_data, std::move(segment));
+            meta.id = new_id;
+            segment_map[id] = new_id;
             chunk_map[chunk_id] = new_id;
+            is_large.push_back(false);
         }
         else
         {
@@ -190,58 +198,87 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
             SegmentId new_id = elem->second;
             segment_map[segment.id] = new_id;
 
-            Segment& target = small_segments[new_id];
+            auto& target = meta_data[new_id];
             target.num_faces += segment.num_faces;
             target.num_vertices += segment.num_vertices;
             target.bb += segment.bb;
         }
     }
 
-    std::cout << timestamp << "Merged " << (segments.size() - to_be_split_count) << " small segments into "
-              << small_segments.size() << " chunks" << std::endl;
-
-    if (to_be_split_count == 0)
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < mesh.faces_size(); i++)
     {
-        #pragma omp parallel for schedule(static)
-        for (size_t i = 0; i < mesh.faces_size(); i++)
+        pmp::Face f(i);
+        if (!mesh.is_deleted(f))
         {
-            FaceHandle fH(i);
-            if (!mesh.is_deleted(fH))
-            {
-                f_prop[fH] = segment_map[f_prop[fH]];
-            }
+            f_prop[f] = segment_map[f_prop[f]];
         }
     }
-    else
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < mesh.vertices_size(); i++)
     {
-        distribute_segments(mesh, segments, segment_map, to_be_split, to_be_split_count, large_segments, large_segment_bounds, small_segments);
+        pmp::Vertex v(i);
+        if (!mesh.is_deleted(v))
+        {
+            v_prop[v] = segment_map[v_prop[v]];
+        }
+    }
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < mesh.edges_size(); i++)
+    {
+        pmp::Edge e(i);
+        if (!mesh.is_deleted(e))
+        {
+            pmp::Halfedge h0 = mesh.halfedge(e, 0);
+            pmp::Halfedge h1 = mesh.halfedge(e, 1);
+            h_prop[h0] = segment_map[h_prop[h0]];
+            h_prop[h1] = segment_map[h_prop[h1]];
+        }
     }
 
-    // consistency check
-    total_faces = 0;
-    for (const auto& segment : small_segments)
+    std::vector<pmp::SurfaceMesh> meshes(meta_data.size());
+    for (size_t i = 0; i < meta_data.size(); i++)
     {
-        total_faces += segment.num_faces;
+        meshes[i].reserve(meta_data[i].num_vertices, 0, meta_data[i].num_faces);
     }
-    if (total_faces != mesh.n_faces())
+    mesh.split_mesh(meshes, f_prop, v_prop, h_prop);
+    mesh.remove_face_property(f_prop);
+    mesh.remove_vertex_property(v_prop);
+    mesh.remove_halfedge_property(h_prop);
+
+    for (size_t i = 0; i < meta_data.size(); i++)
     {
-        std::cerr << consistency_error(mesh.n_faces(), total_faces, "faces").what() << std::endl;
+        auto& meta = meta_data[i];
+        MeshSegment& out = is_large[i] ? large_segments.emplace_back() : chunks.emplace_back();
+        out.mesh.reset(new pmp::SurfaceMesh(std::move(meshes[i])));
+        out.bb = meta.bb;
+        if (out.mesh->n_faces() != meta.num_faces)
+        {
+            std::cerr << consistency_error(meta.num_faces, out.mesh->n_faces(), "MeshSegment faces").what() << std::endl;
+        }
+        if (out.mesh->n_vertices() != meta.num_vertices)
+        {
+            std::cerr << consistency_error(meta.num_vertices, out.mesh->n_vertices(), "MeshSegment vertices").what() << std::endl;
+        }
     }
+
+    std::cout << timestamp << "Merged " << (segments.size() - large_segments.size()) << " small segments into "
+              << chunks.size() << " chunks" << std::endl;
 }
 
 bool add_face(pmp::SurfaceMesh& target,
               FaceHandle fH,
-              std::unordered_map<VertexHandle, VertexHandle>& vertex_map,
+              std::unordered_map<pmp::Vertex, pmp::Vertex>& vertex_map,
               const pmp::SurfaceMesh& src)
 {
-    static std::vector<VertexHandle> face_vertices;
+    static thread_local std::vector<pmp::Vertex> face_vertices;
     face_vertices.clear();
-    for (VertexHandle vH : src.vertices(fH))
+    for (pmp::Vertex vH : src.vertices(fH))
     {
         auto it = vertex_map.find(vH);
         if (it == vertex_map.end())
         {
-            VertexHandle new_vH = target.add_vertex(src.position(vH));
+            pmp::Vertex new_vH = target.add_vertex(src.position(vH));
             target.copy_vprops(src, vH, new_vH);
             vertex_map[vH] = new_vH;
             face_vertices.push_back(new_vH);
@@ -263,211 +300,350 @@ bool add_face(pmp::SurfaceMesh& target,
     return true;
 }
 
-void distribute_segments(pmp::SurfaceMesh& mesh,
-                         std::vector<Segment>& segments,
-                         std::vector<SegmentId>& segment_map,
-                         std::vector<bool> to_be_split,
-                         size_t to_be_split_count,
-                         std::vector<pmp::SurfaceMesh>& out_meshes,
-                         std::vector<pmp::BoundingBox>& out_bounds,
-                         std::vector<Segment>& small_segments)
+void split_mesh(MeshSegment& segment,
+                float chunk_size,
+                std::vector<MeshSegment>& out_meshes)
 {
-    out_meshes.clear();
-    out_bounds.clear();
-    std::vector<std::unordered_map<VertexHandle, VertexHandle>> vertex_maps(to_be_split_count);
+    size_t start = out_meshes.size();
+    auto& mesh = *segment.mesh;
 
-    SegmentId biggest_id = INVALID_SEGMENT;
-    pmp::FaceProperty<bool> f_biggest_delete;
+    pmp::Point size_of_segment = segment.bb.max() - segment.bb.min();
+    pmp::Point size = size_of_segment / chunk_size;
+    Eigen::Vector3i num_chunks(std::ceil(size.x()), std::ceil(size.y()), std::ceil(size.z()));
 
-    auto f_prop = mesh.get_face_property<SegmentId>("f:segment");
-    auto f_delete = mesh.add_face_property<bool>("f:flag_delete", false);
+    // align the chunking to the center of the segment:
+    // modify the offset so that there is equal overlap on all sides
+    pmp::Point size_of_chunks = num_chunks.cast<float>() * chunk_size;
+    pmp::Point chunk_offset = segment.bb.min() - (size_of_chunks - size_of_segment) / 2.0f;
 
-
-    for (auto& segment : segments)
+    auto f_chunk_id = mesh.face_property<uint64_t>("f:chunk_id");
+    std::unordered_set<uint64_t> chunk_ids;
+    #pragma omp parallel
     {
-        if (!to_be_split[segment.id])
+        std::unordered_set<uint64_t> local_chunk_ids;
+        #pragma omp for schedule(static) nowait
+        for (size_t i = 0; i < mesh.faces_size(); i++)
         {
-            continue;
-        }
+            FaceHandle fH(i);
+            if (mesh.is_deleted(fH))
+            {
+                continue;
+            }
+            pmp::Point pos(0, 0, 0);
+            size_t count = 0;
+            for (auto vH : mesh.vertices(fH))
+            {
+                pos += mesh.position(vH);
+                count++;
+            }
+            assert(count == 3);
+            pos /= count;
 
-        SegmentId new_id = out_meshes.size();
-        segment_map[segment.id] = new_id;
-        vertex_maps[new_id].reserve(segment.num_vertices);
-        out_bounds.push_back(segment.bb);
-
-        if (segment.num_faces < mesh.n_faces() / 2)
-        {
-            auto& out_mesh = out_meshes.emplace_back();
-            out_mesh.reserve(segment.num_vertices, 0, segment.num_faces);
-            out_mesh.copy_properties(mesh);
+            uint64_t chunk_id = chunk_index(pos - chunk_offset, chunk_size, num_chunks);
+            f_chunk_id[fH] = chunk_id;
+            local_chunk_ids.insert(chunk_id);
         }
-        else
+        #pragma omp critical
         {
-            // segment is too large, just copy the original the mesh
-            auto& out_mesh = out_meshes.emplace_back(mesh);
-            biggest_id = new_id;
-            f_biggest_delete = out_mesh.get_face_property<bool>("f:flag_delete");
+            chunk_ids.insert(local_chunk_ids.begin(), local_chunk_ids.end());
         }
     }
 
-    ProgressBar progress(mesh.n_faces(), "Extracting large segments");
+    size_t n_chunks = chunk_ids.size();
+
+    std::vector<uint32_t> chunk_map;
+    for (uint64_t chunk_id : chunk_ids)
+    {
+        chunk_map.push_back(chunk_id);
+        auto out_mesh = new pmp::SurfaceMesh();
+        out_mesh->copy_properties(mesh);
+        out_mesh->remove_face_property<uint64_t>("f:chunk_id");
+        out_meshes.emplace_back().mesh.reset(out_mesh);
+    }
+
     size_t fail_count = 0;
-    for (FaceHandle fH : mesh.faces())
+    #pragma omp parallel for reduction(+:fail_count)
+    for (size_t i = 0; i < chunk_map.size(); i++)
     {
-        ++progress;
-        SegmentId& id = f_prop[fH];
-        SegmentId new_id = segment_map[id];
-        if (!to_be_split[id])
+        uint64_t chunk_id = chunk_map[i];
+        std::unordered_map<pmp::Vertex, pmp::Vertex> vertex_map;
+        auto& out_mesh = *out_meshes[i].mesh;
+        for (auto fH : mesh.faces())
         {
-            id = new_id;
-            continue;
-        }
-        f_delete[fH] = true;
-        if (new_id != biggest_id)
-        {
-            if (!add_face(out_meshes[new_id], fH, vertex_maps[new_id], mesh))
+            if (f_chunk_id[fH] == chunk_id)
             {
-                fail_count++;
-            }
-            if (f_biggest_delete)
-            {
-                f_biggest_delete[fH] = true;
+                if (!add_face(out_mesh, fH, vertex_map, mesh))
+                {
+                    fail_count++;
+                }
             }
         }
     }
-    std::cout << "\r";
     if (fail_count > 0)
     {
         std::cout << fail_count << " broken faces removed" << std::endl;
     }
-    mesh.delete_many_faces(f_delete);
-    mesh.remove_face_property(f_delete);
-    mesh.garbage_collection();
 
-    if (f_biggest_delete)
-    {
-        out_meshes[biggest_id].delete_many_faces(f_biggest_delete);
-        // out_meshes[biggest_id].garbage_collection();
-    }
+    mesh.remove_face_property(f_chunk_id);
 
-    for (auto& out_mesh : out_meshes)
+    for (size_t i = start; i < out_meshes.size(); i++)
     {
-        out_mesh.remove_face_property<SegmentId>("f:segment");
-        out_mesh.remove_face_property<bool>("f:flag_delete");
+        auto& out_mesh = out_meshes[i];
+        out_mesh.bb = out_mesh.mesh->bounds();
     }
 }
 
-void partition_large_segments(pmp::SurfaceMesh& mesh,
-                              const std::vector<Segment>& segments,
-                              const std::vector<bool>& to_be_split,
-                              std::vector<Segment>& out_segments,
-                              std::vector<SegmentId>& segment_map,
-                              float chunk_size)
+// SegmentTree
+
+void SegmentTree::simplify(Cesium3DTiles::Tile& root)
 {
-    auto f_prop = mesh.get_face_property<SegmentId>("f:segment");
-    auto v_prop = mesh.get_vertex_property<SegmentId>("v:segment");
-
-    std::vector<pmp::Point> offsets(segments.size());
-    std::vector<Eigen::Vector3i> num_chunks(segments.size());
-    size_t faces_in_split_segments = 0;
-
-    for (auto& segment : segments)
+    while (!combine_if_possible())
     {
-        if (!to_be_split[segment.id])
-        {
-            continue;
-        }
+        #pragma omp parallel
+        #pragma omp single
+        simplify_if_possible(root);
 
-        pmp::Point size_of_segment = segment.bb.max() - segment.bb.min();
-        pmp::Point size = size_of_segment / chunk_size;
-        Eigen::Vector3i num(std::ceil(size.x()), std::ceil(size.y()), std::ceil(size.z()));
-
-        // align the chunking to the center of the segment:
-        // modify the offset so that there is equal overlap on all sides
-        pmp::Point size_of_chunks = num.cast<float>() * chunk_size;
-        pmp::Point offset = segment.bb.min() - (size_of_chunks - size_of_segment) / 2.0f;
-
-        offsets[segment.id] = offset;
-        num_chunks[segment.id] = num;
-        faces_in_split_segments += segment.num_faces;
+        std::cout << "layer complete" << std::endl;
+    }
+    // print();
+}
+SegmentTree::Ptr SegmentTree::octree_partition(
+    std::vector<MeshSegment>& segments, Cesium3DTiles::Tile& root,
+    const boost::filesystem::path& path, int combine_depth)
+{
+    std::vector<MeshSegment*> temp_segments(segments.size());
+    for (size_t i = 0; i < segments.size(); ++i)
+    {
+        temp_segments[i] = &segments[i];
     }
 
-    auto f_chunk_id = mesh.add_face_property<uint64_t>("f:chunk_id");
-    #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < mesh.faces_size(); i++)
-    {
-        FaceHandle fH(i);
-        if (mesh.is_deleted(fH) || !to_be_split[f_prop[fH]])
-        {
-            continue;
-        }
-        pmp::Point pos(0, 0, 0);
-        size_t count = 0;
-        for (auto vH : mesh.vertices(fH))
-        {
-            pos += mesh.position(vH);
-            count++;
-        }
-        assert(count == 3);
-        pos /= count;
+    std::string filename = (path / "t").string();
 
-        SegmentId segment_id = f_prop[fH];
-        f_chunk_id[fH] = chunk_index(pos - offsets[segment_id], chunk_size, num_chunks[segment_id]);
+    return octree_split_recursive(temp_segments.data(), temp_segments.data() + temp_segments.size(),
+                                  filename, root, combine_depth);
+}
+SegmentTree::Ptr SegmentTree::octree_split_recursive(
+    MeshSegment** start, MeshSegment** end,
+    const std::string& filename, Cesium3DTiles::Tile& tile,
+    int combine_depth)
+{
+    size_t n = end - start;
+
+    SegmentTreeNode* node = new SegmentTreeNode();
+
+    if (n <= 8)
+    {
+        tile.children.resize(n);
+        for (size_t i = 0; i < n; i++)
+        {
+            auto& segment = start[i];
+            auto& child_tile = tile.children[i];
+
+            segment->filename = filename + std::to_string(i) + ".b3dm";
+
+            convert_bounding_box(segment->bb, child_tile.boundingVolume);
+
+            child_tile.geometricError = geometric_error(segment->mesh->n_faces());
+
+            Cesium3DTiles::Content content;
+            content.uri = segment->filename;
+            child_tile.content = content;
+
+            node->add_child(SegmentTree::Ptr(new SegmentTreeLeaf(*segment)));
+        }
     }
-
-    ProgressBar progress(faces_in_split_segments, "Splitting large segments");
-
-    std::vector<std::unordered_map<uint64_t, SegmentId>> chunk_maps(segments.size());
-
-    for (auto fH : mesh.faces())
+    else
     {
-        if (!to_be_split[f_prop[fH]])
+        auto split_fn = [](int axis)
         {
-            continue;
-        }
-
-        SegmentId in_id, out_id;
-        auto& chunk_map = chunk_maps[f_prop[fH]];
-        uint64_t chunk_id = f_chunk_id[fH];
-        auto elem = chunk_map.find(chunk_id);
-        if (elem == chunk_map.end())
-        {
-            // all faces in this segment will first get the fake id in_id to avoid overlap with existing segments
-            // the real id will be assigned in the segment mapping step
-            in_id = segment_map.size();
-            out_id = out_segments.size();
-            segment_map.push_back(out_id);
-            auto& new_segment = out_segments.emplace_back();
-            new_segment.id = out_id;
-
-            chunk_map[chunk_id] = in_id;
-        }
-        else
-        {
-            in_id = elem->second;
-            out_id = segment_map[in_id];
-        }
-
-        f_prop[fH] = in_id;
-
-        auto& segment = out_segments[out_id];
-        segment.num_faces++;
-
-        for (auto vH : mesh.vertices(fH))
-        {
-            if (v_prop[vH] != in_id)
+            return [axis](const MeshSegment * a, const MeshSegment * b)
             {
-                v_prop[vH] = in_id;
-                segment.num_vertices++;
-                segment.bb += mesh.position(vH);
+                return a->bb.center()[axis] < b->bb.center()[axis];
+            };
+        };
+
+        MeshSegment** starts[9];
+        starts[0] = start;
+        starts[8] = end; // fake past-the-end start for easier indexing
+
+        for (size_t axis = 0; axis < 3; axis++)
+        {
+            size_t step = 1 << (3 - axis); // values 8 -> 4 -> 2
+            for (size_t i = 0; i < 8; i += step)
+            {
+                auto& a = starts[i];
+                auto& b = starts[i + step];
+                auto& mid = starts[i + step / 2];
+                mid = a + (b - a) / 2;
+                std::nth_element(a, mid, b, split_fn(axis));
             }
         }
 
-        ++progress;
+        tile.children.resize(8);
+        for (size_t i = 0; i < 8; i++)
+        {
+            node->add_child(octree_split_recursive(starts[i], starts[i + 1],
+                                                   filename + std::to_string(i), tile.children[i],
+                                                   combine_depth));
+        }
     }
-    std::cout << "\r";
+    node->get_segment().filename = filename + "_.b3dm";
+    convert_bounding_box(node->get_segment().bb, tile.boundingVolume);
 
-    mesh.remove_face_property(f_chunk_id);
+    if (combine_depth > 0)
+    {
+        node->skipped = node->depth > combine_depth;
+        if (node->depth == combine_depth)
+        {
+            tile.refine = Cesium3DTiles::Tile::Refine::REPLACE;
+        }
+    }
+
+    if (!node->skipped)
+    {
+        Cesium3DTiles::Content content;
+        content.uri = node->get_segment().filename;
+        tile.content = content;
+    }
+
+    return SegmentTree::Ptr(node);
+}
+
+// SegmentTreeNode
+
+void SegmentTreeNode::add_child(SegmentTree::Ptr child)
+{
+    meta_segment.bb += child->get_segment().bb;
+    depth = std::max(depth, child->depth + 1);
+    children.push_back(std::move(child));
+}
+
+bool SegmentTreeNode::combine_if_possible()
+{
+    if (simplified)
+    {
+        meta_segment.mesh->garbage_collection();
+        return true;
+    }
+    std::vector<pmp::SurfaceMesh*> meshes;
+    for (auto& child : children)
+    {
+        if (child->combine_if_possible())
+        {
+            meshes.push_back(child->get_segment().mesh.get());
+        }
+    }
+    if (meshes.size() == children.size())
+    {
+        auto mesh = new pmp::SurfaceMesh();
+        if (!skipped)
+        {
+            mesh->join_mesh(meshes);
+            if (!mesh->has_vertex_property("v:quadric"))
+            {
+                auto vquadric_ = mesh->add_vertex_property<pmp::Quadric>("v:quadric");
+                pmp::SurfaceNormals::compute_face_normals(*mesh);
+                auto fnormal_ = mesh->get_face_property<pmp::Normal>("f:normal");
+                #pragma omp parallel for schedule(static)
+                for (size_t i = 0; i < mesh->n_vertices(); i++)
+                {
+                    pmp::Vertex v(i);
+                    vquadric_[v].clear();
+                    for (auto f : mesh->faces(v))
+                    {
+                        vquadric_[v] += pmp::Quadric(fnormal_[f], mesh->position(v));
+                    }
+                }
+            }
+        }
+        meta_segment.mesh.reset(mesh);
+    }
+    // only return true after simplification is done
+    return false;
+}
+void SegmentTreeNode::simplify_if_possible(Cesium3DTiles::Tile& tile)
+{
+    if (simplified)
+    {
+        return;
+    }
+    if (meta_segment.mesh != nullptr)
+    {
+        double child_error = 0;
+        for (auto& child : tile.children)
+        {
+            child_error += child.geometricError;
+        }
+        if (skipped)
+        {
+            tile.geometricError = child_error;
+        }
+        else
+        {
+            size_t old_num_faces = meta_segment.mesh->n_faces();
+            pmp::SurfaceSimplification simplify(*meta_segment.mesh, true);
+            simplify.simplify(meta_segment.mesh->n_vertices() * 0.2);
+            size_t new_num_faces = meta_segment.mesh->n_faces();
+
+            std::cout << "Simplified " << meta_segment.filename << ": " << old_num_faces << " -> " << new_num_faces << std::endl;
+            tile.geometricError = geometric_error(child_error, old_num_faces, new_num_faces);
+        }
+
+        simplified = true;
+    }
+    else
+    {
+        for (size_t i = 0; i < children.size(); i++)
+        {
+            Cesium3DTiles::Tile& child_tile = tile.children[i];
+            #pragma omp task shared(child_tile)
+            children[i]->simplify_if_possible(child_tile);
+        }
+        #pragma omp taskwait
+    }
+}
+void SegmentTreeNode::collect_segments(std::vector<MeshSegment>& segments)
+{
+    if (!skipped)
+    {
+        segments.push_back(meta_segment);
+    }
+    for (auto& child : children)
+    {
+        child->collect_segments(segments);
+    }
+}
+void SegmentTreeNode::print(size_t depth)
+{
+    std::cout << std::string(depth, ' ') << "Node";
+    if (!meta_segment.filename.empty())
+    {
+        std::cout << " " << meta_segment.filename;
+    }
+    if (meta_segment.mesh != nullptr)
+    {
+        std::cout << "(" << meta_segment.mesh->n_faces() << ")";
+    }
+    std::cout << std::endl;
+    for (auto& child : children)
+    {
+        child->print(depth + 1);
+    }
+}
+
+// SegmentTreeLeaf
+void SegmentTreeLeaf::print(size_t depth)
+{
+    std::cout << std::string(depth, ' ') << "Leaf";
+    if (!segment.filename.empty())
+    {
+        std::cout << " " << segment.filename;
+    }
+    if (segment.mesh != nullptr)
+    {
+        std::cout << "(" << segment.mesh->n_faces() << ")";
+    }
+    std::cout << std::endl;
 }
 
 } // namespace lvr2

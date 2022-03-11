@@ -169,8 +169,12 @@ Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh,
     return nn;
 }
 
-void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh)
+void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh, bool force_recompute)
 {
+    if (!force_recompute && mesh.has_vertex_property("v:normal"))
+    {
+        return;
+    }
     auto vnormal = mesh.vertex_property<Normal>("v:normal");
     if (mesh.has_garbage())
     {
@@ -196,8 +200,12 @@ void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh)
     }
 }
 
-void SurfaceNormals::compute_face_normals(SurfaceMesh& mesh)
+void SurfaceNormals::compute_face_normals(SurfaceMesh& mesh, bool force_recompute)
 {
+    if (!force_recompute && mesh.has_face_property("f:normal"))
+    {
+        return;
+    }
     auto fnormal = mesh.face_property<Normal>("f:normal");
     if (mesh.has_garbage())
     {

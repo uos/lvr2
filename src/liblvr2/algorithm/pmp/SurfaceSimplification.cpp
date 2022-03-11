@@ -11,12 +11,12 @@
 
 namespace pmp {
 
-SurfaceSimplification::SurfaceSimplification(SurfaceMesh& mesh)
-    : mesh_(mesh), initialized_(false), queue_(nullptr)
+SurfaceSimplification::SurfaceSimplification(SurfaceMesh& mesh, bool keep_quadrics)
+    : mesh_(mesh), initialized_(false), queue_(nullptr), keep_quadrics_(keep_quadrics)
 
 {
-    if (!mesh_.is_triangle_mesh())
-        throw InvalidInputException("Input is not a pure triangle mesh!");
+    // if (!mesh_.is_triangle_mesh())
+    //     throw InvalidInputException("Input is not a pure triangle mesh!");
 
     aspect_ratio_ = 0;
     edge_length_ = 0;
@@ -25,20 +25,23 @@ SurfaceSimplification::SurfaceSimplification(SurfaceMesh& mesh)
     hausdorff_error_ = 0;
 
     // add properties
-    vquadric_ = mesh_.add_vertex_property<Quadric>("v:quadric");
+    had_quadrics_ = mesh_.has_vertex_property("v:quadric");
+    vquadric_ = mesh_.vertex_property<Quadric>("v:quadric");
+    keep_quadrics_ = keep_quadrics_ || had_quadrics_;
 
     // get properties
-    vpoint_ = mesh_.vertex_property<Point>("v:point");
+    vpoint_ = mesh_.get_vertex_property<Point>("v:point");
 
     // compute face normals
     SurfaceNormals::compute_face_normals(mesh_);
-    fnormal_ = mesh_.face_property<Normal>("f:normal");
+    fnormal_ = mesh_.get_face_property<Normal>("f:normal");
 }
 
 SurfaceSimplification::~SurfaceSimplification()
 {
     // remove added properties
-    mesh_.remove_vertex_property(vquadric_);
+    if (!keep_quadrics_)
+        mesh_.remove_vertex_property(vquadric_);
     mesh_.remove_face_property(normal_cone_);
     mesh_.remove_face_property(face_points_);
 }
@@ -97,15 +100,18 @@ void SurfaceSimplification::initialize(Scalar aspect_ratio, Scalar edge_length,
     }
 
     // initialize quadrics
-    for (auto v : mesh_.vertices())
+    if (!had_quadrics_)
     {
-        vquadric_[v].clear();
-
-        if (!mesh_.is_isolated(v))
+        for (auto v : mesh_.vertices())
         {
-            for (auto f : mesh_.faces(v))
+            vquadric_[v].clear();
+
+            if (!mesh_.is_isolated(v))
             {
-                vquadric_[v] += Quadric(fnormal_[f], vpoint_[v]);
+                for (auto f : mesh_.faces(v))
+                {
+                    vquadric_[v] += Quadric(fnormal_[f], vpoint_[v]);
+                }
             }
         }
     }
@@ -193,7 +199,7 @@ void SurfaceSimplification::simplify(unsigned int n_vertices)
 
     // clean up
     delete queue_;
-    mesh_.garbage_collection();
+    // mesh_.garbage_collection();
     mesh_.remove_vertex_property(vpriority_);
     mesh_.remove_vertex_property(heap_pos_);
     mesh_.remove_vertex_property(vtarget_);

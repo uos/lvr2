@@ -29,12 +29,12 @@ public:
     //! \brief Compute vertex normals for the whole \p mesh.
     //! \details Calls compute_vertex_normal() for each vertex and adds a new
     //! vertex property of type Normal named "v:normal".
-    static void compute_vertex_normals(SurfaceMesh& mesh);
+    static void compute_vertex_normals(SurfaceMesh& mesh, bool force_recompute = false);
 
     //! \brief Compute face normals for the whole \p mesh.
     //! \details Calls compute_face_normal() for each face and adds a new face
     //! property of type Normal named "f:normal".
-    static void compute_face_normals(SurfaceMesh& mesh);
+    static void compute_face_normals(SurfaceMesh& mesh, bool force_recompute = false);
 
     //! \brief Compute the normal vector of vertex \p v.
     static Normal compute_vertex_normal(const SurfaceMesh& mesh, Vertex v);
