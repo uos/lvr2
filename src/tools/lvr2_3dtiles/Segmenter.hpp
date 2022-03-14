@@ -72,6 +72,11 @@ public:
     bool skipped = false;
     bool simplified = false;
 
+protected:
+    double geometric_error() const
+    {
+        return depth == 0 ? 0.0 : std::pow(10, depth - 1);
+    }
 private:
     static Ptr octree_split_recursive(MeshSegment** start, MeshSegment** end,
                                       const std::string& filename, Cesium3DTiles::Tile& tile,
@@ -124,16 +129,6 @@ public:
 private:
     MeshSegment segment;
 };
-
-inline double geometric_error(size_t num_faces)
-{
-    return std::sqrt((double)num_faces) / 10000.0;
-}
-inline double geometric_error(double child_sum, size_t old_num_faces, size_t new_num_faces)
-{
-    double factor = old_num_faces / (double)new_num_faces;
-    return child_sum * factor * factor * 1000.0;
-}
 
 inline void convert_bounding_box(const pmp::BoundingBox& in, Cesium3DTiles::BoundingVolume& out)
 {

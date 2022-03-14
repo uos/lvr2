@@ -443,13 +443,15 @@ SegmentTree::Ptr SegmentTree::octree_split_recursive(
 
             convert_bounding_box(segment->bb, child_tile.boundingVolume);
 
-            child_tile.geometricError = geometric_error(segment->mesh->n_faces());
-
             Cesium3DTiles::Content content;
             content.uri = segment->filename;
             child_tile.content = content;
 
-            node->add_child(SegmentTree::Ptr(new SegmentTreeLeaf(*segment)));
+            auto child = new SegmentTreeLeaf(*segment);
+
+            child_tile.geometricError = child->geometric_error();
+
+            node->add_child(SegmentTree::Ptr(child));
         }
     }
     else
@@ -586,7 +588,7 @@ void SegmentTreeNode::simplify_if_possible(Cesium3DTiles::Tile& tile)
             size_t new_num_faces = meta_segment.mesh->n_faces();
 
             std::cout << "Simplified " << meta_segment.filename << ": " << old_num_faces << " -> " << new_num_faces << std::endl;
-            tile.geometricError = geometric_error(child_error, old_num_faces, new_num_faces);
+            tile.geometricError = geometric_error();
         }
 
         simplified = true;

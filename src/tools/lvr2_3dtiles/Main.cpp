@@ -283,6 +283,7 @@ int main(int argc, char** argv)
 
     Cesium3DTiles::Tileset tileset;
     tileset.asset.version = "1.0";
+    tileset.geometricError = 1e6; // tileset should always be rendered -> set error very high
     auto& root = tileset.root;
     root.refine = Cesium3DTiles::Tile::Refine::ADD;
     root.transform =
@@ -332,7 +333,7 @@ int main(int argc, char** argv)
 
             std::vector<MeshSegment> children;
             split_mesh(segment, chunk_size, children);
-            root_segment.add_child(SegmentTree::octree_partition(children, tile, path));
+            root_segment.add_child(SegmentTree::octree_partition(children, tile, path, 2));
 
             progress += segment.mesh->n_faces();
         }
@@ -355,13 +356,13 @@ int main(int argc, char** argv)
     root_segment.collect_segments(all_segments);
 
     std::cout << timestamp << "Writing " << all_segments.size() << " segments" << std::endl;
+    ProgressBar progress(all_segments.size(), "Writing segments");
     #pragma omp parallel for
     for (size_t i = 0; i < all_segments.size(); i++)
     {
         write_b3dm(output_dir, all_segments[i].filename, *all_segments[i].mesh, all_segments[i].bb, false);
+        ++progress;
     }
-
-    tileset.geometricError = root.geometricError;
 
     Cesium3DTilesWriter::TilesetWriter writer;
     auto result = writer.writeTileset(tileset);
