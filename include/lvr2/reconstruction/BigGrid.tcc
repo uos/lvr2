@@ -587,7 +587,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                     {
                         // Stored scan has to be a nullptr, try to 
                         // load scan from via scanio
-                        auto hdf5io = FeatureBuild<ScanProjectIO>(project->kernel, project->schema); 
+                        auto hdf5io = FeatureBuild<scanio::ScanProjectIO>(project->kernel, project->schema); 
                         std::cout << timestamp << "Overriding empty scan at scan position " << i << std::endl;
                         lidar->scans[0] = hdf5io.ScanIO::load(i, 0, 0);
 
@@ -601,7 +601,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 else
                 {
                     std::cout << timestamp << "Loading points from scan position " << i << std::endl;
-                    auto hdf5io = FeatureBuild<ScanProjectIO>(project->kernel, project->schema); 
+                    auto hdf5io = FeatureBuild<scanio::ScanProjectIO>(project->kernel, project->schema); 
                     ScanPtr scan = hdf5io.ScanIO::load(i, 0, 0);
                     if(scan)
                     {

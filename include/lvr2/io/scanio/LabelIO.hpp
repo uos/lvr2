@@ -11,6 +11,9 @@
 namespace lvr2
 {
 
+namespace scanio
+{
+
 template <typename FeatureBase>
 class LabelIO
 {
@@ -31,17 +34,20 @@ protected:
   static constexpr const char* OBJID = "Label";
 
 };
+
+} // namespace  scanio
+
 template<typename FeatureBase>
-struct FeatureConstruct<LabelIO, FeatureBase> {
+struct FeatureConstruct<scanio::LabelIO, FeatureBase> {
     
     // DEPS
-    using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase >::type;
-    using dep2 = typename FeatureConstruct<FullWaveformIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<scanio::ArrayIO, FeatureBase >::type;
+    using dep2 = typename FeatureConstruct<scanio::FullWaveformIO, FeatureBase>::type;
     using deps = typename dep1::template Merge<dep2>;
  
 
     // add actual feature
-    using type = typename deps::template add_features<LabelIO>::type;
+    using type = typename deps::template add_features<scanio::LabelIO>::type;
      
 };
 

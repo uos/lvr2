@@ -1,6 +1,9 @@
 namespace lvr2 
 {
 
+namespace scanio
+{
+
 template<typename FeatureBase>
 void PointCloudIO<FeatureBase>::save(
     const std::string& group, 
@@ -214,5 +217,7 @@ PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
 {
     return load(group, container, reduction);
 }
+
+} // namespace scanio
 
 } // namespace lvr2 

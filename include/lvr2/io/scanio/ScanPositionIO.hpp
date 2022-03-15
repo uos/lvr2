@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_DESCRIPTIONS_SCANPOSITIONIO_HPP
-#define LVR2_IO_DESCRIPTIONS_SCANPOSITIONIO_HPP
+#ifndef SCANPOSITIONIO
+#define SCANPOSITIONIO
 
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
@@ -18,6 +18,9 @@
 // #include "LIDARIO.hpp"
 
 namespace lvr2
+{
+
+namespace scanio
 {
 
 /**
@@ -93,22 +96,24 @@ class ScanPositionIO
     static constexpr const char* OBJID = "ScanPosition";
 };
 
+} // namespace scanio
+
 template <typename FeatureBase>
-struct FeatureConstruct< ScanPositionIO, FeatureBase>
+struct FeatureConstruct<lvr2::scanio::ScanPositionIO, FeatureBase>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<LIDARIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<CameraIO, FeatureBase>::type;
-    using dep3 = typename FeatureConstruct<HyperspectralCameraIO, FeatureBase>::type;
-    using dep4 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::scanio::LIDARIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::CameraIO, FeatureBase>::type;
+    using dep3 = typename FeatureConstruct<lvr2::scanio::HyperspectralCameraIO, FeatureBase>::type;
+    using dep4 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
     using deps = typename dep1::template Merge<dep2>::template Merge<dep3>::template Merge<dep4>;
 
     // add the feature itself
-    using type = typename deps::template add_features<ScanPositionIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::ScanPositionIO>::type;
 };
 
 } // namespace lvr2
 
 #include "ScanPositionIO.tcc"
 
-#endif // LVR2_IO_DESCRIPTIONS_SCANPOSITIONIO_HPP
+#endif // SCANPOSITIONIO

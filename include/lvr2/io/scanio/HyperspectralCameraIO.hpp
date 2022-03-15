@@ -12,6 +12,9 @@
 namespace lvr2
 {
 
+namespace scanio
+{
+
 template <typename FeatureBase>
 class HyperspectralCameraIO
 {
@@ -41,6 +44,8 @@ protected:
     static constexpr const char *OBJID = "HyperspectralCamera";
 };
 
+} // namespace scanio
+
 /**
  *
  * @brief FeatureConstruct Specialization for HyperspectralCameraIO
@@ -49,15 +54,15 @@ protected:
  *
  */
 template <typename FeatureBase>
-struct FeatureConstruct<HyperspectralCameraIO, FeatureBase>
+struct FeatureConstruct<lvr2::scanio::HyperspectralCameraIO, FeatureBase>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<HyperspectralPanoramaIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::HyperspectralPanoramaIO, FeatureBase>::type;
     using deps = typename dep1::template Merge<dep2>;
     
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<HyperspectralCameraIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::HyperspectralCameraIO>::type;
 };
 
 } // namespace lvr2

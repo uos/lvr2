@@ -1,6 +1,9 @@
 
 namespace lvr2 {
 
+namespace scanio
+{
+
 template<typename FeatureBase>
 void ImageIO<FeatureBase>::save(std::string groupName,
     std::string datasetName,
@@ -30,5 +33,7 @@ boost::optional<cv::Mat> ImageIO<FeatureBase>::loadImage(std::string groupName,
 {
     return load(groupName, datasetName);
 }
+
+} // namespace scanio
 
 } // namespace lvr2

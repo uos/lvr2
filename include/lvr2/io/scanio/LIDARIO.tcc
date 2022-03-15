@@ -1,5 +1,8 @@
 namespace lvr2 {
 
+namespace scanio
+{
+
 template <typename FeatureBase>
 void LIDARIO<FeatureBase>::save(
     const size_t& scanPosNo,
@@ -98,5 +101,6 @@ LIDARPtr LIDARIO<FeatureBase>::load(
     return ret;
 }
 
+} // namespace scanio
 
 } // namespace lvr2

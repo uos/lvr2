@@ -15,6 +15,9 @@
 namespace lvr2 
 {
 
+namespace scanio
+{
+
 template <typename FeatureBase>
 class FullWaveformIO
 {
@@ -34,6 +37,8 @@ protected:
   static constexpr const char *OBJID = "FullWaveform";
 };
 
+} // namespace scanio
+
 /**
  *
  * @brief FeatureConstruct Specialization for WaveformIO
@@ -43,14 +48,14 @@ protected:
  *
  */
 template <typename FeatureBase>
-struct FeatureConstruct<FullWaveformIO, FeatureBase>
+struct FeatureConstruct<lvr2::scanio::FullWaveformIO, FeatureBase>
 {
 
     // DEPS
     using deps = typename FeatureConstruct<MatrixIO, FeatureBase>::type;
 
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<FullWaveformIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::FullWaveformIO>::type;
 };
 
 } // namespace lvr2

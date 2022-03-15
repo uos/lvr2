@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_scanio_SCANPROJECTIO_HPP
-#define LVR2_IO_scanio_SCANPROJECTIO_HPP
+#ifndef SCANPROJECTIO
+#define SCANPROJECTIO
 
 #include "lvr2/io/scanio/yaml/ScanProject.hpp"
 #include "lvr2/types/ScanTypes.hpp"
@@ -12,6 +12,9 @@
 #include "ScanPositionIO.hpp"
 
 namespace lvr2
+{
+
+namespace scanio
 {
 
 /**
@@ -69,22 +72,24 @@ class ScanProjectIO
     static constexpr const char* OBJID = "ScanProject";
 };
 
+} // namespace scanio
+
 template <typename FeatureBase>
-struct FeatureConstruct<ScanProjectIO, FeatureBase>
+struct FeatureConstruct<lvr2::scanio::ScanProjectIO, FeatureBase>
 {
     // DEPS
     //
-    using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<ScanPositionIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::ScanPositionIO, FeatureBase>::type;
     using deps = typename dep1::template Merge<dep2>;
 
 
     // add the feature itself
-    using type = typename deps::template add_features<ScanProjectIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::ScanProjectIO>::type;
 };
 
 } // namespace lvr2
 
 #include "ScanProjectIO.tcc"
 
-#endif // LVR2_IO_scanio_SCANPROJECTIO_HPP
+#endif // SCANPROJECTIO

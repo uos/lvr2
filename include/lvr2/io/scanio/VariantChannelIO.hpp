@@ -1,6 +1,6 @@
 #pragma once
-#ifndef LVR2_IO_scanio_VCHANNELIO_HPP
-#define LVR2_IO_scanio_VCHANNELIO_HPP
+#ifndef VARIANTCHANNELIO
+#define VARIANTCHANNELIO
 
 #include "lvr2/io/scanio/FeatureBase.hpp"
 #include "lvr2/types/VariantChannel.hpp"
@@ -10,8 +10,11 @@
 #include "lvr2/io/scanio/ChannelIO.hpp"
 
 
-namespace lvr2 {
+namespace lvr2 
+{
 
+namespace scanio
+{
 
 /**
  * @class VariantChannelIO 
@@ -71,17 +74,19 @@ protected:
     ChannelIO<FeatureBase>* m_channel_io = static_cast<ChannelIO<FeatureBase>*>(m_featureBase);
 };
 
+} // namespace scanio
+
 /**
  * Define you dependencies here:
  */
 template<typename FeatureBase>
-struct FeatureConstruct<VariantChannelIO, FeatureBase> {
+struct FeatureConstruct<lvr2::scanio::VariantChannelIO, FeatureBase> {
     
     // DEPS
-    using deps = typename FeatureConstruct<ChannelIO, FeatureBase>::type;
+    using deps = typename FeatureConstruct<lvr2::scanio::ChannelIO, FeatureBase>::type;
 
     // add actual feature
-    using type = typename deps::template add_features<VariantChannelIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::VariantChannelIO>::type;
 };
 
 
@@ -89,4 +94,4 @@ struct FeatureConstruct<VariantChannelIO, FeatureBase> {
 
 #include "VariantChannelIO.tcc"
 
-#endif // LVR2_IO_scanio_VCHANNELIO_HPP
+#endif // VARIANTCHANNELIO

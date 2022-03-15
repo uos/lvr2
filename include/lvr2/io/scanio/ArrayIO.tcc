@@ -1,6 +1,9 @@
 namespace lvr2 
 {
 
+namespace scanio
+{
+
 template<typename FeatureBase>
 ucharArr ArrayIO<FeatureBase>::loadUCharArray(const std::string &group, const std::string &container, std::vector<size_t> &dims) const
 {
@@ -47,4 +50,7 @@ void ArrayIO<FeatureBase>::saveIntArray(const std::string& groupName, const std:
 {
     m_featureBase->m_kernel->saveIntArray(groupName, datasetName, dimensions, data);
 }
+
+} // namespace scanio
+
 } // namespace lvr2

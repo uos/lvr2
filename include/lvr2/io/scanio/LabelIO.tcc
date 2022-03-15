@@ -2,6 +2,9 @@
 namespace lvr2
 {
 
+namespace scanio
+{
+
 template <typename Derived>
 void LabelIO<Derived>::saveLabels(
     std::string& groupName,
@@ -148,5 +151,7 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group) const
     return ret;
 
 }
+
+} // namespace scanio
 
 } // namespace lvr2

@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_DESCRIPTIONS_CAMERAIO_HPP
-#define LVR2_IO_DESCRIPTIONS_CAMERAIO_HPP
+#ifndef CAMERAIO
+#define CAMERAIO
 
 #include "MetaIO.hpp"
 #include "CameraImageIO.hpp"
@@ -11,6 +11,9 @@
 
 
 namespace lvr2
+{
+
+namespace scanio
 {
 
 template <typename FeatureBase>
@@ -51,6 +54,8 @@ protected:
     static constexpr const char* OBJID = "Camera";
 };
 
+} // namespace scanio
+
 /**
  *
  * @brief FeatureConstruct Specialization for hdf5features::ScanCameraIO
@@ -59,20 +64,20 @@ protected:
  *
  */
 template <typename FeatureBase>
-struct FeatureConstruct<CameraIO, FeatureBase>
+struct FeatureConstruct<lvr2::scanio::CameraIO, FeatureBase>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<CameraImageIO, FeatureBase>::type;
-    using dep3 = typename FeatureConstruct<CameraImageGroupIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::CameraImageIO, FeatureBase>::type;
+    using dep3 = typename FeatureConstruct<lvr2::scanio::CameraImageGroupIO, FeatureBase>::type;
     using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
 
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<CameraIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::CameraIO>::type;
 };
 
 } // namespace lvr2
 
 #include "CameraIO.tcc"
 
-#endif // LVR2_IO_DESCRIPTIONS_CAMERAIO_HPP
+#endif // CAMERAIO

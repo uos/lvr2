@@ -2001,7 +2001,10 @@ void LVRMainWindow::unloadPointCloudData()
     }
 }
 
-void LVRMainWindow::loadScanProject(ScanProjectPtr scanProject, QString filename, std::shared_ptr<FeatureBuild<ScanProjectIO>> io, ProjectScale scale)
+void LVRMainWindow::loadScanProject(
+    ScanProjectPtr scanProject, QString filename, 
+    std::shared_ptr<FeatureBuild<scanio::ScanProjectIO>> io, 
+    ProjectScale scale)
 {
     this->checkBoxShowFocal->setChecked(false);
 
@@ -2065,7 +2068,7 @@ void LVRMainWindow::changeReductionAlgorithm()
             int scan_nr = modelItem->data(0, Qt::UserRole).toInt();
             
             //load scan with IO from ScanProjectItem
-            std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+            std::shared_ptr<FeatureBuild<scanio::ScanProjectIO>> io = projItem->getIO();
             if (io == nullptr)
             {
                 std::cerr << "No IOPtr" << std::endl;
@@ -2117,7 +2120,7 @@ void LVRMainWindow::changeReductionAlgorithm()
             int scanpos_nr = posItem->data(0, Qt::UserRole).toInt();
             
             //load ScanPosition from IO of ScanProjectItem
-            std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+            std::shared_ptr<FeatureBuild<scanio::ScanProjectIO>> io = projItem->getIO();
             if (io == nullptr)
             {
                 std::cerr << "No IOPtr" << std::endl;
@@ -2163,7 +2166,7 @@ void LVRMainWindow::changeReductionAlgorithm()
 
             ScanProjectPtr scanProj;
 
-            std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+            std::shared_ptr<FeatureBuild<scanio::ScanProjectIO>> io = projItem->getIO();
             if (io == nullptr)
             {
                 std::cerr << "No IOPtr" << std::endl;
@@ -3783,7 +3786,7 @@ void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
         cv::Mat img;
 
         //laod image with IO from the ScanProjectItem
-        std::shared_ptr<FeatureBuild<ScanProjectIO>> io = projItem->getIO();
+        std::shared_ptr<FeatureBuild<scanio::ScanProjectIO>> io = projItem->getIO();
         if (io == nullptr)
         {
             std::cerr << "No IOPtr" << std::endl;
@@ -4022,7 +4025,7 @@ void LVRMainWindow::openScanProject()
     ProjectScale scale = dialog->projectScale();
     
     ScanProjectPtr scanProject;
-    std::shared_ptr<FeatureBuild<ScanProjectIO>> io;
+    std::shared_ptr<FeatureBuild<scanio::ScanProjectIO>> io;
     switch(projectType)
     {
         case LVRScanProjectOpenDialog::DIR:
@@ -4030,7 +4033,7 @@ void LVRMainWindow::openScanProject()
             DirectoryKernelPtr dirKernel = std::dynamic_pointer_cast<DirectoryKernel>(kernel); 
             DirectorySchemaPtr dirSchema = std::dynamic_pointer_cast<DirectorySchema>(schema);
             auto dirIOPtr = std::shared_ptr<lvr2::scanio::DirectoryIO>(new lvr2::scanio::DirectoryIO(dirKernel, dirSchema));
-            io = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(dirIOPtr);
+            io = std::dynamic_pointer_cast<FeatureBuild<scanio::ScanProjectIO>>(dirIOPtr);
             scanProject = io->loadScanProject(reduction);
             break;
         }
@@ -4040,7 +4043,7 @@ void LVRMainWindow::openScanProject()
             HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel); 
             HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
             auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
-            io = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
+            io = std::dynamic_pointer_cast<FeatureBuild<scanio::ScanProjectIO>>(hdf5IOPtr);
             scanProject = io->loadScanProject(reduction);
             break;
         }

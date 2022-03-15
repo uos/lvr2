@@ -1,6 +1,9 @@
 
 namespace lvr2 {
 
+namespace scanio
+{
+
 template <typename Derived>
 void HyperspectralPanoramaChannelIO<Derived>::save(
     const size_t& scanPosNo, 
@@ -90,5 +93,7 @@ boost::optional<YAML::Node> HyperspectralPanoramaChannelIO<Derived>::loadMeta(
     Description d = Dgen->hyperspectralPanoramaChannel(scanPosNo, hCamNo, hPanoNo, channelId);
     return m_metaIO->load(d);
 }
+
+} // namespace scanio
 
 } // namespace lvr2

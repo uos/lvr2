@@ -1,6 +1,9 @@
 namespace lvr2
 {
 
+namespace scanio
+{
+
 template <typename  FeatureBase>
 void ScanPositionIO< FeatureBase>::save(
     const size_t& scanPosNo, 
@@ -204,5 +207,7 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
 {
     return load(scanPosNo, reduction);
 }
+
+} // namespace scanio
 
 } // namespace lvr2

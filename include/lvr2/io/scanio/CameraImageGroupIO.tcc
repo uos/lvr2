@@ -1,6 +1,9 @@
 namespace lvr2
 {
 
+namespace scanio
+{
+
 template <typename FeatureBase>
 void CameraImageGroupIO<FeatureBase>::save(
     const size_t& scanPosNo,
@@ -180,5 +183,7 @@ CameraImageGroupPtr CameraImageGroupIO<FeatureBase>::loadCameraImage(
 {
     return load(scanPosNr, camNr, imgNr);
 }
+
+} // namespace scanio
 
 } // namespace lvr2

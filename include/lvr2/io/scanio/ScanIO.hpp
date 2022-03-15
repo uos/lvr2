@@ -18,6 +18,9 @@
 namespace lvr2
 {
 
+namespace scanio
+{
+
 template <typename FeatureBase>
 class ScanIO
 {
@@ -81,6 +84,8 @@ class ScanIO
     static constexpr const char* OBJID = "Scan";
 };
 
+} // namespace scanio
+
 /**
  *
  * @brief FeatureConstruct Specialization for ScanIO
@@ -89,15 +94,15 @@ class ScanIO
  *
  */
 template <typename FeatureBase>
-struct FeatureConstruct<ScanIO, FeatureBase >
+struct FeatureConstruct<lvr2::scanio::ScanIO, FeatureBase >
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<PointCloudIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::PointCloudIO, FeatureBase>::type;
     using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<ScanIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::ScanIO>::type;
 };
 
 } // namespace lvr2

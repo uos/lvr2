@@ -2,7 +2,8 @@
 namespace lvr2
 {
 
-
+namespace scanio
+{
 template <typename Derived>
 void FullWaveformIO<Derived>::saveFullWaveform(
     const size_t& scanPosNo,
@@ -225,6 +226,6 @@ WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, c
   
 }
 
-
+} // namespace scanio
 
 } // namespace lvr2

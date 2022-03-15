@@ -2,6 +2,9 @@
 namespace lvr2
 {
 
+namespace scanio
+{
+
 template <typename FeatureBase>
 void HyperspectralCameraIO<FeatureBase>::save(
     const size_t& scanPosNo,
@@ -98,5 +101,7 @@ boost::optional<YAML::Node> HyperspectralCameraIO<FeatureBase>::loadMeta(
     Description d = m_featureBase->m_description->hyperspectralCamera(scanPosNo, hCamNo);
     return m_metaIO->load(d);
 }
+
+} // namespace scanio
 
 } // namespace lvr2

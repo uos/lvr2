@@ -1,6 +1,9 @@
 
 namespace lvr2 {
 
+namespace scanio
+{
+
 template <typename FeatureBase>
 boost::optional<YAML::Node> MetaIO<FeatureBase>::load(
     Description d) const
@@ -38,5 +41,7 @@ void MetaIO<FeatureBase>::save(
 {
 
 }
+
+} // namespace scanio
 
 } // namespace lvr2

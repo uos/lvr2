@@ -12,7 +12,11 @@
 #include "ChannelIO.hpp"
 #include "VariantChannelIO.hpp"
 
-namespace lvr2 {
+namespace lvr2 
+{
+
+namespace scanio
+{
 
 /**
  * @class PointCloudIO 
@@ -130,14 +134,16 @@ protected:
     static constexpr const char* OBJID = "PointBuffer";
 };
 
+} // namespace scanio
+
 template <typename FeatureBase>
-struct FeatureConstruct<PointCloudIO, FeatureBase >
+struct FeatureConstruct<lvr2::scanio::PointCloudIO, FeatureBase >
 {
     // DEPS
-    using deps = typename FeatureConstruct<VariantChannelIO, FeatureBase >::type;
+    using deps = typename FeatureConstruct<lvr2::scanio::VariantChannelIO, FeatureBase >::type;
 
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<PointCloudIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::PointCloudIO>::type;
 };
 
 } // namespace lvr2 

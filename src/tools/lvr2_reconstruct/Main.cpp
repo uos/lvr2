@@ -139,7 +139,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
 
         auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
-        std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
+        std::shared_ptr<FeatureBuild<scanio::ScanProjectIO>> scanProjectIo = std::dynamic_pointer_cast<FeatureBuild<scanio::ScanProjectIO>>(hdf5IOPtr);
 
         // load scan from hdf5 file
         auto lidar = hdf5IO.LIDARIO::load(options.getScanPositionIndex(), 0);

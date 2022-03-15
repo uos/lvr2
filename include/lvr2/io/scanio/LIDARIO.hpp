@@ -1,11 +1,14 @@
-#ifndef LVR2_IO_DESCRIPTIONS_LIDARIO_HPP
-#define LVR2_IO_DESCRIPTIONS_LIDARIO_HPP
+#ifndef LIDARIO_HPP
+#define LIDARIO_HPP
 
 #include "MetaIO.hpp"
 #include "ScanIO.hpp"
 #include "lvr2/io/scanio/yaml/LIDAR.hpp"
 
 namespace lvr2
+{
+
+namespace scanio
 {
 
 template <typename FeatureBase>
@@ -29,6 +32,8 @@ protected:
     ScanIO<FeatureBase>* m_scanIO = static_cast<ScanIO<FeatureBase>*>(m_featureBase);
 };
 
+} // namespace scanio
+
 /**
  *
  * @brief FeatureConstruct Specialization for LIDARIO
@@ -37,19 +42,19 @@ protected:
  *
  */
 template <typename FeatureBase>
-struct FeatureConstruct<LIDARIO, FeatureBase >
+struct FeatureConstruct<lvr2::scanio::LIDARIO, FeatureBase >
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<ScanIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::scanio::ScanIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
     using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<LIDARIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::LIDARIO>::type;
 };
 
-}
+} // namespace lvr2
 
 #include "LIDARIO.tcc"
 
-#endif // LVR2_IO_DESCRIPTIONS_LIDARIO_HPP
+#endif // LIDARIO

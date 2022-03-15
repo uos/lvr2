@@ -3,6 +3,9 @@
 namespace lvr2 
 {
 
+namespace scanio
+{
+
 template<typename FeatureBase>
 template<typename T> 
 ChannelOptional<T> ChannelIO<FeatureBase>::load(
@@ -249,5 +252,7 @@ void ChannelIO<FeatureBase>::saveFundamental(
         throw std::runtime_error(ss.str());  
     }
 }
+
+} // namespace scanio
 
 } // namespace lvr2

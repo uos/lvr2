@@ -5,6 +5,9 @@
 
 namespace lvr2 {
 
+namespace scanio
+{
+
 template <typename FeatureBase>
 class MetaIO
 {
@@ -19,6 +22,8 @@ public:
 protected:
     FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 };
+
+} // namespace scanio
 
 } // namespace lvr2
 

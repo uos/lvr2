@@ -2,6 +2,9 @@
 namespace lvr2 
 {
 
+namespace scanio
+{
+
 // Anker
 template<typename Derived, typename VChannelT, size_t I,
     typename std::enable_if<I == 0, void>::type* = nullptr>
@@ -231,5 +234,7 @@ boost::optional<VariantChannelT> VariantChannelIO<Derived>::loadVariantChannel(
 {
     return load<VariantChannelT>(groupName, datasetName);
 }
+
+} // namespace scanio
 
 } // namespace lvr2 

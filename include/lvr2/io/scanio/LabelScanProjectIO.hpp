@@ -15,6 +15,9 @@
 namespace lvr2
 {
 
+namespace scanio
+{
+
 template <typename FeatureBase>
 class LabelScanProjectIO
 {
@@ -36,17 +39,19 @@ class LabelScanProjectIO
     // static constexpr const char* OBJID = "ScanProject";
 };
 
+} // namespace scanio
+
 template <typename FeatureBase>
-struct FeatureConstruct<LabelScanProjectIO, FeatureBase>
+struct FeatureConstruct<lvr2::scanio::LabelScanProjectIO, FeatureBase>
 {
 
     // DEPS
-    using dep1 = typename FeatureConstruct<ScanProjectIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<LabelIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::scanio::ScanProjectIO, FeatureBase>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::LabelIO, FeatureBase>::type;
     using deps = typename dep1::template Merge<dep2>;
 
     // add the feature itself
-    using type = typename deps::template add_features<LabelScanProjectIO>::type;
+    using type = typename deps::template add_features<scanio::LabelScanProjectIO>::type;
 };
 
 } // namespace lvr2

@@ -1,6 +1,9 @@
 namespace lvr2
 {
 
+namespace scanio
+{
+
 template<typename FeatureBase>
 void ScanProjectIO<FeatureBase>::save(
     ScanProjectPtr scanProject) const
@@ -166,5 +169,7 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject(ReductionAlgorithmPtr
 
     return ret;
 }
+
+} // namespace scanio
 
 } // namespace lvr2

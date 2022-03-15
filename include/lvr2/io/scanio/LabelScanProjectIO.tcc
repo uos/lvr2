@@ -1,6 +1,8 @@
 namespace lvr2
 {
 
+namespace scanio
+{
 template <typename FeatureBase>
 void LabelScanProjectIO<FeatureBase>::saveLabelScanProject(const LabeledScanProjectEditMarkPtr& labelScanProjectPtr)
 {
@@ -47,5 +49,7 @@ ScanProjectPtr LabelScanProjectIO<FeatureBase>::loadScanProject()
 {
     return m_scanProjectIO->loadScanProject();
 }
+
+} // scanio
 
 } // namespace lvr2
