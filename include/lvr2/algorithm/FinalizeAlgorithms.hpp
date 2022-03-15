@@ -32,25 +32,23 @@
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  */
 
-#ifndef LVR2_ALGORITHM_FINALIZEALGORITHM_H_
-#define LVR2_ALGORITHM_FINALIZEALGORITHM_H_
+#ifndef FINALIZEALGORITHMS
+#define FINALIZEALGORITHMS
 
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/optional.hpp>
 
-
-#include "lvr2/types/ColorTypes.hpp"
-#include "lvr2/io/MeshBuffer.hpp"
-#include "lvr2/geometry/Normal.hpp"
 #include "lvr2/attrmaps/AttrMaps.hpp"
+#include "lvr2/algorithm/ClusterPainter.hpp"
 #include "lvr2/algorithm/ColorAlgorithms.hpp"
+#include "lvr2/geometry/Normal.hpp"
 #include "lvr2/util/ClusterBiMap.hpp"
 #include "lvr2/texture/Texture.hpp"
 #include "lvr2/texture/Material.hpp"
-#include "lvr2/algorithm/ClusterPainter.hpp"
-
-#include "lvr2/io/baseio/ObjIO.hpp"
+#include "lvr2/types/ColorTypes.hpp"
+#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/io/fileio/ObjIO.hpp"
 
 namespace lvr2
 {
@@ -173,4 +171,4 @@ private:
 
 #include "lvr2/algorithm/FinalizeAlgorithms.tcc"
 
-#endif /* LVR2_ALGORITHM_FINALIZEALGORITHM_H_ */
+#endif // FINALIZEALGORITHMS

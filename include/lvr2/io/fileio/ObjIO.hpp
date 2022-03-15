@@ -25,40 +25,68 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * DatIO.hpp
+/*
+ * ObjIO.hpp
  *
- *  Created on: Aug 8, 2013
- *      Author: twiemann
+ *  @date 07.11.2011
+ *  @author Florian Otte (fotte@uos.de)
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
+ *  @author Denis Meyer (denmeyer@uos.de)
  */
 
-#ifndef DATIO_HPP_
-#define DATIO_HPP_
-
-#include "lvr2/io/baseio/BaseIO.hpp"
-#include "lvr2/io/Model.hpp"
-
-#include <string>
-using std::string;
+#ifndef LVR2_OBJIO_HPP_
+#define LVR2_OBJIO_HPP_
+#include "lvr2/io/fileio/FileIOBase.hpp"
+#include <fstream>
+#include <set>
+#include <map>
 
 namespace lvr2
 {
 
 /**
- * @brief IO class for binary laser scans
+ * @brief A basic implementation of the obj file format.
  */
-class DatIO : public BaseIO
+class ObjIO : public FileIOBase
 {
 public:
-	DatIO();
-	virtual ~DatIO();
 
-	virtual ModelPtr read(string filename, int n, int reduction = 0);
-	virtual ModelPtr read(string filename);
-	virtual void save(ModelPtr model, string filename);
-	virtual void save(string filename);
+    /**
+     * @brief Constructor.
+     **/
+    ObjIO()
+    {
+        m_model.reset();
+    }
+
+    ~ObjIO() { };
+
+    /**
+     * \brief   Parse the given file and load supported elements.
+     *
+     * @param filename  The file to read.
+     */
+    ModelPtr read( std::string filename );
+
+    /**
+     * @brief     Writes the mesh to an obj file.
+     *
+     * @param  model     The model containing all mesh data
+     * @param  filename  The file name to use
+     */
+    void save( std::string filename );
+
+
+private:
+
+    void parseMtlFile(std::map<string, int>& matNames,
+            std::vector<Material>& materials,
+            std::vector<Texture>& textures,
+            std::string mtlname);
+
 };
 
 } // namespace lvr2
 
-#endif /* DATIO_HPP_ */
+#endif /* OBJIO_H_ */

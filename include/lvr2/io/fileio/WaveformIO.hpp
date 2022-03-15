@@ -25,46 +25,51 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * LasIO.h
+ /**
  *
- *  @date 03.01.2012
- *  @author Thomas Wiemann
- */
+ * @file      WaveformIO.hpp
+ * @brief     Read and write pointclouds and Wavform data from .lwf files.
+ * @details     Read and write pointclouds and Wavform data from .lwf files.
+ * 
+ * @author    Thomas Wiemann (twiemann), twiemann@uos.de, Universität Osnabrück
+ * @author    Michel Loepmeier (mloepmei), mloepmei@uos.de, Universität Osnabrück
+ * @version   111001
+ * @date      Created:       2020-06-23
+ * @date      Last modified: 2011-10-01 19:49:24
+ *
+ **/
 
-#ifndef LASIO_H_
-#define LASIO_H_
+#ifndef WAVEFORMIO_H_
+#define WAVEFORMIO_H_
 
-#include "lvr2/io/baseio/BaseIO.hpp"
+#include "lvr2/io/fileio/FileIOBase.hpp"
 
 namespace lvr2
 {
 
 /**
- * @brief   Interface class to read laser scan data in .las-Format
+ * @brief A import / export class for point cloud and waveform data.
+ * LWF fies supported.
  */
-class LasIO : public BaseIO
+class WaveformIO : public FileIOBase
 {
-public:
-    LasIO() {};
-    virtual ~LasIO() {};
+    public:
 
-    /**
-     * @brief Parse the given file and load supported elements.
-     *
-     * @param filename  The file to read.
-     */
-    virtual ModelPtr read(string filename );
+        /**
+         * \brief Default constructor.
+         **/
+        WaveformIO() {
+            setlocale (LC_ALL, "C");
+            m_model.reset();
+	}
+	~WaveformIO() {};
+        virtual ModelPtr read( std::string filename);
 
-    /**
-     * @brief Save the loaded elements to the given file.
-     *
-     * @param filename Filename of the file to write.
-     */
-    virtual void save( string filename );
+        virtual void save( string filename);
 
 };
 
-} /* namespace lvr2 */
 
-#endif /* LASIO_H_ */
+} // namespace lvr2
+
+#endif /* WAVEFORMIO_H_ */

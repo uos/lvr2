@@ -38,19 +38,19 @@ set(LVR2_SOURCES
     display/MeshCluster.cpp
     geometry/pmp/SurfaceMesh.cpp
     geometry/pmp/SurfaceMeshIO.cpp
-    io/baseio/AsciiIO.cpp
-    io/baseio/BaseIO.cpp
-    io/baseio/ObjIO.cpp
-    io/baseio/DatIO.cpp
-    io/baseio/LasIO.cpp
-    io/baseio/GeoTIFFIO.cpp
+    io/fileio/AsciiIO.cpp
+    io/fileio/FileIOBase.cpp
+    io/fileio/ObjIO.cpp
+    io/fileio/DatIO.cpp
+    io/fileio/LasIO.cpp
+    io/fileio/GeoTIFFIO.cpp
 #    io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp
-    io/baseio/PPMIO.cpp
-    io/baseio/PLYIO.cpp
-    io/baseio/STLIO.cpp
-    io/baseio/UosIO.cpp
-    io/baseio/PCDIO.cpp
+    io/fileio/PPMIO.cpp
+    io/fileio/PLYIO.cpp
+    io/fileio/STLIO.cpp
+    io/fileio/UosIO.cpp
+    io/fileio/PCDIO.cpp
     io/MeshBuffer.cpp
     io/LineReader.cpp
     # io/HDF5IO.cpp

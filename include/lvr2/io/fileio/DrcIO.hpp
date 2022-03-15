@@ -27,15 +27,15 @@
  *
  **/
 
-#ifndef DRCIO_HPP
-#define DRCIO_HPP
+#ifndef DRCIO
+#define DRCIO
 
-#include "lvr2/io/baseio/BaseIO.hpp"
+#include "lvr2/io/fileio/FileIOBase.hpp"
 
 namespace lvr2
 {
 
-class DrcIO : public BaseIO
+class DrcIO : public FileIOBase
 {
   public:
     DrcIO(){};
@@ -65,4 +65,4 @@ class DrcIO : public BaseIO
 
 } /* namespace lvr */
 
-#endif // DRCIO_HPP
+#endif // DRCIO

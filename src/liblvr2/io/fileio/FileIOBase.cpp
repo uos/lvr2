@@ -25,68 +25,42 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * ObjIO.hpp
- *
- *  @date 07.11.2011
- *  @author Florian Otte (fotte@uos.de)
- *  @author Kim Rinnewitz (krinnewitz@uos.de)
- *  @author Sven Schalk (sschalk@uos.de)
- *  @author Denis Meyer (denmeyer@uos.de)
+ /**
+ * @file       lvr2::FileIOBase.cpp
+ * @brief      Base interface for all I/O related classes.
+ * @details    This file introduces a pure virtual class specifying some basic
+ *             methods which must be implemented by all I/O classes in the lvr
+ *             toolkit.
+ * @author     Lars Kiesow (lkiesow), lkiesow@uos.de
+ * @version    120103
+ * @date       Created:       2012-01-03 12:34:25
+ * @date       Last modified: 2012-01-03 12:34:28
  */
 
-#ifndef LVR2_OBJIO_HPP_
-#define LVR2_OBJIO_HPP_
-#include "lvr2/io/baseio/BaseIO.hpp"
-#include <fstream>
-#include <set>
-#include <map>
+#include "lvr2/io/fileio/FileIOBase.hpp"
+
+
+#include <string>
 
 namespace lvr2
 {
 
-/**
- * @brief A basic implementation of the obj file format.
- */
-class ObjIO : public BaseIO
+void FileIOBase::save( ModelPtr m, std::string filename)
 {
-public:
-
-    /**
-     * @brief Constructor.
-     **/
-    ObjIO()
-    {
-        m_model.reset();
-    }
-
-    ~ObjIO() { };
-
-    /**
-     * \brief   Parse the given file and load supported elements.
-     *
-     * @param filename  The file to read.
-     */
-    ModelPtr read( std::string filename );
-
-    /**
-     * @brief     Writes the mesh to an obj file.
-     *
-     * @param  model     The model containing all mesh data
-     * @param  filename  The file name to use
-     */
-    void save( std::string filename );
+	m_model = m;
+    save( filename);
+}
 
 
-private:
+void FileIOBase::setModel( ModelPtr m )
+{
+    m_model = m;
+}
 
-    void parseMtlFile(std::map<string, int>& matNames,
-            std::vector<Material>& materials,
-            std::vector<Texture>& textures,
-            std::string mtlname);
 
-};
+ModelPtr FileIOBase::getModel()
+{
+    return m_model;
+}
 
 } // namespace lvr2
-
-#endif /* OBJIO_H_ */

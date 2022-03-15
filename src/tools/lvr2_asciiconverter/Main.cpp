@@ -27,7 +27,7 @@
 
 #include "Options.hpp"
 
-#include "lvr2/io/baseio/AsciiIO.hpp"
+#include "lvr2/io/fileio/AsciiIO.hpp"
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Progress.hpp"

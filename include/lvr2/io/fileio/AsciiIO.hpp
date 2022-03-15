@@ -39,10 +39,10 @@
  *
  **/
 
-#ifndef ASCIIIO_H_
-#define ASCIIIO_H_
+#ifndef ASCIIIO
+#define ASCIIIO
 
-#include "lvr2/io/baseio/BaseIO.hpp"
+#include "lvr2/io/fileio/FileIOBase.hpp"
 
 namespace lvr2
 {
@@ -52,7 +52,7 @@ namespace lvr2
  *        text formats. Currently the file extensions .xyz, .txt,
  *       .3d and .pts are supported.
  */
-class AsciiIO : public BaseIO
+class AsciiIO : public FileIOBase
 {
     public:
 
@@ -118,4 +118,4 @@ class AsciiIO : public BaseIO
 
 } // namespace lvr2
 
-#endif /* ASCIIIO_H_ */
+#endif // ASCIIIO

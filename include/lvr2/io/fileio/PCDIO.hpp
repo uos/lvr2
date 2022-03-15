@@ -26,41 +26,60 @@
  */
 
  /**
- * @file       lvr2::BaseIO.cpp
- * @brief      Base interface for all I/O related classes.
- * @details    This file introduces a pure virtual class specifying some basic
- *             methods which must be implemented by all I/O classes in the lvr
- *             toolkit.
- * @author     Lars Kiesow (lkiesow), lkiesow@uos.de
- * @version    120103
- * @date       Created:       2012-01-03 12:34:25
- * @date       Last modified: 2012-01-03 12:34:28
- */
+ *
+ * @file      PCDIO.hpp
+ * @brief     Read and write point clouds from PCD files.
+ * @details   Read and write point clouds from the files in the
+ *            PointCloudLibrary file format.
+ * 
+ * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
+ * @version   120109
+ * @date      Created:       2012-01-09 01:50:19
+ * @date      Last modified: 2012-01-09 01:50:22
+ *
+ **/
 
-#include "lvr2/io/baseio/BaseIO.hpp"
+#ifndef PCDIO_HPP_INCLUDED
+#define PCDIO_HPP_INCLUDED
 
-
-#include <string>
+#include "lvr2/io/fileio/FileIOBase.hpp"
 
 namespace lvr2
 {
 
-void BaseIO::save( ModelPtr m, std::string filename)
+/**
+ * @brief A import / export class for point cloud data in the PointCloudLibrary
+ *        file format.
+ */
+class PCDIO : public FileIOBase
 {
-	m_model = m;
-    save( filename);
-}
+    public:
+
+        /**
+         * \brief Default constructor.
+         **/
+        PCDIO() {};
 
 
-void BaseIO::setModel( ModelPtr m )
-{
-    m_model = m;
-}
+        /**
+         * @brief Reads the given file and stores point and normal
+         *        information in the given parameters
+         *
+         * @param filename      The file to read
+         */
+        virtual ModelPtr read( string filename );
 
 
-ModelPtr BaseIO::getModel()
-{
-    return m_model;
-}
+        /**
+         * @todo : Implement save method for ASCII Files...
+         * @param filename
+         */
+        virtual void save( string filename );
+
+
+};
+
 
 } // namespace lvr2
+
+#endif /* PCDIO_HPP_INCLUDED */

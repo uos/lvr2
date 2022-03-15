@@ -25,61 +25,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
+/**
+ * DatIO.hpp
  *
- * @file      PCDIO.hpp
- * @brief     Read and write point clouds from PCD files.
- * @details   Read and write point clouds from the files in the
- *            PointCloudLibrary file format.
- * 
- * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
- * @version   120109
- * @date      Created:       2012-01-09 01:50:19
- * @date      Last modified: 2012-01-09 01:50:22
- *
- **/
+ *  Created on: Aug 8, 2013
+ *      Author: twiemann
+ */
 
-#ifndef PCDIO_HPP_INCLUDED
-#define PCDIO_HPP_INCLUDED
+#ifndef DATIO
+#define DATIO
 
-#include "lvr2/io/baseio/BaseIO.hpp"
+#include "lvr2/io/fileio/FileIOBase.hpp"
+#include "lvr2/io/Model.hpp"
+
+#include <string>
+using std::string;
 
 namespace lvr2
 {
 
 /**
- * @brief A import / export class for point cloud data in the PointCloudLibrary
- *        file format.
+ * @brief IO class for binary laser scans
  */
-class PCDIO : public BaseIO
+class DatIO : public FileIOBase
 {
-    public:
+public:
+	DatIO();
+	virtual ~DatIO();
 
-        /**
-         * \brief Default constructor.
-         **/
-        PCDIO() {};
-
-
-        /**
-         * @brief Reads the given file and stores point and normal
-         *        information in the given parameters
-         *
-         * @param filename      The file to read
-         */
-        virtual ModelPtr read( string filename );
-
-
-        /**
-         * @todo : Implement save method for ASCII Files...
-         * @param filename
-         */
-        virtual void save( string filename );
-
-
+	virtual ModelPtr read(string filename, int n, int reduction = 0);
+	virtual ModelPtr read(string filename);
+	virtual void save(ModelPtr model, string filename);
+	virtual void save(string filename);
 };
-
 
 } // namespace lvr2
 
-#endif /* PCDIO_HPP_INCLUDED */
+#endif // DATIO

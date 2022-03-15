@@ -25,51 +25,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
+/*
+ * STLIO.hpp
  *
- * @file      WaveformIO.hpp
- * @brief     Read and write pointclouds and Wavform data from .lwf files.
- * @details     Read and write pointclouds and Wavform data from .lwf files.
- * 
- * @author    Thomas Wiemann (twiemann), twiemann@uos.de, Universität Osnabrück
- * @author    Michel Loepmeier (mloepmei), mloepmei@uos.de, Universität Osnabrück
- * @version   111001
- * @date      Created:       2020-06-23
- * @date      Last modified: 2011-10-01 19:49:24
- *
- **/
+ *  Created on: Dec 9, 2016
+ *      Author: robot
+ */
 
-#ifndef WAVEFORMIO_H_
-#define WAVEFORMIO_H_
+#ifndef STLIO_HPP
+#define STLIO_HPP
 
-#include "lvr2/io/BaseIO.hpp"
+#include "lvr2/io/fileio/FileIOBase.hpp"
 
 namespace lvr2
 {
 
-/**
- * @brief A import / export class for point cloud and waveform data.
- * LWF fies supported.
+/****
+ * @brief 	Reader / Writer for STL file. Currently only binary STL files
+ * 			are supported.
  */
-class WaveformIO : public BaseIO
+class STLIO : public FileIOBase
 {
-    public:
+public:
+	STLIO();
+	virtual ~STLIO();
 
-        /**
-         * \brief Default constructor.
-         **/
-        WaveformIO() {
-            setlocale (LC_ALL, "C");
-            m_model.reset();
-	}
-	~WaveformIO() {};
-        virtual ModelPtr read( std::string filename);
-
-        virtual void save( string filename);
+	virtual void save( string filename );
+	virtual void save( ModelPtr model, string filename );
+    /**
+     * @brief Parse the given file and load supported elements.
+     *
+     * @param 	filename  The file to read.
+     * @return	A new model. If the file could not be parsed, an empty model
+     * 			is returned.
+     */
+    virtual ModelPtr read(string filename );
 
 };
 
+} /* namespace lvr2 */
 
-} // namespace lvr2
-
-#endif /* WAVEFORMIO_H_ */
+#endif // STLIO

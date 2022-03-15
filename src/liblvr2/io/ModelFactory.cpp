@@ -32,13 +32,13 @@
  *  @author Thomas Wiemann
  */
 
-#include "lvr2/io/baseio/AsciiIO.hpp"
-#include "lvr2/io/baseio/PLYIO.hpp"
-#include "lvr2/io/baseio/UosIO.hpp"
-#include "lvr2/io/baseio/ObjIO.hpp"
-#include "lvr2/io/baseio/LasIO.hpp"
-#include "lvr2/io/baseio/DatIO.hpp"
-#include "lvr2/io/baseio/STLIO.hpp"
+#include "lvr2/io/fileio/AsciiIO.hpp"
+#include "lvr2/io/fileio/PLYIO.hpp"
+#include "lvr2/io/fileio/UosIO.hpp"
+#include "lvr2/io/fileio/ObjIO.hpp"
+#include "lvr2/io/fileio/LasIO.hpp"
+#include "lvr2/io/fileio/DatIO.hpp"
+#include "lvr2/io/fileio/STLIO.hpp"
 
 // #include "lvr2/io/HDF5IO.hpp"
 // #include "lvr2/io/WaveformIO.hpp"
@@ -72,7 +72,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     std::string extension = selectedFile.extension().string();
 
     // Try to parse given file
-    BaseIO* io = 0;
+    FileIOBase* io = 0;
     if(extension == ".ply")
     {
         io = new PLYIO;
@@ -205,7 +205,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     boost::filesystem::path selectedFile(filename);
     std::string extension = selectedFile.extension().string();
 
-    BaseIO* io = 0;
+    FileIOBase* io = 0;
 
     // Create suitable io
     if(extension == ".ply")

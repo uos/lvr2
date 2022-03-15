@@ -25,44 +25,46 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * STLIO.hpp
+/**
+ * LasIO.h
  *
- *  Created on: Dec 9, 2016
- *      Author: robot
+ *  @date 03.01.2012
+ *  @author Thomas Wiemann
  */
 
-#ifndef INCLUDE_LVR2_IO_STLIO_HPP_
-#define INCLUDE_LVR2_IO_STLIO_HPP_
+#ifndef LASIO_H_
+#define LASIO_H_
 
-#include "lvr2/io/baseio/BaseIO.hpp"
+#include "lvr2/io/fileio/FileIOBase.hpp"
 
 namespace lvr2
 {
 
-/****
- * @brief 	Reader / Writer for STL file. Currently only binary STL files
- * 			are supported.
+/**
+ * @brief   Interface class to read laser scan data in .las-Format
  */
-class STLIO : public BaseIO
+class LasIO : public FileIOBase
 {
 public:
-	STLIO();
-	virtual ~STLIO();
+    LasIO() {};
+    virtual ~LasIO() {};
 
-	virtual void save( string filename );
-	virtual void save( ModelPtr model, string filename );
     /**
      * @brief Parse the given file and load supported elements.
      *
-     * @param 	filename  The file to read.
-     * @return	A new model. If the file could not be parsed, an empty model
-     * 			is returned.
+     * @param filename  The file to read.
      */
     virtual ModelPtr read(string filename );
+
+    /**
+     * @brief Save the loaded elements to the given file.
+     *
+     * @param filename Filename of the file to write.
+     */
+    virtual void save( string filename );
 
 };
 
 } /* namespace lvr2 */
 
-#endif /* INCLUDE_LVR2_IO_STLIO_HPP_ */
+#endif /* LASIO_H_ */

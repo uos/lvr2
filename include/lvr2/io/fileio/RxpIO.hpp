@@ -37,7 +37,7 @@
 
 #include <string>
 
-#include "lvr2/io/BaseIO.hpp"
+#include "lvr2/io/FileIOBase.hpp"
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
@@ -49,7 +49,7 @@ using Vec = BaseVector<float>;
 /**
  * @brief Reads .rxp files
  */
-class RxpIO : public BaseIO
+class RxpIO : public FileIOBase
 {
     public:
 

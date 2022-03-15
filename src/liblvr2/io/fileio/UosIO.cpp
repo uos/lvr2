@@ -48,7 +48,7 @@ using std::stringstream;
 
 #include <boost/filesystem.hpp>
 
-#include "lvr2/io/baseio/UosIO.hpp"
+#include "lvr2/io/fileio/UosIO.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
