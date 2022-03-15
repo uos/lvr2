@@ -1,11 +1,11 @@
-#ifndef HDF5KERNEL_HPP
-#define HDF5KERNEL_HPP
+#ifndef HDF5KERNEL
+#define HDF5KERNEL
 
 #include "lvr2/types/VariantChannel.hpp"
 #include "lvr2/types/Channel.hpp"
 #include "lvr2/util/Hdf5Util.hpp"
 
-#include "FileKernel.hpp"
+#include "lvr2/io/kernels/FileKernel.hpp"
 
 namespace lvr2
 {
@@ -371,6 +371,6 @@ using HDF5KernelPtr = std::shared_ptr<HDF5Kernel>;
 
 } // namespace lvr2
 
-#include "lvr2/io/scanio/HDF5Kernel.tcc"
+#include "lvr2/io/kernels/HDF5Kernel.tcc"
 
-#endif
+#endif // HDF5KERNEL

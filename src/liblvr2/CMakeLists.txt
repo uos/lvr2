@@ -51,6 +51,8 @@ set(LVR2_SOURCES
     io/fileio/STLIO.cpp
     io/fileio/UosIO.cpp
     io/fileio/PCDIO.cpp
+    io/kernels/DirectoryKernel.cpp
+    io/kernels/HDF5Kernel.cpp
     io/MeshBuffer.cpp
     io/LineReader.cpp
     # io/HDF5IO.cpp
@@ -70,11 +72,9 @@ set(LVR2_SOURCES
     # io/scanio/ScanProjectSchemaHyperlib.cpp
     io/scanio/ScanProjectSchemaHDF5.cpp
     # io/scanio/LabelScanProjectSchemaHDF5V2.cpp
-    io/scanio/DirectoryKernel.cpp
     io/scanio/DirectoryDataIO.cpp
     io/scanio/MetaFormatFactory.cpp
     io/scanio/ScanProjectSchema.cpp
-    io/scanio/HDF5Kernel.cpp
     # io/scanio/HDF5MetaDescriptionV2.cpp
     io/meshio/MeshSchemaDirectory.cpp
     io/meshio/MeshSchemaHDF5.cpp

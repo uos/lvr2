@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lvr2/io/scanio/DirectoryKernel.hpp"
+#include "lvr2/io/kernels/DirectoryKernel.hpp"
 #include <lvr2/io/meshio/MeshSchemaDirectory.hpp>
 #include <lvr2/io/meshio/MeshIO.hpp>
 #include <lvr2/io/scanio/FeatureBase.hpp>

@@ -1,4 +1,4 @@
-#include "lvr2/io/scanio/DirectoryKernel.hpp"
+#include "lvr2/io/kernels/DirectoryKernel.hpp"
 
 #include <boost/range/iterator_range.hpp>
 

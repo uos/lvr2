@@ -1,4 +1,4 @@
-#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
 #include "lvr2/io/scanio/yaml/YAML.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 

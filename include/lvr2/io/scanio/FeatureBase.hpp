@@ -6,7 +6,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "lvr2/io/scanio/FileKernel.hpp"
+#include "lvr2/io/kernels/FileKernel.hpp"
 #include "lvr2/io/scanio/ScanProjectSchema.hpp"
 
 namespace lvr2 {

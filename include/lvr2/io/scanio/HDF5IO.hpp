@@ -1,7 +1,7 @@
 #ifndef HDF5_DESCRIPTION_IO_HPP
 #define HDF5_DESCRIPTION_IO_HPP
 
-#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
 #include "lvr2/io/scanio/ScanProjectSchema.hpp"
 #include "lvr2/io/scanio/FeatureBase.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"

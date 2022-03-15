@@ -3,7 +3,7 @@
 #include <lvr2/io/meshio/MeshSchemaHDF5.hpp>
 #include <lvr2/io/meshio/MeshIO.hpp>
 #include <lvr2/io/scanio/FeatureBase.hpp>
-#include <lvr2/io/scanio/HDF5Kernel.hpp>
+#include <lvr2/io/kernels/HDF5Kernel.hpp>
 
 namespace lvr2
 {

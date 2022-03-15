@@ -41,7 +41,7 @@
 
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DataStruct.hpp"
-#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
 #include "lvr2/io/scanio/LabelHDF5IO.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
 #include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"

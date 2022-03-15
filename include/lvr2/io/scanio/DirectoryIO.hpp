@@ -1,7 +1,7 @@
 #ifndef DIRECTORYIO_HPP
 #define DIRECTORYIO_HPP
 
-#include "lvr2/io/scanio/DirectoryKernel.hpp"
+#include "lvr2/io/kernels/DirectoryKernel.hpp"
 #include "lvr2/io/scanio/ScanProjectSchema.hpp"
 #include "lvr2/io/scanio/FeatureBase.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
