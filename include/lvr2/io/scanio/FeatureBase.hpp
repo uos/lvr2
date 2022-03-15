@@ -7,9 +7,10 @@
 #include <type_traits>
 
 #include "lvr2/io/kernels/FileKernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
 
-namespace lvr2 {
+namespace lvr2 
+{
 
 /**
  * @class FeatureConstruct

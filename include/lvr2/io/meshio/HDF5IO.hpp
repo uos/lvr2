@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lvr2/io/meshio/MeshSchemaHDF5.hpp>
+#include <lvr2/io/schema/MeshSchemaHDF5.hpp>
 #include <lvr2/io/meshio/MeshIO.hpp>
 #include <lvr2/io/scanio/FeatureBase.hpp>
 #include <lvr2/io/kernels/HDF5Kernel.hpp>

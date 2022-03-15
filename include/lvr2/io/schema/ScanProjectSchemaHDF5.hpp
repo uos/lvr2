@@ -1,24 +1,23 @@
-#ifndef SCANPROJETSCHEMA_RAW_HPP_
-#define SCANPROJETSCHEMA_RAW_HPP_
+#ifndef SCANPROJETSCHEMA_HDF5_HPP
+#define SCANPROJETSCHEMA_HDF5_HPP
 
 #include <string>
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
 
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
 
 namespace lvr2
 {
 
-class ScanProjectSchemaRaw : public DirectorySchema
+class ScanProjectSchemaHDF5 : public HDF5Schema
 {
 public:
-    ScanProjectSchemaRaw(const std::string& rootDir) : DirectorySchema(rootDir) {};
+    ScanProjectSchemaHDF5() : HDF5Schema() {};
 
-    ~ScanProjectSchemaRaw() = default;
+    ~ScanProjectSchemaHDF5() = default;
 
-    
     virtual Description scanProject() const;
 
     virtual Description position(
@@ -39,13 +38,10 @@ public:
         const size_t& scanNo,
         const std::string& channelName) const;
 
-    // virtual std::string scanChannelInv(
-    //     const std::string& d_data) const;
-
     virtual Description camera(
         const size_t& scanPosNo,
         const size_t& camNo) const;
-
+ 
     virtual Description cameraImage(
         const size_t& scanPosNo,
         const size_t& camNo,
@@ -75,23 +71,8 @@ public:
         const size_t& camNo,
         const size_t& panoNo,
         const size_t& channelNo) const;
-        
-};
-
-class ScanProjectSchemaRawPly : public ScanProjectSchemaRaw
-{
-public:
-
-    ScanProjectSchemaRawPly(const std::string& dir) : ScanProjectSchemaRaw(dir) {};
-
-    virtual ~ScanProjectSchemaRawPly() = default;
-
-    virtual Description scan(
-        const size_t& scanPosNo,
-        const size_t& lidarNo,
-        const size_t& scanNo) const override;
 };
 
 } // namespace lvr2
 
-#endif // SCANPROJETSCHEMA_RAW_HPP_
+#endif // SCANPROJETSCHEMA_HDF5_HPP_

@@ -9,7 +9,7 @@
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 
 #include "lvr2/io/kernels/HDF5Kernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>

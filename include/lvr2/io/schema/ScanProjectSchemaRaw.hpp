@@ -1,34 +1,24 @@
-#ifndef SCANPROJECTSCHEMA_SLAM6D_HPP_
-#define SCANPROJECTSCHEMA_SLAM6D_HPP_
+#ifndef SCANPROJETSCHEMA_RAW_HPP_
+#define SCANPROJETSCHEMA_RAW_HPP_
 
 #include <string>
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
 
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
 
 namespace lvr2
 {
 
-/**
- * @brief ScanProjectSchema for Slam6D projects
- * 
- * Takes the transformation and poseEstimation from scanPositions and 
- * uses the data from first scanner (0) and first scan(0) of the scanPositions
- * 
- * That assumes that the scan is recorded at the origin of the scanPosition
- * Otherwise, you have to adjust the scanPositions transformation such that
- * it is given
- * 
- */
-class ScanProjectSchemaSlam6D : public DirectorySchema
+class ScanProjectSchemaRaw : public DirectorySchema
 {
 public:
-    ScanProjectSchemaSlam6D(const std::string& rootDir) : DirectorySchema(rootDir) {};
+    ScanProjectSchemaRaw(const std::string& rootDir) : DirectorySchema(rootDir) {};
 
-    ~ScanProjectSchemaSlam6D() = default;
+    ~ScanProjectSchemaRaw() = default;
 
+    
     virtual Description scanProject() const;
 
     virtual Description position(
@@ -49,14 +39,17 @@ public:
         const size_t& scanNo,
         const std::string& channelName) const;
 
+    // virtual std::string scanChannelInv(
+    //     const std::string& d_data) const;
+
     virtual Description camera(
         const size_t& scanPosNo,
         const size_t& camNo) const;
- 
+
     virtual Description cameraImage(
         const size_t& scanPosNo,
         const size_t& camNo,
-        const std::vector<size_t>& cameraImageNo) const;
+        const std::vector<size_t>& cameraImageNos) const;
 
     virtual Description cameraImageGroup(
         const size_t& scanPosNo,
@@ -82,8 +75,23 @@ public:
         const size_t& camNo,
         const size_t& panoNo,
         const size_t& channelNo) const;
+        
+};
+
+class ScanProjectSchemaRawPly : public ScanProjectSchemaRaw
+{
+public:
+
+    ScanProjectSchemaRawPly(const std::string& dir) : ScanProjectSchemaRaw(dir) {};
+
+    virtual ~ScanProjectSchemaRawPly() = default;
+
+    virtual Description scan(
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
+        const size_t& scanNo) const override;
 };
 
 } // namespace lvr2
 
-#endif // SCANPROJECTSCHEMA_SLAM6D_HPP_
+#endif // SCANPROJETSCHEMA_RAW_HPP_

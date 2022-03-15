@@ -1,7 +1,7 @@
 #include "Options.hpp"
 #include "lvr2/io/scanio/FeatureBase.hpp"
 #include "lvr2/io/kernels/DirectoryKernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
 #include "lvr2/io/scanio/DirectoryIO.hpp"
 

@@ -76,8 +76,8 @@
 #include "lvr2/io/kernels/HDF5Kernel.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
 
 #include "lvr2/geometry/BVH.hpp"
 

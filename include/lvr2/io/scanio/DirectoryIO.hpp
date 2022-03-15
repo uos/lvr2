@@ -2,7 +2,7 @@
 #define DIRECTORYIO_HPP
 
 #include "lvr2/io/kernels/DirectoryKernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
 #include "lvr2/io/scanio/FeatureBase.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"

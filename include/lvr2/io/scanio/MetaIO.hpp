@@ -1,7 +1,7 @@
-#ifndef LVR2_IO_scanio_META_IO_HPP
-#define LVR2_IO_scanio_META_IO_HPP
+#ifndef METAIO
+#define METAIO
 
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
 
 namespace lvr2 {
 
@@ -29,4 +29,4 @@ protected:
 
 #include "MetaIO.tcc"
 
-#endif // LVR2_IO_scanio_META_IO_HPP
+#endif // METAIO

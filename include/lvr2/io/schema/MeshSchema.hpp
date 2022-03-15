@@ -1,5 +1,5 @@
 #pragma once
-#include <lvr2/io/scanio/ScanProjectSchema.hpp> // include to get Description
+#include <lvr2/io/schema/ScanProjectSchema.hpp> // include to get Description
 
 namespace lvr2
 {

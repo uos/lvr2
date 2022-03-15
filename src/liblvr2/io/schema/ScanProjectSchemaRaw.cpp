@@ -3,114 +3,125 @@
 
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/scanio/yaml/YAML.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 
 namespace lvr2
 {
 
-Description ScanProjectSchemaHDF5::scanProject() const
+Description ScanProjectSchemaRaw::scanProject() const
 {
     Description d;
+
     d.dataRoot = "raw";
+
     d.metaRoot = d.dataRoot;
-    d.meta = "";
+    d.meta = "meta.yaml";
+
     return d;
 }
 
-Description ScanProjectSchemaHDF5::position(
-    const size_t& scanPosNo) const
+Description ScanProjectSchemaRaw::position(
+    const size_t &scanPosNo) const
 {
-    Description dp = scanProject();
-
-    Description d;
-    // Save scan file name
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanPosNo;
-    
-    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
-    d.metaRoot = d.dataRoot;
-    d.meta = "";
 
+    Description dp = scanProject();
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+    
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
     
     return d;
 }
 
-Description ScanProjectSchemaHDF5::lidar(
+Description ScanProjectSchemaRaw::lidar(
     const size_t& scanPosNo, 
     const size_t& lidarNo) const
 {
-    Description dp = position(scanPosNo);
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << lidarNo;
+    
+
+    Description dp = position(scanPosNo);
 
     Description d;
     d.dataRoot = *dp.dataRoot + "/lidar_" + sstr.str();
+
     d.metaRoot = d.dataRoot;
-    d.meta = "";
+    d.meta = "meta.yaml";
 
     return d;
 }
 
-Description ScanProjectSchemaHDF5::camera(
+Description ScanProjectSchemaRaw::camera(
     const size_t& scanPosNo,
     const size_t& camNo) const
 {
-    Description dp = position(scanPosNo);
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << camNo;
 
+    Description dp = position(scanPosNo);
+
     Description d;
     d.dataRoot = *dp.dataRoot + "/cam_" + sstr.str();
+
     d.metaRoot = d.dataRoot;
-    d.meta = "";
-
-
+    d.meta = "meta.yaml";
+    
     return d;
 }
 
 
-Description ScanProjectSchemaHDF5::scan(
+Description ScanProjectSchemaRaw::scan(
     const size_t& scanPosNo,
     const size_t& lidarNo,
     const size_t& scanNo) const
 {
-    Description dp = lidar(scanPosNo, lidarNo);
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanNo;
 
+    Description dp = lidar(scanPosNo, lidarNo);
+
     Description d;
-
     d.dataRoot = *dp.dataRoot + "/" + sstr.str();
-    d.metaRoot = d.dataRoot;
-    d.meta = "";
 
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
+    
     return d;
 }
 
-Description ScanProjectSchemaHDF5::scanChannel(
+Description ScanProjectSchemaRaw::scanChannel(
     const size_t& scanPosNo,
     const size_t& lidarNo,
     const size_t& scanNo,
-    const std::string& channel_name) const
+    const std::string& channelName) const
 {
-    Description dp = scan(scanPosNo, lidarNo, scanNo);
-    
     Description d;
 
-    d.dataRoot = dp.dataRoot;
-    d.data = channel_name;
-    d.metaRoot = dp.metaRoot;
-    d.meta = channel_name;
+    Description dp = scan(scanPosNo, lidarNo, scanNo);
+
+    // if(channelName == "points" || channelName == "normals" || channelName == "colors")
+    // {
+    //     d.dataRoot = *dp.dataRoot + "/points.ply";
+    // } else {
+    //     d.dataRoot = *dp.dataRoot;
+    // }
+
+    d.dataRoot = *dp.dataRoot;
+
+    d.data = channelName;
+    d.metaRoot = *dp.dataRoot;
+    d.meta = channelName + ".yaml";
 
     return d;
 }
 
-Description ScanProjectSchemaHDF5::cameraImage(
+Description ScanProjectSchemaRaw::cameraImage(
     const size_t& scanPosNo,
-    const size_t& camNo, 
+    const size_t& camNo,
     const std::vector<size_t>& cameraImageNos) const
 {
     if(cameraImageNos.size() == 0)
@@ -127,60 +138,63 @@ Description ScanProjectSchemaHDF5::cameraImage(
     }
 
     Description dp = camera(scanPosNo, camNo);
-   
-    Description d;
-    d.dataRoot = dp.dataRoot;
-    d.data = sstr.str();
-    d.metaRoot = dp.metaRoot;
-    d.meta = sstr.str();
 
-    return d; 
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+    d.data = "image.png";
+
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
+
+    return d;
 }
 
-Description ScanProjectSchemaHDF5::cameraImageGroup(
+Description ScanProjectSchemaRaw::cameraImageGroup(
     const size_t& scanPosNo,
-    const size_t& camNo, 
+    const size_t& camNo,
     const std::vector<size_t>& cameraImageGroupNos) const
 {
     return cameraImage(scanPosNo, camNo, cameraImageGroupNos);
 }
 
-
-Description ScanProjectSchemaHDF5::hyperspectralCamera(
+Description ScanProjectSchemaRaw::hyperspectralCamera(
     const size_t& scanPosNo,
     const size_t& camNo) const
 {
-    Description dp = position(scanPosNo);
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << camNo;
 
+    Description dp = position(scanPosNo);
+
     Description d;
-    d.dataRoot = *dp.dataRoot + "/" + "hypercam_" + sstr.str();
+    d.dataRoot =  *dp.dataRoot + "/hypercam_" + sstr.str();
+
     d.metaRoot = d.dataRoot;
-    d.meta = "";
+    d.meta = "meta.yaml";
 
     return d;
 }
 
-Description ScanProjectSchemaHDF5::hyperspectralPanorama(
+Description ScanProjectSchemaRaw::hyperspectralPanorama(
     const size_t& scanPosNo,
     const size_t& camNo,
     const size_t& panoNo) const
 {
-    Description dp = hyperspectralCamera(scanPosNo, camNo);
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << panoNo;
+
+    Description dp = hyperspectralCamera(scanPosNo, camNo);
+
     Description d;
-    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+    d.dataRoot =  *dp.dataRoot + "/" + sstr.str();
+
     d.metaRoot = d.dataRoot;
-    d.meta = "";
+    d.meta = "meta.yaml";
 
     return d;
 }
 
-Description ScanProjectSchemaHDF5::hyperspectralPanoramaPreview(
+Description ScanProjectSchemaRaw::hyperspectralPanoramaPreview(
         const size_t& scanPosNo,
         const size_t& camNo,
         const size_t& panoNo) const
@@ -190,28 +204,53 @@ Description ScanProjectSchemaHDF5::hyperspectralPanoramaPreview(
 
     d.dataRoot = *dp.dataRoot;
     d.metaRoot = d.dataRoot;
-    d.data = "preview";
+    d.data = "preview.png";
 
     return d;
 }
 
-Description ScanProjectSchemaHDF5::hyperspectralPanoramaChannel(
+Description ScanProjectSchemaRaw::hyperspectralPanoramaChannel(
     const size_t& scanPosNo,
     const size_t& camNo,
     const size_t& panoNo,
-    const size_t& channelNo) const
+    const size_t& channelNo
+) const
 {
-    Description dp = hyperspectralPanorama(scanPosNo, camNo, panoNo);
-
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << channelNo;
-   
-    Description d;
-    d.dataRoot = dp.dataRoot;
-    d.metaRoot = dp.metaRoot;
 
-    d.meta = "frames";
-    d.data = "frames";
+    Description dp = hyperspectralPanorama(scanPosNo, camNo, panoNo);
+
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/data";
+    d.data = sstr.str() + ".png";
+    
+    d.metaRoot = d.dataRoot;
+    d.meta = boost::none;
+    
+    return d;
+}
+
+Description ScanProjectSchemaRawPly::scan( 
+        const size_t& scanPosNo,
+        const size_t& lidarNo,
+        const size_t& scanNo) const
+{
+    std::stringstream sstr;
+    sstr << std::setfill('0') << std::setw(8) << scanNo;
+
+    Description dp = lidar(scanPosNo, lidarNo);
+
+    Description d;
+
+    std::cout << *dp.dataRoot << std::endl;
+    std::cout << sstr.str() << std::endl;
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+
+    d.data = "points.ply";
+
+    d.metaRoot = d.dataRoot;
+    d.meta = "meta.yaml";
 
     return d;
 }

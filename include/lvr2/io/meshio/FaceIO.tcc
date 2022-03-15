@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FaceIO.hpp"
-#include "MeshSchema.hpp"
+#include "lvr2/io/schema/MeshSchema.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
 namespace lvr2

@@ -1,5 +1,5 @@
-#ifndef SCANPROJECTPARSER_HPP_
-#define SCANPROJECTPARSER_HPP_
+#ifndef SCANPROJECTSCHEMA
+#define SCANPROJECTSCHEMA
 
 #include <string>
 #include <tuple>
@@ -130,4 +130,4 @@ using LabelHDF5SchemaPtr = std::shared_ptr<LabelHDF5Schema>;
 
 } // namespace lvr2
 
-#endif
+#endif // SCANPROJECTSCHEMA

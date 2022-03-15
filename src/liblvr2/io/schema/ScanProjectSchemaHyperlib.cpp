@@ -2,7 +2,7 @@
 #include <iomanip>
 
 #include "lvr2/types/ScanTypes.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaHyperlib.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaHyperlib.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/yaml/Scan.hpp"
 #include "lvr2/io/yaml/Waveform.hpp"

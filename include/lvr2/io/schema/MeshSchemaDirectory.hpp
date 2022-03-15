@@ -1,6 +1,7 @@
-#pragma once
+#ifndef MESHSCHEMADIRECTORY
+#define MESHSCHEMADIRECTORY
 
-#include "lvr2/io/meshio/MeshSchema.hpp"
+#include "lvr2/io/schema/MeshSchema.hpp"
 
 namespace lvr2
 {
@@ -44,3 +45,6 @@ class MeshSchemaDirectory : public MeshSchema
 using MeshSchemaDirectoryPtr = std::shared_ptr<MeshSchemaDirectory>;
 
 } // namespace lvr2
+
+
+#endif // MESHSCHEMADIRECTORY

@@ -6,7 +6,7 @@
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
 
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
 
 namespace lvr2
 {

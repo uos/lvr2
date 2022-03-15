@@ -1,12 +1,12 @@
-#ifndef SCANPROJETSCHEMA_HYPERLIB_HPP_
-#define SCANPROJETSCHEMA_HYPERLIB_HPP_
+#ifndef SCANPROJECTSCHEMAHYPERLIB
+#define SCANPROJECTSCHEMAHYPERLIB
 
 #include <string>
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
 
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
 
 namespace lvr2
 {
@@ -41,4 +41,4 @@ private:
 
 } // namespace lvr2
 
-#endif
+#endif // SCANPROJECTSCHEMAHYPERLIB

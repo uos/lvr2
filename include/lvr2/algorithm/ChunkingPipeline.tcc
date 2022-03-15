@@ -46,9 +46,10 @@
 #include "lvr2/io/kernels/DirectoryKernel.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
 #include "lvr2/io/scanio/DirectoryIO.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
+
 
 
 namespace lvr2

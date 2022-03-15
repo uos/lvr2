@@ -1,7 +1,7 @@
 #include <sstream> 
 #include <iomanip>
 
-#include "lvr2/io/scanio/LabelScanProjectSchemaHDF5V2.hpp"
+#include "lvr2/io/schema/LabelScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/IOUtils.hpp"
 #include "lvr2/io/yaml/MatrixIO.hpp"
 #include "lvr2/io/yaml/Label.hpp"
