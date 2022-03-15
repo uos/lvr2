@@ -107,22 +107,33 @@ public:
 
     void setScanProject(const ScanProjectPtr project);
 
-    virtual ~RaycastingTexturizer()
+    virtual ~RaycastingTexturizer() {}
+
+private:
+
+    struct ImageInfo
     {
-        cv::namedWindow("debug", cv::WINDOW_NORMAL);
-        int i = 0;
-        for (auto& info: m_images)
-        {
-            if (info.image->loaded())
-            {
-                std::stringstream sstr;
-                sstr << "cameraProjected" << i << ".bmp";
-                cv::imwrite(sstr.str(), info.image->image);
-            }
-            i++;
-        }
-        
-    }
+        Eigen::Quaternionf rotation;
+        Eigen::Translation3f translation;
+        Eigen::Quaternionf inverse_rotation;
+        Eigen::Translation3f inverse_translation;
+        CameraImagePtr image;
+        PinholeModel model;
+    };
+
+    // The Raycaster which is used while raycasting
+    RaycasterBasePtr<IntersectionT> m_tracer;
+
+    // The clusters of faces
+    ClusterBiMap<FaceHandle> m_clusters;
+
+    // Maps the face indices given to embree to FaceHandles
+    std::map<size_t, FaceHandle> m_embreeToHandle;
+
+    // The images and poses used for texturization
+    std::vector<ImageInfo> m_images;
+
+    const BaseMesh<BaseVector<float>>& m_debug;
 
 private:
     template <typename... Args>
@@ -144,31 +155,9 @@ private:
         const std::vector<bool>& texturized,
         const ClusterHandle cluster) const;
 
+    std::vector<ImageInfo> rankImagesForCluster(const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect) const;
+
     void DEBUGDrawBorder(TextureHandle texH, const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect, ClusterHandle clusterH);
-
-private:
-
-    struct ImageInfo
-    {
-        Eigen::Quaternionf rotation;
-        Eigen::Translation3f translation;
-        CameraImagePtr image;
-        PinholeModel model;
-    };
-
-    // The Raycaster which is used while raycasting
-    RaycasterBasePtr<IntersectionT> m_tracer;
-
-    // The clusters of faces
-    ClusterBiMap<FaceHandle> m_clusters;
-
-    // Maps the face indices given to embree to FaceHandles
-    std::map<size_t, FaceHandle> m_embreeToHandle;
-
-    // The images and poses used for texturization
-    std::vector<ImageInfo> m_images;
-
-    const BaseMesh<BaseVector<float>>& m_debug;
 };
 
 } // namespace lvr2

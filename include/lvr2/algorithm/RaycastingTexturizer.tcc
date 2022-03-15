@@ -129,7 +129,6 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                     Quaterniond cameraR(camera->transformation.template topLeftCorner<3,3>());
                     Quaterniond imageR(info.image->transformation.template topLeftCorner<3,3>());
                     /**
-                     * The extra rotation around the z axis needs to be there because the camera is mounted 180 degrees reversed.
                      * The camera and image transformations are out of order because the image camera transform puts the Z axis straight ahead
                      * but the image rotation assumes Z is up.
                      */
@@ -144,7 +143,18 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                     Vector3d translation = (imageR * cameraT) + imageT;
                     translation = (positionR * translation) + positionT;
                     info.translation = Translation3f(translation.cast<float>());
-                    
+
+                    // Precalculate inverse transforms
+                    info.inverse_rotation = info.rotation.inverse().normalized();
+                    info.inverse_translation = info.translation.inverse();
+
+                    // === The camera intrinsics in the ringlok ScanProject are wrong === //
+                    // === These are the correct values for the Riegl camera === //
+                    info.model.fx = 2395.4336550315002;
+                    info.model.fy = 2393.3126174899603;
+                    info.model.cx = 3027.8728609530291;
+                    info.model.cy = 2031.02743729632;
+
                     m_images.push_back(info);
                 }   
             }
@@ -263,105 +273,74 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
         return texH;
     }
 
+    this->DEBUGDrawBorder(texH, boundingRect, clusterH);
+
     // List of uv coordinates
     std::vector<TexCoords> uvCoords = this->calculateUVCoordsPerPixel(tex);
     // List of 3D points corresponding to uv coords
     std::vector<Vector3f> points = this->calculate3DPointsPerPixel(uvCoords, boundingRect);
     // List of booleans indicating if a texel is already Texturized
     std::vector<bool> texturized(numPixel, false);
+    // List containing the useable images for texturing the cluster
+    std::vector<ImageInfo> images = this->rankImagesForCluster(boundingRect);
 
-    for (auto& imageInfo : m_images)
+    // cv::namedWindow("Texture", cv::WINDOW_KEEPRATIO);
+    #pragma omp parallel for
+    for (size_t i = 0; i < numPixel; i++)
     {
-        // Precalculate the inverse rotation to be used in the loop
-        Quaternionf inverseRotation = imageInfo.rotation.inverse();
-     
-        // Cluster normal transformed to camera frame
-        Vector3f clusterNormal = (inverseRotation * Vector3f(
-            boundingRect.m_normal.getX(),
-            boundingRect.m_normal.getY(),
-            boundingRect.m_normal.getZ()
-        )).normalized();
-
-        // Camera view vector
-        Vector3f viewVec(0, 0, 1);
-        // If the Normal and the view vector point in opposite directions skip this image
-        if (clusterNormal.dot(viewVec) < 0)
-        {
-            continue;
-        }
-        // Timing
-        Timestamp time_raycasting;
-        // A list of booleans indicating wether the point is visible
-        std::vector<bool> visible = this->calculateVisibilityPerPixel(imageInfo.translation.vector(), points, texturized, clusterH);
-        timings << "[" << index << "] " << "Raycasting took " << time_raycasting.getElapsedTimeInMs() << "ms (" << time_raycasting.getElapsedTimeInS() << "s)" << std::endl;
-
-        // === The camera intrinsics in the ringlok ScanProject are wrong === //
-        // === These are the correct values for the Riegl camera === //
-        imageInfo.model.fx = 2395.4336550315002;
-        imageInfo.model.fy = 2393.3126174899603;
-
-        imageInfo.model.cx = 3027.8728609530291;
-        imageInfo.model.cy = 2031.02743729632;
-
-        // cv::Mat camMat(3, 3, CV_64F, cv::Scalar(0));
-        Eigen::Matrix3f camMat = Eigen::Matrix3f::Zero();
-        camMat(0, 0) = imageInfo.model.fx;
-        camMat(0, 2) = imageInfo.model.cx;
-        camMat(1, 1) = imageInfo.model.fy;
-        camMat(1, 2) = imageInfo.model.cy;
-        camMat(2, 2) = 1;
-
-        if(!imageInfo.image->loaded())
-        {
-            imageInfo.image->load();
-        }
-
+        // if (i % 10 == 0)
+        // {
+            // cv::Mat cvTexture(tex.m_height, tex.m_width, CV_8UC3, tex.m_data);
+            // cv::Mat converted;
+            // cv::cvtColor(cvTexture, converted, cv::COLOR_BGR2RGB);
+            // converted.at<cv::Vec3b>(i) = cv::Vec3b(0,0,0);
+            // cv::imshow("Texture", converted);
+            // cv::waitKey(0);
+        // }
         
-        Timestamp time_pixel_loop;
-        #pragma omp parallel for
-        for (size_t i = 0; i < numPixel; i++)
+
+        // Calculate x,y
+        size_t x = i % tex.m_width;
+        size_t y = i / tex.m_width;
+        // Calculate tex uv
+        double u = ((float) x) / (tex.m_width - 1);
+        double v = ((float) y) / (tex.m_height - 1);
+        // Calculate 3D point
+        BaseVecT tmp = this->calculateTexCoordsInv(texH, boundingRect, TexCoords(u, v));
+        Vector3f point(tmp.x, tmp.y, tmp.z);
+        for (ImageInfo img: images)
         {
-            if (texturized[i] || !visible[i])
-            {
-                continue;
-            }
-            Vector3f point = inverseRotation * (points[i] - imageInfo.translation.vector());
-            // Skip if the point is behind the camera
-            if (point[2] <= 0)
-            {
-                continue;
-            }
-
-            Vector3f projected = camMat * point;
-            projected /= projected.z();
-
-            double u, v;
-            u = projected.x();
-            v = projected.y();
-            undistorted_to_distorted_uv(u, v, imageInfo.model);
-
-            // Calc pixel in image
-            int x = std::floor(u);
-            int y = std::floor(v);
-            // Skip pixel outside the img coordinates
-            if (x < 0 || y < 0 || x >= imageInfo.image->image.cols || y >= imageInfo.image->image.rows)
-            {
-                continue;
-            }
-
-            // Retrieve the color
-            const cv::Vec3b& color = imageInfo.image->image.template at<cv::Vec3b>(y, x);
-
-            // Extract the color
-            uint8_t r = color[0];
-            uint8_t g = color[1];
-            uint8_t b = color[2];
-            setPixel(i, tex, r, g, b);
-            texturized[i] = true;               
+            // Cast ray to point
+            IntersectionT intersection;
+            bool hit = this->m_tracer->castRay( img.translation.vector(), (point - img.translation.vector()).normalized(), intersection);
+            // Did not hit anything
+            if (!hit) continue;
+            // Dit not hit the cluster we are interested in
+            FaceHandle faceH = m_embreeToHandle.at(intersection.face_id);
+            OptionalClusterHandle hitClusterHOpt = m_clusters.getClusterOf(faceH);
+            if (!(hitClusterHOpt && (hitClusterHOpt.unwrap() == clusterH))) continue;
+            // Transform the point to camera space
+            Vector3f transformedPoint = img.inverse_rotation * (point - img.translation.vector());
+            // If the point is behind the camera skip this image
+            if (transformedPoint.z() <= 0) continue;
+            // Project the point
+            Vector2f uv = img.model.projectPoint(transformedPoint);
+            double imgU = uv.x();
+            double imgV = uv.y();
+            undistorted_to_distorted_uv(imgU, imgV, img.model);
+            size_t imgX = std::floor(imgU);
+            size_t imgY = std::floor(imgV);
+            // Skip if the projected pixel is outside the camera image
+            if (imgX < 0 || imgY < 0 || imgX >= img.image->image.cols || imgY >= img.image->image.rows) continue;
+            // Calculate color
+            const cv::Vec3b& color = img.image->image.template at<cv::Vec3b>(imgY, imgX);
+            setPixel(i, tex, color[0], color[1], color[2]);
+            // After the pixel is texturized we are done
+            break;
         }
-        timings << "[" << index << "] Iterating pixels took " << time_pixel_loop.getElapsedTimeInMs() << "ms (" << time_pixel_loop.getElapsedTimeInS() << "s)" << std::endl;  
     }
-    timings << "[" << index << "] Generation took " << time_func.getElapsedTimeInMs() << "ms ("  << time_func.getElapsedTimeInS() << "s)" << std::endl;
+
+    timings << "[" << index << "] Generation took " << time_func.getElapsedTimeInMs() << "ms ("  << time_func.getElapsedTimeInS() << "s)\n";
     return texH;
 }
 
@@ -395,7 +374,7 @@ std::vector<TexCoords> RaycastingTexturizer<BaseVecT>::calculateUVCoordsPerPixel
     {
         for (size_t x = 0; x < tex.m_width; x++)
         {
-            float u = ((float) x + 0.5f) / (tex.m_width - 1);
+            float u = ((float) x + 0.5f) / (tex.m_width  - 1);
             float v = ((float) y + 0.5f) / (tex.m_height - 1);
             ret.push_back(TexCoords(u, v));
         }
@@ -433,8 +412,8 @@ std::vector<Vector3f> RaycastingTexturizer<BaseVecT>::calculate3DPointsPerPixel(
 template <typename BaseVecT>
 std::vector<bool> RaycastingTexturizer<BaseVecT>::calculateVisibilityPerPixel(
     const Vector3f from,
-    const std::vector<Vector3f>& to,
-    const std::vector<bool>& texturized,
+    const std::vector<Vector3f> &to,
+    const std::vector<bool> &texturized,
     const ClusterHandle cluster) const
 {
     std::vector<bool> ret(to.size());
@@ -449,6 +428,8 @@ std::vector<bool> RaycastingTexturizer<BaseVecT>::calculateVisibilityPerPixel(
         directions.begin(),
         [from](const auto& point)
         {
+            // Vector3f direction = (point - from).normalized();
+            // old_points << direction.x() << " " << direction.y() << " " << direction.z() << std::endl;
             return (point - from).normalized();
         }
     );
@@ -488,6 +469,74 @@ std::vector<bool> RaycastingTexturizer<BaseVecT>::calculateVisibilityPerPixel(
         *ret_it = false;
     }
     return std::move(ret);
+}
+
+template <typename BaseVecT>
+std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTexturizer<BaseVecT>::rankImagesForCluster(const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect) const
+{
+    // TODO: check if rect intersects frustum
+    Vector3f normal = Vector3f(
+        boundingRect.m_normal.getX(),
+        boundingRect.m_normal.getY(),
+        boundingRect.m_normal.getZ()
+        );
+    
+    BaseVecT tmp = boundingRect.center();
+    Vector3f center(tmp.x, tmp.y, tmp.z);
+
+    std::vector<std::pair<ImageInfo, float>> ranked;
+
+    std::transform(
+        m_images.begin(),
+        m_images.end(),
+        std::back_insert_iterator(ranked),
+        [normal, center](ImageInfo img)
+        {
+            // View vector in world coordinates
+            Vector3f view = img.rotation * Vector3f::UnitZ();
+            // Check if cluster is seen from the back
+            if (normal.dot(view) < 0)
+            {
+                return std::make_pair(img, 0.0f);
+            }
+            // Direction vector from the camera to the center of the cluster
+            Vector3f direction = (center - img.translation.vector()).normalized();
+
+            // Cosine of the angle between the view vector of the image and the cluster normal
+            float angle = view.dot(normal);
+            // Preload the image if its not already loaded
+            if(!img.image->loaded())
+            {
+                img.image->load();
+            }
+            return std::make_pair(img, angle);
+        });
+
+    std::sort(
+        ranked.begin(),
+        ranked.end(),
+        [](const auto& first, const auto& second)
+        {
+            return first.second > second.second;
+        });
+
+    auto is_valid = [](auto& elem){ return elem.second > 0.0f;};
+
+    size_t numValidImages = std::count_if(ranked.begin(), ranked.end(), is_valid);
+    auto pastValidImageIt = std::partition_point(ranked.begin(), ranked.end(), is_valid);
+    std::vector<ImageInfo> ret;
+
+    std::transform(
+        ranked.begin(),
+        pastValidImageIt,
+        std::back_insert_iterator(ret),
+        [](auto pair)
+        {
+            return pair.first;
+        }
+    );
+
+    return ret;
 }
 
 } // namespace lvr2
