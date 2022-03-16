@@ -1,10 +1,10 @@
 #pragma once
 
-#include <lvr2/io/baseio/BaseIO.hpp>
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/io/meshio/MaterialIO.hpp>
-#include <lvr2/io/meshio/ClusterIO.hpp>
-#include <lvr2/io/meshio/FaceIO.hpp>
+#include "lvr2/io/baseio/BaseIO.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
+#include "lvr2/io/meshio/MaterialIO.hpp"
+#include "lvr2/io/meshio/ClusterIO.hpp"
+#include "lvr2/io/meshio/FaceIO.hpp"
 
 namespace lvr2
 {

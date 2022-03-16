@@ -56,12 +56,9 @@ set(LVR2_SOURCES
     io/modelio/PCDIO.cpp
     io/kernels/DirectoryKernel.cpp
     io/kernels/HDF5Kernel.cpp
-    io/MeshBuffer.cpp
     io/LineReader.cpp
     # io/HDF5IO.cpp
     io/GridIO.cpp
-    io/PolygonBuffer.cpp
-    io/PointBuffer.cpp
     io/ModelFactory.cpp
     # io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
@@ -90,6 +87,9 @@ set(LVR2_SOURCES
     registration/OctreeReduction.cpp
     registration/RegistrationPipeline.cpp
     types/CustomChannelTypes.cpp
+    types/MeshBuffer.cpp
+    types/PolygonBuffer.cpp
+    types/PointBuffer.cpp
     texture/Texture.cpp
     texture/TextureFactory.cpp
     util/ColorGradient.cpp

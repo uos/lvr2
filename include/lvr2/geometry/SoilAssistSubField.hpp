@@ -4,7 +4,8 @@
 
 #ifndef LAS_VEGAS_SOILASSISTSUBFIELD_HPP
 #define LAS_VEGAS_SOILASSISTSUBFIELD_HPP
-#include "lvr2/io/PolygonBuffer.hpp"
+
+#include "lvr2/types/PolygonBuffer.hpp"
 
 namespace lvr2
 {

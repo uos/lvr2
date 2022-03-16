@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
 #include <iostream>

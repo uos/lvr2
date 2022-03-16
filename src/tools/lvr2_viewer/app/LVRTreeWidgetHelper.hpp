@@ -38,8 +38,8 @@
 #include "../widgets/LVRItemTypes.hpp"
 #include "../widgets/LVRModelItem.hpp"
 
-#include "lvr2/io/MeshBuffer.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 
 namespace lvr2
 {

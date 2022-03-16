@@ -25,21 +25,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "lvr2/io/PolygonBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/util/Timestamp.hpp"
-#include <highfive/H5Easy.hpp>
+
 #include <iostream>
 
 namespace lvr2
 {
 
-PolygonBuffer::PolygonBuffer()
+PointBuffer::PointBuffer()
 :base()
 {
    
 }
 
-PolygonBuffer::PolygonBuffer(floatArr points, size_t n)
+PointBuffer::PointBuffer(floatArr points, size_t n)
 {
     // Generate channel object pointer and add it
     // to channel map
@@ -48,45 +48,31 @@ PolygonBuffer::PolygonBuffer(floatArr points, size_t n)
 
 }
 
-PolygonBuffer::PolygonBuffer(std::vector<std::vector<float> >& points)
+PointBuffer::PointBuffer(floatArr points, floatArr normals, size_t n) : PointBuffer(points, n)
 {
-    floatArr arr(new float[points.size()*3]);
-    for(size_t i = 0 ; i < points.size() ; i++)
-    {
-        arr[i*3] = points[i][0];
-        arr[i*3+1] = points[i][1];
-        arr[i*3+2] = points[i][2];
-    }
-    this->setPointArray(arr, points.size());
+    // Add normal data
+    FloatChannelPtr normal_data(new FloatChannel(n, 3, points));
+    this->addFloatChannel(normal_data, "normals");
 }
 
-
-
-void PolygonBuffer::setPointArray(floatArr points, size_t n)
+void PointBuffer::setPointArray(floatArr points, size_t n)
 {
     FloatChannelPtr pts(new FloatChannel(n, 3, points));
     this->addFloatChannel(pts, "points");
 }
 
-
-
-
-void PolygonBuffer::load(std::string file)
+void PointBuffer::setNormalArray(floatArr normals, size_t n)
 {
-    HighFive::File hdf5_file(file, HighFive::File::ReadOnly);
-    std::vector<std::vector<float> > data = H5Easy::load<std::vector<std::vector<float> > >(hdf5_file,"/field/outer_boundary/coordinates");
-    std::cout << "data size: " << data.size() << std::endl;
-    floatArr arr(new float[data.size()*3]);
-    for(size_t i = 0 ; i < data.size() ; i++)
-    {
-        arr[i*3] = data[i][0];
-        arr[i*3+1] = data[i][1];
-        arr[i*3+2] = data[i][2];
-    }
-    this->addFloatChannel(arr, "points", data.size(), 3);
+    FloatChannelPtr nmls(new FloatChannel(n, 3, normals));
+    this->addFloatChannel(nmls, "normals");
+}
+void PointBuffer::setColorArray(ucharArr colors, size_t n, size_t width)
+{
+    UCharChannelPtr cls(new UCharChannel(n, width, colors));
+    this->addUCharChannel(cls, "colors");
 }
 
-floatArr PolygonBuffer::getPointArray()
+floatArr PointBuffer::getPointArray()
 {
     typename Channel<float>::Optional opt = getChannel<float>("points");
     if(opt)
@@ -97,8 +83,42 @@ floatArr PolygonBuffer::getPointArray()
     return floatArr();
 }
 
+floatArr PointBuffer::getNormalArray()
+{
+    typename Channel<float>::Optional opt = getChannel<float>("normals");
+    if(opt)
+    {
+        return opt->dataPtr();
+    }
 
-size_t PolygonBuffer::numPoints() const
+    return floatArr();
+}
+
+ucharArr PointBuffer::getColorArray(size_t& w)
+{
+    w = 0;
+    typename Channel<unsigned char>::Optional opt = getChannel<unsigned char>("colors");
+    if(opt)
+    {
+        w = opt->width();
+        return opt->dataPtr();
+    }
+
+    return ucharArr();
+}
+
+
+bool PointBuffer::hasColors() const
+{
+   return hasChannel<unsigned char>("colors");
+}
+
+bool PointBuffer::hasNormals() const
+{
+   return hasChannel<float>("normals");
+}
+
+size_t PointBuffer::numPoints() const
 {
     const typename Channel<float>::Optional opt = getChannel<float>("points");
     if(opt)
@@ -113,9 +133,9 @@ size_t PolygonBuffer::numPoints() const
 }
 
 
-    PolygonBuffer PolygonBuffer::clone() const
+PointBuffer PointBuffer::clone() const
 {
-    PolygonBuffer pb;
+    PointBuffer pb;
 
     for(const auto& elem : *this)
     {

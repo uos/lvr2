@@ -37,7 +37,7 @@
 #define LVR2_ALGORITHM_RAYCASTING_CLRAYCASTER
 
 #include <chrono>
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
 

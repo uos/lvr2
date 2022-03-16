@@ -1,7 +1,7 @@
 #ifndef WAVEFORMBUFFER_HPP
 #define WAVEFORMBUFFER_HPP
 
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 
 #include <map>
 #include <string>

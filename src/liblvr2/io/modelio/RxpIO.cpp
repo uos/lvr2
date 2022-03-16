@@ -32,8 +32,8 @@
 
 
 
-#include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/PointBuffer.hpp"
+#include "lvr2/types/Model.hpp"
 #include "lvr2/io/baseio/RxpIO.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 

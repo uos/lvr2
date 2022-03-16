@@ -5,7 +5,7 @@
 #include <lvr/reconstruction/TSDFGrid.hpp>
 #include <lvr/reconstruction/PointsetSurface.hpp>
 #include <lvr/reconstruction/FastBox.hpp>
-#include <lvr/io/PointBuffer.hpp>
+#include <lvr/types/PointBuffer.hpp>
 #include <lvr/io/DataStruct.hpp>
 #include <lvr/io/Timestamp.hpp>
 #include <lvr/geometry/HalfEdgeVertex.hpp>

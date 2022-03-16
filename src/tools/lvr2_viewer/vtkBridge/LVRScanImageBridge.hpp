@@ -34,7 +34,7 @@
 #ifndef LVRSCANIMAGEBRIDGE_HPP_
 #define LVRSCANIMAGEBRIDGE_HPP_
 
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/Model.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 

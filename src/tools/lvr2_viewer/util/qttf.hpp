@@ -8,7 +8,7 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Normal.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include <QTreeWidgetItem>
 
 namespace lvr2 {

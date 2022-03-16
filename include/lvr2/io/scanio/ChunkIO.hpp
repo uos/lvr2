@@ -7,7 +7,7 @@
 #include "PointCloudIO.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/io/baseio/BaseIO.hpp"
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/Model.hpp"
 
 using lvr2::baseio::FeatureConstruct;
 

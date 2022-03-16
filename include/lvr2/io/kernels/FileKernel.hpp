@@ -12,8 +12,8 @@
 #include <opencv2/core.hpp>
 
 #include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/util/Tuple.hpp"
 
 namespace lvr2

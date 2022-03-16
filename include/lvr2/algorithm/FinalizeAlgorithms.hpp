@@ -47,7 +47,7 @@
 #include "lvr2/texture/Texture.hpp"
 #include "lvr2/texture/Material.hpp"
 #include "lvr2/types/ColorTypes.hpp"
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/io/modelio/ObjIO.hpp"
 
 namespace lvr2

@@ -35,7 +35,7 @@
 #define LVRPOINTBUFFERBRIDGE_HPP_
 
 #include "lvr2/util/ColorGradient.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>

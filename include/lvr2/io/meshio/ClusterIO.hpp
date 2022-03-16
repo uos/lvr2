@@ -1,8 +1,8 @@
 #pragma once
 
-#include <lvr2/io/MeshBuffer.hpp>
-#include <lvr2/io/schema/MeshSchema.hpp>
-#include <lvr2/io/DataStruct.hpp>
+#include "lvr2/types/MeshBuffer.hpp"
+#include "lvr2/io/schema/MeshSchema.hpp"
+#include "lvr2/io/DataStruct.hpp"
 
 namespace lvr2
 {

@@ -35,7 +35,7 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 
 #include "LVRReconstructionExtendedMarchingCubesDialog.hpp"
 

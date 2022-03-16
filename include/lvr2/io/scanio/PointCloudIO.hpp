@@ -5,7 +5,7 @@
 
 #include <boost/optional.hpp>
 
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/io/baseio/VariantChannelIO.hpp"
 #include "lvr2/io/baseio/ChannelIO.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"

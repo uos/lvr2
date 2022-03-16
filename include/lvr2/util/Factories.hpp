@@ -38,7 +38,7 @@
 #include <string>
 
 #include "lvr2/reconstruction/SearchTree.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 
 using std::string;
 

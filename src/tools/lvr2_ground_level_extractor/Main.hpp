@@ -28,23 +28,23 @@
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/SearchTreeFlann.hpp"
-#include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/modelio/GeoTIFFIO.hpp"
 #include "lvr2/util/ColorGradient.hpp"
 
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#ifndef _SSIZE_T_DEFINED
+#ifndef MAIN
 #ifdef  _WIN64
 typedef __int64    ssize_t;
 #else
 typedef _W64 int   ssize_t;
 #endif
-#define _SSIZE_T_DEFINED
+#define MAIN
 #endif
-#endif
+#endif // MAIN
 
 using boost::optional;
 using std::unique_ptr;

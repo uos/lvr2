@@ -37,7 +37,7 @@
 using std::unordered_map;
 
 #include "lvr2/algorithm/Materializer.hpp"
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 

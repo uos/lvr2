@@ -36,7 +36,7 @@
 #define DATIO
 
 #include "lvr2/io/modelio/ModelIOBase.hpp"
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/Model.hpp"
 
 #include <string>
 using std::string;

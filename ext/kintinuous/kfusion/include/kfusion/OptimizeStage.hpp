@@ -43,7 +43,7 @@
 #include "AbstractStage.hpp"
 #include "BlockingQueue.hpp"
 #include <boost/any.hpp>
-#include <lvr/io/PointBuffer.hpp>
+#include <lvr/types/PointBuffer.hpp>
 #include <lvr/io/DataStruct.hpp>
 #include <lvr/geometry/HalfEdgeVertex.hpp>
 #include <lvr/geometry/HalfEdgeKinFuMesh.hpp>

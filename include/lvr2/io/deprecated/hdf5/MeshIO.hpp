@@ -5,7 +5,7 @@
 
 #include <boost/optional.hpp>
 
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/io/AttributeMeshIOBase.hpp"
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>

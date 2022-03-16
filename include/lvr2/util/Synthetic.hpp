@@ -3,7 +3,7 @@
 #define LVR2_UTIL_SYNTHETIC_HPP
 
 #include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2 {

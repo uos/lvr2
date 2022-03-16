@@ -34,7 +34,7 @@
 #ifndef LVRMESHBUFFERBRIDGE_H_
 #define LVRMESHBUFFERBRIDGE_H_
 
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/display/TexturedMesh.hpp"
 #include "lvr2/display/GlTexture.hpp"
 

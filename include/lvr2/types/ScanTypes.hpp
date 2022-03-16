@@ -1,7 +1,7 @@
 #ifndef SCANTYPES
 #define SCANTYPES
 
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/CameraModels.hpp"

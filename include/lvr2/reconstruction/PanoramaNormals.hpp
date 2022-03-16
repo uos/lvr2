@@ -29,7 +29,7 @@
 #define PANORAMANORMALS_H
 
 #include "lvr2/reconstruction/ModelToImage.hpp"
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/Model.hpp"
 #include "lvr2/util/Progress.hpp"
 
 namespace lvr2

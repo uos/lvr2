@@ -35,8 +35,9 @@
 #define LVRPOLYGONBRIDGE_HPP_
 
 #include "lvr2/util/ColorGradient.hpp"
-#include "lvr2/io/PolygonBuffer.hpp"
+#include "lvr2/types/PolygonBuffer.hpp"
 #include "lvr2/geometry/SoilAssistField.hpp"
+
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>

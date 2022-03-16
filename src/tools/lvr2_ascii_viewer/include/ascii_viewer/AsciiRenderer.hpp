@@ -6,7 +6,7 @@
 #include "BitField.hpp"
 #include <ncursesw/ncurses.h>
 #include <unordered_map>
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 
 #include "CursesHelper.hpp"

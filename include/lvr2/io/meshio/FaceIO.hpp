@@ -1,5 +1,5 @@
 #pragma once
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 
 namespace lvr2
 {

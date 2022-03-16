@@ -30,7 +30,7 @@
 #ifndef DRACO_DECODER_HPP
 #define DRACO_DECODER_HPP
 
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/Model.hpp"
 #include "draco/compression/decode.h"
 
 namespace lvr2

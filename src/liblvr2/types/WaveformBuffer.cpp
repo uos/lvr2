@@ -1,5 +1,5 @@
-#include "lvr2/io/WaveformBuffer.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/types/WaveformBuffer.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <iostream>
 
