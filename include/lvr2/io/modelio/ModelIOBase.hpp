@@ -54,11 +54,11 @@ namespace lvr2
  * @brief Interface specification for low-level io. All read
  *        elements are stored in linear arrays.
  */
-class FileIOBase
+class ModelIOBase
 {
     public:
-        FileIOBase() = default;
-        virtual ~FileIOBase() = default;
+        ModelIOBase() = default;
+        virtual ~ModelIOBase() = default;
 
         /**
          * \brief Parse the given file and load supported elements.

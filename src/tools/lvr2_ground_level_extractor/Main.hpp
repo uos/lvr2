@@ -31,7 +31,7 @@
 #include "lvr2/io/PointBuffer.hpp"
 #include "lvr2/io/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/fileio/GeoTIFFIO.hpp"
+#include "lvr2/io/modelio/GeoTIFFIO.hpp"
 #include "lvr2/util/ColorGradient.hpp"
 
 

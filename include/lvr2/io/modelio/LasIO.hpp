@@ -26,39 +26,45 @@
  */
 
 /**
- * DatIO.hpp
+ * LasIO.h
  *
- *  Created on: Aug 8, 2013
- *      Author: twiemann
+ *  @date 03.01.2012
+ *  @author Thomas Wiemann
  */
 
-#ifndef DATIO
-#define DATIO
+#ifndef LASIO_H_
+#define LASIO_H_
 
-#include "lvr2/io/fileio/FileIOBase.hpp"
-#include "lvr2/io/Model.hpp"
-
-#include <string>
-using std::string;
+#include "lvr2/io/modelio/ModelIOBase.hpp"
 
 namespace lvr2
 {
 
 /**
- * @brief IO class for binary laser scans
+ * @brief   Interface class to read laser scan data in .las-Format
  */
-class DatIO : public FileIOBase
+class LasIO : public ModelIOBase
 {
 public:
-	DatIO();
-	virtual ~DatIO();
+    LasIO() {};
+    virtual ~LasIO() {};
 
-	virtual ModelPtr read(string filename, int n, int reduction = 0);
-	virtual ModelPtr read(string filename);
-	virtual void save(ModelPtr model, string filename);
-	virtual void save(string filename);
+    /**
+     * @brief Parse the given file and load supported elements.
+     *
+     * @param filename  The file to read.
+     */
+    virtual ModelPtr read(string filename );
+
+    /**
+     * @brief Save the loaded elements to the given file.
+     *
+     * @param filename Filename of the file to write.
+     */
+    virtual void save( string filename );
+
 };
 
-} // namespace lvr2
+} /* namespace lvr2 */
 
-#endif // DATIO
+#endif /* LASIO_H_ */

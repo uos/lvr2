@@ -39,7 +39,7 @@
  */
 
 
-#include "lvr2/io/fileio/PLYIO.hpp"
+#include "lvr2/io/modelio/PLYIO.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
 #include <cstring>

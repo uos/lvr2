@@ -36,7 +36,7 @@
 
 #include "lvr2/texture/TextureFactory.hpp"
 
-#include "lvr2/io/fileio/PPMIO.hpp"
+#include "lvr2/io/modelio/PPMIO.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/texture/Texture.hpp"
 

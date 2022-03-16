@@ -27,8 +27,8 @@
  *
  **/
 
-#ifndef DRACO_ENCODER_HPP
-#define DRACO_ENCODER_HPP
+#ifndef DRACOENCODER
+#define DRACOENCODER
 
 #include "lvr2/io/Model.hpp"
 #include "draco/compression/encode.h"
@@ -49,4 +49,4 @@ std::unique_ptr<draco::EncoderBuffer> encodeDraco(ModelPtr                   mod
 
 } // namespace lvr
 
-#endif
+#endif // DRACOENCODER

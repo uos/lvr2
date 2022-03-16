@@ -40,7 +40,7 @@ using std::ifstream;
 
 #include <boost/filesystem.hpp>
 
-#include "lvr2/io/fileio/AsciiIO.hpp"
+#include "lvr2/io/modelio/AsciiIO.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
 

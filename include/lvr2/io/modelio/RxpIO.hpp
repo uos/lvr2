@@ -32,12 +32,12 @@
  *  @author Alexander Loehr (aloehr@uos.de)
  */
 
-#ifndef LVR2_IO_RXPIO_HPP
-#define LVR2_IO_RXPIO_HPP
+#ifndef RXPIO
+#define RXPIO
 
 #include <string>
 
-#include "lvr2/io/FileIOBase.hpp"
+#include "lvr2/io/ModelIOBase.hpp"
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
@@ -49,7 +49,7 @@ using Vec = BaseVector<float>;
 /**
  * @brief Reads .rxp files
  */
-class RxpIO : public FileIOBase
+class RxpIO : public ModelIOBase
 {
     public:
 
@@ -95,4 +95,4 @@ class RxpIO : public FileIOBase
 
 } // namespace lvr2
 
-#endif
+#endif // RXPIO

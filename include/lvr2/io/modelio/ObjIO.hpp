@@ -26,43 +26,67 @@
  */
 
 /*
- * STLIO.hpp
+ * ObjIO.hpp
  *
- *  Created on: Dec 9, 2016
- *      Author: robot
+ *  @date 07.11.2011
+ *  @author Florian Otte (fotte@uos.de)
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
+ *  @author Denis Meyer (denmeyer@uos.de)
  */
 
-#ifndef STLIO_HPP
-#define STLIO_HPP
-
-#include "lvr2/io/fileio/FileIOBase.hpp"
+#ifndef LVR2_OBJIO_HPP_
+#define LVR2_OBJIO_HPP_
+#include "lvr2/io/modelio/ModelIOBase.hpp"
+#include <fstream>
+#include <set>
+#include <map>
 
 namespace lvr2
 {
 
-/****
- * @brief 	Reader / Writer for STL file. Currently only binary STL files
- * 			are supported.
+/**
+ * @brief A basic implementation of the obj file format.
  */
-class STLIO : public FileIOBase
+class ObjIO : public ModelIOBase
 {
 public:
-	STLIO();
-	virtual ~STLIO();
 
-	virtual void save( string filename );
-	virtual void save( ModelPtr model, string filename );
     /**
-     * @brief Parse the given file and load supported elements.
+     * @brief Constructor.
+     **/
+    ObjIO()
+    {
+        m_model.reset();
+    }
+
+    ~ObjIO() { };
+
+    /**
+     * \brief   Parse the given file and load supported elements.
      *
-     * @param 	filename  The file to read.
-     * @return	A new model. If the file could not be parsed, an empty model
-     * 			is returned.
+     * @param filename  The file to read.
      */
-    virtual ModelPtr read(string filename );
+    ModelPtr read( std::string filename );
+
+    /**
+     * @brief     Writes the mesh to an obj file.
+     *
+     * @param  model     The model containing all mesh data
+     * @param  filename  The file name to use
+     */
+    void save( std::string filename );
+
+
+private:
+
+    void parseMtlFile(std::map<string, int>& matNames,
+            std::vector<Material>& materials,
+            std::vector<Texture>& textures,
+            std::string mtlname);
 
 };
 
-} /* namespace lvr2 */
+} // namespace lvr2
 
-#endif // STLIO
+#endif /* OBJIO_H_ */

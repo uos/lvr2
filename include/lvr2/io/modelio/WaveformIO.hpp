@@ -26,41 +26,50 @@
  */
 
  /**
- * @file       lvr2::FileIOBase.cpp
- * @brief      Base interface for all I/O related classes.
- * @details    This file introduces a pure virtual class specifying some basic
- *             methods which must be implemented by all I/O classes in the lvr
- *             toolkit.
- * @author     Lars Kiesow (lkiesow), lkiesow@uos.de
- * @version    120103
- * @date       Created:       2012-01-03 12:34:25
- * @date       Last modified: 2012-01-03 12:34:28
- */
+ *
+ * @file      WaveformIO.hpp
+ * @brief     Read and write pointclouds and Wavform data from .lwf files.
+ * @details     Read and write pointclouds and Wavform data from .lwf files.
+ * 
+ * @author    Thomas Wiemann (twiemann), twiemann@uos.de, Universität Osnabrück
+ * @author    Michel Loepmeier (mloepmei), mloepmei@uos.de, Universität Osnabrück
+ * @version   111001
+ * @date      Created:       2020-06-23
+ * @date      Last modified: 2011-10-01 19:49:24
+ *
+ **/
 
-#include "lvr2/io/fileio/FileIOBase.hpp"
+#ifndef WAVEFORMIO_H_
+#define WAVEFORMIO_H_
 
-
-#include <string>
+#include "lvr2/io/modelio/ModelIOBase.hpp"
 
 namespace lvr2
 {
 
-void FileIOBase::save( ModelPtr m, std::string filename)
+/**
+ * @brief A import / export class for point cloud and waveform data.
+ * LWF fies supported.
+ */
+class WaveformIO : public ModelIOBase
 {
-	m_model = m;
-    save( filename);
-}
+    public:
 
+        /**
+         * \brief Default constructor.
+         **/
+        WaveformIO() {
+            setlocale (LC_ALL, "C");
+            m_model.reset();
+	}
+	~WaveformIO() {};
+        virtual ModelPtr read( std::string filename);
 
-void FileIOBase::setModel( ModelPtr m )
-{
-    m_model = m;
-}
+        virtual void save( string filename);
 
+};
 
-ModelPtr FileIOBase::getModel()
-{
-    return m_model;
-}
 
 } // namespace lvr2
+
+#endif /* WAVEFORMIO_H_ */

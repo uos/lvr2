@@ -45,8 +45,8 @@
 #include <sstream>
 #include <vector>
 
-#include "lvr2/io/fileio/FileIOBase.hpp"
-#include "lvr2/io/fileio/AsciiIO.hpp"
+#include "lvr2/io/modelio/ModelIOBase.hpp"
+#include "lvr2/io/modelio/AsciiIO.hpp"
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
@@ -71,7 +71,7 @@ using Vec = BaseVector<float>;
  * transformation in the file. If no .frame file are present, the
  * .pose files will be sued to transform the scans.
  */
-class UosIO : public FileIOBase
+class UosIO : public ModelIOBase
 {
 
 public:

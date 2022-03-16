@@ -36,7 +36,7 @@
  *      Author:  Denis Meyer    ( denmeyer@uos.de )
  */
 
-#include "lvr2/io/fileio/PPMIO.hpp"
+#include "lvr2/io/modelio/PPMIO.hpp"
 
 #include <iostream>
 #include <fstream>

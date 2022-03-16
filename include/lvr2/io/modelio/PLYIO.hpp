@@ -41,7 +41,7 @@
 #ifndef __PLY_IO_H__
 #define __PLY_IO_H__
 
-#include "lvr2/io/fileio/FileIOBase.hpp"
+#include "lvr2/io/modelio/ModelIOBase.hpp"
 
 #include <rply.h>
 #include <stdint.h>
@@ -101,7 +101,7 @@ ELEMENT face
    PROPERTY   vertex_index (LIST uchar int)  <<  [only read]
 \endverbatim
  */
-class PLYIO : public FileIOBase
+class PLYIO : public ModelIOBase
 {
     public:
         /**

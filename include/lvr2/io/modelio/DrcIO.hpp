@@ -30,12 +30,12 @@
 #ifndef DRCIO
 #define DRCIO
 
-#include "lvr2/io/fileio/FileIOBase.hpp"
+#include "lvr2/io/modelio/ModelIOBase.hpp"
 
 namespace lvr2
 {
 
-class DrcIO : public FileIOBase
+class DrcIO : public ModelIOBase
 {
   public:
     DrcIO(){};

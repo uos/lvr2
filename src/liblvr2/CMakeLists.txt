@@ -41,19 +41,19 @@ set(LVR2_SOURCES
     geometry/SoilAssistField.cpp
     geometry/SoilAssistSubField.cpp
     io/baseio/yaml/Matrix.cpp
-    io/fileio/AsciiIO.cpp
-    io/fileio/FileIOBase.cpp
-    io/fileio/ObjIO.cpp
-    io/fileio/DatIO.cpp
-    io/fileio/LasIO.cpp
-    io/fileio/GeoTIFFIO.cpp
+    io/modelio/AsciiIO.cpp
+    io/modelio/ModelIOBase.cpp
+    io/modelio/ObjIO.cpp
+    io/modelio/DatIO.cpp
+    io/modelio/LasIO.cpp
+    io/modelio/GeoTIFFIO.cpp
 #    io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp
-    io/fileio/PPMIO.cpp
-    io/fileio/PLYIO.cpp
-    io/fileio/STLIO.cpp
-    io/fileio/UosIO.cpp
-    io/fileio/PCDIO.cpp
+    io/modelio/PPMIO.cpp
+    io/modelio/PLYIO.cpp
+    io/modelio/STLIO.cpp
+    io/modelio/UosIO.cpp
+    io/modelio/PCDIO.cpp
     io/kernels/DirectoryKernel.cpp
     io/kernels/HDF5Kernel.cpp
     io/MeshBuffer.cpp

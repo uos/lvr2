@@ -27,49 +27,59 @@
 
  /**
  *
- * @file      WaveformIO.hpp
- * @brief     Read and write pointclouds and Wavform data from .lwf files.
- * @details     Read and write pointclouds and Wavform data from .lwf files.
+ * @file      PCDIO.hpp
+ * @brief     Read and write point clouds from PCD files.
+ * @details   Read and write point clouds from the files in the
+ *            PointCloudLibrary file format.
  * 
- * @author    Thomas Wiemann (twiemann), twiemann@uos.de, Universität Osnabrück
- * @author    Michel Loepmeier (mloepmei), mloepmei@uos.de, Universität Osnabrück
- * @version   111001
- * @date      Created:       2020-06-23
- * @date      Last modified: 2011-10-01 19:49:24
+ * @author    Lars Kiesow (lkiesow), lkiesow@uos.de, Universität Osnabrück
+ * @version   120109
+ * @date      Created:       2012-01-09 01:50:19
+ * @date      Last modified: 2012-01-09 01:50:22
  *
  **/
 
-#ifndef WAVEFORMIO_H_
-#define WAVEFORMIO_H_
+#ifndef PCDIO_HPP_INCLUDED
+#define PCDIO_HPP_INCLUDED
 
-#include "lvr2/io/fileio/FileIOBase.hpp"
+#include "lvr2/io/modelio/ModelIOBase.hpp"
 
 namespace lvr2
 {
 
 /**
- * @brief A import / export class for point cloud and waveform data.
- * LWF fies supported.
+ * @brief A import / export class for point cloud data in the PointCloudLibrary
+ *        file format.
  */
-class WaveformIO : public FileIOBase
+class PCDIO : public ModelIOBase
 {
     public:
 
         /**
          * \brief Default constructor.
          **/
-        WaveformIO() {
-            setlocale (LC_ALL, "C");
-            m_model.reset();
-	}
-	~WaveformIO() {};
-        virtual ModelPtr read( std::string filename);
+        PCDIO() {};
 
-        virtual void save( string filename);
+
+        /**
+         * @brief Reads the given file and stores point and normal
+         *        information in the given parameters
+         *
+         * @param filename      The file to read
+         */
+        virtual ModelPtr read( string filename );
+
+
+        /**
+         * @todo : Implement save method for ASCII Files...
+         * @param filename
+         */
+        virtual void save( string filename );
+
 
 };
 
 
 } // namespace lvr2
 
-#endif /* WAVEFORMIO_H_ */
+#endif /* PCDIO_HPP_INCLUDED */

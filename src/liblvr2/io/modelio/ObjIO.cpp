@@ -46,7 +46,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/tuple/tuple.hpp>
 
-#include "lvr2/io/fileio/ObjIO.hpp"
+#include "lvr2/io/modelio/ObjIO.hpp"
 #include "lvr2/util/Util.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/texture/TextureFactory.hpp"
