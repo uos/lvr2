@@ -4,14 +4,7 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHyperlib.hpp"
 #include "lvr2/io/IOUtils.hpp"
-#include "lvr2/io/yaml/Scan.hpp"
-#include "lvr2/io/yaml/Waveform.hpp"
-#include "lvr2/io/yaml/Label.hpp"
-#include "lvr2/io/yaml/ScanImage.hpp"
-#include "lvr2/io/yaml/ScanPosition.hpp"
-#include "lvr2/io/yaml/MatrixIO.hpp"
-#include "lvr2/io/yaml/ScanProject.hpp"
-#include "lvr2/io/yaml/ScanCamera.hpp"
+#include "lvr2/io/YAML.hpp"
 
 #include <boost/optional/optional_io.hpp>
 

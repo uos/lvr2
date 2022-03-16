@@ -4,12 +4,12 @@ namespace lvr2
 namespace scanio
 {
 
-template <typename  FeatureBase>
-void ScanPositionIO< FeatureBase>::save(
+template <typename  BaseIO>
+void ScanPositionIO< BaseIO>::save(
     const size_t& scanPosNo, 
     ScanPositionPtr scanPositionPtr) const
 {
-    Description d = m_featureBase->m_description->position(scanPosNo);
+    Description d = m_baseIO->m_description->position(scanPosNo);
   
     // std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
     // std::cout << d << std::endl;
@@ -57,27 +57,27 @@ void ScanPositionIO< FeatureBase>::save(
     {
         YAML::Node node;
         node = *scanPositionPtr;
-        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
+        m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 
     // std::cout << "[ScanPositionIO] Meta written. " << std::endl;
 }
 
-template <typename FeatureBase>
-boost::optional<YAML::Node> ScanPositionIO<FeatureBase>::loadMeta(
+template <typename BaseIO>
+boost::optional<YAML::Node> ScanPositionIO<BaseIO>::loadMeta(
         const size_t& scanPosNo) const
 {
-    Description d = m_featureBase->m_description->position(scanPosNo);
+    Description d = m_baseIO->m_description->position(scanPosNo);
     return m_metaIO->load(d);
 }
 
-template <typename FeatureBase>
-ScanPositionPtr ScanPositionIO<FeatureBase>::load(
+template <typename BaseIO>
+ScanPositionPtr ScanPositionIO<BaseIO>::load(
     const size_t& scanPosNo) const
 {
     ScanPositionPtr ret;
 
-    Description d = m_featureBase->m_description->position(scanPosNo);
+    Description d = m_baseIO->m_description->position(scanPosNo);
 
     // std::cout << "[ScanPositionIO - load]"  << std::endl;
     // std::cout << d <<  std::endl;
@@ -88,7 +88,7 @@ ScanPositionPtr ScanPositionIO<FeatureBase>::load(
     }
 
     // Check if specified scan position exists
-    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
@@ -96,7 +96,7 @@ ScanPositionPtr ScanPositionIO<FeatureBase>::load(
     if(d.meta)
     {
         YAML::Node meta;
-        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
@@ -169,8 +169,8 @@ ScanPositionPtr ScanPositionIO<FeatureBase>::load(
     return ret;
 }
 
-template <typename  FeatureBase>
-ScanPositionPtr ScanPositionIO< FeatureBase>::load(
+template <typename  BaseIO>
+ScanPositionPtr ScanPositionIO< BaseIO>::load(
     const size_t& scanPosNo, ReductionAlgorithmPtr reduction) const
 {
     ScanPositionPtr ret = load(scanPosNo);
@@ -186,23 +186,23 @@ ScanPositionPtr ScanPositionIO< FeatureBase>::load(
     return ret;
 }
 
-template <typename  FeatureBase>
-void ScanPositionIO< FeatureBase>::saveScanPosition(
+template <typename  BaseIO>
+void ScanPositionIO< BaseIO>::saveScanPosition(
     const size_t& scanPosNo, 
     ScanPositionPtr scanPositionPtr) const
 {
     save(scanPosNo, scanPositionPtr);
 }
 
-template <typename  FeatureBase>
-ScanPositionPtr ScanPositionIO<FeatureBase>::loadScanPosition(
+template <typename  BaseIO>
+ScanPositionPtr ScanPositionIO<BaseIO>::loadScanPosition(
     const size_t& scanPosNo) const
 {
     return load(scanPosNo);
 }
 
-template <typename  FeatureBase>
-ScanPositionPtr ScanPositionIO< FeatureBase>::loadScanPosition(
+template <typename  BaseIO>
+ScanPositionPtr ScanPositionIO< BaseIO>::loadScanPosition(
     const size_t& scanPosNo, ReductionAlgorithmPtr reduction) const
 {
     return load(scanPosNo, reduction);

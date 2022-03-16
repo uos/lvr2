@@ -35,7 +35,7 @@ namespace lvr2
 {
 
 ////
-/// \brief The MeshBuffer Mesh representation for I/O modules.
+/// \brief A buffered label representaion for I/O modules
 ///
 class LabelBuffer : public BaseBuffer
 {

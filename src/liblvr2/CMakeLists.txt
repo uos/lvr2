@@ -38,6 +38,9 @@ set(LVR2_SOURCES
     display/MeshCluster.cpp
     geometry/pmp/SurfaceMesh.cpp
     geometry/pmp/SurfaceMeshIO.cpp
+    geometry/SoilAssistField.cpp
+    geometry/SoilAssistSubField.cpp
+    io/baseio/yaml/Matrix.cpp
     io/fileio/AsciiIO.cpp
     io/fileio/FileIOBase.cpp
     io/fileio/ObjIO.cpp
@@ -57,15 +60,11 @@ set(LVR2_SOURCES
     io/LineReader.cpp
     # io/HDF5IO.cpp
     io/GridIO.cpp
-    io/Polygon.cpp
-    io/SoilAssistField.cpp
-    io/SoilAssistSubField.cpp
+    io/PolygonBuffer.cpp
     io/PointBuffer.cpp
-    io/Polygon.cpp
     io/ModelFactory.cpp
     # io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
-    io/scanio/yaml/Matrix.cpp
     io/schema/ScanProjectSchemaRaw.cpp
     io/schema/ScanProjectSchemaSlam6D.cpp
     io/schema/ScanProjectSchema.cpp

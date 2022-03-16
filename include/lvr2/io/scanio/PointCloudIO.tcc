@@ -4,8 +4,8 @@ namespace lvr2
 namespace scanio
 {
 
-template<typename FeatureBase>
-void PointCloudIO<FeatureBase>::save(
+template<typename BaseIO>
+void PointCloudIO<BaseIO>::save(
     const std::string& group, 
     const std::string& name,
     PointBufferPtr pcl) const
@@ -16,12 +16,12 @@ void PointCloudIO<FeatureBase>::save(
         std::string groupandname = group + "/" + name;
         save(groupandname, pcl);
     } else {
-        m_featureBase->m_kernel->savePointBuffer(group, name, pcl);
+        m_baseIO->m_kernel->savePointBuffer(group, name, pcl);
     }
 }
 
-template<typename FeatureBase>
-void PointCloudIO<FeatureBase>::save(
+template<typename BaseIO>
+void PointCloudIO<BaseIO>::save(
     const std::string& groupandname, 
     PointBufferPtr pcl) const
 {
@@ -32,8 +32,8 @@ void PointCloudIO<FeatureBase>::save(
     }
 }
 
-template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::load(
+template<typename BaseIO>
+PointBufferPtr PointCloudIO<BaseIO>::load(
     const std::string& group, 
     const std::string& name) const
 {
@@ -43,12 +43,12 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
         // no extension: assuming to store each channel
         return loadPointCloud(group + "/" + name);
     } else {
-        return m_featureBase->m_kernel->loadPointBuffer(group, name);
+        return m_baseIO->m_kernel->loadPointBuffer(group, name);
     }
 }
 
-template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::load(
+template<typename BaseIO>
+PointBufferPtr PointCloudIO<BaseIO>::load(
     const std::string& group) const
 {
     // std::cout << "[IO: PointCloudIO - load]: " << group << std::endl;
@@ -57,7 +57,7 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
     using VChannelT = typename PointBuffer::val_type;
 
     // load all channel in group
-    for(auto meta : m_featureBase->m_kernel->metas(group, "Channel") )
+    for(auto meta : m_baseIO->m_kernel->metas(group, "Channel") )
     {
         boost::optional<VChannelT> copt = m_vchannel_io->template loadVariantChannel<VChannelT>(group, meta.first);
         if(copt)
@@ -74,8 +74,8 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
     return ret;
 }
 
-template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::load( 
+template<typename BaseIO>
+PointBufferPtr PointCloudIO<BaseIO>::load( 
     const std::string& group,
     const std::string& container, 
     ReductionAlgorithmPtr reduction) const
@@ -90,8 +90,8 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
     }
 }
 
-// template<typename FeatureBase>
-// std::unordered_map<std::string, YAML::Node> PointCloudIO<FeatureBase>::loadMeta(
+// template<typename BaseIO>
+// std::unordered_map<std::string, YAML::Node> PointCloudIO<BaseIO>::loadMeta(
 //     const size_t& posNo, 
 //     const size_t& lidarNo,
 //     const size_t& scanNo) const
@@ -99,8 +99,8 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
 
 // }
 
-// template<typename FeatureBase>
-// PointBufferPtr PointCloudIO<FeatureBase>::load(
+// template<typename BaseIO>
+// PointBufferPtr PointCloudIO<BaseIO>::load(
 //     const size_t& posNo, 
 //     const size_t& lidarNo,
 //     const size_t& scanNo) const
@@ -109,7 +109,7 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
 
 //     PointBufferPtr ret;
 
-//     auto Dgen = m_featureBase->m_description;
+//     auto Dgen = m_baseIO->m_description;
 //     Description d = Dgen->scan(posNo, lidarNo, scanNo);
 
 
@@ -117,7 +117,7 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
 //     if(d.meta)
 //     {
 //         YAML::Node scan_meta;
-//         m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, scan_meta);
+//         m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, scan_meta);
 //     }
 
     
@@ -140,7 +140,7 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
 //             // channelName -> meta
 //             std::unordered_map<std::string, YAML::Node> meta_map;
 
-//             for(auto meta : m_featureBase->m_kernel->metas(metaGroup, "Channel"))
+//             for(auto meta : m_baseIO->m_kernel->metas(metaGroup, "Channel"))
 //             {
 //                 std::cout << "found channel meta at file " << meta.first << std::endl;
 //                 std::cout << meta.second << std::endl;
@@ -168,7 +168,7 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
 //     //     // parse group for channel/pcl like objects and group them together
     
 //     //     Description d_channel = Dgen->channel(d, "test");
-//     //     for(auto meta : m_featureBase->m_kernel->metas(*d_channel.groupName, "Channel") )
+//     //     for(auto meta : m_baseIO->m_kernel->metas(*d_channel.groupName, "Channel") )
 //     //     {
 //     //         std::cout << "Meta: " << meta.first << std::endl;
 //     //     }
@@ -177,8 +177,8 @@ PointBufferPtr PointCloudIO<FeatureBase>::load(
 //     return ret;
 // }
 
-template<typename FeatureBase>
-void PointCloudIO<FeatureBase>::savePointCloud(
+template<typename BaseIO>
+void PointCloudIO<BaseIO>::savePointCloud(
     const std::string& group, 
     const std::string& name, 
     PointBufferPtr pcl) const
@@ -186,31 +186,31 @@ void PointCloudIO<FeatureBase>::savePointCloud(
     save(group, name, pcl);
 }
 
-template<typename FeatureBase>
-void PointCloudIO<FeatureBase>::savePointCloud(
+template<typename BaseIO>
+void PointCloudIO<BaseIO>::savePointCloud(
     const std::string& groupandname,
     PointBufferPtr pcl) const
 {
     save(groupandname, pcl);
 }
 
-template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
+template<typename BaseIO>
+PointBufferPtr PointCloudIO<BaseIO>::loadPointCloud(
     const std::string& group, 
     const std::string& name) const
 {
     return load(group, name);
 }
 
-template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud(
+template<typename BaseIO>
+PointBufferPtr PointCloudIO<BaseIO>::loadPointCloud(
     const std::string& group) const
 {
     return load(group);
 }
 
-template<typename FeatureBase>
-PointBufferPtr PointCloudIO<FeatureBase>::loadPointCloud( 
+template<typename BaseIO>
+PointBufferPtr PointCloudIO<BaseIO>::loadPointCloud( 
     const std::string& group,
     const std::string& container, 
     ReductionAlgorithmPtr reduction) const

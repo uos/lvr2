@@ -1,8 +1,7 @@
 
 namespace lvr2 
 {
-
-namespace scanio
+namespace baseio
 {
 
 // Anker
@@ -81,7 +80,7 @@ void VariantChannelIO<Derived>::save(
     // } catch(YAML::TypedBadConversion<int> ex) {
     //     std::cout << ex.what() << std::endl;
     // }
-    // m_featureBase->m_kernel->saveMetaYAML(groupName, channelName, node);
+    // m_baseIO->m_kernel->saveMetaYAML(groupName, channelName, node);
 }
 
 // anker
@@ -199,7 +198,7 @@ boost::optional<VariantChannelT> VariantChannelIO<Derived>::load(
     boost::optional<VariantChannelT> ret;
 
     YAML::Node node;
-    m_featureBase->m_kernel->loadMetaYAML(groupName, datasetName, node);
+    m_baseIO->m_kernel->loadMetaYAML(groupName, datasetName, node);
 
     lvr2::MultiChannel mc;
     if(!YAML::convert<lvr2::MultiChannel>::decode(node, mc))

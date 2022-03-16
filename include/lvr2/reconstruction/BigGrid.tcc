@@ -33,11 +33,11 @@
  */
 
 #include "lvr2/io/LineReader.hpp"
-#include "lvr2/io/scanio/ArrayIO.hpp"
-#include "lvr2/io/scanio/ChannelIO.hpp"
-#include "lvr2/io/scanio/MatrixIO.hpp"
+#include "lvr2/io/baseio/ArrayIO.hpp"
+#include "lvr2/io/baseio/MatrixIO.hpp"
+#include "lvr2/io/baseio/VariantChannelIO.hpp"
+#include "lvr2/io/baseio/ChannelIO.hpp"
 #include "lvr2/io/scanio/PointCloudIO.hpp"
-#include "lvr2/io/scanio/VariantChannelIO.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"
 #include "lvr2/util/Progress.hpp"

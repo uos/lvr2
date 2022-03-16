@@ -35,8 +35,8 @@
 #define LVRPOLYGONBRIDGE_HPP_
 
 #include "lvr2/util/ColorGradient.hpp"
-#include "lvr2/io/Polygon.hpp"
-#include "lvr2/io/SoilAssistField.hpp"
+#include "lvr2/io/PolygonBuffer.hpp"
+#include "lvr2/geometry/SoilAssistField.hpp"
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
@@ -64,16 +64,16 @@ public:
     void setOpacity(float opacityValue);
     void setVisibility(bool visible);
 
-    PolygonPtr getPolygon();
+    PolygonBufferPtr getPolygon();
 
 
 protected:
 
     void computePolygonActor(SoilAssistFieldPtr poly);
     vtkSmartPointer<vtkActor> makeArrow(float * start, float * end);
-    vtkSmartPointer<vtkActor> computePolygonActor(PolygonPtr poly, bool polygon=true);
+    vtkSmartPointer<vtkActor> computePolygonActor(PolygonBufferPtr poly, bool polygon=true);
     std::vector<vtkSmartPointer<vtkActor> >       m_actors;
-    PolygonPtr                      m_polygon;
+    PolygonBufferPtr                      m_polygon;
     float               m_offset[3];
     bool                m_offset_set;
 

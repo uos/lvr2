@@ -10,15 +10,15 @@ namespace lvr2
 namespace meshio
 {
 
-template <typename FeatureBase>
-void TextureIO<FeatureBase>::saveTexture(   
+template <typename BaseIO>
+void TextureIO<BaseIO>::saveTexture(   
     const std::string& mesh_name,
     const size_t material_index,
     const std::string& tex_name,
     const Texture& tex
 ) const
 {
-    Description desc = m_featureBase->m_description->texture(mesh_name, material_index, tex_name);
+    Description desc = m_baseIO->m_description->texture(mesh_name, material_index, tex_name);
 
     size_t byte_count = tex.m_width * tex.m_height * tex.m_numChannels * tex.m_numBytesPerChan;
     ucharArr copy(new uint8_t[byte_count]);
@@ -37,7 +37,7 @@ void TextureIO<FeatureBase>::saveTexture(
         std::cout << timestamp << "[TextureIO] Skipping texture" << std::endl;
         return;
     }
-    m_featureBase->m_kernel->saveUCharArray(
+    m_baseIO->m_kernel->saveUCharArray(
         *desc.dataRoot,
         *desc.data,
         {tex.m_height, 
@@ -55,7 +55,7 @@ void TextureIO<FeatureBase>::saveTexture(
     //     copy.get()
     // );
 
-    // m_featureBase->m_kernel->saveImage(
+    // m_baseIO->m_kernel->saveImage(
     //     *desc.dataRoot,
     //     *desc.data,
     //     matrix
@@ -64,36 +64,36 @@ void TextureIO<FeatureBase>::saveTexture(
     // Save metadata
     YAML::Node meta;
     meta = tex;
-    m_featureBase->m_kernel->saveMetaYAML(
+    m_baseIO->m_kernel->saveMetaYAML(
         *desc.metaRoot,
         *desc.meta,
         meta
     );
 }
 
-template <typename FeatureBase>
-TextureOptional TextureIO<FeatureBase>::loadTexture(
+template <typename BaseIO>
+TextureOptional TextureIO<BaseIO>::loadTexture(
     const std::string& mesh_name,
     const size_t material_index,
     const std::string& texture_name
 ) const
 {
     Texture ret;
-    Description desc = m_featureBase->m_description->texture(
+    Description desc = m_baseIO->m_description->texture(
         mesh_name,
         material_index,
         texture_name
     );
 
     // Check if exists
-    if (!m_featureBase->m_kernel->exists(*desc.dataRoot, *desc.data))
+    if (!m_baseIO->m_kernel->exists(*desc.dataRoot, *desc.data))
     {
         return TextureOptional();
     }
 
     // Load meta
     YAML::Node meta;
-    m_featureBase->m_kernel->loadMetaYAML(
+    m_baseIO->m_kernel->loadMetaYAML(
         *desc.metaRoot,
         *desc.meta,
         meta
@@ -110,7 +110,7 @@ TextureOptional TextureIO<FeatureBase>::loadTexture(
         ret.m_numBytesPerChan
         };
 
-    ucharArr data = m_featureBase->m_kernel->loadUCharArray(
+    ucharArr data = m_baseIO->m_kernel->loadUCharArray(
         *desc.dataRoot,
         *desc.data,
         dims

@@ -3,7 +3,7 @@
 
 #include "lvr2/io/schema/ScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/IOUtils.hpp"
-#include "lvr2/io/yaml/MatrixIO.hpp"
+#include "lvr2/io/YAML.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 #include <boost/filesystem.hpp>

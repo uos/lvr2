@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "lvr2/io/Polygon.hpp"
+#include "lvr2/io/PolygonBuffer.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include <highfive/H5Easy.hpp>
 #include <iostream>
@@ -33,13 +33,13 @@
 namespace lvr2
 {
 
-Polygon::Polygon()
+PolygonBuffer::PolygonBuffer()
 :base()
 {
    
 }
 
-Polygon::Polygon(floatArr points, size_t n)
+PolygonBuffer::PolygonBuffer(floatArr points, size_t n)
 {
     // Generate channel object pointer and add it
     // to channel map
@@ -48,7 +48,7 @@ Polygon::Polygon(floatArr points, size_t n)
 
 }
 
-Polygon::Polygon(std::vector<std::vector<float> >& points)
+PolygonBuffer::PolygonBuffer(std::vector<std::vector<float> >& points)
 {
     floatArr arr(new float[points.size()*3]);
     for(size_t i = 0 ; i < points.size() ; i++)
@@ -62,7 +62,7 @@ Polygon::Polygon(std::vector<std::vector<float> >& points)
 
 
 
-void Polygon::setPointArray(floatArr points, size_t n)
+void PolygonBuffer::setPointArray(floatArr points, size_t n)
 {
     FloatChannelPtr pts(new FloatChannel(n, 3, points));
     this->addFloatChannel(pts, "points");
@@ -71,7 +71,7 @@ void Polygon::setPointArray(floatArr points, size_t n)
 
 
 
-void Polygon::load(std::string file)
+void PolygonBuffer::load(std::string file)
 {
     HighFive::File hdf5_file(file, HighFive::File::ReadOnly);
     std::vector<std::vector<float> > data = H5Easy::load<std::vector<std::vector<float> > >(hdf5_file,"/field/outer_boundary/coordinates");
@@ -86,7 +86,7 @@ void Polygon::load(std::string file)
     this->addFloatChannel(arr, "points", data.size(), 3);
 }
 
-floatArr Polygon::getPointArray()
+floatArr PolygonBuffer::getPointArray()
 {
     typename Channel<float>::Optional opt = getChannel<float>("points");
     if(opt)
@@ -98,7 +98,7 @@ floatArr Polygon::getPointArray()
 }
 
 
-size_t Polygon::numPoints() const
+size_t PolygonBuffer::numPoints() const
 {
     const typename Channel<float>::Optional opt = getChannel<float>("points");
     if(opt)
@@ -113,9 +113,9 @@ size_t Polygon::numPoints() const
 }
 
 
-    Polygon Polygon::clone() const
+    PolygonBuffer PolygonBuffer::clone() const
 {
-    Polygon pb;
+    PolygonBuffer pb;
 
     for(const auto& elem : *this)
     {

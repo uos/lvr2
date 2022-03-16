@@ -1,15 +1,15 @@
 #pragma once
 
-#ifndef LVR2_IO_DESCRIPTIONS_POLYGONIO_HPP
-#define LVR2_IO_DESCRIPTIONS_POLYGONIO_HPP
+#ifndef POLYGONIO
+#define POLYGONIO
 
 #include <boost/optional.hpp>
 
-#include "lvr2/io/Polygon.hpp"
+#include "lvr2/io/scanio/Polygon.hpp"
 
 // Dependencies
-#include "ChannelIO.hpp"
-#include "VariantChannelIO.hpp"
+#include "lvr2/io/scanio/ChannelIO.hpp"
+#include "lvr2/io/scanio/VariantChannelIO.hpp"
 
 namespace lvr2 {
 
@@ -41,7 +41,7 @@ namespace lvr2 {
  * - VariantChannelIO
  * 
  */
-template<typename FeatureBase>
+template<typename BaseIO>
 class PolygonIO
 {
 public:
@@ -52,19 +52,19 @@ protected:
 
     bool isPolygon(const std::string& group);
 
-    FeatureBase* m_FeatureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast<lvr2::baseio::BaseIO*>(this);
     // dependencies
-    VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_file_access);
+    VariantChannelIO<BaseIO>* m_vchannel_io = static_cast<VariantChannelIO<BaseIO>*>(m_file_access);
 
     static constexpr const char* ID = "PolygonIO";
     static constexpr const char* OBJID = "Polygon";
 };
 
-template<typename FeatureBase>
-struct FeatureConstruct<PolygonIO, FeatureBase> {
+template<typename T#pragma endregion>
+struct FeatureConstruct<PolygonIO, T> {
     
     // DEPS
-    using deps = typename FeatureConstruct<VariantChannelIO, FeatureBase>::type;
+    using deps = typename FeatureConstruct<VariantChannelIO, T>::type;
 
     // add actual feature
     using type = typename deps::template add_features<PolygonIO>::type;
@@ -76,4 +76,4 @@ struct FeatureConstruct<PolygonIO, FeatureBase> {
 #include "PolygonIO.tcc"
 
 
-#endif // LVR2_IO_DESCRIPTIONS_POLYGONIO_HPP
+#endif // POLYGONIO

@@ -5,10 +5,10 @@
 
 namespace lvr2 {
 
-namespace scanio
+namespace baseio
 {
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class MetaIO
 {
 public:
@@ -20,10 +20,10 @@ public:
         Description d, 
         YAML::Node node) const;
 protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_BaseIO = static_cast<BaseIO*>(this);
 };
 
-} // namespace scanio
+} // namespace baseio
 
 } // namespace lvr2
 

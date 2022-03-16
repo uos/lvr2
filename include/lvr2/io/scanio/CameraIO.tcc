@@ -4,13 +4,13 @@ namespace lvr2
 namespace scanio
 {
 
-template <typename FeatureBase>
-void CameraIO<FeatureBase>::save(
+template <typename BaseIO>
+void CameraIO<BaseIO>::save(
     const size_t& scanPosNo,
     const size_t& scanCamNo,
     CameraPtr cameraPtr) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
 
     Description d = Dgen->camera(scanPosNo, scanCamNo);
 
@@ -42,18 +42,18 @@ void CameraIO<FeatureBase>::save(
     {
         YAML::Node node;
         node = *cameraPtr;
-        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
+        m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 }
 
-template <typename FeatureBase>
-CameraPtr CameraIO<FeatureBase>::load(
+template <typename BaseIO>
+CameraPtr CameraIO<BaseIO>::load(
     const size_t& scanPosNo, 
     const size_t& scanCamNo) const
 {
     CameraPtr ret;
 
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->camera(scanPosNo, scanCamNo);
 
     if(!d.dataRoot)
@@ -61,7 +61,7 @@ CameraPtr CameraIO<FeatureBase>::load(
         return ret;
     }
 
-    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
@@ -70,7 +70,7 @@ CameraPtr CameraIO<FeatureBase>::load(
     if(d.meta)
     {
         YAML::Node meta;
-        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             std::cout << meta << std::endl;
             return ret;
@@ -105,17 +105,17 @@ CameraPtr CameraIO<FeatureBase>::load(
     return ret;
 }
 
-template <typename FeatureBase>
-boost::optional<YAML::Node> CameraIO<FeatureBase>::loadMeta(
+template <typename BaseIO>
+boost::optional<YAML::Node> CameraIO<BaseIO>::loadMeta(
     const size_t& scanPosNo,
     const size_t& scanCamNo) const
 {
-    Description d = m_featureBase->m_description->camera(scanPosNo, scanCamNo);
+    Description d = m_baseIO->m_description->camera(scanPosNo, scanCamNo);
     return m_metaIO->load(d);
 }
 
-template <typename FeatureBase>
-void CameraIO<FeatureBase>::saveCamera(
+template <typename BaseIO>
+void CameraIO<BaseIO>::saveCamera(
     const size_t& scanPosNo, 
     const size_t& scanCamNo, 
     CameraPtr cameraPtr) const
@@ -123,8 +123,8 @@ void CameraIO<FeatureBase>::saveCamera(
     save(scanPosNo, scanCamNo, cameraPtr);
 }
 
-template <typename FeatureBase>
-CameraPtr CameraIO<FeatureBase>::loadCamera(
+template <typename BaseIO>
+CameraPtr CameraIO<BaseIO>::loadCamera(
     const size_t& scanPosNo, const size_t& scanCamNo) const
 {
     return load(scanPosNo, scanCamNo);

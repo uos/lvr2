@@ -1,32 +1,32 @@
 //
 // Created by imitschke on 13.11.20.
 //
-#include "lvr2/io/SoilAssistSubField.hpp"
+#include "lvr2/geometry/SoilAssistSubField.hpp"
 
 namespace lvr2
 {
 
     SoilAssistSubField::SoilAssistSubField(){}
 
-    void SoilAssistSubField::setHeadlands(std::vector<PolygonPtr>& headlands)
+    void SoilAssistSubField::setHeadlands(std::vector<PolygonBufferPtr>& headlands)
     {
         m_headlands = headlands;
     }
-    void SoilAssistSubField::addHeadland(PolygonPtr  headland)
+    void SoilAssistSubField::addHeadland(PolygonBufferPtr  headland)
     {
         m_headlands.push_back(headland);
     }
 
-    void SoilAssistSubField::setReferenceLines(std::vector<PolygonPtr>& lines)
+    void SoilAssistSubField::setReferenceLines(std::vector<PolygonBufferPtr>& lines)
     {
         m_reference_lines = lines;
     }
-    void SoilAssistSubField::addReferenceLine(PolygonPtr line)
+    void SoilAssistSubField::addReferenceLine(PolygonBufferPtr line)
     {
         m_reference_lines.push_back(line);
     }
 
-    void SoilAssistSubField::setBoundary(PolygonPtr boundary)
+    void SoilAssistSubField::setBoundary(PolygonBufferPtr boundary)
     {
         m_boundary = boundary;
     }
@@ -47,15 +47,15 @@ namespace lvr2
         addAccessPoint(fa);
     }
 
-    std::vector<PolygonPtr> SoilAssistSubField::getHeadlands()
+    std::vector<PolygonBufferPtr> SoilAssistSubField::getHeadlands()
     {
         return m_headlands;
     }
-    std::vector<PolygonPtr> SoilAssistSubField::getReferenceLines()
+    std::vector<PolygonBufferPtr> SoilAssistSubField::getReferenceLines()
     {
         return m_reference_lines;
     }
-    PolygonPtr SoilAssistSubField::getBoundary()
+    PolygonBufferPtr SoilAssistSubField::getBoundary()
     {
         return m_boundary;
     }

@@ -27,9 +27,9 @@
 
 #include <iostream>
 #include "lvr2/types/ScanTypes.hpp"
-#include "lvr2/io/scanio/ChannelIO.hpp"
-#include "lvr2/io/scanio/ArrayIO.hpp"
-#include "lvr2/io/scanio/VariantChannelIO.hpp"
+#include "lvr2/io/baseio/ChannelIO.hpp"
+#include "lvr2/io/baseio/ArrayIO.hpp"
+#include "lvr2/io/baseio/VariantChannelIO.hpp"
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"

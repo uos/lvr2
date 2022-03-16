@@ -6,20 +6,15 @@
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 
-#include "lvr2/io/scanio/yaml/ScanPosition.hpp"
 #include "lvr2/types/ScanTypes.hpp"
-
-// Dependencies
-// SensorIOs
-#include "HyperspectralCameraIO.hpp"
-#include "CameraIO.hpp"
-#include "LIDARIO.hpp"
-#include "MetaIO.hpp"
-// #include "LIDARIO.hpp"
+#include "lvr2/io/baseio/MetaIO.hpp"
+#include "lvr2/io/scanio/yaml/ScanPosition.hpp"
+#include "lvr2/io/scanio/HyperspectralCameraIO.hpp"
+#include "lvr2/io/scanio/CameraIO.hpp"
+#include "lvr2/io/scanio/LIDARIO.hpp"
 
 namespace lvr2
 {
-
 namespace scanio
 {
 
@@ -51,7 +46,7 @@ namespace scanio
  * - ScanIO
  *
  */
-template <typename FeatureBase>
+template <typename BaseIO>
 class ScanPositionIO
 {
   public:
@@ -84,13 +79,13 @@ class ScanPositionIO
         ReductionAlgorithmPtr reduction) const;
    
   protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
     
     // dependencies
-    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
-    LIDARIO<FeatureBase>* m_lidarIO = static_cast<LIDARIO<FeatureBase>*>(m_featureBase);
-    CameraIO<FeatureBase>* m_cameraIO = static_cast<CameraIO<FeatureBase>*>(m_featureBase);
-    HyperspectralCameraIO<FeatureBase>* m_hyperspectralCameraIO = static_cast<HyperspectralCameraIO<FeatureBase>*>(m_featureBase);
+    MetaIO<BaseIO>* m_metaIO = static_cast<MetaIO<BaseIO>*>(m_baseIO);
+    LIDARIO<BaseIO>* m_lidarIO = static_cast<LIDARIO<BaseIO>*>(m_baseIO);
+    CameraIO<BaseIO>* m_cameraIO = static_cast<CameraIO<BaseIO>*>(m_baseIO);
+    HyperspectralCameraIO<BaseIO>* m_hyperspectralCameraIO = static_cast<HyperspectralCameraIO<BaseIO>*>(m_baseIO);
 
     static constexpr const char* ID = "ScanPositionIO";
     static constexpr const char* OBJID = "ScanPosition";
@@ -98,14 +93,14 @@ class ScanPositionIO
 
 } // namespace scanio
 
-template <typename FeatureBase>
-struct FeatureConstruct<lvr2::scanio::ScanPositionIO, FeatureBase>
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::ScanPositionIO, T>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<lvr2::scanio::LIDARIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<lvr2::scanio::CameraIO, FeatureBase>::type;
-    using dep3 = typename FeatureConstruct<lvr2::scanio::HyperspectralCameraIO, FeatureBase>::type;
-    using dep4 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::scanio::LIDARIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::CameraIO, T>::type;
+    using dep3 = typename FeatureConstruct<lvr2::scanio::HyperspectralCameraIO, T>::type;
+    using dep4 = typename FeatureConstruct<lvr2::baseio::MetaIO, T>::type;
     using deps = typename dep1::template Merge<dep2>::template Merge<dep3>::template Merge<dep4>;
 
     // add the feature itself

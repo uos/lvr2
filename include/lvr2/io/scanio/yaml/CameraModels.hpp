@@ -3,9 +3,9 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include "Matrix.hpp"
+#include "lvr2/io/YAML.hpp"
 #include "lvr2/types/CameraModels.hpp"
-#include "lvr2/io/scanio/yaml/Util.hpp"
+#include "lvr2/util/YAMLUtil.hpp"
 
 namespace YAML {
 

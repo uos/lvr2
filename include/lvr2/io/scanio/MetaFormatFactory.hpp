@@ -4,12 +4,9 @@
 #include "lvr2/util/Timestamp.hpp"
 
 #include <yaml-cpp/yaml.h>
-#include "lvr2/io/scanio/yaml/Matrix.hpp"
 
-// TODO: remove this dep
+#include "lvr2/io/YAML.hpp"
 #include "lvr2/util/IOUtils.hpp"
-
-// TODO:  remove this dep
 #include "lvr2/util/TransformUtils.hpp"
 
 

@@ -6,40 +6,40 @@
 
 namespace lvr2
 {
-    namespace meshio
-    {
+namespace meshio
+{
 
-        struct ClusterIOData
-        {
-            size_t num_faces = 0;
-            size_t material_index = 0;
-            indexArray face_indices = nullptr;
-        };
+struct ClusterIOData
+{
+    size_t num_faces = 0;
+    size_t material_index = 0;
+    indexArray face_indices = nullptr;
+};
 
-        template <typename FeatureBase>
-        class ClusterIO
-        {
-        public:
+template <typename BaseIO>
+class ClusterIO
+{
+public:
 
-            void saveClusters(
-                const std::string& mesh_name,
-                const MeshBufferPtr mesh
-            );
+    void saveClusters(
+        const std::string& mesh_name,
+        const MeshBufferPtr mesh
+    );
 
-            /**
-             * @brief
-             *
-             * @param mesh_name
-             * @param[out] mesh The MeshBuffer the data is written to
-             */
-            void loadClusters(
-                const std::string& mesh_name,
-                MeshBufferPtr mesh
-            );
+    /**
+     * @brief
+     *
+     * @param mesh_name
+     * @param[out] mesh The MeshBuffer the data is written to
+     */
+    void loadClusters(
+        const std::string& mesh_name,
+        MeshBufferPtr mesh
+    );
 
-        protected:
-            FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
-        };
+protected:
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
+};
 
 } // namespace meshio
 } // namespace lvr2

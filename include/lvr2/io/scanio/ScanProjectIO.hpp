@@ -3,17 +3,14 @@
 #ifndef SCANPROJECTIO
 #define SCANPROJECTIO
 
-#include "lvr2/io/scanio/yaml/ScanProject.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/io/baseio/MetaIO.hpp"
+#include "lvr2/io/scanio/ScanPositionIO.hpp"
+#include "lvr2/io/scanio/yaml/ScanProject.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
-
-// Dependencies
-#include "MetaIO.hpp"
-#include "ScanPositionIO.hpp"
 
 namespace lvr2
 {
-
 namespace scanio
 {
 
@@ -45,7 +42,7 @@ namespace scanio
  * - ScanPositionIO
  *
  */
-template <typename FeatureBase>
+template <typename BaseIO>
 class ScanProjectIO
 {
   public:
@@ -60,13 +57,11 @@ class ScanProjectIO
 
     
   protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
     
     // dependencies
-    MetaIO<FeatureBase>* m_metaIO = 
-        static_cast<MetaIO<FeatureBase>*>(m_featureBase);
-    ScanPositionIO<FeatureBase>* m_scanPositionIO =
-        static_cast<ScanPositionIO<FeatureBase>*>(m_featureBase);
+    MetaIO<BaseIO>* m_metaIO = static_cast<MetaIO<BaseIO>*>(m_baseIO);
+    ScanPositionIO<BaseIO>* m_scanPositionIO = static_cast<ScanPositionIO<BaseIO>*>(m_baseIO);
 
     static constexpr const char* ID = "ScanProjectIO";
     static constexpr const char* OBJID = "ScanProject";
@@ -74,15 +69,14 @@ class ScanProjectIO
 
 } // namespace scanio
 
-template <typename FeatureBase>
-struct FeatureConstruct<lvr2::scanio::ScanProjectIO, FeatureBase>
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::ScanProjectIO, T>
 {
     // DEPS
     //
-    using dep1 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<lvr2::scanio::ScanPositionIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::baseio::MetaIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::ScanPositionIO, T>::type;
     using deps = typename dep1::template Merge<dep2>;
-
 
     // add the feature itself
     using type = typename deps::template add_features<lvr2::scanio::ScanProjectIO>::type;

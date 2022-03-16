@@ -1,4 +1,4 @@
-#include "lvr2/io/scanio/yaml/Matrix.hpp"
+#include "lvr2/io/baseio/yaml/Matrix.hpp"
 
 namespace YAML
 {

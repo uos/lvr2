@@ -7,8 +7,8 @@ namespace lvr2
 {
 namespace meshio
 {
-template <typename FeatureBase>
-void ClusterIO<FeatureBase>::saveClusters(
+template <typename BaseIO>
+void ClusterIO<BaseIO>::saveClusters(
     const std::string& mesh_name,
     const MeshBufferPtr mesh)
 {
@@ -52,8 +52,8 @@ void ClusterIO<FeatureBase>::saveClusters(
     // TODO: Meta data
     // Save combined cluster indices
     std::vector<size_t> shape = {combined_face_indices.size(), 1};
-    Description desc = m_featureBase->m_description->surfaceCombinedFaceIndices(mesh_name);
-    m_featureBase->m_kernel->saveArray(
+    Description desc = m_baseIO->m_description->surfaceCombinedFaceIndices(mesh_name);
+    m_baseIO->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
         shape,
@@ -62,7 +62,7 @@ void ClusterIO<FeatureBase>::saveClusters(
     {
         YAML::Node meta;
         meta["shape"] = shape;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             meta
@@ -71,8 +71,8 @@ void ClusterIO<FeatureBase>::saveClusters(
 
     // Save cluster face index ranges
     shape = {cluster_idx, 2};
-    desc = m_featureBase->m_description->surfaceFaceIndexRanges(mesh_name);
-    m_featureBase->m_kernel->saveArray(
+    desc = m_baseIO->m_description->surfaceFaceIndexRanges(mesh_name);
+    m_baseIO->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
         shape,
@@ -81,7 +81,7 @@ void ClusterIO<FeatureBase>::saveClusters(
     {
         YAML::Node meta;
         meta["shape"] = shape;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             meta
@@ -93,10 +93,10 @@ void ClusterIO<FeatureBase>::saveClusters(
 
     if (channel_opt)
     {
-        Description desc = m_featureBase->m_description->surfaceMaterialIndices(mesh_name);
+        Description desc = m_baseIO->m_description->surfaceMaterialIndices(mesh_name);
         std::vector<size_t> shape = {channel_opt->numElements(), channel_opt->width()};
 
-        m_featureBase->m_kernel->saveArray(
+        m_baseIO->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
         shape,
@@ -105,7 +105,7 @@ void ClusterIO<FeatureBase>::saveClusters(
 
         YAML::Node meta;
         meta["shape"] = shape;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             meta
@@ -115,23 +115,23 @@ void ClusterIO<FeatureBase>::saveClusters(
 }
 
 
-template <typename FeatureBase>
-void ClusterIO<FeatureBase>::loadClusters(
+template <typename BaseIO>
+void ClusterIO<BaseIO>::loadClusters(
         const std::string& mesh_name,
         MeshBufferPtr mesh
     )
 {
     std::vector<size_t> shape;
     // Load combined face indices
-    Description desc = m_featureBase->m_description->surfaceCombinedFaceIndices(mesh_name);
-    indexArray combined_face_indices = m_featureBase->m_kernel->template loadArray<indexArray::element_type>(
+    Description desc = m_baseIO->m_description->surfaceCombinedFaceIndices(mesh_name);
+    indexArray combined_face_indices = m_baseIO->m_kernel->template loadArray<indexArray::element_type>(
         *desc.dataRoot,
         *desc.data,
         shape
     );
 
-    desc = m_featureBase->m_description->surfaceFaceIndexRanges(mesh_name);
-    indexArray face_index_ranges = m_featureBase->m_kernel->template loadArray<indexArray::element_type>(
+    desc = m_baseIO->m_description->surfaceFaceIndexRanges(mesh_name);
+    indexArray face_index_ranges = m_baseIO->m_kernel->template loadArray<indexArray::element_type>(
         *desc.dataRoot,
         *desc.data,
         shape
@@ -162,11 +162,11 @@ void ClusterIO<FeatureBase>::loadClusters(
         );
     }
 
-    desc = m_featureBase->m_description->surfaceMaterialIndices(mesh_name);
-    if (m_featureBase->m_kernel->exists(*desc.dataRoot, *desc.data))
+    desc = m_baseIO->m_description->surfaceMaterialIndices(mesh_name);
+    if (m_baseIO->m_kernel->exists(*desc.dataRoot, *desc.data))
     {
         std::vector<size_t> shape;
-        indexArray material_indices = m_featureBase->m_kernel->template loadArray<indexArray::element_type>(
+        indexArray material_indices = m_baseIO->m_kernel->template loadArray<indexArray::element_type>(
             *desc.dataRoot,
             *desc.data,
             shape

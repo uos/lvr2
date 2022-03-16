@@ -3,7 +3,10 @@
 #include "lvr2/io/kernels/DirectoryKernel.hpp"
 #include <lvr2/io/schema/MeshSchemaDirectory.hpp>
 #include <lvr2/io/meshio/MeshIO.hpp>
-#include <lvr2/io/scanio/FeatureBase.hpp>
+#include <lvr2/io/baseio/BaseIO.hpp>
+
+using lvr2::baseio::FeatureConstruct;
+using lvr2::baseio::FeatureBuild;
 
 namespace lvr2
 {

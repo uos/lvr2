@@ -12,23 +12,23 @@ namespace lvr2
 namespace meshio
 {
 
-template <typename FeatureBase>
-void MeshIO<FeatureBase>::saveMesh(
+template <typename BaseIO>
+void MeshIO<BaseIO>::saveMesh(
     const std::string mesh_name, 
     const MeshBufferPtr mesh
     ) const
 {
     std::cout << timestamp << "[MeshIO] Saving '" << mesh_name << "' to " 
-        << m_featureBase->m_kernel->fileResource() << std::endl;
+        << m_baseIO->m_kernel->fileResource() << std::endl;
     // Step 0: Write Mesh meta 
     // TODO: write YAML conversion
     {
-        Description desc = m_featureBase->m_description->mesh(mesh_name);
+        Description desc = m_baseIO->m_description->mesh(mesh_name);
         YAML::Node node;
         node["n_materials"] = (uint64_t) mesh->getMaterials().size();
         node["n_textures"]  = (uint64_t) mesh->getTextures().size();
         node["n_faces"]     = (uint64_t) mesh->numFaces();
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             node
@@ -47,27 +47,27 @@ void MeshIO<FeatureBase>::saveMesh(
 
     // Step 3: Save all Materials
     // Write data
-    m_featureBase->m_materialIO->saveMaterials(
+    m_baseIO->m_materialIO->saveMaterials(
         mesh_name,
         mesh
     );
 }
 
-template <typename FeatureBase>
-MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
+template <typename BaseIO>
+MeshBufferPtr MeshIO<BaseIO>::loadMesh(const std::string& name) const
 {
 
     auto ret = MeshBufferPtr(new MeshBuffer); // Buffer for the loaded mesh 
-    Description desc = m_featureBase->m_description->mesh(name);
+    Description desc = m_baseIO->m_description->mesh(name);
 
     // Check if the mesh exists
-    if (!m_featureBase->m_kernel->exists(*desc.dataRoot))
+    if (!m_baseIO->m_kernel->exists(*desc.dataRoot))
     {
         std::cout << timestamp << "[MeshIO] Mesh '" << name << "' not found." << std::endl;
         return nullptr;
     }
     std::cout << timestamp << "[MeshIO] Loading '" << name << "' from " 
-        << m_featureBase->m_kernel->fileResource() << std::endl;
+        << m_baseIO->m_kernel->fileResource() << std::endl;
 
     // === Vertices === //
     loadVertices(name, ret);
@@ -80,9 +80,9 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
 
     // Load num_materials and num_textures to allocate memory
     {
-        Description desc = m_featureBase->m_description->mesh(name);
+        Description desc = m_baseIO->m_description->mesh(name);
         YAML::Node node;
-        m_featureBase->m_kernel->loadMetaYAML(
+        m_baseIO->m_kernel->loadMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             node
@@ -92,14 +92,14 @@ MeshBufferPtr MeshIO<FeatureBase>::loadMesh(const std::string& name) const
     }
 
     // === Materials and Textures === //
-    size_t n_materials = m_featureBase->m_materialIO->loadMaterials(name, ret);
+    size_t n_materials = m_baseIO->m_materialIO->loadMaterials(name, ret);
 
     return ret;
 }
 
 
-template <typename FeatureBase>
-void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh) const
+template <typename BaseIO>
+void MeshIO<BaseIO>::saveVertices(std::string mesh_name, MeshBufferPtr mesh) const
 {
     std::cout << timestamp << "[MeshIO] Mesh has vertex coordinates:  " << (mesh->hasVertices() ? "yes" : "no") << std::endl;
     std::cout << timestamp << "[MeshIO] Mesh has vertex normals:      " << (mesh->hasVertexNormals() ? "yes" : "no") << std::endl;
@@ -107,10 +107,10 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
     if (mesh->hasVertices())
     {
-        auto desc = m_featureBase->m_description->vertexChannel(mesh_name, "coordinates");
+        auto desc = m_baseIO->m_description->vertexChannel(mesh_name, "coordinates");
 
         // Write the vertices
-        m_featureBase->m_kernel->saveFloatArray(
+        m_baseIO->m_kernel->saveFloatArray(
         *desc.dataRoot,
         *desc.data,
         {mesh->numVertices(), 3},
@@ -122,7 +122,7 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
         YAML::Node node;
         node = meta;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             node
@@ -133,10 +133,10 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
     if (mesh->hasVertexNormals())
     {
-        auto desc = m_featureBase->m_description->vertexChannel(mesh_name, "normals");
+        auto desc = m_baseIO->m_description->vertexChannel(mesh_name, "normals");
 
         // Write the vertices
-        m_featureBase->m_kernel->saveFloatArray(
+        m_baseIO->m_kernel->saveFloatArray(
         *desc.dataRoot,
         *desc.data,
         {mesh->numVertices(), 3},
@@ -148,7 +148,7 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
         YAML::Node node;
         node = meta;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             node
@@ -159,11 +159,11 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
     if (mesh->hasVertexColors())
     {
-        auto desc = m_featureBase->m_description->vertexChannel(mesh_name, "colors");
+        auto desc = m_baseIO->m_description->vertexChannel(mesh_name, "colors");
         size_t color_w;
         auto colors = mesh->getVertexColors(color_w);
         // Write the vertices
-        m_featureBase->m_kernel->saveUCharArray(
+        m_baseIO->m_kernel->saveUCharArray(
         *desc.dataRoot,
         *desc.data,
         {mesh->numVertices(), color_w},
@@ -175,7 +175,7 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
         YAML::Node node;
         node = meta;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             node
@@ -184,9 +184,9 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
     if (mesh->getTextureCoordinates())
     {
-        auto desc = m_featureBase->m_description->vertexChannel(mesh_name, "texture_coordinates");
+        auto desc = m_baseIO->m_description->vertexChannel(mesh_name, "texture_coordinates");
         // Write the vertices
-        m_featureBase->m_kernel->saveFloatArray(
+        m_baseIO->m_kernel->saveFloatArray(
         *desc.dataRoot,
         *desc.data,
         {mesh->numVertices(), 2},
@@ -198,7 +198,7 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
         YAML::Node node;
         node = meta;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             node
@@ -207,24 +207,24 @@ void MeshIO<FeatureBase>::saveVertices(std::string mesh_name, MeshBufferPtr mesh
 
 }
 
-template <typename FeatureBase>
-void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh) const
+template <typename BaseIO>
+void MeshIO<BaseIO>::loadVertices(std::string mesh_name, MeshBufferPtr mesh) const
 {
     // Check which channels exist
-    auto coord_desc = m_featureBase->m_description->vertexChannel(mesh_name, "coordinates");
-    auto normal_desc = m_featureBase->m_description->vertexChannel(mesh_name, "normals");
-    auto color_desc = m_featureBase->m_description->vertexChannel(mesh_name, "colors");
-    auto tex_coord_desc = m_featureBase->m_description->vertexChannel(mesh_name, "texture_coordinates");
+    auto coord_desc = m_baseIO->m_description->vertexChannel(mesh_name, "coordinates");
+    auto normal_desc = m_baseIO->m_description->vertexChannel(mesh_name, "normals");
+    auto color_desc = m_baseIO->m_description->vertexChannel(mesh_name, "colors");
+    auto tex_coord_desc = m_baseIO->m_description->vertexChannel(mesh_name, "texture_coordinates");
 
     bool hasCoords      = false;
     bool hasNormals     = false;
     bool hasColors      = false;
     bool hasTexCoords   = false;
 
-    if (m_featureBase->m_kernel->exists(*coord_desc.dataRoot, *coord_desc.data)) hasCoords     = true;
-    if (m_featureBase->m_kernel->exists(*normal_desc.dataRoot, *normal_desc.data)) hasNormals    = true;
-    if (m_featureBase->m_kernel->exists(*color_desc.dataRoot, *color_desc.data)) hasColors     = true;
-    if (m_featureBase->m_kernel->exists(*tex_coord_desc.dataRoot, *tex_coord_desc.data)) hasTexCoords     = true;
+    if (m_baseIO->m_kernel->exists(*coord_desc.dataRoot, *coord_desc.data)) hasCoords     = true;
+    if (m_baseIO->m_kernel->exists(*normal_desc.dataRoot, *normal_desc.data)) hasNormals    = true;
+    if (m_baseIO->m_kernel->exists(*color_desc.dataRoot, *color_desc.data)) hasColors     = true;
+    if (m_baseIO->m_kernel->exists(*tex_coord_desc.dataRoot, *tex_coord_desc.data)) hasTexCoords     = true;
 
     std::cout << timestamp << "[MeshIO] Mesh has vertex coordinates: " << (hasCoords  ? "yes" : "no") << "\n";
     std::cout << timestamp << "[MeshIO] Mesh has vertex normals:     " << (hasNormals ? "yes" : "no") << "\n";
@@ -237,7 +237,7 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
     {
         // Load vertex meta
         YAML::Node node;
-        m_featureBase->m_kernel->loadMetaYAML(
+        m_baseIO->m_kernel->loadMetaYAML(
             *coord_desc.metaRoot,
             *coord_desc.meta,
             node
@@ -247,7 +247,7 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
         if (meta.data_type == "float")
         {
             // Load vertices
-            auto vertices = m_featureBase->m_kernel->loadFloatArray(
+            auto vertices = m_baseIO->m_kernel->loadFloatArray(
                 *coord_desc.dataRoot,
                 *coord_desc.data,
                 meta.shape
@@ -268,7 +268,7 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
     {
         // Load vertex meta
         YAML::Node node;
-        m_featureBase->m_kernel->loadMetaYAML(
+        m_baseIO->m_kernel->loadMetaYAML(
             *normal_desc.metaRoot,
             *normal_desc.meta,
             node
@@ -278,7 +278,7 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
         if (meta.data_type == "float")
         {
             // Load vertices
-            auto normals = m_featureBase->m_kernel->loadFloatArray(
+            auto normals = m_baseIO->m_kernel->loadFloatArray(
                 *normal_desc.dataRoot,
                 *normal_desc.data,
                 meta.shape
@@ -297,7 +297,7 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
     {
         YAML::Node node;
         // Load color meta
-        m_featureBase->m_kernel->loadMetaYAML(
+        m_baseIO->m_kernel->loadMetaYAML(
             *color_desc.metaRoot,
             *color_desc.meta,
             node
@@ -307,7 +307,7 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
         if (meta.data_type == "uchar")
         {
             // Load colors
-            auto colors = m_featureBase->m_kernel->loadUCharArray(
+            auto colors = m_baseIO->m_kernel->loadUCharArray(
             *color_desc.dataRoot,
             *color_desc.data,
             meta.shape
@@ -325,7 +325,7 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
     {
         YAML::Node node;
         // Load meta
-        m_featureBase->m_kernel->loadMetaYAML(
+        m_baseIO->m_kernel->loadMetaYAML(
             *tex_coord_desc.metaRoot,
             *tex_coord_desc.meta,
             node
@@ -334,7 +334,7 @@ void MeshIO<FeatureBase>::loadVertices(std::string mesh_name, MeshBufferPtr mesh
         if (meta.data_type == "float")
         {
             // Load texture coordinates
-            auto coords = m_featureBase->m_kernel->loadFloatArray(
+            auto coords = m_baseIO->m_kernel->loadFloatArray(
                 *tex_coord_desc.dataRoot,
                 *tex_coord_desc.data,
                 meta.shape

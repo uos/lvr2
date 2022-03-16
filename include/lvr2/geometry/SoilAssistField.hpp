@@ -4,30 +4,30 @@
 
 #ifndef LAS_VEGAS_SOILASSISTFIELD_HPP
 #define LAS_VEGAS_SOILASSISTFIELD_HPP
-#include "Polygon.hpp"
-#include "SoilAssistSubField.hpp"
+#include "lvr2/io/PolygonBuffer.hpp"
+#include "lvr2/geometry/SoilAssistSubField.hpp"
 
 namespace lvr2
 {
 class SoilAssistField {
 public:
     SoilAssistField();
-    SoilAssistField(std::string name, PolygonPtr m_boundary, std::vector<SoilAssistSubFieldPtr>& subfields);
+    SoilAssistField(std::string name, PolygonBufferPtr m_boundary, std::vector<SoilAssistSubFieldPtr>& subfields);
     std::vector<SoilAssistSubFieldPtr> getSubFields();
-    PolygonPtr getBoundary();
+    PolygonBufferPtr getBoundary();
     std::string getName();
 
     void setSubFields(std::vector<SoilAssistSubFieldPtr>& fields);
     void addSubField(SoilAssistSubFieldPtr field);
 
-    void setBoundary(PolygonPtr boundary);
+    void setBoundary(PolygonBufferPtr boundary);
     void setName(std::string name);
 
     void fromH5File(std::string path);
 private:
 
     std::vector<SoilAssistSubFieldPtr> m_subfields;
-    PolygonPtr m_boundary;
+    PolygonBufferPtr m_boundary;
     std::string m_name;
 
     inline floatArr vec2Arr(std::vector<std::vector<float>> in)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lvr2/io/scanio/FeatureBase.hpp>
+#include <lvr2/io/baseio/BaseIO.hpp>
 #include <lvr2/io/MeshBuffer.hpp>
 #include <lvr2/io/meshio/MaterialIO.hpp>
 #include <lvr2/io/meshio/ClusterIO.hpp>
@@ -11,7 +11,7 @@ namespace lvr2
 namespace meshio
 {
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class MeshIO
 {
 public:
@@ -42,16 +42,11 @@ private:
     void loadVertices(std::string mesh_name, MeshBufferPtr mesh) const;
 
 protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
 
-    MaterialIO<FeatureBase>* m_materialIO
-        = static_cast<MaterialIO<FeatureBase>*>(m_featureBase);
-
-    ClusterIO<FeatureBase>* m_clusterIO
-        = static_cast<ClusterIO<FeatureBase>*>(m_featureBase);
-
-    FaceIO<FeatureBase>* m_faceIO
-        = static_cast<FaceIO<FeatureBase>*>(m_featureBase);
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
+    MaterialIO<BaseIO>* m_materialIO = static_cast<MaterialIO<BaseIO>*>(m_baseIO);
+    ClusterIO<BaseIO>* m_clusterIO = static_cast<ClusterIO<BaseIO>*>(m_baseIO);
+    FaceIO<BaseIO>* m_faceIO = static_cast<FaceIO<BaseIO>*>(m_baseIO);
 
 };
 } // namespace meshio 

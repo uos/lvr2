@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_DESCRIPTIONS_LABELSCANPROJECTIO_HPP
-#define LVR2_IO_DESCRIPTIONS_LABELSCANPROJECTIO_HPP
+#ifndef LABELSCANPROJECTIO
+#define LABELSCANPROJECTIO
 
 #include "lvr2/types/ScanTypes.hpp"
 
@@ -18,7 +18,7 @@ namespace lvr2
 namespace scanio
 {
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class LabelScanProjectIO
 {
   public:
@@ -28,12 +28,10 @@ class LabelScanProjectIO
     ScanProjectPtr loadScanProject();
 
   protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
     // dependencies
-    ScanProjectIO<FeatureBase>* m_scanProjectIO =
-        static_cast<ScanProjectIO<FeatureBase>*>(m_featureBase);
-    LabelIO<FeatureBase>* m_labelIO = 
-        static_cast<LabelIO<FeatureBase>*>(m_featureBase);
+    ScanProjectIO<BaseIO>* m_scanProjectIO = static_cast<ScanProjectIO<BaseIO>*>(m_baseIO);
+    LabelIO<BaseIO>* m_labelIO = static_cast<LabelIO<BaseIO>*>(m_baseIO);
 
     // static constexpr const char* ID = "ScanProjectIO";
     // static constexpr const char* OBJID = "ScanProject";
@@ -41,13 +39,13 @@ class LabelScanProjectIO
 
 } // namespace scanio
 
-template <typename FeatureBase>
-struct FeatureConstruct<lvr2::scanio::LabelScanProjectIO, FeatureBase>
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::LabelScanProjectIO, T>
 {
 
     // DEPS
-    using dep1 = typename FeatureConstruct<lvr2::scanio::ScanProjectIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<lvr2::scanio::LabelIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::scanio::ScanProjectIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::LabelIO, T>::type;
     using deps = typename dep1::template Merge<dep2>;
 
     // add the feature itself
@@ -58,4 +56,4 @@ struct FeatureConstruct<lvr2::scanio::LabelScanProjectIO, FeatureBase>
 
 #include "LabelScanProjectIO.tcc"
 
-#endif // LVR2_IO_DESCRIPTIONS_LABELSCANPROJECTIO_HPP
+#endif // LABELSCANPROJECTIO

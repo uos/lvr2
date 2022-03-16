@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef POLYBUFFER2_HPP
-#define POLYBUFFER2_HPP
+#ifndef POLYGONBUFFER
+#define POLYGONBUFFER
 
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/types/BaseBuffer.hpp"
@@ -48,11 +48,11 @@ namespace lvr2
 ///        between geometry (channel 'points') and the associated layers like RGB
 ///        colors or point normals consistent.
 ///
-class Polygon : public BaseBuffer
+class PolygonBuffer : public BaseBuffer
 {
     using base = BaseBuffer;
 public:
-    Polygon();
+    PolygonBuffer();
 
     /***
      * @brief Constructs a point Polygon with point the given number
@@ -61,9 +61,9 @@ public:
      * @param points    An array containing point data (x,y,z).
      * @param n         Number of points
      */
-    Polygon(floatArr points, size_t n);
+    PolygonBuffer(floatArr points, size_t n);
 
-    Polygon(std::vector<std::vector<float> >& points);
+    PolygonBuffer(std::vector<std::vector<float> >& points);
     /***
      * @brief Adds points to the buffer. If the buffer already
      *        contains point cloud data, the interal buffer will
@@ -82,12 +82,12 @@ public:
     size_t numPoints() const;
 
     /// Makes a clone
-    Polygon clone() const;
+    PolygonBuffer clone() const;
 
 };
 
-using PolygonPtr = std::shared_ptr<Polygon>;
+using PolygonBufferPtr = std::shared_ptr<PolygonBuffer>;
 
 } // namespace lvr2
 
-#endif // POLYBUFFER2_HPP
+#endif // POLYGONBUFFER

@@ -39,7 +39,7 @@
 #include "lvr2/config/lvropenmp.hpp"
 #include "lvr2/io/kernels/HDF5Kernel.hpp"
 #include "lvr2/io/kernels/DirectoryKernel.hpp"
-#include "lvr2/io/scanio/FeatureBase.hpp"
+#include "lvr2/io/baseio/BaseIO.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
 #include "lvr2/io/scanio/DirectoryIO.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"

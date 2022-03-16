@@ -5,13 +5,13 @@ namespace lvr2
 namespace scanio
 {
 
-template <typename FeatureBase>
-void HyperspectralCameraIO<FeatureBase>::save(
+template <typename BaseIO>
+void HyperspectralCameraIO<BaseIO>::save(
     const size_t& scanPosNo,
     const size_t& hCamNo,
     HyperspectralCameraPtr hcam) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
 
     Description d =  Dgen->hyperspectralCamera(scanPosNo, hCamNo);
 
@@ -36,18 +36,18 @@ void HyperspectralCameraIO<FeatureBase>::save(
     {
         YAML::Node meta;
         meta = *hcam;
-        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, meta);
+        m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, meta);
     }
 }
 
-template <typename FeatureBase>
-HyperspectralCameraPtr HyperspectralCameraIO<FeatureBase>::load(
+template <typename BaseIO>
+HyperspectralCameraPtr HyperspectralCameraIO<BaseIO>::load(
         const size_t& scanPosNo,
         const size_t& hCamNo) const
 {
     HyperspectralCameraPtr ret;
 
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->hyperspectralCamera(scanPosNo, hCamNo);
 
     // std::cout << "[HypersprectralCameraIO - load]" << std::endl;
@@ -58,7 +58,7 @@ HyperspectralCameraPtr HyperspectralCameraIO<FeatureBase>::load(
         return ret;
     }
 
-    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
@@ -67,7 +67,7 @@ HyperspectralCameraPtr HyperspectralCameraIO<FeatureBase>::load(
     if(d.meta)
     {
         YAML::Node meta;
-        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
@@ -93,12 +93,12 @@ HyperspectralCameraPtr HyperspectralCameraIO<FeatureBase>::load(
     return ret;
 }
 
-template <typename FeatureBase>
-boost::optional<YAML::Node> HyperspectralCameraIO<FeatureBase>::loadMeta(
+template <typename BaseIO>
+boost::optional<YAML::Node> HyperspectralCameraIO<BaseIO>::loadMeta(
     const size_t& scanPosNo,
     const size_t& hCamNo) const
 {
-    Description d = m_featureBase->m_description->hyperspectralCamera(scanPosNo, hCamNo);
+    Description d = m_baseIO->m_description->hyperspectralCamera(scanPosNo, hCamNo);
     return m_metaIO->load(d);
 }
 

@@ -1,16 +1,16 @@
-#ifndef LVR2_IO_scanio_ARRAYIO_HPP
-#define LVR2_IO_scanio_ARRAYIO_HPP
+#ifndef ARRAYIO
+#define ARRAYIO
 
-#include "lvr2/io/scanio/FeatureBase.hpp"
+#include "lvr2/io/baseio/BaseIO.hpp"
 #include <boost/shared_array.hpp>
 
 namespace lvr2 
 {
 
-namespace scanio
+namespace baseio
 {
 
-template<typename FeatureBase>
+template<typename BaseIO>
 class ArrayIO {
 public:
 
@@ -29,14 +29,14 @@ public:
     void saveIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<int>& data) const;
 
 protected:
-    FeatureBase* m_featureBase= static_cast<FeatureBase*>(this);
+    BaseIO* m_BaseIO= static_cast<BaseIO*>(this);
 
 };
 
-} // namespace scanio
+} // namespace baseio
 
 } // namespace lvr2
 
 #include "ArrayIO.tcc"
 
-#endif // LVR2_IO_scanio_ARRAYIO_HPP
+#endif // ARRAYIO

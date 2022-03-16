@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lvr2/io/scanio/FeatureBase.hpp>
+#include <lvr2/io/baseio/BaseIO.hpp>
 #include <lvr2/texture/Texture.hpp>
 
 namespace lvr2
@@ -10,7 +10,7 @@ namespace meshio
 
     using TextureOptional = boost::optional<Texture>;
 
-    template <typename FeatureBase>
+    template <typename BaseIO>
     class TextureIO
     {
     public:
@@ -26,13 +26,13 @@ namespace meshio
             const std::string &texture_name) const;
 
     protected:
-        FeatureBase *m_featureBase = static_cast<FeatureBase *>(this);
+        BaseIO *m_baseIO = static_cast<BaseIO *>(this);
     };
 
 } // namespace meshio
 
 template <typename FB>
-struct FeatureConstruct<lvr2::meshio::TextureIO, FB>
+struct lvr2::baseio::FeatureConstruct<lvr2::meshio::TextureIO, FB>
 {
     using type = typename FB::template add_features<lvr2::meshio::TextureIO>::type;
 };

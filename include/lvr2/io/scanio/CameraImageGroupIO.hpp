@@ -3,19 +3,20 @@
 #ifndef CAMERAIMAGEGROUPIO
 #define CAMERAIMAGEGROUPIO
 
-#include "MetaIO.hpp"
-#include "CameraImageIO.hpp"
-#include "FeatureBase.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/io/baseio/MetaIO.hpp"
+#include "lvr2/io/baseio/BaseIO.hpp"
 #include "lvr2/io/scanio/yaml/CameraImage.hpp"
+#include "lvr2/io/scanio/CameraImageIO.hpp"
+
+using lvr2::baseio::FeatureConstruct;
 
 namespace lvr2
 {
-
 namespace scanio
 {
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class CameraImageGroupIO
 {
 public:
@@ -70,11 +71,11 @@ public:
         const size_t& imgNr) const;
     
 protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast< BaseIO*>(this);
 
     // dependencies
-    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
-    CameraImageIO<FeatureBase>* m_cameraImageIO = static_cast<CameraImageIO<FeatureBase>*>(m_featureBase);
+    MetaIO<BaseIO>* m_metaIO = static_cast<MetaIO<BaseIO>*>(m_baseIO);
+    CameraImageIO<BaseIO>* m_cameraImageIO = static_cast<CameraImageIO<BaseIO>*>(m_baseIO);
 
     static constexpr const char* ID = "CameraImageGroupIO";
     static constexpr const char* OBJID = "CameraImageGroup";
@@ -89,12 +90,12 @@ protected:
  * - Sets type variable
  *
  */
-template <typename FeatureBase>
-struct FeatureConstruct<lvr2::scanio::CameraImageGroupIO, FeatureBase>
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::CameraImageGroupIO, T>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<lvr2::scanio::CameraImageIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::baseio::MetaIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::CameraImageIO, T>::type;
     using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF

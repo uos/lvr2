@@ -10,7 +10,7 @@ void HyperspectralPanoramaIO<Derived>::save(
     const size_t& hPanoNo,
     HyperspectralPanoramaPtr pano) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->hyperspectralPanorama(scanPosNo, hCamNo, hPanoNo);
 
     // std::cout << "[HyperspectralPanoramaIO - save]" << std::endl;
@@ -37,7 +37,7 @@ void HyperspectralPanoramaIO<Derived>::save(
     {
         YAML::Node node;
         node = *pano;
-        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
+        m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
     // store hyperspectral channels
 }
@@ -50,7 +50,7 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
 {
     HyperspectralPanoramaPtr ret;
 
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->hyperspectralPanorama(scanPosNo, hCamNo, hPanoNo);
 
     // std::cout << "[HyperspectralPanoramaIO - load]" << std::endl;
@@ -62,7 +62,7 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
     }
 
     // check if group exists
-    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
@@ -71,7 +71,7 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
     if(d.meta)
     {
         YAML::Node meta;
-        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
@@ -119,7 +119,7 @@ boost::optional<YAML::Node> HyperspectralPanoramaIO<Derived>::loadMeta(
     const size_t& hCamNo,
     const size_t& hPanoNo) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->hyperspectralPanorama(scanPosNo, hCamNo, hPanoNo);
     return m_metaIO->load(d);
 }

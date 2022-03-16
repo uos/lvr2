@@ -4,8 +4,8 @@ namespace lvr2
 namespace scanio
 {
 
-template <typename FeatureBase>
-void CameraImageGroupIO<FeatureBase>::save(
+template <typename BaseIO>
+void CameraImageGroupIO<BaseIO>::save(
     const size_t& scanPosNo,
     const size_t& camNo,
     const size_t& imgNo,
@@ -16,14 +16,14 @@ void CameraImageGroupIO<FeatureBase>::save(
     save(scanPosNo, camNo, imgNos, imgPtr);
 }
 
-template <typename FeatureBase>
-void CameraImageGroupIO<FeatureBase>::save(
+template <typename BaseIO>
+void CameraImageGroupIO<BaseIO>::save(
     const size_t& scanPosNo,
     const size_t& camNo,
     const std::vector<size_t>& imgNos,
     CameraImageGroupPtr imgPtr) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->cameraImageGroup(scanPosNo, camNo, imgNos);
 
     // save data
@@ -54,12 +54,12 @@ void CameraImageGroupIO<FeatureBase>::save(
     {
         YAML::Node node;
         node = *imgPtr;
-        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
+        m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 }
 
-template <typename FeatureBase>
-CameraImageGroupPtr CameraImageGroupIO<FeatureBase>::load(
+template <typename BaseIO>
+CameraImageGroupPtr CameraImageGroupIO<BaseIO>::load(
     const size_t& scanPosNo,
     const size_t& camNo,
     const size_t& imgNo) const
@@ -68,15 +68,15 @@ CameraImageGroupPtr CameraImageGroupIO<FeatureBase>::load(
     return load(scanPosNo, camNo, imgNos);
 }
 
-template <typename FeatureBase>
-CameraImageGroupPtr CameraImageGroupIO<FeatureBase>::load(
+template <typename BaseIO>
+CameraImageGroupPtr CameraImageGroupIO<BaseIO>::load(
     const size_t& scanPosNo,
     const size_t& camNo,
     const std::vector<size_t>& imgNos) const
 {
     CameraImageGroupPtr ret;
 
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->cameraImageGroup(scanPosNo, camNo, imgNos);
 
     if(!d.dataRoot)
@@ -84,7 +84,7 @@ CameraImageGroupPtr CameraImageGroupIO<FeatureBase>::load(
         return ret;
     }
 
-    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
@@ -92,7 +92,7 @@ CameraImageGroupPtr CameraImageGroupIO<FeatureBase>::load(
     if(d.meta)
     {   
         YAML::Node meta;
-        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
@@ -145,8 +145,8 @@ CameraImageGroupPtr CameraImageGroupIO<FeatureBase>::load(
     return ret;
 }
 
-template <typename FeatureBase>
-boost::optional<YAML::Node> CameraImageGroupIO<FeatureBase>::loadMeta(
+template <typename BaseIO>
+boost::optional<YAML::Node> CameraImageGroupIO<BaseIO>::loadMeta(
     const size_t& scanPosNo,
     const size_t& camNo,
     const size_t& imgNo) const
@@ -155,18 +155,18 @@ boost::optional<YAML::Node> CameraImageGroupIO<FeatureBase>::loadMeta(
     return loadMeta(scanPosNo, camNo, imgNos);
 }
 
-template <typename FeatureBase>
-boost::optional<YAML::Node> CameraImageGroupIO<FeatureBase>::loadMeta(
+template <typename BaseIO>
+boost::optional<YAML::Node> CameraImageGroupIO<BaseIO>::loadMeta(
     const size_t& scanPosNo,
     const size_t& camNo,
     const std::vector<size_t>& imgNos) const
 {
-    Description d = m_featureBase->m_description->cameraImageGroup(scanPosNo, camNo, imgNos);
+    Description d = m_baseIO->m_description->cameraImageGroup(scanPosNo, camNo, imgNos);
     return m_metaIO->load(d); 
 }
 
-template <typename FeatureBase>
-void CameraImageGroupIO<FeatureBase>::saveCameraImage(
+template <typename BaseIO>
+void CameraImageGroupIO<BaseIO>::saveCameraImage(
     const size_t& scanPosNr, 
     const size_t& camNr, 
     const size_t& imgNr, 
@@ -175,8 +175,8 @@ void CameraImageGroupIO<FeatureBase>::saveCameraImage(
     save(scanPosNr, camNr, imgNr, imgPtr);
 }
 
-template <typename FeatureBase>
-CameraImageGroupPtr CameraImageGroupIO<FeatureBase>::loadCameraImage(
+template <typename BaseIO>
+CameraImageGroupPtr CameraImageGroupIO<BaseIO>::loadCameraImage(
     const size_t& scanPosNr, 
     const size_t& camNr, 
     const size_t& imgNr) const

@@ -1,19 +1,16 @@
-#pragma once
 #ifndef VARIANTCHANNELIO
 #define VARIANTCHANNELIO
 
-#include "lvr2/io/scanio/FeatureBase.hpp"
 #include "lvr2/types/VariantChannel.hpp"
-#include "lvr2/io/scanio/yaml/VariantChannel.hpp"
+#include "lvr2/io/baseio/BaseIO.hpp"
+#include "lvr2/io/baseio/ChannelIO.hpp"
+#include "lvr2/io/YAML.hpp"
 
-// Dependencies
-#include "lvr2/io/scanio/ChannelIO.hpp"
-
+using lvr2::baseio::FeatureConstruct;
 
 namespace lvr2 
 {
-
-namespace scanio
+namespace baseio
 {
 
 /**
@@ -50,7 +47,7 @@ namespace scanio
  * 
  */
 
-template<typename FeatureBase>
+template<typename BaseIO>
 class VariantChannelIO {
 public:
 
@@ -70,8 +67,8 @@ public:
                 std::string datasetName) const;
 
 protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
-    ChannelIO<FeatureBase>* m_channel_io = static_cast<ChannelIO<FeatureBase>*>(m_featureBase);
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
+    ChannelIO<BaseIO>* m_channel_io = static_cast<ChannelIO<BaseIO>*>(m_baseIO);
 };
 
 } // namespace scanio
@@ -79,18 +76,18 @@ protected:
 /**
  * Define you dependencies here:
  */
-template<typename FeatureBase>
-struct FeatureConstruct<lvr2::scanio::VariantChannelIO, FeatureBase> {
+template<typename T>
+struct FeatureConstruct<lvr2::baseio::VariantChannelIO, T> {
     
     // DEPS
-    using deps = typename FeatureConstruct<lvr2::scanio::ChannelIO, FeatureBase>::type;
+    using deps = typename FeatureConstruct<lvr2::baseio::ChannelIO, T>::type;
 
     // add actual feature
-    using type = typename deps::template add_features<lvr2::scanio::VariantChannelIO>::type;
+    using type = typename deps::template add_features<lvr2::baseio::VariantChannelIO>::type;
 };
 
 
-} // namespace lvr2 
+} // namespace baseio 
 
 #include "VariantChannelIO.tcc"
 

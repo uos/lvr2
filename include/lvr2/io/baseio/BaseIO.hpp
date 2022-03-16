@@ -1,6 +1,6 @@
 #pragma once
-#ifndef LVR2_IO_DESC_FeatureBase_HPP
-#define LVR2_IO_DESC_FeatureBase_HPP
+#ifndef LVR2_IO_DESC_BaseIO_HPP
+#define LVR2_IO_DESC_BaseIO_HPP
 
 #include <memory>
 #include <tuple>
@@ -10,6 +10,9 @@
 #include "lvr2/io/schema/ScanProjectSchema.hpp"
 
 namespace lvr2 
+{
+
+namespace baseio
 {
 
 /**
@@ -22,14 +25,14 @@ struct FeatureConstruct;
 
 
 /**
- * @class FeatureBase
- * @brief Manager Class for all FeatureBase components located in hdf5 directory
+ * @class BaseIO
+ * @brief Manager Class for all BaseIO components located in hdf5 directory
  * 
  * 
  */
 
 template<typename SchemaPtrT, template<typename> typename ...Features>
-class FeatureBase : public Features<FeatureBase<SchemaPtrT, Features...> >...
+class BaseIO : public Features<BaseIO<SchemaPtrT, Features...> >...
 {
 protected:
     template <typename T, typename Tuple>
@@ -46,11 +49,11 @@ protected:
 
 public:
     static constexpr std::size_t N = sizeof...(Features);
-    using features = std::tuple<Features<FeatureBase<SchemaPtrT, Features...> >...>;
+    using features = std::tuple<Features<BaseIO<SchemaPtrT, Features...> >...>;
 
     template<template<typename> typename F> 
     struct has_feature {
-        static constexpr bool value = has_type<F<FeatureBase>, features>::type::value;
+        static constexpr bool value = has_type<F<BaseIO>, features>::type::value;
     };
 
     template<
@@ -72,9 +75,9 @@ public:
     >
     struct add_features<F> {
         using type = typename std::conditional<
-            FeatureBase<SchemaPtrT, Features...>::has_feature<F>::value,
-            FeatureBase<SchemaPtrT, Features...>,
-            FeatureBase<SchemaPtrT, Features...,F>
+            BaseIO<SchemaPtrT, Features...>::has_feature<F>::value,
+            BaseIO<SchemaPtrT, Features...>,
+            BaseIO<SchemaPtrT, Features...,F>
             >::type;
     };
 
@@ -99,7 +102,7 @@ public:
 
     template<template<typename> typename F>
     struct add_features_with_deps<F> {
-        using type = typename FeatureConstruct<F, FeatureBase<SchemaPtrT, Features...> >::type;
+        using type = typename FeatureConstruct<F, BaseIO<SchemaPtrT, Features...> >::type;
     };
 
     /////////////////////////////////////////////
@@ -122,9 +125,9 @@ public:
     //     #pragma message("using Tp::save... needs c++17 at least or a newer compiler")
     // #endif
 
-    //using Features<FeatureBase<SchemaPtrT, Features...> >::save...;
+    //using Features<BaseIO<SchemaPtrT, Features...> >::save...;
 
-    FeatureBase(
+    BaseIO(
         const FileKernelPtr inKernel, 
         const SchemaPtrT inDesc,
         const bool load_data = false) 
@@ -135,16 +138,16 @@ public:
 
     }
 
-    virtual ~FeatureBase() {}
+    virtual ~BaseIO() {}
 
     template<template<typename> typename F>
     bool has();
 
     template<template<typename> typename F>
-    F<FeatureBase>* scast();
+    F<BaseIO>* scast();
 
     template<template<typename> typename F>
-    F<FeatureBase>* dcast();
+    F<BaseIO>* dcast();
 
     const FileKernelPtr             m_kernel;
     const SchemaPtrT                m_description;
@@ -163,11 +166,12 @@ struct FeatureConstruct {
 // MeshIO example: FeatureBuild<MeshIO, MeshSchemaPtr>
 // ScanProjectIO example: FeatureBuild<ScanProjectIO>
 template<template<typename> typename Feature, typename SchemaPtrT = ScanProjectSchemaPtr>
-using FeatureBuild = typename FeatureConstruct<Feature, FeatureBase<SchemaPtrT>>::type;
+using FeatureBuild = typename FeatureConstruct<Feature, BaseIO<SchemaPtrT>>::type;
 
+} // namespace baseio
 
 } // namespace lvr2
 
-#include "FeatureBase.tcc"
+#include "BaseIO.tcc"
 
-#endif // LVR2_IO_GFeatureBase_HPP
+#endif // LVR2_IO_GBaseIO_HPP

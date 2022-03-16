@@ -6,8 +6,8 @@ namespace lvr2
 
 namespace meshio
 {
-template <typename FeatureBase>
-void MaterialIO<FeatureBase>::saveMaterial(
+template <typename BaseIO>
+void MaterialIO<BaseIO>::saveMaterial(
     const std::string& mesh_name,
     const size_t& material_index,
     const MeshBufferPtr& mesh
@@ -16,14 +16,14 @@ void MaterialIO<FeatureBase>::saveMaterial(
     const auto& materials = mesh->getMaterials();
     const auto& textures = mesh->getTextures();
     
-    Description desc = m_featureBase->m_description->material(mesh_name, material_index);
+    Description desc = m_baseIO->m_description->material(mesh_name, material_index);
     const Material& mat = materials[material_index];
 
     // Write metadata
     YAML::Node meta;
     meta = mat;
     
-    m_featureBase->m_kernel->saveMetaYAML(
+    m_baseIO->m_kernel->saveMetaYAML(
         *desc.metaRoot,
         *desc.meta,
         meta
@@ -56,24 +56,24 @@ void MaterialIO<FeatureBase>::saveMaterial(
 
 }
 
-template <typename FeatureBase>
-std::pair<MaterialOptional, TextureVectorOpt> MaterialIO<FeatureBase>::loadMaterial(
+template <typename BaseIO>
+std::pair<MaterialOptional, TextureVectorOpt> MaterialIO<BaseIO>::loadMaterial(
         const std::string& mesh_name,
         const size_t& material_index
     ) const
 {
-    Description desc = m_featureBase->m_description->material(
+    Description desc = m_baseIO->m_description->material(
         mesh_name,
         material_index
     );
     // Check if material exists
-    if (!m_featureBase->m_kernel->exists(*desc.dataRoot))
+    if (!m_baseIO->m_kernel->exists(*desc.dataRoot))
     {
         return std::make_pair(MaterialOptional(), TextureVectorOpt());
     }
 
     YAML::Node node;
-    m_featureBase->m_kernel->loadMetaYAML(
+    m_baseIO->m_kernel->loadMetaYAML(
         *desc.metaRoot,
         *desc.meta,
         node
@@ -82,18 +82,18 @@ std::pair<MaterialOptional, TextureVectorOpt> MaterialIO<FeatureBase>::loadMater
 
     
     std::vector<Texture> ret_textures;
-    if (m_featureBase->m_kernel->exists(*desc.dataRoot + "/textures"))
+    if (m_baseIO->m_kernel->exists(*desc.dataRoot + "/textures"))
     {
         // Get all texture names
         std::vector<std::string> textures;  
-        m_featureBase->m_kernel->subGroupNames(
+        m_baseIO->m_kernel->subGroupNames(
                 *desc.dataRoot + "/textures",
                 textures
             );
         // Load layers
         for (std::string layer: textures)
         {
-            auto tex_opt = m_featureBase->m_textureIO->loadTexture(
+            auto tex_opt = m_baseIO->m_textureIO->loadTexture(
                 mesh_name,
                 material_index,
                 layer
@@ -118,16 +118,16 @@ std::pair<MaterialOptional, TextureVectorOpt> MaterialIO<FeatureBase>::loadMater
     return std::make_pair(ret_mat, std::move(ret_textures));
 }
 
-template <typename FeatureBase>
-size_t MaterialIO<FeatureBase>::loadMaterials(
+template <typename BaseIO>
+size_t MaterialIO<BaseIO>::loadMaterials(
     const std::string& mesh_name,
     MeshBufferPtr mesh) const
 {
     size_t count = 0;
     while(true)
     {
-        Description desc = m_featureBase->m_description->material(mesh_name, count);
-        if (!m_featureBase->m_kernel->exists(
+        Description desc = m_baseIO->m_description->material(mesh_name, count);
+        if (!m_baseIO->m_kernel->exists(
             *desc.dataRoot,
             *desc.data
         )) break;
@@ -173,8 +173,8 @@ size_t MaterialIO<FeatureBase>::loadMaterials(
     return mesh->getMaterials().size();
 }
 
-template <typename FeatureBase>
-void MaterialIO<FeatureBase>::saveMaterials(
+template <typename BaseIO>
+void MaterialIO<BaseIO>::saveMaterials(
         const std::string& mesh_name,
         const MeshBufferPtr& mesh
     ) const

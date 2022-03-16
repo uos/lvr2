@@ -1,13 +1,16 @@
-#pragma once
 
-#ifndef LVR2_IO_scanio_MATRIXIO_HPP
-#define LVR2_IO_scanio_MATRIXIO_HPP
+#ifndef MATRIXIO
+#define MATRIXIO
 
 #include <Eigen/Dense>
-#include "lvr2/io/scanio/FeatureBase.hpp"
-namespace lvr2 {
+#include "lvr2/io/baseio/BaseIO.hpp"
+namespace lvr2 
+{
 
-template<typename FeatureBase>
+namespace baseio
+{
+
+template<typename BaseIO>
 class MatrixIO {
 public:
 
@@ -30,12 +33,14 @@ public:
         std::string datasetName);
 
 protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_BaseIO = static_cast<BaseIO*>(this);
 
 };
+
+} // namespace baseio
 
 } // namespace lvr2
 
 #include "MatrixIO.tcc"
 
-#endif // LVR2_IO_scanio_MATRIXIO_HPP
+#endif // MATRIXIO

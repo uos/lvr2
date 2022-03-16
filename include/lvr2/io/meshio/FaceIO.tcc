@@ -8,8 +8,8 @@ namespace lvr2
 {
 namespace meshio
 {
-template <typename FeatureBase>
-void FaceIO<FeatureBase>::saveFaces(
+template <typename BaseIO>
+void FaceIO<BaseIO>::saveFaces(
     const std::string& mesh_name,
     const MeshBufferPtr mesh
 ) const
@@ -31,8 +31,8 @@ void FaceIO<FeatureBase>::saveFaces(
     std::cout << timestamp << "[FaceIO] Has Face Materials: " << (hasMaterials ? "yes" : "no") << std::endl;
 }
 
-template <typename FeatureBase>
-void FaceIO<FeatureBase>::loadFaces(
+template <typename BaseIO>
+void FaceIO<BaseIO>::loadFaces(
     const std::string& mesh_name,
     const MeshBufferPtr mesh
 ) const
@@ -46,8 +46,8 @@ void FaceIO<FeatureBase>::loadFaces(
     loadFaceMaterialIndices(mesh_name, mesh);
 }
 
-template <typename FeatureBase>
-bool FaceIO<FeatureBase>::saveFaceIndices(
+template <typename BaseIO>
+bool FaceIO<BaseIO>::saveFaceIndices(
     const std::string& mesh_name,
     const MeshBufferPtr mesh) const
 {
@@ -58,8 +58,8 @@ bool FaceIO<FeatureBase>::saveFaceIndices(
 
     // Save face indices
     std::vector<size_t> shape = {mesh->numFaces(), 3};
-    auto desc = m_featureBase->m_description->faceIndices(mesh_name);
-    m_featureBase->m_kernel->saveArray(
+    auto desc = m_baseIO->m_description->faceIndices(mesh_name);
+    m_baseIO->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
         shape,
@@ -69,7 +69,7 @@ bool FaceIO<FeatureBase>::saveFaceIndices(
         // TODO: More meta, type eg.
         YAML::Node meta;
         meta["shape"] = shape;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             meta
@@ -79,8 +79,8 @@ bool FaceIO<FeatureBase>::saveFaceIndices(
     return true;
 }
 
-template <typename FeatureBase>
-bool FaceIO<FeatureBase>::saveFaceColors(
+template <typename BaseIO>
+bool FaceIO<BaseIO>::saveFaceColors(
     const std::string& mesh_name,
     const MeshBufferPtr mesh) const
 {
@@ -93,8 +93,8 @@ bool FaceIO<FeatureBase>::saveFaceColors(
     size_t color_width;
     const auto& face_colors = mesh->getFaceColors(color_width);
     std::vector<size_t> shape = {mesh->numFaces(), color_width};
-    Description desc = m_featureBase->m_description->faceColors(mesh_name);
-    m_featureBase->m_kernel->saveArray(
+    Description desc = m_baseIO->m_description->faceColors(mesh_name);
+    m_baseIO->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
         shape,
@@ -104,7 +104,7 @@ bool FaceIO<FeatureBase>::saveFaceColors(
         // TODO: More meta, type eg.
         YAML::Node meta;
         meta["shape"] = shape;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             meta
@@ -114,8 +114,8 @@ bool FaceIO<FeatureBase>::saveFaceColors(
     return true;
 }
 
-template <typename FeatureBase>
-bool FaceIO<FeatureBase>::saveFaceNormals(
+template <typename BaseIO>
+bool FaceIO<BaseIO>::saveFaceNormals(
     const std::string& mesh_name,
     const MeshBufferPtr mesh) const
 {
@@ -126,8 +126,8 @@ bool FaceIO<FeatureBase>::saveFaceNormals(
 
     // Save face normals
     std::vector<size_t> shape = {mesh->numFaces(), 3};
-    Description desc = m_featureBase->m_description->faceNormals(mesh_name);
-    m_featureBase->m_kernel->saveArray(
+    Description desc = m_baseIO->m_description->faceNormals(mesh_name);
+    m_baseIO->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
         shape,
@@ -137,7 +137,7 @@ bool FaceIO<FeatureBase>::saveFaceNormals(
         // TODO: More meta, type eg.
         YAML::Node meta;
         meta["shape"] = shape;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             meta
@@ -147,8 +147,8 @@ bool FaceIO<FeatureBase>::saveFaceNormals(
     return true;
 }
 
-template <typename FeatureBase>
-bool FaceIO<FeatureBase>::saveFaceMaterialIndices(
+template <typename BaseIO>
+bool FaceIO<BaseIO>::saveFaceMaterialIndices(
     const std::string& mesh_name,
     const MeshBufferPtr mesh) const
 {
@@ -161,8 +161,8 @@ bool FaceIO<FeatureBase>::saveFaceMaterialIndices(
 
     // Save face materials
     std::vector<size_t> shape = {mesh->numFaces(), 1};
-    Description desc = m_featureBase->m_description->faceMaterialIndices(mesh_name);
-    m_featureBase->m_kernel->saveArray(
+    Description desc = m_baseIO->m_description->faceMaterialIndices(mesh_name);
+    m_baseIO->m_kernel->saveArray(
         *desc.dataRoot,
         *desc.data,
         shape,
@@ -172,7 +172,7 @@ bool FaceIO<FeatureBase>::saveFaceMaterialIndices(
         // TODO: More meta, type eg.
         YAML::Node meta;
         meta["shape"] = shape;
-        m_featureBase->m_kernel->saveMetaYAML(
+        m_baseIO->m_kernel->saveMetaYAML(
             *desc.metaRoot,
             *desc.meta,
             meta
@@ -182,14 +182,14 @@ bool FaceIO<FeatureBase>::saveFaceMaterialIndices(
     return true;
 }
 
-template <typename FeatureBase>
-bool FaceIO<FeatureBase>::loadFaceIndices(
+template <typename BaseIO>
+bool FaceIO<BaseIO>::loadFaceIndices(
     const std::string& mesh_name,
     MeshBufferPtr mesh) const
 {
-    Description desc = m_featureBase->m_description->faceIndices(mesh_name);
+    Description desc = m_baseIO->m_description->faceIndices(mesh_name);
     // Check if the data exists
-    if (!m_featureBase->m_kernel->exists(
+    if (!m_baseIO->m_kernel->exists(
         *desc.dataRoot,
         *desc.data
     ))
@@ -198,7 +198,7 @@ bool FaceIO<FeatureBase>::loadFaceIndices(
     }
     // Load Meta
     YAML::Node meta;
-    m_featureBase->m_kernel->loadMetaYAML(
+    m_baseIO->m_kernel->loadMetaYAML(
         *desc.metaRoot,
         *desc.meta,
         meta
@@ -207,7 +207,7 @@ bool FaceIO<FeatureBase>::loadFaceIndices(
     // Get dimensions
     std::vector<size_t> shape;
     // Load the data
-    indexArray indices = m_featureBase->m_kernel->template loadArray<indexArray::element_type>(
+    indexArray indices = m_baseIO->m_kernel->template loadArray<indexArray::element_type>(
         *desc.dataRoot,
         *desc.data,
         shape        
@@ -218,14 +218,14 @@ bool FaceIO<FeatureBase>::loadFaceIndices(
     return true;
 }
 
-template <typename FeatureBase>
-bool FaceIO<FeatureBase>::loadFaceColors(
+template <typename BaseIO>
+bool FaceIO<BaseIO>::loadFaceColors(
     const std::string& mesh_name,
     MeshBufferPtr mesh) const
 {
-    Description desc = m_featureBase->m_description->faceColors(mesh_name);
+    Description desc = m_baseIO->m_description->faceColors(mesh_name);
     // Check if the data exists
-    if (!m_featureBase->m_kernel->exists(
+    if (!m_baseIO->m_kernel->exists(
         *desc.dataRoot,
         *desc.data
     ))
@@ -234,7 +234,7 @@ bool FaceIO<FeatureBase>::loadFaceColors(
     }
     // Load Meta
     YAML::Node meta;
-    m_featureBase->m_kernel->loadMetaYAML(
+    m_baseIO->m_kernel->loadMetaYAML(
         *desc.metaRoot,
         *desc.meta,
         meta
@@ -243,7 +243,7 @@ bool FaceIO<FeatureBase>::loadFaceColors(
     // Get dimensions
     std::vector<size_t> shape;
     // Load the data
-    ucharArr indices = m_featureBase->m_kernel->template loadArray<ucharArr::element_type>(
+    ucharArr indices = m_baseIO->m_kernel->template loadArray<ucharArr::element_type>(
         *desc.dataRoot,
         *desc.data,
         shape        
@@ -254,14 +254,14 @@ bool FaceIO<FeatureBase>::loadFaceColors(
     return true;
 }
 
-template <typename FeatureBase>
-bool FaceIO<FeatureBase>::loadFaceNormals(
+template <typename BaseIO>
+bool FaceIO<BaseIO>::loadFaceNormals(
     const std::string& mesh_name,
     MeshBufferPtr mesh) const
 {
-    Description desc = m_featureBase->m_description->faceNormals(mesh_name);
+    Description desc = m_baseIO->m_description->faceNormals(mesh_name);
     // Check if the data exists
-    if (!m_featureBase->m_kernel->exists(
+    if (!m_baseIO->m_kernel->exists(
         *desc.dataRoot,
         *desc.data
     ))
@@ -270,7 +270,7 @@ bool FaceIO<FeatureBase>::loadFaceNormals(
     }
     // Load Meta
     YAML::Node meta;
-    m_featureBase->m_kernel->loadMetaYAML(
+    m_baseIO->m_kernel->loadMetaYAML(
         *desc.metaRoot,
         *desc.meta,
         meta
@@ -279,7 +279,7 @@ bool FaceIO<FeatureBase>::loadFaceNormals(
     // Get dimensions
     std::vector<size_t> shape;
     // Load the data
-    floatArr indices = m_featureBase->m_kernel->template loadArray<floatArr::element_type>(
+    floatArr indices = m_baseIO->m_kernel->template loadArray<floatArr::element_type>(
         *desc.dataRoot,
         *desc.data,
         shape        
@@ -290,14 +290,14 @@ bool FaceIO<FeatureBase>::loadFaceNormals(
     return true;
 }
 
-template <typename FeatureBase>
-bool FaceIO<FeatureBase>::loadFaceMaterialIndices(
+template <typename BaseIO>
+bool FaceIO<BaseIO>::loadFaceMaterialIndices(
     const std::string& mesh_name,
     MeshBufferPtr mesh) const
 {
-    Description desc = m_featureBase->m_description->faceMaterialIndices(mesh_name);
+    Description desc = m_baseIO->m_description->faceMaterialIndices(mesh_name);
     // Check if the data exists
-    if (!m_featureBase->m_kernel->exists(
+    if (!m_baseIO->m_kernel->exists(
         *desc.dataRoot,
         *desc.data
     ))
@@ -306,7 +306,7 @@ bool FaceIO<FeatureBase>::loadFaceMaterialIndices(
     }
     // Load Meta
     YAML::Node meta;
-    m_featureBase->m_kernel->loadMetaYAML(
+    m_baseIO->m_kernel->loadMetaYAML(
         *desc.metaRoot,
         *desc.meta,
         meta
@@ -315,7 +315,7 @@ bool FaceIO<FeatureBase>::loadFaceMaterialIndices(
     // Get dimensions
     std::vector<size_t> shape;
     // Load the data
-    indexArray indices = m_featureBase->m_kernel->template loadArray<indexArray::element_type>(
+    indexArray indices = m_baseIO->m_kernel->template loadArray<indexArray::element_type>(
         *desc.dataRoot,
         *desc.data,
         shape        

@@ -3,12 +3,12 @@
 namespace lvr2 
 {
 
-namespace scanio
+namespace baseio
 {
 
-template<typename FeatureBase>
+template<typename BaseIO>
 template<typename T> 
-ChannelOptional<T> ChannelIO<FeatureBase>::load(
+ChannelOptional<T> ChannelIO<BaseIO>::load(
     std::string group, std::string name) const
 {   
     ChannelOptional<T> ret;
@@ -39,9 +39,9 @@ ChannelOptional<T> ChannelIO<FeatureBase>::load(
     return ret;
 }
 
-template<typename FeatureBase>
+template<typename BaseIO>
 template<typename T>
-void ChannelIO<FeatureBase>::save(
+void ChannelIO<BaseIO>::save(
     std::string group,
     std::string name,
     const Channel<T>& channel) const
@@ -63,9 +63,9 @@ void ChannelIO<FeatureBase>::save(
     }
 }
 
-template<typename FeatureBase>
+template<typename BaseIO>
 template<typename T>
-void ChannelIO<FeatureBase>::save(
+void ChannelIO<BaseIO>::save(
     const size_t& scanPosNo,
     const size_t& lidarNo,
     const size_t& scanNo,
@@ -73,15 +73,15 @@ void ChannelIO<FeatureBase>::save(
     const Channel<T>& channel
 ) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->position(scanPosNo);
     d = Dgen->lidar(d, lidarNo);
     d = Dgen->scan(d, scanNo);
 }
 
-template<typename FeatureBase>
+template<typename BaseIO>
 template<typename T>
-void ChannelIO<FeatureBase>::saveCustom(
+void ChannelIO<BaseIO>::saveCustom(
     std::string group,
     std::string name,
     const Channel<T>& channel) const
@@ -132,19 +132,19 @@ void ChannelIO<FeatureBase>::saveCustom(
         std::vector<size_t> dims(2);
         dims[0] = total_size;
         dims[1] = 1;
-        m_featureBase->m_kernel->saveUCharArray(group, name, dims, data);
+        m_baseIO->m_kernel->saveUCharArray(group, name, dims, data);
     } else {
         std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
     }
 }
 
-template<typename FeatureBase>
-std::vector<size_t> ChannelIO<FeatureBase>::loadDimensions(
+template<typename BaseIO>
+std::vector<size_t> ChannelIO<BaseIO>::loadDimensions(
     std::string groupName, std::string datasetName) const
 {
     std::vector<size_t> dims;
     YAML::Node node;
-    m_featureBase->m_kernel->loadMetaYAML(groupName, datasetName, node);
+    m_baseIO->m_kernel->loadMetaYAML(groupName, datasetName, node);
     for(auto it = node["dims"].begin(); it != node["dims"].end(); ++it)
     {
         dims.push_back(it->as<size_t>());
@@ -156,9 +156,9 @@ std::vector<size_t> ChannelIO<FeatureBase>::loadDimensions(
 // PROTECTED
 
 // LOADER
-template<typename FeatureBase>
+template<typename BaseIO>
 template<typename T>
-ChannelOptional<T> ChannelIO<FeatureBase>::loadFundamental( 
+ChannelOptional<T> ChannelIO<BaseIO>::loadFundamental( 
     std::string group,
     std::string name) const
 {
@@ -167,7 +167,7 @@ ChannelOptional<T> ChannelIO<FeatureBase>::loadFundamental(
     if constexpr(FileKernel::ImplementedTypes::contains<T>())
     {
         std::vector<size_t> dims;
-        boost::shared_array<T> arr = m_featureBase->m_kernel->template loadArray<T>(group, name, dims);
+        boost::shared_array<T> arr = m_baseIO->m_kernel->template loadArray<T>(group, name, dims);
 
         if(arr)
         {
@@ -188,9 +188,9 @@ ChannelOptional<T> ChannelIO<FeatureBase>::loadFundamental(
     return ret;
 }
 
-template<typename FeatureBase>
+template<typename BaseIO>
 template<typename T>
-ChannelOptional<T> ChannelIO<FeatureBase>::loadCustom(
+ChannelOptional<T> ChannelIO<BaseIO>::loadCustom(
     std::string group,
     std::string name
 ) const
@@ -200,7 +200,7 @@ ChannelOptional<T> ChannelIO<FeatureBase>::loadCustom(
     
     // found readable custom type
     std::vector<size_t> dims;
-    ucharArr buffer = m_featureBase->m_kernel->loadUCharArray(group, name, dims);
+    ucharArr buffer = m_baseIO->m_kernel->loadUCharArray(group, name, dims);
     
     unsigned char* data_ptr = &buffer[0];
     size_t Npoints = *reinterpret_cast<size_t*>(data_ptr);
@@ -229,9 +229,9 @@ ChannelOptional<T> ChannelIO<FeatureBase>::loadCustom(
 }
 
 // SAVE
-template<typename FeatureBase>
+template<typename BaseIO>
 template<typename T>
-void ChannelIO<FeatureBase>::saveFundamental(
+void ChannelIO<BaseIO>::saveFundamental(
     std::string group,
     std::string name,
     const Channel<T>& channel) const
@@ -243,7 +243,7 @@ void ChannelIO<FeatureBase>::saveFundamental(
         dims[0] = channel.numElements();
         dims[1] = channel.width();
         // std::cout << "Save Channel " << dims[0] << "x" << dims[1] << std::endl;  
-        m_featureBase->m_kernel->template saveArray<T>(group, name, dims, channel.dataPtr());
+        m_baseIO->m_kernel->template saveArray<T>(group, name, dims, channel.dataPtr());
     } else {
         // TODO: Error or Warning?
         std::stringstream ss;

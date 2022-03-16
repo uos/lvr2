@@ -49,7 +49,7 @@
 #include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/schema/LabelScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
-#include "lvr2/io/Polygon.hpp"
+#include "lvr2/io/PolygonBuffer.hpp"
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/util/Util.hpp"
 #include "lvr2/util/IOUtils.hpp"

@@ -1,11 +1,11 @@
 
-namespace lvr2 {
-
-namespace scanio
+namespace lvr2 
+{
+namespace baseio
 {
 
-template <typename FeatureBase>
-boost::optional<YAML::Node> MetaIO<FeatureBase>::load(
+template <typename BaseIO>
+boost::optional<YAML::Node> MetaIO<BaseIO>::load(
     Description d) const
 {
     boost::optional<YAML::Node> ret;
@@ -20,13 +20,13 @@ boost::optional<YAML::Node> MetaIO<FeatureBase>::load(
         d.metaRoot = d.dataRoot;
     }
 
-    if(!m_featureBase->m_kernel->exists(*d.metaRoot))
+    if(!m_BaseIO->m_kernel->exists(*d.metaRoot))
     {
         return ret;
     }
 
     YAML::Node meta;
-    if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+    if(!m_BaseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
     {
         return ret;
     }
@@ -34,14 +34,13 @@ boost::optional<YAML::Node> MetaIO<FeatureBase>::load(
     return ret;
 }
 
-template <typename FeatureBase>
-void MetaIO<FeatureBase>::save(
+template <typename BaseIO>
+void MetaIO<BaseIO>::save(
     Description d,
     YAML::Node node) const
 {
 
 }
 
-} // namespace scanio
-
+} // namespace baseio
 } // namespace lvr2

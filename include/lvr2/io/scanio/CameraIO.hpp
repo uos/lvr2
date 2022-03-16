@@ -1,22 +1,18 @@
-#pragma once
+#pragma once 
 
-#ifndef CAMERAIO
-#define CAMERAIO
-
-#include "MetaIO.hpp"
-#include "CameraImageIO.hpp"
-#include "CameraImageGroupIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/io/baseio/MetaIO.hpp"
+#include "lvr2/io/scanio/CameraImageIO.hpp"
+#include "lvr2/io/scanio/CameraImageIO.hpp"
+#include "lvr2/io/scanio/CameraImageGroupIO.hpp"
 #include "lvr2/io/scanio/yaml/Camera.hpp"
-
 
 namespace lvr2
 {
-
 namespace scanio
 {
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class CameraIO
 {
 public:
@@ -43,12 +39,12 @@ public:
         const size_t& scanCamNo) const;
 
 protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
 
     // dependencies
-    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
-    CameraImageIO<FeatureBase>* m_cameraImageIO = static_cast<CameraImageIO<FeatureBase>*>(m_featureBase);
-    CameraImageGroupIO<FeatureBase>* m_cameraImageGroupIO = static_cast<CameraImageGroupIO<FeatureBase>*>(m_featureBase);
+    MetaIO<BaseIO>* m_metaIO = static_cast<MetaIO<BaseIO>*>(m_baseIO);
+    CameraImageIO<BaseIO>* m_cameraImageIO = static_cast<CameraImageIO<BaseIO>*>(m_baseIO);
+    CameraImageGroupIO<BaseIO>* m_cameraImageGroupIO = static_cast<CameraImageGroupIO<BaseIO>*>(m_baseIO);
 
     static constexpr const char* ID = "CameraIO";
     static constexpr const char* OBJID = "Camera";
@@ -63,13 +59,13 @@ protected:
  * - Sets type variable
  *
  */
-template <typename FeatureBase>
-struct FeatureConstruct<lvr2::scanio::CameraIO, FeatureBase>
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::CameraIO, T>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<lvr2::scanio::CameraImageIO, FeatureBase>::type;
-    using dep3 = typename FeatureConstruct<lvr2::scanio::CameraImageGroupIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::baseio::MetaIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::CameraImageIO, T>::type;
+    using dep3 = typename FeatureConstruct<lvr2::scanio::CameraImageGroupIO, T>::type;
     using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
 
     // ADD THE FEATURE ITSELF
@@ -80,4 +76,4 @@ struct FeatureConstruct<lvr2::scanio::CameraIO, FeatureBase>
 
 #include "CameraIO.tcc"
 
-#endif // CAMERAIO
+

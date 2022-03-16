@@ -1,17 +1,16 @@
 #ifndef LIDARIO_HPP
 #define LIDARIO_HPP
 
-#include "MetaIO.hpp"
-#include "ScanIO.hpp"
+#include "lvr2/io/baseio/MetaIO.hpp"
+#include "lvr2/io/scanio/ScanIO.hpp"
 #include "lvr2/io/scanio/yaml/LIDAR.hpp"
 
 namespace lvr2
 {
-
 namespace scanio
 {
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class LIDARIO
 {
 public:
@@ -25,11 +24,11 @@ public:
                     const size_t& lidarNo) const;
 
 protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
     
     // dependencies
-    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
-    ScanIO<FeatureBase>* m_scanIO = static_cast<ScanIO<FeatureBase>*>(m_featureBase);
+    MetaIO<BaseIO>* m_metaIO = static_cast<MetaIO<BaseIO>*>(m_baseIO);
+    ScanIO<BaseIO>* m_scanIO = static_cast<ScanIO<BaseIO>*>(m_baseIO);
 };
 
 } // namespace scanio
@@ -41,12 +40,12 @@ protected:
  * - Sets type variable
  *
  */
-template <typename FeatureBase>
-struct FeatureConstruct<lvr2::scanio::LIDARIO, FeatureBase >
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::LIDARIO, T >
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<lvr2::scanio::ScanIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<lvr2::scanio::MetaIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::scanio::ScanIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::baseio::MetaIO, T>::type;
     using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF

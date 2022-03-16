@@ -1,18 +1,17 @@
-#pragma once
-#ifndef LVR2_IO_DESCRIPTIONS_CHANNELIO_HPP
-#define LVR2_IO_DESCRIPTIONS_CHANNELIO_HPP
+#ifndef CHANNELIO
+#define CHANNELIO
 
 #include "lvr2/types/Channel.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
 // Depending Features
 
-namespace lvr2 {
-
-namespace scanio
+namespace lvr2 
+{
+namespace baseio
 {
 
-template<typename FeatureBase>
+template<typename BaseIO>
 class ChannelIO 
 {
 public:
@@ -67,13 +66,12 @@ protected:
         std::string name,
         const Channel<T>& channel) const;
 
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+     BaseIO* m_baseIO = static_cast<BaseIO*>(this);
 };
 
-} // namespace scanio
-
+} // namespace baseio
 } // namespace lvr2
 
 #include "ChannelIO.tcc"
 
-#endif // LVR2_IO_DESCRIPTIONS_CHANNELIO_HPP
+#endif // CHANNELIO

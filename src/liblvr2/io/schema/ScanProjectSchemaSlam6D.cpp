@@ -2,7 +2,7 @@
 #include <iomanip>
 
 #include "lvr2/types/ScanTypes.hpp"
-#include "lvr2/io/scanio/yaml/YAML.hpp"
+#include "lvr2/io/YAML.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaSlam6D.hpp"
 
 namespace lvr2

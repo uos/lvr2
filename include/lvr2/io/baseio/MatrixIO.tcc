@@ -1,10 +1,14 @@
 #include "lvr2/types/MatrixTypes.hpp"
+
 namespace lvr2 
 {
 
-template<typename FeatureBase>
+namespace baseio
+{
+
+template<typename BaseIO>
 template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-void MatrixIO<FeatureBase>::save(std::string groupName,
+void MatrixIO<BaseIO>::save(std::string groupName,
     std::string datasetName,
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat) const
 {
@@ -17,21 +21,21 @@ void MatrixIO<FeatureBase>::save(std::string groupName,
     dmat = map.template cast<double>();
     boost::shared_array<double> d_ptr(dmat.data());
 
-    m_featureBase->m_kernel->saveDoubleArray(groupName, datasetName, dims, d_ptr);
+    m_BaseIO->m_kernel->saveDoubleArray(groupName, datasetName, dims, d_ptr);
 }
 
-template<typename FeatureBase>
+template<typename BaseIO>
 template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-void MatrixIO<FeatureBase>::saveMatrix(std::string groupName,
+void MatrixIO<BaseIO>::saveMatrix(std::string groupName,
     std::string datasetName,
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat) const
 {
     save(groupName, datasetName, mat);   
 }
 
-template<typename FeatureBase>
+template<typename BaseIO>
 template<typename MatrixT>
-MatrixT MatrixIO<FeatureBase>::loadMatrix(std::string groupName,
+MatrixT MatrixIO<BaseIO>::loadMatrix(std::string groupName,
     std::string datasetName)
 {
     std::vector<size_t> dims = {MatrixT::RowsAtCompileTime, MatrixT::ColsAtCompileTime};
@@ -40,7 +44,7 @@ MatrixT MatrixIO<FeatureBase>::loadMatrix(std::string groupName,
     // matrix cofficients as double values and cast them back
     // into the desired type
     boost::shared_array<double> 
-        arr = m_featureBase->m_kernel->template loadDoubleArray(groupName, datasetName, dims);
+        arr = m_BaseIO->m_kernel->template loadDoubleArray(groupName, datasetName, dims);
 
     Eigen::Map<Eigen::Matrix<double, MatrixT::RowsAtCompileTime, MatrixT::ColsAtCompileTime>> map(arr.get());
 
@@ -49,5 +53,7 @@ MatrixT MatrixIO<FeatureBase>::loadMatrix(std::string groupName,
     
     return mat;
 }
+
+} // namespace baseio
 
 } // namespace lvr2

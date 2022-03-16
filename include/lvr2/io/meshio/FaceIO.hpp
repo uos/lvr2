@@ -6,7 +6,7 @@ namespace lvr2
     namespace meshio
     {
 
-        template <typename FeatureBase>
+        template <typename BaseIO>
         class FaceIO
         {
         public:
@@ -32,7 +32,7 @@ namespace lvr2
                 MeshBufferPtr mesh
             ) const;
         protected:
-            FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+            BaseIO* m_baseIO = static_cast<BaseIO*>(this);
 
         private:
 

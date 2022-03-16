@@ -1,20 +1,23 @@
 #pragma once
 
-#ifndef LVR2_IO_scanio_LABELIO_HPP
-#define LVR2_IO_scanio_LABELIO_HPP
+#ifndef LABELIO
+#define LABELIO
 
-#include "lvr2/io/scanio/ArrayIO.hpp"
+#include "lvr2/io/baseio/ArrayIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "WaveformIO.hpp"
 
 #include <yaml-cpp/yaml.h>
+
+using lvr2::baseio::ArrayIO;
+using lvr2::baseio::FeatureConstruct;
+
 namespace lvr2
 {
-
 namespace scanio
 {
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class LabelIO
 {
 public:
@@ -24,12 +27,11 @@ public:
   
 protected:
 
-  FeatureBase *m_featureBase = static_cast<FeatureBase*>(this);
+  BaseIO *m_baseIO = static_cast<BaseIO*>(this);
 
   // dependencies
-  ArrayIO<FeatureBase> *m_arrayIO = static_cast<ArrayIO<FeatureBase> *>(m_featureBase);
-  FullWaveformIO<FeatureBase>* m_fullWaveformIO =
-        static_cast<FullWaveformIO<FeatureBase>*>(m_featureBase);
+  ArrayIO<BaseIO> *m_arrayIO = static_cast<ArrayIO<BaseIO> *>(m_baseIO);
+  FullWaveformIO<BaseIO>* m_fullWaveformIO = static_cast<FullWaveformIO<BaseIO>*>(m_baseIO);
   static constexpr const char* ID = "LabelIO";
   static constexpr const char* OBJID = "Label";
 
@@ -37,12 +39,12 @@ protected:
 
 } // namespace  scanio
 
-template<typename FeatureBase>
-struct FeatureConstruct<scanio::LabelIO, FeatureBase> {
+template<typename T>
+struct FeatureConstruct<scanio::LabelIO, T> {
     
     // DEPS
-    using dep1 = typename FeatureConstruct<scanio::ArrayIO, FeatureBase >::type;
-    using dep2 = typename FeatureConstruct<scanio::FullWaveformIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<baseio::ArrayIO, T>::type;
+    using dep2 = typename FeatureConstruct<scanio::FullWaveformIO, T>::type;
     using deps = typename dep1::template Merge<dep2>;
  
 
@@ -57,4 +59,4 @@ struct FeatureConstruct<scanio::LabelIO, FeatureBase> {
 
 #include "LabelIO.tcc"
 
-#endif // LVR2_IO_scanio_LABELIO_HPP
+#endif // LABELIO

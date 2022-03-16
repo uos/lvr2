@@ -1,8 +1,10 @@
 #pragma once
 
-#include <lvr2/io/scanio/FeatureBase.hpp>
+#include <lvr2/io/baseio/BaseIO.hpp>
 #include <lvr2/io/meshio/TextureIO.hpp>
 #include <lvr2/texture/Material.hpp>
+
+using lvr2::baseio::FeatureConstruct;
 
 namespace lvr2
 {
@@ -12,7 +14,7 @@ namespace meshio
     using TextureVector = std::vector<Texture>;
     using TextureVectorOpt = boost::optional<TextureVector>;
 
-    template <typename FeatureBase>
+    template <typename BaseIO>
     class MaterialIO
     {
     public:
@@ -41,10 +43,8 @@ namespace meshio
      */
         size_t loadMaterials(const std::string& mesh_name, MeshBufferPtr mesh) const;
     protected:
-        FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
-
-        TextureIO<FeatureBase>* m_textureIO
-            = static_cast<TextureIO<FeatureBase>*>(m_featureBase);
+        BaseIO* m_baseIO = static_cast<BaseIO*>(this);
+        TextureIO<BaseIO>* m_textureIO = static_cast<TextureIO<BaseIO>*>(m_baseIO);
 
     };
 

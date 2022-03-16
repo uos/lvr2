@@ -80,7 +80,7 @@ bool color_equal(const color<T> &col1, const color<T> &col2)
 }
 
 
-PolygonPtr LVRSoilAssistBridge::getPolygon()
+PolygonBufferPtr LVRSoilAssistBridge::getPolygon()
 {
     return m_polygon;
 }
@@ -190,7 +190,7 @@ vtkSmartPointer<vtkActor> LVRSoilAssistBridge::makeArrow(float * start, float * 
 }
 
 
-vtkSmartPointer<vtkActor> LVRSoilAssistBridge::computePolygonActor(PolygonPtr poly, bool polygon)
+vtkSmartPointer<vtkActor> LVRSoilAssistBridge::computePolygonActor(PolygonBufferPtr poly, bool polygon)
 {
     auto polygonActor = vtkSmartPointer<vtkActor>::New();
 

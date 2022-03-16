@@ -13,7 +13,7 @@ void LabelIO<Derived>::saveLabels(
     //TODO Maybe add Description conatining the group and datasetname
     boost::filesystem::path pointCloud("pointCloud");
     boost::filesystem::path groupPath = (boost::filesystem::path(groupName) / pointCloud);
-    m_featureBase->m_kernel->savePointBuffer(groupPath.string(), "points", labelRootPtr->points);
+    m_baseIO->m_kernel->savePointBuffer(groupPath.string(), "points", labelRootPtr->points);
 
     for(auto classPtr : labelRootPtr->labelClasses)
     {
@@ -30,7 +30,7 @@ void LabelIO<Derived>::saveLabels(
             /*std::string metaName = instancePtr->instanceName + std::string(".yaml");
             std::string dataSetName = instancePtr->instanceName + std::string(".ids");
 
-            Description d = m_featureBase->m_description->labelInstance(group, classPtr->className, instancePtr->instanceName);
+            Description d = m_baseIO->m_description->labelInstance(group, classPtr->className, instancePtr->instanceName);
             if(d.groupName)
             {
                 groupName = *d.groupName;
@@ -52,7 +52,7 @@ void LabelIO<Derived>::saveLabels(
             }
 
             //save meta
-            m_featureBase->m_kernel->saveMetaYAML(groupName, metaName, node);
+            m_baseIO->m_kernel->saveMetaYAML(groupName, metaName, node);
 */
             //save IDS
             int* sharedArrayData = new int[instancePtr->labeledIDs.size()];
@@ -93,13 +93,13 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group) const
     //read Pointbuffer 
     boost::shared_array<float> pointData;
     std::vector<size_t> pointDim;
-    pointData = m_featureBase->m_kernel->loadFloatArray(group, "points", pointDim);
+    pointData = m_baseIO->m_kernel->loadFloatArray(group, "points", pointDim);
     PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
     ret->points = pb;
 
 
     std::vector<std::string> labelClasses;
-    m_featureBase->m_kernel->subGroupNames(group, labelClasses);
+    m_baseIO->m_kernel->subGroupNames(group, labelClasses);
     boost::filesystem::path groupPath(group);
     for (auto classGroup : labelClasses)
     {
@@ -113,7 +113,7 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group) const
         classPtr->className = classGroup;
 
         std::vector<std::string> labelInstances;
-        m_featureBase->m_kernel->subGroupNames(classPath.string(), labelInstances);
+        m_baseIO->m_kernel->subGroupNames(classPath.string(), labelInstances);
         for(auto instanceGroup : labelInstances)
         {
             LabelInstancePtr instancePtr(new LabelInstance);
@@ -142,7 +142,7 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group) const
 
     //read Waveform
     boost::filesystem::path waveformPath(groupPath / boost::filesystem::path("waveform"));
-    if (m_featureBase->m_kernel->exists(waveformPath.string()))
+    if (m_baseIO->m_kernel->exists(waveformPath.string()))
     {
             std::cout << "[LabelIO] Read Waveform" << std::endl;
             WaveformPtr fwPtr = m_fullWaveformIO->loadLabelWaveform(groupPath.string());
