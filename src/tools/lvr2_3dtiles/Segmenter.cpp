@@ -66,9 +66,9 @@ struct SegmentMetaData
  * @param p the 3D position
  * @param chunk_size the size of a chunk
  * @param num_chunks the number of chunks along each axis
- * @return uint64_t the 1D Chunk-index
+ * @return uint32_t the 1D Chunk-index
  */
-uint64_t chunk_index(pmp::Point p, float chunk_size, Eigen::Vector3i num_chunks)
+uint32_t chunk_index(pmp::Point p, float chunk_size, Eigen::Vector3i num_chunks)
 {
     return std::floor(p.x() / chunk_size)
            + std::floor(p.y() / chunk_size) * num_chunks.x()
@@ -139,21 +139,24 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
     std::cout << "\r" << timestamp << "Found " << segments.size() << " initial segments" << std::endl;
 
     // consistency check
-    // each face should be assigned to exactly one segment
-    // vertices might be shared between segments or isolated, so we don't count them
-    size_t total_faces = 0;
+    size_t total_faces = 0, total_vertices = 0;
     for (auto& segment : segments)
     {
         total_faces += segment.num_faces;
+        total_vertices += segment.num_vertices;
     }
     if (total_faces != mesh.n_faces())
     {
         throw consistency_error(mesh.n_faces(), total_faces, "SegmentMetaData faces");
     }
+    if (total_vertices != mesh.n_vertices())
+    {
+        throw consistency_error(mesh.n_vertices(), total_vertices, "SegmentMetaData vertices");
+    }
 
     // ==================== merge small segments within a chunk together ====================
 
-    std::unordered_map<uint64_t, SegmentId> chunk_map;
+    std::unordered_map<uint32_t, SegmentId> chunk_map;
     pmp::Point total_size = bb.max() - bb.min();
     pmp::Point size = total_size / chunk_size;
     Eigen::Vector3i num_chunks(std::ceil(size.x()), std::ceil(size.y()), std::ceil(size.z()));
@@ -169,6 +172,11 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
 
     for (auto& segment : segments)
     {
+        if (segment.num_faces == 0)
+        {
+            continue;
+        }
+
         if (segment.bb.longest_axis_size() >= chunk_size)
         {
             SegmentId id = segment.id;
@@ -180,7 +188,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
         }
 
         // all other segments are merged based on the chunk that their center lies in
-        uint64_t chunk_id = chunk_index(segment.bb.center() - chunk_offset, chunk_size, num_chunks);
+        uint32_t chunk_id = chunk_index(segment.bb.center() - chunk_offset, chunk_size, num_chunks);
         auto elem = chunk_map.find(chunk_id);
         if (elem == chunk_map.end())
         {
@@ -252,6 +260,8 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
         MeshSegment& out = is_large[i] ? large_segments.emplace_back() : chunks.emplace_back();
         out.mesh.reset(new pmp::SurfaceMesh(std::move(meshes[i])));
         out.bb = meta.bb;
+
+        // consistency check
         if (out.mesh->n_faces() != meta.num_faces)
         {
             std::cerr << consistency_error(meta.num_faces, out.mesh->n_faces(), "MeshSegment faces").what() << std::endl;
@@ -304,7 +314,6 @@ void split_mesh(MeshSegment& segment,
                 float chunk_size,
                 std::vector<MeshSegment>& out_meshes)
 {
-    size_t start = out_meshes.size();
     auto& mesh = *segment.mesh;
 
     pmp::Point size_of_segment = segment.bb.max() - segment.bb.min();
@@ -316,11 +325,11 @@ void split_mesh(MeshSegment& segment,
     pmp::Point size_of_chunks = num_chunks.cast<float>() * chunk_size;
     pmp::Point chunk_offset = segment.bb.min() - (size_of_chunks - size_of_segment) / 2.0f;
 
-    auto f_chunk_id = mesh.face_property<uint64_t>("f:chunk_id");
-    std::unordered_set<uint64_t> chunk_ids;
+    auto f_chunk_id = mesh.face_property<uint32_t>("f:chunk_id");
+    std::unordered_set<uint32_t> chunk_ids;
     #pragma omp parallel
     {
-        std::unordered_set<uint64_t> local_chunk_ids;
+        std::unordered_set<uint32_t> local_chunk_ids;
         #pragma omp for schedule(static) nowait
         for (size_t i = 0; i < mesh.faces_size(); i++)
         {
@@ -339,7 +348,7 @@ void split_mesh(MeshSegment& segment,
             assert(count == 3);
             pos /= count;
 
-            uint64_t chunk_id = chunk_index(pos - chunk_offset, chunk_size, num_chunks);
+            uint32_t chunk_id = chunk_index(pos - chunk_offset, chunk_size, num_chunks);
             f_chunk_id[fH] = chunk_id;
             local_chunk_ids.insert(chunk_id);
         }
@@ -349,46 +358,32 @@ void split_mesh(MeshSegment& segment,
         }
     }
 
-    size_t n_chunks = chunk_ids.size();
-
-    std::vector<uint32_t> chunk_map;
-    for (uint64_t chunk_id : chunk_ids)
+    std::unordered_map<uint32_t, uint32_t> chunk_map;
+    for (uint32_t chunk_id : chunk_ids)
     {
-        chunk_map.push_back(chunk_id);
-        auto out_mesh = new pmp::SurfaceMesh();
-        out_mesh->copy_properties(mesh);
-        out_mesh->remove_face_property<uint64_t>("f:chunk_id");
-        out_meshes.emplace_back().mesh.reset(out_mesh);
+        uint32_t index = chunk_map.size();
+        chunk_map[chunk_id] = index;
     }
 
-    size_t fail_count = 0;
-    #pragma omp parallel for reduction(+:fail_count)
-    for (size_t i = 0; i < chunk_map.size(); i++)
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < mesh.faces_size(); i++)
     {
-        uint64_t chunk_id = chunk_map[i];
-        std::unordered_map<pmp::Vertex, pmp::Vertex> vertex_map;
-        auto& out_mesh = *out_meshes[i].mesh;
-        for (auto fH : mesh.faces())
+        FaceHandle fH(i);
+        if (!mesh.is_deleted(fH))
         {
-            if (f_chunk_id[fH] == chunk_id)
-            {
-                if (!add_face(out_mesh, fH, vertex_map, mesh))
-                {
-                    fail_count++;
-                }
-            }
+            f_chunk_id[fH] = chunk_map[f_chunk_id[fH]];
         }
     }
-    if (fail_count > 0)
-    {
-        std::cout << fail_count << " broken faces removed" << std::endl;
-    }
+
+    std::vector<pmp::SurfaceMesh> meshes(chunk_map.size());
+    mesh.split_mesh(meshes, f_chunk_id);
 
     mesh.remove_face_property(f_chunk_id);
 
-    for (size_t i = start; i < out_meshes.size(); i++)
+    for (auto& mesh : meshes)
     {
-        auto& out_mesh = out_meshes[i];
+        auto& out_mesh = out_meshes.emplace_back();
+        out_mesh.mesh.reset(new pmp::SurfaceMesh(std::move(mesh)));
         out_mesh.bb = out_mesh.mesh->bounds();
     }
 }
@@ -587,7 +582,9 @@ void SegmentTreeNode::simplify_if_possible(Cesium3DTiles::Tile& tile)
             simplify.simplify(meta_segment.mesh->n_vertices() * 0.2);
             size_t new_num_faces = meta_segment.mesh->n_faces();
 
-            std::cout << "Simplified " << meta_segment.filename << ": " << old_num_faces << " -> " << new_num_faces << std::endl;
+            float ratio = (float)new_num_faces / old_num_faces;
+            ratio = std::floor(ratio * 10) / 10;
+            std::cout << new_num_faces << '(' << ratio << "%) " << std::flush;
             tile.geometricError = geometric_error();
         }
 

@@ -1751,10 +1751,16 @@ public:
     //! not work for delete_face.
     void delete_many_faces(const FaceProperty<bool>& faces);
 
+    //! Split the mesh into subset meshes. All vertices and edges must be uniquely assigned to
+    //! one subset (or PMP_INVALID_INDEX) and may not be shared.
     void split_mesh(std::vector<SurfaceMesh>& output,
                     FaceProperty<IndexType>& face_dist,
                     VertexProperty<IndexType>& vertex_dist,
                     HalfedgeProperty<IndexType>& halfedge_dist);
+
+    //! Split the mesh into subset meshes. Vertices and edges can be shared between subsets.
+    void split_mesh(std::vector<SurfaceMesh>& output,
+                    FaceProperty<IndexType>& face_dist);
 
     void join_mesh(const std::vector<SurfaceMesh*>& input);
 
@@ -1905,6 +1911,9 @@ private:
 
     //! Helper for halfedge collapse
     void remove_loop_helper(Halfedge h);
+
+    Halfedge find_next_candidate(Halfedge h, std::function<bool(Halfedge)> pred) const;
+    Halfedge find_prev_candidate(Halfedge h, std::function<bool(Halfedge)> pred) const;
 
     //!@}
     //! \name Private members

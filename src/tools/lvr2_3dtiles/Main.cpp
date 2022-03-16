@@ -232,7 +232,8 @@ int main(int argc, char** argv)
         if (chunk_size > 0)
         {
             std::cout << timestamp << "Segmenting mesh" << std::endl;
-            segment_mesh(surface_mesh, bb, chunk_size, chunks, segments);
+            segment_mesh(surface_mesh, bb, chunk_size * 2, chunks, segments);
+            // chunk_size * 2 to merge the small segments into larger chunks, otherwise we get a lot of small chunks
         }
         else
         {
@@ -363,6 +364,7 @@ int main(int argc, char** argv)
         write_b3dm(output_dir, all_segments[i].filename, *all_segments[i].mesh, all_segments[i].bb, false);
         ++progress;
     }
+    std::cout << "\r";
 
     Cesium3DTilesWriter::TilesetWriter writer;
     auto result = writer.writeTileset(tileset);
