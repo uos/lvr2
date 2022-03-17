@@ -39,6 +39,9 @@
 // Eigen
 #include <Eigen/Dense>
 
+// Using
+using Eigen::Vector2i;
+
 /**
  * @file RaycastingTexturizer.hpp
  * @date 11.02.2022
@@ -109,7 +112,7 @@ public:
 
     virtual ~RaycastingTexturizer() {}
 
-private:
+public:
 
     struct ImageInfo
     {
@@ -133,29 +136,28 @@ private:
     // The images and poses used for texturization
     std::vector<ImageInfo> m_images;
 
-    const BaseMesh<BaseVector<float>>& m_debug;
+    // The mesh, used to get faces of cluster
+    std::reference_wrapper<const BaseMesh<BaseVector<float>>> m_mesh;
 
 private:
     template <typename... Args>
     Texture initTexture(Args&&... args) const;
 
-    /**
-     * @brief Calculates the uv coordinates for each pixel of the Texture
-     * 
-     * @param tex The Texture to calculate the uv coordinates for
-     * @return std::vector<TexCoords> 
-     */
-    std::vector<TexCoords> calculateUVCoordsPerPixel(const Texture& tex) const;
+    void paintTriangle(TextureHandle, FaceHandle, const BoundingRectangle<typename BaseVecT::CoordType>&, const std::vector<ImageInfo>&);
 
-    std::vector<Vector3f> calculate3DPointsPerPixel(const std::vector<TexCoords>&, const BoundingRectangle<typename BaseVecT::CoordType>&);
-
-    std::vector<bool> calculateVisibilityPerPixel(
-        const Vector3f from, 
-        const std::vector<Vector3f>& to,
-        const std::vector<bool>& texturized,
-        const ClusterHandle cluster) const;
+    void paintTexel(TextureHandle texH, FaceHandle faceH, Vector2i texel, Vector3f point, const std::vector<ImageInfo>& images);
 
     std::vector<ImageInfo> rankImagesForCluster(const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect) const;
+
+    /**
+     * @brief Checks if point is visible from origin
+     * 
+     * @param origin 
+     * @param point 
+     */
+    bool isVisible(Vector3f origin, Vector3f point, FaceHandle clusterH) const;
+
+    bool calcPointColor(Vector3f point, const ImageInfo& img, cv::Vec3b& color) const;
 
     void DEBUGDrawBorder(TextureHandle texH, const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect, ClusterHandle clusterH);
 };

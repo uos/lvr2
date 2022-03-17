@@ -26,9 +26,15 @@ public:
 using BarycentricCoords = Vector3<Scalar>;
 
 private:
-    Vec m_a;
-    Vec m_b;
-    Vec m_c;
+    // Points
+    Vec m_a; // Point a
+    Vec m_b; // Point b
+    Vec m_c; // Point c
+    // Vectors
+    Vec m_AB; // Vec from a to b
+    Vec m_BC; // Vec from b to c
+    Vec m_CA; // Vec from c to a
+    
     Scalar m_area; // Area of the triangle
     Scalar m_areaInverse; // 1 / area
 
@@ -81,6 +87,15 @@ public:
      * @return std::pair<Vec, Vec> first is the min corner and second the max corner
      */
     std::pair<Vec, Vec> getAABoundingBox() const;
+
+    /**
+     * @brief Calculates if a point lies within the triangle
+     * 
+     * @param point 
+     * @return true 
+     * @return false 
+     */
+    bool contains(Vec point) const;
 };
 
 } // namespace lvr2

@@ -1,5 +1,6 @@
 // lvr2 includes
 #include "RaycastingTexturizer.hpp"
+#include "lvr2/texture/Triangle.hpp"
 #include "lvr2/util/Util.hpp"
 #include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/io/baseio/PLYIO.hpp"
@@ -14,13 +15,16 @@
 #include <fstream>
 #include <numeric>
 #include <variant>
+#include <atomic>
 
 using Eigen::Quaterniond;
 using Eigen::Quaternionf;
 using Eigen::AngleAxisd;
 using Eigen::Translation3f;
+using Eigen::Vector2i;
 
 std::ofstream timings("timings.log");
+std::ofstream barycentric_sum("bary.txt");
 
 namespace lvr2
 {
@@ -36,7 +40,7 @@ RaycastingTexturizer<BaseVecT>::RaycastingTexturizer(
     const ClusterBiMap<FaceHandle>& clusters,
     const ScanProjectPtr project
 ): Texturizer<BaseVecT>(texelMinSize, texMinClusterSize, texMaxClusterSize)
- , m_debug(mesh)
+ , m_mesh(mesh)
 {
     this->setGeometry(mesh);
     this->setClusters(clusters);
@@ -46,6 +50,7 @@ RaycastingTexturizer<BaseVecT>::RaycastingTexturizer(
 template <typename BaseVecT>
 void RaycastingTexturizer<BaseVecT>::setGeometry(const BaseMesh<BaseVecT>& mesh)
 {
+    m_mesh = std::cref(mesh);
     m_embreeToHandle.clear();
     MeshBufferPtr buffer = std::make_shared<MeshBuffer>();
     std::vector<float> vertices;
@@ -164,18 +169,40 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
     std::cout << timestamp << "[RaycastingTexturizer] Loaded " << m_images.size() << " images" << std::endl;
 }
 
-
-void setPixel(size_t index, Texture& tex, uint8_t r, uint8_t g, uint8_t b)
+inline Vector2i texelFromUV(const TexCoords& uv, const Texture& tex)
 {
-    tex.m_data[3 * index + 0] = r;
-    tex.m_data[3 * index + 1] = g;
-    tex.m_data[3 * index + 2] = b;
+    size_t x = uv.u * tex.m_width;
+    size_t y = uv.v * tex.m_height;
+    x = std::min<size_t>({x, (size_t) tex.m_width - 1});
+    y = std::min<size_t>({y, (size_t) tex.m_height - 1});
+    return Vector2i(x, y);
 }
 
-void setPixel(uint16_t x, uint16_t y, Texture& tex, uint8_t r, uint8_t g, uint8_t b)
+inline TexCoords uvFromTexel(const Vector2i& texel, const Texture& tex)
+{
+    return TexCoords(
+        ((float) texel.x() + 0.5f) / tex.m_width,
+        ((float) texel.y() + 0.5f) / tex.m_height
+    );
+}
+
+inline void setPixel(size_t index, Texture& tex, cv::Vec3b color)
+{
+    tex.m_data[3 * index + 0] = color[0];
+    tex.m_data[3 * index + 1] = color[1];
+    tex.m_data[3 * index + 2] = color[2];
+}
+
+inline void setPixel(uint16_t x, uint16_t y, Texture& tex, cv::Vec3b color)
 {
     size_t index = (y * tex.m_width) + x;
-    setPixel(index, tex, r, g, b);
+    setPixel(index, tex, color);
+}
+
+inline void setPixel(TexCoords uv, Texture& tex, cv::Vec3b color)
+{
+    auto p = texelFromUV(uv, tex);
+    setPixel(p.x(), p.y(), tex, color);
 }
 
 template <typename BaseVecT>
@@ -185,19 +212,17 @@ void RaycastingTexturizer<BaseVecT>::DEBUGDrawBorder(TextureHandle texH, const B
     // Draw in vertices of cluster
     for (auto face: m_clusters.getCluster(clusterH))
     {
-        for (auto vertex: m_debug.getVerticesOfFace(face))
+        for (auto vertex: m_mesh.get().getVerticesOfFace(face))
         {
             IntersectionT intersection;
-            BaseVecT pos = m_debug.getVertexPosition(vertex);
+            BaseVecT pos = m_mesh.get().getVertexPosition(vertex);
             Vector3f direction = (Vector3f(pos.x, pos.y, pos.z) - DEBUG_ORIGIN).normalized();
             if (!m_tracer->castRay(DEBUG_ORIGIN, direction, intersection)) continue;
 
             if (m_clusters.getClusterH(FaceHandle(intersection.face_id)) != clusterH) continue;
             
             TexCoords uv = this->calculateTexCoords(texH, boundingRect, pos);
-            uint16_t x = uv.u * (tex.m_width - 1);
-            uint16_t y = uv.v * (tex.m_height - 1);
-            setPixel(x, y, tex, 0, 0, 0);
+            setPixel(uv, tex, cv::Vec3b(0, 0, 0));
         }
     }
 }
@@ -264,8 +289,6 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
     );
 
     Texture& tex = this->m_textures[texH];
-    // Number of pixels in the texture
-    size_t numPixel = sizeX * sizeY;
 
     if (m_images.size() == 0)
     {
@@ -275,69 +298,13 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
 
     this->DEBUGDrawBorder(texH, boundingRect, clusterH);
 
-    // List of uv coordinates
-    std::vector<TexCoords> uvCoords = this->calculateUVCoordsPerPixel(tex);
-    // List of 3D points corresponding to uv coords
-    std::vector<Vector3f> points = this->calculate3DPointsPerPixel(uvCoords, boundingRect);
-    // List of booleans indicating if a texel is already Texturized
-    std::vector<bool> texturized(numPixel, false);
     // List containing the useable images for texturing the cluster
     std::vector<ImageInfo> images = this->rankImagesForCluster(boundingRect);
-
-    // cv::namedWindow("Texture", cv::WINDOW_KEEPRATIO);
+    // Paint all faces
     #pragma omp parallel for
-    for (size_t i = 0; i < numPixel; i++)
+    for (FaceHandle faceH: m_clusters.getCluster(clusterH))
     {
-        // if (i % 10 == 0)
-        // {
-            // cv::Mat cvTexture(tex.m_height, tex.m_width, CV_8UC3, tex.m_data);
-            // cv::Mat converted;
-            // cv::cvtColor(cvTexture, converted, cv::COLOR_BGR2RGB);
-            // converted.at<cv::Vec3b>(i) = cv::Vec3b(0,0,0);
-            // cv::imshow("Texture", converted);
-            // cv::waitKey(0);
-        // }
-        
-
-        // Calculate x,y
-        size_t x = i % tex.m_width;
-        size_t y = i / tex.m_width;
-        // Calculate tex uv
-        double u = ((float) x) / (tex.m_width - 1);
-        double v = ((float) y) / (tex.m_height - 1);
-        // Calculate 3D point
-        BaseVecT tmp = this->calculateTexCoordsInv(texH, boundingRect, TexCoords(u, v));
-        Vector3f point(tmp.x, tmp.y, tmp.z);
-        for (ImageInfo img: images)
-        {
-            // Cast ray to point
-            IntersectionT intersection;
-            bool hit = this->m_tracer->castRay( img.translation.vector(), (point - img.translation.vector()).normalized(), intersection);
-            // Did not hit anything
-            if (!hit) continue;
-            // Dit not hit the cluster we are interested in
-            FaceHandle faceH = m_embreeToHandle.at(intersection.face_id);
-            OptionalClusterHandle hitClusterHOpt = m_clusters.getClusterOf(faceH);
-            if (!(hitClusterHOpt && (hitClusterHOpt.unwrap() == clusterH))) continue;
-            // Transform the point to camera space
-            Vector3f transformedPoint = img.inverse_rotation * (point - img.translation.vector());
-            // If the point is behind the camera skip this image
-            if (transformedPoint.z() <= 0) continue;
-            // Project the point
-            Vector2f uv = img.model.projectPoint(transformedPoint);
-            double imgU = uv.x();
-            double imgV = uv.y();
-            undistorted_to_distorted_uv(imgU, imgV, img.model);
-            size_t imgX = std::floor(imgU);
-            size_t imgY = std::floor(imgV);
-            // Skip if the projected pixel is outside the camera image
-            if (imgX < 0 || imgY < 0 || imgX >= img.image->image.cols || imgY >= img.image->image.rows) continue;
-            // Calculate color
-            const cv::Vec3b& color = img.image->image.template at<cv::Vec3b>(imgY, imgX);
-            setPixel(i, tex, color[0], color[1], color[2]);
-            // After the pixel is texturized we are done
-            break;
-        }
+        this->paintTriangle(texH, faceH, boundingRect, images);
     }
 
     timings << "[" << index << "] Generation took " << time_func.getElapsedTimeInMs() << "ms ("  << time_func.getElapsedTimeInS() << "s)\n";
@@ -365,110 +332,82 @@ Texture RaycastingTexturizer<BaseVecT>::initTexture(Args&&... args) const
 }
 
 template <typename BaseVecT>
-std::vector<TexCoords> RaycastingTexturizer<BaseVecT>::calculateUVCoordsPerPixel(const Texture& tex) const
+void RaycastingTexturizer<BaseVecT>::paintTriangle(
+    TextureHandle texH,
+    FaceHandle faceH,
+    const BoundingRectangle<typename BaseVecT::CoordType>& bRect,
+    const std::vector<ImageInfo>& images)
 {
-    std::vector<TexCoords> ret;
-    ret.reserve(tex.m_width * tex.m_height);
-
-    for (size_t y = 0; y < tex.m_height; y++)
-    {
-        for (size_t x = 0; x < tex.m_width; x++)
-        {
-            float u = ((float) x + 0.5f) / (tex.m_width  - 1);
-            float v = ((float) y + 0.5f) / (tex.m_height - 1);
-            ret.push_back(TexCoords(u, v));
-        }
-    }
-
-    return std::move(ret);
-}
-
-template <typename BaseVecT>
-std::vector<Vector3f> RaycastingTexturizer<BaseVecT>::calculate3DPointsPerPixel(
-    const std::vector<TexCoords>& texel,
-    const BoundingRectangle<typename BaseVecT::CoordType>& bb)
-{
-    std::vector<Vector3f> ret(texel.size());
-    // Calculate 3D points
-    std::transform(
-        texel.begin(),
-        texel.end(),
-        ret.begin(),
-        [this, bb](const TexCoords& uv)
-        {
-            BaseVecT tmp = this->calculateTexCoordsInv(TextureHandle(), bb, uv);
-
-            Vector3f ret;
-            ret(0) = tmp[0];
-            ret(1) = tmp[1];
-            ret(2) = tmp[2];
-            
-            return ret;
-        });
-
-    return std::move(ret);
-}
-
-template <typename BaseVecT>
-std::vector<bool> RaycastingTexturizer<BaseVecT>::calculateVisibilityPerPixel(
-    const Vector3f from,
-    const std::vector<Vector3f> &to,
-    const std::vector<bool> &texturized,
-    const ClusterHandle cluster) const
-{
-    std::vector<bool> ret(to.size());
-
-    std::vector<Vector3f>       directions(ret.size());
-    std::vector<IntersectionT>  intersections(ret.size());
-    std::vector<uchar>          hits(ret.size());
-    // Calculate directions
-    std::transform(
-        to.begin(),
-        to.end(),
-        directions.begin(),
-        [from](const auto& point)
-        {
-            // Vector3f direction = (point - from).normalized();
-            // old_points << direction.x() << " " << direction.y() << " " << direction.z() << std::endl;
-            return (point - from).normalized();
-        }
+    // Texture
+    Texture& tex = this->m_textures[texH];
+    // Corners in 3D
+    std::array<BaseVecT, 3UL> vertices = m_mesh.get().getVertexPositionsOfFace(faceH);
+    // The triangle in 3D World space
+    auto worldTriangle = Triangle(
+        Vector3f(vertices[0].x, vertices[0].y, vertices[0].z),
+        Vector3f(vertices[1].x, vertices[1].y, vertices[1].z),
+        Vector3f(vertices[2].x, vertices[2].y, vertices[2].z)
     );
-    // Cast Rays from Camera to points and check for visibility
-    // this->m_tracer->castRays(from, directions, intersections, hits);
-    #pragma omp parallel for
-    for (size_t i = 0; i < to.size(); i++)
+    // Vertices in texture uvs
+    std::array<TexCoords, 3UL> triUV;
+    triUV[0] = this->calculateTexCoords(texH, bRect, vertices[0]);
+    triUV[1] = this->calculateTexCoords(texH, bRect, vertices[1]);
+    triUV[2] = this->calculateTexCoords(texH, bRect, vertices[2]);
+    // The triangle in uv space
+    Triangle<Vector2f, float> uvTriangle(
+        Vector2f(triUV[0].u, triUV[0].v),
+        Vector2f(triUV[1].u, triUV[1].v),
+        Vector2f(triUV[2].u, triUV[2].v)
+    );
+    // The triangle in texel space
+    Triangle<Vector2i> texelTriangle(
+        texelFromUV(triUV[0], tex),
+        texelFromUV(triUV[1], tex),
+        texelFromUV(triUV[2], tex)
+    );
+    // Determine texel bb
+    auto [minP, maxP] = texelTriangle.getAABoundingBox();
+    // Iterate bb and check if texel center is inside the triangle
+    for (int y = minP.y(); y <= maxP.y(); y++ )
     {
-        if (texturized[i])
+        for (int x = minP.x(); x <= maxP.x(); x++)
         {
-            hits[i] = false;
-            continue;
+            auto tmp = uvFromTexel(Vector2i(x, y), tex);
+            Vector2f pointUV(tmp.u, tmp.v);
+            // Skip texel if not inside this triangle
+            if (!uvTriangle.contains(pointUV)) continue;
+            // Calc barycentric coordinates
+            Vector3f barycentrics = uvTriangle.barycentric(pointUV);
+            // Calculate 3D point using barycentrics
+            Vector3f pointWorld = worldTriangle.point(barycentrics);
+            // Set pixel color pixel
+            this->paintTexel(texH, faceH, Vector2i(x, y), pointWorld, images);
         }
+    }
+}
+
+template <typename BaseVecT>
+void RaycastingTexturizer<BaseVecT>::paintTexel(
+    TextureHandle texH,
+    FaceHandle faceH,
+    Vector2i texel,
+    Vector3f point,
+    const std::vector<ImageInfo>& images)
+{
+    for (ImageInfo img: images)
+    {   
+        // Check if the point is visible
+        if (!this->isVisible(img.translation.vector(), point, faceH)) continue;
+
+        cv::Vec3b color;
+        // If the color could not be calculated process next image
+        if (!this->calcPointColor(point, img, color)) continue;
         
-        hits[i] = this->m_tracer->castRay(from, directions[i], intersections[i]);
+        setPixel(texel.x(), texel.y(), this->m_textures[texH], color);
+        
+        // After the pixel is texturized we are done
+        return;
     }
-
-
-    auto ret_it = ret.begin();
-    auto int_it = intersections.begin();
-    auto hit_it = hits.begin();
-
-    // For each
-    for(;ret_it != ret.end(); ++ret_it, ++int_it, ++hit_it)
-    {
-        if (*hit_it)
-        {
-            // check if the hit face belongs to the cluster we are texturzing
-            FaceHandle              fHandle = m_embreeToHandle.at(int_it->face_id);
-            ClusterHandle           cHandle = m_clusters.getClusterH(fHandle);
-            if (cHandle == cluster)
-            {
-                *ret_it = true;
-                continue;
-            }
-        }
-        *ret_it = false;
-    }
-    return std::move(ret);
 }
 
 template <typename BaseVecT>
@@ -537,6 +476,48 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
     );
 
     return ret;
+}
+
+template <typename BaseVecT>
+bool RaycastingTexturizer<BaseVecT>::isVisible(Vector3f origin, Vector3f point, FaceHandle faceH) const
+{
+    // Cast ray to point
+    IntersectionT intersection;
+    bool hit = this->m_tracer->castRay( origin, (point - origin).normalized(), intersection);
+    // Did not hit anything
+    if (!hit) return false;
+    // Dit not hit the cluster we are interested in
+    FaceHandle hitFaceH = m_embreeToHandle.at(intersection.face_id);
+    // Wrong face
+    if (faceH != hitFaceH) return false;
+    float dist = (intersection.point - point).norm();
+    // Default
+    return true;
+}
+
+template <typename BaseVecT>
+bool RaycastingTexturizer<BaseVecT>::calcPointColor(Vector3f point, const ImageInfo& img, cv::Vec3b& color) const
+{
+    // Transform the point to camera space
+    Vector3f transformedPoint = img.inverse_rotation * (point - img.translation.vector());
+    // If the point is behind the camera no color will be extracted
+    if (transformedPoint.z() <= 0) return false;
+
+    // Project the point to the camera image
+    Vector2f uv = img.model.projectPoint(transformedPoint);
+    double imgU = uv.x();
+    double imgV = uv.y();
+    // Distort the uv coordinates
+    undistorted_to_distorted_uv(imgU, imgV, img.model);
+    size_t imgX = std::floor(imgU);
+    size_t imgY = std::floor(imgV);
+
+    // Skip if the projected pixel is outside the camera image
+    if (imgX < 0 || imgY < 0 || imgX >= img.image->image.cols || imgY >= img.image->image.rows) return false;
+
+    // Calculate color
+    color = img.image->image.template at<cv::Vec3b>(imgY, imgX);
+    return true;
 }
 
 } // namespace lvr2

@@ -19,10 +19,14 @@ Triangle<Vec, Scalar>::Triangle(const std::array<Vec, 3UL>& array)
 template <typename Vec, typename Scalar>
 inline void Triangle<Vec, Scalar>::init()
 {
+    // Calc sides
+    m_AB = m_b - m_a;
+    m_BC = m_c - m_b;
+    m_CA = m_a - m_c;
     // Calculate the area using herons formula
-    Scalar lenA = (m_b - m_a).norm();
-    Scalar lenB = (m_c - m_b).norm();
-    Scalar lenC = (m_a - m_c).norm();
+    Scalar lenA = m_AB.norm();
+    Scalar lenB = m_BC.norm();
+    Scalar lenC = m_CA.norm();
     // Semi perimeter of the triangle
     Scalar sp = (lenA + lenB + lenC) / 2;
     m_area = std::sqrt((sp - lenA) * (sp - lenB) * (sp - lenC) * sp);
@@ -67,6 +71,46 @@ std::pair<Vec, Vec> Triangle<Vec, Scalar>::getAABoundingBox() const
         max[i] = std::max({m_a[i], m_b[i], m_c[i]});
     }
     return std::make_pair(min, max);
+}
+
+template <typename Vec>
+bool sameSide(Vec pointA, Vec pointB, Vec reference, Vec point)
+{
+    Vector3<typename Vec::Scalar> AB;
+    Vector3<typename Vec::Scalar> AR;
+    Vector3<typename Vec::Scalar> AP;
+
+
+    if constexpr (Vec::RowsAtCompileTime == 2)
+    {
+        AB = pointB.homogeneous() - pointA.homogeneous();
+        AR = reference.homogeneous() - pointA.homogeneous();
+        AP = point.homogeneous()  - pointA.homogeneous();
+    }
+    else if constexpr (Vec::RowsAtCompileTime == 3)
+    {
+        AB = pointB - pointA;
+        AR = reference - pointA;
+        AP = point  - pointA;
+    }
+
+    Vector3<typename Vec::Scalar> cp1 = AB.cross(AR);
+    Vector3<typename Vec::Scalar> cp2 = AB.cross(AP);
+
+    if (cp1.dot(cp2) < 0) return false;
+
+    return true;
+}
+
+template <typename Vec, typename Scalar>
+bool Triangle<Vec, Scalar>::contains(Vec point) const
+{
+
+    if (!sameSide(m_a, m_b, m_c, point)) return false;
+    if (!sameSide(m_b, m_c, m_a, point)) return false;
+    if (!sameSide(m_c, m_a, m_b, point)) return false;
+
+    return true;
 }
 
 } // namespace lvr2
