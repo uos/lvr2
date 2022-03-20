@@ -94,6 +94,10 @@ bool sameSide(Vec pointA, Vec pointB, Vec reference, Vec point)
         AP = point  - pointA;
     }
 
+    AB.normalize();
+    AR.normalize();
+    AP.normalize();
+
     Vector3<typename Vec::Scalar> cp1 = AB.cross(AR);
     Vector3<typename Vec::Scalar> cp2 = AB.cross(AP);
 

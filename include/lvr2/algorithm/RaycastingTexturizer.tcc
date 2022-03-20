@@ -23,8 +23,6 @@ using Eigen::AngleAxisd;
 using Eigen::Translation3f;
 using Eigen::Vector2i;
 
-std::ofstream timings("timings.log");
-std::ofstream barycentric_sum("bary.txt");
 
 namespace lvr2
 {
@@ -307,7 +305,6 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
         this->paintTriangle(texH, faceH, boundingRect, images);
     }
 
-    timings << "[" << index << "] Generation took " << time_func.getElapsedTimeInMs() << "ms ("  << time_func.getElapsedTimeInS() << "s)\n";
     return texH;
 }
 
@@ -343,10 +340,10 @@ void RaycastingTexturizer<BaseVecT>::paintTriangle(
     // Corners in 3D
     std::array<BaseVecT, 3UL> vertices = m_mesh.get().getVertexPositionsOfFace(faceH);
     // The triangle in 3D World space
-    auto worldTriangle = Triangle(
-        Vector3f(vertices[0].x, vertices[0].y, vertices[0].z),
-        Vector3f(vertices[1].x, vertices[1].y, vertices[1].z),
-        Vector3f(vertices[2].x, vertices[2].y, vertices[2].z)
+    auto worldTriangle = Triangle<Vector3d, double>(
+        Vector3d(vertices[0].x, vertices[0].y, vertices[0].z),
+        Vector3d(vertices[1].x, vertices[1].y, vertices[1].z),
+        Vector3d(vertices[2].x, vertices[2].y, vertices[2].z)
     );
     // Vertices in texture uvs
     std::array<TexCoords, 3UL> triUV;
@@ -354,13 +351,13 @@ void RaycastingTexturizer<BaseVecT>::paintTriangle(
     triUV[1] = this->calculateTexCoords(texH, bRect, vertices[1]);
     triUV[2] = this->calculateTexCoords(texH, bRect, vertices[2]);
     // The triangle in uv space
-    Triangle<Vector2f, float> uvTriangle(
-        Vector2f(triUV[0].u, triUV[0].v),
-        Vector2f(triUV[1].u, triUV[1].v),
-        Vector2f(triUV[2].u, triUV[2].v)
+    auto uvTriangle = Triangle<Vector2d, double>(
+        Vector2d(triUV[0].u, triUV[0].v),
+        Vector2d(triUV[1].u, triUV[1].v),
+        Vector2d(triUV[2].u, triUV[2].v)
     );
     // The triangle in texel space
-    Triangle<Vector2i> texelTriangle(
+    Triangle<Vector2i, double> texelTriangle(
         texelFromUV(triUV[0], tex),
         texelFromUV(triUV[1], tex),
         texelFromUV(triUV[2], tex)
@@ -373,15 +370,15 @@ void RaycastingTexturizer<BaseVecT>::paintTriangle(
         for (int x = minP.x(); x <= maxP.x(); x++)
         {
             auto tmp = uvFromTexel(Vector2i(x, y), tex);
-            Vector2f pointUV(tmp.u, tmp.v);
+            Vector2d pointUV(tmp.u, tmp.v);
             // Skip texel if not inside this triangle
             if (!uvTriangle.contains(pointUV)) continue;
             // Calc barycentric coordinates
-            Vector3f barycentrics = uvTriangle.barycentric(pointUV);
+            Vector3d barycentrics = uvTriangle.barycentric(pointUV);
             // Calculate 3D point using barycentrics
-            Vector3f pointWorld = worldTriangle.point(barycentrics);
+            Vector3d pointWorld = worldTriangle.point(barycentrics);
             // Set pixel color pixel
-            this->paintTexel(texH, faceH, Vector2i(x, y), pointWorld, images);
+            this->paintTexel(texH, faceH, Vector2i(x, y), pointWorld.cast<float>(), images);
         }
     }
 }
@@ -436,7 +433,7 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
             // Check if cluster is seen from the back
             if (normal.dot(view) < 0)
             {
-                return std::make_pair(img, 0.0f);
+                return std::make_pair(img, std::abs(view.dot(normal)));
             }
             // Direction vector from the camera to the center of the cluster
             Vector3f direction = (center - img.translation.vector()).normalized();
@@ -498,8 +495,10 @@ bool RaycastingTexturizer<BaseVecT>::isVisible(Vector3f origin, Vector3f point, 
 template <typename BaseVecT>
 bool RaycastingTexturizer<BaseVecT>::calcPointColor(Vector3f point, const ImageInfo& img, cv::Vec3b& color) const
 {
+    // TODO: Temporary correction values
+    auto inverse_rot = (img.rotation * Eigen::AngleAxisf( -0.78 / 180 * M_PI, Vector3f::UnitX()) * Eigen::AngleAxisf( -0.21 / 180 * M_PI, Vector3f::UnitY()) * Eigen::AngleAxisf( -1.17 / 180 * M_PI, Vector3f::UnitZ())).inverse();
     // Transform the point to camera space
-    Vector3f transformedPoint = img.inverse_rotation * (point - img.translation.vector());
+    Vector3f transformedPoint = inverse_rot * (point - (img.translation.vector() + Vector3f(0.08, 0.1, 0.31)));
     // If the point is behind the camera no color will be extracted
     if (transformedPoint.z() <= 0) return false;
 
