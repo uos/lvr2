@@ -127,29 +127,33 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                     // Set the image
                     info.image = imgOrGrp.template get<CameraImagePtr>();
 
-                    // Calculate rotation of the image in world space
-                    Quaterniond positionR(position->transformation.template topLeftCorner<3,3>());
-                    Quaterniond cameraR(camera->transformation.template topLeftCorner<3,3>());
-                    Quaterniond imageR(info.image->transformation.template topLeftCorner<3,3>());
-                    /**
-                     * The camera and image transformations are out of order because the image camera transform puts the Z axis straight ahead
-                     * but the image rotation assumes Z is up.
-                     */
-                    Quaterniond rotation = positionR * imageR * cameraR;
-                    info.rotation = rotation.cast<float>().normalized();
+                    // Rotation parts of transformations
+                    Quaterniond positionR(position->transformation.template topLeftCorner<3,3>()); // Position -> World
+                    Quaterniond cameraR(camera->transformation.template topLeftCorner<3,3>()); // Image -> Camera
+                    Quaterniond imageR(info.image->transformation.template topLeftCorner<3,3>()); // Image -> World
 
-                    // Calculate Translation
-                    Vector3d positionT(position->transformation.template topRightCorner<3,1>());
-                    Vector3d cameraT(camera->transformation.template topRightCorner<3,1>());
-                    Vector3d imageT(info.image->transformation.template topRightCorner<3,1>());
-                    // Rotate current translation with the rotation from the next level and add the new translation part
-                    Vector3d translation = (imageR * cameraT) + imageT;
-                    translation = (positionR * translation) + positionT;
-                    info.translation = Translation3f(translation.cast<float>());
+                    // Translation parts of transformations
+                    Vector3d positionT(position->transformation.template topRightCorner<3,1>()); // Position -> World
+                    Vector3d cameraT(camera->transformation.template topRightCorner<3,1>()); // Image -> Camera
+                    Vector3d imageT(info.image->transformation.template topRightCorner<3,1>()); // Image -> World
 
-                    // Precalculate inverse transforms
-                    info.inverse_rotation = info.rotation.inverse().normalized();
-                    info.inverse_translation = info.translation.inverse();
+                    // Calculate Image -> World transform
+                    Vector3d translationI2W = positionR * imageT + positionT;
+                    Quaterniond rotationI2W = positionR * imageR;
+                    // Calculate Image -> Camera transform
+                    Vector3d translationI2C = cameraT;
+                    Quaterniond rotationI2C = cameraR;
+
+                    info.ImageToWorldRotation = rotationI2W.normalized().cast<float>();
+                    info.ImageToWorldTranslation = translationI2W.cast<float>();
+                    info.ImageToCameraRotation = rotationI2C.normalized().cast<float>();
+                    info.ImageToCameraTranslation = translationI2C.cast<float>();
+                    
+                    // Calculate camera origin in World space
+                    Vector3d origin(0,0,0); // Camera frame
+                    origin = rotationI2C.inverse() * (origin - translationI2C); // From Camera -> Image
+                    origin = rotationI2W * origin + translationI2W; // From Image -> World
+                    info.cameraOrigin = origin.cast<float>();
 
                     // === The camera intrinsics in the ringlok ScanProject are wrong === //
                     // === These are the correct values for the Riegl camera === //
@@ -394,7 +398,7 @@ void RaycastingTexturizer<BaseVecT>::paintTexel(
     for (ImageInfo img: images)
     {   
         // Check if the point is visible
-        if (!this->isVisible(img.translation.vector(), point, faceH)) continue;
+        if (!this->isVisible(img.cameraOrigin, point, faceH)) continue;
 
         cv::Vec3b color;
         // If the color could not be calculated process next image
@@ -429,14 +433,15 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
         [normal, center](ImageInfo img)
         {
             // View vector in world coordinates
-            Vector3f view = img.rotation * Vector3f::UnitZ();
+            Vector3f view = img.ImageToCameraRotation.inverse() * Vector3f::UnitZ(); // Camera -> Image
+            view = img.ImageToWorldRotation * view; // Image -> Camera
             // Check if cluster is seen from the back
             if (normal.dot(view) < 0)
             {
                 return std::make_pair(img, std::abs(view.dot(normal)));
             }
             // Direction vector from the camera to the center of the cluster
-            Vector3f direction = (center - img.translation.vector()).normalized();
+            Vector3f direction = (center - img.cameraOrigin).normalized();
 
             // Cosine of the angle between the view vector of the image and the cluster normal
             float angle = view.dot(normal);
@@ -495,15 +500,14 @@ bool RaycastingTexturizer<BaseVecT>::isVisible(Vector3f origin, Vector3f point, 
 template <typename BaseVecT>
 bool RaycastingTexturizer<BaseVecT>::calcPointColor(Vector3f point, const ImageInfo& img, cv::Vec3b& color) const
 {
-    // TODO: Temporary correction values
-    auto inverse_rot = (img.rotation * Eigen::AngleAxisf( -0.78 / 180 * M_PI, Vector3f::UnitX()) * Eigen::AngleAxisf( -0.21 / 180 * M_PI, Vector3f::UnitY()) * Eigen::AngleAxisf( -1.17 / 180 * M_PI, Vector3f::UnitZ())).inverse();
     // Transform the point to camera space
-    Vector3f transformedPoint = inverse_rot * (point - (img.translation.vector() + Vector3f(0.08, 0.1, 0.31)));
+    Vector3f imgPoint = img.ImageToWorldRotation.inverse() * (point - img.ImageToWorldTranslation); // World -> Image
+    Vector3f camPoint = img.ImageToCameraRotation * imgPoint + img.ImageToCameraTranslation;
     // If the point is behind the camera no color will be extracted
-    if (transformedPoint.z() <= 0) return false;
+    if (camPoint.z() <= 0) return false;
 
     // Project the point to the camera image
-    Vector2f uv = img.model.projectPoint(transformedPoint);
+    Vector2f uv = img.model.projectPoint(camPoint);
     double imgU = uv.x();
     double imgV = uv.y();
     // Distort the uv coordinates

@@ -116,10 +116,11 @@ public:
 
     struct ImageInfo
     {
-        Eigen::Quaternionf rotation;
-        Eigen::Translation3f translation;
-        Eigen::Quaternionf inverse_rotation;
-        Eigen::Translation3f inverse_translation;
+        Eigen::Quaternionf ImageToWorldRotation;
+        Eigen::Vector3f ImageToWorldTranslation;
+        Eigen::Quaternionf ImageToCameraRotation;
+        Eigen::Vector3f ImageToCameraTranslation;
+        Eigen::Vector3f cameraOrigin;
         CameraImagePtr image;
         PinholeModel model;
     };
