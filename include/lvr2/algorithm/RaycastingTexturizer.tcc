@@ -298,7 +298,7 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
         return texH;
     }
 
-    this->DEBUGDrawBorder(texH, boundingRect, clusterH);
+    // this->DEBUGDrawBorder(texH, boundingRect, clusterH);
 
     // List containing the useable images for texturing the cluster
     std::vector<ImageInfo> images = this->rankImagesForCluster(boundingRect);
@@ -453,6 +453,7 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
             return std::make_pair(img, angle);
         });
 
+    // Sort the Images by the angle between viewvec and normal
     std::sort(
         ranked.begin(),
         ranked.end(),
@@ -462,7 +463,9 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
         });
 
     auto is_valid = [](auto& elem){ return elem.second > 0.0f;};
-
+    // Extract all images which face the camera
+    // (currently not working because the normals are not consistently on the
+    // right side therefore no images have negative value because we use abs)
     size_t numValidImages = std::count_if(ranked.begin(), ranked.end(), is_valid);
     auto pastValidImageIt = std::partition_point(ranked.begin(), ranked.end(), is_valid);
     std::vector<ImageInfo> ret;
@@ -474,6 +477,23 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
         [](auto pair)
         {
             return pair.first;
+        }
+    );
+
+    // Stable sort the images by distance to the cluster
+    // This keeps the relative order of images which have the same distance
+    std::stable_sort(
+        ret.begin(),
+        ret.end(),
+        [center](const auto& lhs, const auto& rhs)
+        {
+            double lhs_dist = (center - lhs.cameraOrigin).squaredNorm();
+            double rhs_dist = (center - rhs.cameraOrigin).squaredNorm();
+            double diff = std::abs(lhs_dist - rhs_dist);
+            // Centimeter accuracy is enough
+            if (diff < 0.01f) return false;
+
+            return lhs_dist < rhs_dist;
         }
     );
 
