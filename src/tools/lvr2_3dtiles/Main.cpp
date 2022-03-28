@@ -52,6 +52,8 @@
 using namespace lvr2;
 using namespace Cesium3DTiles;
 
+#include "viewer.html"
+
 int main(int argc, char** argv)
 {
     fs::path input_file;
@@ -62,6 +64,7 @@ int main(int argc, char** argv)
     fs::path segment_out_path;
     bool fix_mesh;
     bool load_segments;
+    bool assign_colors;
 
     try
     {
@@ -72,7 +75,7 @@ int main(int argc, char** argv)
         options_description options("General Options");
         options.add_options()
         ("calcNormals,N", bool_switch(&calc_normals),
-         "Calculate normals if there are none in the input")
+         "Calculate normals")
 
         ("fix,f", bool_switch(&fix_mesh),
          "Assume the mesh might have errors, attempt to fix it")
@@ -88,6 +91,9 @@ int main(int argc, char** argv)
 
         ("ls", bool_switch(&load_segments),
          "Interpret <input_file> as a directory and load segments written by the --ws option")
+
+        ("assignColors,C", bool_switch(&assign_colors),
+         "Assign colors to vertices")
 
         ("help,h", bool_switch(&help),
          "Print this message here")
@@ -133,7 +139,18 @@ int main(int argc, char** argv)
             output_dir = "chunk.3dtiles";
         }
 
-        if (fs::is_directory(input_file) && !load_segments)
+        if (!fs::exists(input_file))
+        {
+            throw error("<input_file> does not exist");
+        }
+        else if (fs::is_regular_file(input_file))
+        {
+            if (load_segments)
+            {
+                throw error("Option --ls is set but <input_file> is not a directory");
+            }
+        }
+        else if (fs::is_directory(input_file))
         {
             if (fs::is_directory(input_file / "chunks") || fs::is_directory(input_file / "segments"))
             {
@@ -143,6 +160,15 @@ int main(int argc, char** argv)
             {
                 throw error("<input_file> is a directory but doesn't match --ws output");
             }
+        }
+        else
+        {
+            throw error("<input_file> is neither a file nor a directory");
+        }
+
+        if (load_segments && chunk_size <= 0)
+        {
+            throw error("Loading segments requires a chunk size");
         }
     }
     catch (const boost::program_options::error& ex)
@@ -212,11 +238,25 @@ int main(int argc, char** argv)
             surface_mesh.remove_degenerate_faces();
         }
 
-        if (calc_normals && !surface_mesh.has_vertex_property("v:normal"))
-        {
-            std::cout << timestamp << "Calculating normals" << std::endl;
-            pmp::SurfaceNormals::compute_vertex_normals(surface_mesh);
-        }
+        // if (calc_normals)
+        // {
+        //     std::cout << timestamp << "Calculating normals" << std::endl;
+        //     pmp::SurfaceNormals::compute_vertex_normals(surface_mesh, true);
+        //     auto v_normal = surface_mesh.vertex_property<pmp::Normal>("v:normal");
+        //     #pragma omp parallel for schedule(static)
+        //     for (size_t i = 0; i < surface_mesh.vertices_size(); i++)
+        //     {
+        //         pmp::Vertex v(i);
+        //         if (!surface_mesh.is_deleted(v))
+        //         {
+        //             auto& n = v_normal[v];
+        //             if (n.dot(pmp::Point::UnitZ()) < 0)
+        //             {
+        //                 n = -n;
+        //             }
+        //         }
+        //     }
+        // }
 
         if (!mesh_out_file.empty())
         {
@@ -241,6 +281,41 @@ int main(int argc, char** argv)
             out.mesh = std::make_shared<pmp::SurfaceMesh>(std::move(surface_mesh));
             out.bb = bb;
             out.filename = "mesh.b3dm";
+        }
+    }
+
+    if (assign_colors)
+    {
+        std::cout << timestamp << "Assigning colors" << std::endl;
+        float step_size = chunk_size > 0 ? chunk_size : 10;
+        float variation = 0.1;
+        for (size_t i = 0; i < segments.size() + chunks.size(); i++)
+        {
+            auto& segment = i < segments.size() ? segments[i] : chunks[i - segments.size()];
+            auto& mesh = *segment.mesh;
+            auto v_color = mesh.vertex_property<pmp::Color>("v:color");
+            float r = std::abs(std::sin(i * 2));
+            float g = std::abs(std::cos(i));
+            float b = std::abs(std::sin(i * 30));
+            float min_z = segment.bb.min().z();
+            float max_z = segment.bb.max().z();
+            #pragma omp parallel for schedule(static)
+            for (size_t i = 0; i < mesh.vertices_size(); i++)
+            {
+                pmp::Vertex v(i);
+                if (!mesh.is_deleted(v))
+                {
+                    auto pos = mesh.position(v);
+                    float dr = std::sin(pos.x() / step_size) * variation;
+                    float dg = std::sin(pos.y() / step_size) * variation;
+                    float db = ((pos.z() - min_z) / (max_z - min_z) - 0.5f) * variation;
+                    v_color[v] = pmp::Color(
+                        std::clamp(r + dr, 0.0f, 1.0f),
+                        std::clamp(g + dg, 0.0f, 1.0f),
+                        std::clamp(b + db, 0.0f, 1.0f)
+                    );
+                }
+            }
         }
     }
 
@@ -280,7 +355,6 @@ int main(int argc, char** argv)
 
     fs::remove_all(output_dir);
     fs::create_directories(output_dir);
-    fs::path tileset_file = output_dir / "tileset.json";
 
     Cesium3DTiles::Tileset tileset;
     tileset.asset.version = "1.0";
@@ -298,17 +372,18 @@ int main(int argc, char** argv)
 
     convert_bounding_box(bb, root.boundingVolume);
     SegmentTreeNode root_segment;
-    root_segment.skipped = true;
+    root_segment.m_skipped = true;
 
     if (!chunks.empty())
     {
-        std::string path = "chunks";
+        std::string path = "chunks/";
         fs::create_directories(output_dir / path);
 
         std::cout << timestamp << "Partitioning chunks                " << std::endl;
         auto& tile = root.children.emplace_back();
-        auto chunk_root = SegmentTree::octree_partition(chunks, tile, path, 2);
-        chunk_root->skipped = true;
+        auto chunk_root = SegmentTree::octree_partition(chunks, 2);
+        chunk_root->m_skipped = true;
+        chunk_root->fill_tile(tile, path + "c");
         root_segment.add_child(std::move(chunk_root));
     }
 
@@ -332,9 +407,9 @@ int main(int argc, char** argv)
             Tile& tile = root.children.emplace_back();
             convert_bounding_box(segment.bb, tile.boundingVolume);
 
-            std::vector<MeshSegment> children;
-            split_mesh(segment, chunk_size, children);
-            root_segment.add_child(SegmentTree::octree_partition(children, tile, path, 2));
+            auto tree = split_mesh(segment, chunk_size);
+            tree->fill_tile(tile, path + "s");
+            root_segment.add_child(std::move(tree));
 
             progress += segment.mesh->n_faces();
         }
@@ -350,19 +425,48 @@ int main(int argc, char** argv)
         root_segment.add_child(std::make_unique<SegmentTreeLeaf>(segment));
     }
 
-    std::cout << timestamp << "Constructed tree with depth " << root_segment.depth << ". Creating meta-segments" << std::endl;
-    root_segment.simplify(root);
+    std::cout << timestamp << "Constructed tree with depth " << root_segment.m_depth << ". Creating meta-segments" << std::endl;
+    root_segment.simplify();
+
+    root_segment.fill_tile(root, "");
 
     std::vector<MeshSegment> all_segments;
     root_segment.collect_segments(all_segments);
 
-    std::cout << timestamp << "Writing " << all_segments.size() << " segments" << std::endl;
-    ProgressBar progress(all_segments.size(), "Writing segments");
+    if (calc_normals)
+    {
+        std::cout << timestamp << "Calculating normals" << std::endl;
+        ProgressBar progress_normals(all_segments.size(), "Calculating normals");
+        for (size_t i = 0; i < all_segments.size(); i++)
+        {
+            auto& mesh = *all_segments[i].mesh;
+            pmp::SurfaceNormals::compute_vertex_normals(mesh, true);
+            auto v_normal = mesh.get_vertex_property<pmp::Normal>("v:normal");
+            #pragma omp parallel for schedule(static)
+            for (size_t i = 0; i < mesh.vertices_size(); i++)
+            {
+                pmp::Vertex v(i);
+                if (!mesh.is_deleted(v))
+                {
+                    auto& n = v_normal[v];
+                    if (n.dot(pmp::Point::UnitZ()) < 0.5)
+                    {
+                        n = -n;
+                    }
+                }
+            }
+            ++progress_normals;
+        }
+    }
+    std::cout << "\r";
+
+    std::cout << timestamp << "Writing " << all_segments.size() << " segments        " << std::endl;
+    ProgressBar progress_write(all_segments.size(), "Writing segments");
     #pragma omp parallel for
     for (size_t i = 0; i < all_segments.size(); i++)
     {
         write_b3dm(output_dir, all_segments[i].filename, *all_segments[i].mesh, all_segments[i].bb, false);
-        ++progress;
+        ++progress_write;
     }
     std::cout << "\r";
 
@@ -387,10 +491,19 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
+    fs::path tileset_file = output_dir / "tileset.json";
     std::cout << timestamp << "Writing " << tileset_file << std::endl;
 
-    std::ofstream out(tileset_file.string(), std::ios::binary);
-    out.write((char*)result.tilesetBytes.data(), result.tilesetBytes.size());
+    std::ofstream tileset_out(tileset_file.string(), std::ios::binary);
+    tileset_out.write((char*)result.tilesetBytes.data(), result.tilesetBytes.size());
+    tileset_out.close();
+
+    fs::path viewer_file = output_dir / "index.html";
+    std::cout << timestamp << "Writing " << viewer_file << std::endl;
+
+    std::ofstream viewer_out(viewer_file.string());
+    viewer_out << VIEWER_HTML;
+    viewer_out.close();
 
     std::cout << timestamp << "Finished" << std::endl;
 

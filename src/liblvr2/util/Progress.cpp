@@ -138,6 +138,11 @@ void ProgressBar::print_bar()
 {
 	using namespace std::chrono;
 
+	if (m_percent == 100)
+	{
+		cout << "\r" << m_prefix << " 100%                " << flush;
+		return;
+	}
 	// calculate eta based on time difference since m_start
 	auto now = system_clock::now();
 	auto diff = now - m_start;

@@ -1725,6 +1725,9 @@ public:
     //! returns the valence of face \p f (its number of vertices)
     size_t valence(Face f) const;
 
+    //! returns the center of face \p f (average position of vertices)
+    Point center(Face f) const;
+
     //! attempts to fix non-manifold vertices by inserting a new vertex per connected patch
     void duplicate_non_manifold_vertices();
 

@@ -501,6 +501,21 @@ size_t SurfaceMesh::valence(Face f) const
     return count;
 }
 
+Point SurfaceMesh::center(Face f) const
+{
+    size_t count(0);
+    Point sum(Point::Zero());
+
+    for (auto v : vertices(f))
+    {
+        PMP_ASSERT(v.is_valid());
+        sum += position(v);
+        ++count;
+    }
+
+    return sum / count;
+}
+
 BoundingBox SurfaceMesh::bounds() const
 {
     BoundingBox bb;
@@ -979,41 +994,64 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
     auto v_map = add_vertex_property<Vertex>("v:split_map");
     auto h_map = add_halfedge_property<Halfedge>("h:split_map");
 
-    std::thread f_thread([&]()
+    size_t num_threads = std::min((size_t)omp_get_max_threads(), output.size());
+
+    #pragma omp parallel num_threads(num_threads)
     {
-        for (auto f : faces())
-            if (face_dist[f] < output.size())
-                f_map[f] = output[face_dist[f]].new_face();
-    });
-    std::thread v_thread([&]()
-    {
-        for (auto v : vertices())
-            if (vertex_dist[v] < output.size())
-                v_map[v] = output[vertex_dist[v]].new_vertex();
-    });
-    for (auto e : edges())
-    {
-        Halfedge h0 = halfedge(e, 0);
-        Halfedge h1 = halfedge(e, 1);
-        if (halfedge_dist[h0] < output.size())
+        int thread_i = omp_get_thread_num();
+        size_t start = thread_i * output.size() / num_threads;
+        size_t end = std::min((thread_i + 1) * output.size() / num_threads, output.size());
+        size_t n = end - start;
+
+        std::vector<size_t> next_face(n);
+        std::vector<size_t> next_vertex(n);
+        std::vector<size_t> next_edge(n);
+        for (size_t i = start; i < end; i++)
         {
-            h_map[h0] = output[halfedge_dist[h0]].new_edge();
-            if (halfedge_dist[h0] == halfedge_dist[h1])
-            {
-                h_map[h1] = opposite_halfedge(h_map[h0]);
-                continue;
-            }
+            next_face[i - start] = output[i].faces_size();
+            next_vertex[i - start] = output[i].vertices_size();
+            next_edge[i - start] = output[i].edges_size();
         }
-        if (halfedge_dist[h1] < output.size())
+
+        for (Face f : faces())
         {
-            h_map[h1] = opposite_halfedge(output[halfedge_dist[h1]].new_edge());
+            auto id = face_dist[f];
+            if (id >= start && id < end)
+                f_map[f] = Face(next_face[id - start]++);
+        }
+        for (Vertex v : vertices())
+        {
+            auto id = vertex_dist[v];
+            if (id >= start && id < end)
+                v_map[v] = Vertex(next_vertex[id - start]++);
+        }
+        for (Edge e : edges())
+        {
+            Halfedge h0 = halfedge(e, 0);
+            Halfedge h1 = halfedge(e, 1);
+            auto id0 = halfedge_dist[h0];
+            auto id1 = halfedge_dist[h1];
+            if (id0 >= start && id0 < end)
+            {
+                h_map[h0] = halfedge(Edge(next_edge[id0 - start]++), 0);
+                if (id0 == id1)
+                {
+                    h_map[h1] = opposite_halfedge(h_map[h0]);
+                    continue;
+                }
+            }
+            if (id1 >= start && id1 < end)
+                h_map[h1] = halfedge(Edge(next_edge[id1 - start]++), 1);
+        }
+        for (size_t i = start; i < end; i++)
+        {
+            output[i].new_faces   (next_face  [i - start] - output[i].faces_size());
+            output[i].new_vertices(next_vertex[i - start] - output[i].vertices_size());
+            output[i].new_edges   (next_edge  [i - start] - output[i].edges_size());
         }
     }
 
-    f_thread.join();
-    v_thread.join();
-
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static,256)
     for (size_t i = 0; i < faces_size(); i++)
     {
         Face f(i);
@@ -1023,7 +1061,7 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
         mesh.copy_fprops(*this, f, f_map[f]);
         mesh.set_halfedge(f_map[f], h_map[halfedge(f)]);
     }
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static,256)
     for (size_t i = 0; i < vertices_size(); i++)
     {
         Vertex v(i);
@@ -1036,7 +1074,7 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
         if (h.is_valid())
             mesh.set_halfedge(v_map[v], h_map[h]);
     }
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static,256)
     for (size_t i = 0; i < halfedges_size(); i++)
     {
         Halfedge h(i);
@@ -1082,7 +1120,7 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
     auto h_map = add_halfedge_property<Halfedge>("h:split_map");
 
 
-    size_t num_threads = omp_get_max_threads();
+    size_t num_threads = std::min((size_t)omp_get_max_threads(), output.size());
 
     #pragma omp parallel num_threads(num_threads)
     {
@@ -1218,14 +1256,14 @@ void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
         IndexType face_offset = face_offsets[i];
         IndexType vertex_offset = vertex_offsets[i];
         IndexType halfedge_offset = halfedge_offsets[i];
-        #pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static,256)
         for (size_t j = 0; j < mesh.faces_size(); j++)
         {
             Face f(j), fm(face_offset + j);
             copy_fprops(mesh, f, fm);
             set_halfedge(fm, Halfedge(halfedge_offset + mesh.halfedge(f).idx()));
         }
-        #pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static,256)
         for (size_t j = 0; j < mesh.vertices_size(); j++)
         {
             Vertex v(j), vm(vertex_offset + j);
@@ -1235,7 +1273,7 @@ void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
             if (h.is_valid())
                 set_halfedge(vm, Halfedge(halfedge_offset + h.idx()));
         }
-        #pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(static,256)
         for (size_t j = 0; j < mesh.halfedges_size(); j++)
         {
             Halfedge h(j), hm(halfedge_offset + j);

@@ -61,12 +61,14 @@ public:
     //! Get center point.
     Point center() const { return 0.5f * (min_ + max_); }
 
+    //! Get index of longest axis (0=x, 1=y, 2=z).
     size_t longest_axis() const
     {
         Point size = max_ - min_;
         return std::max_element(size.data(), size.data() + 3) - size.data();
     }
 
+    //! Get length of longest axis.
     Scalar longest_axis_size() const
     {
         Point size = max_ - min_;
@@ -81,6 +83,24 @@ public:
 
     //! Get the size of the bounding box.
     Scalar size() const { return is_empty() ? 0.0 : (max_ - min_).norm(); }
+
+    //! Indicate if p is inside the bounding box.
+    bool contains(const Point& p)
+    {
+        for (int i = 0; i < 3; ++i)
+            if (p[i] < min_[i] || p[i] > max_[i])
+                return false;
+        return true;
+    }
+
+    //! Indicate if bb overlaps this bounding box.
+    bool overlaps(const BoundingBox& bb)
+    {
+        for (int i = 0; i < 3; ++i)
+            if (bb.max_[i] < min_[i] || bb.min_[i] > max_[i])
+                return false;
+        return true;
+    }
 
 private:
     Point min_, max_;
