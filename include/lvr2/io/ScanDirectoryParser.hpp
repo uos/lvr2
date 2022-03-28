@@ -35,7 +35,7 @@
 #include <Eigen/Dense>
 
 #include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/util/Timestamp.hpp"
 

@@ -5,11 +5,10 @@
 #include <yaml-cpp/yaml.h>
 #include <utility>
 
-#include "Matrix.hpp"
-
+#include "lvr2/io/YAML.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/types/MultiChannelMap.hpp"
-#include "lvr2/io/scanio/yaml/Util.hpp"
+#include "lvr2/util/YAMLUtil.hpp"
 
 
 namespace YAML {

@@ -25,10 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
 
-#ifndef LVR2_TYPES_BASEBUFFER
-#define LVR2_TYPES_BASEBUFFER
+#ifndef BASEBUFFER
+#define BASEBUFFER
 
 #include <algorithm>
 #include <vector>
@@ -692,4 +691,4 @@ public:
 
 #include "BaseBuffer.tcc"
 
-#endif // LVR2_TYPES_BASEBUFFER
+#endif // BASEBUFFER

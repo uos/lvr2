@@ -1,16 +1,20 @@
-#ifndef LVR2_IO_DESCRIPTIONS_HYPERSPECTRAL_PANORAMA_CHANNEL_IO_HPP
-#define LVR2_IO_DESCRIPTIONS_HYPERSPECTRAL_PANORAMA_CHANNEL_IO_HPP
+#ifndef HYPERSPECTRALPANORAMACHANNELIO
+#define HYPERSPECTRALPANORAMACHANNELIO
 
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/scanio/yaml/HyperspectralCamera.hpp"
-// deps
-#include "MetaIO.hpp"
-#include "ImageIO.hpp"
+#include "lvr2/io/baseio/MetaIO.hpp"
+#include "lvr2/io/scanio/ImageIO.hpp"
 
+using lvr2::baseio::MetaIO;
+using lvr2::baseio::FeatureConstruct;
 
-namespace lvr2 {
+namespace lvr2 
+{
+namespace scanio
+{
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class HyperspectralPanoramaChannelIO
 {
 public:
@@ -34,12 +38,14 @@ public:
         const size_t& channelId) const;
 
 protected:
-    FeatureBase *m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO *m_baseIO = static_cast<BaseIO*>(this);
     
     // deps
-    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
-    ImageIO<FeatureBase>* m_imageIO = static_cast<ImageIO<FeatureBase>*>(m_featureBase);
+    MetaIO<BaseIO>* m_metaIO = static_cast<MetaIO<BaseIO>*>(m_baseIO);
+    ImageIO<BaseIO>* m_imageIO = static_cast<ImageIO<BaseIO>*>(m_baseIO);
 };
+
+} // namespace scanio
 
 /**
  *
@@ -48,20 +54,21 @@ protected:
  * - Sets type variable
  *
  */
-template <typename FeatureBase>
-struct FeatureConstruct<HyperspectralPanoramaChannelIO, FeatureBase>
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::HyperspectralPanoramaChannelIO, T>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<ImageIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::baseio::MetaIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::ImageIO, T>::type;
     using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<HyperspectralPanoramaChannelIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::HyperspectralPanoramaChannelIO>::type;
 };
+
 
 } // namespace lvr2
 
 #include "HyperspectralPanoramaChannelIO.tcc"
 
-#endif // LVR2_IO_DESCRIPTIONS_HYPERSPECTRAL_PANORAMA_CHANNEL_IO_HPP
+#endif // HYPERSPECTRALPANORAMACHANNELIO

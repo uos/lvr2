@@ -46,7 +46,7 @@
 #include <lvr/reconstruction/TSDFGrid.hpp>
 #include <lvr/reconstruction/PointsetSurface.hpp>
 #include <lvr/reconstruction/FastKinFuBox.hpp>
-#include <lvr/io/PointBuffer.hpp>
+#include <lvr/types/PointBuffer.hpp>
 #include <lvr/io/DataStruct.hpp>
 #include <lvr/geometry/HalfEdgeVertex.hpp>
 #include <lvr/geometry/HalfEdgeKinFuMesh.hpp>

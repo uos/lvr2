@@ -5,10 +5,8 @@
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"
-#include "lvr2/io/scanio/yaml/Util.hpp"
-
-#include "AABB.hpp"
-#include "Matrix.hpp"
+#include "lvr2/util/YAMLUtil.hpp"
+#include "lvr2/io/YAML.hpp"
 
 namespace YAML {  
 

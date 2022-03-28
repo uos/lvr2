@@ -41,7 +41,7 @@
 #include <flann/flann.hpp>
 
 #include "lvr2/util/Timestamp.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/reconstruction/SearchTree.hpp"
 
 using std::vector;

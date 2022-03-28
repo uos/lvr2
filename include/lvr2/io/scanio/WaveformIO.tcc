@@ -1,7 +1,8 @@
 
 namespace lvr2
 {
-
+namespace scanio
+{
 
 template <typename Derived>
 void FullWaveformIO<Derived>::saveFullWaveform(
@@ -9,7 +10,7 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     const size_t& scanNo,
     const WaveformPtr& fwPtr)
 {
-    Description d = m_featureBase->m_description->waveform(scanPosNo, scanNo);
+    Description d = m_baseIO->m_description->waveform(scanPosNo, scanNo);
     // Init default values
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanNo;
@@ -45,7 +46,7 @@ void FullWaveformIO<Derived>::saveFullWaveform(
         metaName = *d.meta;
     }
     
-    m_featureBase->m_kernel->saveMetaYAML(metaRoot, metaName, node);
+    m_baseIO->m_kernel->saveMetaYAML(metaRoot, metaName, node);
 
     // saving Waveform samples
     uint16Arr waveformData = uint16Arr(new uint16_t[long(fwPtr->lowPower.size()) * long((fwPtr->maxBucketSize + 2))]());
@@ -59,7 +60,7 @@ void FullWaveformIO<Derived>::saveFullWaveform(
     }
 
     std::vector<size_t> waveformDim = {fwPtr->lowPower.size(), static_cast<size_t>(fwPtr->maxBucketSize + 2)};
-    m_featureBase->m_kernel->saveUInt16Array(groupName, waveformName, waveformDim, waveformData);
+    m_baseIO->m_kernel->saveUInt16Array(groupName, waveformName, waveformDim, waveformData);
 
 }
 template <typename Derived>
@@ -81,7 +82,7 @@ void FullWaveformIO<Derived>::saveLabelWaveform(
     }
 
     std::vector<size_t> waveformDim = {fwPtr->lowPower.size(), static_cast<size_t>(fwPtr->maxBucketSize + 2)};
-    m_featureBase->m_kernel->saveUInt16Array(groupName, "waveform", waveformDim, waveformData);
+    m_baseIO->m_kernel->saveUInt16Array(groupName, "waveform", waveformDim, waveformData);
 
 }
 template <typename Derived>
@@ -93,7 +94,7 @@ WaveformPtr FullWaveformIO<Derived>::loadLabelWaveform(const std::string& groupN
     // Load actual data
     boost::shared_array<uint16_t> waveformData;
     std::vector<size_t> waveformDim;
-    waveformData = m_featureBase->m_kernel->loadUInt16Array(groupName, waveformName, waveformDim);
+    waveformData = m_baseIO->m_kernel->loadUInt16Array(groupName, waveformName, waveformDim);
     ret->waveformSamples.reserve(waveformDim[0] * waveformDim[1] - 1);
     ret->lowPower.reserve(waveformDim[0]);
     ret->echoType.reserve(waveformDim[0]);
@@ -140,7 +141,7 @@ WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, c
     WaveformPtr ret(new Waveform);
 
     
-    Description d = m_featureBase->m_description->waveform(scanPosNo, scanNo);
+    Description d = m_baseIO->m_description->waveform(scanPosNo, scanNo);
     // Init default values
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << scanNo;
@@ -167,7 +168,7 @@ WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, c
     if(d.meta)
     {
         YAML::Node meta;
-        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
@@ -182,7 +183,7 @@ WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, c
     // Load actual data
     boost::shared_array<uint16_t> waveformData;
     std::vector<size_t> waveformDim;
-    waveformData = m_featureBase->m_kernel->loadUInt16Array(groupName, waveformName, waveformDim);
+    waveformData = m_baseIO->m_kernel->loadUInt16Array(groupName, waveformName, waveformDim);
  //   ret->waveformSamples.reserve(waveformDim[0] * (waveformDim[1] - 2));
     ret->lowPower.reserve(waveformDim[0]);
     ret->echoType.reserve(waveformDim[0]);
@@ -225,6 +226,5 @@ WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, c
   
 }
 
-
-
+} // namespace scanio
 } // namespace lvr2

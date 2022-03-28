@@ -18,6 +18,7 @@ set(LVR2_CHUNKING_SERVER_DEPENDENCIES
     lvr2
     lvr2las_static
     lvr2rply_static
+    TBB::tbb
     ${Boost_LIBRARIES}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )

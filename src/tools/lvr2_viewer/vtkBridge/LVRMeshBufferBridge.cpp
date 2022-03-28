@@ -273,6 +273,7 @@ namespace lvr2
         m_meshActor->SetProperty(p);
     }
 
+
     vtkSmartPointer<vtkActor> LVRMeshBufferBridge::getWireframeActor()
     {
         return m_wireframeActor;

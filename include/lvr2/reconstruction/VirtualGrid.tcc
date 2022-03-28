@@ -32,18 +32,19 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb, size_t gridCellSize, float voxelSize)
+VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb, float gridCellSize, float voxelSize)
 {
     m_pcbb = bb;
     if (fmod((float)gridCellSize, voxelSize) != 0)
     {
-        int var = ((int)gridCellSize / (int)voxelSize) + fmod((float)gridCellSize, voxelSize);
+        float var = (gridCellSize / voxelSize) + fmod((float)gridCellSize, voxelSize);
         m_gridCellSize = var * voxelSize;
     }
     else
     {
         m_gridCellSize = gridCellSize;
     }
+    std::cout << "GRID: " << m_gridCellSize << std::endl;
 
     m_voxelsize = voxelSize;
 }
@@ -70,12 +71,12 @@ void VirtualGrid<BaseVecT>::setBoundingBox(BoundingBox<BaseVecT> bb)
 template <typename BaseVecT>
 void VirtualGrid<BaseVecT>::findInitialBox()
 {
-    int min_x = (floor(m_pcbb.getMin().x / m_gridCellSize)) * m_gridCellSize;
-    int min_y = (floor(m_pcbb.getMin().y / m_gridCellSize)) * m_gridCellSize;
-    int min_z = (floor(m_pcbb.getMin().z / m_gridCellSize)) * m_gridCellSize;
-    int max_x = min_x + m_gridCellSize;
-    int max_y = min_y + m_gridCellSize;
-    int max_z = min_z + m_gridCellSize;
+    float min_x = m_pcbb.getMin().x;
+    float min_y = m_pcbb.getMin().y;
+    float min_z = m_pcbb.getMin().z;
+    float max_x = min_x + m_gridCellSize;
+    float max_y = min_y + m_gridCellSize;
+    float max_z = min_z + m_gridCellSize;
 
     m_initbox =
         lvr2::BoundingBox<BaseVecT>(BaseVecT(min_x, min_y, min_z), BaseVecT(max_x, max_y, max_z));
@@ -85,7 +86,7 @@ template <typename BaseVecT>
 void VirtualGrid<BaseVecT>::generateNeighbours()
 {
 
-    // Calculates the numbers of Boxes that fits per axis
+    // Calculates the numbers of Boxes that fit per axis
     int n_xboxes =
         ceil((m_pcbb.getXSize() + abs(m_pcbb.getMin().x - m_initbox.getMin().x)) / m_gridCellSize);
     int n_yboxes =

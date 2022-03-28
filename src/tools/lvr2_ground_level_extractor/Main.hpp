@@ -19,6 +19,7 @@
 #include <ogr_spatialref.h>
 #include <ogr_geometry.h>
 
+#include "lvr2/types/ColorTypes.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
@@ -27,23 +28,23 @@
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/SearchTreeFlann.hpp"
-#include "lvr2/io/PointBuffer.hpp"
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/baseio/GeoTIFFIO.hpp"
-#include "lvr2/display/ColorMap.hpp"
+#include "lvr2/io/modelio/GeoTIFFIO.hpp"
+#include "lvr2/util/ColorGradient.hpp"
 
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#ifndef _SSIZE_T_DEFINED
+#ifndef MAIN
 #ifdef  _WIN64
 typedef __int64    ssize_t;
 #else
 typedef _W64 int   ssize_t;
 #endif
-#define _SSIZE_T_DEFINED
+#define MAIN
 #endif
-#endif
+#endif // MAIN
 
 using boost::optional;
 using std::unique_ptr;
@@ -1248,37 +1249,37 @@ Eigen::MatrixXd affineMatrix, string colorScale)
 
     ProgressBar progressColor(xDim * yDim, timestamp.getElapsedTime() + "Setting colors ");     
 
-    ColorMap colorMap(maxDistance - minDistance);
-    float color[3];
-    GradientType type;
+    ColorGradient colorMap(maxDistance - minDistance);
+    RGBFColor color;
+    ColorGradient::GradientType type;
     // Get Color Scale --> Default to JET if not supported
     if(colorScale == "GREY")
     {
-        type = GREY;
+        type = ColorGradient::GREY;
     }
     else if(colorScale == "JET")
     {
-        type = JET;
+        type = ColorGradient::JET;
     }
     else if(colorScale == "HOT")
     {
-        type = HOT;
+        type = ColorGradient::HOT;
     }
     else if(colorScale == "HSV")
     {
-        type = HSV;
+        type = ColorGradient::HSV;
     }
     else if(colorScale == "SHSV")
     {
-        type = SHSV;
+        type = ColorGradient::SHSV;
     }
     else if(colorScale == "SIMPSONS")
     {
-        type = SIMPSONS;
+        type = ColorGradient::SIMPSONS;
     }
     else
     {
-        type = JET;
+        type = ColorGradient::JET;
     }
 
     for (int y = 0; y < yDim; y++)
@@ -1324,35 +1325,35 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand, string colorScal
     // Read key Information from the TIFF
     // ======================================================================= 
 
-    GradientType type;
+    ColorGradient::GradientType type;
     // Get Color Scale --> Default to JET if not supported
     if(colorScale == "GREY")
     {
-        type = GREY;
+        type = ColorGradient::GREY;
     }
     else if(colorScale == "JET")
     {
-        type = JET;
+        type = ColorGradient::JET;
     }
     else if(colorScale == "HOT")
     {
-        type = HOT;
+        type = ColorGradient::HOT;
     }
     else if(colorScale == "HSV")
     {
-        type = HSV;
+        type = ColorGradient::HSV;
     }
     else if(colorScale == "SHSV")
     {
-        type = SHSV;
+        type = ColorGradient::SHSV;
     }
     else if(colorScale == "SIMPSONS")
     {
-        type = SIMPSONS;
+        type = ColorGradient::SIMPSONS;
     }
     else
     {
-        type = JET;
+        type = ColorGradient::JET;
     }
     
     int yDimTiff = io->getRasterHeight();
@@ -1410,8 +1411,8 @@ Texture readGeoTIFF(GeoTIFFIO* io, int firstBand, int lastBand, string colorScal
         
         size_t maxV = (size_t)(max*multi);      
         // Build colorMap based on max/min
-        ColorMap colorMap(maxV);
-        float color[3];
+        ColorGradient colorMap(maxV);
+        RGBFColor color;
         ProgressBar progressGeoTIFF(yDimTiff* xDimTiff, timestamp.getElapsedTime() + "Extracting GeoTIFF data ");
         for (ssize_t y = 0; y < yDimTiff; y++)
         {

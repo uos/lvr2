@@ -63,3 +63,5 @@ debian/lvr2-*/
 
 # RiVLib lib path
 ext/rivlib/
+texture_*.jpg
+texture_*.ppm

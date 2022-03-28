@@ -39,7 +39,7 @@
 using std::unique_ptr;
 using std::make_unique;
 
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/Model.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/algorithm/NormalAlgorithms.hpp"

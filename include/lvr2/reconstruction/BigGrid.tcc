@@ -33,11 +33,11 @@
  */
 
 #include "lvr2/io/LineReader.hpp"
-#include "lvr2/io/scanio/ArrayIO.hpp"
-#include "lvr2/io/scanio/ChannelIO.hpp"
-#include "lvr2/io/scanio/MatrixIO.hpp"
+#include "lvr2/io/baseio/ArrayIO.hpp"
+#include "lvr2/io/baseio/MatrixIO.hpp"
+#include "lvr2/io/baseio/VariantChannelIO.hpp"
+#include "lvr2/io/baseio/ChannelIO.hpp"
 #include "lvr2/io/scanio/PointCloudIO.hpp"
-#include "lvr2/io/scanio/VariantChannelIO.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"
 #include "lvr2/util/Progress.hpp"
@@ -538,18 +538,22 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
 
 template <typename BaseVecT>
 BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale)
-        : m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0),
-          m_numPoints(0), m_extrude(true), m_scale(scale), m_has_normal(false), m_has_color(false)
+        : m_maxIndex(0), 
+          m_maxIndexSquare(0), 
+          m_maxIndexX(0), 
+          m_maxIndexY(0), 
+          m_maxIndexZ(0),
+          m_numPoints(0), 
+          m_extrude(true), 
+          m_scale(scale), 
+          m_has_normal(false), 
+          m_has_color(false)
 {
-    /// 
-#ifdef LVR2_USE_OPEN_MP
-    omp_init_lock(&m_lock);
-#endif
     m_voxelSize = voxelsize;
 
     if (project->changed.size() <= 0)
     {
-        std::cerr << "no new scans to be added!" << std::endl;
+        std::cout << timestamp << "Warning: No new scans to be added!" << std::endl;
         return;
     }
     else
@@ -558,56 +562,96 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
         string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
         lvr2::ProgressBar progress(project->changed.size() * 3, comment);
-        // bounding box of all scans in .h5
+        
+        // Vector of all computed bounding boxes
         std::vector<BoundingBox<BaseVecT>> scan_boxes;
 
-        lvr2::scanio::HDF5IO hdf5io(project->kernel, project->schema); 
 
-        //iterate through ALL points to calculate transformed boundingboxes of scans
+        // Iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < project->changed.size(); i++)
         {
+            std::cout << timestamp << "Loading scan position " << i << " from " << project->changed.size() << std::endl;
             ScanPositionPtr pos = project->project->positions.at(i);
-            assert(pos->lidars.size() > 0);
+            if(pos && pos->lidars.size())
+            {
+                // Check if a scan object exists
+                LIDARPtr lidar = pos->lidars[0];
+                if(lidar->scans.size())
+                {
+                    // Check if data has already been loaded
+                    if(lidar->scans[0] && !lidar->scans[0]->loaded())
+                    {
+                        lidar->scans[0]->load();
+                    }
+                    else if(!lidar->scans[0])
+                    {
+                        // Stored scan has to be a nullptr, try to 
+                        // load scan from via scanio
+                        auto hdf5io = FeatureBuild<scanio::ScanProjectIO>(project->kernel, project->schema); 
+                        std::cout << timestamp << "Overriding empty scan at scan position " << i << std::endl;
+                        lidar->scans[0] = hdf5io.ScanIO::load(i, 0, 0);
 
-            // Load points
-            cout << std::endl << timestamp << "Loading points from scan position " << i << endl;
-            ScanPtr p = hdf5io.ScanIO::load(i, 0, 0);
-            p->load();
-            size_t numPoints = p->points->numPoints();
+                        if(!lidar->scans[0])
+                        {
+                            std::cout << timestamp << "Unable to re-load data. Skipping scan position " << i << std::endl;
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    std::cout << timestamp << "Loading points from scan position " << i << std::endl;
+                    auto hdf5io = FeatureBuild<scanio::ScanProjectIO>(project->kernel, project->schema); 
+                    ScanPtr scan = hdf5io.ScanIO::load(i, 0, 0);
+                    if(scan)
+                    {
+                        lidar->scans.push_back(scan);
+                    }
+                    else
+                    {
+                        std::cout << timestamp << "Warning: Unable to get data for scan position " << i << std::endl;
+                        continue;
+                    }
+                }
+            }
 
+            // Direct acces should be safe now..
+            ScanPtr scan = pos->lidars[0]->scans[0];
+            
+            size_t numPoints = scan->points->numPoints();
 
             BoundingBox<BaseVecT> box;
 
             // Get point array
-            boost::shared_array<float> points = p->points->getPointArray();
+            boost::shared_array<float> points = scan->points->getPointArray();
 
             // Get transformation from scan position
             Transformd finalPose_n = pos->transformation;
 
-            std::cout << timestamp << finalPose_n << std::endl;
-
             Transformd finalPose = finalPose_n;
-
+            #pragma omp parallel for
             for (int k = 0; k < numPoints; k++)
             {
-                Eigen::Vector4d point(
-                    points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                Eigen::Vector4d point(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
                 Eigen::Vector4d transPoint = finalPose * point;
 
                 BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
-                m_bb.expand(temp);
-                box.expand(temp);
+                #pragma omp critical
+                {
+                    m_bb.expand(temp);
+                    box.expand(temp);
+                }
             }
             // filter the new scans to calculate new reconstruction area
-            if(project->changed.at(i))
+            if (project->changed.at(i))
             {
                 m_partialbb.expand(box);
             }
             scan_boxes.push_back(box);
 
-            if(!timestamp.isQuiet()) ++progress;
+            if (!timestamp.isQuiet())
+                ++progress;
         }
-
 
         // Make box side lenghts divisible by voxel size
         float longestSide = m_bb.getLongestSide();
@@ -621,7 +665,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         m_bb.expand(BaseVecT(center.x - xsize / 2, center.y - ysize / 2, center.z - zsize / 2));
         longestSide = ceil(longestSide / voxelsize) * voxelsize;
 
-        // calculate max indices
+        // Calculate max indices
 
         // m_maxIndex = (size_t)(longestSide/voxelsize);
         m_maxIndexX = (size_t)(xsize / voxelsize);
@@ -653,10 +697,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 Transformd finalPose_n = pos->transformation;
                 Transformd finalPose = finalPose_n;
                 int dx, dy, dz;
+                #pragma omp parallel for
                 for (int k = 0; k < numPoints; k++)
                 {
-                    Eigen::Vector4d point(
-                            points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                    Eigen::Vector4d point(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
                     Eigen::Vector4d transPoint = finalPose * point;
                     BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
                     // m_bb.expand(temp);
@@ -677,6 +721,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                         if (j == 0)
                         {
                             m_gridNumPoints[h].size++;
+
                         }
                         else
                         {
@@ -684,7 +729,6 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                             if (it == m_gridNumPoints.end())
                             {
                                 m_gridNumPoints[h].size = 0;
-
                             }
                         }
                     }
@@ -697,6 +741,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
         size_t num_cells = 0;
         size_t offset = 0;
+
         for (auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); ++it)
         {
             it->second.offset = offset;
@@ -724,15 +769,14 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
         float* mmfdata = (float*)m_PointFile.data();
 
-
-
         for (int i = 0; i < project->changed.size(); i++)
         {
             if ((project->changed.at(i) != true) && m_partialbb.isValid() && !m_partialbb.overlap(scan_boxes.at(i)))
             {
                 cout << timestamp << "Scan No. " << i << " ignored!" << endl;
             }
-            else{
+            else
+            {
                 ScanPositionPtr pos = project->project->positions.at(i);
                 size_t numPoints = pos->lidars[0]->scans[0]->points->numPoints();
 
@@ -740,7 +784,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
                 Transformd finalPose_n = pos->transformation;
                 Transformd finalPose = finalPose_n;
-                for (int k = 0; k < numPoints; k++) {
+                
+                #pragma omp parallel for
+                for (int k = 0; k < numPoints; k++) 
+                {
                     Eigen::Vector4d point(
                             points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
                     Eigen::Vector4d transPoint = finalPose * point;
@@ -764,11 +811,16 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 }
             }
             if(!timestamp.isQuiet())
+            {
                 ++progress;
+            }
         }
 
         if(!timestamp.isQuiet())
+        {
             cout << endl;
+        }
+            
         
         m_PointFile.close();
         m_NomralFile.close();
@@ -976,17 +1028,17 @@ lvr2::floatArr BigGrid<BaseVecT>::points(
     boost::iostreams::mapped_file_source mmfs("points.mmf");
     float* mmfdata = (float*)mmfs.data();
 
-    for (auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); it++)
+    for (auto it : m_gridNumPoints)
     {
-        if (it->second.ix >= idxmin && it->second.iy >= idymin && it->second.iz >= idzmin &&
-            it->second.ix <= idxmax && it->second.iy <= idymax && it->second.iz <= idzmax)
+        if (it.second.ix >= idxmin && it.second.iy >= idymin && it.second.iz >= idzmin &&
+            it.second.ix <= idxmax && it.second.iy <= idymax && it.second.iz <= idzmax)
         {
-            size_t cSize = it->second.size;
+            size_t cSize = it.second.size;
             for (size_t x = 0; x < cSize; x++)
             {
-                points.get()[p_index] = mmfdata[(it->second.offset + x) * 3];
-                points.get()[p_index + 1] = mmfdata[(it->second.offset + x) * 3 + 1];
-                points.get()[p_index + 2] = mmfdata[(it->second.offset + x) * 3 + 2];
+                points.get()[p_index]     = mmfdata[(it.second.offset + x) * 3];
+                points.get()[p_index + 1] = mmfdata[(it.second.offset + x) * 3 + 1];
+                points.get()[p_index + 2] = mmfdata[(it.second.offset + x) * 3 + 2];
                 p_index += 3;
             }
         }
@@ -1087,7 +1139,7 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(
             size_t cSize = it->second.size;
             for (size_t x = 0; x < cSize; x++)
             {
-                points.get()[p_index] = mmfdata[(it->second.offset + x) * 3];
+                points.get()[p_index]     = mmfdata[(it->second.offset + x) * 3];
                 points.get()[p_index + 1] = mmfdata[(it->second.offset + x) * 3 + 1];
                 points.get()[p_index + 2] = mmfdata[(it->second.offset + x) * 3 + 2];
                 p_index += 3;

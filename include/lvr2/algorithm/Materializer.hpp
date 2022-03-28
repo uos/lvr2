@@ -154,6 +154,13 @@ public:
     void setTexturizer(Texturizer<BaseVecT>& texturizer);
 
     /**
+     * @brief Adds another texturizer
+     * 
+     * @param texturizer The texturizer
+     */
+    void addTexturizer(Texturizer<BaseVecT>& texturizer);
+
+    /**
      * @brief Generates materials
      *
      * For each cluster, check whether a texture should be generated:
@@ -188,8 +195,9 @@ private:
     /// Point cloud
     const PointsetSurface<BaseVecT>& m_surface;
 
-    /// Texturizer
-    boost::optional<Texturizer<BaseVecT>&> m_texturizer;
+    /// Texturizers
+    using TexturizerRefVec = std::vector<std::reference_wrapper<Texturizer<BaseVecT>>>;
+    boost::optional<TexturizerRefVec> m_texturizers;
 
 };
 

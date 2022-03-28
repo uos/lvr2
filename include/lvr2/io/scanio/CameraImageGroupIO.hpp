@@ -1,18 +1,22 @@
 #pragma once
 
-#ifndef LVR2_IO_DESCRIPTIONS_CAMERAIMAGEGROUPIO_HPP
-#define LVR2_IO_DESCRIPTIONS_CAMERAIMAGEGROUPIO_HPP
+#ifndef CAMERAIMAGEGROUPIO
+#define CAMERAIMAGEGROUPIO
 
-#include "MetaIO.hpp"
-#include "CameraImageIO.hpp"
-#include "FeatureBase.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/io/baseio/MetaIO.hpp"
+#include "lvr2/io/baseio/BaseIO.hpp"
 #include "lvr2/io/scanio/yaml/CameraImage.hpp"
+#include "lvr2/io/scanio/CameraImageIO.hpp"
+
+using lvr2::baseio::FeatureConstruct;
 
 namespace lvr2
 {
+namespace scanio
+{
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class CameraImageGroupIO
 {
 public:
@@ -67,15 +71,17 @@ public:
         const size_t& imgNr) const;
     
 protected:
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast< BaseIO*>(this);
 
     // dependencies
-    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
-    CameraImageIO<FeatureBase>* m_cameraImageIO = static_cast<CameraImageIO<FeatureBase>*>(m_featureBase);
+    MetaIO<BaseIO>* m_metaIO = static_cast<MetaIO<BaseIO>*>(m_baseIO);
+    CameraImageIO<BaseIO>* m_cameraImageIO = static_cast<CameraImageIO<BaseIO>*>(m_baseIO);
 
     static constexpr const char* ID = "CameraImageGroupIO";
     static constexpr const char* OBJID = "CameraImageGroup";
 };
+
+} // namespace scanio
 
 /**
  *
@@ -84,20 +90,20 @@ protected:
  * - Sets type variable
  *
  */
-template <typename FeatureBase>
-struct FeatureConstruct<CameraImageGroupIO, FeatureBase>
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::CameraImageGroupIO, T>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<CameraImageIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::baseio::MetaIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::CameraImageIO, T>::type;
     using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<CameraImageGroupIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::CameraImageGroupIO>::type;
 };
 
 } // namespace lvr2
 
 #include "CameraImageGroupIO.tcc"
 
-#endif // LVR2_IO_DESCRIPTIONS_CAMERAIMAGEGROUPIO_HPP
+#endif // CAMERAIMAGEGROUPIO

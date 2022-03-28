@@ -54,7 +54,7 @@ using std::min;
 #include "lvr2/geometry/HalfEdgeFace.hpp"
 #include "lvr2/geometry/HalfEdgeVertex.hpp"
 
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 
 namespace lvr2
 {

@@ -1,31 +1,33 @@
 #pragma once
-#ifndef LVR2_IO_scanio_CHANNELIO_HPP
-#define LVR2_IO_scanio_CHANNELIO_HPP
+#ifndef CHUNKIO
+#define CHUNKIO
 
-#include "ArrayIO.hpp"
-#include "MeshIO.hpp"
+#include "lvr2/io/baseio/ArrayIO.hpp"
+#include "lvr2/io/meshio/MeshIO.hpp"
 #include "PointCloudIO.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/io/scanio/FeatureBase.hpp"
-#include "lvr2/io/Model.hpp"
+#include "lvr2/io/baseio/BaseIO.hpp"
+#include "lvr2/types/Model.hpp"
+
+using lvr2::baseio::FeatureConstruct;
 
 namespace lvr2
 {
 
-template <typename FeatureBase, typename T>
+template <typename BaseIO, typename T>
 struct IOType;
 
-template <typename FeatureBase>
-struct IOType<FeatureBase, MeshBufferPtr> {
-    using io_type = MeshIO<FeatureBase>;
+template <typename BaseIO>
+struct IOType<BaseIO, MeshBufferPtr> {
+    using io_type = MeshIO<BaseIO>;
 };
 
-template <typename FeatureBase>
-struct IOType<FeatureBase, PointBufferPtr> {
-    using io_type = PointCloudIO<FeatureBase>;
+template <typename BaseIO>
+struct IOType<BaseIO, PointBufferPtr> {
+    using io_type = PointCloudIO<BaseIO>;
 };
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class ChunkIO
 {
   public:
@@ -52,8 +54,8 @@ class ChunkIO
     T loadChunk(std::string layer, int x, int y, int z);
 
   protected:
-    FeatureBase* m_file_access                 = static_cast<FeatureBase*>(this);
-    ArrayIO<FeatureBase>* m_array_io           = static_cast<ArrayIO<FeatureBase>*>(m_file_access);
+    BaseIO* m_file_access                 = static_cast<BaseIO*>(this);
+    ArrayIO<BaseIO>* m_array_io           = static_cast<ArrayIO<BaseIO>*>(m_file_access);
 
   private:
     const std::string m_chunkName       = "chunks";
@@ -65,13 +67,13 @@ class ChunkIO
 /**
  * Define you dependencies here:
  */
-template <typename FeatureBase>
-struct FeatureConstruct<ChunkIO, FeatureBase>
+template <typename T>
+struct FeatureConstruct<ChunkIO, T>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<ArrayIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<MeshIO, FeatureBase>::type;
-    using dep3 = typename FeatureConstruct<PointCloudIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::baseio::ArrayIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::meshio::MeshIO, T>::type;
+    using dep3 = typename FeatureConstruct<lvr2::scanio::PointCloudIO, T>::type;
     using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
 
     // add actual feature
@@ -82,4 +84,4 @@ struct FeatureConstruct<ChunkIO, FeatureBase>
 
 #include "ChunkIO.tcc"
 
-#endif // LVR2_IO_scanio_CHANNELIO_HPP
+#endif // CHUNKIO

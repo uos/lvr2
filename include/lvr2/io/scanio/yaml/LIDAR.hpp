@@ -1,8 +1,7 @@
 #ifndef LVR2_IO_YAML_LIDAR_HPP
 #define LVR2_IO_YAML_LIDAR_HPP
 
-#include "Matrix.hpp"
-#include "AABB.hpp"
+#include "lvr2/io/YAML.hpp"
 
 namespace YAML {  
 

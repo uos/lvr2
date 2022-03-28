@@ -5,7 +5,7 @@
 
 #include <boost/optional.hpp>
 
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 
 // Dependencies
 #include "ChannelIO.hpp"

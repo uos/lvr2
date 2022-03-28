@@ -57,7 +57,7 @@ using namespace std;
 #include "lvr2/geometry/Quaternion.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/Model.hpp"
 
 namespace lvr2
 {

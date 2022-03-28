@@ -1,22 +1,22 @@
 namespace lvr2
 {
 
-template <typename FeatureBase>
-void ChunkIO<FeatureBase>::saveAmount(BaseVector<std::size_t> amount)
+template <typename BaseIO>
+void ChunkIO<BaseIO>::saveAmount(BaseVector<std::size_t> amount)
 {
     boost::shared_array<size_t> amountArr(new size_t[3]{amount.x, amount.y, amount.z});
     m_array_io->save(m_chunkName, m_amountName, 3, amountArr);
 }
 
-template <typename FeatureBase>
-void ChunkIO<FeatureBase>::saveChunkSize(float chunkSize)
+template <typename BaseIO>
+void ChunkIO<BaseIO>::saveChunkSize(float chunkSize)
 {
     boost::shared_array<float> chunkSizeArr(new float[1]{chunkSize});
     m_array_io->save(m_chunkName, m_chunkSizeName, 1, chunkSizeArr);
 }
 
-template <typename FeatureBase>
-void ChunkIO<FeatureBase>::saveBoundingBox(BoundingBox<BaseVector<float>> boundingBox)
+template <typename BaseIO>
+void ChunkIO<BaseIO>::saveBoundingBox(BoundingBox<BaseVector<float>> boundingBox)
 {
     boost::shared_array<float> boundingBoxArr(new float[6]{boundingBox.getMin()[0],
                                                            boundingBox.getMin()[1],
@@ -28,8 +28,8 @@ void ChunkIO<FeatureBase>::saveBoundingBox(BoundingBox<BaseVector<float>> boundi
     m_array_io->save(m_chunkName, m_boundingBoxName, boundingBoxDim, boundingBoxArr);
 }
 
-template <typename FeatureBase>
-void ChunkIO<FeatureBase>::save(BaseVector<std::size_t> amount,
+template <typename BaseIO>
+void ChunkIO<BaseIO>::save(BaseVector<std::size_t> amount,
                             float chunkSize,
                             BoundingBox<BaseVector<float>> boundingBox)
 {
@@ -38,9 +38,9 @@ void ChunkIO<FeatureBase>::save(BaseVector<std::size_t> amount,
     saveBoundingBox(boundingBox);
 }
 
-template <typename FeatureBase>
+template <typename BaseIO>
 template <typename T>
-void ChunkIO<FeatureBase>::saveChunk(T data, std::string layer, int x, int y, int z)
+void ChunkIO<BaseIO>::saveChunk(T data, std::string layer, int x, int y, int z)
 {
     std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
 
@@ -50,11 +50,11 @@ void ChunkIO<FeatureBase>::saveChunk(T data, std::string layer, int x, int y, in
     boost::filesystem::path layerPath(layer);
 
     std::string groupName = (chunkPath / layerPath).string();
-    static_cast<typename IOType<FeatureBase, T>::io_type*>(m_featureBase)->save(groupName, chunkName, data);
+    static_cast<typename IOType<BaseIO, T>::io_type*>(m_baseIO)->save(groupName, chunkName, data);
 }
 
-template <typename FeatureBase>
-BaseVector<size_t> ChunkIO<FeatureBase>::loadAmount()
+template <typename BaseIO>
+BaseVector<size_t> ChunkIO<BaseIO>::loadAmount()
 {
     BaseVector<size_t> amount;
     size_t dimensionAmount;
@@ -73,8 +73,8 @@ BaseVector<size_t> ChunkIO<FeatureBase>::loadAmount()
     return amount;
 }
 
-template <typename FeatureBase>
-float ChunkIO<FeatureBase>::loadChunkSize()
+template <typename BaseIO>
+float ChunkIO<BaseIO>::loadChunkSize()
 {
     float chunkSize;
     size_t dimensionChunkSize;
@@ -94,8 +94,8 @@ float ChunkIO<FeatureBase>::loadChunkSize()
     return chunkSize;
 }
 
-template <typename FeatureBase>
-BoundingBox<BaseVector<float>> ChunkIO<FeatureBase>::loadBoundingBox()
+template <typename BaseIO>
+BoundingBox<BaseVector<float>> ChunkIO<BaseIO>::loadBoundingBox()
 {
     BoundingBox<BaseVector<float>> boundingBox;
     std::vector<size_t> dimensionBox;
@@ -123,13 +123,13 @@ BoundingBox<BaseVector<float>> ChunkIO<FeatureBase>::loadBoundingBox()
     return boundingBox;
 }
 
-template <typename FeatureBase>
+template <typename BaseIO>
 template <typename T>
-T ChunkIO<FeatureBase>::loadChunk(std::string layer, int x, int y, int z)
+T ChunkIO<BaseIO>::loadChunk(std::string layer, int x, int y, int z)
 {
     std::string chunkName = std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
 
-    return static_cast<typename IOType<FeatureBase, T>::io_type*>(m_featureBase)
+    return static_cast<typename IOType<BaseIO, T>::io_type*>(m_baseIO)
         ->load(m_chunkName + "/" + layer + "/" + chunkName);
 }
 

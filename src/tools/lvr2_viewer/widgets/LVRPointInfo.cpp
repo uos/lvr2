@@ -52,6 +52,9 @@ LVRPointInfo::LVRPointInfo(QWidget* parent, PointBufferPtr pointBuffer, int poin
         .arg(points[pointId * 3 + 2], 10, 'g', 4));
     
     UCharChannelOptional spec_channels = pointBuffer->getUCharChannel("spectral_channels");
+    if(!spec_channels) {
+        spec_channels = pointBuffer->getUCharChannel("spectral");
+    }
     size_t n_spec = spec_channels->numElements();
     m_numChannels = spec_channels->width();
     

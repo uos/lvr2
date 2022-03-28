@@ -37,13 +37,14 @@
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/config/lvropenmp.hpp"
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
+#include "lvr2/io/kernels/DirectoryKernel.hpp"
+#include "lvr2/io/baseio/BaseIO.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
 #include "lvr2/io/scanio/DirectoryIO.hpp"
-#include "lvr2/io/scanio/DirectoryKernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
-#include "lvr2/io/scanio/HDF5Kernel.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 #include "lvr2/util/IOUtils.hpp"
 
 #include "LargeScaleOptions.hpp"
@@ -96,12 +97,28 @@ int main(int argc, char** argv)
 
     OpenMPConfig::setNumThreads(options.getNumThreads());
 
-    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(),
-                                      options.getNodeSize(), options.getPartMethod(), options.getKi(), options.getKd(), options.getKn(),
-                                      options.useRansac(), options.getFlippoint(), options.extrude(), options.getDanglingArtifacts(),
-                                      options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
-                                      options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
-                                      options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(), options.getDebugChunks(), options.useGPU());
+    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), 
+                                      options.getBGVoxelsize(), options.getScaling(),
+                                      options.getNodeSize(), 
+                                      options.getPartMethod(), 
+                                      options.getKi(), options.getKd(), options.getKn(),
+                                      options.useRansac(), 
+                                      options.getFlippoint(), 
+                                      options.extrude(), 
+                                      options.getDanglingArtifacts(),
+                                      options.getCleanContourIterations(), 
+                                      options.getFillHoles(), 
+                                      options.optimizePlanes(),
+                                      options.getNormalThreshold(), 
+                                      options.getPlaneIterations(), 
+                                      options.getMinPlaneSize(), 
+                                      options.getSmallRegionThreshold(),
+                                      options.retesselate(), 
+                                      options.getLineFusionThreshold(), 
+                                      options.getBigMesh(), 
+                                      options.getDebugChunks(), 
+                                      options.useGPU(), 
+                                      options.useGPUDistances());
 
     
 
@@ -140,9 +157,12 @@ int main(int argc, char** argv)
         DirectorySchemaPtr dirSchema(new ScanProjectSchemaRaw(in));
         lvr2::scanio::DirectoryIO dirio(dirKernel, dirSchema);
         dirScanProject = dirio.ScanProjectIO::load();
+        project->kernel = dirKernel;
+        project->schema = dirSchema;
 
         //reconstruction from ScanProject Folder
-        if(dirScanProject) {
+        if(dirScanProject) 
+        {
             project->project = dirScanProject;
             std::vector<bool> init(dirScanProject->positions.size(), true);
             project->changed = init;
@@ -150,19 +170,20 @@ int main(int argc, char** argv)
         //reconstruction from a .ply file
         else if(!boost::filesystem::is_directory(selectedFile))
         {
+            std::cout << timestamp << "Reading single file: " << selectedFile.string() << std::endl;
             project->project = ScanProjectPtr(new ScanProject);
             ModelPtr model = ModelFactory::readModel(in);
 
-            // Create new scan object
+            // Create new scan object and mark scan data as
+            // loaded
             ScanPtr scan(new Scan);
             scan->points = model->m_pointCloud;
-
+            
             // Create new lidar object
             LIDARPtr lidar(new LIDAR);
 
             // Create new scan position
             ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
-            scanPosPtr->lidars.push_back(lidar);
 
             // Buildup scan project structure
             project->project->positions.push_back(scanPosPtr);

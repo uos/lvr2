@@ -27,8 +27,8 @@
 
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/WaveformBuffer.hpp"
-#include "lvr2/io/baseio/AsciiIO.hpp"
+#include "lvr2/types/WaveformBuffer.hpp"
+#include "lvr2/io/modelio/AsciiIO.hpp"
 #include "lvr2/util/IOUtils.hpp"
 #include "lvr2/util/TransformUtils.hpp"
 

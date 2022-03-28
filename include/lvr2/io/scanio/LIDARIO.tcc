@@ -1,12 +1,15 @@
 namespace lvr2 {
 
-template <typename FeatureBase>
-void LIDARIO<FeatureBase>::save(
+namespace scanio
+{
+
+template <typename BaseIO>
+void LIDARIO<BaseIO>::save(
     const size_t& scanPosNo,
     const size_t& lidarNo,
     LIDARPtr lidar) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->lidar(scanPosNo, lidarNo);
 
     // std::cout << "LIDARIO - save data " << std::endl;
@@ -23,27 +26,27 @@ void LIDARIO<FeatureBase>::save(
     {
         YAML::Node node;
         node = *lidar;
-        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
+        m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 }
 
-template <typename FeatureBase>
-boost::optional<YAML::Node> LIDARIO<FeatureBase>::loadMeta(
+template <typename BaseIO>
+boost::optional<YAML::Node> LIDARIO<BaseIO>::loadMeta(
         const size_t& scanPosNo,
         const size_t& lidarNo) const
 {
-    Description d = m_featureBase->m_description->lidar(scanPosNo, lidarNo);
+    Description d = m_baseIO->m_description->lidar(scanPosNo, lidarNo);
     return m_metaIO->load(d);
 }
 
-template <typename FeatureBase>
-LIDARPtr LIDARIO<FeatureBase>::load(
+template <typename BaseIO>
+LIDARPtr LIDARIO<BaseIO>::load(
     const size_t& scanPosNo,
     const size_t& lidarNo) const
 {
     LIDARPtr ret;
 
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->lidar(scanPosNo, lidarNo);
 
     if(!d.dataRoot)
@@ -52,7 +55,7 @@ LIDARPtr LIDARIO<FeatureBase>::load(
     }
 
     // check if group exists
-    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
@@ -67,7 +70,7 @@ LIDARPtr LIDARIO<FeatureBase>::load(
     if(d.meta)
     {
         YAML::Node meta;
-        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
@@ -98,5 +101,6 @@ LIDARPtr LIDARIO<FeatureBase>::load(
     return ret;
 }
 
+} // namespace scanio
 
 } // namespace lvr2

@@ -38,7 +38,7 @@
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/geometry/pmp/SurfaceMesh.h"
 
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 
 namespace lvr2
 {

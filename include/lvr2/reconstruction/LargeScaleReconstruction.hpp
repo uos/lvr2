@@ -129,6 +129,8 @@ namespace lvr2
             }
             return dest;
         }
+
+        bool useGPUDistances;
     };
 
     template <typename BaseVecT>
@@ -150,7 +152,7 @@ namespace lvr2
                 uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, std::vector<float> flipPoint,
                 bool extrude, int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
                 float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
-                bool retesselate, float lineFusionThreshold, bool bigMesh, bool debugChunks, bool useGPU);
+                bool retesselate, float lineFusionThreshold, bool bigMesh, bool debugChunks, bool useGPU, bool useGPUDistances = false);
 
         /**
          * Constructor with parameters in a struct
@@ -244,6 +246,8 @@ namespace lvr2
 
         // flag to trigger GPU usage
         bool m_useGPU = false;
+
+        bool m_useGPUDistances = false;
 
         // path to hdf5 path containing previously reconstructed scans (or no scans) only
         string m_filePath;

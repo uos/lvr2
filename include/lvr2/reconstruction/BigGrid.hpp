@@ -45,6 +45,8 @@
 #include <unordered_map>
 #include <utility>
 
+#include <tbb/concurrent_unordered_map.h>
+
 #ifndef __APPLE__
 #include <omp.h>
 #endif
@@ -84,7 +86,7 @@ class BigGrid
      * @param project ScanProject, which contain one or more Scans
      * @param scale scale value of for current scans
      */
-    BigGrid(float voxelsize,ScanProjectEditMarkPtr project, float scale = 0);
+    BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale = 0);
 
     BigGrid(std::string path);
 
@@ -221,7 +223,8 @@ class BigGrid
 
     std::vector<shared_ptr<Scan>> m_scans;
 
-    std::unordered_map<size_t, CellInfo> m_gridNumPoints;
+    //std::unordered_map<size_t, CellInfo> m_gridNumPoints;
+    tbb::concurrent_unordered_map<size_t, CellInfo> m_gridNumPoints;
     float m_scale;
 };
 

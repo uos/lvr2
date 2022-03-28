@@ -3,14 +3,17 @@
 namespace lvr2
 {
 
-template <typename FeatureBase>
-void ScanIO<FeatureBase>::save(
+namespace scanio
+{
+
+template <typename BaseIO>
+void ScanIO<BaseIO>::save(
     const size_t& scanPosNo,
     const size_t& sensorNo,
     const size_t& scanNo,
     ScanPtr scanPtr) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
 
     // std::cout << "[ScanIO - save]" << std::endl;
@@ -47,7 +50,7 @@ void ScanIO<FeatureBase>::save(
                     YAML::Node meta;
                     meta = elem.second;
                     meta["name"] = elem.first;
-                    m_featureBase->m_kernel->saveMetaYAML(*dc.metaRoot, *dc.meta, meta);
+                    m_baseIO->m_kernel->saveMetaYAML(*dc.metaRoot, *dc.meta, meta);
                 }
             }
 
@@ -104,7 +107,7 @@ void ScanIO<FeatureBase>::save(
                 // std::cout << "Save Channel Group to file: " << ex_elem.first << std::endl;
                 // std::cout << *ex_elem.second << std::endl;
 
-                m_featureBase->m_kernel->savePointBuffer(group, name, ex_elem.second);
+                m_baseIO->m_kernel->savePointBuffer(group, name, ex_elem.second);
             }
 
             // std::cout << "Save Channel METAs" << std::endl;
@@ -119,7 +122,7 @@ void ScanIO<FeatureBase>::save(
                     YAML::Node meta;
                     meta = elem.second;
                     meta["name"] = elem.first;
-                    m_featureBase->m_kernel->saveMetaYAML(*dc.metaRoot, *dc.meta, meta);
+                    m_baseIO->m_kernel->saveMetaYAML(*dc.metaRoot, *dc.meta, meta);
                 }
             }
 
@@ -141,25 +144,25 @@ void ScanIO<FeatureBase>::save(
         node = *scanPtr;
 
         // std::cout << "write YAML" << std::endl;
-        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
+        m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
     
     // std::cout << "Success" << std::endl;
 }
 
-template <typename FeatureBase>
-boost::optional<YAML::Node> ScanIO<FeatureBase>::loadMeta(
+template <typename BaseIO>
+boost::optional<YAML::Node> ScanIO<BaseIO>::loadMeta(
     const size_t& scanPosNo, 
     const size_t& sensorNo,
     const size_t& scanNo) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
     return m_metaIO->load(d);
 }
 
-template <typename FeatureBase>
-ScanPtr ScanIO<FeatureBase>::load(
+template <typename BaseIO>
+ScanPtr ScanIO<BaseIO>::load(
     const size_t& scanPosNo, 
     const size_t& sensorNo,
     const size_t& scanNo) const
@@ -168,7 +171,7 @@ ScanPtr ScanIO<FeatureBase>::load(
 
     // Get Description of Scan Location
 
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
 
     if(!d.dataRoot)
@@ -176,7 +179,7 @@ ScanPtr ScanIO<FeatureBase>::load(
         return ret;
     }
 
-    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
@@ -188,7 +191,7 @@ ScanPtr ScanIO<FeatureBase>::load(
     if(d.meta)
     {
         YAML::Node meta;
-        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
@@ -213,8 +216,8 @@ ScanPtr ScanIO<FeatureBase>::load(
     } else {
 
         points_loader = [
-            schema = m_featureBase->m_description,
-            kernel = m_featureBase->m_kernel,
+            schema = m_baseIO->m_description,
+            kernel = m_baseIO->m_kernel,
             scanPosNo,
             sensorNo,
             scanNo
@@ -366,7 +369,7 @@ ScanPtr ScanIO<FeatureBase>::load(
     // ret->points = points_loader();
     // New:
     
-    if(m_featureBase->m_load_data)
+    if(m_baseIO->m_load_data)
     {
         ret->points = points_loader();
     }
@@ -378,13 +381,13 @@ ScanPtr ScanIO<FeatureBase>::load(
 }
 
 
-template <typename FeatureBase>
-std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMetas(
+template <typename BaseIO>
+std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
     const size_t& scanPosNo, 
     const size_t& sensorNo,
     const size_t& scanNo) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
 
     std::unordered_map<std::string, YAML::Node> channel_metas;
@@ -394,11 +397,11 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
     {
         YAML::Node meta;
 
-        // cout << m_featureBase << endl;
-        // cout << m_featureBase->m_kernel << endl;
-        // cout << m_featureBase->m_kernel->fileResource() << endl;  
+        // cout << m_baseIO << endl;
+        // cout << m_baseIO->m_kernel << endl;
+        // cout << m_baseIO->m_kernel->fileResource() << endl;  
 
-        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
+        m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
 
         // std::cout << "loadChannelMetas - Loaded Meta: " << std::endl;
         // std::cout << meta << std::endl;
@@ -414,7 +417,7 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
                 if(dc.meta)
                 {
                     YAML::Node cmeta;
-                    m_featureBase->m_kernel->loadMetaYAML(*dc.metaRoot, *dc.meta, cmeta);
+                    m_baseIO->m_kernel->loadMetaYAML(*dc.metaRoot, *dc.meta, cmeta);
 
 
                     if(cmeta["name"])
@@ -439,7 +442,7 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
 
         // std::cout << "Search for meta files in " << metaGroup << std::endl;
 
-        for(auto meta : m_featureBase->m_kernel->metas(metaGroup, "channel"))
+        for(auto meta : m_baseIO->m_kernel->metas(metaGroup, "channel"))
         {
             std::string channel_name = meta.first;
 
@@ -459,8 +462,8 @@ std::unordered_map<std::string, YAML::Node> ScanIO<FeatureBase>::loadChannelMeta
     return channel_metas;
 }   
 
-template <typename FeatureBase>
-void ScanIO<FeatureBase>::saveScan(
+template <typename BaseIO>
+void ScanIO<BaseIO>::saveScan(
     const size_t& scanPosNo,
     const size_t& sensorNo,
     const size_t& scanNo,
@@ -469,8 +472,8 @@ void ScanIO<FeatureBase>::saveScan(
     save(scanPosNo, scanNo, scanPtr);
 }
 
-template <typename FeatureBase>
-ScanPtr ScanIO<FeatureBase>::loadScan(
+template <typename BaseIO>
+ScanPtr ScanIO<BaseIO>::loadScan(
     const size_t& scanPosNo,
     const size_t& sensorNo,
     const size_t& scanNo) const
@@ -478,8 +481,8 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
     return load(scanPosNo, sensorNo, scanNo);
 }
 
-template <typename FeatureBase>
-ScanPtr ScanIO<FeatureBase>::loadScan(
+template <typename BaseIO>
+ScanPtr ScanIO<BaseIO>::loadScan(
     const size_t& scanPosNo, 
     const size_t& sensorNo,
     const size_t& scanNo, 
@@ -514,5 +517,7 @@ ScanPtr ScanIO<FeatureBase>::loadScan(
 
     return ret;
 }
+
+} // namespace scanio
 
 } // namespace lvr2

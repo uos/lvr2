@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LVR2_IO_DESCRIPTIONS_IMAGEIO_HPP
-#define LVR2_IO_DESCRIPTIONS_IMAGEIO_HPP
+#ifndef IMAGEIO
+#define IMAGEIO
 
 #include <boost/optional.hpp>
 #include <opencv2/core.hpp>
@@ -9,11 +9,14 @@
 
 namespace lvr2 {
 
-template<typename FeatureBase>
+namespace scanio
+{
+
+template<typename BaseIO>
 class ImageIO {
 public:
 
-    void save(      
+    void save(
         std::string groupName, 
         std::string datasetName, 
         const cv::Mat& img
@@ -37,12 +40,14 @@ public:
 
 protected:
 
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
 
 };
+
+} // namespace scanio
 
 } // namespace lvr2
 
 #include "ImageIO.tcc"
 
-#endif // LVR2_IO_DESCRIPTIONS_IMAGEIO_HPP
+#endif // IMAGEIO

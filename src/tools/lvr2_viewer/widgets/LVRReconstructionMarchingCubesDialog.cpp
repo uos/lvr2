@@ -38,7 +38,7 @@
 #include "lvr2/reconstruction/PointsetGrid.hpp"
 #include "lvr2/reconstruction/TetraederBox.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 
@@ -282,7 +282,7 @@ void LVRReconstructViaMarchingCubesDialog::generateMesh()
     deleteSmallPlanarCluster(mesh, clusterBiMap, 10);
 
     ClusterPainter painter(clusterBiMap);
-    auto clusterColors = DenseClusterMap<Rgb8Color>(painter.simpsons(mesh));
+    auto clusterColors = DenseClusterMap<RGB8Color>(painter.colorize(mesh, ColorGradient::GREY));
     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
 
     TextureFinalizer<Vec> finalize(clusterBiMap);

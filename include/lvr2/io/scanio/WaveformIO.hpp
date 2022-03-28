@@ -3,36 +3,45 @@
 #ifndef LVR2_IO_DESCRIPTIONS_WAVEFORMIO_HPP
 #define LVR2_IO_DESCRIPTIONS_WAVEFORMIO_HPP
 
-#include "lvr2/io/scanio/ArrayIO.hpp"
-#include "lvr2/io/scanio/MatrixIO.hpp"
-#include "lvr2/io/scanio/yaml/Matrix.hpp"
-#include "lvr2/io/scanio/yaml/Waveform.hpp"
-#include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/types/ScanTypes.hpp"
-
 #include <sstream>
 #include <yaml-cpp/yaml.h>
+
+#include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/io/baseio/BaseIO.hpp"
+#include "lvr2/io/baseio/ArrayIO.hpp"
+#include "lvr2/io/baseio/MatrixIO.hpp"
+#include "lvr2/io/YAML.hpp"
+
+using lvr2::baseio::MatrixIO;
+using lvr2::baseio::FeatureConstruct;
+
 namespace lvr2 
 {
-
-template <typename FeatureBase>
-class FullWaveformIO
+namespace scanio
 {
-public:
-  void saveFullWaveform(const size_t& scanPosNo, const size_t& scanNo, const WaveformPtr &buffer);
-  void saveLabelWaveform(const std::string& group, const WaveformPtr &buffer);
 
-  WaveformPtr loadLabelWaveform(const std::string& groupName);
-  
-  WaveformPtr loadFullWaveform(const size_t& scanPosNo, const size_t& scanNo);
-protected:
-  FeatureBase *m_featureBase = static_cast<FeatureBase *>(this);
+  template <typename BaseIO>
+  class FullWaveformIO
+  {
+  public:
+    void saveFullWaveform(const size_t &scanPosNo, const size_t &scanNo, const WaveformPtr &buffer);
+    void saveLabelWaveform(const std::string &group, const WaveformPtr &buffer);
 
-// dependencies
- MatrixIO<FeatureBase>* m_matrixIO = static_cast<MatrixIO<FeatureBase>*>(m_featureBase);
-  static constexpr const char *ID = "FullWaveformIO";
-  static constexpr const char *OBJID = "FullWaveform";
-};
+    WaveformPtr loadLabelWaveform(const std::string &groupName);
+
+    WaveformPtr loadFullWaveform(const size_t &scanPosNo, const size_t &scanNo);
+
+  protected:
+    BaseIO *m_baseIO = static_cast<BaseIO *>(this);
+
+    // dependencies
+    MatrixIO<BaseIO> *m_matrixIO = static_cast<MatrixIO<BaseIO> *>(m_baseIO);
+    static constexpr const char *ID = "FullWaveformIO";
+    static constexpr const char *OBJID = "FullWaveform";
+  };
+
+} // namespace scanio
 
 /**
  *
@@ -42,15 +51,15 @@ protected:
  *
  *
  */
-template <typename FeatureBase>
-struct FeatureConstruct<FullWaveformIO, FeatureBase>
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::FullWaveformIO, T>
 {
 
     // DEPS
-    using deps = typename FeatureConstruct<MatrixIO, FeatureBase>::type;
+    using deps = typename FeatureConstruct<MatrixIO, T>::type;
 
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<FullWaveformIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::FullWaveformIO>::type;
 };
 
 } // namespace lvr2

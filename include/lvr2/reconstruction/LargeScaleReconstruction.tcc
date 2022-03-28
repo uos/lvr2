@@ -27,9 +27,9 @@
 
 #include <iostream>
 #include "lvr2/types/ScanTypes.hpp"
-#include "lvr2/io/scanio/ChannelIO.hpp"
-#include "lvr2/io/scanio/ArrayIO.hpp"
-#include "lvr2/io/scanio/VariantChannelIO.hpp"
+#include "lvr2/io/baseio/ChannelIO.hpp"
+#include "lvr2/io/baseio/ArrayIO.hpp"
+#include "lvr2/io/baseio/VariantChannelIO.hpp"
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
@@ -98,36 +98,73 @@ namespace lvr2
     template<typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction( vector<float> voxelSizes, float bgVoxelSize,
                                                                  float scale, uint nodeSize,
-                                                                 int partMethod, int ki, int kd, int kn, bool useRansac,
+                                                                 int partMethod, int ki, int kd, int kn, 
+                                                                 bool useRansac,
                                                                  std::vector<float> flipPoint,
-                                                                 bool extrude, int removeDanglingArtifacts,
-                                                                 int cleanContours, int fillHoles, bool optimizePlanes,
-                                                                 float planeNormalThreshold, int planeIterations,
-                                                                 int minPlaneSize, int smallRegionThreshold,
-                                                                 bool retesselate, float lineFusionThreshold,
-                                                                 bool bigMesh, bool debugChunks, bool useGPU)
+                                                                 bool extrude, 
+                                                                 int removeDanglingArtifacts,
+                                                                 int cleanContours, int fillHoles, 
+                                                                 bool optimizePlanes,
+                                                                 float planeNormalThreshold, 
+                                                                 int planeIterations,
+                                                                 int minPlaneSize, 
+                                                                 int smallRegionThreshold,
+                                                                 bool retesselate, 
+                                                                 float lineFusionThreshold,
+                                                                 bool bigMesh, 
+                                                                 bool debugChunks, 
+                                                                 bool useGPU, 
+                                                                 bool useGPUDistances)
             : m_voxelSizes(voxelSizes), m_bgVoxelSize(bgVoxelSize),
               m_scale(scale),m_nodeSize(nodeSize),
-              m_partMethod(partMethod), m_ki(ki), m_kd(kd), m_kn(kn), m_useRansac(useRansac),
-              m_flipPoint(flipPoint), m_extrude(extrude), m_removeDanglingArtifacts(removeDanglingArtifacts),
-              m_cleanContours(cleanContours), m_fillHoles(fillHoles), m_optimizePlanes(optimizePlanes),
-              m_planeNormalThreshold(planeNormalThreshold), m_planeIterations(planeIterations),
-              m_minPlaneSize(minPlaneSize), m_smallRegionThreshold(smallRegionThreshold),
-              m_retesselate(retesselate), m_lineFusionThreshold(lineFusionThreshold),m_bigMesh(bigMesh), m_debugChunks(debugChunks), m_useGPU(useGPU)
+              m_partMethod(partMethod), 
+              m_ki(ki), m_kd(kd), m_kn(kn), 
+              m_useRansac(useRansac),
+              m_flipPoint(flipPoint), 
+              m_extrude(extrude), 
+              m_removeDanglingArtifacts(removeDanglingArtifacts),
+              m_cleanContours(cleanContours), 
+              m_fillHoles(fillHoles), 
+              m_optimizePlanes(optimizePlanes),
+              m_planeNormalThreshold(planeNormalThreshold), 
+              m_planeIterations(planeIterations),
+              m_minPlaneSize(minPlaneSize), 
+              m_smallRegionThreshold(smallRegionThreshold),
+              m_retesselate(retesselate), 
+              m_lineFusionThreshold(lineFusionThreshold),
+              m_bigMesh(bigMesh), 
+              m_debugChunks(debugChunks), 
+              m_useGPU(useGPU),
+              m_useGPUDistances(useGPUDistances)
     {
         std::cout << timestamp << "Reconstruction Instance generated..." << std::endl;
     }
 
     template<typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
-            : LargeScaleReconstruction(options.voxelSizes, options.bgVoxelSize,
+            : LargeScaleReconstruction(
+              options.voxelSizes, 
+              options.bgVoxelSize,
               options.scale,options.nodeSize,
-              options.partMethod, options.ki, options.kd, options.kn, options.useRansac,
-              options.getFlipPoint(), options.extrude, options.removeDanglingArtifacts,
-              options.cleanContours, options.fillHoles, options.optimizePlanes,
-              options.planeNormalThreshold, options.planeIterations,
-              options.minPlaneSize, options.smallRegionThreshold,
-              options.retesselate, options.lineFusionThreshold, options.bigMesh, options.debugChunks, options.useGPU)
+              options.partMethod, 
+              options.ki, options.kd, options.kn, 
+              options.useRansac,
+              options.getFlipPoint(), 
+              options.extrude, 
+              options.removeDanglingArtifacts,
+              options.cleanContours, 
+              options.fillHoles, 
+              options.optimizePlanes,
+              options.planeNormalThreshold, 
+              options.planeIterations,
+              options.minPlaneSize, 
+              options.smallRegionThreshold,
+              options.retesselate, 
+              options.lineFusionThreshold, 
+              options.bigMesh, 
+              options.debugChunks, 
+              options.useGPU, 
+              options.useGPUDistances)
     {
     }
 
@@ -185,6 +222,7 @@ namespace lvr2
 
                 size_t numPoints;
 
+                // Get all points within current chunk, overlapped by 3 x voxelsiue
                 floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] * 3,
                                             partitionBoxes->at(i).getMin().y - m_voxelSizes[h] * 3,
                                             partitionBoxes->at(i).getMin().z - m_voxelSizes[h] * 3,
@@ -374,9 +412,10 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(ScanProjectEditMarkPtr project,
-            BoundingBox<BaseVecT>& newChunksBB,
-            std::shared_ptr<ChunkHashGrid> chunkManager)
+    int LargeScaleReconstruction<BaseVecT>::mpiChunkAndReconstruct(
+        ScanProjectEditMarkPtr project,
+        BoundingBox<BaseVecT>& newChunksBB,
+        std::shared_ptr<ChunkHashGrid> chunkManager)
     {
         unsigned long timeStart1 = lvr2::timestamp.getCurrentTimeInMs();
         unsigned long timeSum = 0;
@@ -389,7 +428,7 @@ namespace lvr2
         }
 
         cout << lvr2::timestamp << "Starting BigGrid" << endl;
-        BigGrid<BaseVecT> bg( m_bgVoxelSize ,project, m_scale);
+        BigGrid<BaseVecT> bg(m_bgVoxelSize, project, m_scale);
         cout << lvr2::timestamp << "BigGrid finished " << endl;
 
         BoundingBox<BaseVecT> bb = bg.getBB();
@@ -404,8 +443,7 @@ namespace lvr2
         BoundingBox<BaseVecT> partbb = bg.getpartialBB();
         cout << lvr2::timestamp << "Generating VGrid" << endl;
 
-        VirtualGrid<BaseVecT> vGrid(
-                    bg.getpartialBB(), m_chunkSize, m_bgVoxelSize);
+        VirtualGrid<BaseVecT> vGrid(bg.getpartialBB(), m_chunkSize, m_bgVoxelSize);
         vGrid.calculateBoxes();
         partitionBoxes = vGrid.getBoxes();
         BaseVecT addMin = BaseVecT(std::floor(partbb.getMin().x / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().y / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().z / m_chunkSize) * m_chunkSize);
@@ -458,12 +496,12 @@ namespace lvr2
 
                 size_t numPoints;
 
-                floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3,
+                floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] * 3,
+                                            partitionBoxes->at(i).getMin().y - m_voxelSizes[h] * 3,
+                                            partitionBoxes->at(i).getMin().z - m_voxelSizes[h] * 3,
+                                            partitionBoxes->at(i).getMax().x + m_voxelSizes[h] * 3,
+                                            partitionBoxes->at(i).getMax().y + m_voxelSizes[h] * 3,
+                                            partitionBoxes->at(i).getMax().z + m_voxelSizes[h] * 3,
                                             numPoints);
 
                 // remove chunks with less than 50 points
@@ -520,6 +558,12 @@ namespace lvr2
                                                                          m_ki,
                                                                          m_kd,
                                                                          m_useRansac);
+
+
+                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(m_voxelSizes[h], surface, gridbb, true, m_extrude);
+                ps_grid->setBB(gridbb);
+                ps_grid->calcIndices();
+
                 //calculate important stuff for reconstruction
                 if (!bg.hasNormals())
                 {
@@ -529,42 +573,59 @@ namespace lvr2
                     // std::vector<float> flipPoint = std::vector<float>{100, 100, 100};
                     size_t num_points = p_loader_reduced->numPoints();
                     floatArr points = p_loader_reduced->getPointArray();
+
+                    // for(size_t i = 0; i < num_points; i++)
+                    // {
+                    //     std::cout << points[i * 3] << " " << points[i * 3 + 1] << " " << points[i * 3 + 2] << std::endl; 
+                    // }
+
                     floatArr normals = floatArr(new float[num_points * 3]);
                     std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
                     GpuSurface gpu_surface(points, num_points);
 
                     gpu_surface.setKn(m_kn);
                     gpu_surface.setKi(m_ki);
+                    gpu_surface.setKd(m_kd);
                     gpu_surface.setFlippoint(m_flipPoint[0], m_flipPoint[1], m_flipPoint[2]);
 
                     gpu_surface.calculateNormals();
                     gpu_surface.getNormals(normals);
 
                     p_loader_reduced->setNormalArray(normals, num_points);
-                    gpu_surface.freeGPU();
-    #else
 
+                    auto& query_points = ps_grid->getQueryPoints();
+
+                    if(m_useGPUDistances)
+                    {
+                        std::cout << timestamp << "Computing signed distances in GPU with brute force kernel (kd = 5)." << std::endl;
+                        std::cout << timestamp << "This might take a while...." << std::endl;
+                        gpu_surface.distances(query_points, m_voxelSizes[h]);
+                        std::cout << timestamp << "Done." << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << timestamp << "Computing signed distances..." << std::endl;
+                        ps_grid->calcDistanceValues();
+                    }
+
+                    gpu_surface.freeGPU();
+
+    #else
                         std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
                         surface->calculateSurfaceNormals();
+                        ps_grid->calcDistanceValues();
     #endif
                     }
                     else
                     {
                         surface->calculateSurfaceNormals();
+                        ps_grid->calcDistanceValues();
                     }
                 }
-
-
-
-                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
-                        m_voxelSizes[h], surface, gridbb, true, m_extrude);
-
-                ps_grid->setBB(gridbb);
-                ps_grid->calcIndices();
-                ps_grid->calcDistanceValues();
-
-
-
+                else
+                {
+                    ps_grid->calcDistanceValues();
+                }
 
                 unsigned long timeStart = lvr2::timestamp.getCurrentTimeInMs();
                 int x = (int)floor(partitionBoxes->at(i).getCentroid().x / m_chunkSize);
