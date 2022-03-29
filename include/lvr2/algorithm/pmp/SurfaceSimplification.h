@@ -38,6 +38,9 @@ public:
     //! Simplify mesh to \p n_vertices.
     void simplify(unsigned int n_vertices);
 
+    //! Calculates quadrics for a mesh.
+    static void calculate_quadrics(SurfaceMesh& mesh);
+
 private:
     // Store data for an halfedge collapse
     struct CollapseData

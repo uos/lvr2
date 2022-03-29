@@ -102,18 +102,7 @@ void SurfaceSimplification::initialize(Scalar aspect_ratio, Scalar edge_length,
     // initialize quadrics
     if (!had_quadrics_)
     {
-        for (auto v : mesh_.vertices())
-        {
-            vquadric_[v].clear();
-
-            if (!mesh_.is_isolated(v))
-            {
-                for (auto f : mesh_.faces(v))
-                {
-                    vquadric_[v] += Quadric(fnormal_[f], vpoint_[v]);
-                }
-            }
-        }
+        calculate_quadrics(mesh_);
     }
 
     // initialize normal cones
@@ -203,6 +192,24 @@ void SurfaceSimplification::simplify(unsigned int n_vertices)
     mesh_.remove_vertex_property(vpriority_);
     mesh_.remove_vertex_property(heap_pos_);
     mesh_.remove_vertex_property(vtarget_);
+}
+
+void SurfaceSimplification::calculate_quadrics(SurfaceMesh& mesh)
+{
+    auto vquadric = mesh.vertex_property<Quadric>("v:quadric");
+    SurfaceNormals::compute_face_normals(mesh);
+    auto fnormal = mesh.get_face_property<pmp::Normal>("f:normal");
+    auto vposition = mesh.get_vertex_property<pmp::Point>("v:point");
+    #pragma omp parallel for schedule(dynamic,64)
+    for (size_t i = 0; i < mesh.n_vertices(); i++)
+    {
+        Vertex v(i);
+        if (mesh.is_deleted(v))
+            continue;
+        vquadric[v].clear();
+        for (auto f : mesh.faces(v))
+            vquadric[v] += Quadric(fnormal[f], vposition[v]);
+    }
 }
 
 void SurfaceSimplification::enqueue_vertex(Vertex v)

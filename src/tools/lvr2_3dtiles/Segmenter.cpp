@@ -33,12 +33,7 @@
  */
 
 #include "Segmenter.hpp"
-#include "B3dmWriter.hpp"
-#include "lvr2/util/Progress.hpp"
-#include "lvr2/algorithm/pmp/SurfaceNormals.h"
-#include "lvr2/algorithm/pmp/SurfaceFeatures.h"
-
-#include <thread>
+#include "lvr2/algorithm/pmp/SurfaceSimplification.h"
 
 namespace lvr2
 {
@@ -277,7 +272,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
               << chunks.size() << " chunks" << std::endl;
 }
 
-SegmentTree::Ptr split_mesh(MeshSegment& segment, float chunk_size)
+SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
 {
     auto& mesh = *segment.mesh;
 
@@ -446,483 +441,178 @@ SegmentTree::Ptr split_mesh(MeshSegment& segment, float chunk_size)
     return tree;
 }
 
-
-// SegmentTree::Ptr split_mesh(MeshSegment& segment, float chunk_size, bool print)
-// {
-//     int total_depth = std::ceil(std::log2(segment.bb.longest_axis_size() / chunk_size));
-//     pmp::Point size = segment.bb.max() - segment.bb.min();
-//     if (print)
-//     {
-//         std::cout << timestamp << "Segment " << size.x() << " x " << size.y() << " x " << size.z()
-//                   << " has " << total_depth << " levels" << std::endl;
-//     }
-//     if (total_depth < 1)
-//     {
-//         return SegmentTree::Ptr(new SegmentTreeLeaf(segment));
-//     }
-
-//     auto& base_mesh = *segment.mesh;
-
-//     if (!base_mesh.has_vertex_property("v:quadric"))
-//     {
-//         auto v_quadric = base_mesh.add_vertex_property<pmp::Quadric>("v:quadric");
-//         pmp::SurfaceNormals::compute_face_normals(base_mesh);
-//         auto f_normal = base_mesh.get_face_property<pmp::Normal>("f:normal");
-//         auto v_position = base_mesh.get_vertex_property<pmp::Point>("v:point");
-//         #pragma omp parallel for schedule(static)
-//         for (size_t i = 0; i < base_mesh.n_vertices(); i++)
-//         {
-//             pmp::Vertex v(i);
-//             if (!base_mesh.is_deleted(v))
-//             {
-//                 v_quadric[v].clear();
-//                 for (auto f : base_mesh.faces(v))
-//                 {
-//                     v_quadric[v] += pmp::Quadric(f_normal[f], v_position[v]);
-//                 }
-//             }
-//         }
-//     }
-
-//     auto f_chunk_id = base_mesh.face_property<pmp::IndexType>("f:chunk_id");
-
-//     pmp::Point center = segment.bb.center();
-//     #pragma omp parallel for schedule(static)
-//     for (size_t i = 0; i < base_mesh.faces_size(); i++)
-//     {
-//         FaceHandle fH(i);
-//         if (base_mesh.is_deleted(fH))
-//         {
-//             continue;
-//         }
-//         auto pos = base_mesh.center(fH);
-
-//         pmp::IndexType index = 0;
-//         for (size_t axis = 0; axis < 3; axis++)
-//         {
-//             if (pos[axis] > center[axis])
-//             {
-//                 index |= (1 << axis);
-//             }
-//         }
-//         f_chunk_id[fH] = index;
-//     }
-
-//     std::vector<std::vector<pmp::SurfaceMesh>> layers(total_depth + 1);
-//     std::vector<std::vector<pmp::Point>> centers(total_depth);
-//     centers[0].push_back(segment.bb.center());
-
-//     if (print)
-//     {
-//         std::cout << timestamp << "Simplifying: " << base_mesh.n_faces() << " -> " << std::flush;
-//     }
-//     pmp::SurfaceSimplification simplifier(base_mesh);
-
-//     for (size_t i = 0; i < total_depth; i++)
-//     {
-//         auto& next_layer = layers[i];
-//         next_layer.resize(8);
-//         base_mesh.split_mesh(next_layer, f_chunk_id);
-
-//         simplifier.simplify(base_mesh.n_vertices() * 0.2);
-//         if (print)
-//         {
-//             std::cout << base_mesh.n_faces() << (i < total_depth - 1 ? " -> " : "") << std::flush;
-//         }
-//     }
-//     if (print)
-//     {
-//         std::cout << std::endl;
-//         std::cout << timestamp << "Constructing tree" << std::endl;
-//     }
-
-//     // final layer: only most simplified mesh
-//     layers[total_depth].push_back(std::move(base_mesh));
-
-//     for (size_t depth = 1; depth < total_depth; depth++)
-//     {
-//         size_t n = layers[0].size();
-
-//         auto& depth_centers = centers[depth];
-//         depth_centers.resize(n);
-//         for (size_t i = 0; i < n; i++)
-//         {
-//             auto bb = layers[0][i].bounds();
-//             depth_centers[i] = bb.center();
-//         }
-
-//         size_t next_n = n * 8;
-//         for (size_t layer = 0; layer < total_depth - depth; layer++)
-//         {
-//             auto& meshes = layers[layer];
-//             std::vector<pmp::SurfaceMesh> next_meshes;
-//             for (size_t i = 0; i < n; i++)
-//             {
-//                 auto& center = depth_centers[i];
-//                 auto& mesh = meshes[i];
-//                 auto f_chunk_id = mesh.face_property<pmp::IndexType>("f:chunk_id");
-//                 for (auto fH : mesh.faces())
-//                 {
-//                     auto pos = mesh.center(fH);
-//                     pmp::IndexType index = 0;
-//                     for (size_t axis = 0; axis < 3; axis++)
-//                     {
-//                         if (pos[axis] > center[axis])
-//                         {
-//                             index |= (1 << axis);
-//                         }
-//                     }
-//                     f_chunk_id[fH] = index;
-//                 }
-//                 std::vector<pmp::SurfaceMesh> sub_meshes(8);
-//                 mesh.split_mesh(sub_meshes, f_chunk_id);
-//                 for (auto& sub_mesh : sub_meshes)
-//                 {
-//                     next_meshes.push_back(std::move(sub_mesh));
-//                 }
-//             }
-//             if (next_meshes.size() != next_n)
-//             {
-//                 throw consistency_error(next_n, next_meshes.size(), "next Meshes");
-//             }
-//             std::swap(meshes, next_meshes);
-//         }
-//     }
-
-//     std::vector<SegmentTree::Ptr> row;
-//     for (auto& mesh : layers[0])
-//     {
-//         if (mesh.n_faces() == 0)
-//         {
-//             row.push_back(nullptr);
-//             continue;
-//         }
-//         MeshSegment segment;
-//         segment.mesh.reset(new pmp::SurfaceMesh(std::move(mesh)));
-//         segment.bb = segment.mesh->bounds();
-//         row.push_back(SegmentTree::Ptr(new SegmentTreeLeaf(segment)));
-//     }
-
-//     for (size_t layer = 1; layer < layers.size(); layer++)
-//     {
-//         std::vector<SegmentTree::Ptr> next_row;
-//         for (size_t block = 0; block < row.size(); block += 8)
-//         {
-//             auto node = new SegmentTreeNode();
-//             for (size_t i = 0; i < 8; i++)
-//             {
-//                 if (row[block + i] == nullptr)
-//                 {
-//                     continue;
-//                 }
-//                 node->add_child(std::move(row[block + i]));
-//             }
-//             if (node->num_children() == 0)
-//             {
-//                 delete node;
-//                 next_row.push_back(nullptr);
-//             }
-//             else
-//             {
-//                 node->segment().mesh.reset(new pmp::SurfaceMesh(std::move(layers[layer][block / 8])));
-//                 next_row.push_back(SegmentTree::Ptr(node));
-//             }
-//         }
-//         std::swap(row, next_row);
-//     }
-//     if (row.size() != 1)
-//     {
-//         throw consistency_error(1, row.size(), "rows of segment trees");
-//     }
-//     return std::move(row[0]);
-// }
-
-// SegmentTree
-
-void SegmentTree::simplify(bool print)
+SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, bool print)
 {
-    while (!combine_if_possible(print))
+    int total_depth = std::ceil(std::log2(segment.bb.longest_axis_size() / chunk_size));
+    pmp::Point size = segment.bb.max() - segment.bb.min();
+    if (print)
     {
-        #pragma omp parallel
-        #pragma omp single
-        simplify_if_possible(print);
+        std::cout << timestamp << "Segment " << size.x() << " x " << size.y() << " x " << size.z()
+                  << " has " << total_depth << " levels" << std::endl;
+    }
+    if (total_depth < 1)
+    {
+        return SegmentTree::Ptr(new SegmentTreeLeaf(segment));
+    }
 
-        if (print)
+    auto& base_mesh = *segment.mesh;
+
+    if (!base_mesh.has_vertex_property("v:quadric"))
+    {
+        pmp::SurfaceSimplification::calculate_quadrics(base_mesh);
+    }
+
+    auto f_chunk_id = base_mesh.face_property<pmp::IndexType>("f:chunk_id");
+
+    pmp::Point center = segment.bb.center();
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < base_mesh.faces_size(); i++)
+    {
+        FaceHandle fH(i);
+        if (base_mesh.is_deleted(fH))
         {
-            std::cout << "layer complete" << std::endl;
+            continue;
         }
-    }
-    // print();
-}
-SegmentTree::Ptr SegmentTree::octree_partition(std::vector<MeshSegment>& segments, int combine_depth)
-{
-    std::vector<MeshSegment*> temp_segments(segments.size());
-    for (size_t i = 0; i < segments.size(); ++i)
-    {
-        temp_segments[i] = &segments[i];
-    }
+        auto pos = base_mesh.center(fH);
 
-    return octree_split_recursive(temp_segments.data(), temp_segments.data() + temp_segments.size(),
-                                  combine_depth);
-}
-
-void one_split(MeshSegment** starts[9], size_t a, size_t b)
-{
-    pmp::BoundingBox bb;
-    for (auto it = starts[a]; it != starts[b]; ++it)
-    {
-        bb += (*it)->bb;
-    }
-
-    size_t mid = (a + b) / 2;
-    starts[mid] = starts[a] + (starts[b] - starts[a]) / 2;
-    size_t axis = bb.longest_axis();
-
-    std::nth_element(starts[a], starts[mid], starts[b], [axis](auto a, auto b)
-    {
-        return a->bb.center()[axis] < b->bb.center()[axis];
-    });
-
-    if (mid - a > 1)
-    {
-        one_split(starts, a, mid);
-        one_split(starts, mid, b);
-    }
-}
-
-SegmentTree::Ptr SegmentTree::octree_split_recursive(MeshSegment** start, MeshSegment** end, int combine_depth)
-{
-    size_t n = end - start;
-
-    SegmentTreeNode* node = new SegmentTreeNode();
-
-    if (n <= 8)
-    {
-        for (size_t i = 0; i < n; i++)
-        {
-            node->add_child(SegmentTree::Ptr(new SegmentTreeLeaf(*start[i])));
-        }
-    }
-    else
-    {
-        auto split_fn = [](int axis)
-        {
-            return [axis](const MeshSegment * a, const MeshSegment * b)
-            {
-                return a->bb.center()[axis] < b->bb.center()[axis];
-            };
-        };
-
-        MeshSegment** starts[9];
-        starts[0] = start;
-        starts[8] = end; // fake past-the-end start for easier indexing
-
+        pmp::IndexType index = 0;
         for (size_t axis = 0; axis < 3; axis++)
         {
-            size_t step = 1 << (3 - axis); // values 8 -> 4 -> 2
-            for (size_t i = 0; i < 8; i += step)
+            if (pos[axis] > center[axis])
             {
-                auto& a = starts[i];
-                auto& b = starts[i + step];
-                auto& mid = starts[i + step / 2];
-                mid = a + (b - a) / 2;
-                std::nth_element(a, mid, b, split_fn(axis));
+                index |= (1 << axis);
             }
         }
+        f_chunk_id[fH] = index;
+    }
 
-        for (size_t i = 0; i < 8; i++)
+    std::vector<std::vector<pmp::SurfaceMesh>> layers(total_depth + 1);
+    std::vector<std::vector<pmp::Point>> centers(total_depth);
+    centers[0].push_back(segment.bb.center());
+
+    if (print)
+    {
+        std::cout << timestamp << "Simplifying: " << base_mesh.n_faces() << " -> " << std::flush;
+    }
+    pmp::SurfaceSimplification simplifier(base_mesh);
+
+    for (size_t i = 0; i < total_depth; i++)
+    {
+        auto& next_layer = layers[i];
+        next_layer.resize(8);
+        base_mesh.split_mesh(next_layer, f_chunk_id);
+
+        simplifier.simplify(base_mesh.n_vertices() * 0.2);
+        if (print)
         {
-            node->add_child(octree_split_recursive(starts[i], starts[i + 1], combine_depth));
+            std::cout << base_mesh.n_faces() << (i < total_depth - 1 ? " -> " : "") << std::flush;
         }
     }
-
-    if (combine_depth > 0)
+    if (print)
     {
-        node->m_skipped = node->m_depth > combine_depth;
+        std::cout << std::endl;
+        std::cout << timestamp << "Constructing tree" << std::endl;
     }
 
-    return SegmentTree::Ptr(node);
-}
+    // final layer: only most simplified mesh
+    layers[total_depth].push_back(std::move(base_mesh));
 
-// SegmentTreeNode
+    for (size_t depth = 1; depth < total_depth; depth++)
+    {
+        size_t n = layers[0].size();
 
-void SegmentTreeNode::add_child(SegmentTree::Ptr child)
-{
-    m_meta_segment.bb += child->segment().bb;
-    m_depth = std::max(m_depth, child->m_depth + 1);
-    m_children.push_back(std::move(child));
-}
-
-bool SegmentTreeNode::combine_if_possible(bool print)
-{
-    if (m_simplified)
-    {
-        m_meta_segment.mesh->garbage_collection();
-        return true;
-    }
-    if (m_meta_segment.mesh != nullptr)
-    {
-        // done combining, but not simplified
-        return false;
-    }
-    size_t count = 0;
-    for (auto& child : m_children)
-    {
-        if (child->combine_if_possible(print))
+        auto& depth_centers = centers[depth];
+        depth_centers.resize(n);
+        for (size_t i = 0; i < n; i++)
         {
-            count++;
+            auto bb = layers[0][i].bounds();
+            depth_centers[i] = bb.center();
         }
-    }
-    if (count < m_children.size())
-    {
-        return false;
-    }
 
-    std::vector<pmp::SurfaceMesh*> meshes;
-    for (auto& child : m_children)
-    {
-        meshes.push_back(child->segment().mesh.get());
-        meshes.back()->garbage_collection();
-    }
-    auto mesh = new pmp::SurfaceMesh();
-    if (!m_skipped)
-    {
-        mesh->join_mesh(meshes);
-        if (!mesh->has_vertex_property("v:quadric"))
+        size_t next_n = n * 8;
+        for (size_t layer = 0; layer < total_depth - depth; layer++)
         {
-            auto v_quadric = mesh->add_vertex_property<pmp::Quadric>("v:quadric");
-            pmp::SurfaceNormals::compute_face_normals(*mesh);
-            auto f_normal = mesh->get_face_property<pmp::Normal>("f:normal");
-            auto v_position = mesh->get_vertex_property<pmp::Point>("v:point");
-            #pragma omp parallel for schedule(dynamic,64)
-            for (size_t i = 0; i < mesh->n_vertices(); i++)
+            auto& meshes = layers[layer];
+            std::vector<pmp::SurfaceMesh> next_meshes;
+            for (size_t i = 0; i < n; i++)
             {
-                pmp::Vertex v(i);
-                v_quadric[v].clear();
-                for (auto f : mesh->faces(v))
+                auto& center = depth_centers[i];
+                auto& mesh = meshes[i];
+                auto f_chunk_id = mesh.face_property<pmp::IndexType>("f:chunk_id");
+                for (auto fH : mesh.faces())
                 {
-                    v_quadric[v] += pmp::Quadric(f_normal[f], v_position[v]);
+                    auto pos = mesh.center(fH);
+                    pmp::IndexType index = 0;
+                    for (size_t axis = 0; axis < 3; axis++)
+                    {
+                        if (pos[axis] > center[axis])
+                        {
+                            index |= (1 << axis);
+                        }
+                    }
+                    f_chunk_id[fH] = index;
+                }
+                std::vector<pmp::SurfaceMesh> sub_meshes(8);
+                mesh.split_mesh(sub_meshes, f_chunk_id);
+                for (auto& sub_mesh : sub_meshes)
+                {
+                    next_meshes.push_back(std::move(sub_mesh));
                 }
             }
+            if (next_meshes.size() != next_n)
+            {
+                throw consistency_error(next_n, next_meshes.size(), "next Meshes");
+            }
+            std::swap(meshes, next_meshes);
         }
     }
-    m_meta_segment.mesh.reset(mesh);
-    // only return true after simplification is done
-    return false;
-}
-void SegmentTreeNode::simplify_if_possible(bool print)
-{
-    if (m_simplified)
+
+    std::vector<SegmentTree::Ptr> row;
+    for (auto& mesh : layers[0])
     {
-        return;
-    }
-    if (m_meta_segment.mesh != nullptr)
-    {
-        if (!m_skipped)
+        if (mesh.n_faces() == 0)
         {
-            auto& mesh = *m_meta_segment.mesh;
-            size_t old_num_vertices = mesh.n_vertices();
-            pmp::SurfaceSimplification simplify(mesh, true);
-            constexpr float TARGET_RATIO = 0.2;
-            simplify.simplify(old_num_vertices * TARGET_RATIO);
+            row.push_back(nullptr);
+            continue;
+        }
+        MeshSegment segment;
+        segment.mesh.reset(new pmp::SurfaceMesh(std::move(mesh)));
+        segment.bb = segment.mesh->bounds();
+        row.push_back(SegmentTree::Ptr(new SegmentTreeLeaf(segment)));
+    }
 
-            // TODO: recombine feature vertices
-
-            float ratio = (float)mesh.n_vertices() / old_num_vertices;
-            ratio = std::floor(ratio * 1000) / 10;
-            if (print)
+    for (size_t layer = 1; layer < layers.size(); layer++)
+    {
+        std::vector<SegmentTree::Ptr> next_row;
+        for (size_t block = 0; block < row.size(); block += 8)
+        {
+            auto node = new SegmentTreeNode();
+            for (size_t i = 0; i < 8; i++)
             {
-                std::cout << mesh.n_faces() << '(' << ratio << "%) " << std::flush;
+                if (row[block + i] == nullptr)
+                {
+                    continue;
+                }
+                node->add_child(std::move(row[block + i]));
+            }
+            if (node->num_children() == 0)
+            {
+                delete node;
+                next_row.push_back(nullptr);
+            }
+            else
+            {
+                node->segment().mesh.reset(new pmp::SurfaceMesh(std::move(layers[layer][block / 8])));
+                next_row.push_back(SegmentTree::Ptr(node));
             }
         }
-
-        m_simplified = true;
+        std::swap(row, next_row);
     }
-    else
+    if (row.size() != 1)
     {
-        for (size_t i = 0; i < m_children.size(); i++)
-        {
-            #pragma omp task
-            m_children[i]->simplify_if_possible(print);
-        }
-        #pragma omp taskwait
+        throw consistency_error(1, row.size(), "rows of segment trees");
     }
-}
-void SegmentTreeNode::fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix)
-{
-    if (m_finalized)
-    {
-        return;
-    }
-    tile.children.resize(m_children.size());
-    for (size_t i = 0; i < m_children.size(); i++)
-    {
-        m_children[i]->fill_tile(tile.children[i], filename_prefix + std::to_string(i));
-    }
-
-    if (m_skipped)
-    {
-        tile.geometricError = 0;
-        for (auto& child : tile.children)
-        {
-            tile.geometricError += child.geometricError;
-        }
-    }
-    else
-    {
-        m_meta_segment.filename = filename_prefix + "_.b3dm";
-        Cesium3DTiles::Content content;
-        content.uri = m_meta_segment.filename;
-        tile.content = content;
-        tile.geometricError = geometric_error();
-        tile.refine = Cesium3DTiles::Tile::Refine::REPLACE;
-    }
-    convert_bounding_box(m_meta_segment.bb, tile.boundingVolume);
-
-    m_finalized = true;
-}
-void SegmentTreeNode::collect_segments(std::vector<MeshSegment>& segments)
-{
-    if (!m_skipped)
-    {
-        segments.push_back(m_meta_segment);
-    }
-    for (auto& child : m_children)
-    {
-        child->collect_segments(segments);
-    }
-}
-void SegmentTreeNode::print(size_t indent)
-{
-    std::cout << std::string(indent, ' ') << "Node";
-    if (!m_meta_segment.filename.empty())
-    {
-        std::cout << " " << m_meta_segment.filename;
-    }
-    if (m_meta_segment.mesh != nullptr)
-    {
-        std::cout << "(" << m_meta_segment.mesh->n_faces() << ")";
-    }
-    std::cout << std::endl;
-    for (auto& child : m_children)
-    {
-        child->print(indent + 2);
-    }
-}
-
-// SegmentTreeLeaf
-void SegmentTreeLeaf::print(size_t indent)
-{
-    std::cout << std::string(indent, ' ') << "Leaf";
-    if (!m_segment.filename.empty())
-    {
-        std::cout << " " << m_segment.filename;
-    }
-    if (m_segment.mesh != nullptr)
-    {
-        std::cout << "(" << m_segment.mesh->n_faces() << ")";
-    }
-    std::cout << std::endl;
+    return std::move(row[0]);
 }
 
 } // namespace lvr2
