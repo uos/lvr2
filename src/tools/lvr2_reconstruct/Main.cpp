@@ -259,13 +259,21 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             model->m_pointCloud = scan->points;
             scan->release();
 
-            // Transform pointcloud
+            // Transform the single pointcloud to world if the user wants to
             if (options.transformScanPosition())
             {
                 transformPointCloud<float>(
                     model,
                     (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>()
                     );
+            }
+            // Only transform to position (This is necessary to use texturizers because the camera is mounted relative to the scanposition)
+            else
+            {
+                transformPointCloud<float>(
+                    model,
+                    (lidar->transformation * scan->transformation).cast<float>()
+                );
             }
             buffer = model->m_pointCloud;
         }
@@ -565,6 +573,26 @@ void addRGBTexturizer(const reconstruct::Options& options, lvr2::Materializer<Ve
     auto hdf5IO = scanio::HDF5IO(kernel, schema);
 
     ScanProjectPtr project = hdf5IO.loadScanProject();
+
+    // If only one scan position is used for reconstruction use only the images associated with that position
+    if (options.hasScanPositionIndex())
+    {
+        project->positions.clear();
+        ScanPositionPtr pos = hdf5IO.loadScanPosition(options.getScanPositionIndex());
+        // Check if position exists
+        if (!pos) 
+        {
+            std::cout << timestamp << "[Main] Cannot initialize RaycastingTexturizer: Position " << options.getScanPositionIndex() << " could not be loaded" << std::endl;
+            return;
+        }
+        // If the single scan position was not transformed from position to world space remove the transformation from the project and position
+        if (!options.transformScanPosition())
+        {
+            project->transformation = Transformd::Identity(); // Project -> GPS 
+            pos->transformation = Transformd::Identity(); // Position -> Project
+        }
+        project->positions.push_back(pos);
+    }
 
     auto texturizer = std::make_shared<RaycastingTexturizer<Vec>>(
         options.getTexelSize(),

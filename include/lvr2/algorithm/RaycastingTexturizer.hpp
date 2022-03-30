@@ -112,7 +112,7 @@ public:
 
     virtual ~RaycastingTexturizer() {}
 
-public:
+private:
 
     struct ImageInfo
     {

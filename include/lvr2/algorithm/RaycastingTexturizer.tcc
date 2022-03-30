@@ -228,7 +228,7 @@ void RaycastingTexturizer<BaseVecT>::DEBUGDrawBorder(TextureHandle texH, const B
         }
     }
 }
-// Completely redo this
+// TODO: Completely redo this
 void undistorted_to_distorted_uv(
     double &u,
     double &v,
@@ -308,6 +308,27 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
     {
         this->paintTriangle(texH, faceH, boundingRect, images);
     }
+
+    // TODO: Currently making the result worse
+    // // Apply histogram equalization
+    // // Convert to LAB color format
+    // cv::Mat lab;
+    // cv::Mat texCV(tex.m_height, tex.m_width, CV_8UC3, tex.m_data);
+    // cv::cvtColor(texCV, lab, cv::COLOR_BGR2Lab);
+
+    // // Extract L channel
+    // std::vector<cv::Mat> channels(3);
+    // cv::split(lab, channels);
+    // cv::Mat LChannel = channels[0];
+
+    // // Apply clahe algorithm
+    // cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(); // Create algorithm
+    // clahe->apply(LChannel, LChannel);
+
+    // // Write the result back to the texture
+    // channels[0] = LChannel;
+    // cv::merge(channels, lab);
+    // cv::cvtColor(lab, texCV, cv::COLOR_Lab2BGR);
 
     return texH;
 }
@@ -414,7 +435,6 @@ void RaycastingTexturizer<BaseVecT>::paintTexel(
 template <typename BaseVecT>
 std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTexturizer<BaseVecT>::rankImagesForCluster(const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect) const
 {
-    // TODO: check if rect intersects frustum
     Vector3f normal = Vector3f(
         boundingRect.m_normal.getX(),
         boundingRect.m_normal.getY(),
