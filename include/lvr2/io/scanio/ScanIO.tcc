@@ -345,7 +345,8 @@ ScanPtr ScanIO<BaseIO>::load(
                             // 2. Used directory schema and stored binary channels
                             //    - this should not happen. binary channels must have an meta file
 
-                            // std::cout << dc << std::endl;
+                            std::cerr << "[ScanIO - load] ERROR: Could not load file by description: " << std::endl;
+                            std::cerr << dc << std::endl;
 
                             throw std::runtime_error("[ScanIO - Panic. Something orrured that should not happen]");
                         }
@@ -389,7 +390,6 @@ ScanPtr ScanIO<BaseIO>::load(
     return ret;
 }
 
-
 template <typename BaseIO>
 std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
     const size_t& scanPosNo, 
@@ -398,6 +398,9 @@ std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
 {
     auto Dgen = m_baseIO->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
+
+    // std::cout << "loadChannelMetas from description" << std::endl;
+    // std::cout << d << std::endl;
 
     std::unordered_map<std::string, YAML::Node> channel_metas;
 
@@ -450,7 +453,6 @@ std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
         std::tie(metaGroup, metaFile) = hdf5util::validateGroupDataset(metaGroup, metaFile);
 
         // std::cout << "Search for meta files in " << metaGroup << std::endl;
-
         for(auto meta : m_baseIO->m_kernel->metas(metaGroup, "channel"))
         {
             std::string channel_name = meta.first;

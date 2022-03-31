@@ -352,7 +352,7 @@ std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
 }
 
 std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
-    const std::string& group, const std::string& type) const
+    const std::string& group, const std::string& entity) const
 {
     std::unordered_map<std::string, YAML::Node> ret;
 
@@ -364,16 +364,9 @@ std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
             YAML::Node meta = loadMetaInformation(
                 entry.path().string());
 
-            if(meta["type"])
+            if (meta["entity"])
             {
-                if(meta["type"].as<std::string>() == type)
-                {
-                    ret[entry.path().stem().string()] = meta;
-                }
-            }
-            else if (meta["entity"])
-            {
-                if(meta["entity"].as<std::string>() == type)
+                if(meta["entity"].as<std::string>() == entity)
                 {
                     ret[entry.path().stem().string()] = meta;
                 }

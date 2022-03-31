@@ -205,7 +205,7 @@ public:
         const std::string& group) const;
 
     virtual std::unordered_map<std::string, YAML::Node> metas(
-        const std::string& group, const std::string& sensor_type
+        const std::string& group, const std::string& entity
     ) const;
 
     virtual bool isMeta(const std::string& path) const;
