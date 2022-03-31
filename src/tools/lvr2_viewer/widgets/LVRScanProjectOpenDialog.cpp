@@ -105,6 +105,9 @@ void LVRScanProjectOpenDialog::updateDirectorySchema(int index)
         case 2:
             m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaSlam6D(m_kernel->fileResource()));
             break;
+        case 3:
+            m_schema = ScanProjectSchemaPtr(new ScanProjectSchemaEuRoC(m_kernel->fileResource()));
+            break;
     }
 }
 void LVRScanProjectOpenDialog::updateHDF5Schema(int index)
@@ -163,6 +166,7 @@ void LVRScanProjectOpenDialog::updateAvailableSchemas()
             b->addItem("RAW");
             b->addItem("RAW PLY");
             b->addItem("SLAM 6D");
+            b->addItem("EuRoC");
             break;    
         default:
             b->addItem("None");      

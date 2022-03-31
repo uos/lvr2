@@ -38,7 +38,7 @@ struct convert<lvr2::LIDAR>
             lvr2::LIDAR::entity, 
             lvr2::LIDAR::type))
         {
-            return false;
+            // return false;
         }
 
         if(node["transformation"])

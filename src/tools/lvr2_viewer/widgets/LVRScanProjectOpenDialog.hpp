@@ -8,6 +8,8 @@
 #include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaSlam6D.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaEuRoC.hpp"
+
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 #include "LVRReductionAlgorithmDialog.hpp"
