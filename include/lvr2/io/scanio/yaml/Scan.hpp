@@ -77,7 +77,7 @@ struct convert<lvr2::Scan>
             try {
                 scan.startTime = node["start_time"].as<double>();
             } catch(const YAML::TypedBadConversion<double>& ex) {
-                std::cerr << "[YAML - Scan - decode] ERROR: Could not convert 'start_time': " << node["start_time"] << " to double" << std::endl; 
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'start_time': " << node["start_time"] << " as double" << std::endl; 
                 return false;
             }
         } else {
@@ -89,7 +89,7 @@ struct convert<lvr2::Scan>
             try {
                 scan.endTime = node["end_time"].as<double>();
             } catch(const YAML::TypedBadConversion<double>& ex) {
-                std::cerr << "[YAML - Scan - decode] ERROR: Could not convert 'end_time': " << node["end_time"] << " to double" << std::endl; 
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'end_time': " << node["end_time"] << " as double" << std::endl; 
                 return false;
             }
         } else {
@@ -101,7 +101,8 @@ struct convert<lvr2::Scan>
             try {
                 scan.numPoints = node["num_points"].as<unsigned int>();
             } catch(const YAML::TypedBadConversion<unsigned int>& ex) {
-                std::cerr << "[YAML - Scan - decode] ERROR: Could not convert 'num_points': " << node["num_points"] << " to unsigned int" << std::endl; 
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'num_points': "
+                    << node["num_points"] << " as unsigned int" << std::endl; 
                 return false;
             }
         }
@@ -111,7 +112,8 @@ struct convert<lvr2::Scan>
             try {
                 scan.poseEstimation = node["pose_estimation"].as<lvr2::Transformd>();
             } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
-                std::cerr << "[YAML - Scan - decode] ERROR: Could not convert 'pose_estimation': " << node["pose_estimation"] << " to Transformd" << std::endl; 
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'pose_estimation': "
+                    << node["pose_estimation"] << " as Transformd" << std::endl; 
                 return false;
             }
         } else {
@@ -123,7 +125,8 @@ struct convert<lvr2::Scan>
             try {
                 scan.transformation = node["transformation"].as<lvr2::Transformd>();
             } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
-                std::cerr << "[YAML - Scan - decode] ERROR: Could not convert 'transformation': " << node["transformation"] << " to Transformd" << std::endl; 
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'transformation': "
+                    << node["transformation"] << " as Transformd" << std::endl; 
                 return false;
             }
         } else {
@@ -135,7 +138,8 @@ struct convert<lvr2::Scan>
             try {
                 scan.model = node["model"].as<lvr2::SphericalModel>();
             } catch(const YAML::TypedBadConversion<lvr2::SphericalModel>& ex) {
-                std::cerr << "[YAML - Scan - decode] ERROR: Could not convert 'model': " << node["model"] << " to SphericalModel" << std::endl; 
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'model': "
+                    << node["model"] << " as SphericalModel" << std::endl; 
                 return false;
             }
         }
@@ -145,7 +149,8 @@ struct convert<lvr2::Scan>
             try {
                 scan.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
             } catch(const YAML::TypedBadConversion<lvr2::BoundingBox<lvr2::BaseVector<float> > >& ex) {
-                std::cerr << "[YAML - Scan - decode] ERROR: Could not convert 'aabb': " << node["aabb"] << " to BoundingBox" << std::endl; 
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'aabb': "
+                    << node["aabb"] << " as BoundingBox" << std::endl; 
                 return false;
             }
         }
