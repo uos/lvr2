@@ -108,7 +108,7 @@ CameraImageGroupPtr CameraImageGroupIO<BaseIO>::load(
             return ret;
         }
     } else {
-        ret.reset(new CameraImageGroup);
+        ret = std::make_shared<CameraImageGroup>();
     }
     
     if(ret)

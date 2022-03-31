@@ -64,7 +64,7 @@ PointBufferPtr PointCloudIO<BaseIO>::load(
         {
             if(!ret)
             {
-                ret.reset(new PointBuffer);
+                ret = std::make_shared<PointBuffer>();
             }
             // add channel
             (*ret)[meta.first] = *copt;

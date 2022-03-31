@@ -74,7 +74,7 @@ HyperspectralPanoramaChannelPtr HyperspectralPanoramaChannelIO<Derived>::load(
     } else {
         
         // no meta name specified but scan position is there: 
-        ret.reset(new HyperspectralPanoramaChannel);
+        ret = std::make_shared<HyperspectralPanoramaChannel>();
     }
     
     ret->channel = *m_imageIO->load(*d.dataRoot, *d.data);

@@ -79,8 +79,8 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
 
     Description d = m_baseIO->m_description->position(scanPosNo);
 
-    // std::cout << "[ScanPositionIO - load]"  << std::endl;
-    // std::cout << d <<  std::endl;
+    std::cout << "[ScanPositionIO - load]"  << std::endl;
+    std::cout << d <<  std::endl;
 
     if(!d.dataRoot)
     {
@@ -104,7 +104,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
         ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
     } else {
         // no meta name specified but scan position is there: 
-        ret.reset(new ScanPosition);
+        ret = std::make_shared<ScanPosition>();
     }
 
     //// DATA
@@ -114,7 +114,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     size_t lidarNo = 0;
     while(true)
     {
-        // std::cout << "[ScanPositionIO - load] Load LIDAR " << lidarNo << std::endl;
+        std::cout << "[ScanPositionIO - load] Load LIDAR " << lidarNo << std::endl;
         LIDARPtr lidar = m_lidarIO->load(scanPosNo, lidarNo);
 
         if(lidar)
@@ -124,7 +124,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
             break;
         }
 
-        // std::cout << "[ScanPositionIO - load] Loaded LIDAR " << lidarNo << std::endl;
+        std::cout << "[ScanPositionIO - load] Loaded LIDAR " << lidarNo << std::endl;
 
         ++lidarNo;
     }
@@ -133,7 +133,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     size_t camNo = 0;
     while(true)
     {
-        // std::cout << "[ScanPositionIO - load] Load Camera " << camNo << std::endl;
+        std::cout << "[ScanPositionIO - load] Load Camera " << camNo << std::endl;
 
         CameraPtr cam = m_cameraIO->load(scanPosNo, camNo);
         if(cam)
@@ -143,7 +143,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
             break;
         }
 
-        // std::cout << "[ScanPositionIO - load] Loaded Camera " << camNo << std::endl;
+        std::cout << "[ScanPositionIO - load] Loaded Camera " << camNo << std::endl;
 
         camNo++;
     }

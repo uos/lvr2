@@ -93,7 +93,12 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
             for (IndexType i = 0; i < rows; ++i) {
                 col_it = row_it->begin();
                 for (IndexType j = 0; j < cols; ++j) {
-                    M.coeffRef(i, j) = col_it->as<Scalar>();
+                    try {
+                        M.coeffRef(i, j) = col_it->as<Scalar>();
+                    } catch(const YAML::TypedBadConversion<Scalar>& ex) {
+                        std::cerr << "[YAML - Matrix - decode] ERROR: Could not decode matrix entry (" << i << ", " << j << "): " << *col_it << " to scalar" << std::endl;
+                        return false;
+                    }
                     ++col_it;
                 }
                 ++row_it;
@@ -152,7 +157,12 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
             for (IndexType i = 0; i < rows; ++i) {
                 col_it = row_it->begin();
                 for (IndexType j = 0; j < cols; ++j) {
-                    M.coeffRef(i, j) = col_it->as<Scalar>();
+                    try {
+                        M.coeffRef(i, j) = col_it->as<Scalar>();
+                    } catch(const YAML::TypedBadConversion<Scalar>& ex) {
+                        std::cerr << "[YAML - Matrix - decode] ERROR: Could not decode matrix entry (" << i << ", " << j << "): " << *col_it << " to scalar" << std::endl;
+                        return false;
+                    }
                     ++col_it;
                 }
                 ++row_it;
@@ -191,7 +201,7 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
 
         if(A != rows)
         {
-            std::cout << "[YAML::convert<Matrix> - decode] rows in yaml (" << rows << ") differ from row-static matrix rows (" << A << ")." << std::endl;
+            std::cout << "[YAML - Matrix - decode] rows in yaml (" << rows << ") differ from row-static matrix rows (" << A << ")." << std::endl;
             return false;
         }
 
@@ -214,7 +224,12 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
             for (IndexType i = 0; i < rows; ++i) {
                 col_it = row_it->begin();
                 for (IndexType j = 0; j < cols; ++j) {
-                    M.coeffRef(i, j) = col_it->as<Scalar>();
+                    try {
+                        M.coeffRef(i, j) = col_it->as<Scalar>();
+                    } catch(const YAML::TypedBadConversion<Scalar>& ex) {
+                        std::cerr << "[YAML - Matrix - decode] ERROR: Could not decode matrix entry (" << i << ", " << j << "): " << *col_it << " to scalar" << std::endl;
+                        return false;
+                    }
                     ++col_it;
                 }
                 ++row_it;
@@ -270,7 +285,11 @@ struct convert<Eigen::Matrix<Scalar_, A_, B_, C_, D_, E_> >
             for (IndexType i = 0; i < rows; ++i) {
                 col_it = row_it->begin();
                 for (IndexType j = 0; j < cols; ++j) {
-                    M.coeffRef(i, j) = col_it->as<Scalar>();
+                    try {
+                        M.coeffRef(i, j) = col_it->as<Scalar>();
+                    } catch(const YAML::TypedBadConversion<Scalar>& ex) {
+                        std::cerr << "[YAML - Matrix - decode] ERROR: Could not decode matrix entry (" << i << ", " << j << "): " << *col_it << " to scalar" << std::endl;
+                    }
                     ++col_it;
                 }
                 ++row_it;

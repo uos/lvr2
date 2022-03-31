@@ -80,7 +80,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
         // create without meta information: generate meta afterwards
 
         // std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
-        ret.reset(new ScanProject);
+        ret = std::make_shared<ScanProject>();
     }
 
 
@@ -88,6 +88,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
     size_t scanPosNo = 0;
     while(true)
     {  
+        std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
         // Get description for next scan
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
         if(!scanPos)
@@ -95,7 +96,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
             break;
         }
 
-        // std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
+        std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
         ret->positions.push_back(scanPos);
         scanPosNo++;
     }
@@ -148,7 +149,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::loadScanProject(ReductionAlgorithmPtr redu
         // create without meta information: generate meta afterwards
 
         // std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
-        ret.reset(new ScanProject);
+        ret = std::make_shared<ScanProject>();
     }
 
 
