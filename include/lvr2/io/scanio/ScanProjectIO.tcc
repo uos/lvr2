@@ -70,8 +70,16 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
     if(d.meta)
     {
         YAML::Node meta;
-        m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
-        ret = std::make_shared<ScanProject>(meta.as<ScanProject>());
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        {
+            return ret;
+        }
+        try {
+            ret = std::make_shared<ScanProject>(meta.as<ScanProject>());
+        } catch(const YAML::TypedBadConversion<ScanProject>& ex) {
+            std::cerr << "[ScanProjectIO - load] ERROR at ScanProject: Could not decode YAML as ScanProject." << std::endl;
+            throw ex;
+        }
     } 
     else 
     {
@@ -88,7 +96,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
     size_t scanPosNo = 0;
     while(true)
     {  
-        std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
+        // std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
         // Get description for next scan
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
         if(!scanPos)
@@ -96,7 +104,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
             break;
         }
 
-        std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
+        // std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
         ret->positions.push_back(scanPos);
         scanPosNo++;
     }

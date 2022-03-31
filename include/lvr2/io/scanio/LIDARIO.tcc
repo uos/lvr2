@@ -60,8 +60,8 @@ LIDARPtr LIDARIO<BaseIO>::load(
         return ret;
     }
 
-    std::cout << "[LIDARIO - load] Description:" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[LIDARIO - load] Description:" << std::endl;
+    // std::cout << d << std::endl;
 
     ///////////////////////
     //////  META
@@ -75,7 +75,12 @@ LIDARPtr LIDARIO<BaseIO>::load(
             return ret;
         }
         // std::cout << "[LIDARIO - load] Load Meta " << std::endl;
-        ret = std::make_shared<LIDAR>(meta.as<LIDAR>());
+        try {
+            ret = std::make_shared<LIDAR>(meta.as<LIDAR>());
+        } catch(const YAML::TypedBadConversion<LIDAR>& ex) {
+            std::cerr << "[LIDARIO - load] ERROR at LIDAR (" << scanPosNo << ", " << lidarNo << ") : Could not decode YAML as LIDAR." << std::endl;
+            throw ex;
+        }
     } else {
         // no meta name specified but scan position is there: 
         ret = std::make_shared<LIDAR>();
@@ -88,7 +93,7 @@ LIDARPtr LIDARIO<BaseIO>::load(
     size_t scanNo = 0;
     while(true)
     {
-        std::cout << "[LIDARIO - load] Load Scan " << scanNo << std::endl;
+        // std::cout << "[LIDARIO - load] Load Scan " << scanNo << std::endl;
         ScanPtr scan = m_scanIO->load(scanPosNo, lidarNo, scanNo);
         if(scan)
         {
@@ -97,7 +102,7 @@ LIDARPtr LIDARIO<BaseIO>::load(
             break;
         }
 
-        std::cout << "[LIDARIO - load] Loaded Scan " << scanNo << std::endl;
+        // std::cout << "[LIDARIO - load] Loaded Scan " << scanNo << std::endl;
         scanNo++;
     }
     return ret;

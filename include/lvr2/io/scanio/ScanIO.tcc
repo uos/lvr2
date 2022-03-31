@@ -184,8 +184,8 @@ ScanPtr ScanIO<BaseIO>::load(
         return ret;
     }
 
-    std::cout << "[ScanIO - load] Description:" << std::endl;
-    std::cout << d << std::endl;
+    // std::cout << "[ScanIO - load] Description:" << std::endl;
+    // std::cout << d << std::endl;
 
     /// META
     if(d.meta)
@@ -199,7 +199,7 @@ ScanPtr ScanIO<BaseIO>::load(
         try {
             ret = std::make_shared<Scan>(meta.as<Scan>());
         } catch(const YAML::TypedBadConversion<Scan>& ex) {
-            std::cerr << "[ScanIO - load] ERROR at Scan (" << scanPosNo << ", " << sensorNo << ", " << scanNo << ") : Could not decode YAML to Scan." << std::endl;
+            std::cerr << "[ScanIO - load] ERROR at Scan (" << scanPosNo << ", " << sensorNo << ", " << scanNo << ") : Could not decode YAML as Scan." << std::endl;
             throw ex;
         }
 
@@ -208,8 +208,8 @@ ScanPtr ScanIO<BaseIO>::load(
         ret = std::make_shared<Scan>();
     }
 
-    std::cout << "[ScanIO - load] Meta loaded." << std::endl;
-    std::cout << "- points: " << ret->numPoints << std::endl;
+    // std::cout << "[ScanIO - load] Meta loaded." << std::endl;
+    // std::cout << "- points: " << ret->numPoints << std::endl;
 
     /// Load each channel
     /// We need to load each channel here, because the channel list is in the scan meta file
