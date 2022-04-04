@@ -782,8 +782,10 @@ public:
         //! default constructur
         HalfedgeAroundFaceCirculator(const SurfaceMesh* m, Face f)
             : mesh_(m), halfedge_(mesh_->halfedge(f)), is_active_(true), loop_helper_(halfedge_)
-        {
-        }
+        {}
+        HalfedgeAroundFaceCirculator(const SurfaceMesh* m, Halfedge start)
+            : mesh_(m), halfedge_(start), is_active_(true), loop_helper_(halfedge_)
+        {}
 
         //! are two circulators equal?
         bool operator==(const HalfedgeAroundFaceCirculator& rhs) const
@@ -1595,6 +1597,12 @@ public:
         return HalfedgeAroundFaceCirculator(this, f);
     }
 
+    //! returns circulator for halfedges of a boundary "Face"
+    HalfedgeAroundFaceCirculator boundary_circulator(Halfedge h) const
+    {
+        return HalfedgeAroundFaceCirculator(this, h);
+    }
+
     //!@}
     //! \name Higher-level Topological Operations
     //!@{
@@ -1765,7 +1773,12 @@ public:
     void split_mesh(std::vector<SurfaceMesh>& output,
                     FaceProperty<IndexType>& face_dist);
 
+    //! Adds everything in the input meshes to the current mesh.
     void join_mesh(const std::vector<SurfaceMesh*>& input);
+
+    //! Unifies h0 and h1 into a single edge, combining adjacent vertices.
+    //! Requires both halfedges to be boundary halfedges.
+    void stitch_boundary(Halfedge h0, Halfedge h1);
 
     //! are there any deleted entities?
     inline bool has_garbage() const { return has_garbage_; }
@@ -1841,8 +1854,9 @@ public:
             auto what = "SurfaceMesh: cannot allocate vertex, max. index reached";
             throw AllocationException(what);
         }
+        Vertex ret(vertices_size());
         vprops_.push_back(n);
-        return Vertex(vertices_size() - 1);
+        return ret;
     }
 
     //! \brief Allocate a new edge, resize edge and halfedge properties accordingly.
@@ -1859,10 +1873,12 @@ public:
             throw AllocationException(what);
         }
 
+        Halfedge ret(halfedges_size());
+
         eprops_.push_back(n);
         hprops_.push_back(2 * n);
 
-        return halfedge(Edge(edges_size() - 1), 0);
+        return ret;
     }
 
     //! \brief Allocate a new edge, resize edge and halfedge properties accordingly.
@@ -1895,8 +1911,9 @@ public:
             auto what = "SurfaceMesh: cannot allocate face, max. index reached";
             throw AllocationException(what);
         }
+        Face ret(faces_size());
         fprops_.push_back(n);
-        return Face(faces_size() - 1);
+        return ret;
     }
 
     //!@}

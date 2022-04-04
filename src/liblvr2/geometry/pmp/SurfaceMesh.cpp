@@ -720,7 +720,7 @@ void SurfaceMesh::split(Face f, Vertex v)
     }
 
     set_next_halfedge(hold, hend);
-    set_next_halfedge(next_halfedge(hend), hold);
+    set_prev_halfedge(hold, next_halfedge(hend));
 
     set_face(hold, f);
 
@@ -775,7 +775,7 @@ Halfedge SurfaceMesh::split(Edge e, Vertex v)
     }
     else
     {
-        set_next_halfedge(prev_halfedge(h0), t1);
+        set_prev_halfedge(t1, prev_halfedge(h0));
         set_next_halfedge(t1, h0);
         // halfedge handle of vh already is h0
     }
@@ -1116,9 +1116,7 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
         mesh.copy_properties(*this);
     }
 
-    auto f_map = add_face_property<Face>("f:split_map");
     auto h_map = add_halfedge_property<Halfedge>("h:split_map");
-
 
     size_t num_threads = std::min((size_t)omp_get_max_threads(), output.size());
 
@@ -1145,7 +1143,6 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
 
             Face out_f = mesh.new_face();
             mesh.copy_fprops(*this, f, out_f);
-            f_map[f] = out_f;
             face_edges.clear();
             for (Halfedge h : halfedges(f))
             {
@@ -1167,27 +1164,34 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
                         out_h = opposite_halfedge(mesh.new_edge());
                     mesh.copy_eprops(*this, edge(h), edge(out_h));
                 }
+                if ((h.idx() & 1) != (out_h.idx() & 1))
+                {
+                    throw std::runtime_error("Invalid halfedge mapping"); // TODO: remove
+                }
                 mesh.copy_hprops(*this, h, out_h);
                 mesh.set_face(out_h, out_f);
                 h_map[h] = out_h;
                 face_edges.push_back(out_h);
 
                 Vertex v = to_vertex(h);
-                auto it = vertex_map.find(v);
-                if (it == vertex_map.end())
+                Vertex& out_v = vertex_map[v];
+                if (!out_v.is_valid())
                 {
-                    Vertex out_v = mesh.add_vertex(position(v));
+                    out_v = mesh.add_vertex(position(v));
                     mesh.copy_vprops(*this, v, out_v);
                     mesh.set_halfedge(out_v, opposite_halfedge(out_h));
-                    it = vertex_map.emplace(v, out_v).first;
                 }
-                mesh.set_vertex(out_h, it->second);
+                mesh.set_vertex(out_h, out_v);
             }
             mesh.set_halfedge(out_f, face_edges[0]);
             for (size_t j = 0; j < 3; j++)
             {
                 Halfedge cur_h = face_edges[j], next_h = face_edges[(j + 1) % 3];
                 mesh.set_next_halfedge(cur_h, next_h);
+                if (mesh.to_vertex(opposite_halfedge(next_h)).is_valid() && mesh.to_vertex(opposite_halfedge(next_h)) != mesh.to_vertex(cur_h))
+                {
+                    throw std::runtime_error("Invalid vertex mapping"); // TODO: remove
+                }
                 mesh.set_vertex(opposite_halfedge(next_h), mesh.to_vertex(cur_h));
             }
         }
@@ -1205,12 +1209,24 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
             {
                 Halfedge out_h = opposite_halfedge(h_map[opposite_halfedge(h)]);
                 Halfedge next_candidate = find_next_candidate(h, is_valid_fn);
-                mesh.set_next_halfedge(out_h, opposite_halfedge(h_map[opposite_halfedge(next_candidate)]));
+                Halfedge mapped = opposite_halfedge(h_map[opposite_halfedge(next_candidate)]);
+                if (mesh.next_halfedge(out_h).is_valid() && mesh.next_halfedge(out_h) != mapped)
+                {
+                    throw std::runtime_error("Inconsistent next mapping"); // TODO: remove
+                }
+                mesh.set_next_halfedge(out_h, mapped);
+
+                Halfedge prev_candidate = find_prev_candidate(h, is_valid_fn);
+                Halfedge mapped_prev = opposite_halfedge(h_map[opposite_halfedge(prev_candidate)]);
+                if (mesh.prev_halfedge(out_h).is_valid() && mesh.prev_halfedge(out_h) != mapped_prev)
+                {
+                    throw std::runtime_error("Inconsistent prev mapping"); // TODO: remove
+                }
+                mesh.set_prev_halfedge(out_h, mapped_prev);
             }
         }
     }
 
-    remove_face_property(f_map);
     remove_halfedge_property(h_map);
 
     for (auto& mesh : output)
@@ -1291,6 +1307,60 @@ void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
     }
 
     remove_degenerate_faces();
+}
+
+void SurfaceMesh::stitch_boundary(Halfedge h0, Halfedge h1)
+{
+    auto o0 = opposite_halfedge(h0);
+    auto o1 = opposite_halfedge(h1);
+
+    if (!is_boundary(h0) || !is_boundary(h1) || is_boundary(o0) || is_boundary(o1))
+        throw InvalidInputException("SurfaceMesh::stitch_boundary: invalid halfedge pair");
+
+    // merge vertices (has to happen before modifying the connectivity)
+    auto v0 = from_vertex(h0);
+    auto other_v0 = to_vertex(h1);
+    auto v1 = to_vertex(h0);
+    auto other_v1 = from_vertex(h1);
+
+    if (other_v0 != v0)
+    {
+        for (auto h_out : halfedges(other_v0))
+            set_vertex(opposite_halfedge(h_out), v0);
+        vdeleted_[other_v0] = true;
+        ++deleted_vertices_;
+    }
+
+    if (other_v1 != v1)
+    {
+        for (auto h_out : halfedges(other_v1))
+            set_vertex(opposite_halfedge(h_out), v1);
+        vdeleted_[other_v1] = true;
+        ++deleted_vertices_;
+    }
+    else if (halfedge(v1) == h1) // vertex stays, but its outgoing edge will be deleted
+        set_halfedge(v1, o0);
+
+    // re-link next/prev halfedges of h0 and h1
+    if (next_halfedge(h1) != h0)
+        set_next_halfedge(prev_halfedge(h0), next_halfedge(h1));
+    if (next_halfedge(h0) != h1)
+        set_next_halfedge(prev_halfedge(h1), next_halfedge(h0));
+
+    // copy properties from o1 to h0
+    set_face(h0, face(o1));
+    set_next_halfedge(h0, next_halfedge(o1));
+    set_prev_halfedge(h0, prev_halfedge(o1));
+    copy_hprops(*this, o1, h0);
+
+    set_halfedge(face(o1), h0);
+
+    edeleted_[edge(h1)] = true;
+    ++deleted_edges_;
+    has_garbage_ = true;
+
+    adjust_outgoing_halfedge(v0);
+    adjust_outgoing_halfedge(v1);
 }
 
 bool SurfaceMesh::is_collapse_ok(Halfedge v0v1)
@@ -1497,7 +1567,7 @@ void SurfaceMesh::remove_loop_helper(Halfedge h)
 
     // halfedge -> halfedge
     set_next_halfedge(h1, next_halfedge(o0));
-    set_next_halfedge(prev_halfedge(o0), h1);
+    set_prev_halfedge(h1, prev_halfedge(o0));
 
     // halfedge -> face
     set_face(h1, fo);

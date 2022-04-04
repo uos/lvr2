@@ -36,12 +36,10 @@
 
 #include "CesiumPmpInterop.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
+#include "lvr2/util/Progress.hpp"
 
 namespace lvr2
 {
-
-typedef pmp::IndexType SegmentId;
-constexpr SegmentId INVALID_SEGMENT = pmp::PMP_MAX_INDEX;
 
 struct MeshSegment
 {
@@ -62,7 +60,8 @@ public:
     virtual void collect_segments(std::vector<MeshSegment>& segments) = 0;
 
     virtual bool combine_if_possible(bool print) = 0;
-    virtual void simplify_if_possible(bool print) = 0;
+    virtual void simplify_if_possible(ProgressBar* progress, std::vector<std::pair<size_t, float>>& results) = 0;
+    virtual size_t count_simplifyable() = 0;
     virtual MeshSegment& segment() = 0;
 
     size_t m_depth = 0;
@@ -97,8 +96,9 @@ public:
     void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) override;
 
     bool combine_if_possible(bool print) override;
-    void simplify_if_possible(bool print) override;
-    virtual MeshSegment& segment() override
+    void simplify_if_possible(ProgressBar* progress, std::vector<std::pair<size_t, float>>& results) override;
+    size_t count_simplifyable() override;
+    MeshSegment& segment() override
     {
         return m_meta_segment;
     }
@@ -138,9 +138,13 @@ public:
     {
         return true;
     }
-    void simplify_if_possible(bool print) override
+    void simplify_if_possible(ProgressBar* progress, std::vector<std::pair<size_t, float>>& results) override
     {
         m_simplified = true;
+    }
+    size_t count_simplifyable() override
+    {
+        return 0;
     }
     virtual MeshSegment& segment() override
     {

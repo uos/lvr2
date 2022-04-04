@@ -394,8 +394,8 @@ public:
 
     void copy_props(const PropertyContainer& src, size_t src_i, size_t target_i, size_t offset)
     {
-        assert(n_properties() == src.n_properties());
-        for (size_t i = offset; i < parrays_.size(); ++i)
+        size_t end = std::min(n_properties(), src.n_properties());
+        for (size_t i = offset; i < end; ++i)
         {
             parrays_[i]->copy_prop(src.parrays_[i], src_i, target_i);
         }

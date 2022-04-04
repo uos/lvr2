@@ -38,19 +38,38 @@
 namespace lvr2
 {
 
+void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print);
+
 // SegmentTree
 
 void SegmentTree::simplify(bool print)
 {
     while (!combine_if_possible(print))
     {
-        #pragma omp parallel
+        ProgressBar* progress = nullptr;
+        std::vector<std::pair<size_t, float>> results;
+        if (print)
+        {
+            size_t total_count = count_simplifyable();
+            progress = new ProgressBar(total_count, "Simplifying Layer");
+        }
+
+        #pragma omp parallel shared(progress, results)
         #pragma omp single
-        simplify_if_possible(print);
+        simplify_if_possible(progress, results);
 
         if (print)
         {
-            std::cout << "layer complete" << std::endl;
+            std::cout << "\r";
+            if (!results.empty())
+            {
+                for (auto [ n, ratio ] : results)
+                {
+                    std::cout << n << "(" << ratio << "%)  ";
+                }
+                std::cout << "                       " << std::endl;
+            }
+            std::cout << "layer complete               " << std::endl;
         }
     }
     // print();
@@ -186,6 +205,9 @@ bool SegmentTreeNode::combine_if_possible(bool print)
     if (!m_skipped)
     {
         mesh->join_mesh(meshes);
+
+        remove_overlapping_features(*mesh, print);
+
         if (!mesh->has_vertex_property("v:quadric"))
         {
             pmp::SurfaceSimplification::calculate_quadrics(*mesh);
@@ -195,7 +217,7 @@ bool SegmentTreeNode::combine_if_possible(bool print)
     // only return true after simplification is done
     return false;
 }
-void SegmentTreeNode::simplify_if_possible(bool print)
+void SegmentTreeNode::simplify_if_possible(ProgressBar* progress, std::vector<std::pair<size_t, float>>& results)
 {
     if (m_simplified)
     {
@@ -211,13 +233,16 @@ void SegmentTreeNode::simplify_if_possible(bool print)
             constexpr float TARGET_RATIO = 0.2;
             simplify.simplify(old_num_vertices * TARGET_RATIO);
 
-            // TODO: recombine feature vertices
-
-            float ratio = (float)mesh.n_vertices() / old_num_vertices;
-            ratio = std::floor(ratio * 1000) / 10;
-            if (print)
+            if (progress != nullptr)
             {
-                std::cout << mesh.n_faces() << '(' << ratio << "%) " << std::flush;
+                ++(*progress);
+                float ratio = (float)mesh.n_vertices() / old_num_vertices;
+                ratio = std::floor(ratio * 1000) / 10;
+                if (ratio > TARGET_RATIO * 110 && mesh.n_faces() > 10000)
+                {
+                    #pragma omp critical
+                    results.emplace_back(mesh.n_faces(), ratio);
+                }
             }
         }
 
@@ -227,11 +252,34 @@ void SegmentTreeNode::simplify_if_possible(bool print)
     {
         for (size_t i = 0; i < m_children.size(); i++)
         {
-            #pragma omp task
-            m_children[i]->simplify_if_possible(print);
+            #pragma omp task shared(progress, results)
+            m_children[i]->simplify_if_possible(progress, results);
         }
         #pragma omp taskwait
     }
+}
+size_t SegmentTreeNode::count_simplifyable()
+{
+    if (m_simplified)
+    {
+        return 0;
+    }
+    size_t ret = 0;
+    if (m_meta_segment.mesh != nullptr)
+    {
+        if (!m_skipped)
+        {
+            ret = 1;
+        }
+    }
+    else
+    {
+        for (auto& child : m_children)
+        {
+            ret += child->count_simplifyable();
+        }
+    }
+    return ret;
 }
 void SegmentTreeNode::fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix)
 {
@@ -309,6 +357,113 @@ void SegmentTreeLeaf::print(size_t indent)
         std::cout << "(" << m_segment.mesh->n_faces() << ")";
     }
     std::cout << std::endl;
+}
+
+// other functions
+
+void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print)
+{
+    auto h_original = mesh.get_halfedge_property<pmp::Edge>("h:original");
+    if (!h_original)
+    {
+        return;
+    }
+    std::unordered_map<pmp::Edge, std::pair<pmp::Halfedge, pmp::Halfedge>> matches;
+    #pragma omp parallel for schedule(dynamic,64)
+    for (size_t i = 0; i < mesh.halfedges_size(); i++)
+    {
+        pmp::Halfedge heH(i);
+        if (mesh.is_deleted(heH) || !h_original[heH].is_valid())
+        {
+            continue;
+        }
+        if (!mesh.is_boundary(mesh.opposite_halfedge(heH)))
+        {
+            throw std::runtime_error("boundary stitching: Marked non-boundary edge as stitch boundary.");
+        }
+        #pragma omp critical
+        {
+            auto& entry = matches[h_original[heH]];
+            if (heH.idx() < mesh.opposite_halfedge(heH).idx())
+            {
+                entry.first = heH;
+            }
+            else
+            {
+                entry.second = heH;
+            }
+        }
+    }
+    size_t stitch_count = 0;
+    for (auto match : matches)
+    {
+        auto heH0 = match.second.first;
+        auto heH1 = match.second.second;
+        if (heH0.is_valid() && heH1.is_valid())
+        {
+            if (mesh.is_deleted(heH0) || mesh.is_deleted(heH1) || !h_original[heH0].is_valid() || h_original[heH0] != h_original[heH1])
+            {
+                throw std::runtime_error("boundary stitching: Deleted or incorrect match.");
+            }
+            h_original[heH0] = pmp::Edge();
+            h_original[heH1] = pmp::Edge();
+            mesh.stitch_boundary(mesh.opposite_halfedge(heH0), mesh.opposite_halfedge(heH1));
+            stitch_count++;
+        }
+    }
+    if (print)
+    {
+        std::cout << "Stitched " << stitch_count << " edges.  " << std::flush;
+    }
+
+    auto v_feature = mesh.get_vertex_property<bool>("v:feature");
+    size_t cleared = 0, remaining = 0;
+    #pragma omp parallel reduction(+:remaining)
+    {
+        std::vector<pmp::Vertex> non_feature_vertices;
+        #pragma omp for schedule(dynamic,64) nowait
+        for (size_t i = 0; i < mesh.vertices_size(); i++)
+        {
+            pmp::Vertex vH(i);
+            if (mesh.is_deleted(vH) || !v_feature[vH])
+            {
+                continue;
+            }
+            bool feature = false;
+            for (auto heH : mesh.halfedges(vH))
+            {
+                if (h_original[heH].is_valid() || h_original[mesh.opposite_halfedge(heH)].is_valid())
+                {
+                    feature = true;
+                    remaining++;
+                    break;
+                }
+            }
+            if (!feature)
+            {
+                non_feature_vertices.push_back(vH);
+            }
+        }
+        #pragma omp critical
+        {
+            cleared += non_feature_vertices.size();
+            for (auto vH : non_feature_vertices)
+            {
+                v_feature[vH] = false;
+            }
+        }
+    }
+    std::cout << "Cleared " << cleared << " vertices." << (remaining == 0 ? " Mesh now feature free." : "") << std::endl;
+    if (remaining == 0)
+    {
+        mesh.remove_halfedge_property(h_original);
+        mesh.remove_vertex_property(v_feature);
+        mesh.remove_edge_property<bool>("e:feature");
+    }
+
+    mesh.duplicate_non_manifold_vertices();
+    mesh.remove_degenerate_faces();
+
 }
 
 } // namespace lvr2

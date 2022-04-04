@@ -59,8 +59,6 @@ inline std::pair<size_t, T&> push_and_get_index(std::vector<T>& vec, T&& value =
 /**
  * @brief partitions all connected regions of a mesh, and bundles small segments into chunks
  *
- * Adds a face property called "f:segment" to the mesh containing the SegmentId of the face.
- *
  * @param input_mesh the mesh to partition
  * @param small_segments a vector to store the segments in
  * @param large_segments a vector to store extracted segments in
@@ -75,7 +73,7 @@ void segment_mesh(pmp::SurfaceMesh& input_mesh,
 SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, bool print = true);
 SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size);
 
-SegmentTree::Ptr split_mesh(MeshSegment& segment, float chunk_size)
+inline SegmentTree::Ptr split_mesh(MeshSegment& segment, float chunk_size)
 {
     return split_mesh_bottom_up(segment, chunk_size);
 }

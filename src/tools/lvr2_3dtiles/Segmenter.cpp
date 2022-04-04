@@ -47,6 +47,9 @@ struct consistency_error : public std::runtime_error
     {}
 };
 
+typedef pmp::IndexType SegmentId;
+constexpr SegmentId INVALID_SEGMENT = pmp::PMP_MAX_INDEX;
+
 struct SegmentMetaData
 {
     SegmentId id = INVALID_SEGMENT;
@@ -123,7 +126,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
 
                 h_prop[heH] = segment.id;
 
-                FaceHandle fH = mesh.face(heH);
+                pmp::Face fH = mesh.face(heH);
                 if (fH.is_valid() && f_prop[fH] != segment.id)
                 {
                     f_prop[fH] = segment.id;
@@ -293,7 +296,7 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
         #pragma omp for schedule(static) nowait
         for (size_t i = 0; i < mesh.faces_size(); i++)
         {
-            FaceHandle fH(i);
+            pmp::Face fH(i);
             if (mesh.is_deleted(fH))
             {
                 continue;
@@ -328,7 +331,7 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < mesh.faces_size(); i++)
     {
-        FaceHandle fH(i);
+        pmp::Face fH(i);
         if (!mesh.is_deleted(fH))
         {
             f_chunk_id[fH] = chunk_map[f_chunk_id[fH]];
@@ -393,34 +396,43 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < mesh.faces_size(); i++)
     {
-        FaceHandle fH(i);
+        pmp::Face fH(i);
         if (!mesh.is_deleted(fH))
         {
             f_chunk_id[fH] = combine_map[f_chunk_id[fH]];
         }
     }
 
-    // mark all vertices on chunk borders as features
     auto v_feature = mesh.add_vertex_property("v:feature", false);
-    #pragma omp parallel for schedule(static,256)
-    for (size_t i = 0; i < mesh.vertices_size(); i++)
+    auto h_original = mesh.add_halfedge_property<pmp::Edge>("h:original");
+    #pragma omp parallel
     {
-        VertexHandle vH(i);
-        if (mesh.is_deleted(vH))
+        std::vector<pmp::Vertex> feature_vertices;
+        #pragma omp for schedule(dynamic,64) nowait
+        for (size_t i = 0; i < mesh.edges_size(); i++)
         {
-            continue;
-        }
-        pmp::IndexType id = pmp::PMP_MAX_INDEX;
-        for (auto fH : mesh.faces(vH))
-        {
-            if (id == pmp::PMP_MAX_INDEX)
+            pmp::Edge eH(i);
+            if (mesh.is_deleted(eH))
             {
-                id = f_chunk_id[fH];
+                continue;
             }
-            else if (id != f_chunk_id[fH])
+            auto heH0 = mesh.halfedge(eH, 0);
+            auto heH1 = mesh.halfedge(eH, 1);
+            auto fH0 = mesh.face(heH0);
+            auto fH1 = mesh.face(heH1);
+            if (fH0.is_valid() && fH1.is_valid() && f_chunk_id[fH0] != f_chunk_id[fH1])
+            {
+                h_original[heH0] = eH;
+                h_original[heH1] = eH;
+                feature_vertices.push_back(mesh.to_vertex(heH0));
+                feature_vertices.push_back(mesh.to_vertex(heH1));
+            }
+        }
+        #pragma omp critical
+        {
+            for (auto vH : feature_vertices)
             {
                 v_feature[vH] = true;
-                break;
             }
         }
     }
@@ -468,7 +480,7 @@ SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, boo
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < base_mesh.faces_size(); i++)
     {
-        FaceHandle fH(i);
+        pmp::Face fH(i);
         if (base_mesh.is_deleted(fH))
         {
             continue;

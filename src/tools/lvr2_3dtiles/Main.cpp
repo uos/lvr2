@@ -440,19 +440,30 @@ int main(int argc, char** argv)
         for (size_t i = 0; i < all_segments.size(); i++)
         {
             auto& mesh = *all_segments[i].mesh;
-            pmp::SurfaceNormals::compute_vertex_normals(mesh, true);
             auto v_normal = mesh.get_vertex_property<pmp::Normal>("v:normal");
-            #pragma omp parallel for schedule(static)
+            auto v_feature = mesh.get_vertex_property<bool>("v:feature");
+            auto v_color = mesh.get_vertex_property<pmp::Color>("v:color");
+            bool has_features = v_feature;
+            #pragma omp parallel for schedule(dynamic,64)
             for (size_t i = 0; i < mesh.vertices_size(); i++)
             {
                 pmp::Vertex v(i);
-                if (!mesh.is_deleted(v))
+                if (mesh.is_deleted(v))
                 {
-                    auto& n = v_normal[v];
-                    if (n.dot(pmp::Point::UnitZ()) < 0.5)
+                    continue;
+                }
+                if (has_features && v_feature[v])
+                {
+                    v_color[v] = pmp::Color(1, 0, 0);
+                }
+                else
+                {
+                    auto n = pmp::SurfaceNormals::compute_vertex_normal(mesh, v);
+                    if (n.dot(pmp::Point::UnitZ()) < 0)
                     {
                         n = -n;
                     }
+                    v_normal[v] = n;
                 }
             }
             ++progress_normals;
