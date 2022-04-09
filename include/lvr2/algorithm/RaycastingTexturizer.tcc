@@ -162,6 +162,26 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                     info.model.cx = 3027.8728609530291;
                     info.model.cy = 2031.02743729632;
 
+                    // Apply histogram equalization (works only on one channel matrices)
+                    // Convert to LAB color format
+                    info.image->load();
+                    cv::Mat lab;
+                    cv::cvtColor(info.image->image, lab, cv::COLOR_BGR2Lab);
+
+                    // Extract L channel
+                    std::vector<cv::Mat> channels(3);
+                    cv::split(lab, channels);
+                    cv::Mat LChannel = channels[0];
+
+                    // Apply clahe algorithm
+                    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(); // Create algorithm
+                    clahe->apply(LChannel, LChannel);
+
+                    // Write the result back to the texture
+                    channels[0] = LChannel;
+                    cv::merge(channels, lab);
+                    cv::cvtColor(lab, info.image->image, cv::COLOR_Lab2BGR);
+
                     m_images.push_back(info);
                 }   
             }
@@ -228,7 +248,11 @@ void RaycastingTexturizer<BaseVecT>::DEBUGDrawBorder(TextureHandle texH, const B
         }
     }
 }
-// TODO: Completely redo this
+// TODO: Properly integrate this somewhere
+/**
+ * @brief Copied from 
+ * https://gitlab.informatik.uni-osnabrueck.de/Las_Vegas_Reconstruction/Develop/-/blob/feature/cloud_colorizer/src/tools/lvr2_cloud_colorizer/Main.cpp
+ */
 void undistorted_to_distorted_uv(
     double &u,
     double &v,
@@ -271,7 +295,6 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
     ClusterHandle clusterH
 )
 {
-    Timestamp time_func;
     // Calculate the texture size
     unsigned short int sizeX = ceil(abs(boundingRect.m_maxDistA - boundingRect.m_minDistA) / this->m_texelSize);
     unsigned short int sizeY = ceil(abs(boundingRect.m_maxDistB - boundingRect.m_minDistB) / this->m_texelSize);
@@ -290,45 +313,18 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
         )
     );
 
-    Texture& tex = this->m_textures[texH];
-
     if (m_images.size() == 0)
     {
         std::cout << timestamp << "[RaycastingTexturizer] No images set, cannot texturize cluster" << std::endl;
         return texH;
     }
 
-    // this->DEBUGDrawBorder(texH, boundingRect, clusterH);
-
-    // List containing the useable images for texturing the cluster
-    std::vector<ImageInfo> images = this->rankImagesForCluster(boundingRect);
     // Paint all faces
     #pragma omp parallel for
     for (FaceHandle faceH: m_clusters.getCluster(clusterH))
     {
-        this->paintTriangle(texH, faceH, boundingRect, images);
+        this->paintTriangle(texH, faceH, boundingRect);
     }
-
-    // TODO: Currently making the result worse
-    // // Apply histogram equalization
-    // // Convert to LAB color format
-    // cv::Mat lab;
-    // cv::Mat texCV(tex.m_height, tex.m_width, CV_8UC3, tex.m_data);
-    // cv::cvtColor(texCV, lab, cv::COLOR_BGR2Lab);
-
-    // // Extract L channel
-    // std::vector<cv::Mat> channels(3);
-    // cv::split(lab, channels);
-    // cv::Mat LChannel = channels[0];
-
-    // // Apply clahe algorithm
-    // cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(); // Create algorithm
-    // clahe->apply(LChannel, LChannel);
-
-    // // Write the result back to the texture
-    // channels[0] = LChannel;
-    // cv::merge(channels, lab);
-    // cv::cvtColor(lab, texCV, cv::COLOR_Lab2BGR);
 
     return texH;
 }
@@ -353,12 +349,42 @@ Texture RaycastingTexturizer<BaseVecT>::initTexture(Args&&... args) const
     return std::move(ret);
 }
 
+inline bool texelCornersOrCenterInTriangle(Vector2i texel, const Texture& tex, const Triangle<Vector2d, double>& tri)
+{
+    Vector2d coords;
+    // Center
+    coords.x() = ((float) texel.x() + 0.5f) / tex.m_width;
+    coords.y() = ((float) texel.y() + 0.5f) / tex.m_height;
+    if (tri.contains(coords)) return true;
+
+    // Top Left
+    coords.x() = ((float) texel.x()) / tex.m_width;
+    coords.y() = ((float) texel.y()) / tex.m_height;
+    if (tri.contains(coords)) return true;
+
+    // Top Right
+    coords.x() = ((float) texel.x() + 1.0f) / tex.m_width;
+    coords.y() = ((float) texel.y()) / tex.m_height;
+    if (tri.contains(coords)) return true;
+
+    // Bottom Left
+    coords.x() = ((float) texel.x()) / tex.m_width;
+    coords.y() = ((float) texel.y() + 1.0f) / tex.m_height;
+    if (tri.contains(coords)) return true;
+
+    // Bottom Right
+    coords.x() = ((float) texel.x() + 1.0f) / tex.m_width;
+    coords.y() = ((float) texel.y() + 1.0f) / tex.m_height;
+    if (tri.contains(coords)) return true;
+
+    return false;
+}
+
 template <typename BaseVecT>
 void RaycastingTexturizer<BaseVecT>::paintTriangle(
     TextureHandle texH,
     FaceHandle faceH,
-    const BoundingRectangle<typename BaseVecT::CoordType>& bRect,
-    const std::vector<ImageInfo>& images)
+    const BoundingRectangle<typename BaseVecT::CoordType>& bRect)
 {
     // Texture
     Texture& tex = this->m_textures[texH];
@@ -387,6 +413,10 @@ void RaycastingTexturizer<BaseVecT>::paintTriangle(
         texelFromUV(triUV[1], tex),
         texelFromUV(triUV[2], tex)
     );
+
+    // Rank images for triangle
+    std::vector<ImageInfo> images = this->rankImagesForTriangle(worldTriangle);
+
     // Determine texel bb
     auto [minP, maxP] = texelTriangle.getAABoundingBox();
     // Iterate bb and check if texel center is inside the triangle
@@ -394,6 +424,8 @@ void RaycastingTexturizer<BaseVecT>::paintTriangle(
     {
         for (int x = minP.x(); x <= maxP.x(); x++)
         {
+            // Check if corners or center of the texel are inside the triangle
+            // If any is inside the texel is colored
             auto tmp = uvFromTexel(Vector2i(x, y), tex);
             Vector2d pointUV(tmp.u, tmp.v);
             // Skip texel if not inside this triangle
@@ -433,16 +465,10 @@ void RaycastingTexturizer<BaseVecT>::paintTexel(
 }
 
 template <typename BaseVecT>
-std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTexturizer<BaseVecT>::rankImagesForCluster(const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect) const
+std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTexturizer<BaseVecT>::rankImagesForTriangle(const Triangle<Vector3d, double>& triangle) const
 {
-    Vector3f normal = Vector3f(
-        boundingRect.m_normal.getX(),
-        boundingRect.m_normal.getY(),
-        boundingRect.m_normal.getZ()
-        );
-    
-    BaseVecT tmp = boundingRect.center();
-    Vector3f center(tmp.x, tmp.y, tmp.z);
+    Vector3f normal = triangle.normal().cast<float>();
+    Vector3f center = triangle.center().cast<float>();
 
     std::vector<std::pair<ImageInfo, float>> ranked;
 
@@ -454,14 +480,12 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
         {
             // View vector in world coordinates
             Vector3f view = img.ImageToCameraRotation.inverse() * Vector3f::UnitZ(); // Camera -> Image
-            view = img.ImageToWorldRotation * view; // Image -> Camera
-            // Check if cluster is seen from the back
-            if (normal.dot(view) < 0)
-            {
-                return std::make_pair(img, std::abs(view.dot(normal)));
-            }
-            // Direction vector from the camera to the center of the cluster
-            Vector3f direction = (center - img.cameraOrigin).normalized();
+            view = img.ImageToWorldRotation * view; // Image -> World
+            // Check if triangle is seen from the back // Currently not working because the normals are not always correct
+            // if (normal.dot(view) < 0)
+            // {
+            //     return std::make_pair(img, 0.0f);
+            // }
 
             // Cosine of the angle between the view vector of the image and the cluster normal
             float angle = view.dot(normal);
@@ -470,7 +494,7 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
             {
                 img.image->load();
             }
-            return std::make_pair(img, angle);
+            return std::make_pair(img, std::abs(angle)); // Use abs because values can be negative if the normal points the wrong direction
         });
 
     // Sort the Images by the angle between viewvec and normal

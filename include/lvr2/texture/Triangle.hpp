@@ -96,6 +96,20 @@ public:
      * @return false 
      */
     bool contains(Vec point) const;
+
+    /**
+     * @brief Calculates the triangles center
+     * 
+     * @return Vec 
+     */
+    Vec center() const;
+
+    /**
+     * @brief Calculates the triangles normal
+     * 
+     * @return Vec The normal of the triangle with length 1
+     */
+    Vec normal() const;
 };
 
 } // namespace lvr2

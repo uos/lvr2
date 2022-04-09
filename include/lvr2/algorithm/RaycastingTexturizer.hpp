@@ -35,6 +35,7 @@
 #include "lvr2/algorithm/raycasting/EmbreeRaycaster.hpp"
 #include "lvr2/algorithm/raycasting/Intersection.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/texture/Triangle.hpp"
 
 // Eigen
 #include <Eigen/Dense>
@@ -144,11 +145,11 @@ private:
     template <typename... Args>
     Texture initTexture(Args&&... args) const;
 
-    void paintTriangle(TextureHandle, FaceHandle, const BoundingRectangle<typename BaseVecT::CoordType>&, const std::vector<ImageInfo>&);
+    void paintTriangle(TextureHandle, FaceHandle, const BoundingRectangle<typename BaseVecT::CoordType>&);
 
     void paintTexel(TextureHandle texH, FaceHandle faceH, Vector2i texel, Vector3f point, const std::vector<ImageInfo>& images);
 
-    std::vector<ImageInfo> rankImagesForCluster(const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect) const;
+    std::vector<ImageInfo> rankImagesForTriangle(const Triangle<Vector3d, double>& triangle) const;
 
     /**
      * @brief Checks if point is visible from origin

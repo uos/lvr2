@@ -117,5 +117,21 @@ bool Triangle<Vec, Scalar>::contains(Vec point) const
     return true;
 }
 
+template <typename Vec, typename Scalar>
+Vec Triangle<Vec, Scalar>::center() const
+{
+    return point(BarycentricCoords(1.0/3.0, 1.0/3.0, 1.0/3.0));
+}
+
+template <typename Vec, typename Scalar>
+Vec Triangle<Vec, Scalar>::normal() const
+{
+    Scalar x = m_a.y() * m_b.z() - m_a.z() * m_b.y();
+    Scalar y = m_a.z() * m_b.x() - m_a.x() * m_b.z();
+    Scalar z = m_a.x() * m_b.y() - m_a.y() * m_b.x();
+
+    return Vec(x, y, z).normalized();
+}
+
 } // namespace lvr2
 
