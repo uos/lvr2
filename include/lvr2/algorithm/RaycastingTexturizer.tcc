@@ -5,6 +5,7 @@
 #include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/io/baseio/PLYIO.hpp"
 #include "lvr2/util/Util.hpp"
+#include "lvr2/algorithm/UtilAlgorithms.hpp"
 
 // opencv includes
 #include <opencv2/imgproc.hpp>
@@ -349,36 +350,6 @@ Texture RaycastingTexturizer<BaseVecT>::initTexture(Args&&... args) const
     return std::move(ret);
 }
 
-inline bool texelCornersOrCenterInTriangle(Vector2i texel, const Texture& tex, const Triangle<Vector2d, double>& tri)
-{
-    Vector2d coords;
-    // Center
-    coords.x() = ((float) texel.x() + 0.5f) / tex.m_width;
-    coords.y() = ((float) texel.y() + 0.5f) / tex.m_height;
-    if (tri.contains(coords)) return true;
-
-    // Top Left
-    coords.x() = ((float) texel.x()) / tex.m_width;
-    coords.y() = ((float) texel.y()) / tex.m_height;
-    if (tri.contains(coords)) return true;
-
-    // Top Right
-    coords.x() = ((float) texel.x() + 1.0f) / tex.m_width;
-    coords.y() = ((float) texel.y()) / tex.m_height;
-    if (tri.contains(coords)) return true;
-
-    // Bottom Left
-    coords.x() = ((float) texel.x()) / tex.m_width;
-    coords.y() = ((float) texel.y() + 1.0f) / tex.m_height;
-    if (tri.contains(coords)) return true;
-
-    // Bottom Right
-    coords.x() = ((float) texel.x() + 1.0f) / tex.m_width;
-    coords.y() = ((float) texel.y() + 1.0f) / tex.m_height;
-    if (tri.contains(coords)) return true;
-
-    return false;
-}
 
 template <typename BaseVecT>
 void RaycastingTexturizer<BaseVecT>::paintTriangle(
@@ -414,28 +385,94 @@ void RaycastingTexturizer<BaseVecT>::paintTriangle(
         texelFromUV(triUV[2], tex)
     );
 
+    Triangle<Vector2f, float> subPixelTriangle(
+        Vector2f(triUV[0].u * tex.m_width, triUV[0].v * tex.m_height),
+        Vector2f(triUV[1].u * tex.m_width, triUV[1].v * tex.m_height),
+        Vector2f(triUV[2].u * tex.m_width, triUV[2].v * tex.m_height)
+    );
+
     // Rank images for triangle
     std::vector<ImageInfo> images = this->rankImagesForTriangle(worldTriangle);
 
     // Determine texel bb
     auto [minP, maxP] = texelTriangle.getAABoundingBox();
+    
+    // Lambda to process a texel
+    auto ProcessTexel = [&](Vector2d uv, Vector2i point)
+    {
+        // Check if the uv is inside the triangle
+        // Skip texel if not inside this triangle
+        if (!uvTriangle.contains(uv)) return;
+        // Calc barycentric coordinates
+        Vector3d barycentrics = uvTriangle.barycentric(uv);
+        // Calculate 3D point using barycentrics
+        Vector3d pointWorld = worldTriangle.point(barycentrics);
+        // Set pixel color
+        this->paintTexel(texH, faceH, point, pointWorld.cast<float>(), images);
+    };
+
+    // Lambda for processing the texel on the triangle sides
+    auto ProcessSideTexel = [&](Vector2i texel)
+    {
+        // Calculate uv coordiantes of the corners and the center
+        auto tmp = uvFromTexel(texel, tex);
+        Vector2d center(tmp.u, tmp.v);
+        // Top Left
+        Vector2d topLeft(
+            ((float) texel.x()) / tex.m_width,
+            ((float) texel.y()) / tex.m_height
+        );
+        // Top Right
+        Vector2d topRight(
+            ((float) texel.x() + 1.0f) / tex.m_width,
+            ((float) texel.y()) / tex.m_height
+        );
+        // Bottom Left
+        Vector2d botLeft(
+            ((float) texel.x()) / tex.m_width,
+            ((float) texel.y() + 1.0f) / tex.m_height
+        );
+        // Bottom Right
+        Vector2d botRight(
+            ((float) texel.x() + 1.0f) / tex.m_width,
+            ((float) texel.y() + 1.0f) / tex.m_height
+        );
+
+        if (uvTriangle.contains(center))
+        {
+            ProcessTexel(center, texel);
+        }
+        else if (uvTriangle.contains(topLeft))
+        {
+            ProcessTexel(topLeft, texel);
+        }
+        else if (uvTriangle.contains(topRight))
+        {
+            ProcessTexel(topRight, texel);
+        }
+        else if (uvTriangle.contains(botLeft))
+        {
+            ProcessTexel(botLeft, texel);
+        }
+        else if (uvTriangle.contains(botRight))
+        {
+            ProcessTexel(botRight, texel);
+        }
+
+    };
+    // TODO: Line plotting is currently broken
+    // Iterate sides of the triangle because these texels need special treatment due to the center not always being inside the triangle
+    rasterize_line(subPixelTriangle.A(), subPixelTriangle.B(), ProcessSideTexel);
+    rasterize_line(subPixelTriangle.B(), subPixelTriangle.C(), ProcessSideTexel);
+    rasterize_line(subPixelTriangle.C(), subPixelTriangle.A(), ProcessSideTexel);
+
     // Iterate bb and check if texel center is inside the triangle
     for (int y = minP.y(); y <= maxP.y(); y++ )
     {
         for (int x = minP.x(); x <= maxP.x(); x++)
         {
-            // Check if corners or center of the texel are inside the triangle
-            // If any is inside the texel is colored
-            auto tmp = uvFromTexel(Vector2i(x, y), tex);
-            Vector2d pointUV(tmp.u, tmp.v);
-            // Skip texel if not inside this triangle
-            if (!uvTriangle.contains(pointUV)) continue;
-            // Calc barycentric coordinates
-            Vector3d barycentrics = uvTriangle.barycentric(pointUV);
-            // Calculate 3D point using barycentrics
-            Vector3d pointWorld = worldTriangle.point(barycentrics);
-            // Set pixel color pixel
-            this->paintTexel(texH, faceH, Vector2i(x, y), pointWorld.cast<float>(), images);
+            TexCoords uv = uvFromTexel(Vector2i(x, y), tex);
+            ProcessTexel(Vector2d(uv.u, uv.v), Vector2i(x, y));
         }
     }
 }

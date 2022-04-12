@@ -110,6 +110,18 @@ public:
      * @return Vec The normal of the triangle with length 1
      */
     Vec normal() const;
+
+    // Gets the Point of the triangle
+    Vec A() const { return m_a; };
+    Vec B() const { return m_b; };
+    Vec C() const { return m_c; };
+
+    // Gets the Side Vector of the triangle
+    Vec AB() const { return m_AB; };
+    Vec BC() const { return m_BC; };
+    Vec CA() const { return m_CA; };
+
+    
 };
 
 } // namespace lvr2
