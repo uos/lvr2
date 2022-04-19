@@ -339,10 +339,10 @@ Texture RaycastingTexturizer<BaseVecT>::initTexture(Args&&... args) const
     ret.m_layerName = "RGB";
     size_t num_pixel = ret.m_width * ret.m_height;
 
-    // Init red
+    // Init black
     for (int i = 0; i < num_pixel; i++)
     {
-        ret.m_data[i * 3 + 0] = 255;
+        ret.m_data[i * 3 + 0] = 0;
         ret.m_data[i * 3 + 1] = 0;
         ret.m_data[i * 3 + 2] = 0;
     }
@@ -362,22 +362,17 @@ void RaycastingTexturizer<BaseVecT>::paintTriangle(
     // Corners in 3D
     std::array<BaseVecT, 3UL> vertices = m_mesh.get().getVertexPositionsOfFace(faceH);
     // The triangle in 3D World space
-    auto worldTriangle = Triangle<Vector3d, double>(
-        Vector3d(vertices[0].x, vertices[0].y, vertices[0].z),
-        Vector3d(vertices[1].x, vertices[1].y, vertices[1].z),
-        Vector3d(vertices[2].x, vertices[2].y, vertices[2].z)
+    auto worldTriangle = Triangle<Vector3f, float>(
+        Vector3f(vertices[0].x, vertices[0].y, vertices[0].z),
+        Vector3f(vertices[1].x, vertices[1].y, vertices[1].z),
+        Vector3f(vertices[2].x, vertices[2].y, vertices[2].z)
     );
     // Vertices in texture uvs
     std::array<TexCoords, 3UL> triUV;
     triUV[0] = this->calculateTexCoords(texH, bRect, vertices[0]);
     triUV[1] = this->calculateTexCoords(texH, bRect, vertices[1]);
     triUV[2] = this->calculateTexCoords(texH, bRect, vertices[2]);
-    // The triangle in uv space
-    auto uvTriangle = Triangle<Vector2d, double>(
-        Vector2d(triUV[0].u, triUV[0].v),
-        Vector2d(triUV[1].u, triUV[1].v),
-        Vector2d(triUV[2].u, triUV[2].v)
-    );
+
     // The triangle in texel space
     Triangle<Vector2i, double> texelTriangle(
         texelFromUV(triUV[0], tex),
@@ -397,70 +392,68 @@ void RaycastingTexturizer<BaseVecT>::paintTriangle(
     // Determine texel bb
     auto [minP, maxP] = texelTriangle.getAABoundingBox();
     
-    // Lambda to process a texel
-    auto ProcessTexel = [&](Vector2d uv, Vector2i point)
+    // Lambda to process a texel // uv has to be between 0 and tex_width/tex_heigth not 0 and 1
+    auto ProcessTexel = [&](Vector2f uv, Vector2i texel)
     {
-        // Check if the uv is inside the triangle
         // Skip texel if not inside this triangle
-        if (!uvTriangle.contains(uv)) return;
+        if (!subPixelTriangle.contains(uv)) return;
         // Calc barycentric coordinates
-        Vector3d barycentrics = uvTriangle.barycentric(uv);
+        Vector3f barycentrics = subPixelTriangle.barycentric(uv);
         // Calculate 3D point using barycentrics
-        Vector3d pointWorld = worldTriangle.point(barycentrics);
+        Vector3f pointWorld = worldTriangle.point(barycentrics);
         // Set pixel color
-        this->paintTexel(texH, faceH, point, pointWorld.cast<float>(), images);
+        this->paintTexel(texH, faceH, texel, pointWorld, images);
     };
 
     // Lambda for processing the texel on the triangle sides
     auto ProcessSideTexel = [&](Vector2i texel)
     {
-        // Calculate uv coordiantes of the corners and the center
-        auto tmp = uvFromTexel(texel, tex);
-        Vector2d center(tmp.u, tmp.v);
+        // Calculate uv coordiantes of the corners and the center;
+        Vector2f center(texel.x() + 0.5f, texel.y() + 0.5f);
         // Top Left
-        Vector2d topLeft(
-            ((float) texel.x()) / tex.m_width,
-            ((float) texel.y()) / tex.m_height
+        Vector2f topLeft(
+            (float) texel.x(),
+            (float) texel.y()
         );
         // Top Right
-        Vector2d topRight(
-            ((float) texel.x() + 1.0f) / tex.m_width,
-            ((float) texel.y()) / tex.m_height
+        Vector2f topRight(
+            (float) texel.x() + 1.0f,
+            (float) texel.y()
         );
         // Bottom Left
-        Vector2d botLeft(
-            ((float) texel.x()) / tex.m_width,
-            ((float) texel.y() + 1.0f) / tex.m_height
+        Vector2f botLeft(
+            (float) texel.x(),
+            (float) texel.y() + 1.0f
         );
         // Bottom Right
-        Vector2d botRight(
-            ((float) texel.x() + 1.0f) / tex.m_width,
-            ((float) texel.y() + 1.0f) / tex.m_height
+        Vector2f botRight(
+            (float) texel.x() + 1.0f,
+            (float) texel.y() + 1.0f
         );
 
-        if (uvTriangle.contains(center))
+        if (subPixelTriangle.contains(center))
         {
             ProcessTexel(center, texel);
         }
-        else if (uvTriangle.contains(topLeft))
+        else if (subPixelTriangle.contains(topLeft))
         {
             ProcessTexel(topLeft, texel);
         }
-        else if (uvTriangle.contains(topRight))
+        else if (subPixelTriangle.contains(topRight))
         {
             ProcessTexel(topRight, texel);
         }
-        else if (uvTriangle.contains(botLeft))
+        else if (subPixelTriangle.contains(botLeft))
         {
             ProcessTexel(botLeft, texel);
         }
-        else if (uvTriangle.contains(botRight))
+        else if (subPixelTriangle.contains(botRight))
         {
             ProcessTexel(botRight, texel);
         }
 
     };
-    // TODO: Line plotting is currently broken
+
     // Iterate sides of the triangle because these texels need special treatment due to the center not always being inside the triangle
     rasterize_line(subPixelTriangle.A(), subPixelTriangle.B(), ProcessSideTexel);
     rasterize_line(subPixelTriangle.B(), subPixelTriangle.C(), ProcessSideTexel);
@@ -471,8 +464,7 @@ void RaycastingTexturizer<BaseVecT>::paintTriangle(
     {
         for (int x = minP.x(); x <= maxP.x(); x++)
         {
-            TexCoords uv = uvFromTexel(Vector2i(x, y), tex);
-            ProcessTexel(Vector2d(uv.u, uv.v), Vector2i(x, y));
+            ProcessTexel(Vector2f(x + 0.5f, y + 0.5f), Vector2i(x, y));
         }
     }
 }
@@ -502,10 +494,10 @@ void RaycastingTexturizer<BaseVecT>::paintTexel(
 }
 
 template <typename BaseVecT>
-std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTexturizer<BaseVecT>::rankImagesForTriangle(const Triangle<Vector3d, double>& triangle) const
+std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTexturizer<BaseVecT>::rankImagesForTriangle(const Triangle<Vector3f, float>& triangle) const
 {
-    Vector3f normal = triangle.normal().cast<float>();
-    Vector3f center = triangle.center().cast<float>();
+    Vector3f normal = triangle.normal();
+    Vector3f center = triangle.center();
 
     std::vector<std::pair<ImageInfo, float>> ranked;
 

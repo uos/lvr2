@@ -149,7 +149,7 @@ private:
 
     void paintTexel(TextureHandle texH, FaceHandle faceH, Vector2i texel, Vector3f point, const std::vector<ImageInfo>& images);
 
-    std::vector<ImageInfo> rankImagesForTriangle(const Triangle<Vector3d, double>& triangle) const;
+    std::vector<ImageInfo> rankImagesForTriangle(const Triangle<Vector3f, float>& triangle) const;
 
     /**
      * @brief Checks if point is visible from origin
