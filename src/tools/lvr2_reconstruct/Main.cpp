@@ -246,6 +246,18 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
         std::shared_ptr<FeatureBuild<ScanProjectIO>> scanProjectIO = std::dynamic_pointer_cast<FeatureBuild<ScanProjectIO>>(hdf5IOPtr);
 
+        ReductionAlgorithmPtr reduction_algorithm;
+        // If the user supplied valid octree reduction parameters use octree reduction otherwise use no reduction
+        if (options.getOctreeVoxelSize() > 0.0f)
+        {
+            reduction_algorithm = std::make_shared<OctreeReductionAlgorithm>(options.getOctreeVoxelSize(), options.getOctreeMinPoints());
+        }
+        else
+        {
+            reduction_algorithm = std::make_shared<NoReductionAlgorithm>();
+        }
+        
+
         if (options.hasScanPositionIndex())
         {
             auto project = scanProjectIO->loadScanProject();
@@ -254,7 +266,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             auto scan = lidar->scans.at(0); 
 
             // Load scan
-            scan->load();
+            scan->load(reduction_algorithm);
             ModelPtr model = std::make_shared<Model>();
             model->m_pointCloud = scan->points;
             scan->release();
@@ -295,7 +307,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                         bool was_loaded = scan->loaded();
                         if (!scan->loaded())
                         {
-                            scan->load();
+                            scan->load(reduction_algorithm);
                         }
                         size_t npoints_old = model->m_pointCloud->numPoints();
 

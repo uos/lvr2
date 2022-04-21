@@ -121,6 +121,8 @@ Options::Options(int argc, char** argv)
         ("outputMeshName", value<string>(&m_meshName)->default_value("default"), "The name of the saved mesh")
         ("inputMeshName", value<string>(&m_inputMeshName), "The name of the mesh to load from the file")
         ("inputMeshFile", value<string>(&m_inputMeshFile), "The file to load the mesh from")
+        ("reduceScan", value<float>(&m_octreeVoxelSize)->default_value(0.0f), "Use Octree reduction with the given gridsize algorithm when loading the individual scans")
+        ("reduceScanMinPoints", value<size_t>(&m_octreeMinPoints)->default_value(1), "The number of points an octree voxel has to contain to be considered occupied")
     ;
 
     setup();
@@ -524,6 +526,16 @@ string Options::getInputMeshName() const
 string Options::getInputMeshFile() const
 {
     return m_inputMeshFile;
+}
+
+float Options::getOctreeVoxelSize() const
+{
+    return m_octreeVoxelSize;
+}
+
+size_t Options::getOctreeMinPoints() const
+{
+    return m_octreeMinPoints;
 }
 
 Options::~Options() {

@@ -363,6 +363,10 @@ public:
 
     bool transformScanPosition() const;
 
+    float getOctreeVoxelSize() const;
+
+    size_t getOctreeMinPoints() const;
+
 private:
 
     /// The set voxelsize
@@ -499,6 +503,12 @@ private:
 
     ///Filename to load the mesh from
     std::string m_inputMeshFile;
+
+    /// Octree reduction voxel size
+    float m_octreeVoxelSize;
+
+    /// Octree min points
+    size_t m_octreeMinPoints;
 
 };
 
