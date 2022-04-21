@@ -781,11 +781,16 @@ int main(int argc, char** argv)
         }
 
         cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
-
+        
+        // Recalculate the face normals because the faces were modified previously
+        faceNormals = calcFaceNormals(mesh);
+        
         if (options.retesselate())
         {
             Tesselator<Vec>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
         }
+        // Recompute clusters because the mesh has been modified
+        clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
     }
     else
     {

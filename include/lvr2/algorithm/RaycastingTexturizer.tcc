@@ -570,7 +570,18 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
         }
     );
 
-    return ret;
+    // Return max 10 Images, this should be enough if we need 
+    // more then 10 the images are probably to far away to have good data anyway
+    // and we can reduce the amount of traced rays especially for large amounts of images
+    if (ret.size() <= 10)
+    {
+        return ret;
+    }
+
+    std::vector<ImageInfo> reduced;
+    std::copy_n(ret.begin(), 10, std::back_inserter(reduced));
+
+    return reduced;
 }
 
 template <typename BaseVecT>
