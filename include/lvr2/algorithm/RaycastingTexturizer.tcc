@@ -156,6 +156,11 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                     origin = rotationI2W * origin + translationI2W; // From Image -> World
                     info.cameraOrigin = origin.cast<float>();
 
+                    // Precalculate the view direction vector in world space (only needs rotation no translation)
+                    Vector3d view_vec_world = rotationI2C.inverse() * Vector3d::UnitZ();
+                    view_vec_world = rotationI2W * view_vec_world;
+                    info.viewDirectionWorld = view_vec_world.normalized().cast<float>();
+
                     // === The camera intrinsics in the ringlok ScanProject are wrong === //
                     // === These are the correct values for the Riegl camera === //
                     info.model.fx = 2395.4336550315002;
@@ -499,11 +504,31 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
     Vector3f normal = triangle.normal();
     Vector3f center = triangle.center();
 
+    // Initially all images are considered
+    std::vector<ImageInfo> consideration_set = m_images;
+
+    // Filter out images pointing away from the triangle
+    auto partition_point = std::partition(
+        consideration_set.begin(),
+        consideration_set.end(),
+        [&](ImageInfo elem)
+        {
+            Vector3f to_triangle = (center - elem.cameraOrigin).normalized();
+            
+            // 1 is 0 deg -1 is 180
+            float sin_angle = to_triangle.dot(elem.viewDirectionWorld);
+            // If the angle is smaller than 90 deg keep the image
+            return sin_angle > 0;
+        }
+    );
+    // Remove all elements in the second partition
+    consideration_set.erase(partition_point, consideration_set.end());
+
     std::vector<std::pair<ImageInfo, float>> ranked;
 
     std::transform(
-        m_images.begin(),
-        m_images.end(),
+        consideration_set.begin(),
+        consideration_set.end(),
         std::back_insert_iterator(ranked),
         [normal, center](ImageInfo img)
         {

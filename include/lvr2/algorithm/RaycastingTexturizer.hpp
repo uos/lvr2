@@ -122,6 +122,7 @@ private:
         Eigen::Quaternionf ImageToCameraRotation;
         Eigen::Vector3f ImageToCameraTranslation;
         Eigen::Vector3f cameraOrigin;
+        Eigen::Vector3f viewDirectionWorld;
         CameraImagePtr image;
         PinholeModel model;
     };
