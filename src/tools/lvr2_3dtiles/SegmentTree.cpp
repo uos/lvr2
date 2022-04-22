@@ -170,15 +170,19 @@ void SegmentTreeNode::add_child(SegmentTree::Ptr child)
     m_depth = std::max(m_depth, child->m_depth + 1);
     m_children.push_back(std::move(child));
 }
-void SegmentTreeNode::update_children()
+void SegmentTreeNode::update_children(int combine_depth)
 {
     m_meta_segment.bb = pmp::BoundingBox();
     m_depth = 0;
     for (auto& child : m_children)
     {
-        child->update_children();
+        child->update_children(combine_depth);
         m_meta_segment.bb += child->segment().bb;
         m_depth = std::max(m_depth, child->m_depth + 1);
+    }
+    if (combine_depth > 0)
+    {
+        m_skipped = m_depth > combine_depth;
     }
 }
 bool SegmentTreeNode::combine_if_possible(bool print)

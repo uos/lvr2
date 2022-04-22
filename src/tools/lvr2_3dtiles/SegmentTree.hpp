@@ -57,7 +57,7 @@ public:
     void simplify(bool print = true);
     virtual void print(size_t indent = 0) = 0;
     virtual void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) = 0;
-    virtual void update_children() = 0;
+    virtual void update_children(int combine_depth = -1) = 0;
     virtual void collect_segments(std::vector<MeshSegment>& segments) = 0;
 
     virtual bool combine_if_possible(bool print) = 0;
@@ -65,6 +65,7 @@ public:
     virtual size_t sum_simplify_vertices() = 0;
     virtual MeshSegment& segment() = 0;
     virtual bool is_leaf() = 0;
+    virtual size_t num_children() = 0;
 
     size_t m_depth = 0;
     bool m_skipped = false;
@@ -95,7 +96,7 @@ public:
 
     void print(size_t indent = 0) override;
     void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) override;
-    void update_children() override;
+    void update_children(int combine_depth = -1) override;
     void collect_segments(std::vector<MeshSegment>& segments) override;
 
     bool combine_if_possible(bool print) override;
@@ -108,6 +109,10 @@ public:
     bool is_leaf() override
     {
         return false;
+    }
+    size_t num_children() override
+    {
+        return m_children.size();
     }
 
 private:
@@ -136,7 +141,7 @@ public:
 
         m_finalized = true;
     }
-    void update_children() override
+    void update_children(int combine_depth = -1) override
     {}
     void collect_segments(std::vector<MeshSegment>& segments) override
     {
@@ -162,6 +167,10 @@ public:
     bool is_leaf() override
     {
         return true;
+    }
+    size_t num_children() override
+    {
+        return 1;
     }
 
 private:

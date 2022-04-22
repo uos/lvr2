@@ -67,11 +67,17 @@ struct SegmentMetaData
  * @param num_chunks the number of chunks along each axis
  * @return pmp::IndexType the 1D Chunk-index
  */
-pmp::IndexType chunk_index(pmp::Point p, float chunk_size, Eigen::Vector3i num_chunks)
+pmp::IndexType chunk_index(const pmp::Point& p, float chunk_size, const Eigen::Vector3i& num_chunks)
 {
     return std::floor(p.x() / chunk_size)
            + std::floor(p.y() / chunk_size) * num_chunks.x()
            + std::floor(p.z() / chunk_size) * num_chunks.x() * num_chunks.y();
+}
+pmp::Point chunk_position(pmp::IndexType index, float chunk_size, const Eigen::Vector3i& num_chunks)
+{
+    return pmp::Point(index % num_chunks.x(),
+                      (index / num_chunks.x()) % num_chunks.y(),
+                      (index / num_chunks.x() / num_chunks.y())) * chunk_size;
 }
 
 void segment_mesh(pmp::SurfaceMesh& mesh,
@@ -325,19 +331,77 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
     std::vector<pmp::SurfaceMesh> meshes(chunk_map.size());
     mesh.split_mesh(meshes, f_chunk_id);
 
-    std::vector<MeshSegment> segments;
+    std::vector<std::pair<pmp::Point, SegmentTree::Ptr>> nodes;
 
-    for (size_t i = 0; i < meshes.size(); i++)
+    for (auto [ chunk_id, index ] : chunk_map)
     {
-        auto& mesh = meshes[i];
-        mesh.object_property<pmp::IndexType>("o:chunk_id")[0] = i;
+        MeshSegment segment;
+        segment.mesh.reset(new pmp::SurfaceMesh(std::move(meshes[index])));
+        segment.mesh->add_object_property<pmp::IndexType>("o:chunk_id")[0] = index;
+        segment.bb = segment.mesh->bounds();
 
-        auto& out_mesh = segments.emplace_back();
-        out_mesh.mesh.reset(new pmp::SurfaceMesh(std::move(mesh)));
-        out_mesh.bb = out_mesh.mesh->bounds();
+        auto chunk_pos = chunk_position(chunk_id, 1, num_chunks);
+        auto leaf = new SegmentTreeLeaf(segment);
+        nodes.emplace_back(chunk_pos, SegmentTree::Ptr(leaf));
     }
 
-    auto tree = SegmentTree::octree_partition(segments, 2);
+    std::unordered_map<pmp::IndexType, SegmentTreeNode*> parents;
+    Eigen::Vector3i parent_num_chunks = num_chunks / 2;
+
+    while (nodes.size() != 1)
+    {
+        parent_num_chunks = parent_num_chunks.cwiseMax(1);
+        for (auto& [ chunk_pos, node ] : nodes)
+        {
+            auto parent_id = chunk_index(chunk_pos / 2, 1, parent_num_chunks);
+            auto parent = parents.find(parent_id);
+            if (parent == parents.end())
+            {
+                parent = parents.emplace(parent_id, new SegmentTreeNode()).first;
+            }
+            parent->second->add_child(std::move(node));
+        }
+        nodes.clear();
+        for (auto [ chunk_id, node ] : parents)
+        {
+            auto pos = chunk_position(chunk_id, 1, parent_num_chunks);
+            if (node->num_children() == 1)
+            {
+                nodes.emplace_back(pos, std::move(node->children()[0]));
+                delete node;
+                continue;
+            }
+
+            size_t child_child_count = 0;
+            for (auto& child : node->children())
+            {
+                child_child_count += child->num_children();
+            }
+            if (child_child_count <= 8)
+            {
+                // sparse node -> collapse one layer
+                std::vector<SegmentTree::Ptr> new_children;
+                for (auto& child : node->children())
+                {
+                    if (child->is_leaf())
+                    {
+                        new_children.emplace_back(std::move(child));
+                    }
+                    else
+                    {
+                        auto& child_children = dynamic_cast<SegmentTreeNode*>(child.get())->children();
+                        new_children.insert(new_children.end(), std::move_iterator(child_children.begin()), std::move_iterator(child_children.end()));
+                    }
+                }
+                node->children().swap(new_children);
+            }
+            nodes.emplace_back(pos, SegmentTree::Ptr(node));
+        }
+        parents.clear();
+        parent_num_chunks /= 2;
+    }
+    auto tree = std::move(nodes[0].second);
+    tree->update_children(2);
 
     std::vector<pmp::IndexType> combine_map(meshes.size(), pmp::PMP_MAX_INDEX);
     std::vector<std::shared_ptr<pmp::SurfaceMesh>> combined_meshes;
@@ -617,7 +681,7 @@ SegmentTree::Ptr split_mesh_medium(MeshSegment& segment, float chunk_size)
         leafs[i].second->add_child(SegmentTree::Ptr(new SegmentTreeLeaf(segment)));
     }
 
-    root->update_children();
+    root->update_children(2);
 
     return SegmentTree::Ptr(root);
 }
