@@ -655,9 +655,9 @@ public:
             do
             {
                 halfedge_ = mesh_->ccw_rotated_halfedge(halfedge_);
+                loop_helper_.loop_detection(halfedge_);
             } while (mesh_->is_boundary(halfedge_));
             is_active_ = true;
-            loop_helper_.loop_detection(halfedge_);
             return *this;
         }
 
@@ -1735,6 +1735,12 @@ public:
 
     //! returns the center of face \p f (average position of vertices)
     Point center(Face f) const;
+
+    //! returns the center of edge \p e.
+    Point center(Edge e) const
+    {
+        return (vpoint_[vertex(e, 0)] + vpoint_[vertex(e, 1)]) / 2;
+    }
 
     //! attempts to fix non-manifold vertices by inserting a new vertex per connected patch
     void duplicate_non_manifold_vertices();

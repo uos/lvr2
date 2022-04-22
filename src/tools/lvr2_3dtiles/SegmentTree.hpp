@@ -57,12 +57,14 @@ public:
     void simplify(bool print = true);
     virtual void print(size_t indent = 0) = 0;
     virtual void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) = 0;
+    virtual void update_children() = 0;
     virtual void collect_segments(std::vector<MeshSegment>& segments) = 0;
 
     virtual bool combine_if_possible(bool print) = 0;
     virtual void simplify_if_possible(ProgressBar* progress, std::vector<std::pair<size_t, float>>& results) = 0;
-    virtual size_t count_simplifyable() = 0;
+    virtual size_t sum_simplify_vertices() = 0;
     virtual MeshSegment& segment() = 0;
+    virtual bool is_leaf() = 0;
 
     size_t m_depth = 0;
     bool m_skipped = false;
@@ -92,15 +94,20 @@ public:
     }
 
     void print(size_t indent = 0) override;
-    void collect_segments(std::vector<MeshSegment>& segments) override;
     void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) override;
+    void update_children() override;
+    void collect_segments(std::vector<MeshSegment>& segments) override;
 
     bool combine_if_possible(bool print) override;
     void simplify_if_possible(ProgressBar* progress, std::vector<std::pair<size_t, float>>& results) override;
-    size_t count_simplifyable() override;
+    size_t sum_simplify_vertices() override;
     MeshSegment& segment() override
     {
         return m_meta_segment;
+    }
+    bool is_leaf() override
+    {
+        return false;
     }
 
 private:
@@ -114,10 +121,6 @@ public:
         : m_segment(segment)
     {}
     void print(size_t indent = 0) override;
-    void collect_segments(std::vector<MeshSegment>& segments) override
-    {
-        segments.push_back(m_segment);
-    }
     void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) override
     {
         if (m_finalized)
@@ -133,6 +136,12 @@ public:
 
         m_finalized = true;
     }
+    void update_children() override
+    {}
+    void collect_segments(std::vector<MeshSegment>& segments) override
+    {
+        segments.push_back(m_segment);
+    }
 
     bool combine_if_possible(bool print) override
     {
@@ -142,13 +151,17 @@ public:
     {
         m_simplified = true;
     }
-    size_t count_simplifyable() override
+    size_t sum_simplify_vertices() override
     {
         return 0;
     }
     virtual MeshSegment& segment() override
     {
         return m_segment;
+    }
+    bool is_leaf() override
+    {
+        return true;
     }
 
 private:

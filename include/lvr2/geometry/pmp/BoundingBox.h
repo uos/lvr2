@@ -102,6 +102,14 @@ public:
         return true;
     }
 
+    std::array<BoundingBox, 2> split(int axis, float threshold) const
+    {
+        BoundingBox bb1(*this), bb2(*this);
+        bb1.max_[axis] = threshold;
+        bb2.min_[axis] = threshold;
+        return {bb1, bb2};
+    }
+
 private:
     Point min_, max_;
 };

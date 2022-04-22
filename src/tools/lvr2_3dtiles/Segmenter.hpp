@@ -72,6 +72,7 @@ void segment_mesh(pmp::SurfaceMesh& input_mesh,
 
 SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, bool print = true);
 SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size);
+SegmentTree::Ptr split_mesh_medium(MeshSegment& segment, float chunk_size);
 
 inline SegmentTree::Ptr split_mesh(MeshSegment& segment, float chunk_size)
 {

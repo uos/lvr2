@@ -278,6 +278,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
 SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
 {
     auto& mesh = *segment.mesh;
+    mesh.garbage_collection(); // ensure that we never need to check mesh.is_deleted(...)
 
     pmp::Point size_of_segment = segment.bb.max() - segment.bb.min();
     pmp::Point size = size_of_segment / chunk_size;
@@ -297,21 +298,8 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
         for (size_t i = 0; i < mesh.faces_size(); i++)
         {
             pmp::Face fH(i);
-            if (mesh.is_deleted(fH))
-            {
-                continue;
-            }
-            pmp::Point pos(0, 0, 0);
-            size_t count = 0;
-            for (auto vH : mesh.vertices(fH))
-            {
-                pos += mesh.position(vH);
-                count++;
-            }
-            assert(count == 3);
-            pos /= count;
-
-            auto chunk_id = chunk_index(pos - chunk_offset, chunk_size, num_chunks);
+            auto center = mesh.center(fH);
+            auto chunk_id = chunk_index(center - chunk_offset, chunk_size, num_chunks);
             f_chunk_id[fH] = chunk_id;
             local_chunk_ids.insert(chunk_id);
         }
@@ -331,11 +319,7 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < mesh.faces_size(); i++)
     {
-        pmp::Face fH(i);
-        if (!mesh.is_deleted(fH))
-        {
-            f_chunk_id[fH] = chunk_map[f_chunk_id[fH]];
-        }
+        f_chunk_id[pmp::Face(i)] = chunk_map[f_chunk_id[pmp::Face(i)]];
     }
 
     std::vector<pmp::SurfaceMesh> meshes(chunk_map.size());
@@ -364,11 +348,11 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
     {
         auto current = queue.back();
         queue.pop_back();
-        SegmentTreeNode* node = dynamic_cast<SegmentTreeNode*>(current);
-        if (!node)
+        if (current->is_leaf())
         {
             continue;
         }
+        SegmentTreeNode* node = dynamic_cast<SegmentTreeNode*>(current);
         if (node->m_depth > 1)
         {
             for (auto& child : node->children())
@@ -396,43 +380,27 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < mesh.faces_size(); i++)
     {
-        pmp::Face fH(i);
-        if (!mesh.is_deleted(fH))
-        {
-            f_chunk_id[fH] = combine_map[f_chunk_id[fH]];
-        }
+        f_chunk_id[pmp::Face(i)] = combine_map[f_chunk_id[pmp::Face(i)]];
     }
 
     auto v_feature = mesh.add_vertex_property("v:feature", false);
     auto h_original = mesh.add_halfedge_property<pmp::Edge>("h:original");
-    #pragma omp parallel
+    #pragma omp parallel for schedule(dynamic,64)
+    for (size_t i = 0; i < mesh.edges_size(); i++)
     {
-        std::vector<pmp::Vertex> feature_vertices;
-        #pragma omp for schedule(dynamic,64) nowait
-        for (size_t i = 0; i < mesh.edges_size(); i++)
+        pmp::Edge eH(i);
+        auto heH0 = mesh.halfedge(eH, 0);
+        auto heH1 = mesh.halfedge(eH, 1);
+        auto fH0 = mesh.face(heH0);
+        auto fH1 = mesh.face(heH1);
+        if (fH0.is_valid() && fH1.is_valid() && f_chunk_id[fH0] != f_chunk_id[fH1])
         {
-            pmp::Edge eH(i);
-            if (mesh.is_deleted(eH))
+            h_original[heH0] = eH;
+            h_original[heH1] = eH;
+            #pragma omp critical
             {
-                continue;
-            }
-            auto heH0 = mesh.halfedge(eH, 0);
-            auto heH1 = mesh.halfedge(eH, 1);
-            auto fH0 = mesh.face(heH0);
-            auto fH1 = mesh.face(heH1);
-            if (fH0.is_valid() && fH1.is_valid() && f_chunk_id[fH0] != f_chunk_id[fH1])
-            {
-                h_original[heH0] = eH;
-                h_original[heH1] = eH;
-                feature_vertices.push_back(mesh.to_vertex(heH0));
-                feature_vertices.push_back(mesh.to_vertex(heH1));
-            }
-        }
-        #pragma omp critical
-        {
-            for (auto vH : feature_vertices)
-            {
-                v_feature[vH] = true;
+                v_feature[mesh.to_vertex(heH0)] = true;
+                v_feature[mesh.to_vertex(heH1)] = true;
             }
         }
     }
@@ -451,6 +419,207 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
     mesh.remove_face_property(f_chunk_id);
 
     return tree;
+}
+
+SegmentTree::Ptr split_mesh_medium(MeshSegment& segment, float chunk_size)
+{
+    if (segment.bb.longest_axis_size() < chunk_size)
+    {
+        return SegmentTree::Ptr(new SegmentTreeLeaf(segment));
+    }
+
+    auto& mesh = *segment.mesh;
+    mesh.garbage_collection(); // ensure that we never need to check mesh.is_deleted(...)
+
+    struct SplitData
+    {
+        int split_axis[3];
+        float split_points[3][4];
+
+        SplitData()
+        {}
+        SplitData(const pmp::BoundingBox& bb)
+        {
+            pmp::Point size = bb.max() - bb.min();
+            std::vector<pmp::BoundingBox> bbs = { bb };
+            for (int i = 0; i < 3; i++)
+            {
+                int axis = std::max_element(size.data(), size.data() + 3) - size.data();
+                split_axis[i] = axis;
+                size[axis] /= 2;
+                std::vector<pmp::BoundingBox> new_bbs;
+                for (size_t b = 0; b < bbs.size(); b++)
+                {
+                    split_points[i][b] = bbs[b].min()[axis] + size[axis];
+                    auto split = bbs[b].split(axis, split_points[i][b]);
+                    new_bbs.insert(new_bbs.end(), split.begin(), split.end());
+                }
+            }
+        }
+        uint8_t id(const pmp::Point& p) const
+        {
+            uint8_t ret = 0;
+            size_t index = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                size_t next_index = index * 2;
+                if (p[split_axis[i]] > split_points[i][index])
+                {
+                    ret |= (1 << i);
+                    next_index++;
+                }
+            }
+            return ret;
+        }
+    };
+
+    std::vector<pmp::BoundingBox> bbs = { segment.bb };
+    std::vector<SplitData> splits = { SplitData(segment.bb) };
+    std::vector<bool> needs_splitting = { true };
+    std::vector<SegmentTreeNode*> nodes;
+    std::vector<std::pair<pmp::IndexType, SegmentTreeNode*>> leafs;
+    auto root = new SegmentTreeNode();
+    nodes.push_back(root);
+
+    auto v_chunk_id = mesh.add_vertex_property<pmp::IndexType>("v:chunk_id", 0);
+
+    for (;;)
+    {
+        bbs.clear();
+        bbs.resize(splits.size() * 8);
+
+        #pragma omp parallel
+        {
+            std::vector<pmp::BoundingBox> local_bbs(bbs.size());
+            #pragma omp for schedule(dynamic,64) nowait
+            for (size_t i = 0; i < mesh.vertices_size(); i++)
+            {
+                pmp::Vertex vH(i);
+                auto& id = v_chunk_id[vH];
+                if (!needs_splitting[id])
+                {
+                    id *= 8;
+                    continue;
+                }
+                auto& position = mesh.position(vH);
+                pmp::IndexType new_id = splits[id].id(position);
+                id = id * 8 + new_id;
+                local_bbs[id] += position;
+            }
+            #pragma omp critical
+            {
+                for (size_t i = 0; i < local_bbs.size(); i++)
+                {
+                    bbs[i] += local_bbs[i];
+                }
+            }
+        }
+        for (auto& leaf : leafs)
+        {
+            leaf.first *= 8;
+        }
+
+        splits.resize(bbs.size());
+        needs_splitting.clear();
+        needs_splitting.resize(bbs.size(), false);
+        std::vector<SegmentTreeNode*> new_nodes(bbs.size(), nullptr);
+        bool any_splitting = false;
+        for (size_t i = 0; i < bbs.size(); i++)
+        {
+            auto parent = nodes[i / 8];
+            if (parent == nullptr || bbs[i].is_empty())
+            {
+                continue;
+            }
+
+            splits[i] = SplitData(bbs[i]);
+            needs_splitting[i] = bbs[i].longest_axis_size() >= chunk_size;
+
+            if (needs_splitting[i])
+            {
+                new_nodes[i] = new SegmentTreeNode();
+                parent->add_child(SegmentTree::Ptr(new_nodes[i]));
+                any_splitting = true;
+            }
+            else
+            {
+                leafs.push_back(std::make_pair(i, parent));
+            }
+        }
+        nodes = std::move(new_nodes);
+        if (!any_splitting)
+        {
+            break;
+        }
+    }
+
+    std::vector<pmp::IndexType> leaf_id_map(bbs.size(), pmp::PMP_MAX_INDEX);
+    std::vector<pmp::BoundingBox> leaf_bbs(leafs.size());
+    for (size_t id = 0; id < leafs.size(); id++)
+    {
+        leaf_id_map[leafs[id].first] = id;
+        leaf_bbs[id] = bbs[leafs[id].first];
+    }
+
+    auto f_chunk_id = mesh.add_face_property<pmp::IndexType>("f:chunk_id", pmp::PMP_MAX_INDEX);
+
+    #pragma omp parallel for schedule(dynamic,64)
+    for (size_t i = 0; i < mesh.faces_size(); i++)
+    {
+        pmp::Face fH(i);
+        auto v_iter = mesh.vertices(fH);
+        auto id0 = v_chunk_id[*v_iter];
+        auto id1 = v_chunk_id[*++v_iter];
+        auto id2 = v_chunk_id[*++v_iter];
+        if (id0 == id1 || id1 != id2)
+        {
+            f_chunk_id[fH] = leaf_id_map[id0];
+        }
+        else
+        {
+            f_chunk_id[fH] = leaf_id_map[id1];
+        }
+    }
+
+    mesh.remove_vertex_property(v_chunk_id);
+
+    mesh.add_edge_property<bool>("e:feature", false);
+    auto v_feature = mesh.add_vertex_property<bool>("v:feature", false);
+    auto h_original = mesh.add_halfedge_property<pmp::Halfedge>("h:original");
+    #pragma omp parallel for schedule(dynamic,64)
+    for (size_t i = 0; i < mesh.edges_size(); i++)
+    {
+        pmp::Edge eH(i);
+        auto heH0 = mesh.halfedge(eH, 0);
+        auto heH1 = mesh.halfedge(eH, 1);
+        auto fH0 = mesh.face(heH0);
+        auto fH1 = mesh.face(heH1);
+        if (fH0.is_valid() && fH1.is_valid() && f_chunk_id[fH0] != f_chunk_id[fH1])
+        {
+            h_original[heH0] = heH0;
+            h_original[heH1] = heH1;
+            #pragma omp critical
+            {
+                v_feature[mesh.to_vertex(heH0)] = true;
+                v_feature[mesh.to_vertex(heH1)] = true;
+            }
+        }
+    }
+
+    std::vector<pmp::SurfaceMesh> meshes(leafs.size());
+    mesh.split_mesh(meshes, f_chunk_id);
+
+    for (size_t i = 0; i < leafs.size(); i++)
+    {
+        MeshSegment segment;
+        segment.mesh.reset(new pmp::SurfaceMesh(std::move(meshes[i])));
+        segment.bb = leaf_bbs[i];
+        leafs[i].second->add_child(SegmentTree::Ptr(new SegmentTreeLeaf(segment)));
+    }
+
+    root->update_children();
+
+    return SegmentTree::Ptr(root);
 }
 
 SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, bool print)

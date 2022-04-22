@@ -201,7 +201,7 @@ void SurfaceSimplification::calculate_quadrics(SurfaceMesh& mesh)
     auto fnormal = mesh.get_face_property<pmp::Normal>("f:normal");
     auto vposition = mesh.get_vertex_property<pmp::Point>("v:point");
     #pragma omp parallel for schedule(dynamic,64)
-    for (size_t i = 0; i < mesh.n_vertices(); i++)
+    for (size_t i = 0; i < mesh.vertices_size(); i++)
     {
         Vertex v(i);
         if (mesh.is_deleted(v))

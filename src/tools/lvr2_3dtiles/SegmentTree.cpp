@@ -50,7 +50,7 @@ void SegmentTree::simplify(bool print)
         std::vector<std::pair<size_t, float>> results;
         if (print)
         {
-            size_t total_count = count_simplifyable();
+            size_t total_count = sum_simplify_vertices();
             progress = new ProgressBar(total_count, "Simplifying Layer");
         }
 
@@ -69,7 +69,7 @@ void SegmentTree::simplify(bool print)
                 }
                 std::cout << "                       " << std::endl;
             }
-            std::cout << "layer complete               " << std::endl;
+            std::cout << timestamp << "layer complete               " << std::endl;
         }
     }
     // print();
@@ -170,6 +170,17 @@ void SegmentTreeNode::add_child(SegmentTree::Ptr child)
     m_depth = std::max(m_depth, child->m_depth + 1);
     m_children.push_back(std::move(child));
 }
+void SegmentTreeNode::update_children()
+{
+    m_meta_segment.bb = pmp::BoundingBox();
+    m_depth = 0;
+    for (auto& child : m_children)
+    {
+        child->update_children();
+        m_meta_segment.bb += child->segment().bb;
+        m_depth = std::max(m_depth, child->m_depth + 1);
+    }
+}
 bool SegmentTreeNode::combine_if_possible(bool print)
 {
     if (m_simplified)
@@ -233,9 +244,11 @@ void SegmentTreeNode::simplify_if_possible(ProgressBar* progress, std::vector<st
             constexpr float TARGET_RATIO = 0.2;
             simplify.simplify(old_num_vertices * TARGET_RATIO);
 
+            // TODO: remove small faces
+
             if (progress != nullptr)
             {
-                ++(*progress);
+                *progress += old_num_vertices;
                 float ratio = (float)mesh.n_vertices() / old_num_vertices;
                 ratio = std::floor(ratio * 1000) / 10;
                 if (ratio > TARGET_RATIO * 110 && mesh.n_faces() > 10000)
@@ -258,7 +271,7 @@ void SegmentTreeNode::simplify_if_possible(ProgressBar* progress, std::vector<st
         #pragma omp taskwait
     }
 }
-size_t SegmentTreeNode::count_simplifyable()
+size_t SegmentTreeNode::sum_simplify_vertices()
 {
     if (m_simplified)
     {
@@ -269,14 +282,14 @@ size_t SegmentTreeNode::count_simplifyable()
     {
         if (!m_skipped)
         {
-            ret = 1;
+            ret = m_meta_segment.mesh->n_vertices();
         }
     }
     else
     {
         for (auto& child : m_children)
         {
-            ret += child->count_simplifyable();
+            ret += child->sum_simplify_vertices();
         }
     }
     return ret;
@@ -413,57 +426,48 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print)
     }
     if (print)
     {
-        std::cout << "Stitched " << stitch_count << " edges.  " << std::flush;
+        std::cout << "Stitched " << stitch_count << " edges." << std::endl;
     }
+
+    mesh.duplicate_non_manifold_vertices();
+    mesh.remove_degenerate_faces();
 
     auto v_feature = mesh.get_vertex_property<bool>("v:feature");
     size_t cleared = 0, remaining = 0;
-    #pragma omp parallel reduction(+:remaining)
+    #pragma omp parallel for schedule(dynamic,64) reduction(+:remaining, cleared)
+    for (size_t i = 0; i < mesh.vertices_size(); i++)
     {
-        std::vector<pmp::Vertex> non_feature_vertices;
-        #pragma omp for schedule(dynamic,64) nowait
-        for (size_t i = 0; i < mesh.vertices_size(); i++)
+        pmp::Vertex vH(i);
+        if (mesh.is_deleted(vH) || !v_feature[vH])
         {
-            pmp::Vertex vH(i);
-            if (mesh.is_deleted(vH) || !v_feature[vH])
+            continue;
+        }
+        bool feature = false;
+        for (auto heH : mesh.halfedges(vH))
+        {
+            if (h_original[heH].is_valid() || h_original[mesh.opposite_halfedge(heH)].is_valid())
             {
-                continue;
-            }
-            bool feature = false;
-            for (auto heH : mesh.halfedges(vH))
-            {
-                if (h_original[heH].is_valid() || h_original[mesh.opposite_halfedge(heH)].is_valid())
-                {
-                    feature = true;
-                    remaining++;
-                    break;
-                }
-            }
-            if (!feature)
-            {
-                non_feature_vertices.push_back(vH);
+                feature = true;
+                remaining++;
+                break;
             }
         }
-        #pragma omp critical
+        if (!feature)
         {
-            cleared += non_feature_vertices.size();
-            for (auto vH : non_feature_vertices)
-            {
-                v_feature[vH] = false;
-            }
+            cleared++;
+            v_feature[vH] = false;
         }
     }
-    std::cout << "Cleared " << cleared << " vertices." << (remaining == 0 ? " Mesh now feature free." : "") << std::endl;
+    if (print)
+    {
+        std::cout << "Cleared " << cleared << " vertices." << (remaining == 0 ? " Mesh now feature free." : "") << std::endl;
+    }
     if (remaining == 0)
     {
         mesh.remove_halfedge_property(h_original);
         mesh.remove_vertex_property(v_feature);
         mesh.remove_edge_property<bool>("e:feature");
     }
-
-    mesh.duplicate_non_manifold_vertices();
-    mesh.remove_degenerate_faces();
-
 }
 
 } // namespace lvr2
