@@ -130,6 +130,7 @@ void write_b3dm(const fs::path& output_dir,
                 const std::string& filename,
                 pmp::SurfaceMesh& mesh,
                 const pmp::BoundingBox& bb,
+                const std::string& texture_file,
                 bool print_progress)
 {
     std::string output_path = (output_dir / filename).string();
@@ -158,8 +159,41 @@ void write_b3dm(const fs::path& output_dir,
 
     auto [ out_mesh_id, out_mesh ] = push_and_get_index(model.meshes);
 
+    auto [ material_id, material ] = push_and_get_index(model.materials);
+    material.doubleSided = true;
+
     auto [ primitive_id, primitive ] = push_and_get_index(out_mesh.primitives);
     primitive.mode = CesiumGltf::MeshPrimitive::Mode::TRIANGLES;
+    primitive.material = material_id;
+
+    if (!texture_file.empty())
+    {
+        if (!tex)
+        {
+            throw std::runtime_error("Texture file specified, but no texture coordinates found");
+        }
+        auto [ image_id, image ] = push_and_get_index(model.images);
+        image.uri = texture_file;
+
+        auto [ sampler_id, sampler ] = push_and_get_index(model.samplers);
+        using CesiumGltf::Sampler;
+        sampler.magFilter = Sampler::MagFilter::LINEAR;
+        sampler.minFilter = Sampler::MinFilter::LINEAR_MIPMAP_LINEAR;
+        sampler.wrapS = Sampler::WrapS::CLAMP_TO_EDGE;
+        sampler.wrapT = Sampler::WrapT::CLAMP_TO_EDGE;
+
+        auto [ texture_id, texture ] = push_and_get_index(model.textures);
+        texture.source = image_id;
+        texture.sampler = sampler_id;
+
+        CesiumGltf::TextureInfo info;
+        info.index = texture_id;
+
+        CesiumGltf::MaterialPBRMetallicRoughness pbr;
+        pbr.baseColorTexture = info;
+
+        material.pbrMetallicRoughness = pbr;
+    }
 
     auto [ node_id, node ] = push_and_get_index(model.nodes);
     node.mesh = out_mesh_id;
@@ -185,7 +219,14 @@ void write_b3dm(const fs::path& output_dir,
     }
     if (tex)
     {
-        property_writers.emplace_back("TEXCOORD_0", 2, (float*)tex.data(), pmp::TexCoord(0, 0), pmp::TexCoord(1, 1));
+        if (texture_file.empty())
+        {
+            std::cerr << "Warning: Texture coordinates found, but no texture file specified. Ignoring texture coordinates." << std::endl;
+        }
+        else
+        {
+            property_writers.emplace_back("TEXCOORD_0", 2, (float*)tex.data(), pmp::TexCoord(0, 0), pmp::TexCoord(1, 1));
+        }
     }
 
     size_t byte_offset = 0;

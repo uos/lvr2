@@ -35,8 +35,10 @@
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
+#include "lvr2/geometry/pmp/SurfaceMeshIO.h"
 #include "lvr2/algorithm/pmp/SurfaceNormals.h"
 #include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/meshio/HDF5IO.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "B3dmWriter.hpp"
@@ -207,24 +209,37 @@ int main(int argc, char** argv)
     }
     else
     {
-        try
-        {
-            mesh.getSurfaceMesh().read(input_file.string());
-        }
-        catch (std::exception& e)
-        {
-            std::cerr << "SurfaceMeshIO failed: " << e.what() << std::endl;
-            std::cout << "Trying ModelFactory next" << std::endl;
+        auto extension = input_file.extension().string().substr(1);
 
+        std::cout << timestamp << "Reading mesh " << input_file;
+        if (pmp::SurfaceMeshIO::supported_extensions().count(extension))
+        {
+            std::cout << " using pmp::SurfaceMeshIO" << std::endl;
+            pmp::SurfaceMeshIO io(input_file.string(), pmp::IOFlags());
+            io.read(mesh.getSurfaceMesh());
+        }
+        else if (extension == "h5")
+        {
+            std::cout << " using meshio::HDF5IO" << std::endl;
+            auto kernel = std::make_shared<HDF5Kernel>(input_file.string());
+            auto schema = std::make_shared<MeshSchemaHDF5>();
+            meshio::HDF5IO io(kernel, schema);
+            MeshBufferPtr buffer;
+            try
+            {
+                buffer = io.loadMesh("Mesh0"); // TODO: replace with mesh finder
+            }
+            catch(const std::exception& e)
+            {
+                buffer = io.loadMesh("default");
+            }
+            std::cout << timestamp << "Converting to PMPMesh" << std::endl;
+            mesh = PMPMesh<BaseVector<float>>(buffer);
+        }
+        else
+        {
+            std::cout << " using ModelFactory" << std::endl;
             ModelPtr model = ModelFactory::readModel(input_file.string());
-            if (!model)
-            {
-                throw std::runtime_error("Error reading model");
-            }
-            if (!model->m_mesh)
-            {
-                throw std::runtime_error("Model has no mesh");
-            }
             std::cout << timestamp << "Converting to PMPMesh" << std::endl;
             mesh = PMPMesh<BaseVector<float>>(model->m_mesh);
         }
@@ -458,12 +473,7 @@ int main(int argc, char** argv)
                 }
                 else
                 {
-                    auto n = pmp::SurfaceNormals::compute_vertex_normal(mesh, v);
-                    if (n.dot(pmp::Point::UnitZ()) < 0)
-                    {
-                        n = -n;
-                    }
-                    v_normal[v] = n;
+                    v_normal[v] = pmp::SurfaceNormals::compute_vertex_normal(mesh, v);
                 }
             }
             ++progress_normals;
@@ -476,7 +486,7 @@ int main(int argc, char** argv)
     #pragma omp parallel for
     for (size_t i = 0; i < all_segments.size(); i++)
     {
-        write_b3dm(output_dir, all_segments[i].filename, *all_segments[i].mesh, all_segments[i].bb, false);
+        write_b3dm(output_dir, all_segments[i].filename, *all_segments[i].mesh, all_segments[i].bb, "", false);
         ++progress_write;
     }
     std::cout << "\r";

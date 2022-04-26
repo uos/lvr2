@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_set>
 
 #include "Types.h"
 #include "SurfaceMesh.h"
@@ -22,6 +23,8 @@ public:
     void read(SurfaceMesh& mesh);
 
     void write(const SurfaceMesh& mesh);
+
+    static std::unordered_set<std::string>& supported_extensions();
 
 private:
     void read_off(SurfaceMesh& mesh);

@@ -31,6 +31,15 @@ void tfwrite(FILE* out, const T& t)
 
 namespace pmp {
 
+std::unordered_set<std::string>& SurfaceMeshIO::supported_extensions()
+{
+    static std::unordered_set<std::string> extensions = {
+        "off", "obj", "stl", "ply", "pmp", "xyz", "agi"
+    };
+    return extensions;
+}
+
+
 void SurfaceMeshIO::read(SurfaceMesh& mesh)
 {
     std::setlocale(LC_NUMERIC, "C");
@@ -1004,7 +1013,14 @@ static int faceCallback(p_ply_argument argument)
     vertices.push_back(pmp::Vertex(idx));
 
     if (value_index == length - 1)
-        mesh->add_face(vertices);
+    {
+        try
+        {
+            mesh->add_face(vertices);
+        }
+        catch (const pmp::TopologyException&)
+        { }
+    }
 
     return 1;
 }

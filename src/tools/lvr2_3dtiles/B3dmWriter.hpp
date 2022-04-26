@@ -56,6 +56,7 @@ void write_b3dm(const fs::path& output_dir,
                 const std::string& filename,
                 pmp::SurfaceMesh& mesh,
                 const pmp::BoundingBox& bb,
+                const std::string& texture_file = "",
                 bool print_progress = true);
 
 } // namespace lvr2
