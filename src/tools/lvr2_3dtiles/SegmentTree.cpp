@@ -161,6 +161,75 @@ SegmentTree::Ptr SegmentTree::octree_split_recursive(MeshSegment** start, MeshSe
 
     return SegmentTree::Ptr(node);
 }
+SegmentTree::Ptr SegmentTree::octree_partition(std::vector<std::pair<pmp::Point, MeshSegment>>& chunks, const Eigen::Vector3i& num_chunks, int combine_depth)
+{
+    std::vector<std::pair<pmp::Point, SegmentTree::Ptr>> nodes;
+
+    for (auto [ chunk_pos, segment ] : chunks)
+    {
+        auto leaf = new SegmentTreeLeaf(segment);
+        nodes.emplace_back(chunk_pos, SegmentTree::Ptr(leaf));
+    }
+
+    std::unordered_map<pmp::IndexType, SegmentTreeNode*> parents;
+    Eigen::Vector3i parent_num_chunks = num_chunks / 2;
+
+    while (nodes.size() != 1)
+    {
+        parent_num_chunks = parent_num_chunks.cwiseMax(1);
+        for (auto& [ chunk_pos, node ] : nodes)
+        {
+            auto parent_id = chunk_index(chunk_pos / 2, 1, parent_num_chunks);
+            auto parent = parents.find(parent_id);
+            if (parent == parents.end())
+            {
+                parent = parents.emplace(parent_id, new SegmentTreeNode()).first;
+            }
+            parent->second->add_child(std::move(node));
+        }
+        nodes.clear();
+        for (auto [ chunk_id, node ] : parents)
+        {
+            auto pos = chunk_position(chunk_id, 1, parent_num_chunks);
+            if (node->num_children() == 1)
+            {
+                nodes.emplace_back(pos, std::move(node->children()[0]));
+                delete node;
+                continue;
+            }
+
+            size_t child_child_count = 0;
+            for (auto& child : node->children())
+            {
+                child_child_count += child->num_children();
+            }
+            if (child_child_count <= 8)
+            {
+                // sparse node -> collapse one layer
+                std::vector<SegmentTree::Ptr> new_children;
+                for (auto& child : node->children())
+                {
+                    if (child->is_leaf())
+                    {
+                        new_children.emplace_back(std::move(child));
+                    }
+                    else
+                    {
+                        auto& child_children = dynamic_cast<SegmentTreeNode*>(child.get())->children();
+                        new_children.insert(new_children.end(), std::move_iterator(child_children.begin()), std::move_iterator(child_children.end()));
+                    }
+                }
+                node->children().swap(new_children);
+            }
+            nodes.emplace_back(pos, SegmentTree::Ptr(node));
+        }
+        parents.clear();
+        parent_num_chunks /= 2;
+    }
+    auto& ret = nodes[0].second;
+    ret->update_children(combine_depth);
+    return std::move(ret);
+}
 
 // SegmentTreeNode
 
@@ -380,6 +449,8 @@ void SegmentTreeLeaf::print(size_t indent)
 
 void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print)
 {
+    return; // FIXME: fix this function and remove this line
+
     auto h_original = mesh.get_halfedge_property<pmp::Edge>("h:original");
     if (!h_original)
     {

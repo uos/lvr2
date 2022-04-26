@@ -67,7 +67,7 @@ inline std::pair<size_t, T&> push_and_get_index(std::vector<T>& vec, T&& value =
 void segment_mesh(pmp::SurfaceMesh& input_mesh,
                   const pmp::BoundingBox& bb,
                   float chunk_size,
-                  std::vector<MeshSegment>& chunks,
+                  std::vector<std::pair<pmp::Point, MeshSegment>>& chunks,
                   std::vector<MeshSegment>& large_segments);
 
 SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, bool print = true);

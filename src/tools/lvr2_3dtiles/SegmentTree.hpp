@@ -48,12 +48,37 @@ struct MeshSegment
     std::string filename = "";
 };
 
+/**
+ * @brief Calculates a 1D Chunk-index from a 3D position
+ *
+ * @param p the 3D position
+ * @param chunk_size the size of a chunk
+ * @param num_chunks the number of chunks along each axis
+ * @return pmp::IndexType the 1D Chunk-index
+ */
+inline pmp::IndexType chunk_index(const pmp::Point& p, float chunk_size, const Eigen::Vector3i& num_chunks)
+{
+    return std::floor(p.x() / chunk_size)
+           + std::floor(p.y() / chunk_size) * num_chunks.x()
+           + std::floor(p.z() / chunk_size) * num_chunks.x() * num_chunks.y();
+}
+/**
+ * @brief Inverse of chunk_index
+ */
+inline pmp::Point chunk_position(pmp::IndexType index, float chunk_size, const Eigen::Vector3i& num_chunks)
+{
+    return pmp::Point(index % num_chunks.x(),
+                      (index / num_chunks.x()) % num_chunks.y(),
+                      (index / num_chunks.x() / num_chunks.y())) * chunk_size;
+}
+
 class SegmentTree
 {
 public:
     using Ptr = std::unique_ptr<SegmentTree>;
 
     static Ptr octree_partition(std::vector<MeshSegment>& segments, int combine_depth = -1);
+    static Ptr octree_partition(std::vector<std::pair<pmp::Point, MeshSegment>>& chunks, const Eigen::Vector3i& num_chunks, int combine_depth = -1);
     void simplify(bool print = true);
     virtual void print(size_t indent = 0) = 0;
     virtual void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) = 0;

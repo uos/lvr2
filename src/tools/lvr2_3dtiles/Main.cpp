@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     fs::path output_dir;
     bool calc_normals;
     float chunk_size = -1;
-    fs::path mesh_out_file;
+    std::vector<fs::path> mesh_out_files;
     fs::path segment_out_path;
     bool fix_mesh;
     bool load_segments;
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
         ("segment,s", value<float>(&chunk_size),
          "Segment the mesh into connected regions with the given chunk size")
 
-        ("wm", value<fs::path>(&mesh_out_file),
+        ("wm", value<std::vector<fs::path>>(&mesh_out_files),
          "Save the mesh after fix and calcNormals to the given file")
 
         ("ws", value<fs::path>(&segment_out_path),
@@ -181,23 +181,33 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    std::cout << timestamp << "Reading mesh " << input_file << std::endl;
 
     PMPMesh<BaseVector<float>> mesh;
-    std::vector<MeshSegment> chunks;
+    std::vector<std::pair<pmp::Point, MeshSegment>> chunks;
     std::vector<MeshSegment> segments;
     pmp::BoundingBox bb;
+    Eigen::Vector3i num_chunks = Eigen::Vector3i::Zero();
 
     if (load_segments)
     {
+        std::cout << timestamp << "Reading segments from " << input_file << std::endl;
+
         for (auto file : boost::make_iterator_range(fs::directory_iterator(input_file / "chunks"), {}))
         {
-            auto& out = chunks.emplace_back();
-            out.mesh.reset(new pmp::SurfaceMesh());
-            out.mesh->read(file.path().string());
-            out.bb = out.mesh->bounds();
-            bb += out.bb;
+            auto& [ chunk_pos, segment ] = chunks.emplace_back();
+
+            int x, y, z;
+            std::sscanf(file.path().filename().c_str(), "%d_%d_%d.pmp", &x, &y, &z);
+            chunk_pos = pmp::Point(x, y, z);
+            num_chunks = num_chunks.cwiseMax(Eigen::Vector3i(x, y, z));
+
+            segment.mesh.reset(new pmp::SurfaceMesh());
+            segment.mesh->read(file.path().string());
+            segment.bb = segment.mesh->bounds();
+            bb += segment.bb;
         }
+        num_chunks += Eigen::Vector3i::Ones(); // count is max element + 1
+
         for (auto file : boost::make_iterator_range(fs::directory_iterator(input_file / "segments"), {}))
         {
             auto& out = segments.emplace_back();
@@ -273,13 +283,13 @@ int main(int argc, char** argv)
         //     }
         // }
 
-        if (!mesh_out_file.empty())
+        for (auto file : mesh_out_files)
         {
-            std::cout << timestamp << "Writing mesh to " << mesh_out_file << std::endl;
+            std::cout << timestamp << "Writing mesh to " << file << std::endl;
             surface_mesh.garbage_collection();
             pmp::IOFlags flags;
             flags.use_binary = true;
-            surface_mesh.write(mesh_out_file.string(), flags);
+            surface_mesh.write(file.string(), flags);
         }
 
         bb = surface_mesh.bounds();
@@ -299,6 +309,38 @@ int main(int argc, char** argv)
         }
     }
 
+    if (!segment_out_path.empty())
+    {
+        std::cout << timestamp << "Writing segments to " << segment_out_path << std::endl;
+        fs::path chunk_dir = segment_out_path / "chunks";
+        fs::path segment_dir = segment_out_path / "segments";
+        fs::remove_all(chunk_dir);
+        fs::remove_all(segment_dir);
+        fs::create_directories(chunk_dir);
+        fs::create_directories(segment_dir);
+        for (auto& chunk : chunks)
+        {
+            chunk.second.mesh->garbage_collection();
+        }
+        for (auto& segment : segments)
+        {
+            segment.mesh->garbage_collection();
+        }
+        #pragma omp parallel for
+        for (size_t i = 0; i < chunks.size(); ++i)
+        {
+            auto& [ chunk_pos, chunk ] = chunks[i];
+            std::stringstream ss;
+            ss << chunk_dir.string() << "/" << (int)chunk_pos.x() << "_" << (int)chunk_pos.y() << "_" << (int)chunk_pos.z() << ".pmp";
+            chunk.mesh->write(ss.str());
+        }
+        #pragma omp parallel for
+        for (size_t i = 0; i < segments.size(); ++i)
+        {
+            segments[i].mesh->write((segment_dir / (std::to_string(i) + ".pmp")).string());
+        }
+    }
+
     if (assign_colors)
     {
         std::cout << timestamp << "Assigning colors" << std::endl;
@@ -306,7 +348,7 @@ int main(int argc, char** argv)
         float variation = 0.1;
         for (size_t i = 0; i < segments.size() + chunks.size(); i++)
         {
-            auto& segment = i < segments.size() ? segments[i] : chunks[i - segments.size()];
+            auto& segment = i < segments.size() ? segments[i] : chunks[i - segments.size()].second;
             auto& mesh = *segment.mesh;
             auto v_color = mesh.vertex_property<pmp::Color>("v:color");
             float r = std::abs(std::sin(i * 2));
@@ -330,38 +372,6 @@ int main(int argc, char** argv)
                         std::clamp(b + db, 0.0f, 1.0f)
                     );
                 }
-            }
-        }
-    }
-
-    if (!segment_out_path.empty())
-    {
-        std::cout << timestamp << "Writing segments to " << segment_out_path << std::endl;
-        fs::path chunk_dir = segment_out_path / "chunks";
-        fs::path segment_dir = segment_out_path / "segments";
-        fs::remove_all(chunk_dir);
-        fs::remove_all(segment_dir);
-        fs::create_directories(chunk_dir);
-        fs::create_directories(segment_dir);
-        for (auto& chunk : chunks)
-        {
-            chunk.mesh->garbage_collection();
-        }
-        for (auto& segment : segments)
-        {
-            segment.mesh->garbage_collection();
-        }
-        #pragma omp parallel for
-        for (size_t i = 0; i < chunks.size() + segments.size(); ++i)
-        {
-            if (i < chunks.size())
-            {
-                chunks[i].mesh->write((chunk_dir / (std::to_string(i) + ".pmp")).string());
-            }
-            else
-            {
-                size_t idx = i - chunks.size();
-                segments[idx].mesh->write((segment_dir / (std::to_string(idx) + ".pmp")).string());
             }
         }
     }
@@ -396,7 +406,7 @@ int main(int argc, char** argv)
 
         std::cout << timestamp << "Partitioning chunks                " << std::endl;
         auto& tile = root.children.emplace_back();
-        auto chunk_root = SegmentTree::octree_partition(chunks, 2);
+        auto chunk_root = SegmentTree::octree_partition(chunks, num_chunks, 2);
         chunk_root->m_skipped = true;
         chunk_root->fill_tile(tile, path + "c");
         root_segment.add_child(std::move(chunk_root));
@@ -455,10 +465,9 @@ int main(int argc, char** argv)
         for (size_t i = 0; i < all_segments.size(); i++)
         {
             auto& mesh = *all_segments[i].mesh;
-            auto v_normal = mesh.get_vertex_property<pmp::Normal>("v:normal");
-            auto v_feature = mesh.get_vertex_property<bool>("v:feature");
-            auto v_color = mesh.get_vertex_property<pmp::Color>("v:color");
-            bool has_features = v_feature;
+            auto v_normal = mesh.vertex_property<pmp::Normal>("v:normal");
+            // auto v_feature = mesh.get_vertex_property<bool>("v:feature");
+            // auto v_color = mesh.get_vertex_property<pmp::Color>("v:color");
             #pragma omp parallel for schedule(dynamic,64)
             for (size_t i = 0; i < mesh.vertices_size(); i++)
             {
@@ -467,14 +476,14 @@ int main(int argc, char** argv)
                 {
                     continue;
                 }
-                if (has_features && v_feature[v])
-                {
-                    v_color[v] = pmp::Color(1, 0, 0);
-                }
-                else
-                {
+                // if (v_feature && v_feature[v])
+                // {
+                //     v_color[v] = pmp::Color(1, 0, 0);
+                // }
+                // else
+                // {
                     v_normal[v] = pmp::SurfaceNormals::compute_vertex_normal(mesh, v);
-                }
+                // }
             }
             ++progress_normals;
         }
