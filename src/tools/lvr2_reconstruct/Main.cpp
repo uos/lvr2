@@ -231,7 +231,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
             return nullptr;
         }
-        cout << "loading h5 scanproject from " << filePath << endl;
+        cout << timestamp << "Loading h5 scanproject from " << filePath << endl;
 
         // create hdf5 kernel and schema 
         FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
@@ -295,7 +295,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             ScanProjectPtr project = scanProjectIO->loadScanProject();
             // The aggregated scans
             ModelPtr model = std::make_shared<Model>();
-            model->m_pointCloud = std::make_shared<PointBuffer>();
+            model->m_pointCloud = nullptr;
 
             for (ScanPositionPtr pos: project->positions)
             {
@@ -307,9 +307,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                         bool was_loaded = scan->loaded();
                         if (!scan->loaded())
                         {
-                            scan->load(reduction_algorithm);
+                            scan->load();
                         }
-                        size_t npoints_old = model->m_pointCloud->numPoints();
 
                         // Transform the new pointcloud
                         transformPointCloud<float>(
@@ -318,7 +317,17 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                         
                         // Merge pointcloud and new scan 
                         // TODO: Maybe merge by allocation all needed memory first instead of constant allocations
-                        *model->m_pointCloud = mergePointBuffers(*model->m_pointCloud, *scan->points);
+                        if (model->m_pointCloud)
+                        {
+                            *model->m_pointCloud = mergePointBuffers(*model->m_pointCloud, *scan->points);
+                        }
+                        else
+                        {
+                            model->m_pointCloud = std::make_shared<PointBuffer>();
+                            *model->m_pointCloud = *scan->points; // Copy the first scan
+                        }
+                        
+                        
                         
                         // If not previously loaded unload
                         if (!was_loaded)
@@ -329,7 +338,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 }
             }
 
-            buffer = model->m_pointCloud;
+            reduction_algorithm->setPointBuffer(model->m_pointCloud);
+            buffer = reduction_algorithm->getReducedPoints();
         }
 
     }
@@ -618,23 +628,9 @@ void addRGBTexturizer(const reconstruct::Options& options, lvr2::Materializer<Ve
     materializer.addTexturizer(texturizer);
 }
 
-template <typename BaseMeshT>
-auto loadAndReconstructMesh(reconstruct::Options options)
+template <typename BaseMeshT, typename BaseVecT>
+BaseMeshT reconstructMesh(reconstruct::Options options, PointsetSurfacePtr<BaseVecT> surface)
 {
-    auto surface = loadPointCloud<Vec>(options);
-    if (!surface)
-    {
-        cout << "Failed to create pointcloud. Exiting." << endl;
-        exit(EXIT_FAILURE);
-    }
-
-    // Save points and normals only
-    if(options.savePointNormals())
-    {
-        ModelPtr pn(new Model(surface->pointBuffer()));
-        ModelFactory::saveModel(pn, "pointnormals.ply");
-    }
-
     // =======================================================================
     // Reconstruct mesh from point cloud data
     // =======================================================================
@@ -654,6 +650,12 @@ auto loadAndReconstructMesh(reconstruct::Options options)
         grid->saveGrid("fastgrid.grid");
     }
 
+    return std::move(mesh);
+}
+
+template <typename BaseMeshT>
+void optimizeMesh(reconstruct::Options options, BaseMeshT& mesh)
+{
     // =======================================================================
     // Optimize mesh
     // =======================================================================
@@ -663,10 +665,8 @@ auto loadAndReconstructMesh(reconstruct::Options options)
         removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
     }
 
-    // Magic number from lvr1 `cleanContours`...
     cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
 
-    // Fill small holes if requested
     if(options.getFillHoles())
     {
         mesh.fillHoles(options.getFillHoles());
@@ -688,36 +688,152 @@ auto loadAndReconstructMesh(reconstruct::Options options)
         std::cout << timestamp << "Removed " << old - mesh.numVertices() << " vertices." << std::endl;
     }
 
-    return std::make_tuple(std::move(mesh), surface);
+    auto faceNormals = calcFaceNormals(mesh);
+
+
+    if (options.optimizePlanes())
+    {
+        ClusterBiMap<FaceHandle> clusterBiMap = iterativePlanarClusterGrowingRANSAC(
+            mesh,
+            faceNormals,
+            options.getNormalThreshold(),
+            options.getPlaneIterations(),
+            options.getMinPlaneSize()
+        );
+
+        if(options.getSmallRegionThreshold() > 0)
+        {
+            deleteSmallPlanarCluster(mesh, clusterBiMap, static_cast<size_t>(options.getSmallRegionThreshold()));
+        }
+
+        cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
+
+        if(options.getFillHoles())
+        {
+            mesh.fillHoles(options.getFillHoles());
+        }
+    
+        // Recalculate the face normals because the faces were modified previously
+        faceNormals = calcFaceNormals(mesh);
+        // Regrow clusters after hole filling and small region removal
+        clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
+
+        if (options.retesselate())
+        {
+            Tesselator<Vec>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
+        }
+    }
+
 }
 
-template <typename BaseMeshT>
+template <typename BaseVecT>
+struct cmpBaseVecT
+{
+    bool operator()(const BaseVecT& lhs, const BaseVecT& rhs) const
+    {
+        return (lhs[0] < rhs[0])
+            || (lhs[0] == rhs[0] && lhs[1] < rhs[1])
+            || (lhs[0] == rhs[0] && lhs[1] == rhs[1] && lhs[2] < rhs[2]);
+
+    }
+};
+
+template <typename BaseMeshT, typename BaseVecT>
 auto loadExistingMesh(reconstruct::Options options)
 {
     meshio::HDF5IO io(
         std::make_shared<HDF5Kernel>(options.getInputMeshFile()),
         std::make_shared<MeshSchemaHDF5>()
     );
+    MeshBufferPtr mesh_buffer = io.loadMesh(options.getInputMeshName());
 
-    std::cout << timestamp << "Loading existing mesh '" << options.getInputMeshName() << "' from file '" << options.getInputFileName() << "'" << std::endl;
 
-    BaseMeshT mesh(io.loadMesh(options.getInputMeshName()));
-    
-    PointBufferPtr buffer = std::make_shared<PointBuffer>();
-    floatArr points(new float[3]);
-    buffer->setPointArray(points, 1);
-    PointsetSurfacePtr<Vec> surface = std::make_shared<AdaptiveKSearchSurface<Vec>>(
-            buffer,
-            options.getPCM(),
-            options.getKn(),
-            options.getKi(),
-            options.getKd(),
-            0,
-            options.getScanPoseFile());
+    // Handle Maps needed during mesh construction
+    std::map<size_t, VertexHandle> indexToVertexHandle;
+    std::map<BaseVecT, VertexHandle, cmpBaseVecT<BaseVecT>> positionToVertexHandle;
+    std::map<size_t, FaceHandle> indexToFaceHandle;
+    // Create all this stuff manually instead of using the constructors to
+    // ensure the Handles are correct.
+    BaseMeshT mesh;
+    DenseFaceMap<Normal<float>> faceNormalMap;
+    ClusterBiMap<FaceHandle> clusterBiMap;
 
-    
+    // Add vertices
+    floatArr vertices = mesh_buffer->getVertices();
+    for (size_t i = 0; i < mesh_buffer->numVertices(); i++)
+    {
+        BaseVecT vertex_pos(
+            vertices[i * 3 + 0],
+            vertices[i * 3 + 1],
+            vertices[i * 3 + 2]);
 
-    return std::make_tuple(std::move(mesh), surface);
+        // If the vertex position already exists do not add new vertex
+        if (positionToVertexHandle.count(vertex_pos))
+        {
+            VertexHandle vertexH = positionToVertexHandle.at(vertex_pos);
+            indexToVertexHandle.insert(std::pair(i, vertexH));
+        }
+        else
+        {
+            VertexHandle vertexH = mesh.addVertex(vertex_pos);
+            indexToVertexHandle.insert(std::pair(i, vertexH));
+        }
+        
+        
+    }
+
+    // Add faces
+    indexArray faces = mesh_buffer->getFaceIndices();
+    floatArr faceNormals = mesh_buffer->getFaceNormals();
+    for (size_t i = 0; i < mesh_buffer->numFaces(); i++)
+    {
+        VertexHandle v0 = indexToVertexHandle.at(faces[i * 3 + 0]);
+        VertexHandle v1 = indexToVertexHandle.at(faces[i * 3 + 1]);
+        VertexHandle v2 = indexToVertexHandle.at(faces[i * 3 + 2]);
+        // Add face
+        FaceHandle faceH = mesh.addFace(v0, v1, v2);
+        indexToFaceHandle.insert(std::pair(i, faceH));
+
+        if (faceNormals)
+        {
+            // Add normal
+            Normal<float> normal(
+                faceNormals[i * 3 + 0],
+                faceNormals[i * 3 + 1],
+                faceNormals[i * 3 + 2]
+            );
+            
+            faceNormalMap.insert(faceH, normal);
+        }
+        
+    }
+
+    if (!faceNormals)
+    {
+        std::cout << timestamp << "Calculating face normals" << std::endl;
+        faceNormalMap = calcFaceNormals(mesh);
+    }
+
+    // Add clusters
+    for (size_t i = 0;; i++)
+    {
+        std::string clusterString =  "cluster" + std::to_string(i) + "_face_indices";
+        auto clusterIndicesOptional = mesh_buffer->getIndexChannel(clusterString);
+        // If the cluster does not exist break
+        if (!clusterIndicesOptional) break;
+
+        ClusterHandle clusterH = clusterBiMap.createCluster();
+        for (size_t j = 0; j < clusterIndicesOptional->numElements(); j++)
+        {
+            FaceHandle faceH = indexToFaceHandle.at(j);
+            clusterBiMap.addToCluster(clusterH, faceH);
+        }
+    }
+
+    // Load the pointcloud
+    PointsetSurfacePtr<Vec> surface = loadPointCloud<BaseVecT>(options);
+
+    return std::make_tuple(std::move(mesh), std::move(surface), std::move(faceNormalMap), std::move(clusterBiMap));
 }
 
 int main(int argc, char** argv)
@@ -746,56 +862,42 @@ int main(int argc, char** argv)
 
     lvr2::PMPMesh<Vec> mesh;
     PointsetSurfacePtr<Vec> surface;
+    DenseFaceMap<Normal<float>> faceNormals;
+    ClusterBiMap<FaceHandle> clusterBiMap;
 
     if (options.useExistingMesh())
     {
-        std::tie(mesh, surface) = loadExistingMesh<lvr2::PMPMesh<Vec>>(options);
+        std::cout << timestamp << "Loading existing mesh '" << options.getInputMeshName() << "' from file '" << options.getInputMeshFile() << "'" << std::endl;
+        std::tie(mesh, surface, faceNormals, clusterBiMap) = loadExistingMesh<lvr2::PMPMesh<Vec>, Vec>(options);
     }
     else
     {
-        std::tie(mesh, surface) = loadAndReconstructMesh<lvr2::PMPMesh<Vec>>(options);
-    }
-
-    // Calculate face normals
-    auto faceNormals = calcFaceNormals(mesh);
-
-    ClusterBiMap<FaceHandle> clusterBiMap;
-    if(options.optimizePlanes())
-    {
-        clusterBiMap = iterativePlanarClusterGrowingRANSAC(
-            mesh,
-            faceNormals,
-            options.getNormalThreshold(),
-            options.getPlaneIterations(),
-            options.getMinPlaneSize()
-        );
-
-        if(options.getSmallRegionThreshold() > 0)
+        // Load PointCloud
+        surface = loadPointCloud<Vec>(options);
+        if (!surface)
         {
-            deleteSmallPlanarCluster(mesh, clusterBiMap, static_cast<size_t>(options.getSmallRegionThreshold()));
+            cout << "Failed to create pointcloud. Exiting." << endl;
+            exit(EXIT_FAILURE);
         }
-
-        if(options.getFillHoles())
-        {
-            mesh.fillHoles(options.getFillHoles());
-        }
-
-        cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
         
-        // Recalculate the face normals because the faces were modified previously
-        faceNormals = calcFaceNormals(mesh);
-        
-        if (options.retesselate())
-        {
-            Tesselator<Vec>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
-        }
-        // Recompute clusters because the mesh has been modified
-        clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
+        // Reconstruct simple mesh
+        mesh = reconstructMesh<lvr2::PMPMesh<Vec>>(options, surface);
     }
-    else
+
+    // Save points and normals only
+    if(options.savePointNormals())
     {
-        clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
+        ModelPtr pn(new Model(surface->pointBuffer()));
+        ModelFactory::saveModel(pn, "pointnormals.ply");
     }
+
+    // Optimize the mesh if requested
+    optimizeMesh(options, mesh);
+    
+
+    // Calc normals and clusters
+    faceNormals = calcFaceNormals(mesh);
+    clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
 
     // =======================================================================
     // Finalize mesh
