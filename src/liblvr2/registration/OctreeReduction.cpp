@@ -10,12 +10,16 @@ namespace lvr2
 OctreeReduction::OctreeReduction(
     PointBufferPtr &pointBuffer,
     const double &voxelSize,
-    const size_t &minPointsPerVoxel)
+    const size_t &minPointsPerVoxel,
+    const VoxelSamplingPolicy samplingPolicy)
     : m_pointBuffer(pointBuffer), 
       m_voxelSize(voxelSize),
       m_minPointsPerVoxel(minPointsPerVoxel),
-      m_numPoints(pointBuffer->numPoints())
+      m_numPoints(pointBuffer->numPoints()),
+      m_samplingPolicy(samplingPolicy)
 {
+    m_randomEngine.seed(std::random_device()());
+
     size_t n = pointBuffer->numPoints();
     m_flags = new bool[n];
     for (int i = 0; i < n; i++)
@@ -39,8 +43,10 @@ OctreeReduction::OctreeReduction(
     Vector3f *points,
     const size_t &n0,
     const double &voxelSize,
-    const size_t &minPointsPerVoxel) : m_voxelSize(voxelSize), m_minPointsPerVoxel(minPointsPerVoxel)
+    const size_t &minPointsPerVoxel,
+    const VoxelSamplingPolicy samplingPolicy) : m_voxelSize(voxelSize), m_minPointsPerVoxel(minPointsPerVoxel), m_samplingPolicy(samplingPolicy)
 {
+    m_randomEngine.seed(std::random_device()());
 
     m_flags = new bool[n0];
     for (int i = 0; i < n0; i++)
