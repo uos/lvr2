@@ -149,6 +149,10 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                     info.ImageToWorldTranslation = translationI2W.cast<float>();
                     info.ImageToCameraRotation = rotationI2C.normalized().cast<float>();
                     info.ImageToCameraTranslation = translationI2C.cast<float>();
+
+                    // Precalculate inverse Rotations because those are extremely expensive
+                    info.ImageToWorldRotationInverse = rotationI2W.normalized().inverse().cast<float>();
+                    info.ImageToCameraRotationInverse = rotationI2C.normalized().inverse().cast<float>();
                     
                     // Calculate camera origin in World space
                     Vector3d origin(0,0,0); // Camera frame
@@ -533,7 +537,7 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
         [normal, center](ImageInfo img)
         {
             // View vector in world coordinates
-            Vector3f view = img.ImageToCameraRotation.inverse() * Vector3f::UnitZ(); // Camera -> Image
+            Vector3f view = img.ImageToCameraRotationInverse * Vector3f::UnitZ(); // Camera -> Image
             view = img.ImageToWorldRotation * view; // Image -> World
             // Check if triangle is seen from the back // Currently not working because the normals are not always correct
             // if (normal.dot(view) < 0)
@@ -630,7 +634,7 @@ template <typename BaseVecT>
 bool RaycastingTexturizer<BaseVecT>::calcPointColor(Vector3f point, const ImageInfo& img, cv::Vec3b& color) const
 {
     // Transform the point to camera space
-    Vector3f imgPoint = img.ImageToWorldRotation.inverse() * (point - img.ImageToWorldTranslation); // World -> Image
+    Vector3f imgPoint = img.ImageToWorldRotationInverse * (point - img.ImageToWorldTranslation); // World -> Image
     Vector3f camPoint = img.ImageToCameraRotation * imgPoint + img.ImageToCameraTranslation;
     // If the point is behind the camera no color will be extracted
     if (camPoint.z() <= 0) return false;
