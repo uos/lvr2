@@ -86,8 +86,7 @@ public:
     virtual void collect_segments(std::vector<MeshSegment>& segments) = 0;
 
     virtual bool combine_if_possible(bool print) = 0;
-    virtual void simplify_if_possible(ProgressBar* progress, std::vector<std::pair<size_t, float>>& results) = 0;
-    virtual size_t sum_simplify_vertices() = 0;
+    virtual void collect_simplifyable(std::vector<std::shared_ptr<pmp::SurfaceMesh>>& meshes) = 0;
     virtual MeshSegment& segment() = 0;
     virtual bool is_leaf() = 0;
     virtual size_t num_children() = 0;
@@ -125,8 +124,7 @@ public:
     void collect_segments(std::vector<MeshSegment>& segments) override;
 
     bool combine_if_possible(bool print) override;
-    void simplify_if_possible(ProgressBar* progress, std::vector<std::pair<size_t, float>>& results) override;
-    size_t sum_simplify_vertices() override;
+    void collect_simplifyable(std::vector<std::shared_ptr<pmp::SurfaceMesh>>& meshes) override;
     MeshSegment& segment() override
     {
         return m_meta_segment;
@@ -149,7 +147,9 @@ class SegmentTreeLeaf : public SegmentTree
 public:
     SegmentTreeLeaf(const MeshSegment& segment)
         : m_segment(segment)
-    {}
+    {
+        m_simplified = true;
+    }
     void print(size_t indent = 0) override;
     void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) override
     {
@@ -177,13 +177,9 @@ public:
     {
         return true;
     }
-    void simplify_if_possible(ProgressBar* progress, std::vector<std::pair<size_t, float>>& results) override
+    void collect_simplifyable(std::vector<std::shared_ptr<pmp::SurfaceMesh>>& meshes) override
     {
         m_simplified = true;
-    }
-    size_t sum_simplify_vertices() override
-    {
-        return 0;
     }
     virtual MeshSegment& segment() override
     {

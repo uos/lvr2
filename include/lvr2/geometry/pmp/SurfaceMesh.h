@@ -576,7 +576,8 @@ public:
         //! pre-increment (rotate couter-clockwise)
         HalfedgeAroundVertexCirculator& operator++()
         {
-            assert(halfedge_.is_valid());
+            if (!halfedge_.is_valid())
+                throw InvalidInputException("Tried to iterate over Halfedges of isolated vertex!");
             halfedge_ = mesh_->ccw_rotated_halfedge(halfedge_);
             is_active_ = true;
             loop_helper_.loop_detection(halfedge_);
@@ -586,7 +587,8 @@ public:
         //! pre-decrement (rotate clockwise)
         HalfedgeAroundVertexCirculator& operator--()
         {
-            assert(halfedge_.is_valid());
+            if (!halfedge_.is_valid())
+                throw InvalidInputException("Tried to iterate over Halfedges of isolated vertex!");
             halfedge_ = mesh_->cw_rotated_halfedge(halfedge_);
             loop_helper_.cancel();
             return *this;
@@ -626,12 +628,20 @@ public:
     public:
         //! construct with mesh and vertex (vertex should not be isolated!)
         FaceAroundVertexCirculator(const SurfaceMesh* m, Vertex v)
-            : mesh_(m), halfedge_(mesh_->halfedge(v)), is_active_(true), loop_helper_(halfedge_)
+            : mesh_(m), halfedge_(mesh_->halfedge(v)), is_active_(true), loop_helper_(Halfedge())
         {
             if (halfedge_.is_valid() && mesh_->is_boundary(halfedge_))
             {
-                operator++();
-                loop_helper_.set_start(halfedge_);
+                try
+                {
+                    operator++();
+                    loop_helper_.set_start(halfedge_);
+                }
+                catch(const TopologyException&)
+                {
+                    std::cerr << "Warning: Isolated Vertex is not detected as isolated!" << std::endl;
+                    halfedge_ = Halfedge();
+                }
             }
         }
 
@@ -651,7 +661,8 @@ public:
         //! pre-increment (rotates counter-clockwise)
         FaceAroundVertexCirculator& operator++()
         {
-            assert(halfedge_.is_valid());
+            if (!halfedge_.is_valid())
+                throw InvalidInputException("Tried to iterate over Faces of isolated vertex!");
             do
             {
                 halfedge_ = mesh_->ccw_rotated_halfedge(halfedge_);
@@ -1978,11 +1989,13 @@ private:
     // helper data for add_face()
     typedef std::pair<Halfedge, Halfedge> NextCacheEntry;
     typedef std::vector<NextCacheEntry> NextCache;
-    std::vector<Vertex> add_face_vertices_;
+    std::vector<Vertex> temp_face_vertices_;
     std::vector<Halfedge> add_face_halfedges_;
     std::vector<bool> add_face_is_new_;
     std::vector<bool> add_face_needs_adjust_;
     NextCache add_face_next_cache_;
+    std::vector<Face> delete_incident_faces_;
+    std::vector<Edge> delete_deleted_edges_;
 
     //!@}
 };

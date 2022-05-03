@@ -261,21 +261,21 @@ Vertex SurfaceMesh::add_vertex(const Point& p)
 
 Face SurfaceMesh::add_triangle(Vertex v0, Vertex v1, Vertex v2)
 {
-    add_face_vertices_.resize(3);
-    add_face_vertices_[0] = v0;
-    add_face_vertices_[1] = v1;
-    add_face_vertices_[2] = v2;
-    return add_face(add_face_vertices_);
+    temp_face_vertices_.resize(3);
+    temp_face_vertices_[0] = v0;
+    temp_face_vertices_[1] = v1;
+    temp_face_vertices_[2] = v2;
+    return add_face(temp_face_vertices_);
 }
 
 Face SurfaceMesh::add_quad(Vertex v0, Vertex v1, Vertex v2, Vertex v3)
 {
-    add_face_vertices_.resize(4);
-    add_face_vertices_[0] = v0;
-    add_face_vertices_[1] = v1;
-    add_face_vertices_[2] = v2;
-    add_face_vertices_[3] = v3;
-    return add_face(add_face_vertices_);
+    temp_face_vertices_.resize(4);
+    temp_face_vertices_[0] = v0;
+    temp_face_vertices_[1] = v1;
+    temp_face_vertices_[2] = v2;
+    temp_face_vertices_[3] = v3;
+    return add_face(temp_face_vertices_);
 }
 
 Face SurfaceMesh::add_face(const std::vector<Vertex>& vertices)
@@ -1000,7 +1000,7 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
     {
         int thread_i = omp_get_thread_num();
         size_t start = thread_i * output.size() / num_threads;
-        size_t end = std::min((thread_i + 1) * output.size() / num_threads, output.size());
+        size_t end = (thread_i + 1) * output.size() / num_threads;
         size_t n = end - start;
 
         std::vector<size_t> next_face(n);
@@ -1128,7 +1128,7 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
     {
         int thread_i = omp_get_thread_num();
         size_t start = thread_i * output.size() / num_threads;
-        size_t end = std::min((thread_i + 1) * output.size() / num_threads, output.size());
+        size_t end = (thread_i + 1) * output.size() / num_threads;
         size_t n = end - start;
 
         std::vector<Halfedge> face_edges;
@@ -1626,7 +1626,8 @@ void SurfaceMesh::delete_vertex(Vertex v)
         return;
 
     // collect incident faces
-    std::vector<Face> incident_faces;
+    std::vector<Face>& incident_faces = delete_incident_faces_;
+    incident_faces.clear();
     incident_faces.reserve(6);
 
     for (auto f : faces(v))
@@ -1672,11 +1673,13 @@ void SurfaceMesh::delete_face(Face f)
     }
 
     // boundary edges of face f to be deleted
-    std::vector<Edge> deletedEdges;
+    std::vector<Edge>& deletedEdges = delete_deleted_edges_;
+    deletedEdges.clear();
     deletedEdges.reserve(3);
 
     // vertices of face f for updating their outgoing halfedge
-    std::vector<Vertex> vertices;
+    std::vector<Vertex>& vertices = temp_face_vertices_;
+    vertices.clear();
     vertices.reserve(3);
 
     // for all halfedges of face f do:

@@ -192,27 +192,78 @@ int main(int argc, char** argv)
     {
         std::cout << timestamp << "Reading segments from " << input_file << std::endl;
 
-        for (auto file : boost::make_iterator_range(fs::directory_iterator(input_file / "chunks"), {}))
+        fs::path chunk_folder = input_file / "chunks";
+        fs::path segment_folder = input_file / "segments";
+        std::vector<fs::path> chunk_files;
+        std::vector<fs::path> segment_files;
+        if (fs::is_directory(chunk_folder))
         {
-            auto& [ chunk_pos, segment ] = chunks.emplace_back();
+            for (auto& entry : fs::directory_iterator(chunk_folder))
+            {
+                chunk_files.push_back(entry.path());
+            }
+            std::sort(chunk_files.begin(), chunk_files.end());
+        }
+        if (fs::is_directory(segment_folder))
+        {
+            for (auto& entry : fs::directory_iterator(segment_folder))
+            {
+                segment_files.push_back(entry.path());
+            }
+            std::sort(segment_files.begin(), segment_files.end());
+        }
+        chunks.resize(chunk_files.size());
+        segments.resize(segment_files.size());
+
+        #pragma omp parallel for
+        for (size_t i = 0; i < chunk_files.size(); i++)
+        {
+            auto name = chunk_files[i];
+            auto& [ chunk_pos, segment ] = chunks[i];
 
             int x, y, z;
-            std::sscanf(file.path().filename().c_str(), "%d_%d_%d.pmp", &x, &y, &z);
+            int read = std::sscanf(name.stem().c_str(), "%d_%d_%d", &x, &y, &z);
+            if (read != 3)
+            {
+                std::cout << "Skipping " << name << std::endl;
+                continue;
+            }
             chunk_pos = pmp::Point(x, y, z);
-            num_chunks = num_chunks.cwiseMax(Eigen::Vector3i(x, y, z));
 
             segment.mesh.reset(new pmp::SurfaceMesh());
-            segment.mesh->read(file.path().string());
+            segment.mesh->read(name.string());
             segment.bb = segment.mesh->bounds();
+        }
+        for (size_t i = 0; i < chunks.size(); i++)
+        {
+            if (chunks[i].second.mesh == nullptr)
+            {
+                std::swap(chunks[i], chunks.back());
+                chunks.pop_back();
+            }
+        }
+
+        Eigen::Vector3i min_chunk = Eigen::Vector3i::Constant(std::numeric_limits<int>::max());
+        Eigen::Vector3i max_chunk = Eigen::Vector3i::Constant(std::numeric_limits<int>::min());
+
+        for (auto& [ chunk_pos, segment ] : chunks)
+        {
+            min_chunk = min_chunk.cwiseMin(chunk_pos.cast<int>());
+            max_chunk = max_chunk.cwiseMax(chunk_pos.cast<int>());
             bb += segment.bb;
         }
-        num_chunks += Eigen::Vector3i::Ones(); // count is max element + 1
-
-        for (auto file : boost::make_iterator_range(fs::directory_iterator(input_file / "segments"), {}))
+        num_chunks = max_chunk - min_chunk + Eigen::Vector3i::Ones();
+        std::cout << num_chunks.transpose() << " Chunks from " << min_chunk.transpose() << " to " << max_chunk.transpose() << std::endl; // TODO: temp
+        for (auto& [ chunk_pos, segment ] : chunks)
         {
-            auto& out = segments.emplace_back();
+            chunk_pos -= min_chunk.cast<float>();
+        }
+
+        for (size_t i = 0; i < segment_files.size(); i++)
+        {
+            auto& out = segments[i];
             out.mesh.reset(new pmp::SurfaceMesh());
-            out.mesh->read(file.path().string());
+            out.mesh->read(segment_files[i].string());
             out.bb = out.mesh->bounds();
             bb += out.bb;
         }
@@ -239,7 +290,7 @@ int main(int argc, char** argv)
             {
                 buffer = io.loadMesh("Mesh0"); // TODO: replace with mesh finder
             }
-            catch(const std::exception& e)
+            catch (const std::exception& e)
             {
                 buffer = io.loadMesh("default");
             }
@@ -367,10 +418,10 @@ int main(int argc, char** argv)
                     float dg = std::sin(pos.y() / step_size) * variation;
                     float db = ((pos.z() - min_z) / (max_z - min_z) - 0.5f) * variation;
                     v_color[v] = pmp::Color(
-                        std::clamp(r + dr, 0.0f, 1.0f),
-                        std::clamp(g + dg, 0.0f, 1.0f),
-                        std::clamp(b + db, 0.0f, 1.0f)
-                    );
+                                     std::clamp(r + dr, 0.0f, 1.0f),
+                                     std::clamp(g + dg, 0.0f, 1.0f),
+                                     std::clamp(b + db, 0.0f, 1.0f)
+                                 );
                 }
             }
         }
@@ -466,24 +517,22 @@ int main(int argc, char** argv)
         {
             auto& mesh = *all_segments[i].mesh;
             auto v_normal = mesh.vertex_property<pmp::Normal>("v:normal");
-            // auto v_feature = mesh.get_vertex_property<bool>("v:feature");
-            // auto v_color = mesh.get_vertex_property<pmp::Color>("v:color");
+            auto v_feature = mesh.get_vertex_property<bool>("v:feature");
+            auto v_color = mesh.get_vertex_property<pmp::Color>("v:color");
+            bool color_features = false; // v_feature && v_color;
             #pragma omp parallel for schedule(dynamic,64)
             for (size_t i = 0; i < mesh.vertices_size(); i++)
             {
-                pmp::Vertex v(i);
-                if (mesh.is_deleted(v))
+                pmp::Vertex vH(i);
+                if (mesh.is_deleted(vH))
                 {
                     continue;
                 }
-                // if (v_feature && v_feature[v])
-                // {
-                //     v_color[v] = pmp::Color(1, 0, 0);
-                // }
-                // else
-                // {
-                    v_normal[v] = pmp::SurfaceNormals::compute_vertex_normal(mesh, v);
-                // }
+                if (color_features && v_feature[vH])
+                {
+                    v_color[vH] = pmp::Color(1, 0, 0);
+                }
+                v_normal[vH] = pmp::SurfaceNormals::compute_vertex_normal(mesh, vH);
             }
             ++progress_normals;
         }

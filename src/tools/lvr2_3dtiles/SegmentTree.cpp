@@ -44,19 +44,54 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print);
 
 void SegmentTree::simplify(bool print)
 {
+    std::vector<std::shared_ptr<pmp::SurfaceMesh>> meshes;
+
     while (!combine_if_possible(print))
     {
+        collect_simplifyable(meshes);
+
+        // larger meshes tend to take longer, so have OpenMP schedule them first
+        std::sort(meshes.begin(), meshes.end(), [](auto & a, auto & b)
+        {
+            return a->n_vertices() > b->n_vertices();
+        });
+
         ProgressBar* progress = nullptr;
         std::vector<std::pair<size_t, float>> results;
+
         if (print)
         {
-            size_t total_count = sum_simplify_vertices();
+            size_t total_count = 0;
+            for (auto& m : meshes)
+            {
+                total_count += m->n_vertices();
+            }
             progress = new ProgressBar(total_count, "Simplifying Layer");
         }
+        #pragma omp parallel for schedule(dynamic,1)
+        for (size_t i = 0; i < meshes.size(); i++)
+        {
+            auto& mesh = *meshes[i];
+            size_t old_num_vertices = mesh.n_vertices();
+            pmp::SurfaceSimplification simplify(mesh, true);
+            constexpr float TARGET_RATIO = 0.2;
+            simplify.simplify(old_num_vertices * TARGET_RATIO);
 
-        #pragma omp parallel shared(progress, results)
-        #pragma omp single
-        simplify_if_possible(progress, results);
+            // TODO: remove small faces
+
+            if (print)
+            {
+                *progress += old_num_vertices;
+                float ratio = (float)mesh.n_vertices() / old_num_vertices;
+                ratio = std::floor(ratio * 1000) / 10;
+                if (ratio > TARGET_RATIO * 110 && mesh.n_faces() > 10000)
+                {
+                    #pragma omp critical
+                    results.emplace_back(mesh.n_faces(), ratio);
+                }
+            }
+        }
+        meshes.clear();
 
         if (print)
         {
@@ -283,7 +318,6 @@ bool SegmentTreeNode::combine_if_possible(bool print)
     for (auto& child : m_children)
     {
         meshes.push_back(child->segment().mesh.get());
-        meshes.back()->garbage_collection();
     }
     auto mesh = new pmp::SurfaceMesh();
     if (!m_skipped)
@@ -301,7 +335,7 @@ bool SegmentTreeNode::combine_if_possible(bool print)
     // only return true after simplification is done
     return false;
 }
-void SegmentTreeNode::simplify_if_possible(ProgressBar* progress, std::vector<std::pair<size_t, float>>& results)
+void SegmentTreeNode::collect_simplifyable(std::vector<std::shared_ptr<pmp::SurfaceMesh>>& meshes)
 {
     if (m_simplified)
     {
@@ -311,61 +345,18 @@ void SegmentTreeNode::simplify_if_possible(ProgressBar* progress, std::vector<st
     {
         if (!m_skipped)
         {
-            auto& mesh = *m_meta_segment.mesh;
-            size_t old_num_vertices = mesh.n_vertices();
-            pmp::SurfaceSimplification simplify(mesh, true);
-            constexpr float TARGET_RATIO = 0.2;
-            simplify.simplify(old_num_vertices * TARGET_RATIO);
-
-            // TODO: remove small faces
-
-            if (progress != nullptr)
-            {
-                *progress += old_num_vertices;
-                float ratio = (float)mesh.n_vertices() / old_num_vertices;
-                ratio = std::floor(ratio * 1000) / 10;
-                if (ratio > TARGET_RATIO * 110 && mesh.n_faces() > 10000)
-                {
-                    #pragma omp critical
-                    results.emplace_back(mesh.n_faces(), ratio);
-                }
-            }
+            meshes.push_back(m_meta_segment.mesh);
         }
 
         m_simplified = true;
     }
     else
     {
-        for (size_t i = 0; i < m_children.size(); i++)
-        {
-            #pragma omp task shared(progress, results)
-            m_children[i]->simplify_if_possible(progress, results);
-        }
-        #pragma omp taskwait
-    }
-}
-size_t SegmentTreeNode::sum_simplify_vertices()
-{
-    if (m_simplified)
-    {
-        return 0;
-    }
-    size_t ret = 0;
-    if (m_meta_segment.mesh != nullptr)
-    {
-        if (!m_skipped)
-        {
-            ret = m_meta_segment.mesh->n_vertices();
-        }
-    }
-    else
-    {
         for (auto& child : m_children)
         {
-            ret += child->sum_simplify_vertices();
+            child->collect_simplifyable(meshes);
         }
     }
-    return ret;
 }
 void SegmentTreeNode::fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix)
 {
@@ -451,95 +442,168 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print)
 {
     return; // FIXME: fix this function and remove this line
 
-    auto h_original = mesh.get_halfedge_property<pmp::Edge>("h:original");
-    if (!h_original)
+    auto v_original = mesh.get_vertex_property<pmp::Vertex>("v:original");
+    if (!v_original)
     {
         return;
     }
-    std::unordered_map<pmp::Edge, std::pair<pmp::Halfedge, pmp::Halfedge>> matches;
-    #pragma omp parallel for schedule(dynamic,64)
-    for (size_t i = 0; i < mesh.halfedges_size(); i++)
-    {
-        pmp::Halfedge heH(i);
-        if (mesh.is_deleted(heH) || !h_original[heH].is_valid())
-        {
-            continue;
-        }
-        if (!mesh.is_boundary(mesh.opposite_halfedge(heH)))
-        {
-            throw std::runtime_error("boundary stitching: Marked non-boundary edge as stitch boundary.");
-        }
-        #pragma omp critical
-        {
-            auto& entry = matches[h_original[heH]];
-            if (heH.idx() < mesh.opposite_halfedge(heH).idx())
-            {
-                entry.first = heH;
-            }
-            else
-            {
-                entry.second = heH;
-            }
-        }
-    }
-    size_t stitch_count = 0;
-    for (auto match : matches)
-    {
-        auto heH0 = match.second.first;
-        auto heH1 = match.second.second;
-        if (heH0.is_valid() && heH1.is_valid())
-        {
-            if (mesh.is_deleted(heH0) || mesh.is_deleted(heH1) || !h_original[heH0].is_valid() || h_original[heH0] != h_original[heH1])
-            {
-                throw std::runtime_error("boundary stitching: Deleted or incorrect match.");
-            }
-            h_original[heH0] = pmp::Edge();
-            h_original[heH1] = pmp::Edge();
-            mesh.stitch_boundary(mesh.opposite_halfedge(heH0), mesh.opposite_halfedge(heH1));
-            stitch_count++;
-        }
-    }
-    if (print)
-    {
-        std::cout << "Stitched " << stitch_count << " edges." << std::endl;
-    }
-
-    mesh.duplicate_non_manifold_vertices();
-    mesh.remove_degenerate_faces();
-
+    auto f_boundary = mesh.get_face_property<bool>("f:boundary");
+    auto v_merge_count = mesh.get_vertex_property<uint32_t>("v:merge_count");
     auto v_feature = mesh.get_vertex_property<bool>("v:feature");
-    size_t cleared = 0, remaining = 0;
-    #pragma omp parallel for schedule(dynamic,64) reduction(+:remaining, cleared)
+
+    std::unordered_map<pmp::Vertex, std::vector<pmp::Vertex>> original_to_current;
+    #pragma omp parallel for schedule(dynamic,64)
     for (size_t i = 0; i < mesh.vertices_size(); i++)
     {
         pmp::Vertex vH(i);
-        if (mesh.is_deleted(vH) || !v_feature[vH])
+        if (!mesh.is_deleted(vH) && v_feature[vH])
+        {
+            #pragma omp critical
+            original_to_current[v_original[vH]].push_back(vH);
+        }
+    }
+
+    for (auto it = original_to_current.begin(); it != original_to_current.end();)
+    {
+        if (it->second.size() < 2)
+        {
+            it = original_to_current.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    std::cout << timestamp << "Found " << original_to_current.size() << " vertices to replace." << std::endl; // TODO: temp
+
+    auto map_vertex = [&original_to_current](pmp::Vertex vH) -> pmp::Vertex
+    {
+        auto it = original_to_current.find(vH);
+        return it != original_to_current.end() ? it->second[0] : vH;
+    };
+
+    std::unordered_map<pmp::Face, std::vector<pmp::Vertex>> deleted_faces;
+    #pragma omp parallel for schedule(dynamic,64)
+    for (size_t i = 0; i < mesh.faces_size(); i++)
+    {
+        pmp::Face fH(i);
+        if (mesh.is_deleted(fH) || !f_boundary[fH])
         {
             continue;
         }
-        bool feature = false;
-        for (auto heH : mesh.halfedges(vH))
+        bool has_merged = false;
+        for (auto vH : mesh.vertices(fH))
         {
-            if (h_original[heH].is_valid() || h_original[mesh.opposite_halfedge(heH)].is_valid())
+            if (map_vertex(vH) != vH)
+            {
+                has_merged = true;
+                break;
+            }
+        }
+        if (!has_merged)
+        {
+            continue; // the face would not change
+        }
+        #pragma omp critical
+        {
+            auto v_it = mesh.vertices(fH);
+            deleted_faces[fH] =
+            {
+                map_vertex(*v_it),
+                map_vertex(*++v_it),
+                map_vertex(*++v_it),
+            };
+        }
+    }
+
+    std::cout << timestamp << "Deleting " << deleted_faces.size() << " faces." << std::endl; // TODO: temp
+
+    for (auto& f : deleted_faces)
+    {
+        mesh.delete_face(f.first);
+    }
+
+    std::cout << timestamp << "Removed " << deleted_faces.size() << " faces." << std::endl; // TODO: temp
+
+    std::vector<pmp::Face> new_faces;
+    for (auto& entry : deleted_faces)
+    {
+        try
+        {
+            auto new_id = mesh.add_face(entry.second);
+            mesh.copy_fprops(mesh, entry.first, new_id);
+            new_faces.push_back(new_id);
+        }
+        catch (const pmp::TopologyException&)
+        {}
+    }
+    if (print)
+    {
+        std::cout << "Stitched " << original_to_current.size() << " vertices, re-adding " << deleted_faces.size() << " faces";
+        if (deleted_faces.size() != new_faces.size())
+        {
+            std::cout << " (" << (deleted_faces.size() - new_faces.size()) << " failed)";
+        }
+        std::cout << std::endl;
+    }
+
+    mesh.remove_degenerate_faces();
+    mesh.duplicate_non_manifold_vertices();
+
+    for (auto& entry : original_to_current)
+    {
+        size_t decrement = entry.second.size() - 1;
+        v_merge_count[entry.second[0]] -= decrement;
+    }
+
+    for (auto fH : new_faces)
+    {
+        bool boundary = false;
+        for (auto vH : mesh.vertices(fH))
+        {
+            if (v_merge_count[vH] > 1)
+            {
+                boundary = true;
+                break;
+            }
+        }
+        f_boundary[fH] = boundary;
+    }
+
+    size_t cleared = 0, remaining = 0;
+    for (auto& entry : original_to_current)
+    {
+        auto vH = entry.second[0];
+        bool feature = false;
+        for (auto fH : mesh.faces(vH))
+        {
+            if (f_boundary[fH])
             {
                 feature = true;
-                remaining++;
                 break;
             }
         }
         if (!feature)
         {
-            cleared++;
             v_feature[vH] = false;
+            ++cleared;
+        }
+        else
+        {
+            ++remaining;
         }
     }
+
     if (print)
     {
         std::cout << "Cleared " << cleared << " vertices." << (remaining == 0 ? " Mesh now feature free." : "") << std::endl;
     }
     if (remaining == 0)
     {
-        mesh.remove_halfedge_property(h_original);
+        mesh.remove_face_property(f_boundary);
+        mesh.remove_vertex_property(v_original);
+        mesh.remove_vertex_property(v_merge_count);
         mesh.remove_vertex_property(v_feature);
         mesh.remove_edge_property<bool>("e:feature");
     }

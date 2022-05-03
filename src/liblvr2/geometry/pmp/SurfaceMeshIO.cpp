@@ -985,7 +985,7 @@ static int vertexCallback(p_ply_argument argument)
     ply_get_argument_user_data(argument, &pdata, &idx);
 
     auto* mesh = (pmp::SurfaceMesh*)pdata;
-    static Point point;
+    static thread_local Point point;
     point[idx] = ply_get_argument_value(argument);
 
     if (idx == 2)
@@ -1004,7 +1004,7 @@ static int faceCallback(p_ply_argument argument)
     ply_get_argument_property(argument, nullptr, &length, &value_index);
 
     auto* mesh = (pmp::SurfaceMesh*)pdata;
-    static std::vector<Vertex> vertices;
+    static thread_local std::vector<Vertex> vertices;
 
     if (value_index == 0)
         vertices.clear();
