@@ -115,17 +115,39 @@ class Vertex : public Handle
     using Handle::Handle;
 };
 
+class Edge;
+
 //! this type represents a halfedge (internally it is basically an index)
 class Halfedge : public Handle
 {
     using Handle::Handle;
+
+public:
+    //! get the opposite halfedge of this one
+    Halfedge opposite() const { return Halfedge(idx() ^ 1); }
+
+    //! get the full edge of the halfedge
+    inline Edge edge() const;
 };
 
 //! this type represents an edge (internally it is basically an index)
 class Edge : public Handle
 {
     using Handle::Handle;
+
+public:
+    //! returns the \p i'th halfedge. \p i has to be 0 or 1.
+    Halfedge halfedge(unsigned int i = 0) const
+    {
+        assert(i <= 1);
+        return Halfedge((idx() << 1) + i);
+    }
 };
+
+Edge Halfedge::edge() const
+{
+    return Edge(idx() >> 1);
+}
 
 //! this type represents a face (internally it is basically an index)
 class Face : public Handle
@@ -990,7 +1012,7 @@ public:
 
     //! returns whether halfedge \p h is deleted
     //! \sa garbage_collection()
-    bool is_deleted(Halfedge h) const { return edeleted_[edge(h)]; }
+    bool is_deleted(Halfedge h) const { return edeleted_[h.edge()]; }
 
     //! returns whether edge \p e is deleted
     //! \sa garbage_collection()
@@ -1057,7 +1079,7 @@ public:
     //! returns the vertex the halfedge \p h emanates from
     inline Vertex from_vertex(Halfedge h) const
     {
-        return to_vertex(opposite_halfedge(h));
+        return to_vertex(h.opposite());
     }
 
     //! sets the vertex the halfedge \p h points to to \p v
@@ -1098,7 +1120,7 @@ public:
     //! returns the opposite halfedge of \p h
     inline Halfedge opposite_halfedge(Halfedge h) const
     {
-        return Halfedge(h.idx() ^ 1);
+        return h.opposite();
     }
 
     //! returns the halfedge that is rotated counter-clockwise around the
@@ -1106,7 +1128,7 @@ public:
     //! halfedge of \p h.
     inline Halfedge ccw_rotated_halfedge(Halfedge h) const
     {
-        return opposite_halfedge(prev_halfedge(h));
+        return prev_halfedge(h).opposite();
     }
 
     //! returns the halfedge that is rotated clockwise around the start
@@ -1114,42 +1136,41 @@ public:
     //! \p h.
     inline Halfedge cw_rotated_halfedge(Halfedge h) const
     {
-        return next_halfedge(opposite_halfedge(h));
+        return next_halfedge(h.opposite());
     }
 
     //! return the edge that contains halfedge \p h as one of its two
     //! halfedges.
-    inline Edge edge(Halfedge h) const { return Edge(h.idx() >> 1); }
+    inline Edge edge(Halfedge h) const { return h.edge(); }
 
     //! returns whether h is a boundary halfege, i.e., if its face does not exist.
     inline bool is_boundary(Halfedge h) const { return !face(h).is_valid(); }
 
     //! returns the \p i'th halfedge of edge \p e. \p i has to be 0 or 1.
-    inline Halfedge halfedge(Edge e, unsigned int i) const
+    inline Halfedge halfedge(Edge e, unsigned int i = 0) const
     {
-        assert(i <= 1);
-        return Halfedge((e.idx() << 1) + i);
+        return e.halfedge(i);
     }
 
     //! returns the \p i'th vertex of edge \p e. \p i has to be 0 or 1.
     inline Vertex vertex(Edge e, unsigned int i) const
     {
         assert(i <= 1);
-        return to_vertex(halfedge(e, i));
+        return to_vertex(e.halfedge(i));
     }
 
     //! returns the face incident to the \p i'th halfedge of edge \p e. \p i has to be 0 or 1.
     Face face(Edge e, unsigned int i) const
     {
         assert(i <= 1);
-        return face(halfedge(e, i));
+        return face(e.halfedge(i));
     }
 
     //! returns whether \p e is a boundary edge, i.e., if one of its
     //! halfedges is a boundary halfedge.
     bool is_boundary(Edge e) const
     {
-        return (is_boundary(halfedge(e, 0)) || is_boundary(halfedge(e, 1)));
+        return (is_boundary(e.halfedge(0)) || is_boundary(e.halfedge(1)));
     }
 
     //! returns a halfedge of face \p f
@@ -1165,7 +1186,7 @@ public:
         Halfedge hh = h;
         do
         {
-            if (is_boundary(opposite_halfedge(h)))
+            if (is_boundary(h.opposite()))
                 return true;
             h = next_halfedge(h);
         } while (h != hh);
@@ -1626,7 +1647,7 @@ public:
     //! \sa insert_vertex(Halfedge, Vertex)
     Halfedge insert_vertex(Edge e, const Point& p)
     {
-        return insert_vertex(halfedge(e, 0), add_vertex(p));
+        return insert_vertex(e.halfedge(), add_vertex(p));
     }
 
     //! Subdivide the edge \p e = (v0,v1) by splitting it into the two edge
@@ -1636,7 +1657,7 @@ public:
     //! insert_vertex(Halfedge, Vertex)
     Halfedge insert_vertex(Edge e, Vertex v)
     {
-        return insert_vertex(halfedge(e, 0), v);
+        return insert_vertex(e.halfedge(), v);
     }
 
     //! Subdivide the halfedge \p h = (v0,v1) by splitting it into the two halfedges
@@ -1907,7 +1928,7 @@ public:
         assert(start != end);
 
         Halfedge h0(new_edge());
-        Halfedge h1(opposite_halfedge(h0));
+        Halfedge h1(h0.opposite());
 
         set_vertex(h0, end);
         set_vertex(h1, start);

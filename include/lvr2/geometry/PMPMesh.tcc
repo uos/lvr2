@@ -147,12 +147,12 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
 template<typename BaseVecT>
 EdgeCollapseResult PMPMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 {
-    pmp::Halfedge heH = m_mesh.halfedge(edgeH, 0);
+    pmp::Halfedge heH = edgeH.halfedge();
     if (!m_mesh.is_collapse_ok(heH))
     {
         panic("call to collapseEdge() with non-collapsable edge!");
     }
-    pmp::Halfedge opH = m_mesh.opposite_halfedge(heH);
+    pmp::Halfedge opH = heH.opposite();
 
     Vertex keptH = m_mesh.to_vertex(heH);
     Vertex removedH = m_mesh.from_vertex(heH);
@@ -168,10 +168,10 @@ EdgeCollapseResult PMPMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
         result.neighbors[0] = EdgeCollapseRemovedFace(
             f0,
             {
-                m_mesh.edge(m_mesh.prev_halfedge(heH)),
-                m_mesh.edge(m_mesh.next_halfedge(heH))
+                m_mesh.prev_halfedge(heH).edge(),
+                m_mesh.next_halfedge(heH).edge()
             },
-            m_mesh.edge(m_mesh.next_halfedge(heH))
+            m_mesh.next_halfedge(heH).edge()
         );
     }
     if (f1.is_valid())
@@ -179,10 +179,10 @@ EdgeCollapseResult PMPMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
         result.neighbors[1] = EdgeCollapseRemovedFace(
             f1,
             {
-                m_mesh.edge(m_mesh.next_halfedge(opH)),
-                m_mesh.edge(m_mesh.prev_halfedge(opH))
+                m_mesh.next_halfedge(opH).edge(),
+                m_mesh.prev_halfedge(opH).edge()
             },
-            m_mesh.edge(m_mesh.prev_halfedge(opH))
+            m_mesh.prev_halfedge(opH).edge()
         );
     }
 
@@ -193,15 +193,15 @@ EdgeCollapseResult PMPMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 template<typename BaseVecT>
 array<VertexHandle, 3> PMPMesh<BaseVecT>::getVerticesOfFace(FaceHandle handle) const
 {
-    auto f = m_mesh.vertices(handle);
-    array<VertexHandle, 3> result = { *f, *(++f), *(++f) };
+    auto it = m_mesh.vertices(handle);
+    array<VertexHandle, 3> result = { *it, *(++it), *(++it) };
     return result;
 }
 template<typename BaseVecT>
 array<EdgeHandle, 3> PMPMesh<BaseVecT>::getEdgesOfFace(FaceHandle handle) const
 {
-    auto f = m_mesh.halfedges(handle);
-    array<EdgeHandle, 3> result = { m_mesh.edge(*f), m_mesh.edge(*(++f)), m_mesh.edge(*(++f)) };
+    auto it = m_mesh.halfedges(handle);
+    array<EdgeHandle, 3> result = { (*it).edge(), (*++it).edge(), (*++it).edge() };
     return result;
 }
 template<typename BaseVecT>
@@ -209,7 +209,7 @@ void PMPMesh<BaseVecT>::getNeighboursOfFace(FaceHandle handle, vector<FaceHandle
 {
     for (pmp::Halfedge heH : m_mesh.halfedges(handle))
     {
-        FaceHandle face = m_mesh.face(m_mesh.opposite_halfedge(heH));
+        FaceHandle face = m_mesh.face(heH.opposite());
         if (face.is_valid())
         {
             facesOut.push_back(face);
@@ -219,14 +219,14 @@ void PMPMesh<BaseVecT>::getNeighboursOfFace(FaceHandle handle, vector<FaceHandle
 template<typename BaseVecT>
 array<VertexHandle, 2> PMPMesh<BaseVecT>::getVerticesOfEdge(EdgeHandle edgeH) const
 {
-    pmp::Halfedge heH = m_mesh.halfedge(edgeH, 0);
+    pmp::Halfedge heH = edgeH.halfedge();
     return { m_mesh.to_vertex(heH), m_mesh.from_vertex(heH) };
 }
 template<typename BaseVecT>
 array<OptionalFaceHandle, 2> PMPMesh<BaseVecT>::getFacesOfEdge(EdgeHandle edgeH) const
 {
-    pmp::Halfedge heH = m_mesh.halfedge(edgeH, 0);
-    return { m_mesh.face(heH), m_mesh.face(m_mesh.opposite_halfedge(heH)) };
+    pmp::Halfedge heH = edgeH.halfedge();
+    return { m_mesh.face(heH), m_mesh.face(heH.opposite()) };
 }
 template<typename BaseVecT>
 void PMPMesh<BaseVecT>::getFacesOfVertex(VertexHandle handle, vector<FaceHandle>& facesOut) const
@@ -241,7 +241,7 @@ void PMPMesh<BaseVecT>::getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>
 {
     for (const pmp::Halfedge heH : m_mesh.halfedges(handle))
     {
-        edgesOut.push_back(m_mesh.edge(heH));
+        edgesOut.push_back(heH.edge());
     }
 }
 template<typename BaseVecT>
@@ -259,7 +259,7 @@ OptionalFaceHandle PMPMesh<BaseVecT>::getOppositeFace(FaceHandle faceH, VertexHa
     {
         if (m_mesh.to_vertex(heH) == vertexH)
         {
-            return m_mesh.face(m_mesh.opposite_halfedge(heH));
+            return m_mesh.face(heH.opposite());
         }
     }
     return OptionalFaceHandle();
@@ -271,7 +271,7 @@ OptionalEdgeHandle PMPMesh<BaseVecT>::getOppositeEdge(FaceHandle faceH, VertexHa
     {
         if (m_mesh.to_vertex(heH) == vertexH)
         {
-            return m_mesh.edge(m_mesh.opposite_halfedge(heH));
+            return heH.opposite().edge();
         }
     }
     return OptionalEdgeHandle();
@@ -279,12 +279,12 @@ OptionalEdgeHandle PMPMesh<BaseVecT>::getOppositeEdge(FaceHandle faceH, VertexHa
 template<typename BaseVecT>
 OptionalVertexHandle PMPMesh<BaseVecT>::getOppositeVertex(FaceHandle faceH, EdgeHandle edgeH) const
 {
-    pmp::Halfedge heH = m_mesh.halfedge(edgeH, 0);
+    pmp::Halfedge heH = edgeH.halfedge();
     if (m_mesh.face(heH) == faceH)
     {
         return m_mesh.to_vertex(heH);
     }
-    heH = m_mesh.opposite_halfedge(heH);
+    heH = heH.opposite();
     if (m_mesh.face(heH) == faceH)
     {
         return m_mesh.to_vertex(heH);
@@ -342,7 +342,7 @@ VertexSplitResult PMPMesh<BaseVecT>::splitVertex(VertexHandle split_vH)
     double longest_length = -1;
     for (const pmp::Halfedge heH : m_mesh.halfedges(split_vH))
     {
-        double length = m_mesh.edge_length(m_mesh.edge(heH));
+        double length = m_mesh.edge_length(heH.edge());
         if (length > longest_length)
         {
             longest_heH = heH;
@@ -357,7 +357,7 @@ VertexSplitResult PMPMesh<BaseVecT>::splitVertex(VertexHandle split_vH)
     // do an edge flip on the neighboring edges if the local delaunay criteria is not met
     vector<pmp::Vertex> commonVertexHandles = findCommonNeigbours(split_vH, m_mesh.to_vertex(longest_heH));
 
-    EdgeSplitResult split_result = this->splitEdge(m_mesh.edge(longest_heH));
+    EdgeSplitResult split_result = this->splitEdge(longest_heH.edge());
     VertexSplitResult result(split_result.edgeCenter);
     result.addedFaces = split_result.addedFaces;
 
@@ -374,8 +374,8 @@ VertexSplitResult PMPMesh<BaseVecT>::splitVertex(VertexHandle split_vH)
         {
             continue;
         }
-        pmp::Halfedge heH = m_mesh.halfedge(eH, 0);
-        pmp::Halfedge oH = m_mesh.opposite_halfedge(heH);
+        pmp::Halfedge heH = eH.halfedge();
+        pmp::Halfedge oH = heH.opposite();
 
         //calculate the circumcenter of each triangle, look whether the local delaunay criteria is fulfilled
         auto circumCenterPair1 = triCircumCenter(m_mesh.face(heH));
@@ -413,7 +413,7 @@ EdgeSplitResult PMPMesh<BaseVecT>::splitEdge(EdgeHandle eH)
     {
         result.addedFaces.push_back(f);
     }
-    f = m_mesh.face(m_mesh.opposite_halfedge(new_heH));
+    f = m_mesh.face(new_heH.opposite());
     if (f.is_valid())
     {
         result.addedFaces.push_back(f);
@@ -424,7 +424,7 @@ EdgeSplitResult PMPMesh<BaseVecT>::splitEdge(EdgeHandle eH)
 template<typename BaseVecT>
 void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
 {
-    DenseEdgeMap<bool> visitedEdges(m_mesh.edges_size(), false);
+    auto visitedEdges = m_mesh.add_edge_property<bool>("e:visited", false);
     std::vector<pmp::Halfedge> contours;
 
     for (const auto& eH : m_mesh.edges())
@@ -436,11 +436,11 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
         visitedEdges[eH] = true;
 
         //get halfedges of edge
-        auto heH = m_mesh.halfedge(eH, 0);
+        auto heH = eH.halfedge();
         if (!m_mesh.is_boundary(heH))
         {
             // if this HalfEdge has a face, check the other one
-            heH = m_mesh.opposite_halfedge(heH);
+            heH = heH.opposite();
             if (!m_mesh.is_boundary(heH))
             {
                 // both sides have a face => not a boundary
@@ -453,7 +453,7 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
         int count = 0;
         do
         {
-            visitedEdges[m_mesh.edge(heH)] = true;
+            visitedEdges[heH.edge()] = true;
             heH = m_mesh.next_halfedge(heH);
             count++;
         } while (heH != start);
@@ -467,6 +467,8 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
         // as the contour fulfills all the necessary criteria, we add it to the list of contours which will be filled
         contours.push_back(heH);
     }
+
+    m_mesh.remove_edge_property(visitedEdges);
 
     cout << timestamp << "Found " << contours.size() << " holes" << endl;
 

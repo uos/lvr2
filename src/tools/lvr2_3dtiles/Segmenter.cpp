@@ -64,6 +64,8 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
                   std::vector<std::pair<pmp::Point, MeshSegment>>& chunks,
                   std::vector<MeshSegment>& large_segments)
 {
+    mesh.garbage_collection(); // ensure that we never need to check mesh.is_deleted(...)
+
     auto f_prop = mesh.add_face_property<SegmentId>("f:segment", INVALID_SEGMENT);
     auto v_prop = mesh.add_vertex_property<SegmentId>("v:segment", INVALID_SEGMENT);
     auto h_prop = mesh.add_halfedge_property<SegmentId>("h:segment", INVALID_SEGMENT);
@@ -199,32 +201,17 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < mesh.faces_size(); i++)
     {
-        pmp::Face f(i);
-        if (!mesh.is_deleted(f))
-        {
-            f_prop[f] = segment_map[f_prop[f]];
-        }
+        f_prop[pmp::Face(i)] = segment_map[f_prop[pmp::Face(i)]];
     }
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < mesh.vertices_size(); i++)
     {
-        pmp::Vertex v(i);
-        if (!mesh.is_deleted(v))
-        {
-            v_prop[v] = segment_map[v_prop[v]];
-        }
+        v_prop[pmp::Vertex(i)] = segment_map[v_prop[pmp::Vertex(i)]];
     }
     #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < mesh.edges_size(); i++)
+    for (size_t i = 0; i < mesh.halfedges_size(); i++)
     {
-        pmp::Edge e(i);
-        if (!mesh.is_deleted(e))
-        {
-            pmp::Halfedge h0 = mesh.halfedge(e, 0);
-            pmp::Halfedge h1 = mesh.halfedge(e, 1);
-            h_prop[h0] = segment_map[h_prop[h0]];
-            h_prop[h1] = segment_map[h_prop[h1]];
-        }
+        h_prop[pmp::Halfedge(i)] = segment_map[h_prop[pmp::Halfedge(i)]];
     }
 
     std::vector<pmp::SurfaceMesh> meshes(meta_data.size());
@@ -640,8 +627,8 @@ SegmentTree::Ptr split_mesh_medium(MeshSegment& segment, float chunk_size)
     for (size_t i = 0; i < mesh.edges_size(); i++)
     {
         pmp::Edge eH(i);
-        auto heH0 = mesh.halfedge(eH, 0);
-        auto heH1 = mesh.halfedge(eH, 1);
+        auto heH0 = eH.halfedge(0);
+        auto heH1 = eH.halfedge(1);
         auto fH0 = mesh.face(heH0);
         auto fH1 = mesh.face(heH1);
         if (fH0.is_valid() && fH1.is_valid() && f_chunk_id[fH0] != f_chunk_id[fH1])

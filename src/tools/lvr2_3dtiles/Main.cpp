@@ -313,6 +313,7 @@ int main(int argc, char** argv)
             surface_mesh.duplicate_non_manifold_vertices();
             surface_mesh.remove_degenerate_faces();
         }
+        surface_mesh.garbage_collection();
 
         // if (calc_normals)
         // {
@@ -337,7 +338,6 @@ int main(int argc, char** argv)
         for (auto file : mesh_out_files)
         {
             std::cout << timestamp << "Writing mesh to " << file << std::endl;
-            surface_mesh.garbage_collection();
             pmp::IOFlags flags;
             flags.use_binary = true;
             surface_mesh.write(file.string(), flags);
