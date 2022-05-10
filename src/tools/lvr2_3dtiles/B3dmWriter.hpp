@@ -52,11 +52,6 @@ namespace lvr2
  * @param mesh the mesh to convert
  * @param bb the bounding box of the mesh
  */
-void write_b3dm(const fs::path& output_dir,
-                const std::string& filename,
-                pmp::SurfaceMesh& mesh,
-                const pmp::BoundingBox& bb,
-                const std::string& texture_file = "",
-                bool print_progress = true);
+void write_b3dm(const fs::path& output_dir, const MeshSegment& segment, bool print_progress = true);
 
 } // namespace lvr2

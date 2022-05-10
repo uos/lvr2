@@ -72,6 +72,8 @@ const char* VIEWER_HTML = R"=======(
             })
         );
 
+        tileset.lightColor = new Cesium.Cartesian3(3, 2.8, 2.4);
+
         tileset.readyPromise
             .then(function () {
                 viewer.zoomTo(tileset);

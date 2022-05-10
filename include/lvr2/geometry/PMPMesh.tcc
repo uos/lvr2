@@ -108,7 +108,10 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
             addFace(v0, v1, v2);
         }
         catch (pmp::TopologyException& e)
-        {}
+        {
+            auto fH = m_mesh.new_face();
+            m_mesh.delete_face(fH);
+        }
     }
 
     if (this->numFaces() < numFaces)
@@ -121,10 +124,13 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
         auto src_normals = ptr->getFaceNormals();
         auto dest_normals = m_mesh.face_property<pmp::Normal>("f:normal");
         auto src = src_normals.get();
-        for (auto fH : m_mesh.faces())
+        for (size_t i = 0; i < m_mesh.faces_size(); i++, src += 3)
         {
-            dest_normals[fH] = pmp::Normal(src[0], src[1], src[2]);
-            src += 3;
+            pmp::Face fH(i);
+            if (!m_mesh.is_deleted(fH))
+            {
+                dest_normals[fH] = pmp::Normal(src[0], src[1], src[2]);
+            }
         }
     }
     if (ptr->hasFaceColors())
@@ -135,10 +141,28 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
         {
             auto dest_colors = m_mesh.face_property<pmp::Color>("f:color");
             auto src = src_colors.get();
-            for (auto fH : m_mesh.faces())
+            for (size_t i = 0; i < m_mesh.faces_size(); i++, src += w)
             {
-                dest_colors[fH] = pmp::Color(src[0] / 255.0f, src[1] / 255.0f, src[2] / 255.0f);
-                src += w;
+                pmp::Face fH(i);
+                if (!m_mesh.is_deleted(fH))
+                {
+                    dest_colors[fH] = pmp::Color(src[0] / 255.0f, src[1] / 255.0f, src[2] / 255.0f);
+                }
+            }
+        }
+    }
+    if (ptr->hasChannel<unsigned int>("face_material_indices"))
+    {
+        auto& materials = ptr->getMaterials();
+        auto src_material_indices = ptr->getFaceMaterialIndices();
+        auto dest_material_indices = m_mesh.face_property<pmp::IndexType>("f:material");
+        auto src = src_material_indices.get();
+        for (size_t i = 0; i < m_mesh.faces_size(); i++, src++)
+        {
+            pmp::Face fH(i);
+            if (!m_mesh.is_deleted(fH))
+            {
+                dest_material_indices[fH] = *src;
             }
         }
     }

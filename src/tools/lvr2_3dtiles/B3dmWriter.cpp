@@ -126,19 +126,16 @@ struct PropertyWriter
 };
 
 
-void write_b3dm(const fs::path& output_dir,
-                const std::string& filename,
-                pmp::SurfaceMesh& mesh,
-                const pmp::BoundingBox& bb,
-                const std::string& texture_file,
-                bool print_progress)
+void write_b3dm(const fs::path& output_dir, const MeshSegment& segment, bool print_progress)
 {
-    std::string output_path = (output_dir / filename).string();
+    std::string output_path = (output_dir / segment.filename).string();
     // create the file to ensure all the paths exist and are possible
     if (!std::ofstream(output_path, std::ios::binary))
     {
         throw std::runtime_error("Could not open " + output_path);
     }
+
+    auto& mesh = *segment.mesh;
 
     if (mesh.n_faces() < mesh.faces_size() * 2 / 3)
     {
@@ -149,6 +146,12 @@ void write_b3dm(const fs::path& output_dir,
     const auto normals = mesh.get_vertex_property<pmp::Normal>("v:normal");
     const auto colors = mesh.get_vertex_property<pmp::Color>("v:color");
     const auto tex = mesh.get_vertex_property<pmp::TexCoord>("v:tex");
+
+    if (!tex && segment.texture_file)
+    {
+        throw std::runtime_error("Texture file specified, but no texture coordinates found");
+    }
+    bool use_tex = tex && segment.texture_file;
 
     CesiumGltf::Model model;
     std::vector<std::byte> buffer;
@@ -166,14 +169,10 @@ void write_b3dm(const fs::path& output_dir,
     primitive.mode = CesiumGltf::MeshPrimitive::Mode::TRIANGLES;
     primitive.material = material_id;
 
-    if (!texture_file.empty())
+    if (use_tex)
     {
-        if (!tex)
-        {
-            throw std::runtime_error("Texture file specified, but no texture coordinates found");
-        }
         auto [ image_id, image ] = push_and_get_index(model.images);
-        image.uri = texture_file;
+        image.uri = *segment.texture_file;
 
         auto [ sampler_id, sampler ] = push_and_get_index(model.samplers);
         using CesiumGltf::Sampler;
@@ -191,6 +190,8 @@ void write_b3dm(const fs::path& output_dir,
 
         CesiumGltf::MaterialPBRMetallicRoughness pbr;
         pbr.baseColorTexture = info;
+        pbr.metallicFactor = 0;
+        pbr.roughnessFactor = 0.5;
 
         material.pbrMetallicRoughness = pbr;
     }
@@ -207,26 +208,19 @@ void write_b3dm(const fs::path& output_dir,
 
     model.scene = scene_id;
 
-    property_writers.emplace_back("POSITION", 3, (float*)positions.data(), bb.min(), bb.max());
+    property_writers.emplace_back("POSITION", 3, (float*)positions.data(), segment.bb.min(), segment.bb.max());
 
     if (normals)
     {
         property_writers.emplace_back("NORMAL", 3, (float*)normals.data(), pmp::Point(-1, -1, -1), pmp::Point(1, 1, 1));
     }
-    if (colors)
+    if (colors && !use_tex)
     {
         property_writers.emplace_back("COLOR_0", 3, (float*)colors.data(), pmp::Color(0, 0, 0), pmp::Color(1, 1, 1));
     }
-    if (tex)
+    if (use_tex)
     {
-        if (texture_file.empty())
-        {
-            std::cerr << "Warning: Texture coordinates found, but no texture file specified. Ignoring texture coordinates." << std::endl;
-        }
-        else
-        {
-            property_writers.emplace_back("TEXCOORD_0", 2, (float*)tex.data(), pmp::TexCoord(0, 0), pmp::TexCoord(1, 1));
-        }
+        property_writers.emplace_back("TEXCOORD_0", 2, (float*)tex.data(), pmp::TexCoord(0, 0), pmp::TexCoord(1, 1));
     }
 
     size_t byte_offset = 0;

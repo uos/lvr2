@@ -775,7 +775,8 @@ void SurfaceMeshIO::read_pmp(SurfaceMesh& mesh)
             auto& prop = props.emplace_back();
             tfread(in, prop.second);
             prop.first.resize(len);
-            fread((char*)prop.first.data(), sizeof(char), len, in);
+            size_t nread = fread((char*)prop.first.data(), sizeof(char), len, in);
+            PMP_ASSERT(nread == len);
         }
     }
 

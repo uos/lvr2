@@ -1648,6 +1648,9 @@ void SurfaceMesh::delete_face(Face f)
         deleted_faces_++;
     }
 
+    if (!halfedge(f).is_valid())
+        return;
+
     // boundary edges of face f to be deleted
     std::vector<Edge>& deleted_edges = delete_deleted_edges_;
     deleted_edges.clear();

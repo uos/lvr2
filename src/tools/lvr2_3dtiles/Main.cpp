@@ -63,9 +63,7 @@ int main(int argc, char** argv)
     bool calc_normals;
     float chunk_size = -1;
     std::vector<fs::path> mesh_out_files;
-    fs::path segment_out_path;
     bool fix_mesh;
-    bool load_segments;
     bool assign_colors;
 
     try
@@ -85,17 +83,11 @@ int main(int argc, char** argv)
         ("segment,s", value<float>(&chunk_size),
          "Segment the mesh into connected regions with the given chunk size")
 
-        ("wm", value<std::vector<fs::path>>(&mesh_out_files),
-         "Save the mesh after fix and calcNormals to the given file")
-
-        ("ws", value<fs::path>(&segment_out_path),
-         "Save the segments to the given directory")
-
-        ("ls", bool_switch(&load_segments),
-         "Interpret <input_file> as a directory and load segments written by the --ws option")
+        ("writeMesh,w", value<std::vector<fs::path>>(&mesh_out_files),
+         "Save the mesh after fix to the given file")
 
         ("assignColors,C", bool_switch(&assign_colors),
-         "Assign colors to vertices")
+         "Use existing colors or assign new ones to vertices")
 
         ("help,h", bool_switch(&help),
          "Print this message here")
@@ -145,33 +137,6 @@ int main(int argc, char** argv)
         {
             throw error("<input_file> does not exist");
         }
-        else if (fs::is_regular_file(input_file))
-        {
-            if (load_segments)
-            {
-                throw error("Option --ls is set but <input_file> is not a directory");
-            }
-        }
-        else if (fs::is_directory(input_file))
-        {
-            if (fs::is_directory(input_file / "chunks") || fs::is_directory(input_file / "segments"))
-            {
-                load_segments = true;
-            }
-            else
-            {
-                throw error("<input_file> is a directory but doesn't match --ws output");
-            }
-        }
-        else
-        {
-            throw error("<input_file> is neither a file nor a directory");
-        }
-
-        if (load_segments && chunk_size <= 0)
-        {
-            throw error("Loading segments requires a chunk size");
-        }
     }
     catch (const boost::program_options::error& ex)
     {
@@ -181,218 +146,158 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
+    fs::remove_all(output_dir);
+    fs::create_directories(output_dir);
 
     PMPMesh<BaseVector<float>> mesh;
     std::vector<std::pair<pmp::Point, MeshSegment>> chunks;
     std::vector<MeshSegment> segments;
     pmp::BoundingBox bb;
     Eigen::Vector3i num_chunks = Eigen::Vector3i::Zero();
+    std::vector<std::string> texture_files;
 
-    if (load_segments)
+    auto input_extension = input_file.extension().string().substr(1);
+
+    std::cout << timestamp << "Reading mesh " << input_file;
+    if (pmp::SurfaceMeshIO::supported_extensions().count(input_extension))
     {
-        std::cout << timestamp << "Reading segments from " << input_file << std::endl;
+        std::cout << " using pmp::SurfaceMeshIO" << std::endl;
+        pmp::SurfaceMeshIO io(input_file.string(), pmp::IOFlags());
+        io.read(mesh.getSurfaceMesh());
+    }
+    else if (input_extension == "h5")
+    {
+        std::cout << " using meshio::HDF5IO" << std::endl;
+        auto kernel = std::make_shared<HDF5Kernel>(input_file.string());
 
-        fs::path chunk_folder = input_file / "chunks";
-        fs::path segment_folder = input_file / "segments";
-        std::vector<fs::path> chunk_files;
-        std::vector<fs::path> segment_files;
-        if (fs::is_directory(chunk_folder))
+        std::vector<std::string> mesh_names;
+        kernel->subGroupNames("/meshes/", mesh_names);
+        auto mesh_name = mesh_names.front();
+
+        auto schema = std::make_shared<MeshSchemaHDF5>();
+        meshio::HDF5IO io(kernel, schema);
+        MeshBufferPtr buffer;
+
+        buffer = io.loadMesh(mesh_name);
+
+        std::cout << timestamp << "Converting to PMPMesh" << std::endl;
+        mesh = PMPMesh<BaseVector<float>>(buffer);
+
+        if (!buffer->getMaterials().empty() && !assign_colors)
         {
-            for (auto& entry : fs::directory_iterator(chunk_folder))
+            auto materials = buffer->getMaterials();
+            auto textures = buffer->getTextures();
+
+            texture_files.resize(textures.size());
+            for (size_t i = 0; i < textures.size(); ++i)
             {
-                chunk_files.push_back(entry.path());
+                textures[i].save();
+                auto in_filename = "texture_" + std::to_string(textures[i].m_index) + ".ppm";
+                auto out_filename = "texture.png";
+                texture_files[textures[i].m_index] = out_filename;
+                // move texture file to output directory
+                auto out_path = output_dir / "segments" / ("s" + std::to_string(textures[i].m_index)) / out_filename;
+                fs::create_directories(out_path.parent_path());
+                auto command = "convert " + in_filename + " " + out_path.string();
+                int ret = system(command.c_str());
+                if (ret != 0)
+                {
+                    throw std::runtime_error("Failed to convert texture");
+                }
+                fs::remove(in_filename);
+                // fs::rename(filename, output_dir / path / filename);
             }
-            std::sort(chunk_files.begin(), chunk_files.end());
-        }
-        if (fs::is_directory(segment_folder))
-        {
-            for (auto& entry : fs::directory_iterator(segment_folder))
+
+            std::vector<pmp::IndexType> mat_to_texture(materials.size(), pmp::PMP_MAX_INDEX);
+            for (size_t i = 0; i < materials.size(); i++)
             {
-                segment_files.push_back(entry.path());
+                auto& material = materials[i];
+                if (!material.m_texture)
+                {
+                    continue;
+                }
+                auto& texture = mat_to_texture[i];
+                texture = material.m_texture->idx();
+                for (auto& [ name, tex ] : material.m_layers)
+                {
+                    if (name.find("rgb") != std::string::npos || name.find("RGB") != std::string::npos)
+                    {
+                        texture = tex.idx();
+                        break;
+                    }
+                }
             }
-            std::sort(segment_files.begin(), segment_files.end());
-        }
-        chunks.resize(chunk_files.size());
-        segments.resize(segment_files.size());
 
-        #pragma omp parallel for
-        for (size_t i = 0; i < chunk_files.size(); i++)
-        {
-            auto name = chunk_files[i];
-            auto& [ chunk_pos, segment ] = chunks[i];
-
-            int x, y, z;
-            int read = std::sscanf(name.stem().c_str(), "%d_%d_%d", &x, &y, &z);
-            if (read != 3)
+            auto& surface_mesh = mesh.getSurfaceMesh();
+            auto f_material = surface_mesh.face_property<pmp::IndexType>("f:material");
+            #pragma omp parallel for schedule(static)
+            for (size_t i = 0; i < surface_mesh.faces_size(); i++)
             {
-                std::cout << "Skipping " << name << std::endl;
-                continue;
+                pmp::Face fH(i);
+                if (!surface_mesh.is_deleted(fH))
+                {
+                    f_material[fH] = mat_to_texture[f_material[fH]];
+                }
             }
-            chunk_pos = pmp::Point(x, y, z);
-
-            segment.mesh.reset(new pmp::SurfaceMesh());
-            segment.mesh->read(name.string());
-            segment.bb = segment.mesh->bounds();
-        }
-        for (size_t i = 0; i < chunks.size(); i++)
-        {
-            if (chunks[i].second.mesh == nullptr)
-            {
-                std::swap(chunks[i], chunks.back());
-                chunks.pop_back();
-            }
-        }
-
-        Eigen::Vector3i min_chunk = Eigen::Vector3i::Constant(std::numeric_limits<int>::max());
-        Eigen::Vector3i max_chunk = Eigen::Vector3i::Constant(std::numeric_limits<int>::min());
-
-        for (auto& [ chunk_pos, segment ] : chunks)
-        {
-            min_chunk = min_chunk.cwiseMin(chunk_pos.cast<int>());
-            max_chunk = max_chunk.cwiseMax(chunk_pos.cast<int>());
-            bb += segment.bb;
-        }
-        num_chunks = max_chunk - min_chunk + Eigen::Vector3i::Ones();
-        std::cout << num_chunks.transpose() << " Chunks from " << min_chunk.transpose() << " to " << max_chunk.transpose() << std::endl; // TODO: temp
-        for (auto& [ chunk_pos, segment ] : chunks)
-        {
-            chunk_pos -= min_chunk.cast<float>();
-        }
-
-        for (size_t i = 0; i < segment_files.size(); i++)
-        {
-            auto& out = segments[i];
-            out.mesh.reset(new pmp::SurfaceMesh());
-            out.mesh->read(segment_files[i].string());
-            out.bb = out.mesh->bounds();
-            bb += out.bb;
         }
     }
     else
     {
-        auto extension = input_file.extension().string().substr(1);
-
-        std::cout << timestamp << "Reading mesh " << input_file;
-        if (pmp::SurfaceMeshIO::supported_extensions().count(extension))
-        {
-            std::cout << " using pmp::SurfaceMeshIO" << std::endl;
-            pmp::SurfaceMeshIO io(input_file.string(), pmp::IOFlags());
-            io.read(mesh.getSurfaceMesh());
-        }
-        else if (extension == "h5")
-        {
-            std::cout << " using meshio::HDF5IO" << std::endl;
-            auto kernel = std::make_shared<HDF5Kernel>(input_file.string());
-            auto schema = std::make_shared<MeshSchemaHDF5>();
-            meshio::HDF5IO io(kernel, schema);
-            MeshBufferPtr buffer;
-            try
-            {
-                buffer = io.loadMesh("Mesh0"); // TODO: replace with mesh finder
-            }
-            catch (const std::exception& e)
-            {
-                buffer = io.loadMesh("default");
-            }
-            std::cout << timestamp << "Converting to PMPMesh" << std::endl;
-            mesh = PMPMesh<BaseVector<float>>(buffer);
-        }
-        else
-        {
-            std::cout << " using ModelFactory" << std::endl;
-            ModelPtr model = ModelFactory::readModel(input_file.string());
-            std::cout << timestamp << "Converting to PMPMesh" << std::endl;
-            mesh = PMPMesh<BaseVector<float>>(model->m_mesh);
-        }
-
-        auto& surface_mesh = mesh.getSurfaceMesh();
-
-        if (fix_mesh)
-        {
-            std::cout << timestamp << "Fixing mesh" << std::endl;
-            surface_mesh.duplicate_non_manifold_vertices();
-            surface_mesh.remove_degenerate_faces();
-        }
-        surface_mesh.garbage_collection();
-
-        // if (calc_normals)
-        // {
-        //     std::cout << timestamp << "Calculating normals" << std::endl;
-        //     pmp::SurfaceNormals::compute_vertex_normals(surface_mesh, true);
-        //     auto v_normal = surface_mesh.vertex_property<pmp::Normal>("v:normal");
-        //     #pragma omp parallel for schedule(static)
-        //     for (size_t i = 0; i < surface_mesh.vertices_size(); i++)
-        //     {
-        //         pmp::Vertex v(i);
-        //         if (!surface_mesh.is_deleted(v))
-        //         {
-        //             auto& n = v_normal[v];
-        //             if (n.dot(pmp::Point::UnitZ()) < 0)
-        //             {
-        //                 n = -n;
-        //             }
-        //         }
-        //     }
-        // }
-
-        for (auto file : mesh_out_files)
-        {
-            std::cout << timestamp << "Writing mesh to " << file << std::endl;
-            pmp::IOFlags flags;
-            flags.use_binary = true;
-            surface_mesh.write(file.string(), flags);
-        }
-
-        bb = surface_mesh.bounds();
-
-        if (chunk_size > 0)
-        {
-            std::cout << timestamp << "Segmenting mesh" << std::endl;
-            segment_mesh(surface_mesh, bb, chunk_size * 2, chunks, segments);
-            // chunk_size * 2 to merge the small segments into larger chunks, otherwise we get a lot of small chunks
-        }
-        else
-        {
-            auto& out = segments.emplace_back();
-            out.mesh = std::make_shared<pmp::SurfaceMesh>(std::move(surface_mesh));
-            out.bb = bb;
-            out.filename = "mesh.b3dm";
-        }
+        std::cout << " using ModelFactory" << std::endl;
+        ModelPtr model = ModelFactory::readModel(input_file.string());
+        std::cout << timestamp << "Converting to PMPMesh" << std::endl;
+        mesh = PMPMesh<BaseVector<float>>(model->m_mesh);
     }
 
-    if (!segment_out_path.empty())
+    auto& surface_mesh = mesh.getSurfaceMesh();
+
+    if (fix_mesh)
     {
-        std::cout << timestamp << "Writing segments to " << segment_out_path << std::endl;
-        fs::path chunk_dir = segment_out_path / "chunks";
-        fs::path segment_dir = segment_out_path / "segments";
-        fs::remove_all(chunk_dir);
-        fs::remove_all(segment_dir);
-        fs::create_directories(chunk_dir);
-        fs::create_directories(segment_dir);
-        for (auto& chunk : chunks)
-        {
-            chunk.second.mesh->garbage_collection();
-        }
-        for (auto& segment : segments)
-        {
-            segment.mesh->garbage_collection();
-        }
-        #pragma omp parallel for
-        for (size_t i = 0; i < chunks.size(); ++i)
-        {
-            auto& [ chunk_pos, chunk ] = chunks[i];
-            std::stringstream ss;
-            ss << chunk_dir.string() << "/" << (int)chunk_pos.x() << "_" << (int)chunk_pos.y() << "_" << (int)chunk_pos.z() << ".pmp";
-            chunk.mesh->write(ss.str());
-        }
-        #pragma omp parallel for
+        std::cout << timestamp << "Fixing mesh" << std::endl;
+        surface_mesh.duplicate_non_manifold_vertices();
+        surface_mesh.remove_degenerate_faces();
+    }
+    surface_mesh.garbage_collection();
+
+    for (auto file : mesh_out_files)
+    {
+        std::cout << timestamp << "Writing mesh to " << file << std::endl;
+        pmp::IOFlags flags;
+        flags.use_binary = true;
+        surface_mesh.write(file.string(), flags);
+    }
+
+    bb = surface_mesh.bounds();
+
+    if (!texture_files.empty())
+    {
+        auto face_dist = surface_mesh.get_face_property<pmp::IndexType>("f:material");
+        std::vector<pmp::SurfaceMesh> meshes(texture_files.size());
+        surface_mesh.split_mesh(meshes, face_dist);
+
+        segments.resize(meshes.size());
         for (size_t i = 0; i < segments.size(); ++i)
         {
-            segments[i].mesh->write((segment_dir / (std::to_string(i) + ".pmp")).string());
+            segments[i].mesh.reset(new pmp::SurfaceMesh(std::move(meshes[i])));
+            segments[i].bb = segments[i].mesh->bounds();
+            segments[i].texture_file.reset(new std::string(texture_files[i]));
         }
     }
+    else if (chunk_size > 0)
+    {
+        std::cout << timestamp << "Segmenting mesh" << std::endl;
+        segment_mesh(surface_mesh, bb, chunk_size * 2, chunks, segments);
+        // chunk_size * 2 to merge the small segments into larger chunks, otherwise we get a lot of small chunks
+    }
+    else
+    {
+        auto& out = segments.emplace_back();
+        out.mesh = std::make_shared<pmp::SurfaceMesh>(std::move(surface_mesh));
+        out.bb = bb;
+        out.filename = "mesh.b3dm";
+    }
 
-    if (assign_colors)
+    if (assign_colors && !surface_mesh.has_vertex_property("v:color"))
     {
         std::cout << timestamp << "Assigning colors" << std::endl;
         float step_size = chunk_size > 0 ? chunk_size : 10;
@@ -401,7 +306,11 @@ int main(int argc, char** argv)
         {
             auto& segment = i < segments.size() ? segments[i] : chunks[i - segments.size()].second;
             auto& mesh = *segment.mesh;
-            auto v_color = mesh.vertex_property<pmp::Color>("v:color");
+            if (mesh.has_vertex_property("v:color"))
+            {
+                continue;
+            }
+            auto v_color = mesh.add_vertex_property<pmp::Color>("v:color");
             float r = std::abs(std::sin(i * 2));
             float g = std::abs(std::cos(i));
             float b = std::abs(std::sin(i * 30));
@@ -428,9 +337,6 @@ int main(int argc, char** argv)
     }
 
     std::cout << timestamp << "Creating 3D Tiles" << std::endl;
-
-    fs::remove_all(output_dir);
-    fs::create_directories(output_dir);
 
     Cesium3DTiles::Tileset tileset;
     tileset.asset.version = "1.0";
@@ -544,7 +450,7 @@ int main(int argc, char** argv)
     #pragma omp parallel for
     for (size_t i = 0; i < all_segments.size(); i++)
     {
-        write_b3dm(output_dir, all_segments[i].filename, *all_segments[i].mesh, all_segments[i].bb, "", false);
+        write_b3dm(output_dir, all_segments[i], false);
         ++progress_write;
     }
     std::cout << "\r";

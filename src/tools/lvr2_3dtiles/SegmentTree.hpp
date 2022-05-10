@@ -46,6 +46,7 @@ struct MeshSegment
     std::shared_ptr<pmp::SurfaceMesh> mesh = nullptr;
     pmp::BoundingBox bb;
     std::string filename = "";
+    std::shared_ptr<std::string> texture_file = nullptr;
 };
 
 /**

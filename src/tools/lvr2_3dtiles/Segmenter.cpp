@@ -247,19 +247,24 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
               << chunks.size() << " chunks" << std::endl;
 }
 
-SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
+SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& in_segment, float chunk_size)
 {
-    auto& mesh = *segment.mesh;
+    if (in_segment.bb.longest_axis_size() <= chunk_size)
+    {
+        return SegmentTree::Ptr(new SegmentTreeLeaf(in_segment));
+    }
+
+    auto& mesh = *in_segment.mesh;
     mesh.garbage_collection(); // ensure that we never need to check mesh.is_deleted(...)
 
-    pmp::Point size_of_segment = segment.bb.max() - segment.bb.min();
+    pmp::Point size_of_segment = in_segment.bb.max() - in_segment.bb.min();
     pmp::Point size = size_of_segment / chunk_size;
     Eigen::Vector3i num_chunks(std::ceil(size.x()), std::ceil(size.y()), std::ceil(size.z()));
 
     // align the chunking to the center of the segment:
     // modify the offset so that there is equal overlap on all sides
     pmp::Point size_of_chunks = num_chunks.cast<float>() * chunk_size;
-    pmp::Point chunk_offset = segment.bb.min() - (size_of_chunks - size_of_segment) / 2.0f;
+    pmp::Point chunk_offset = in_segment.bb.min() - (size_of_chunks - size_of_segment) / 2.0f;
 
     auto v_chunk_id = mesh.add_vertex_property<pmp::IndexType>("v:chunk_id", pmp::PMP_MAX_INDEX);
     #pragma omp parallel for schedule(static)
@@ -312,12 +317,13 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size)
     std::vector<std::pair<pmp::Point, MeshSegment>> chunks;
     for (auto [ chunk_id, index ] : chunk_map)
     {
-        auto& [ chunk_pos, segment ] = chunks.emplace_back();
+        auto& [ chunk_pos, out_segment ] = chunks.emplace_back();
         chunk_pos = chunk_position(chunk_id, 1, num_chunks);
 
-        segment.mesh.reset(new pmp::SurfaceMesh(std::move(meshes[index])));
-        segment.mesh->add_object_property<pmp::IndexType>("o:chunk_id")[0] = index;
-        segment.bb = segment.mesh->bounds();
+        out_segment.mesh.reset(new pmp::SurfaceMesh(std::move(meshes[index])));
+        out_segment.mesh->add_object_property<pmp::IndexType>("o:chunk_id")[0] = index;
+        out_segment.bb = out_segment.mesh->bounds();
+        out_segment.texture_file = in_segment.texture_file;
     }
 
     auto tree = SegmentTree::octree_partition(chunks, num_chunks, 2);
