@@ -1101,15 +1101,6 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
         mesh.remove_face_property<IndexType>(face_dist.name());
         mesh.remove_vertex_property<IndexType>(vertex_dist.name());
         mesh.remove_halfedge_property<IndexType>(halfedge_dist.name());
-        #pragma omp parallel for schedule(dynamic,64)
-        for (size_t i = 0; i < mesh.vertices_size(); i++)
-        {
-            Vertex v(i);
-            auto h = mesh.halfedge(v);
-            mesh.adjust_outgoing_halfedge(v);
-            if (h != mesh.halfedge(v))
-                std::cout << "v" << std::flush; // TODO: remove
-        }
     }
 }
 
@@ -1170,10 +1161,6 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
                         out_h = mesh.new_edge().opposite();
                     mesh.copy_eprops(*this, h.edge(), out_h.edge());
                 }
-                if ((h.idx() & 1) != (out_h.idx() & 1))
-                {
-                    throw std::runtime_error("Invalid halfedge mapping"); // TODO: remove
-                }
                 mesh.copy_hprops(*this, h, out_h);
                 mesh.set_face(out_h, out_f);
                 h_map[h] = out_h;
@@ -1194,10 +1181,6 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
             {
                 Halfedge cur_h = face_edges[j], next_h = face_edges[(j + 1) % 3];
                 mesh.set_next_halfedge(cur_h, next_h);
-                if (mesh.to_vertex(next_h.opposite()).is_valid() && mesh.to_vertex(next_h.opposite()) != mesh.to_vertex(cur_h))
-                {
-                    throw std::runtime_error("Invalid vertex mapping"); // TODO: remove
-                }
                 mesh.set_vertex(next_h.opposite(), mesh.to_vertex(cur_h));
             }
         }
@@ -1218,18 +1201,10 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
 
                 Halfedge next_candidate = find_next_candidate(h, is_valid_fn);
                 Halfedge mapped = h_map[next_candidate.opposite()].opposite();
-                if (mesh.next_halfedge(out_h).is_valid() && mesh.next_halfedge(out_h) != mapped)
-                {
-                    throw std::runtime_error("Inconsistent next mapping"); // TODO: remove
-                }
                 mesh.set_next_halfedge(out_h, mapped);
 
                 Halfedge prev_candidate = find_prev_candidate(h, is_valid_fn);
                 Halfedge mapped_prev = h_map[prev_candidate.opposite()].opposite();
-                if (mesh.prev_halfedge(out_h).is_valid() && mesh.prev_halfedge(out_h) != mapped_prev)
-                {
-                    throw std::runtime_error("Inconsistent prev mapping"); // TODO: remove
-                }
                 mesh.set_prev_halfedge(out_h, mapped_prev);
             }
         }
@@ -1241,15 +1216,6 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
     {
         mesh.remove_degenerate_faces();
         mesh.remove_face_property<IndexType>(face_dist.name());
-        #pragma omp parallel for schedule(dynamic,64)
-        for (size_t i = 0; i < mesh.vertices_size(); i++)
-        {
-            Vertex v(i);
-            auto h = mesh.halfedge(v);
-            mesh.adjust_outgoing_halfedge(v);
-            if (h != mesh.halfedge(v))
-                std::cout << "v" << std::flush; // TODO: remove
-        }
     }
 }
 
@@ -1612,9 +1578,8 @@ Halfedge SurfaceMesh::find_next_candidate(Halfedge h, std::function<bool(Halfedg
     Halfedge candidate = next_halfedge(h);
     while (!pred(candidate))
     {
-        if (candidate.opposite() == h) throw std::runtime_error("hi there find_next_candidate"); // TODO: move down
         candidate = next_halfedge(candidate.opposite());
-        if (candidate == h)
+        if (candidate.opposite() == h)
             return Halfedge();
     }
     return candidate;
@@ -1624,9 +1589,8 @@ Halfedge SurfaceMesh::find_prev_candidate(Halfedge h, std::function<bool(Halfedg
     Halfedge candidate = prev_halfedge(h);
     while (!pred(candidate))
     {
-        if (candidate.opposite() == h) throw std::runtime_error("hi there find_prev_candidate"); // TODO: move down
         candidate = prev_halfedge(candidate.opposite());
-        if (candidate == h)
+        if (candidate.opposite() == h)
             return Halfedge();
     }
     return candidate;
