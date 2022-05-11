@@ -111,39 +111,35 @@ void SegmentTree::simplify(bool print)
 }
 SegmentTree::Ptr SegmentTree::octree_partition(std::vector<MeshSegment>& segments, int combine_depth)
 {
-    std::vector<MeshSegment*> temp_segments(segments.size());
+    std::vector<SegmentTree*> temp_segments(segments.size());
     for (size_t i = 0; i < segments.size(); ++i)
     {
-        temp_segments[i] = &segments[i];
+        temp_segments[i] = new SegmentTreeLeaf(segments[i]);
     }
 
     return octree_split_recursive(temp_segments.data(), temp_segments.data() + temp_segments.size(),
                                   combine_depth);
 }
-void one_split(MeshSegment** starts[9], size_t a, size_t b)
+SegmentTree::Ptr SegmentTree::octree_partition(std::vector<SegmentTree::Ptr>& segments)
 {
-    pmp::BoundingBox bb;
-    for (auto it = starts[a]; it != starts[b]; ++it)
+    std::vector<SegmentTree*> temp_segments(segments.size());
+    for (size_t i = 0; i < segments.size(); ++i)
     {
-        bb += (*it)->bb;
+        temp_segments[i] = segments[i].release();
     }
+    segments.clear();
 
-    size_t mid = (a + b) / 2;
-    starts[mid] = starts[a] + (starts[b] - starts[a]) / 2;
-    size_t axis = bb.longest_axis();
-
-    std::nth_element(starts[a], starts[mid], starts[b], [axis](auto a, auto b)
+    auto ret = octree_split_recursive(temp_segments.data(), temp_segments.data() + temp_segments.size(), -1);
+    for (auto& ptr : temp_segments)
     {
-        return a->bb.center()[axis] < b->bb.center()[axis];
-    });
-
-    if (mid - a > 1)
-    {
-        one_split(starts, a, mid);
-        one_split(starts, mid, b);
+        if (ptr != nullptr)
+        {
+            throw std::runtime_error("SegmentTree::octree_partition: not all segments were released");
+        }
     }
+    return ret;
 }
-SegmentTree::Ptr SegmentTree::octree_split_recursive(MeshSegment** start, MeshSegment** end, int combine_depth)
+SegmentTree::Ptr SegmentTree::octree_split_recursive(SegmentTree** start, SegmentTree** end, int combine_depth)
 {
     size_t n = end - start;
 
@@ -153,20 +149,21 @@ SegmentTree::Ptr SegmentTree::octree_split_recursive(MeshSegment** start, MeshSe
     {
         for (size_t i = 0; i < n; i++)
         {
-            node->add_child(SegmentTree::Ptr(new SegmentTreeLeaf(*start[i])));
+            node->add_child(SegmentTree::Ptr(start[i]));
+            start[i] = nullptr;
         }
     }
     else
     {
         auto split_fn = [](int axis)
         {
-            return [axis](const MeshSegment * a, const MeshSegment * b)
+            return [axis](SegmentTree * a, SegmentTree * b)
             {
-                return a->bb.center()[axis] < b->bb.center()[axis];
+                return a->segment().bb.center()[axis] < b->segment().bb.center()[axis];
             };
         };
 
-        MeshSegment** starts[9];
+        SegmentTree** starts[9];
         starts[0] = start;
         starts[8] = end; // fake past-the-end start for easier indexing
 
@@ -189,10 +186,7 @@ SegmentTree::Ptr SegmentTree::octree_split_recursive(MeshSegment** start, MeshSe
         }
     }
 
-    if (combine_depth > 0)
-    {
-        node->m_skipped = node->m_depth > combine_depth;
-    }
+    node->m_skipped = combine_depth < 0 || node->m_depth > combine_depth;
 
     return SegmentTree::Ptr(node);
 }
@@ -286,10 +280,7 @@ void SegmentTreeNode::update_children(int combine_depth)
         m_meta_segment.texture_file = child->segment().texture_file;
         m_depth = std::max(m_depth, child->m_depth + 1);
     }
-    if (combine_depth > 0)
-    {
-        m_skipped = m_depth > combine_depth;
-    }
+    m_skipped = combine_depth < 0 || m_depth > combine_depth;
 }
 bool SegmentTreeNode::combine_if_possible(bool print)
 {
@@ -366,23 +357,25 @@ void SegmentTreeNode::fill_tile(Cesium3DTiles::Tile& tile, const std::string& fi
     {
         return;
     }
+    auto prefix = m_meta_segment.filename.empty() ? filename_prefix : m_meta_segment.filename;
     tile.children.resize(m_children.size());
     for (size_t i = 0; i < m_children.size(); i++)
     {
-        m_children[i]->fill_tile(tile.children[i], filename_prefix + std::to_string(i));
+        m_children[i]->fill_tile(tile.children[i], prefix + std::to_string(i));
     }
 
     if (m_skipped)
     {
-        tile.geometricError = 0;
+        double sum = 0;
         for (auto& child : tile.children)
         {
-            tile.geometricError += child.geometricError;
+            sum += child.geometricError;
         }
+        tile.geometricError = (sum + 1) * 10;
     }
     else
     {
-        m_meta_segment.filename = filename_prefix + "_.b3dm";
+        m_meta_segment.filename = prefix + "_.b3dm";
         Cesium3DTiles::Content content;
         content.uri = m_meta_segment.filename;
         tile.content = content;

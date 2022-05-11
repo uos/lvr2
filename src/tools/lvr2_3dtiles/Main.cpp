@@ -364,12 +364,11 @@ int main(int argc, char** argv)
         std::cout << timestamp << "Partitioning chunks                " << std::endl;
         auto& tile = root.children.emplace_back();
         auto chunk_root = SegmentTree::octree_partition(chunks, num_chunks, 2);
-        chunk_root->m_skipped = true;
-        chunk_root->fill_tile(tile, path + "c");
+        chunk_root->segment().filename = path + "c";
         root_segment.add_child(std::move(chunk_root));
     }
 
-    if (chunk_size > 0)
+    if (!segments.empty())
     {
         std::cout << timestamp << "Splitting " << segments.size() << " large segments" << std::endl;
         size_t total_faces = 0;
@@ -379,6 +378,8 @@ int main(int argc, char** argv)
         }
         ProgressBar progress(total_faces, "Splitting segments");
 
+        std::vector<SegmentTree::Ptr> segment_trees(segments.size());
+
         for (size_t i = 0; i < segments.size(); i++)
         {
             auto& segment = segments[i];
@@ -386,16 +387,26 @@ int main(int argc, char** argv)
 
             fs::create_directories(output_dir / path);
 
-            Tile& tile = root.children.emplace_back();
-            convert_bounding_box(segment.bb, tile.boundingVolume);
-
-            auto tree = split_mesh(segment, chunk_size);
-            tree->fill_tile(tile, path + "s");
-            root_segment.add_child(std::move(tree));
+            auto tree = split_mesh(segment, chunk_size > 0 ? chunk_size : segment.bb.longest_axis_size() + 1);
+            tree->segment().filename = path + "s";
+            segment_trees[i] = std::move(tree);
 
             progress += segment.mesh->n_faces();
         }
         std::cout << "\r";
+
+        if (segment_trees.size() > 50)
+        {
+            auto segment_root = SegmentTree::octree_partition(segment_trees);
+            root_segment.add_child(std::move(segment_root));
+        }
+        else
+        {
+            for (auto& tree : segment_trees)
+            {
+                root_segment.add_child(std::move(tree));
+            }
+        }
     }
     else
     {

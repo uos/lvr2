@@ -79,6 +79,7 @@ public:
     using Ptr = std::unique_ptr<SegmentTree>;
 
     static Ptr octree_partition(std::vector<MeshSegment>& segments, int combine_depth = -1);
+    static Ptr octree_partition(std::vector<SegmentTree::Ptr>& segments);
     static Ptr octree_partition(std::vector<std::pair<pmp::Point, MeshSegment>>& chunks, const Eigen::Vector3i& num_chunks, int combine_depth = -1);
     void simplify(bool print = true);
     virtual void print(size_t indent = 0) = 0;
@@ -103,7 +104,7 @@ protected:
         return m_depth == 0 ? 0.0 : std::pow(10, m_depth - 1);
     }
 private:
-    static Ptr octree_split_recursive(MeshSegment** start, MeshSegment** end, int combine_depth);
+    static Ptr octree_split_recursive(SegmentTree** start, SegmentTree** end, int combine_depth);
 };
 
 class SegmentTreeNode : public SegmentTree
@@ -158,7 +159,8 @@ public:
         {
             return;
         }
-        m_segment.filename = filename_prefix + ".b3dm";
+        auto prefix = m_segment.filename.empty() ? filename_prefix : m_segment.filename;
+        m_segment.filename = prefix + ".b3dm";
         Cesium3DTiles::Content content;
         content.uri = m_segment.filename;
         tile.content = content;
