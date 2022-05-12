@@ -80,8 +80,9 @@ int main(int argc, char** argv)
         ("fix,f", bool_switch(&fix_mesh),
          "Assume the mesh might have errors, attempt to fix it")
 
-        ("segment,s", value<float>(&chunk_size),
-         "Segment the mesh into connected regions with the given chunk size")
+        ("chunkSize,c", value<float>(&chunk_size),
+         "When loading a Mesh: Split the Mesh into parts with this size.\n"
+         "When loading chunks: Assume the chunks have this size.")
 
         ("writeMesh,w", value<std::vector<fs::path>>(&mesh_out_files),
          "Save the mesh after fix to the given file")
@@ -156,10 +157,71 @@ int main(int argc, char** argv)
     Eigen::Vector3i num_chunks = Eigen::Vector3i::Zero();
     std::vector<std::string> texture_files;
 
-    auto input_extension = input_file.extension().string().substr(1);
+    std::string input_extension = "";
+    if (!fs::is_directory(input_file))
+    {
+        std::cout << timestamp << "Reading mesh " << input_file;
+        input_extension = input_file.extension().string();
+        if (input_extension.empty())
+        {
+            throw boost::program_options::error("Input file has no extension and is not a directory");
+        }
+        input_extension = input_extension.substr(1);
+    }
 
-    std::cout << timestamp << "Reading mesh " << input_file;
-    if (pmp::SurfaceMeshIO::supported_extensions().count(input_extension))
+    if (input_extension.empty()) // => directory containing chunks
+    {
+        std::cout << timestamp << "Reading chunks from " << input_file << std::endl;
+        std::vector<fs::path> chunk_files;
+        for (auto& entry : fs::directory_iterator(input_file))
+        {
+            chunk_files.push_back(entry.path());
+        }
+        chunks.resize(chunk_files.size());
+
+        #pragma omp parallel for
+        for (size_t i = 0; i < chunk_files.size(); i++)
+        {
+            auto name = chunk_files[i];
+            auto& [ chunk_pos, segment ] = chunks[i];
+            int x, y, z;
+            int read = std::sscanf(name.stem().c_str(), "%d_%d_%d", &x, &y, &z);
+            if (read != 3)
+            {
+                std::cout << "Skipping " << name << std::endl;
+                continue;
+            }
+            chunk_pos = pmp::Point(x, y, z);
+
+            segment.mesh.reset(new pmp::SurfaceMesh());
+            segment.mesh->read(name.string());
+            segment.bb = segment.mesh->bounds();
+        }
+        for (size_t i = 0; i < chunks.size(); i++)
+        {
+            if (chunks[i].second.mesh == nullptr)
+            {
+                std::swap(chunks[i], chunks.back());
+                chunks.pop_back();
+            }
+        }
+        Eigen::Vector3i min_chunk = Eigen::Vector3i::Constant(std::numeric_limits<int>::max());
+        Eigen::Vector3i max_chunk = Eigen::Vector3i::Constant(std::numeric_limits<int>::min());
+
+        for (auto& [ chunk_pos, segment ] : chunks)
+        {
+            min_chunk = min_chunk.cwiseMin(chunk_pos.cast<int>());
+            max_chunk = max_chunk.cwiseMax(chunk_pos.cast<int>());
+            bb += segment.bb;
+        }
+        num_chunks = max_chunk - min_chunk + Eigen::Vector3i::Ones();
+        std::cout << num_chunks.transpose() << " Chunks from " << min_chunk.transpose() << " to " << max_chunk.transpose() << std::endl; // TODO: temp
+        for (auto& [ chunk_pos, segment ] : chunks)
+        {
+            chunk_pos -= min_chunk.cast<float>();
+        }
+    }
+    else if (pmp::SurfaceMeshIO::supported_extensions().count(input_extension))
     {
         std::cout << " using pmp::SurfaceMeshIO" << std::endl;
         pmp::SurfaceMeshIO io(input_file.string(), pmp::IOFlags());
@@ -269,7 +331,11 @@ int main(int argc, char** argv)
 
     bb = surface_mesh.bounds();
 
-    if (!texture_files.empty())
+    if (!chunks.empty())
+    {
+        // chunks were loaded, no further splitting required
+    }
+    else if (!texture_files.empty())
     {
         auto face_dist = surface_mesh.get_face_property<pmp::IndexType>("f:material");
         std::vector<pmp::SurfaceMesh> meshes(texture_files.size());
@@ -370,15 +436,19 @@ int main(int argc, char** argv)
 
     if (!segments.empty())
     {
-        std::cout << timestamp << "Splitting " << segments.size() << " large segments" << std::endl;
-        size_t total_faces = 0;
-        for (auto& segment : segments)
+        ProgressBar* progress = nullptr;
+        if (chunk_size > 0)
         {
-            total_faces += segment.mesh->n_faces();
+            std::cout << timestamp << "Splitting " << segments.size() << " large segments" << std::endl;
+            size_t total_faces = 0;
+            for (auto& segment : segments)
+            {
+                total_faces += segment.mesh->n_faces();
+            }
+            progress = new ProgressBar(total_faces, "Splitting segments");
         }
-        ProgressBar progress(total_faces, "Splitting segments");
 
-        std::vector<SegmentTree::Ptr> segment_trees(segments.size());
+        std::vector<SegmentTree::Ptr> segment_trees;
 
         for (size_t i = 0; i < segments.size(); i++)
         {
@@ -387,13 +457,22 @@ int main(int argc, char** argv)
 
             fs::create_directories(output_dir / path);
 
-            auto tree = split_mesh(segment, chunk_size > 0 ? chunk_size : segment.bb.longest_axis_size() + 1);
+            auto& tree = segment_trees.emplace_back();
+            if (chunk_size > 0)
+            {
+                tree = split_mesh(segment, chunk_size > 0 ? chunk_size : segment.bb.longest_axis_size() + 1);
+                *progress += segment.mesh->n_faces();
+            }
+            else
+            {
+                tree.reset(new SegmentTreeLeaf(segment));
+            }
             tree->segment().filename = path + "s";
-            segment_trees[i] = std::move(tree);
-
-            progress += segment.mesh->n_faces();
         }
-        std::cout << "\r";
+        if (progress != nullptr)
+        {
+            std::cout << "\r";
+        }
 
         if (segment_trees.size() > 50)
         {
@@ -407,15 +486,6 @@ int main(int argc, char** argv)
                 root_segment.add_child(std::move(tree));
             }
         }
-    }
-    else
-    {
-        auto& segment = segments[0];
-        Cesium3DTiles::Content content;
-        content.uri = segment.filename;
-        auto& tile = root.children.emplace_back();
-        tile.content = content;
-        root_segment.add_child(std::make_unique<SegmentTreeLeaf>(segment));
     }
 
     std::cout << timestamp << "Constructed tree with depth " << root_segment.m_depth << ". Creating meta-segments" << std::endl;
