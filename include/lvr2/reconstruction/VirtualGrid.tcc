@@ -35,24 +35,17 @@ template <typename BaseVecT>
 VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb, float gridCellSize, float voxelSize)
 {
     m_pcbb = bb;
-    if (fmod((float)gridCellSize, voxelSize) != 0)
+    if (fmod(gridCellSize, voxelSize) != 0)
     {
-        float var = (gridCellSize / voxelSize) + fmod((float)gridCellSize, voxelSize);
-        m_gridCellSize = var * voxelSize;
+        m_gridCellSize = ceil(gridCellSize / voxelSize) * voxelSize;
+        std::cout << timestamp << "Warning: Adjusted grid cell size to " << m_gridCellSize << std::endl;
     }
     else
     {
         m_gridCellSize = gridCellSize;
     }
-    std::cout << "GRID: " << m_gridCellSize << std::endl;
 
     m_voxelsize = voxelSize;
-}
-
-template <typename BaseVecT>
-VirtualGrid<BaseVecT>::~VirtualGrid()
-{
-    std::cout << "Bye" << std::endl;
 }
 
 template <typename BaseVecT>
@@ -71,9 +64,9 @@ void VirtualGrid<BaseVecT>::setBoundingBox(BoundingBox<BaseVecT> bb)
 template <typename BaseVecT>
 void VirtualGrid<BaseVecT>::findInitialBox()
 {
-    float min_x = m_pcbb.getMin().x;
-    float min_y = m_pcbb.getMin().y;
-    float min_z = m_pcbb.getMin().z;
+    float min_x = floor(m_pcbb.getMin().x / m_gridCellSize) * m_gridCellSize;
+    float min_y = floor(m_pcbb.getMin().y / m_gridCellSize) * m_gridCellSize;
+    float min_z = floor(m_pcbb.getMin().z / m_gridCellSize) * m_gridCellSize;
     float max_x = min_x + m_gridCellSize;
     float max_y = min_y + m_gridCellSize;
     float max_z = min_z + m_gridCellSize;

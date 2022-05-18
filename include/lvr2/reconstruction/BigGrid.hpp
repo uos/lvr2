@@ -45,12 +45,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include <tbb/concurrent_unordered_map.h>
-
-#ifndef __APPLE__
-#include <omp.h>
-#endif
-
 
 namespace lvr2
 {
@@ -130,25 +124,32 @@ class BigGrid
      * @param numPoints number of points
      * @return lvr2::floatArr, containing points
      */
-    lvr2::floatArr points(
-        float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
+    lvr2::floatArr points(BaseVecT min, BaseVecT max, size_t& numPoints);
 
-    lvr2::floatArr normals(
-        float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
+    lvr2::floatArr normals(BaseVecT min, BaseVecT max, size_t& numNormals);
 
-    lvr2::ucharArr colors(
-        float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
+    lvr2::ucharArr colors(BaseVecT min, BaseVecT max, size_t& numColors);
+
     /**
      * return numbers of points in a specific area (defined by the params) of the grid
-     * @param minx
-     * @param miny
-     * @param minz
-     * @param maxx
-     * @param maxy
-     * @param maxz
+     * @param min
+     * @param max
      * @return number of points in area
      */
-    size_t getSizeofBox(float minx, float miny, float minz, float maxx, float maxy, float maxz);
+    size_t getSizeofBox(BaseVecT min, BaseVecT max)
+    {
+        std::vector<std::pair<size_t, size_t>> _unused;
+        return getSizeofBox(min, max, _unused);
+    }
+    /**
+     * return numbers of points in a specific area (defined by the params) of the grid
+     * @param min
+     * @param max
+     * @param cellCounts a vector containing <cellId, cellCount> of all cells intersecting
+     *                   the area.
+     * @return number of points in area
+     */
+    size_t getSizeofBox(BaseVecT min, BaseVecT max, std::vector<std::pair<size_t, size_t>>& cellCounts);
 
     void serialize(std::string path = "serinfo.ls");
 
@@ -165,7 +166,7 @@ class BigGrid
     BoundingBox<BaseVecT>& getpartialBB() { return m_partialbb; }
 
 
-    virtual ~BigGrid();
+    virtual ~BigGrid() = default;
 
     inline size_t hashValue(size_t i, size_t j, size_t k)
     {
@@ -187,14 +188,19 @@ class BigGrid
         return it != m_gridNumPoints.end();
     }
 
-    inline bool hasColors() { return m_has_color; }
-    inline bool hasNormals() { return m_has_normal; }
+    inline bool hasColors() { return m_hasColor; }
+    inline bool hasNormals() { return m_hasNormal; }
 
   private:
-    inline int calcIndex(float f) { return f < 0 ? f - .5 : f + .5; }
+    inline int calcIndex(float f) const { return f < 0 ? f - .5 : f + .5; }
+    void calcIndex(const BaseVecT& vec, size_t& i, size_t& j, size_t& k) const
+    {
+        i = calcIndex((vec[0] - m_bb.getMin()[0]) / m_voxelSize);
+        j = calcIndex((vec[1] - m_bb.getMin()[1]) / m_voxelSize);
+        k = calcIndex((vec[2] - m_bb.getMin()[2]) / m_voxelSize);
+    }
 
     bool exists(int i, int j, int k);
-    void insert(float x, float y, float z);
 
     size_t m_maxIndexSquare;
     size_t m_maxIndex;
@@ -207,14 +213,11 @@ class BigGrid
 
     float m_voxelSize;
     bool m_extrude;
-#ifdef LVR2_USE_OPEN_MP
-    omp_lock_t m_lock;
-#endif
-    bool m_has_normal;
-    bool m_has_color;
+    bool m_hasNormal;
+    bool m_hasColor;
 
     boost::iostreams::mapped_file m_PointFile;
-    boost::iostreams::mapped_file m_NomralFile;
+    boost::iostreams::mapped_file m_NormalFile;
     boost::iostreams::mapped_file m_ColorFile;
     BoundingBox<BaseVecT> m_bb;
 
@@ -223,8 +226,7 @@ class BigGrid
 
     std::vector<shared_ptr<Scan>> m_scans;
 
-    //std::unordered_map<size_t, CellInfo> m_gridNumPoints;
-    tbb::concurrent_unordered_map<size_t, CellInfo> m_gridNumPoints;
+    std::unordered_map<size_t, CellInfo> m_gridNumPoints;
     float m_scale;
 };
 

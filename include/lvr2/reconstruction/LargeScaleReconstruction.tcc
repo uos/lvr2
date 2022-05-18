@@ -27,6 +27,7 @@
 
 #include <iostream>
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/geometry/PMPMesh.hpp"
 #include "lvr2/io/baseio/ChannelIO.hpp"
 #include "lvr2/io/baseio/ArrayIO.hpp"
 #include "lvr2/io/baseio/VariantChannelIO.hpp"
@@ -47,6 +48,7 @@
 #include "LargeScaleReconstruction.hpp"
 
 #include <mpi.h>
+#include <yaml-cpp/yaml.h>
 
 
 #if defined CUDA_FOUND
@@ -222,14 +224,15 @@ namespace lvr2
 
                 size_t numPoints;
 
-                // Get all points within current chunk, overlapped by 3 x voxelsiue
-                floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] * 3,
-                                            partitionBoxes->at(i).getMin().y - m_voxelSizes[h] * 3,
-                                            partitionBoxes->at(i).getMin().z - m_voxelSizes[h] * 3,
-                                            partitionBoxes->at(i).getMax().x + m_voxelSizes[h] * 3,
-                                            partitionBoxes->at(i).getMax().y + m_voxelSizes[h] * 3,
-                                            partitionBoxes->at(i).getMax().z + m_voxelSizes[h] * 3,
-                                            numPoints);
+                BaseVecT gridbb_min = partitionBoxes->at(i).getMin();
+                BaseVecT gridbb_max = partitionBoxes->at(i).getMax();
+                for (int j = 0; j < 3; j++)
+                {
+                    gridbb_min[j] -= m_voxelSizes[h] * 3;
+                    gridbb_max[j] += m_voxelSizes[h] * 3;
+                }
+
+                floatArr points = bg.points(gridbb_min, gridbb_max, numPoints);
 
                 // remove boxes with less than 50 points
                 if (numPoints <= 50)
@@ -238,12 +241,6 @@ namespace lvr2
                     continue;
                 }
 
-                BaseVecT gridbb_min(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] * 3,
-                                    partitionBoxes->at(i).getMin().y - m_voxelSizes[h] * 3,
-                                    partitionBoxes->at(i).getMin().z - m_voxelSizes[h] * 3);
-                BaseVecT gridbb_max(partitionBoxes->at(i).getMax().x + m_voxelSizes[h] * 3,
-                                    partitionBoxes->at(i).getMax().y + m_voxelSizes[h] * 3,
-                                    partitionBoxes->at(i).getMax().z + m_voxelSizes[h] * 3);
                 BoundingBox<BaseVecT> gridbb(gridbb_min, gridbb_max);
 
                 cout << "\n" <<  lvr2::timestamp <<"box: " << i << "/" << partitionBoxes->size() - 1 << endl;
@@ -254,13 +251,7 @@ namespace lvr2
                 if (bg.hasNormals())
                 {
                     size_t numNormals;
-                    lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] * 3,
-                                                        partitionBoxes->at(i).getMin().y - m_voxelSizes[h] * 3,
-                                                        partitionBoxes->at(i).getMin().z - m_voxelSizes[h] * 3,
-                                                        partitionBoxes->at(i).getMax().x + m_voxelSizes[h] * 3,
-                                                        partitionBoxes->at(i).getMax().y + m_voxelSizes[h] * 3,
-                                                        partitionBoxes->at(i).getMax().z + m_voxelSizes[h] * 3,
-                                                        numNormals);
+                    lvr2::floatArr normals = bg.normals(gridbb_min, gridbb_max, numNormals);
 
                     p_loader->setNormalArray(normals, numNormals);
                     cout << "got " << numNormals << " normals" << endl;
@@ -477,10 +468,27 @@ namespace lvr2
 
         for(int h = 0; h < m_voxelSizes.size(); h++)
         {
+            float voxelSize = m_voxelSizes[h];
+            float overlap = 5 * voxelSize;
+
+            if (m_debugChunks && h == 0)
+            {
+                boost::filesystem::remove_all("chunks");
+                boost::filesystem::create_directories("chunks");
+
+                YAML::Node metadata;
+                metadata["chunk_size"] = m_chunkSize;
+                metadata["voxel_size"] = voxelSize;
+                metadata["overlap"] = overlap;
+
+                std::ofstream out("chunks/chunk_metadata.yaml");
+                out << metadata;
+            }
+
             // vector to save the new chunk names - which chunks have to be reconstructed
             vector<BaseVector<int>> newChunks = vector<BaseVector<int>>();
 
-            string layerName = "tsdf_values_" + std::to_string(m_voxelSizes[h]);
+            string layerName = "tsdf_values_" + std::to_string(voxelSize);
             //create chunks
 
             for (int i = 0; i < partitionBoxes->size(); i++)
@@ -496,13 +504,15 @@ namespace lvr2
 
                 size_t numPoints;
 
-                floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] * 3,
-                                            partitionBoxes->at(i).getMin().y - m_voxelSizes[h] * 3,
-                                            partitionBoxes->at(i).getMin().z - m_voxelSizes[h] * 3,
-                                            partitionBoxes->at(i).getMax().x + m_voxelSizes[h] * 3,
-                                            partitionBoxes->at(i).getMax().y + m_voxelSizes[h] * 3,
-                                            partitionBoxes->at(i).getMax().z + m_voxelSizes[h] * 3,
-                                            numPoints);
+                BaseVecT gridbb_min = partitionBoxes->at(i).getMin();
+                BaseVecT gridbb_max = partitionBoxes->at(i).getMax();
+                for (int j = 0; j < 3; j++)
+                {
+                    gridbb_min[j] -= overlap;
+                    gridbb_max[j] += overlap;
+                }
+
+                floatArr points = bg.points(gridbb_min, gridbb_max, numPoints);
 
                 // remove chunks with less than 50 points
                 if (numPoints <= 50)
@@ -511,12 +521,6 @@ namespace lvr2
                     continue;
                 }
 
-                BaseVecT gridbb_min(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
-                                    partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
-                                    partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3);
-                BaseVecT gridbb_max(partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
-                                    partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
-                                    partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3);
                 BoundingBox<BaseVecT> gridbb(gridbb_min, gridbb_max);
 
                 cout <<  lvr2::timestamp <<"Processed Partitions: " << i << "/" << partitionBoxes->size() - 1 << endl;
@@ -527,13 +531,7 @@ namespace lvr2
                 if (bg.hasNormals())
                 {
                     size_t numNormals;
-                    lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x -m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMin().y -m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMin().z -m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMax().x +m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMax().y +m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMax().z +m_voxelSizes[h] *3,
-                                                        numNormals);
+                    lvr2::floatArr normals = bg.normals(gridbb_min, gridbb_max, numNormals);
 
                     p_loader->setNormalArray(normals, numNormals);
                     cout << "got " << numNormals << " normals" << endl;
@@ -543,7 +541,7 @@ namespace lvr2
                 //if(numPoints > (m_chunkSize*500000)) // reduction TODO add options
                 if(false)
                 {
-                    OctreeReduction oct(p_loader, m_voxelSizes[h], 20);
+                    OctreeReduction oct(p_loader, voxelSize / 5, 20);
                     p_loader_reduced = oct.getReducedPoints();
                 }
                 else
@@ -560,9 +558,10 @@ namespace lvr2
                                                                          m_useRansac);
 
 
-                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(m_voxelSizes[h], surface, gridbb, true, m_extrude);
+                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(voxelSize, surface, gridbb, true, m_extrude);
                 ps_grid->setBB(gridbb);
                 ps_grid->calcIndices();
+                bool distances_calculated = false;
 
                 //calculate important stuff for reconstruction
                 if (!bg.hasNormals())
@@ -573,12 +572,6 @@ namespace lvr2
                     // std::vector<float> flipPoint = std::vector<float>{100, 100, 100};
                     size_t num_points = p_loader_reduced->numPoints();
                     floatArr points = p_loader_reduced->getPointArray();
-
-                    // for(size_t i = 0; i < num_points; i++)
-                    // {
-                    //     std::cout << points[i * 3] << " " << points[i * 3 + 1] << " " << points[i * 3 + 2] << std::endl; 
-                    // }
-
                     floatArr normals = floatArr(new float[num_points * 3]);
                     std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
                     GpuSurface gpu_surface(points, num_points);
@@ -600,12 +593,8 @@ namespace lvr2
                         std::cout << timestamp << "Computing signed distances in GPU with brute force kernel (kd = 5)." << std::endl;
                         std::cout << timestamp << "This might take a while...." << std::endl;
                         gpu_surface.distances(query_points, m_voxelSizes[h]);
+                        distances_calculated = true;
                         std::cout << timestamp << "Done." << std::endl;
-                    }
-                    else
-                    {
-                        std::cout << timestamp << "Computing signed distances..." << std::endl;
-                        ps_grid->calcDistanceValues();
                     }
 
                     gpu_surface.freeGPU();
@@ -613,16 +602,15 @@ namespace lvr2
     #else
                         std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
                         surface->calculateSurfaceNormals();
-                        ps_grid->calcDistanceValues();
     #endif
                     }
                     else
                     {
                         surface->calculateSurfaceNormals();
-                        ps_grid->calcDistanceValues();
                     }
                 }
-                else
+
+                if (!distances_calculated)
                 {
                     ps_grid->calcDistanceValues();
                 }
@@ -647,16 +635,12 @@ namespace lvr2
                 // save the mesh of the chunk
                 if(m_debugChunks && h == 0)
                 {
-                    auto reconstruction =
-                            make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
-                    lvr2::HalfEdgeMesh<Vec> mesh;
+                    auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
+                    lvr2::PMPMesh<Vec> mesh;
                     reconstruction->getMesh(mesh);
-                    if(mesh.numVertices() > 0 && mesh.numFaces() > 0)
+                    if(mesh.numFaces() > 0)
                     {
-                        lvr2::SimpleFinalizer<Vec> finalize;
-                        auto meshBuffer = MeshBufferPtr(finalize.apply(mesh));
-                        auto m = ModelPtr(new Model(meshBuffer));
-                        ModelFactory::saveModel(m, name_id + ".ply");
+                        mesh.getSurfaceMesh().write("chunks/" + name_id + ".ply");
                     }
                 }
 
@@ -669,14 +653,8 @@ namespace lvr2
             if(m_bigMesh && h == 0)
             {
                 //combine chunks
-                auto vmax = cbb.getMax();
-                auto vmin = cbb.getMin();
-                vmin.x -= m_voxelSizes[h] *3;
-                vmin.y -= m_voxelSizes[h] *3;
-                vmin.z -= m_voxelSizes[h] *3;
-                vmax.x += m_voxelSizes[h] *3;
-                vmax.y += m_voxelSizes[h] *3;
-                vmax.z += m_voxelSizes[h] *3;
+                auto vmin = cbb.getMin() - BaseVecT(overlap, overlap, overlap);
+                auto vmax = cbb.getMax() + BaseVecT(overlap, overlap, overlap);
                 cbb.expand(vmin);
                 cbb.expand(vmax);
 
@@ -1005,13 +983,15 @@ namespace lvr2
 
                 size_t numPoints;
 
-                floatArr points = bg.points(partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
-                                            partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3,
-                                            numPoints);
+                BaseVecT gridbb_min = partitionBoxes->at(i).getMin();
+                BaseVecT gridbb_max = partitionBoxes->at(i).getMax();
+                for (int j = 0; j < 3; j++)
+                {
+                    gridbb_min[j] -= m_voxelSizes[h] * 3;
+                    gridbb_max[j] += m_voxelSizes[h] * 3;
+                }
+
+                floatArr points = bg.points(gridbb_min, gridbb_max, numPoints);
 
                 // remove chunks with less than 50 points
                 if (numPoints <= 50)
@@ -1021,12 +1001,8 @@ namespace lvr2
                 }
 
                 // Get Bounding Box
-                float x_min = partitionBoxes->at(i).getMin().x - m_voxelSizes[h] *3,
-                        y_min = partitionBoxes->at(i).getMin().y - m_voxelSizes[h] *3,
-                        z_min = partitionBoxes->at(i).getMin().z - m_voxelSizes[h] *3,
-                        x_max = partitionBoxes->at(i).getMax().x + m_voxelSizes[h] *3,
-                        y_max = partitionBoxes->at(i).getMax().y + m_voxelSizes[h] *3,
-                        z_max = partitionBoxes->at(i).getMax().z + m_voxelSizes[h] *3;
+                float x_min = gridbb_min.x, y_min = gridbb_min.y, z_min = gridbb_min.z,
+                        x_max = gridbb_max.x, y_max = gridbb_max.y, z_max = gridbb_max.z;
 
 
                 // Wait for Client to ask for job
@@ -1062,13 +1038,7 @@ namespace lvr2
                 if (!calcNorm)
                 {
                     size_t numNormals;
-                    lvr2::floatArr normals = bg.normals(partitionBoxes->at(i).getMin().x -m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMin().y -m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMin().z -m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMax().x +m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMax().y +m_voxelSizes[h] *3,
-                                                        partitionBoxes->at(i).getMax().z +m_voxelSizes[h] *3,
-                                                        numNormals);
+                    lvr2::floatArr normals = bg.normals(gridbb_min, gridbb_max, numNormals);
                     std::cout << lvr2::timestamp << "NumNormals: " << numNormals << std::endl;
                     MPI_Send(&numNormals, 1, MPI_SIZE_T, dest, 13, MPI_COMM_WORLD);
                     MPI_Send(normals.get(), numNormals*3, MPI_FLOAT, dest, 14, MPI_COMM_WORLD);
