@@ -128,7 +128,8 @@ template<typename BaseVecT>
 TextureHandle Texturizer<BaseVecT>::generateTexture(
     int index,
     const PointsetSurface<BaseVecT>& surface,
-    const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect
+    const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect,
+    ClusterHandle cluster
 )
 {
     cout << "Wrong" << endl;

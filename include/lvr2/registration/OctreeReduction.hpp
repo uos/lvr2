@@ -42,15 +42,23 @@
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 
 #include <vector>
+#include <random>
 
 namespace lvr2
 {
 
+// Informs the way the a point is picked from a voxel
+enum VoxelSamplingPolicy
+{
+    CLOSEST_TO_CENTER,
+    RANDOM_SAMPLE
+};
+
 class OctreeReduction
 {
 public:
-    OctreeReduction(PointBufferPtr& pointBuffer, const double& voxelSize, const size_t& minPointsPerVoxel);
-    OctreeReduction(Vector3f* points, const size_t& n, const double& voxelSize, const size_t& minPointsPerVoxel);
+    OctreeReduction(PointBufferPtr& pointBuffer, const double& voxelSize, const size_t& minPointsPerVoxel, const VoxelSamplingPolicy samplingPolicy = CLOSEST_TO_CENTER);
+    OctreeReduction(Vector3f* points, const size_t& n, const double& voxelSize, const size_t& minPointsPerVoxel, const VoxelSamplingPolicy samplingPolicy = CLOSEST_TO_CENTER);
 
     PointBufferPtr getReducedPoints();
     void getReducedPoints(Vector3f& points, size_t& n);
@@ -82,6 +90,8 @@ private:
     bool*               m_flags;
     PointBufferPtr      m_pointBuffer;
     Vector3f            m_points;
+    VoxelSamplingPolicy m_samplingPolicy;
+    std::mt19937        m_randomEngine;
 };
 
 /**
@@ -97,7 +107,7 @@ public:
     void setPointBuffer(PointBufferPtr ptr) override
     {
         // Create octree
-        m_octree = new OctreeReduction(ptr, m_voxelSize, m_minPoints);
+        m_octree = new OctreeReduction(ptr, m_voxelSize, m_minPoints, VoxelSamplingPolicy::RANDOM_SAMPLE);
     }
 
     PointBufferPtr getReducedPoints()

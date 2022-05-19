@@ -48,6 +48,11 @@ void ClusterIO<BaseIO>::saveClusters(
         cluster_idx++;
     }
     
+    // If no clusters exist we can stop here
+    if (combined_face_indices.size() <= 0 || cluster_ranges.size() <= 0)
+    {
+        return;
+    }
 
     // TODO: Meta data
     // Save combined cluster indices
@@ -136,6 +141,11 @@ void ClusterIO<BaseIO>::loadClusters(
         *desc.data,
         shape
     );
+    // If the Mesh has no clusters return
+    if (!(face_index_ranges && combined_face_indices))
+    {
+        return;
+    }
 
     // Add each cluster to the buffer
     for (size_t i = 0; i < shape[0]; i++)

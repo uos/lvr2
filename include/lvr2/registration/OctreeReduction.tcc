@@ -200,23 +200,35 @@ void OctreeReduction::createOctree(T* points, const int& n, bool* flagged, const
 
     if (max[axis] - min[axis] <= m_voxelSize)
     {
-        // keep the Point closest to the center
-        int closest = 0;
-        double minDist = (points[closest] - center).squaredNorm();
-        for (int i = 1; i < n; i++)
+        int sample_index = 0;
+
+        if (m_samplingPolicy == CLOSEST_TO_CENTER)
         {
-            double dist = (points[i] - center).squaredNorm();
-            if (dist < minDist)
+            // keep the Point closest to the center
+            double minDist = (points[sample_index] - center).squaredNorm();
+            for (int i = 1; i < n; i++)
             {
-                closest = i;
-                minDist = dist;
+                double dist = (points[i] - center).squaredNorm();
+                if (dist < minDist)
+                {
+                    sample_index = i;
+                    minDist = dist;
+                }
             }
         }
+        else if(m_samplingPolicy == RANDOM_SAMPLE)
+        {
+            // Keep a random sample
+            std::uniform_int_distribution<int> dist(0, n - 1);
+            sample_index = dist(m_randomEngine);
+        }
+        
         // flag all other Points for deletion
         for (int i = 0; i < n; i++)
         {
-            flagged[i] = i != closest;
+            flagged[i] = i != sample_index;
         }
+
         return;
     }
 
