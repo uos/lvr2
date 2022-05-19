@@ -240,14 +240,14 @@ int main(int argc, char** argv)
         int x = lsr.mpiAndReconstruct(project);
     }
 
-    // reconstruction of .ply for diffrent voxelSizes
-    if(options.getDebugChunks())
-    {
+    // // reconstruction of .ply for diffrent voxelSizes
+    // if(options.getDebugChunks())
+    // {
 
-        for (int i; i < options.getVoxelSizes().size(); i++) {
-            lsr.getPartialReconstruct(bb, cm, options.getVoxelSizes()[i]);
-        }
-    }
+    //     for (int i; i < options.getVoxelSizes().size(); i++) {
+    //         lsr.getPartialReconstruct(bb, cm, options.getVoxelSizes()[i]);
+    //     }
+    // }
 
     cout << "Program end." << endl;
 

@@ -81,7 +81,7 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
     } else {
         
         // no meta name specified but scan position is there: 
-        ret.reset(new HyperspectralPanorama);
+        ret = std::make_shared<HyperspectralPanorama>();
     }
 
     /// Preview

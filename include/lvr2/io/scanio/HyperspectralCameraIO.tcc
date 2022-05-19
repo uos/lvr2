@@ -73,7 +73,7 @@ HyperspectralCameraPtr HyperspectralCameraIO<BaseIO>::load(
         }
         ret = std::make_shared<HyperspectralCamera>(meta.as<HyperspectralCamera>());
     } else {
-        ret.reset(new HyperspectralCamera);
+        ret = std::make_shared<HyperspectralCamera>();
     }
 
     // Load SensorData

@@ -63,7 +63,7 @@ class VirtualGrid
     /**
      * Destructor
      */
-    virtual ~VirtualGrid();
+    virtual ~VirtualGrid() = default;
 
     /**
      * Method to calculate the boxes/chunks covering the PointCloud-BB

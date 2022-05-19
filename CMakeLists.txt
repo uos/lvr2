@@ -48,7 +48,7 @@ include_directories(include)
 # Compiler specific settings
 ###############################################################################
 
-# Add -O0 to remove optimizations when using gcc
+# Add -g to include debug symbols when using gcc
 if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")

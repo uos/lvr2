@@ -104,7 +104,7 @@ CameraImagePtr CameraImageIO<BaseIO>::load(
         }
         
     } else {
-        ret.reset(new CameraImage);
+        ret = std::make_shared<CameraImage>();
     }
 
     // should we load the data here?

@@ -101,10 +101,16 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
             return ret;
         }
 
-        ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
+        try {
+            ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
+        } catch(const YAML::TypedBadConversion<ScanPosition>& ex) {
+            std::cerr << "[ScanPositionIO - load] ERROR at Scan (" << scanPosNo << ") : Could not decode YAML as ScanPosition." << std::endl;
+            throw ex;
+        }
+       
     } else {
         // no meta name specified but scan position is there: 
-        ret.reset(new ScanPosition);
+        ret = std::make_shared<ScanPosition>();
     }
 
     //// DATA
@@ -134,7 +140,6 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     while(true)
     {
         // std::cout << "[ScanPositionIO - load] Load Camera " << camNo << std::endl;
-
         CameraPtr cam = m_cameraIO->load(scanPosNo, camNo);
         if(cam)
         {
@@ -142,9 +147,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
         } else {
             break;
         }
-
         // std::cout << "[ScanPositionIO - load] Loaded Camera " << camNo << std::endl;
-
         camNo++;
     }
 

@@ -205,19 +205,9 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
             if (!ignoreSplit)
             {
                 // std::cout << lvr2::timestamp << " rsize start "  << std::endl;
-                size_t rightSize = m_grid->getSizeofBox(rightbb.getMin().x,
-                                                        rightbb.getMin().y,
-                                                        rightbb.getMin().z,
-                                                        rightbb.getMax().x,
-                                                        rightbb.getMax().y,
-                                                        rightbb.getMax().z);
+                size_t rightSize = m_grid->getSizeofBox(rightbb.getMin(), rightbb.getMax());
                 // std::cout << lvr2::timestamp << " lsize start "  << std::endl;
-                size_t leftSize = m_grid->getSizeofBox(leftbb.getMin().x,
-                                                       leftbb.getMin().y,
-                                                       leftbb.getMin().z,
-                                                       leftbb.getMax().x,
-                                                       leftbb.getMax().y,
-                                                       leftbb.getMax().z);
+                size_t leftSize = m_grid->getSizeofBox(leftbb.getMin(),leftbb.getMax());
 
                 // std::cout << lvr2::timestamp << " size_end "  << std::endl;
                 BigGridKdTree* leftChild = new BigGridKdTree(leftbb, leftSize);

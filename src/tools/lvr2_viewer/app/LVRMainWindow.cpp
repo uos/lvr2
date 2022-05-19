@@ -4025,16 +4025,27 @@ void LVRMainWindow::openScanProject()
     ProjectScale scale = dialog->projectScale();
     
     ScanProjectPtr scanProject;
-    std::shared_ptr<FeatureBuild<scanio::ScanProjectIO>> io;
+    std::shared_ptr<FeatureBuild<scanio::ScanProjectIO> > io;
     switch(projectType)
     {
         case LVRScanProjectOpenDialog::DIR:
         {
             DirectoryKernelPtr dirKernel = std::dynamic_pointer_cast<DirectoryKernel>(kernel); 
             DirectorySchemaPtr dirSchema = std::dynamic_pointer_cast<DirectorySchema>(schema);
-            auto dirIOPtr = std::shared_ptr<lvr2::scanio::DirectoryIO>(new lvr2::scanio::DirectoryIO(dirKernel, dirSchema));
+            // TODO: make use of the new flag "load_data", currently set to true. 
+            // Set to false and load per object like: scanProject->positions[0]->lidar[0]->scan[0]->load();
+            // or
+            // auto scan = scanProject->positions[0]->lidar[0]->scan[0];
+            // ...
+            // scan->load();
+            // ...
+            // scan->release();
+            auto dirIOPtr = std::shared_ptr<lvr2::scanio::DirectoryIO>(new lvr2::scanio::DirectoryIO(dirKernel, dirSchema, true));
             io = std::dynamic_pointer_cast<FeatureBuild<scanio::ScanProjectIO>>(dirIOPtr);
-            scanProject = io->loadScanProject(reduction);
+            // scanProject = io->loadScanProject(reduction);
+            std::cout << "Load ScanProject from directory" << std::endl;
+            scanProject = io->loadScanProject();
+            std::cout << "Loaded ScanProject with " << scanProject->positions.size() << " ScanPositions" << std::endl; 
             break;
         }
         case LVRScanProjectOpenDialog::HDF5:
@@ -4042,9 +4053,11 @@ void LVRMainWindow::openScanProject()
             // use this for reconstruct?
             HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel); 
             HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
-            auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
+            auto hdf5IOPtr = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema, true));
             io = std::dynamic_pointer_cast<FeatureBuild<scanio::ScanProjectIO>>(hdf5IOPtr);
-            scanProject = io->loadScanProject(reduction);
+            scanProject = io->loadScanProject();
+
+            // scanProject = io->loadScanProject(reduction);
             break;
         }
     }

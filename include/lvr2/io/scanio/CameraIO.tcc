@@ -77,7 +77,7 @@ CameraPtr CameraIO<BaseIO>::load(
         }
         ret = std::make_shared<Camera>(meta.as<Camera>());
     } else {
-        ret.reset(new Camera);
+        ret = std::make_shared<Camera>();
     }
 
     /// DATA

@@ -57,12 +57,11 @@ struct convert<lvr2::Scan>
                 node["channels"].push_back(elem.first);
             }
         }
-        
 
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::Scan& scan) 
+    static bool decode(const Node& node, lvr2::Scan& scan)
     {
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, 
@@ -75,45 +74,85 @@ struct convert<lvr2::Scan>
 
         if(node["start_time"])
         {
-            scan.startTime = node["start_time"].as<double>();
+            try {
+                scan.startTime = node["start_time"].as<double>();
+            } catch(const YAML::TypedBadConversion<double>& ex) {
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'start_time': " << node["start_time"] << " as double" << std::endl; 
+                return false;
+            }
         } else {
             scan.startTime = -1.0;
         }
 
         if(node["end_time"])
         {
-            scan.endTime = node["end_time"].as<double>();
+            try {
+                scan.endTime = node["end_time"].as<double>();
+            } catch(const YAML::TypedBadConversion<double>& ex) {
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'end_time': " << node["end_time"] << " as double" << std::endl; 
+                return false;
+            }
         } else {
             scan.endTime = -1.0;
         }
 
         if(node["num_points"])
         {
-            scan.numPoints = node["num_points"].as<unsigned int>();
+            try {
+                scan.numPoints = node["num_points"].as<unsigned int>();
+            } catch(const YAML::TypedBadConversion<unsigned int>& ex) {
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'num_points': "
+                    << node["num_points"] << " as unsigned int" << std::endl; 
+                return false;
+            }
         }
         
         if(node["pose_estimation"])
         {
-            scan.poseEstimation = node["pose_estimation"].as<lvr2::Transformd>();
+            try {
+                scan.poseEstimation = node["pose_estimation"].as<lvr2::Transformd>();
+            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'pose_estimation': "
+                    << node["pose_estimation"] << " as Transformd" << std::endl; 
+                return false;
+            }
         } else {
             scan.poseEstimation = lvr2::Transformd::Identity();
         }
 
         if(node["transformation"])
         {
-            scan.transformation = node["transformation"].as<lvr2::Transformd>();
+            try {
+                scan.transformation = node["transformation"].as<lvr2::Transformd>();
+            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'transformation': "
+                    << node["transformation"] << " as Transformd" << std::endl; 
+                return false;
+            }
         } else {
             scan.transformation = lvr2::Transformd::Identity();
         }
 
         if(node["model"])
         {
-            scan.model = node["model"].as<lvr2::SphericalModel>();
+            try {
+                scan.model = node["model"].as<lvr2::SphericalModel>();
+            } catch(const YAML::TypedBadConversion<lvr2::SphericalModel>& ex) {
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'model': "
+                    << node["model"] << " as SphericalModel" << std::endl; 
+                return false;
+            }
         }
         
         if(node["aabb"])
         {
-            scan.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
+            try {
+                scan.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
+            } catch(const YAML::TypedBadConversion<lvr2::BoundingBox<lvr2::BaseVector<float> > >& ex) {
+                std::cerr << "[YAML - Scan - decode] ERROR: Could not decode 'aabb': "
+                    << node["aabb"] << " as BoundingBox" << std::endl; 
+                return false;
+            }
         }
 
         return true;

@@ -56,34 +56,70 @@ struct convert<lvr2::ScanProject>
 
         if(node["transformation"])
         {
-            scanProj.transformation = node["transformation"].as<lvr2::Transformd>();
+            try {
+                scanProj.transformation = node["transformation"].as<lvr2::Transformd>();
+            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
+                std::cerr << "[YAML - ScanProject - decode] ERROR: Could not decode 'transformation': " 
+                    << node["transformation"] << " as Transformd" << std::endl; 
+                return false;
+            }
         }  else {
             scanProj.transformation  = lvr2::Transformd::Identity();
         }
       
         if(node["crs"])
         {
-            scanProj.crs = node["crs"].as<std::string>();
+            try {
+                scanProj.crs = node["crs"].as<std::string>();
+            } catch(const YAML::TypedBadConversion<std::string>& ex) {
+                std::cerr << "[YAML - ScanProject - decode] ERROR: Could not decode 'crs': " 
+                    << node["crs"] << " as string" << std::endl; 
+                return false;
+            }
         }
 
         if(node["coordinate_system"])
         {
-            scanProj.coordinateSystem = node["coordinate_system"].as<std::string>();
+            try {
+                scanProj.coordinateSystem = node["coordinate_system"].as<std::string>();
+            } catch(const YAML::TypedBadConversion<std::string>& ex) {
+                std::cerr << "[YAML - ScanProject - decode] ERROR: Could not decode 'coordinate_system': " 
+                    << node["coordinate_system"] << " as string" << std::endl; 
+                return false;
+            }
         }
 
         if(node["unit"])
         {
-            scanProj.unit = node["unit"].as<std::string>();
+            try {
+                scanProj.unit = node["unit"].as<std::string>();
+            } catch(const YAML::TypedBadConversion<std::string>& ex) {
+                std::cerr << "[YAML - ScanProject - decode] ERROR: Could not decode 'unit': " 
+                    << node["unit"] << " as string" << std::endl; 
+                return false;
+            }
         }
               
         if(node["name"])
         {
-            scanProj.name = node["name"].as<std::string>();
+            try {
+                scanProj.name = node["name"].as<std::string>();
+            } catch(const YAML::TypedBadConversion<std::string>& ex) {
+                std::cerr << "[YAML - ScanProject - decode] ERROR: Could not decode 'name': " 
+                    << node["name"] << " as string" << std::endl; 
+                return false;
+            }
         }
 
         if(node["aabb"])
         {
-            scanProj.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
+            try {
+                scanProj.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
+            } catch(const YAML::TypedBadConversion<lvr2::BoundingBox<lvr2::BaseVector<float> > >& ex) {
+                std::cerr << "[YAML - ScanProject - decode] ERROR: Could not decode 'aabb': " 
+                    << node["aabb"] << " as BoundingBox" << std::endl; 
+                return false;
+            }
         }
 
     

@@ -57,14 +57,14 @@ PointBufferPtr PointCloudIO<BaseIO>::load(
     using VChannelT = typename PointBuffer::val_type;
 
     // load all channel in group
-    for(auto meta : m_baseIO->m_kernel->metas(group, "Channel") )
+    for(auto meta : m_baseIO->m_kernel->metas(group, "channel") )
     {
         boost::optional<VChannelT> copt = m_vchannel_io->template loadVariantChannel<VChannelT>(group, meta.first);
         if(copt)
         {
             if(!ret)
             {
-                ret.reset(new PointBuffer);
+                ret = std::make_shared<PointBuffer>();
             }
             // add channel
             (*ret)[meta.first] = *copt;
@@ -89,93 +89,6 @@ PointBufferPtr PointCloudIO<BaseIO>::load(
         return loadPointCloud(group, container);
     }
 }
-
-// template<typename BaseIO>
-// std::unordered_map<std::string, YAML::Node> PointCloudIO<BaseIO>::loadMeta(
-//     const size_t& posNo, 
-//     const size_t& lidarNo,
-//     const size_t& scanNo) const
-// {
-
-// }
-
-// template<typename BaseIO>
-// PointBufferPtr PointCloudIO<BaseIO>::load(
-//     const size_t& posNo, 
-//     const size_t& lidarNo,
-//     const size_t& scanNo) const
-// {
-//     std::cout << "[PointCloudIO - load] " << std::endl;
-
-//     PointBufferPtr ret;
-
-//     auto Dgen = m_baseIO->m_description;
-//     Description d = Dgen->scan(posNo, lidarNo, scanNo);
-
-
-//     std::vector<std::string> known_channel_names;
-//     if(d.meta)
-//     {
-//         YAML::Node scan_meta;
-//         m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, scan_meta);
-//     }
-
-    
-//     if(d.data)
-//     {
-//         // scan contains data: load them
-//     } else {
-//         // scan is a group load each channel individually
-//         Description d_channel = Dgen->scanChannel(posNo, lidarNo, scanNo, "test");
-//         std::cout << "Load channel from " << *d_channel.dataRoot << std::endl;
-
-//         if(d_channel.meta)
-//         {
-//             // there should lie some metas
-//             std::string metaGroup = *d_channel.metaRoot;
-//             std::string metaFile = *d_channel.meta;
-//             std::tie(metaGroup, metaFile) = hdf5util::validateGroupDataset(metaGroup, metaFile);
-//             std::cout << "Channel Located in group " << metaGroup << " at " << metaFile << std::endl;
-
-//             // channelName -> meta
-//             std::unordered_map<std::string, YAML::Node> meta_map;
-
-//             for(auto meta : m_baseIO->m_kernel->metas(metaGroup, "Channel"))
-//             {
-//                 std::cout << "found channel meta at file " << meta.first << std::endl;
-//                 std::cout << meta.second << std::endl;
-
-//                 if(meta.second["channel_name"])
-//                 {
-//                     meta_map[meta.second["channel_name"].template as<std::string>()] = meta.second;
-//                 } else {
-//                     // assuming the name to be the channel name
-//                     meta_map[meta.first] = meta.second;
-//                 }
-//             }
-//         }
-//     }
-    
-    
-//     // Description d = Dgen->position(posNo);
-//     // d = Dgen->lidar(d, lidarNo);
-//     // d = Dgen->scan(d, scanNo);
-
-//     // if(d.dataSetName)
-//     // {
-//     //     // load pointbuffer from dataset
-//     // } else {
-//     //     // parse group for channel/pcl like objects and group them together
-    
-//     //     Description d_channel = Dgen->channel(d, "test");
-//     //     for(auto meta : m_baseIO->m_kernel->metas(*d_channel.groupName, "Channel") )
-//     //     {
-//     //         std::cout << "Meta: " << meta.first << std::endl;
-//     //     }
-//     // }
-
-//     return ret;
-// }
 
 template<typename BaseIO>
 void PointCloudIO<BaseIO>::savePointCloud(
