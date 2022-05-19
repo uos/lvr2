@@ -163,8 +163,6 @@ private:
     bool isVisible(Vector3f origin, Vector3f point, FaceHandle clusterH) const;
 
     bool calcPointColor(Vector3f point, const ImageInfo& img, cv::Vec3b& color) const;
-
-    void DEBUGDrawBorder(TextureHandle texH, const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect, ClusterHandle clusterH);
 };
 
 } // namespace lvr2

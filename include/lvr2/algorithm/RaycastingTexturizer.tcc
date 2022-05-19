@@ -28,8 +28,6 @@ using Eigen::Vector2i;
 namespace lvr2
 {
 
-const Vector3f DEBUG_ORIGIN(0, 0, 1);
-
 template <typename BaseVecT>
 RaycastingTexturizer<BaseVecT>::RaycastingTexturizer(
     float texelMinSize,
@@ -237,27 +235,6 @@ inline void setPixel(TexCoords uv, Texture& tex, cv::Vec3b color)
     setPixel(p.x(), p.y(), tex, color);
 }
 
-template <typename BaseVecT>
-void RaycastingTexturizer<BaseVecT>::DEBUGDrawBorder(TextureHandle texH, const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect, ClusterHandle clusterH)
-{
-    Texture& tex = this->m_textures[texH];
-    // Draw in vertices of cluster
-    for (auto face: m_clusters.getCluster(clusterH))
-    {
-        for (auto vertex: m_mesh.get().getVerticesOfFace(face))
-        {
-            IntersectionT intersection;
-            BaseVecT pos = m_mesh.get().getVertexPosition(vertex);
-            Vector3f direction = (Vector3f(pos.x, pos.y, pos.z) - DEBUG_ORIGIN).normalized();
-            if (!m_tracer->castRay(DEBUG_ORIGIN, direction, intersection)) continue;
-
-            if (m_clusters.getClusterH(FaceHandle(intersection.face_id)) != clusterH) continue;
-            
-            TexCoords uv = this->calculateTexCoords(texH, boundingRect, pos);
-            setPixel(uv, tex, cv::Vec3b(0, 0, 0));
-        }
-    }
-}
 // TODO: Properly integrate this somewhere
 /**
  * @brief Copied from 

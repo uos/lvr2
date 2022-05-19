@@ -1003,9 +1003,6 @@ int main(int argc, char** argv)
 
         if (extension == ".h5")
         {
-            /* TODO: TESTING IO move this to a part of this program where it makes sense*/
-
-            std::cout << timestamp << "[Experimental] Saving using MeshIO" << std::endl;
 
             HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(output_filename));
             MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
@@ -1021,9 +1018,6 @@ int main(int argc, char** argv)
 
         if (extension == "")
         {
-            /* TODO: TESTING IO move this to a part of this program where it makes sense*/
-
-            std::cout << timestamp << "[Experimental] Saving using MeshIO" << std::endl;
 
             DirectoryKernelPtr kernel = DirectoryKernelPtr(new DirectoryKernel(output_filename));
             MeshSchemaDirectoryPtr schema = MeshSchemaDirectoryPtr(new MeshSchemaDirectory());
