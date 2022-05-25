@@ -90,7 +90,7 @@ void OctreeReduction::init()
     m_randomEngine.seed(std::random_device()());
 
     m_flags = new bool[m_numPoints];
-    std::fill_n(m_flags.get(), m_numPoints, false);
+    std::fill_n(m_flags, m_numPoints, false);
 
     AABB<float> bb(m_points, m_numPoints);
 
