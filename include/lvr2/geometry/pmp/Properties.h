@@ -192,7 +192,6 @@ public:
         return parray_->name();
     }
 
-private:
     PropertyArray<T>& array()
     {
         assert(parray_ != nullptr);

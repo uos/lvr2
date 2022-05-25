@@ -29,7 +29,8 @@ public:
     virtual TextureHandle generateTexture(
         int index,
         const PointsetSurface<BaseVecT>& surface,
-        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect   
+        const BoundingRectangle<typename BaseVecT::CoordType>& boundingRect,
+        ClusterHandle cluster
     ) override;
 
     /**

@@ -118,10 +118,12 @@ struct BoundingRectangle
     {
     }
 
+    BaseVector<CoordType> center() const;
 };
 
 } // namespace lvr2
 
 
+#include "BoundingRectangle.tcc"
 
 #endif /* LVR2_GEOMETRY_BOUNDINGRECTANGLE_H_ */

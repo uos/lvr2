@@ -24,6 +24,12 @@ public:
         const std::string& mesh_name
     ) const;
 
+    /**
+     * @brief Returns a vector of mesh names in the opened file
+     * 
+     */
+    std::vector<std::string> getAvailableMeshes() const;
+
 private:
     /**
      * @brief Saves the vertices, normals and colors if available

@@ -348,5 +348,15 @@ void MeshIO<BaseIO>::loadVertices(std::string mesh_name, MeshBufferPtr mesh) con
     
 }
 
+
+template <typename FeatureBase>
+std::vector<std::string> MeshIO<FeatureBase>::getAvailableMeshes() const
+{
+    std::vector<std::string> ret;
+    m_baseIO->m_kernel->subGroupNames( "meshes", ret);
+
+    return ret;
+}
+
 } // namespace meshio
 } // namespace lvr2

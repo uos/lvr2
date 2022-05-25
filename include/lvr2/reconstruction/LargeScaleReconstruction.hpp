@@ -161,23 +161,14 @@ namespace lvr2
          LargeScaleReconstruction(LSROptions options);
 
         /**
-         * this method splits the given PointClouds in to Chunks and calculates all required values for a later reconstruction
+         * splits the given PointClouds and calculates the reconstruction
          *
          * @param project ScanProject containing Scans
          * @param newChunksBB sets the Bounding Box of the reconstructed area
-         * @param chunkManager a chunkManager to handle chunks
-         * @tparam BaseVecT
+         * @param chunkManager an optional chunkManager to handle chunks. Only needed when using the VGrid partition method.
          * @return
          */
-        int mpiChunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager);
-
-        /**
-         *
-         * this methods splits the given PointClouds via kd-Tree and calculates all required values for a later reconstruction
-         * @param project ScanProject containing Scans
-         * @return
-         */
-        int mpiAndReconstruct(ScanProjectEditMarkPtr project);
+        void chunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager = nullptr);
 
         /**
          *
