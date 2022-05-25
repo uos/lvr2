@@ -536,7 +536,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         // Iterate through ALL points to calculate transformed boundingboxes of scans
         for (int i = 0; i < project->changed.size(); i++)
         {
-            std::cout << "\r" << timestamp << "Loading scan position " << (i + 1) << " of " << project->changed.size() << std::endl;
+            std::cout << "\r" << timestamp << "Loading scan position " << (i + 1) << " of " << project->changed.size() << "          " << std::endl;
             ScanPositionPtr pos = project->project->positions.at(i);
             if(pos && pos->lidars.size())
             {
@@ -596,14 +596,23 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
             Transformd finalPose = finalPose_n;
 
-            for (int k = 0; k < numPoints; k++)
+            #pragma omp parallel
             {
-                Eigen::Vector4d point(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
-                Eigen::Vector4d transPoint = finalPose * point;
+                BoundingBox<BaseVecT> local_bb;
+                #pragma omp for schedule(static) nowait
+                for (int k = 0; k < numPoints; k++)
+                {
+                    Eigen::Vector4d point(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                    Eigen::Vector4d transPoint = finalPose * point;
 
-                BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
-                m_bb.expand(temp);
-                box.expand(temp);
+                    BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
+                    local_bb.expand(temp);
+                }
+                #pragma omp critical
+                {
+                    box.expand(local_bb);
+                    m_bb.expand(local_bb);
+                }
             }
             // filter the new scans to calculate new reconstruction area
             if (project->changed.at(i))
@@ -647,54 +656,58 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             if ((!project->changed.at(i)) && m_partialbb.isValid() && !m_partialbb.overlap(scan_boxes.at(i)))
             {
                 cout << timestamp << "Scan No. " << i << " ignored!" << endl;
-            }
-            else
-            {   
-                ScanPositionPtr pos = project->project->positions.at(i);
-                
-                pos->lidars[0]->scans[0]->load();
-                size_t numPoints =  pos->lidars[0]->scans[0]->points->numPoints();
-
-                boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
-                m_numPoints += numPoints;
-                Transformd finalPose_n = pos->transformation;
-                Transformd finalPose = finalPose_n;
-                int dx, dy, dz;
-                for (int k = 0; k < numPoints; k++)
+                if(!timestamp.isQuiet())
                 {
-                    Eigen::Vector4d point(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
-                    Eigen::Vector4d transPoint = finalPose * point;
-                    BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
-                    // m_bb.expand(temp);
-                    ix = transPoint[0] * m_scale;
-                    iy = transPoint[1] * m_scale;
-                    iz = transPoint[2] * m_scale;
-                    calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-                    int e;
-                    this->m_extrude ? e = 8 : e = 1;
-                    for (int j = 0; j < e; j++)
+                    ++progress;
+                }
+                continue;
+            }
+            ScanPositionPtr pos = project->project->positions.at(i);
+            
+            pos->lidars[0]->scans[0]->load();
+            size_t numPoints =  pos->lidars[0]->scans[0]->points->numPoints();
+
+            boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
+            m_numPoints += numPoints;
+            Transformd finalPose_n = pos->transformation;
+            Transformd finalPose = finalPose_n;
+            int dx, dy, dz;
+            for (int k = 0; k < numPoints; k++)
+            {
+                Eigen::Vector4d point(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                Eigen::Vector4d transPoint = finalPose * point;
+                BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
+                // m_bb.expand(temp);
+                ix = transPoint[0] * m_scale;
+                iy = transPoint[1] * m_scale;
+                iz = transPoint[2] * m_scale;
+                calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
+                int e;
+                this->m_extrude ? e = 8 : e = 1;
+                for (int j = 0; j < e; j++)
+                {
+                    dx = HGCreateTable[j][0];
+                    dy = HGCreateTable[j][1];
+                    dz = HGCreateTable[j][2];
+                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
+                    if (j == 0)
                     {
-                        dx = HGCreateTable[j][0];
-                        dy = HGCreateTable[j][1];
-                        dz = HGCreateTable[j][2];
-                        size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                        if (j == 0)
+                        m_gridNumPoints[h].size++;
+                    }
+                    else
+                    {
+                        auto it = m_gridNumPoints.find(h);
+                        if (it == m_gridNumPoints.end())
                         {
-                            m_gridNumPoints[h].size++;
-                        }
-                        else
-                        {
-                            auto it = m_gridNumPoints.find(h);
-                            if (it == m_gridNumPoints.end())
-                            {
-                                m_gridNumPoints[h].size = 0;
-                            }
+                            m_gridNumPoints[h].size = 0;
                         }
                     }
                 }
             }
             if(!timestamp.isQuiet())
+            {
                 ++progress;
+            }
         }
 
 
@@ -935,21 +948,15 @@ lvr2::floatArr BigGrid<BaseVecT>::points(int i, int j, int k, size_t& numPoints)
 }
 
 template <typename BaseVecT>
-lvr2::floatArr BigGrid<BaseVecT>::points(BaseVecT min, BaseVecT max, size_t& numPoints)
+lvr2::floatArr BigGrid<BaseVecT>::points(const BoundingBox<BaseVecT>& bb, size_t& numPoints, size_t minNumPoints)
 {
-    min.x = std::max(min.x, m_bb.getMin().x);
-    min.y = std::max(min.y, m_bb.getMin().y);
-    min.z = std::max(min.z, m_bb.getMin().z);
-    max.x = std::min(max.x, m_bb.getMax().x);
-    max.y = std::min(max.y, m_bb.getMax().y);
-    max.z = std::min(max.z, m_bb.getMax().z);
-
-    size_t idxmin, idymin, idzmin, idxmax, idymax, idzmax;
-    calcIndex(min, idxmin, idymin, idzmin);
-    calcIndex(max, idxmax, idymax, idzmax);
-
     std::vector<std::pair<size_t, size_t>> cellCounts;
-    numPoints = getSizeofBox(min, max, cellCounts);
+    numPoints = getSizeofBox(bb, cellCounts);
+
+    if (numPoints < minNumPoints)
+    {
+        return lvr2::floatArr();
+    }
 
     lvr2::floatArr points(new float[numPoints * 3]);
 
@@ -962,6 +969,8 @@ lvr2::floatArr BigGrid<BaseVecT>::points(BaseVecT min, BaseVecT max, size_t& num
     }
 
     float* pointFile = (float*)m_PointFile.data();
+
+    auto min = bb.getMin(), max = bb.getMax();
 
     #pragma omp parallel for
     for (size_t i = 0; i < cellCounts.size(); i++)
@@ -992,26 +1001,21 @@ lvr2::floatArr BigGrid<BaseVecT>::points(BaseVecT min, BaseVecT max, size_t& num
 }
 
 template <typename BaseVecT>
-lvr2::floatArr BigGrid<BaseVecT>::normals(BaseVecT min, BaseVecT max, size_t& numNormals)
+lvr2::floatArr BigGrid<BaseVecT>::normals(const BoundingBox<BaseVecT>& bb, size_t& numNormals, size_t minNumNormals)
 {
     if (!m_hasNormal)
     {
         numNormals = 0;
         return lvr2::floatArr();
     }
-    min.x = std::max(min.x, m_bb.getMin().x);
-    min.y = std::max(min.y, m_bb.getMin().y);
-    min.z = std::max(min.z, m_bb.getMin().z);
-    max.x = std::min(max.x, m_bb.getMax().x);
-    max.y = std::min(max.y, m_bb.getMax().y);
-    max.z = std::min(max.z, m_bb.getMax().z);
-
-    size_t idxmin, idymin, idzmin, idxmax, idymax, idzmax;
-    calcIndex(min, idxmin, idymin, idzmin);
-    calcIndex(max, idxmax, idymax, idzmax);
 
     std::vector<std::pair<size_t, size_t>> cellCounts;
-    numNormals = getSizeofBox(min, max, cellCounts);
+    numNormals = getSizeofBox(bb, cellCounts);
+
+    if (numNormals < minNumNormals)
+    {
+        return lvr2::floatArr();
+    }
 
     lvr2::floatArr normals(new float[numNormals * 3]);
 
@@ -1025,6 +1029,8 @@ lvr2::floatArr BigGrid<BaseVecT>::normals(BaseVecT min, BaseVecT max, size_t& nu
 
     float* pointFile = (float*)m_PointFile.data();
     float* normalFile = (float*)m_NormalFile.data();
+
+    auto min = bb.getMin(), max = bb.getMax();
 
     #pragma omp parallel for
     for (size_t i = 0; i < cellCounts.size(); i++)
@@ -1056,26 +1062,21 @@ lvr2::floatArr BigGrid<BaseVecT>::normals(BaseVecT min, BaseVecT max, size_t& nu
 }
 
 template <typename BaseVecT>
-lvr2::ucharArr BigGrid<BaseVecT>::colors(BaseVecT min, BaseVecT max, size_t& numColors)
+lvr2::ucharArr BigGrid<BaseVecT>::colors(const BoundingBox<BaseVecT>& bb, size_t& numColors, size_t minNumColors)
 {
     if (!m_hasColor)
     {
         numColors = 0;
         return lvr2::ucharArr();
     }
-    min.x = std::max(min.x, m_bb.getMin().x);
-    min.y = std::max(min.y, m_bb.getMin().y);
-    min.z = std::max(min.z, m_bb.getMin().z);
-    max.x = std::min(max.x, m_bb.getMax().x);
-    max.y = std::min(max.y, m_bb.getMax().y);
-    max.z = std::min(max.z, m_bb.getMax().z);
-
-    size_t idxmin, idymin, idzmin, idxmax, idymax, idzmax;
-    calcIndex(min, idxmin, idymin, idzmin);
-    calcIndex(max, idxmax, idymax, idzmax);
 
     std::vector<std::pair<size_t, size_t>> cellCounts;
-    numColors = getSizeofBox(min, max, cellCounts);
+    numColors = getSizeofBox(bb, cellCounts);
+
+    if (numColors < minNumColors)
+    {
+        return lvr2::ucharArr();
+    }
 
     lvr2::ucharArr colors(new float[numColors * 3]);
 
@@ -1089,6 +1090,8 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(BaseVecT min, BaseVecT max, size_t& num
 
     float* pointFile = (float*)m_PointFile.data();
     uchar* colorFile = (uchar*)m_ColorFile.data();
+
+    auto min = bb.getMin(), max = bb.getMax();
 
     #pragma omp parallel for
     for (size_t i = 0; i < cellCounts.size(); i++)
@@ -1141,20 +1144,28 @@ lvr2::floatArr BigGrid<BaseVecT>::getPointCloud(size_t& numPoints)
 }
 
 template <typename BaseVecT>
-size_t BigGrid<BaseVecT>::getSizeofBox(BaseVecT min, BaseVecT max, std::vector<std::pair<size_t, size_t>>& cellCounts)
+size_t BigGrid<BaseVecT>::getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<std::pair<size_t, size_t>>& cellCounts)
 {
+    auto min = bb.getMin(), max = bb.getMax();
     size_t idxmin, idymin, idzmin, idxmax, idymax, idzmax;
     calcIndex(min, idxmin, idymin, idzmin);
     calcIndex(max, idxmax, idymax, idzmax);
 
     cellCounts.clear();
 
-    for (auto& [ id, cell ] : m_gridNumPoints)
+    #pragma omp parallel for
+    for (size_t i = 0; i < m_gridNumPoints.bucket_count(); i++)
     {
-        if (cell.ix >= idxmin || cell.iy >= idymin || cell.iz >= idzmin ||
-            cell.ix < idxmax || cell.iy < idymax || cell.iz < idzmax)
+        auto begin = m_gridNumPoints.begin(i), end = m_gridNumPoints.end(i);
+        for (auto it = begin; it != end; ++it)
         {
-            cellCounts.emplace_back(id, 0);
+            auto& [ id, cell ] = *it;
+            if (cell.ix >= idxmin || cell.iy >= idymin || cell.iz >= idzmin ||
+                cell.ix <= idxmax || cell.iy <= idymax || cell.iz <= idzmax)
+            {
+                #pragma omp critical
+                cellCounts.emplace_back(id, 0);
+            }
         }
     }
 

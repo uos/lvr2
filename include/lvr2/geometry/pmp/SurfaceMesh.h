@@ -14,6 +14,8 @@
 #include "Properties.h"
 #include "BoundingBox.h"
 
+#include <highfive/H5Group.hpp>
+
 namespace pmp
 {
 class Handle;
@@ -1079,6 +1081,9 @@ public:
     //! texture coordinates.
     void write(const std::string& filename,
                const IOFlags& flags = IOFlags()) const;
+
+    void read(const HighFive::Group& group);
+    void write(HighFive::Group& group) const;
 
     //!@}
     //! \name Add new elements by hand

@@ -114,42 +114,52 @@ class BigGrid
     lvr2::floatArr points(int i, int j, int k, size_t& numPoints);
 
     /**
-     *  Points that are within bounding box defined by a min and max point
-     * @param minx
-     * @param miny
-     * @param minz
-     * @param maxx
-     * @param maxy
-     * @param maxz
-     * @param numPoints number of points
-     * @return lvr2::floatArr, containing points
+     * @brief Returns the points within a bounding box
+     * 
+     * @param bb the bounding box
+     * @param numPoints the number of points is written into this variable
+     * @param minNumPoints the minimum number of points to be returned
+     * @return lvr2::floatArr the points
      */
-    lvr2::floatArr points(BaseVecT min, BaseVecT max, size_t& numPoints);
-
-    lvr2::floatArr normals(BaseVecT min, BaseVecT max, size_t& numNormals);
-
-    lvr2::ucharArr colors(BaseVecT min, BaseVecT max, size_t& numColors);
+    lvr2::floatArr points(const BoundingBox<BaseVecT>& bb, size_t& numPoints, size_t minNumPoints = 0);
 
     /**
-     * return numbers of points in a specific area (defined by the params) of the grid
-     * @param min
-     * @param max
+     * @brief Returns the normals of points within a bounding box
+     * 
+     * @param bb the bounding box
+     * @param numNormals the number of normals is written into this variable
+     * @param minNumNormals the minimum number of normals to be returned
+     * @return lvr2::floatArr the normals
+     */
+    lvr2::floatArr normals(const BoundingBox<BaseVecT>& bb, size_t& numNormals, size_t minNumNormals = 0);
+
+    /**
+     * @brief Returns the colors of points within a bounding box
+     * 
+     * @param bb the bounding box
+     * @param numColors the number of colors is written into this variable
+     * @param minNumColors the minimum number of colors to be returned
+     * @return lvr2::ucharArr the colors
+     */
+    lvr2::ucharArr colors(const BoundingBox<BaseVecT>& bb, size_t& numColors, size_t minNumColors = 0);
+
+    /**
+     * return numbers of points in a bounding box of the grid
+     * @param bb the bounding box
      * @return number of points in area
      */
-    size_t getSizeofBox(BaseVecT min, BaseVecT max)
+    size_t getSizeofBox(const BoundingBox<BaseVecT>& bb)
     {
         std::vector<std::pair<size_t, size_t>> _unused;
-        return getSizeofBox(min, max, _unused);
+        return getSizeofBox(bb, _unused);
     }
     /**
-     * return numbers of points in a specific area (defined by the params) of the grid
-     * @param min
-     * @param max
-     * @param cellCounts a vector containing <cellId, cellCount> of all cells intersecting
-     *                   the area.
+     * return numbers of points in a bounding box of the grid
+     * @param bb the bounding box
+     * @param cellCounts will be filled with <cellId, cellCount> of all cells intersecting bb
      * @return number of points in area
      */
-    size_t getSizeofBox(BaseVecT min, BaseVecT max, std::vector<std::pair<size_t, size_t>>& cellCounts);
+    size_t getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<std::pair<size_t, size_t>>& cellCounts);
 
     void serialize(std::string path = "serinfo.ls");
 

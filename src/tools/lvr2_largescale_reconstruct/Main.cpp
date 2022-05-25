@@ -124,13 +124,14 @@ int main(int argc, char** argv)
 
 
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
-    std::shared_ptr<ChunkHashGrid> cm;
     BoundingBox<Vec> boundingBox;
-
+    std::string chunk_h5 = "chunked_mesh.h5";
 
     //reconstruction from hdf5
     if (extension == ".h5")
     {
+        chunk_h5 = in;
+
         std::cout << timestamp << "Reading project from HDF5 file" << std::endl;
         HDF5KernelPtr hdf5kernel(new HDF5Kernel(in));
         HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
@@ -146,7 +147,6 @@ int main(int argc, char** argv)
         {
             project->changed.push_back(true);
         }
-        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getChunkSize()));
     }
     else
     {
@@ -225,31 +225,18 @@ int main(int argc, char** argv)
                 it++;
             }
         }
+    }
 
-        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getChunkSize()));
+    std::shared_ptr<ChunkHashGrid> cm = nullptr;
+    if (options.getPartMethod() == 1)
+    {
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(chunk_h5, 50, boundingBox, options.getChunkSize()));
     }
 
     BoundingBox<Vec> bb;
-    // reconstruction with diffrent methods
-    if(options.getPartMethod() == 1)
-    {
-        int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
-    }
-    else
-    {
-        int x = lsr.mpiAndReconstruct(project);
-    }
+    lsr.chunkAndReconstruct(project, bb, cm);
 
-    // // reconstruction of .ply for diffrent voxelSizes
-    // if(options.getDebugChunks())
-    // {
-
-    //     for (int i; i < options.getVoxelSizes().size(); i++) {
-    //         lsr.getPartialReconstruct(bb, cm, options.getVoxelSizes()[i]);
-    //     }
-    // }
-
-    cout << "Program end." << endl;
+    cout << timestamp << "Program end." << endl;
 
     return 0;
 }
