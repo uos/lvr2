@@ -25,11 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
+/**
  * BigGrid.hpp
  *
- *  Created on: Jul 17, 2017
- *      Author: Isaak Mitschke
+ * @date Jul 17, 2017
+ * @author Isaak Mitschke
+ * @author Malte Hillmann
  */
 
 #ifndef LAS_VEGAS_BIGGRID_HPP
@@ -53,14 +54,10 @@ using Vec = BaseVector<float>;
 
 struct CellInfo
 {
-    CellInfo() : size(0), offset(0), inserted(0), dist_offset(0) {}
+    CellInfo() : size(0), offset(0), inserted(0) {}
     size_t size;
     size_t offset;
     size_t inserted;
-    size_t dist_offset;
-    size_t ix;
-    size_t iy;
-    size_t iz;
 };
 
 template <typename BaseVecT>
@@ -96,22 +93,18 @@ class BigGrid
 
     /**
      * Amount of Points in Voxel at position i,j,k
-     * @param i
-     * @param j
-     * @param k
+     * @param index
      * @return amount of points, 0 if voxel does not exsist
      */
-    size_t pointSize(int i, int j, int k);
+    size_t pointSize(const Eigen::Vector3i& index);
 
     /**
      * Points of  Voxel at position i,j,k
-     * @param i
-     * @param j
-     * @param k
+     * @param index
      * @param numPoints, amount of points in lvr2::floatArr
      * @return lvr2::floatArr, containing points
      */
-    lvr2::floatArr points(int i, int j, int k, size_t& numPoints);
+    lvr2::floatArr points(const Eigen::Vector3i& index, size_t& numPoints);
 
     /**
      * @brief Returns the points within a bounding box
@@ -146,20 +139,26 @@ class BigGrid
     /**
      * return numbers of points in a bounding box of the grid
      * @param bb the bounding box
-     * @return number of points in area
+     * @return number of points in the area
      */
-    size_t getSizeofBox(const BoundingBox<BaseVecT>& bb)
+    size_t getSizeofBox(const BoundingBox<BaseVecT>& bb) const
     {
-        std::vector<std::pair<size_t, size_t>> _unused;
+        std::vector<std::pair<const CellInfo*, size_t>> _unused;
         return getSizeofBox(bb, _unused);
     }
     /**
      * return numbers of points in a bounding box of the grid
      * @param bb the bounding box
      * @param cellCounts will be filled with <cellId, cellCount> of all cells intersecting bb
-     * @return number of points in area
+     * @return number of points in the area
      */
-    size_t getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<std::pair<size_t, size_t>>& cellCounts);
+    size_t getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<std::pair<const CellInfo*, size_t>>& cellCounts) const;
+    /**
+     * return an overestimate of the numbers of points in a bounding box of the grid
+     * @param bb the bounding box
+     * @return a number >= the actual number of points in the area
+     */
+    size_t estimateSizeofBox(const BoundingBox<BaseVecT>& bb) const;
 
     void serialize(std::string path = "serinfo.ls");
 
@@ -178,45 +177,31 @@ class BigGrid
 
     virtual ~BigGrid() = default;
 
-    inline size_t hashValue(size_t i, size_t j, size_t k)
+    void calcIndex(const BaseVecT& vec, Eigen::Vector3i& index) const
     {
-        return i * m_maxIndexSquare + j * m_maxIndex + k;
+        index.x() = std::round(vec.x / m_voxelSize);
+        index.y() = std::round(vec.y / m_voxelSize);
+        index.z() = std::round(vec.z / m_voxelSize);
+    }
+    Eigen::Vector3i calcIndex(const BaseVecT& vec) const
+    {
+        Eigen::Vector3i ret;
+        calcIndex(vec, ret);
+        return ret;
     }
 
-    inline size_t getDistanceFileOffset(size_t hash)
+    inline bool exists(const Eigen::Vector3i& index)
     {
-        if (exists(hash))
-        {
-            return m_gridNumPoints[hash].dist_offset;
-        }
-        else
-            return 0;
-    }
-    inline bool exists(size_t hash)
-    {
-        auto it = m_gridNumPoints.find(hash);
-        return it != m_gridNumPoints.end();
+        return m_cells.find(index) != m_cells.end();
     }
 
     inline bool hasColors() { return m_hasColor; }
     inline bool hasNormals() { return m_hasNormal; }
 
-  private:
-    inline int calcIndex(float f) const { return f < 0 ? f - .5 : f + .5; }
-    void calcIndex(const BaseVecT& vec, size_t& i, size_t& j, size_t& k) const
-    {
-        i = calcIndex((vec[0] - m_bb.getMin()[0]) / m_voxelSize);
-        j = calcIndex((vec[1] - m_bb.getMin()[1]) / m_voxelSize);
-        k = calcIndex((vec[2] - m_bb.getMin()[2]) / m_voxelSize);
-    }
+private:
+    template<typename LineType>
+    void initFromLineReader(LineReader& lineReader);
 
-    bool exists(int i, int j, int k);
-
-    size_t m_maxIndexSquare;
-    size_t m_maxIndex;
-    size_t m_maxIndexX;
-    size_t m_maxIndexY;
-    size_t m_maxIndexZ;
     size_t m_numPoints;
 
     size_t m_pointBufferSize;
@@ -234,9 +219,30 @@ class BigGrid
     //BoundingBox, of unreconstructed scans
     BoundingBox<BaseVecT> m_partialbb;
 
-    std::vector<shared_ptr<Scan>> m_scans;
+    CellInfo& getCellInfo(const BaseVecT& vec)
+    {
+        return getCellInfo(calcIndex(vec));
+    }
+    CellInfo& getCellInfo(const Eigen::Vector3i& index)
+    {
+        return m_cells[index];
+    }
 
-    std::unordered_map<size_t, CellInfo> m_gridNumPoints;
+    class Hasher
+    {
+    public:
+        size_t operator()(const Eigen::Vector3i& index) const
+        {
+            /// slightly simplified FNV-1a hash function
+            uint64_t hash = 14695981039346656037UL;
+            hash = (hash ^ (*(uint32_t*)&index.x())) * 1099511628211UL;
+            hash = (hash ^ (*(uint32_t*)&index.y())) * 1099511628211UL;
+            hash = (hash ^ (*(uint32_t*)&index.z())) * 1099511628211UL;
+            return hash;
+        }
+    };
+
+    std::unordered_map<Eigen::Vector3i, CellInfo, Hasher> m_cells;
     float m_scale;
 };
 

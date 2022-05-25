@@ -25,11 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * BigGrid.cpp
+/**
+ * BigGrid.tcc
  *
- *  Created on: Jul 17, 2017
- *      Author: Isaak Mitschke
+ * @date Jul 17, 2017
+ * @author Isaak Mitschke
+ * @author Malte Hillmann
  */
 
 #include "lvr2/io/LineReader.hpp"
@@ -59,8 +60,7 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
                            float voxelsize,
                            float scale,
                            size_t bufferSize)
-    : m_maxIndex(0), m_maxIndexSquare(0), m_maxIndexX(0), m_maxIndexY(0), m_maxIndexZ(0),
-      m_numPoints(0), m_extrude(true), m_scale(scale), m_hasNormal(false), m_hasColor(false),
+    : m_numPoints(0), m_extrude(false), m_scale(scale), m_hasNormal(false), m_hasColor(false),
       m_pointBufferSize(1024)
 {
 
@@ -72,283 +72,86 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
     float ix, iy, iz;
     std::cout << lvr2::timestamp << "Computing Bounding Box..." << std::endl;
     m_numPoints = 0;
-    size_t rsize = 0;
+
     LineReader lineReader(cloudPath);
-    size_t lasti = 0;
+
+    if (lineReader.getFileType() == XYZNRGB)
+    {
+        initFromLineReader<xyznc>(lineReader);
+    }
+    else if (lineReader.getFileType() == XYZN)
+    {
+        initFromLineReader<xyzn>(lineReader);
+    }
+    else if (lineReader.getFileType() == XYZ)
+    {
+        initFromLineReader<xyz>(lineReader);
+    }
+    else if (lineReader.getFileType() == XYZRGB)
+    {
+        initFromLineReader<xyzc>(lineReader);
+    }
+    else
+    {
+        throw std::runtime_error("Unsupported LineReader type");
+    }
+}
+
+template<typename BaseVecT>
+template<typename LineType>
+void BigGrid<BaseVecT>::initFromLineReader(LineReader& lineReader)
+{
+    size_t rsize = 0;
+    Eigen::Vector3i index;
+
     while (lineReader.ok())
     {
-        if (lineReader.getFileType() == XYZNRGB)
+        auto a = boost::static_pointer_cast<LineType>(lineReader.getNextPoints(rsize, m_pointBufferSize));
+        if (rsize <= 0 && !lineReader.ok())
         {
-            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
-            {
-                break;
-            }
-            for (int i = 0; i < rsize; i++)
-            {
-                m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
-                                        a.get()[i].point.y * m_scale,
-                                        a.get()[i].point.z * m_scale));
-                m_numPoints++;
-            }
+            break;
         }
-        else if (lineReader.getFileType() == XYZN)
+        for (int i = 0; i < rsize; i++)
         {
-            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
+            auto& in = a.get()[i].point;
+            auto point = BaseVecT(in.x, in.y, in.z) * m_scale;
+            m_bb.expand(point);
+            m_numPoints++;
+
+            calcIndex(BaseVecT(point.x, point.y, point.z) * m_scale, index);
+
+            getCellInfo(index).size++;
+
+            if (this->m_extrude)
             {
-                break;
+                for (int j = 0; j < 8; j++)
+                {
+                    getCellInfo(index + Eigen::Vector3i(
+                        HGCreateTable[j][0],
+                        HGCreateTable[j][1],
+                        HGCreateTable[j][2]
+                    ));
+                }
             }
-            for (int i = 0; i < rsize; i++)
-            {
-                m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
-                                        a.get()[i].point.y * m_scale,
-                                        a.get()[i].point.z * m_scale));
-                m_numPoints++;
-            }
-        }
-        else if (lineReader.getFileType() == XYZ)
-        {
-            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
-            {
-                break;
-            }
-            for (size_t i = 0; i < rsize; i++)
-            {
-                m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
-                                        a.get()[i].point.y * m_scale,
-                                        a.get()[i].point.z * m_scale));
-                m_numPoints++;
-                lasti = i;
-            }
-        }
-        else if (lineReader.getFileType() == XYZRGB)
-        {
-            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
-            {
-                break;
-            }
-            for (size_t i = 0; i < rsize; i++)
-            {
-                m_bb.expand(BaseVecT(a.get()[i].point.x * m_scale,
-                                        a.get()[i].point.y * m_scale,
-                                        a.get()[i].point.z * m_scale));
-                m_numPoints++;
-                lasti = i;
-            }
-        }
-        else
-        {
-            exit(-1);
         }
     }
 
-    // Make box side lenghts be divisible by voxel size
-    float longestSide = m_bb.getLongestSide();
-
+    // Make box side lengths be divisible by voxel size
     BaseVecT center = m_bb.getCentroid();
-    size_t xsize2 = calcIndex(m_bb.getXSize() / m_voxelSize);
-    float xsize = ceil(m_bb.getXSize() / voxelsize) * voxelsize;
-    float ysize = ceil(m_bb.getYSize() / voxelsize) * voxelsize;
-    float zsize = ceil(m_bb.getZSize() / voxelsize) * voxelsize;
+    float xsize = ceil(m_bb.getXSize() / m_voxelSize) * m_voxelSize;
+    float ysize = ceil(m_bb.getYSize() / m_voxelSize) * m_voxelSize;
+    float zsize = ceil(m_bb.getZSize() / m_voxelSize) * m_voxelSize;
     m_bb.expand(BaseVecT(center.x + xsize / 2, center.y + ysize / 2, center.z + zsize / 2));
     m_bb.expand(BaseVecT(center.x - xsize / 2, center.y - ysize / 2, center.z - zsize / 2));
-    longestSide = ceil(longestSide / voxelsize) * voxelsize;
 
-    // calc max indices
-
-    // m_maxIndex = (size_t)(longestSide/voxelsize);
-    m_maxIndexX = (size_t)(xsize / voxelsize);
-    m_maxIndexY = (size_t)(ysize / voxelsize);
-    m_maxIndexZ = (size_t)(zsize / voxelsize);
-    m_maxIndex = std::max(m_maxIndexX, std::max(m_maxIndexY, m_maxIndexZ)) + 5 * voxelsize;
-    m_maxIndexX += 1;
-    m_maxIndexY += 2;
-    m_maxIndexZ += 3;
-    m_maxIndexSquare = m_maxIndex * m_maxIndex;
-
-    std::cout << timestamp << "BigGrid - Max Squared indices: " 
-              << "\t" << m_maxIndexSquare << "\t " 
-              << m_maxIndexX << "\t " 
-              << m_maxIndexY << "\t "
-              << m_maxIndexZ << std::endl;
-
-    string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
-    lvr2::ProgressBar progress(this->m_numPoints, comment);
-
-    lineReader.rewind();
-
-    size_t idx, idy, idz;
-    while (lineReader.ok())
-    {
-        if (lineReader.getFileType() == XYZNRGB)
-        {
-            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
-            {
-                break;
-            }
-            int dx, dy, dz;
-            for (int i = 0; i < rsize; i++)
-            {
-                ix = a.get()[i].point.x * m_scale;
-                iy = a.get()[i].point.y * m_scale;
-                iz = a.get()[i].point.z * m_scale;
-                calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-                int e;
-                this->m_extrude ? e = 8 : e = 1;
-                for (int j = 0; j < e; j++)
-                {
-                    dx = HGCreateTable[j][0];
-                    dy = HGCreateTable[j][1];
-                    dz = HGCreateTable[j][2];
-                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                    if (j == 0)
-                        m_gridNumPoints[h].size++;
-                    else
-                    {
-                        auto it = m_gridNumPoints.find(h);
-                        if (it == m_gridNumPoints.end())
-                        {
-                            m_gridNumPoints[h].size = 0;
-                        }
-                    }
-                }
-            }
-        }
-        else if (lineReader.getFileType() == XYZN)
-        {
-            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
-            {
-                break;
-            }
-            int dx, dy, dz;
-            for (int i = 0; i < rsize; i++)
-            {
-                ix = a.get()[i].point.x * m_scale;
-                iy = a.get()[i].point.y * m_scale;
-                iz = a.get()[i].point.z * m_scale;
-                calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-
-                int e;
-                this->m_extrude ? e = 8 : e = 1;
-                for (int j = 0; j < e; j++)
-                {
-                    dx = HGCreateTable[j][0];
-                    dy = HGCreateTable[j][1];
-                    dz = HGCreateTable[j][2];
-                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                    if (j == 0)
-                        m_gridNumPoints[h].size++;
-                    else
-                    {
-                        auto it = m_gridNumPoints.find(h);
-                        if (it == m_gridNumPoints.end())
-                        {
-                            m_gridNumPoints[h].size = 0;
-                        }
-                    }
-                }
-            }
-        }
-        else if (lineReader.getFileType() == XYZ)
-        {
-            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
-            {
-                break;
-            }
-            int dx, dy, dz;
-            for (int i = 0; i < rsize; i++)
-            {
-                ix = a.get()[i].point.x * m_scale;
-                iy = a.get()[i].point.y * m_scale;
-                iz = a.get()[i].point.z * m_scale;
-                calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-                int e;
-                this->m_extrude ? e = 8 : e = 1;
-                for (int j = 0; j < e; j++)
-                {
-                    dx = HGCreateTable[j][0];
-                    dy = HGCreateTable[j][1];
-                    dz = HGCreateTable[j][2];
-                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                    if (j == 0)
-                        m_gridNumPoints[h].size++;
-                    else
-                    {
-                        auto it = m_gridNumPoints.find(h);
-                        if (it == m_gridNumPoints.end())
-                        {
-                            m_gridNumPoints[h].size = 0;
-                        }
-                    }
-                }
-            }
-        }
-        else if (lineReader.getFileType() == XYZRGB)
-        {
-            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
-            {
-                break;
-            }
-            int dx, dy, dz;
-            for (int i = 0; i < rsize; i++)
-            {
-                ix = a.get()[i].point.x * m_scale;
-                iy = a.get()[i].point.y * m_scale;
-                iz = a.get()[i].point.z * m_scale;
-                calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-                int e;
-                this->m_extrude ? e = 8 : e = 1;
-                for (int j = 0; j < e; j++)
-                {
-                    dx = HGCreateTable[j][0];
-                    dy = HGCreateTable[j][1];
-                    dz = HGCreateTable[j][2];
-                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                    if (j == 0)
-                        m_gridNumPoints[h].size++;
-                    else
-                    {
-                        auto it = m_gridNumPoints.find(h);
-                        if (it == m_gridNumPoints.end())
-                        {
-                            m_gridNumPoints[h].size = 0;
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            exit(-1);
-        }
-        progress += rsize;
-    }
-
-    size_t num_cells = 0;
     size_t offset = 0;
-    for (auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); ++it)
-    {
-        it->second.offset = offset;
-        offset += it->second.size;
-        it->second.dist_offset = num_cells++;
-    }
 
-    lineReader.rewind();
+    for (auto& [ index, cell ] : m_cells)
+    {
+        cell.offset = offset;
+        offset += cell.size;
+        m_numPoints += cell.size;
+    }
 
     boost::iostreams::mapped_file_params mmfparam;
     mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
@@ -360,14 +163,14 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
 
     float* mmfdata_normal;
     unsigned char* mmfdata_color;
-    if (lineReader.getFileType() == XYZNRGB || lineReader.getFileType() == XYZN)
+    if constexpr(LineTypeTraits<LineType>::hasNormal)
     {
         mmfparam.path = "normals.mmf";
         m_NormalFile.open(mmfparam);
         mmfdata_normal = (float*)m_NormalFile.data();
         m_hasNormal = true;
     }
-    if (lineReader.getFileType() == XYZNRGB || lineReader.getFileType() == XYZRGB)
+    if constexpr(LineTypeTraits<LineType>::hasColor)
     {
         mmfparam.path = "colors.mmf";
         m_ColorFile.open(mmfparam);
@@ -375,127 +178,36 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
         m_hasColor = true;
     }
 
+    lineReader.rewind();
+
     while (lineReader.ok())
     {
-        if (lineReader.getFileType() == XYZNRGB)
+        auto a = boost::static_pointer_cast<LineType>(lineReader.getNextPoints(rsize, m_pointBufferSize));
+        if (rsize <= 0 && !lineReader.ok())
         {
-            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
-            {
-                break;
-            }
-            for (int i = 0; i < rsize; i++)
-            {
-                ix = a.get()[i].point.x * m_scale;
-                iy = a.get()[i].point.y * m_scale;
-                iz = a.get()[i].point.z * m_scale;
-                size_t idx, idy, idz;
-                calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-                size_t h = hashValue(idx, idy, idz);
-                size_t ins = (m_gridNumPoints[h].inserted);
-                m_gridNumPoints[h].ix = idx;
-                m_gridNumPoints[h].iy = idy;
-                m_gridNumPoints[h].iz = idz;
-                m_gridNumPoints[h].inserted++;
-                size_t index = m_gridNumPoints[h].offset + ins;
-                mmfdata[index * 3] = ix;
-                mmfdata[index * 3 + 1] = iy;
-                mmfdata[index * 3 + 2] = iz;
-                mmfdata_normal[index * 3] = a.get()[i].normal.x;
-                mmfdata_normal[index * 3 + 1] = a.get()[i].normal.y;
-                mmfdata_normal[index * 3 + 2] = a.get()[i].normal.z;
-
-                mmfdata_color[index * 3] = a.get()[i].color.r;
-                mmfdata_color[index * 3 + 1] = a.get()[i].color.g;
-                mmfdata_color[index * 3 + 2] = a.get()[i].color.b;
-            }
+            break;
         }
-        else if (lineReader.getFileType() == XYZN)
+        for (int i = 0; i < rsize; i++)
         {
-            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
+            auto& in = a.get()[i];
+            auto point = BaseVecT(in.point.x, in.point.y, in.point.z) * m_scale;
+            auto& cell = getCellInfo(point);
+            size_t pos = (cell.offset + cell.inserted) * 3;
+            cell.inserted++;
+            mmfdata[pos] = point.x;
+            mmfdata[pos + 1] = point.y;
+            mmfdata[pos + 2] = point.z;
+            if constexpr(LineTypeTraits<LineType>::hasNormal)
             {
-                break;
+                mmfdata_normal[pos] = in.normal.x;
+                mmfdata_normal[pos + 1] = in.normal.y;
+                mmfdata_normal[pos + 2] = in.normal.z;
             }
-            for (int i = 0; i < rsize; i++)
+            if constexpr(LineTypeTraits<LineType>::hasColor)
             {
-                ix = a.get()[i].point.x * m_scale;
-                iy = a.get()[i].point.y * m_scale;
-                iz = a.get()[i].point.z * m_scale;
-                size_t idx, idy, idz;
-                calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-                size_t h = hashValue(idx, idy, idz);
-                size_t ins = (m_gridNumPoints[h].inserted);
-                m_gridNumPoints[h].ix = idx;
-                m_gridNumPoints[h].iy = idy;
-                m_gridNumPoints[h].iz = idz;
-                m_gridNumPoints[h].inserted++;
-                size_t index = m_gridNumPoints[h].offset + ins;
-                mmfdata[index * 3] = ix;
-                mmfdata[index * 3 + 1] = iy;
-                mmfdata[index * 3 + 2] = iz;
-                mmfdata_normal[index * 3] = a.get()[i].normal.x;
-                mmfdata_normal[index * 3 + 1] = a.get()[i].normal.y;
-                mmfdata_normal[index * 3 + 2] = a.get()[i].normal.z;
-            }
-        }
-        else if (lineReader.getFileType() == XYZ)
-        {
-            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
-            {
-                break;
-            }
-            for (int i = 0; i < rsize; i++)
-            {
-                ix = a.get()[i].point.x * m_scale;
-                iy = a.get()[i].point.y * m_scale;
-                iz = a.get()[i].point.z * m_scale;
-                size_t idx, idy, idz;
-                calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-                size_t h = hashValue(idx, idy, idz);
-                size_t ins = (m_gridNumPoints[h].inserted);
-                m_gridNumPoints[h].ix = idx;
-                m_gridNumPoints[h].iy = idy;
-                m_gridNumPoints[h].iz = idz;
-                m_gridNumPoints[h].inserted++;
-                size_t index = m_gridNumPoints[h].offset + ins;
-                mmfdata[index * 3] = ix;
-                mmfdata[index * 3 + 1] = iy;
-                mmfdata[index * 3 + 2] = iz;
-            }
-        }
-        else if (lineReader.getFileType() == XYZRGB)
-        {
-            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(
-                lineReader.getNextPoints(rsize, m_pointBufferSize));
-            if (rsize <= 0 && !lineReader.ok())
-            {
-                break;
-            }
-            for (int i = 0; i < rsize; i++)
-            {
-                ix = a.get()[i].point.x * m_scale;
-                iy = a.get()[i].point.y * m_scale;
-                iz = a.get()[i].point.z * m_scale;
-                size_t idx, idy, idz;
-                calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-                size_t h = hashValue(idx, idy, idz);
-                size_t ins = (m_gridNumPoints[h].inserted);
-                m_gridNumPoints[h].ix = idx;
-                m_gridNumPoints[h].iy = idy;
-                m_gridNumPoints[h].iz = idz;
-                m_gridNumPoints[h].inserted++;
-                size_t index = m_gridNumPoints[h].offset + ins;
-                mmfdata[index * 3] = ix;
-                mmfdata[index * 3 + 1] = iy;
-                mmfdata[index * 3 + 2] = iz;
-                mmfdata_color[index * 3] = a.get()[i].color.r;
-                mmfdata_color[index * 3 + 1] = a.get()[i].color.g;
-                mmfdata_color[index * 3 + 2] = a.get()[i].color.b;
+                mmfdata_color[pos] = in.color.r;
+                mmfdata_color[pos + 1] = in.color.g;
+                mmfdata_color[pos + 2] = in.color.b;
             }
         }
     }
@@ -504,13 +216,8 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
 
 template <typename BaseVecT>
 BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale)
-        : m_maxIndex(0),
-          m_maxIndexSquare(0),
-          m_maxIndexX(0),
-          m_maxIndexY(0),
-          m_maxIndexZ(0),
-          m_numPoints(0),
-          m_extrude(true),
+        : m_numPoints(0),
+          m_extrude(false),
           m_scale(scale),
           m_hasNormal(false),
           m_hasColor(false)
@@ -522,262 +229,203 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         std::cout << timestamp << "Warning: No new scans to be added!" << std::endl;
         return;
     }
-    else
+
+    size_t numScans = project->changed.size();
+
+    // Vector of all computed bounding boxes
+    std::vector<BoundingBox<BaseVecT>> scanBoxes(numScans);
+    std::vector<std::unordered_map<Eigen::Vector3i, CellInfo, Hasher>> scanCells(numScans);
+    std::vector<bool> ignoredOrInvalid(numScans, false);
+
+    std::stringstream ss;
+    ss << timestamp << "Building grid: loading " << numScans << " scan positions";
+    lvr2::ProgressBar progressLoading(numScans, ss.str());
+
+    // Iterate through ALL points to calculate transformed boundingboxes of scans
+    for (int i = 0; i < numScans; i++)
     {
-        float ix, iy, iz;
-
-        string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
-        lvr2::ProgressBar progress(project->changed.size() * 3, comment);
-        
-        // Vector of all computed bounding boxes
-        std::vector<BoundingBox<BaseVecT>> scan_boxes;
-
-
-        // Iterate through ALL points to calculate transformed boundingboxes of scans
-        for (int i = 0; i < project->changed.size(); i++)
+        ScanPositionPtr pos = project->project->positions.at(i);
+        if (!pos || pos->lidars.empty())
         {
-            std::cout << "\r" << timestamp << "Loading scan position " << (i + 1) << " of " << project->changed.size() << "          " << std::endl;
-            ScanPositionPtr pos = project->project->positions.at(i);
-            if(pos && pos->lidars.size())
-            {
-                // Check if a scan object exists
-                LIDARPtr lidar = pos->lidars[0];
-                if(lidar->scans.size())
-                {
-                    // Check if data has already been loaded
-                    if(lidar->scans[0] && !lidar->scans[0]->loaded())
-                    {
-                        lidar->scans[0]->load();
-                    }
-                    else if(!lidar->scans[0])
-                    {
-                        // Stored scan has to be a nullptr, try to 
-                        // load scan from via scanio
-                        auto hdf5io = FeatureBuild<scanio::ScanProjectIO>(project->kernel, project->schema); 
-                        std::cout << timestamp << "Overriding empty scan at scan position " << i << std::endl;
-                        lidar->scans[0] = hdf5io.ScanIO::load(i, 0, 0);
-
-                        if(!lidar->scans[0])
-                        {
-                            std::cout << timestamp << "Unable to re-load data. Skipping scan position " << i << std::endl;
-                            return;
-                        }
-                    }
-                }
-                else
-                {
-                    std::cout << timestamp << "Loading points from scan position " << i << std::endl;
-                    auto hdf5io = FeatureBuild<scanio::ScanProjectIO>(project->kernel, project->schema); 
-                    ScanPtr scan = hdf5io.ScanIO::load(i, 0, 0);
-                    if(scan)
-                    {
-                        lidar->scans.push_back(scan);
-                    }
-                    else
-                    {
-                        std::cout << timestamp << "Warning: Unable to get data for scan position " << i << std::endl;
-                        continue;
-                    }
-                }
-            }
-
-            // Direct acces should be safe now..
-            ScanPtr scan = pos->lidars[0]->scans[0];
-            
-            size_t numPoints = scan->points->numPoints();
-
-            BoundingBox<BaseVecT> box;
-
-            // Get point array
-            boost::shared_array<float> points = scan->points->getPointArray();
-
-            // Get transformation from scan position
-            Transformd finalPose_n = pos->transformation;
-
-            Transformd finalPose = finalPose_n;
-
-            #pragma omp parallel
-            {
-                BoundingBox<BaseVecT> local_bb;
-                #pragma omp for schedule(static) nowait
-                for (int k = 0; k < numPoints; k++)
-                {
-                    Eigen::Vector4d point(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
-                    Eigen::Vector4d transPoint = finalPose * point;
-
-                    BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
-                    local_bb.expand(temp);
-                }
-                #pragma omp critical
-                {
-                    box.expand(local_bb);
-                    m_bb.expand(local_bb);
-                }
-            }
-            // filter the new scans to calculate new reconstruction area
-            if (project->changed.at(i))
-            {
-                m_partialbb.expand(box);
-            }
-            scan_boxes.push_back(box);
-
-            if (!timestamp.isQuiet())
-                ++progress;
+            std::cout << timestamp << "Warning: scan position " << i << " is empty" << std::endl;
+            ignoredOrInvalid[i] = true;
+            ++progressLoading;
+            continue;
         }
-
-        // Make box side lenghts divisible by voxel size
-        float longestSide = m_bb.getLongestSide();
-
-        BaseVecT center = m_bb.getCentroid();
-        size_t xsize2 = calcIndex(m_bb.getXSize() / m_voxelSize);
-        float xsize = ceil(m_bb.getXSize() / voxelsize) * voxelsize;
-        float ysize = ceil(m_bb.getYSize() / voxelsize) * voxelsize;
-        float zsize = ceil(m_bb.getZSize() / voxelsize) * voxelsize;
-        m_bb.expand(BaseVecT(center.x + xsize / 2, center.y + ysize / 2, center.z + zsize / 2));
-        m_bb.expand(BaseVecT(center.x - xsize / 2, center.y - ysize / 2, center.z - zsize / 2));
-        longestSide = ceil(longestSide / voxelsize) * voxelsize;
-
-        // Calculate max indices
-
-        // m_maxIndex = (size_t)(longestSide/voxelsize);
-        m_maxIndexX = (size_t)(xsize / voxelsize);
-        m_maxIndexY = (size_t)(ysize / voxelsize);
-        m_maxIndexZ = (size_t)(zsize / voxelsize);
-        m_maxIndex = std::max(m_maxIndexX, std::max(m_maxIndexY, m_maxIndexZ)) + 5 * voxelsize;
-        m_maxIndexX += 1;
-        m_maxIndexY += 2;
-        m_maxIndexZ += 3;
-        m_maxIndexSquare = m_maxIndex * m_maxIndex;
-
-        size_t idx, idy, idz;
-
-        for (int i = 0; i < project->changed.size(); i++)
+        // Check if a scan object exists
+        LIDARPtr lidar = pos->lidars[0];
+        if(lidar->scans.empty() || !lidar->scans[0])
         {
-            if ((!project->changed.at(i)) && m_partialbb.isValid() && !m_partialbb.overlap(scan_boxes.at(i)))
+            std::cout << timestamp << "Loading points with scanio" << std::endl;
+            auto hdf5io = FeatureBuild<scanio::ScanProjectIO>(project->kernel, project->schema); 
+            ScanPtr scan = hdf5io.ScanIO::load(i, 0, 0);
+            if(!scan)
             {
-                cout << timestamp << "Scan No. " << i << " ignored!" << endl;
-                if(!timestamp.isQuiet())
-                {
-                    ++progress;
-                }
+                std::cout << timestamp << "Warning: Unable to get data for scan position " << i << std::endl;
+                ignoredOrInvalid[i] = true;
+                ++progressLoading;
                 continue;
             }
-            ScanPositionPtr pos = project->project->positions.at(i);
-            
-            pos->lidars[0]->scans[0]->load();
-            size_t numPoints =  pos->lidars[0]->scans[0]->points->numPoints();
-
-            boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
-            m_numPoints += numPoints;
-            Transformd finalPose_n = pos->transformation;
-            Transformd finalPose = finalPose_n;
-            int dx, dy, dz;
-            for (int k = 0; k < numPoints; k++)
+            if (lidar->scans.empty())
             {
-                Eigen::Vector4d point(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
-                Eigen::Vector4d transPoint = finalPose * point;
-                BaseVecT temp(transPoint[0], transPoint[1], transPoint[2]);
-                // m_bb.expand(temp);
-                ix = transPoint[0] * m_scale;
-                iy = transPoint[1] * m_scale;
-                iz = transPoint[2] * m_scale;
-                calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-                int e;
-                this->m_extrude ? e = 8 : e = 1;
-                for (int j = 0; j < e; j++)
-                {
-                    dx = HGCreateTable[j][0];
-                    dy = HGCreateTable[j][1];
-                    dz = HGCreateTable[j][2];
-                    size_t h = hashValue(idx + dx, idy + dy, idz + dz);
-                    if (j == 0)
-                    {
-                        m_gridNumPoints[h].size++;
-                    }
-                    else
-                    {
-                        auto it = m_gridNumPoints.find(h);
-                        if (it == m_gridNumPoints.end())
-                        {
-                            m_gridNumPoints[h].size = 0;
-                        }
-                    }
-                }
-            }
-            if(!timestamp.isQuiet())
-            {
-                ++progress;
-            }
-        }
-
-
-        size_t num_cells = 0;
-        size_t offset = 0;
-
-        for (auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); ++it)
-        {
-            it->second.offset = offset;
-            offset += it->second.size;
-            it->second.dist_offset = num_cells++;
-        }
-
-        boost::iostreams::mapped_file_params mmfparam;
-        mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-        mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
-
-        mmfparam.path = "points.mmf";
-        m_PointFile.open(mmfparam);
-        float* mmfdata = (float*)m_PointFile.data();
-
-        for (int i = 0; i < project->changed.size(); i++)
-        {
-            if ((project->changed.at(i) != true) && m_partialbb.isValid() && !m_partialbb.overlap(scan_boxes.at(i)))
-            {
-                cout << timestamp << "Scan No. " << i << " ignored!" << endl;
+                lidar->scans.push_back(scan);
             }
             else
             {
-                ScanPositionPtr pos = project->project->positions.at(i);
-                size_t numPoints = pos->lidars[0]->scans[0]->points->numPoints();
+                lidar->scans[0] = scan;
+            }
+        }
+        ScanPtr scan = lidar->scans[0];
+        scan->load();
 
+        size_t numPoints = scan->points->numPoints();
+        boost::shared_array<float> points = scan->points->getPointArray();
 
-                boost::shared_array<float> points = pos->lidars[0]->scans[0]->points->getPointArray();
-                Transformd finalPose_n = pos->transformation;
-                Transformd finalPose = finalPose_n;
-                for (int k = 0; k < numPoints; k++)
+        // Get transformation from scan position
+        Transformd finalPose = pos->transformation;
+
+        auto& box = scanBoxes[i];
+        auto& scanCell = scanCells[i];
+
+        #pragma omp parallel
+        {
+            BoundingBox<BaseVecT> local_bb;
+            std::unordered_map<Eigen::Vector3i, CellInfo, Hasher> local_cells;
+
+            #pragma omp for schedule(static) nowait
+            for (int k = 0; k < numPoints; k++)
+            {
+                Eigen::Vector4d original(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+                Eigen::Vector4d transPoint = finalPose * original;
+
+                auto point = BaseVecT(transPoint[0], transPoint[1], transPoint[2]) * m_scale;
+                local_bb.expand(point);
+
+                Eigen::Vector3i index = calcIndex(point);
+                local_cells[index].size++;
+
+                if (this->m_extrude)
                 {
-                    Eigen::Vector4d point(
-                            points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
-                    Eigen::Vector4d transPoint = finalPose * point;
-
-                    ix = transPoint[0] * m_scale;
-                    iy = transPoint[1] * m_scale;
-                    iz = transPoint[2] * m_scale;
-                    size_t idx, idy, idz;
-                    calcIndex(BaseVecT(ix, iy, iz), idx, idy, idz);
-                    size_t h = hashValue(idx, idy, idz);
-                    size_t ins = (m_gridNumPoints[h].inserted);
-                    m_gridNumPoints[h].ix = idx;
-                    m_gridNumPoints[h].iy = idy;
-                    m_gridNumPoints[h].iz = idz;
-                    m_gridNumPoints[h].inserted++;
-                    size_t index = m_gridNumPoints[h].offset + ins;
-                    mmfdata[index * 3] = ix;
-                    mmfdata[index * 3 + 1] = iy;
-                    mmfdata[index * 3 + 2] = iz;
+                    for (int j = 0; j < 8; j++)
+                    {
+                        local_cells[index + Eigen::Vector3i(
+                            HGCreateTable[j][0],
+                            HGCreateTable[j][1],
+                            HGCreateTable[j][2]
+                        )];
+                    }
                 }
             }
-            if(!timestamp.isQuiet())
+            #pragma omp critical
             {
-                ++progress;
+                box.expand(local_bb);
+                m_bb.expand(local_bb);
+
+                for (auto& cell : local_cells)
+                {
+                    scanCell[cell.first].size += cell.second.size;
+                }
             }
         }
-
-        if(!timestamp.isQuiet())
+        // filter the new scans to calculate new reconstruction area
+        if (project->changed[i])
         {
-            cout << endl;
+            m_partialbb.expand(box);
+        }
+
+        scan->release();
+
+        ++progressLoading;
+    }
+    std::cout << std::endl;
+
+    for (int i = 0; i < numScans; i++)
+    {
+        if (ignoredOrInvalid[i])
+        {
+            continue;
+        }
+        if (!project->changed[i] && m_partialbb.isValid() && !m_partialbb.overlap(scanBoxes[i]))
+        {
+            std::cout << timestamp << "Scan No. " << i << " ignored!" << std::endl;
+            ignoredOrInvalid[i] = true;
+            continue;
+        }
+        for (auto& [ index, cell ] : scanCells[i])
+        {
+            getCellInfo(index).size += cell.size;
         }
     }
+    scanCells.clear();
+
+    // Make box side lengths divisible by voxel size
+    BaseVecT center = m_bb.getCentroid();
+    float xsize = ceil(m_bb.getXSize() / voxelsize) * voxelsize;
+    float ysize = ceil(m_bb.getYSize() / voxelsize) * voxelsize;
+    float zsize = ceil(m_bb.getZSize() / voxelsize) * voxelsize;
+    m_bb.expand(BaseVecT(center.x + xsize / 2, center.y + ysize / 2, center.z + zsize / 2));
+    m_bb.expand(BaseVecT(center.x - xsize / 2, center.y - ysize / 2, center.z - zsize / 2));
+
+    size_t offset = 0;
+
+    for (auto& [ index, cell ] : m_cells)
+    {
+        cell.offset = offset;
+        offset += cell.size;
+        m_numPoints += cell.size;
+    }
+
+    boost::iostreams::mapped_file_params mmfparam;
+    mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+    mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
+
+    mmfparam.path = "points.mmf";
+    m_PointFile.open(mmfparam);
+    float* mmfdata = (float*)m_PointFile.data();
+
+    ss.str("");
+    ss << timestamp << "Building grid: filling cells";
+    lvr2::ProgressBar progressFilling(numScans, ss.str());
+
+    for (int i = 0; i < numScans; i++)
+    {
+        if (ignoredOrInvalid[i])
+        {
+            ++progressFilling;
+            continue;
+        }
+        ScanPositionPtr pos = project->project->positions.at(i);
+        Transformd finalPose = pos->transformation;
+
+        ScanPtr scan = pos->lidars[0]->scans[0];
+        scan->load();
+        size_t numPoints = scan->points->numPoints();
+        boost::shared_array<float> points = scan->points->getPointArray();
+
+        for (int k = 0; k < numPoints; k++)
+        {
+            Eigen::Vector4d original(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
+            Eigen::Vector4d transPoint = finalPose * original;
+
+            auto point = BaseVecT(transPoint[0], transPoint[1], transPoint[2]) * m_scale;
+            auto& cell = getCellInfo(point);
+            size_t pos = (cell.offset + cell.inserted) * 3;
+            cell.inserted++;
+            mmfdata[pos] = point.x;
+            mmfdata[pos + 1] = point.y;
+            mmfdata[pos + 2] = point.z;
+        }
+        scan->release();
+
+        ++progressFilling;
+    }
+    std::cout << std::endl;
+}
+
+template<typename T>
+void fread(std::ifstream& file, T& value)
+{
+    file.read((char*)value, sizeof(T));
 }
 
 template <typename BaseVecT>
@@ -785,37 +433,22 @@ BigGrid<BaseVecT>::BigGrid(std::string path)
 {
     ifstream ifs(path, ios::binary);
 
-    ifs.read((char*)&m_maxIndexSquare, sizeof(m_maxIndexSquare));
-    ifs.read((char*)&m_maxIndex, sizeof(m_maxIndex));
-    ifs.read((char*)&m_maxIndexX, sizeof(m_maxIndexX));
-    ifs.read((char*)&m_maxIndexY, sizeof(m_maxIndexY));
-    ifs.read((char*)&m_maxIndexZ, sizeof(m_maxIndexZ));
-    ifs.read((char*)&m_numPoints, sizeof(m_numPoints));
-    ifs.read((char*)&m_pointBufferSize, sizeof(m_pointBufferSize));
-    ifs.read((char*)&m_voxelSize, sizeof(m_voxelSize));
-    ifs.read((char*)&m_extrude, sizeof(m_extrude));
-    ifs.read((char*)&m_hasNormal, sizeof(m_hasNormal));
-    ifs.read((char*)&m_hasColor, sizeof(m_hasColor));
-    ifs.read((char*)&m_scale, sizeof(m_scale));
-    float mx, my, mz, n1, n2, n3;
-    ifs.read((char*)&mx, sizeof(float));
-    ifs.read((char*)&my, sizeof(float));
-    ifs.read((char*)&mz, sizeof(float));
-    ifs.read((char*)&n1, sizeof(float));
-    ifs.read((char*)&n2, sizeof(float));
-    ifs.read((char*)&n3, sizeof(float));
-    m_bb.expand(BaseVecT(mx, my, mz));
-    m_bb.expand(BaseVecT(n1, n2, n3));
+    fread(ifs, m_numPoints);
+    fread(ifs, m_pointBufferSize);
+    fread(ifs, m_voxelSize);
+    fread(ifs, m_extrude);
+    fread(ifs, m_hasNormal);
+    fread(ifs, m_hasColor);
+    fread(ifs, m_scale);
+    BaseVecT min, max;
+    fread(ifs, min.x); fread(ifs, min.y); fread(ifs, min.z);
+    fread(ifs, max.x); fread(ifs, max.y); fread(ifs, max.z);
+    m_bb = BoundingBox<BaseVecT>(min, max);
 
     size_t gridSize;
-    ifs.read((char*)&gridSize, sizeof(gridSize));
+    fread(ifs, gridSize);
 
     std::cout << timestamp << "\tLoading Exisiting Grid: " << std::endl;
-    std::cout << timestamp << "\tm_maxIndexSquare: \t\t\t" << m_maxIndexSquare << std::endl;
-    std::cout << timestamp << "\tm_maxIndex: \t\t\t" << m_maxIndex << std::endl;
-    std::cout << timestamp << "\tm_maxIndexX: \t\t\t" << m_maxIndexX << std::endl;
-    std::cout << timestamp << "\tm_maxIndexY: \t\t\t" << m_maxIndexY << std::endl;
-    std::cout << timestamp << "\tm_maxIndexZ: \t\t\t" << m_maxIndexZ << std::endl;
     std::cout << timestamp << "\tm_numPoints: \t\t\t" << m_numPoints << std::endl;
     std::cout << timestamp << "\tm_pointBufferSize: \t\t\t" << m_pointBufferSize << std::endl;
     std::cout << timestamp << "\tm_voxelSize: \t\t\t" << m_voxelSize << std::endl;
@@ -827,17 +460,13 @@ BigGrid<BaseVecT>::BigGrid(std::string path)
 
     for (size_t i = 0; i < gridSize; i++)
     {
-        CellInfo c;
-        size_t hash;
-        ifs.read((char*)&hash, sizeof(size_t));
-        ifs.read((char*)&c.size, sizeof(size_t));
-        ifs.read((char*)&c.offset, sizeof(size_t));
-        ifs.read((char*)&c.inserted, sizeof(size_t));
-        ifs.read((char*)&c.dist_offset, sizeof(size_t));
-        ifs.read((char*)&c.ix, sizeof(size_t));
-        ifs.read((char*)&c.iy, sizeof(size_t));
-        ifs.read((char*)&c.iz, sizeof(size_t));
-        m_gridNumPoints[hash] = c;
+        Eigen::Vector3i index;
+        fread(ifs, index.x()); fread(ifs, index.y()); fread(ifs, index.z());
+
+        auto& c = getCellInfo(index);
+        fread(ifs, c.size);
+        fread(ifs, c.offset);
+        fread(ifs, c.inserted);
     }
 
     boost::iostreams::mapped_file_params mmfparam;
@@ -859,49 +488,39 @@ BigGrid<BaseVecT>::BigGrid(std::string path)
     }
 }
 
+template<typename T>
+void fwrite(std::ofstream& file, T& value)
+{
+    file.write((char*)value, sizeof(T));
+}
+
 template <typename BaseVecT>
 void BigGrid<BaseVecT>::serialize(std::string path)
 {
     ofstream ofs(path, ios::binary);
-    //    size_t data_size =      sizeof(m_maxIndexSquare) + sizeof(m_maxIndex) +
-    //    sizeof(m_maxIndexX) + sizeof(m_maxIndexY) +
-    //                            sizeof(m_maxIndexZ) + sizeof(m_numPoints) +
-    //                            sizeof(m_pointBufferSize) + sizeof(m_voxelSize) +
-    //                            sizeof(m_extrude) + sizeof(m_hasNormal) + sizeof(m_hasColor) +
-    //                            sizeof(m_scale) + (m_gridNumPoints.size() * (sizeof(size_t)*7)) +
-    //                            (m_gridNumPoints.size() *(sizeof(size_t)));
+    fwrite(ofs, m_numPoints);
+    fwrite(ofs, m_pointBufferSize);
+    fwrite(ofs, m_voxelSize);
+    fwrite(ofs, m_extrude);
+    fwrite(ofs, m_hasNormal);
+    fwrite(ofs, m_hasColor);
+    fwrite(ofs, m_scale);
 
-    ofs.write((char*)&m_maxIndexSquare, sizeof(m_maxIndexSquare));
-    ofs.write((char*)&m_maxIndex, sizeof(m_maxIndex));
-    ofs.write((char*)&m_maxIndexX, sizeof(m_maxIndexX));
-    ofs.write((char*)&m_maxIndexY, sizeof(m_maxIndexY));
-    ofs.write((char*)&m_maxIndexZ, sizeof(m_maxIndexZ));
-    ofs.write((char*)&m_numPoints, sizeof(m_numPoints));
-    ofs.write((char*)&m_pointBufferSize, sizeof(m_pointBufferSize));
-    ofs.write((char*)&m_voxelSize, sizeof(m_voxelSize));
-    ofs.write((char*)&m_extrude, sizeof(m_extrude));
-    ofs.write((char*)&m_hasNormal, sizeof(m_hasNormal));
-    ofs.write((char*)&m_hasColor, sizeof(m_hasColor));
-    ofs.write((char*)&m_scale, sizeof(m_scale));
+    BaseVecT min = m_bb.min();
+    BaseVecT max = m_bb.max();
+    fwrite(ofs, min.x); fwrite(ofs, min.y); fwrite(ofs, min.z);
+    fwrite(ofs, max.x); fwrite(ofs, max.y); fwrite(ofs, max.z);
 
-    ofs.write((char*)&m_bb.getMin()[0], sizeof(float));
-    ofs.write((char*)&m_bb.getMin()[1], sizeof(float));
-    ofs.write((char*)&m_bb.getMin()[2], sizeof(float));
-    ofs.write((char*)&m_bb.getMax()[0], sizeof(float));
-    ofs.write((char*)&m_bb.getMax()[1], sizeof(float));
-    ofs.write((char*)&m_bb.getMax()[2], sizeof(float));
-    size_t gridSize = m_gridNumPoints.size();
-    ofs.write((char*)&gridSize, sizeof(gridSize));
-    for (auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); ++it)
+    size_t gridSize = m_cells.size();
+    fwrite(ofs, gridSize);
+
+    for (auto& [ index, cell ] : m_cells)
     {
-        ofs.write((char*)&it->first, sizeof(size_t));
-        ofs.write((char*)&it->second.size, sizeof(size_t));
-        ofs.write((char*)&it->second.offset, sizeof(size_t));
-        ofs.write((char*)&it->second.inserted, sizeof(size_t));
-        ofs.write((char*)&it->second.dist_offset, sizeof(size_t));
-        ofs.write((char*)&it->second.ix, sizeof(size_t));
-        ofs.write((char*)&it->second.iy, sizeof(size_t));
-        ofs.write((char*)&it->second.iz, sizeof(size_t));
+        fwrite(ofs, index.x()); fwrite(ofs, index.y()); fwrite(ofs, index.z());
+
+        fwrite(ofs, cell.size);
+        fwrite(ofs, cell.offset);
+        fwrite(ofs, cell.inserted);
     }
     ofs.close();
 }
@@ -909,7 +528,7 @@ void BigGrid<BaseVecT>::serialize(std::string path)
 template <typename BaseVecT>
 size_t BigGrid<BaseVecT>::size()
 {
-    return m_gridNumPoints.size();
+    return m_cells.size();
 }
 
 template <typename BaseVecT>
@@ -919,20 +538,18 @@ size_t BigGrid<BaseVecT>::pointSize()
 }
 
 template <typename BaseVecT>
-size_t BigGrid<BaseVecT>::pointSize(int i, int j, int k)
+size_t BigGrid<BaseVecT>::pointSize(const Eigen::Vector3i& index)
 {
-    size_t h = hashValue(i, j, k);
-    auto it = m_gridNumPoints.find(h);
-    return it != m_gridNumPoints.end() ? it->second.size : 0;
+    auto it = m_cells.find(index);
+    return it != m_cells.end() ? it->second.size : 0;
 }
 
 template <typename BaseVecT>
-lvr2::floatArr BigGrid<BaseVecT>::points(int i, int j, int k, size_t& numPoints)
+lvr2::floatArr BigGrid<BaseVecT>::points(const Eigen::Vector3i& index, size_t& numPoints)
 {
     lvr2::floatArr points;
-    size_t h = hashValue(i, j, k);
-    auto it = m_gridNumPoints.find(h);
-    if (it != m_gridNumPoints.end())
+    auto it = m_cells.find(index);
+    if (it != m_cells.end())
     {
         auto& cell = it->second;
 
@@ -950,7 +567,7 @@ lvr2::floatArr BigGrid<BaseVecT>::points(int i, int j, int k, size_t& numPoints)
 template <typename BaseVecT>
 lvr2::floatArr BigGrid<BaseVecT>::points(const BoundingBox<BaseVecT>& bb, size_t& numPoints, size_t minNumPoints)
 {
-    std::vector<std::pair<size_t, size_t>> cellCounts;
+    std::vector<std::pair<const CellInfo*, size_t>> cellCounts;
     numPoints = getSizeofBox(bb, cellCounts);
 
     if (numPoints < minNumPoints)
@@ -963,7 +580,7 @@ lvr2::floatArr BigGrid<BaseVecT>::points(const BoundingBox<BaseVecT>& bb, size_t
     // determine where each cell is going to start in the point array
     std::vector<float*> cellOutPoints;
     cellOutPoints.push_back(points.get());
-    for (auto& [ id, count ] : cellCounts)
+    for (auto& [ cell, count ] : cellCounts)
     {
         cellOutPoints.push_back(cellOutPoints.back() + count * 3);
     }
@@ -975,13 +592,12 @@ lvr2::floatArr BigGrid<BaseVecT>::points(const BoundingBox<BaseVecT>& bb, size_t
     #pragma omp parallel for
     for (size_t i = 0; i < cellCounts.size(); i++)
     {
-        auto& [ id, cellNumPoints ] = cellCounts[i];
-        auto& cell = m_gridNumPoints[id];
+        auto& [ cell, cellNumPoints ] = cellCounts[i];
 
         float* cellOut = cellOutPoints[i];
 
-        float* cellIn = pointFile + 3 * cell.offset;
-        float* cellInEnd = cellIn + 3 * cell.size;
+        float* cellIn = pointFile + 3 * cell->offset;
+        float* cellInEnd = cellIn + 3 * cell->size;
         for (float* p = cellIn; p < cellInEnd; p += 3)
         {
             if (p[0] >= min.x && p[0] <= max.x && p[1] >= min.y && p[1] <= max.y && p[2] >= min.z && p[2] <= max.z)
@@ -1009,7 +625,7 @@ lvr2::floatArr BigGrid<BaseVecT>::normals(const BoundingBox<BaseVecT>& bb, size_
         return lvr2::floatArr();
     }
 
-    std::vector<std::pair<size_t, size_t>> cellCounts;
+    std::vector<std::pair<const CellInfo*, size_t>> cellCounts;
     numNormals = getSizeofBox(bb, cellCounts);
 
     if (numNormals < minNumNormals)
@@ -1022,7 +638,7 @@ lvr2::floatArr BigGrid<BaseVecT>::normals(const BoundingBox<BaseVecT>& bb, size_
     // determine where each cell is going to start in the point array
     std::vector<float*> cellOutNormals;
     cellOutNormals.push_back(normals.get());
-    for (auto& [ id, count ] : cellCounts)
+    for (auto& [ cell, count ] : cellCounts)
     {
         cellOutNormals.push_back(cellOutNormals.back() + count * 3);
     }
@@ -1035,14 +651,13 @@ lvr2::floatArr BigGrid<BaseVecT>::normals(const BoundingBox<BaseVecT>& bb, size_
     #pragma omp parallel for
     for (size_t i = 0; i < cellCounts.size(); i++)
     {
-        auto& [ id, cellNumNormals ] = cellCounts[i];
-        auto& cell = m_gridNumPoints[id];
+        auto& [ cell, cellNumNormals ] = cellCounts[i];
 
         float* cellOut = cellOutNormals[i];
 
-        float* cellIn = normalFile + 3 * cell.offset;
-        float* points = pointFile + 3 * cell.offset;
-        float* pointsEnd = points + 3 * cell.size;
+        float* cellIn = normalFile + 3 * cell->offset;
+        float* points = pointFile + 3 * cell->offset;
+        float* pointsEnd = points + 3 * cell->size;
         for (float* p = points; p < pointsEnd; p += 3, cellIn += 3)
         {
             if (p[0] >= min.x && p[0] <= max.x && p[1] >= min.y && p[1] <= max.y && p[2] >= min.z && p[2] <= max.z)
@@ -1070,7 +685,7 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(const BoundingBox<BaseVecT>& bb, size_t
         return lvr2::ucharArr();
     }
 
-    std::vector<std::pair<size_t, size_t>> cellCounts;
+    std::vector<std::pair<const CellInfo*, size_t>> cellCounts;
     numColors = getSizeofBox(bb, cellCounts);
 
     if (numColors < minNumColors)
@@ -1083,7 +698,7 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(const BoundingBox<BaseVecT>& bb, size_t
     // determine where each cell is going to start in the point array
     std::vector<uchar*> cellOutColors;
     cellOutColors.push_back(colors.get());
-    for (auto& [ id, count ] : cellCounts)
+    for (auto& [ cell, count ] : cellCounts)
     {
         cellOutColors.push_back(cellOutColors.back() + count * 3);
     }
@@ -1096,14 +711,13 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(const BoundingBox<BaseVecT>& bb, size_t
     #pragma omp parallel for
     for (size_t i = 0; i < cellCounts.size(); i++)
     {
-        auto& [ id, cellNumColors ] = cellCounts[i];
-        auto& cell = m_gridNumPoints[id];
+        auto& [ cell, cellNumColors ] = cellCounts[i];
 
         uchar* cellOut = cellOutColors[i];
 
-        uchar* cellIn = colorFile + 3 * cell.offset;
-        float* points = pointFile + 3 * cell.offset;
-        float* pointsEnd = points + 3 * cell.size;
+        uchar* cellIn = colorFile + 3 * cell->offset;
+        float* points = pointFile + 3 * cell->offset;
+        float* pointsEnd = points + 3 * cell->size;
         for (float* p = points; p < pointsEnd; p += 3, cellIn += 3)
         {
             if (p[0] >= min.x && p[0] <= max.x && p[1] >= min.y && p[1] <= max.y && p[2] >= min.z && p[2] <= max.z)
@@ -1123,14 +737,6 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(const BoundingBox<BaseVecT>& bb, size_t
 }
 
 template <typename BaseVecT>
-bool BigGrid<BaseVecT>::exists(int i, int j, int k)
-{
-    size_t h = hashValue(i, j, k);
-    auto it = m_gridNumPoints.find(h);
-    return it != m_gridNumPoints.end();
-}
-
-template <typename BaseVecT>
 lvr2::floatArr BigGrid<BaseVecT>::getPointCloud(size_t& numPoints)
 {
     numPoints = m_numPoints;
@@ -1144,27 +750,27 @@ lvr2::floatArr BigGrid<BaseVecT>::getPointCloud(size_t& numPoints)
 }
 
 template <typename BaseVecT>
-size_t BigGrid<BaseVecT>::getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<std::pair<size_t, size_t>>& cellCounts)
+size_t BigGrid<BaseVecT>::getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<std::pair<const CellInfo*, size_t>>& cellCounts) const
 {
     auto min = bb.getMin(), max = bb.getMax();
-    size_t idxmin, idymin, idzmin, idxmax, idymax, idzmax;
-    calcIndex(min, idxmin, idymin, idzmin);
-    calcIndex(max, idxmax, idymax, idzmax);
+    Eigen::Vector3i indexMin, indexMax;
+    calcIndex(min, indexMin);
+    calcIndex(max, indexMax);
 
     cellCounts.clear();
 
     #pragma omp parallel for
-    for (size_t i = 0; i < m_gridNumPoints.bucket_count(); i++)
+    for (size_t i = 0; i < m_cells.bucket_count(); i++)
     {
-        auto begin = m_gridNumPoints.begin(i), end = m_gridNumPoints.end(i);
-        for (auto it = begin; it != end; ++it)
+        auto start = m_cells.begin(i), end = m_cells.end(i);
+        for (auto it = start; it != end; ++it)
         {
-            auto& [ id, cell ] = *it;
-            if (cell.ix >= idxmin || cell.iy >= idymin || cell.iz >= idzmin ||
-                cell.ix <= idxmax || cell.iy <= idymax || cell.iz <= idzmax)
+            auto& [ index, cell ] = *it;
+            if (index.x() >= indexMin.x() && index.y() >= indexMin.y() && index.z() >= indexMin.z() &&
+                index.x() <= indexMax.x() && index.y() <= indexMax.y() && index.z() <= indexMax.z())
             {
                 #pragma omp critical
-                cellCounts.emplace_back(id, 0);
+                cellCounts.emplace_back(&cell, 0);
             }
         }
     }
@@ -1175,17 +781,44 @@ size_t BigGrid<BaseVecT>::getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vec
     #pragma omp parallel for reduction(+:numPoints)
     for (size_t i = 0; i < cellCounts.size(); i++)
     {
-        auto& [ id, cellNumPoints ] = cellCounts[i];
-        auto& cell = m_gridNumPoints[id];
+        auto& [ cell, cellNumPoints ] = cellCounts[i];
 
-        float* cellPoints = pointFile + 3 * cell.offset;
-        float* cellPointsEnd = cellPoints + 3 * cell.size;
+        float* cellPoints = pointFile + 3 * cell->offset;
+        float* cellPointsEnd = cellPoints + 3 * cell->size;
         for (float* p = cellPoints; p < cellPointsEnd; p += 3)
         {
             if (p[0] >= min.x && p[0] <= max.x && p[1] >= min.y && p[1] <= max.y && p[2] >= min.z && p[2] <= max.z)
             {
                 cellNumPoints++;
-                numPoints++;
+            }
+        }
+        numPoints += cellNumPoints;
+    }
+
+    return numPoints;
+}
+
+template <typename BaseVecT>
+size_t BigGrid<BaseVecT>::estimateSizeofBox(const BoundingBox<BaseVecT>& bb) const
+{
+    auto min = bb.getMin(), max = bb.getMax();
+    Eigen::Vector3i indexMin, indexMax;
+    calcIndex(min, indexMin);
+    calcIndex(max, indexMax);
+
+    size_t numPoints = 0;
+
+    #pragma omp parallel for reduction(+:numPoints)
+    for (size_t i = 0; i < m_cells.bucket_count(); i++)
+    {
+        auto start = m_cells.begin(i), end = m_cells.end(i);
+        for (auto it = start; it != end; ++it)
+        {
+            auto& [ index, cell ] = *it;
+            if (index.x() >= indexMin.x() && index.y() >= indexMin.y() && index.z() >= indexMin.z() &&
+                index.x() <= indexMax.x() && index.y() <= indexMax.y() && index.z() <= indexMax.z())
+            {
+                numPoints += cell.size;
             }
         }
     }

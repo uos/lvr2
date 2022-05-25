@@ -282,6 +282,25 @@ namespace lvr2
             {
                 auto& partitionBox = partitionBoxes->at(i);
 
+                BoundingBox<BaseVecT> gridbb(partitionBox.getMin() - overlapVector, partitionBox.getMax() + overlapVector);
+
+                if (bg.estimateSizeofBox(gridbb) < MIN_POINTS_PER_CHUNK)
+                {
+                    partitionBoxesSkipped++;
+                    continue;
+                }
+
+                size_t numPoints;
+                floatArr points = bg.points(gridbb, numPoints, MIN_POINTS_PER_CHUNK);
+
+                if (!points)
+                {
+                    partitionBoxesSkipped++;
+                    continue;
+                }
+
+                std::cout << timestamp << "Processing Partition " << i << "/" << (partitionBoxes->size() - 1) << std::endl;
+
                 string name_id;
                 BaseVector<int> chunkCoords;
                 if (chunkManager)
@@ -295,19 +314,6 @@ namespace lvr2
                 {
                     name_id = std::to_string(i);
                 }
-
-                BoundingBox<BaseVecT> gridbb(partitionBox.getMin() - overlapVector, partitionBox.getMax() + overlapVector);
-
-                size_t numPoints;
-                floatArr points = bg.points(gridbb, numPoints, MIN_POINTS_PER_CHUNK);
-
-                if (!points)
-                {
-                    partitionBoxesSkipped++;
-                    continue;
-                }
-
-                std::cout << timestamp << "Processing Partition " << i << "/" << (partitionBoxes->size() - 1) << std::endl;
 
                 lvr2::PointBufferPtr p_loader(new lvr2::PointBuffer);
                 p_loader->setPointArray(points, numPoints);
@@ -326,10 +332,12 @@ namespace lvr2
                 }
 
                 lvr2::PointBufferPtr p_loader_reduced;
-                //if(numPoints > (m_chunkSize*500000)) // reduction TODO add options
-                if(false)
+                float reductionThreshold = std::pow(gridbb.getLongestSide() / voxelSize, 3); // number of voxels in the chunk
+                if(numPoints > reductionThreshold || numPoints > 100'000'000)
                 {
-                    OctreeReduction oct(p_loader, voxelSize / 5, 20);
+                    // reduction is necessary not just as a speedup, but also to avoid GPU memory overflow
+                    std::cout << timestamp << "Reducing point cloud starting with " << numPoints << " points" << std::endl;
+                    OctreeReduction oct(p_loader, voxelSize / 2.0, 20);
                     p_loader_reduced = oct.getReducedPoints();
                 }
                 else
@@ -342,7 +350,7 @@ namespace lvr2
 
                 auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(voxelSize, surface, gridbb, true, m_extrude);
 
-    #ifdef GPU_FOUND
+#ifdef GPU_FOUND
                 if (!hasNormals && m_useGPU)
                 {
                     // std::vector<float> flipPoint = std::vector<float>{100, 100, 100};
@@ -374,7 +382,7 @@ namespace lvr2
                         std::cout << timestamp << "Done." << std::endl;
                     }
                 }
-    #endif
+#endif
 
                 if (!hasNormals)
                 {

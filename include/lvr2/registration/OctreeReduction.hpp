@@ -29,11 +29,12 @@
  */
 
 /**
- * Metascan.hpp
+ * OctreeReduction.hpp
  *
- *  @date Sep 23, 2019
- *  @author Thomas Wiemann
- *  @author Malte Hillmann
+ * @date Sep 23, 2019
+ * @author Malte Hillmann
+ * @author Thomas Wiemann
+ * @author Justus Braun
  */
 
 #include "lvr2/types/MatrixTypes.hpp"
@@ -47,7 +48,7 @@
 namespace lvr2
 {
 
-// Informs the way the a point is picked from a voxel
+// Informs the way a point is picked from a voxel
 enum VoxelSamplingPolicy
 {
     CLOSEST_TO_CENTER,
@@ -57,45 +58,60 @@ enum VoxelSamplingPolicy
 class OctreeReduction
 {
 public:
-    OctreeReduction(PointBufferPtr& pointBuffer, const double& voxelSize, const size_t& minPointsPerVoxel, const VoxelSamplingPolicy samplingPolicy = CLOSEST_TO_CENTER);
-    OctreeReduction(Vector3f* points, const size_t& n, const double& voxelSize, const size_t& minPointsPerVoxel, const VoxelSamplingPolicy samplingPolicy = CLOSEST_TO_CENTER);
+    /**
+     * @brief Construct a new OctreeReduction object
+     * 
+     * @param pointBuffer The points to be reduced
+     * @param voxelSize The minimum size of a Leaf Node.
+     *                  Anything smaller will be condensed using the sampling policy
+     * @param minPointsPerVoxel Leaf nodes with fewer points than this will be ignored
+     * @param samplingPolicy The way a point is picked from a condensed Leaf node
+     */
+    OctreeReduction(PointBufferPtr& pointBuffer, float voxelSize, size_t minPointsPerVoxel, VoxelSamplingPolicy samplingPolicy = CLOSEST_TO_CENTER);
+    /**
+     * @brief Construct a new OctreeReduction object
+     * 
+     * @param points The points to be reduced. THIS DATA WILL BE MODIFIED IN PLACE.
+     * @param n The length of points. Will be updated to the number of points after reduction.
+     * @param voxelSize The minimum size of a Leaf Node.
+     *                  Anything smaller will be condensed using the sampling policy
+     * @param minPointsPerVoxel Leaf nodes with fewer points than this will be ignored
+     * @param samplingPolicy The way a point is picked from a condensed Leaf node
+     */
+    OctreeReduction(Vector3f* points, size_t& n, float voxelSize, size_t minPointsPerVoxel, VoxelSamplingPolicy samplingPolicy = CLOSEST_TO_CENTER);
 
+    /**
+     * @brief Get the Reduced Points object. ONLY WORKS IF PointBufferPtr CONSTRUCTOR WAS USED
+     * 
+     * @return PointBufferPtr The reduced points
+     */
     PointBufferPtr getReducedPoints();
-    void getReducedPoints(Vector3f& points, size_t& n);
-
-    ~OctreeReduction() { delete[] m_flags;}
 
 private:
-    template<typename T>
-    void createOctree(T* points, const int& n, bool* flagged, const T& min, const T& max, const int& level);
+    /// initialize and run the reduction
+    void init();
 
-    template<typename T>
-    size_t splitPoints(T* points, const size_t& n, const int axis, const double& splitValue);
+    /// recursive core function for reduction
+    void createOctree(size_t start, size_t n, const Vector3f& min, const Vector3f& max, unsigned int level = 0);
 
-    template<typename T>
-    void createOctree(lvr2::PointBufferPtr& points, size_t s, size_t n, bool* flagged, const lvr2::Vector3<T>& min, const lvr2::Vector3<T>& max, const int& level);
+    /// samples [start, start+n) according to m_samplingPolicy
+    void sampleRange(size_t start, size_t n, const Vector3f& center);
 
-    template<typename T>
-    size_t splitPoints(lvr2::PointBufferPtr& points, size_t s, size_t n, const int axis, const double& splitValue);
+    size_t splitPoints(size_t start, size_t n, unsigned int axis, float splitValue);
 
-    template<typename T>
-    void swapAllChannelsOfType(lvr2::PointBufferPtr& points, const size_t& l, const size_t& r);
-
-    template<typename T>
-    void swapInChannel(lvr2::Channel<T>& ch, const size_t& l, const size_t& r);
-
-    double              m_voxelSize;
+    float               m_voxelSize;
     size_t              m_minPointsPerVoxel;
     size_t              m_numPoints; 
-    bool*               m_flags;
+    bool*               m_flags; // m_flags[i] == true iff m_points[i] should be deleted
+    Vector3f*           m_points; // not owned
+    std::vector<size_t> m_pointIndices;
     PointBufferPtr      m_pointBuffer;
-    Vector3f            m_points;
     VoxelSamplingPolicy m_samplingPolicy;
     std::mt19937        m_randomEngine;
 };
 
 /**
- * @brief Reference implemention of an octree-based reduction algorithm
+ * @brief Reference implementation of an octree-based reduction algorithm
  * 
  */
 class OctreeReductionAlgorithm : public ReductionAlgorithm
@@ -107,7 +123,7 @@ public:
     void setPointBuffer(PointBufferPtr ptr) override
     {
         // Create octree
-        m_octree = new OctreeReduction(ptr, m_voxelSize, m_minPoints, VoxelSamplingPolicy::RANDOM_SAMPLE);
+        m_octree.reset(new OctreeReduction(ptr, m_voxelSize, m_minPoints, VoxelSamplingPolicy::RANDOM_SAMPLE));
     }
 
     PointBufferPtr getReducedPoints()
@@ -116,28 +132,15 @@ public:
         {
             return m_octree->getReducedPoints();
         }
-        else
-        {
-            return PointBufferPtr(new PointBuffer());
-        }
-    }
-
-    ~OctreeReductionAlgorithm()
-    {
-        if(m_octree)
-        {
-            delete m_octree;
-        }
+        return PointBufferPtr(new PointBuffer());
     }
 
 private:
-    OctreeReduction*    m_octree;
-    double              m_voxelSize;
-    size_t              m_minPoints;
+    std::shared_ptr<OctreeReduction> m_octree;
+    double m_voxelSize;
+    size_t m_minPoints;
 };
 
 } // namespace lvr2
-
-#include "lvr2/registration/OctreeReduction.tcc"
 
 #endif
