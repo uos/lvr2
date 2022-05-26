@@ -127,7 +127,7 @@ void OctreeReduction::init()
     }
     m_numPoints = l;
 
-    delete m_flags;
+    delete[] m_flags;
     m_flags = nullptr;
 }
 

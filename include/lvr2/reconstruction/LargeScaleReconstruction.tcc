@@ -85,92 +85,21 @@ namespace lvr2
 
     using Vec = lvr2::BaseVector<float>;
 
-    /// Minimum number of points needed to consider a chunk. Chunks smaller than this are skipped.
-    constexpr size_t MIN_POINTS_PER_CHUNK = 50;
-
     //TODO: write set Methods for certain variables
-
-    template <typename BaseVecT>
-    LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction()
-    : m_voxelSizes(std::vector<float>{0.1}), m_bgVoxelSize(1), m_scale(1),m_nodeSize(1000000), m_partMethod(1),
-    m_ki(20), m_kd(25), m_kn(20), m_useRansac(false), m_flipPoint(std::vector<float>{10000000, 10000000, 10000000}), m_extrude(false), m_removeDanglingArtifacts(0), m_cleanContours(0),
-    m_fillHoles(0), m_optimizePlanes(false), m_planeNormalThreshold(0.85), m_planeIterations(3), m_minPlaneSize(7), m_smallRegionThreshold(0),
-    m_retesselate(false), m_lineFusionThreshold(0.01)
-    {
-        std::cout << timestamp << "Reconstruction Instance generated..." << std::endl;
-    }
-
-    template<typename BaseVecT>
-    LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction( vector<float> voxelSizes, float bgVoxelSize,
-                                                                 float scale, uint nodeSize,
-                                                                 int partMethod, int ki, int kd, int kn, 
-                                                                 bool useRansac,
-                                                                 std::vector<float> flipPoint,
-                                                                 bool extrude, 
-                                                                 int removeDanglingArtifacts,
-                                                                 int cleanContours, int fillHoles, 
-                                                                 bool optimizePlanes,
-                                                                 float planeNormalThreshold, 
-                                                                 int planeIterations,
-                                                                 int minPlaneSize, 
-                                                                 int smallRegionThreshold,
-                                                                 bool retesselate, 
-                                                                 float lineFusionThreshold,
-                                                                 bool bigMesh, 
-                                                                 bool debugChunks, 
-                                                                 bool useGPU, 
-                                                                 bool useGPUDistances)
-            : m_voxelSizes(voxelSizes), m_bgVoxelSize(bgVoxelSize),
-              m_scale(scale),m_nodeSize(nodeSize),
-              m_partMethod(partMethod), 
-              m_ki(ki), m_kd(kd), m_kn(kn), 
-              m_useRansac(useRansac),
-              m_flipPoint(flipPoint), 
-              m_extrude(extrude), 
-              m_removeDanglingArtifacts(removeDanglingArtifacts),
-              m_cleanContours(cleanContours), 
-              m_fillHoles(fillHoles), 
-              m_optimizePlanes(optimizePlanes),
-              m_planeNormalThreshold(planeNormalThreshold), 
-              m_planeIterations(planeIterations),
-              m_minPlaneSize(minPlaneSize), 
-              m_smallRegionThreshold(smallRegionThreshold),
-              m_retesselate(retesselate), 
-              m_lineFusionThreshold(lineFusionThreshold),
-              m_bigMesh(bigMesh), 
-              m_debugChunks(debugChunks), 
-              m_useGPU(useGPU),
-              m_useGPUDistances(useGPUDistances)
-    {
-        std::cout << timestamp << "Reconstruction Instance generated..." << std::endl;
-    }
 
     template<typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
-            : LargeScaleReconstruction(
-              options.voxelSizes, 
-              options.bgVoxelSize,
-              options.scale,options.nodeSize,
-              options.partMethod, 
-              options.ki, options.kd, options.kn, 
-              options.useRansac,
-              options.getFlipPoint(), 
-              options.extrude, 
-              options.removeDanglingArtifacts,
-              options.cleanContours, 
-              options.fillHoles, 
-              options.optimizePlanes,
-              options.planeNormalThreshold, 
-              options.planeIterations,
-              options.minPlaneSize, 
-              options.smallRegionThreshold,
-              options.retesselate, 
-              options.lineFusionThreshold, 
-              options.bigMesh, 
-              options.debugChunks, 
-              options.useGPU, 
-              options.useGPUDistances)
+        : m_options(options)
     {
+#ifndef GPU_FOUND
+        if (m_options.useGPU)
+        {
+            std::cout << timestamp << "Warning: useGPU specified but no GPU found. Reverting to CPU" << std::endl;
+            m_options.useGPU = false;
+        }
+#endif
+
+        std::cout << timestamp << "Reconstruction Instance generated..." << std::endl;
     }
 
     template <typename BaseVecT>
@@ -179,6 +108,14 @@ namespace lvr2
         BoundingBox<BaseVecT>& newChunksBB,
         std::shared_ptr<ChunkHashGrid> chunkManager)
     {
+#ifndef GPU_FOUND
+        if (m_options.useGPU)
+        {
+            std::cout << timestamp << "Warning: useGPU specified but no GPU found. Reverting to CPU" << std::endl;
+            m_options.useGPU = false;
+        }
+#endif
+
         auto startTimeMs = timestamp.getCurrentTimeInMs();
 
         if(project->project->positions.size() != project->changed.size())
@@ -186,8 +123,21 @@ namespace lvr2
             throw std::runtime_error("Inconsistency between number of given scans and diff-vector (scans to consider)!");
         }
 
+        bool useVGrid = m_options.partMethod == 1;
+        if (useVGrid && !chunkManager)
+        {
+            throw std::runtime_error("partMethod set to VGrid but no chunk manager given!");
+        }
+
+        /// Minimum number of points needed to consider a chunk. Chunks smaller than this are skipped.
+        size_t minPointsPerChunk = std::max(m_options.ki, std::max(m_options.kd, m_options.kn)) * 2;
+
+        /// Maximum number of points in a chunk to avoid GPU memory overflow. Chunks bigger than this are reduced.
+        size_t maxPointsPerChunk = 150'000'000;
+
+
         std::cout << timestamp << "Starting BigGrid" << std::endl;
-        BigGrid<BaseVecT> bg(m_bgVoxelSize, project, m_scale);
+        BigGrid<BaseVecT> bg(m_options.bgVoxelSize, project, m_options.scale);
         std::cout << timestamp << "BigGrid finished " << std::endl;
 
         BoundingBox<BaseVecT> bb = bg.getBB();
@@ -195,21 +145,22 @@ namespace lvr2
         std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes;
         vector<BoundingBox<BaseVecT>> partitionBoxesNew;
 
-        if (chunkManager)
+        float chunkSize;
+        if (useVGrid)
         {
             // use V-Grid
-            m_chunkSize = chunkManager->getChunkSize();
+            chunkSize = chunkManager->getChunkSize();
 
             BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
 
             BoundingBox<BaseVecT> partbb = bg.getpartialBB();
             std::cout << timestamp << "Generating VGrid" << std::endl;
 
-            VirtualGrid<BaseVecT> vGrid(partbb, m_chunkSize, m_bgVoxelSize);
+            VirtualGrid<BaseVecT> vGrid(partbb, chunkSize, m_options.bgVoxelSize);
             vGrid.calculateBoxes();
             partitionBoxes = vGrid.getBoxes();
-            BaseVecT addMin = BaseVecT(std::floor(partbb.getMin().x / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().y / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().z / m_chunkSize) * m_chunkSize);
-            BaseVecT addMax = BaseVecT(std::ceil(partbb.getMax().x / m_chunkSize) * m_chunkSize, std::ceil(partbb.getMax().y / m_chunkSize) * m_chunkSize, std::ceil(partbb.getMax().z / m_chunkSize) * m_chunkSize);
+            BaseVecT addMin = BaseVecT(std::floor(partbb.getMin().x / chunkSize) * chunkSize, std::floor(partbb.getMin().y / chunkSize) * chunkSize, std::floor(partbb.getMin().z / chunkSize) * chunkSize);
+            BaseVecT addMax = BaseVecT(std::ceil(partbb.getMax().x / chunkSize) * chunkSize, std::ceil(partbb.getMax().y / chunkSize) * chunkSize, std::ceil(partbb.getMax().z / chunkSize) * chunkSize);
             newChunksBB.expand(addMin);
             newChunksBB.expand(addMax);
 
@@ -217,12 +168,12 @@ namespace lvr2
 
             // we use the BB of all scans (including old ones) they are already hashed in the cm
             // and we can't make the BB smaller
-            BaseVecT addCMBBMin = BaseVecT(std::floor(bb.getMin().x / m_chunkSize) * m_chunkSize, std::floor(bb.getMin().y / m_chunkSize) * m_chunkSize, std::floor(bb.getMin().z / m_chunkSize) * m_chunkSize);
-            BaseVecT addCMBBMax = BaseVecT(std::ceil(bb.getMax().x / m_chunkSize) * m_chunkSize, std::ceil(bb.getMax().y / m_chunkSize) * m_chunkSize, std::ceil(bb.getMax().z / m_chunkSize) * m_chunkSize);
+            BaseVecT addCMBBMin = BaseVecT(std::floor(bb.getMin().x / chunkSize) * chunkSize, std::floor(bb.getMin().y / chunkSize) * chunkSize, std::floor(bb.getMin().z / chunkSize) * chunkSize);
+            BaseVecT addCMBBMax = BaseVecT(std::ceil(bb.getMax().x / chunkSize) * chunkSize, std::ceil(bb.getMax().y / chunkSize) * chunkSize, std::ceil(bb.getMax().z / chunkSize) * chunkSize);
             cmBB.expand(addCMBBMin);
             cmBB.expand(addCMBBMax);
             chunkManager->setBoundingBox(cmBB);
-            int numChunks_global = (cmBB.getXSize() / m_chunkSize) * (cmBB.getYSize() / m_chunkSize) * (cmBB.getZSize() / m_chunkSize);
+            int numChunks_global = (cmBB.getXSize() / chunkSize) * (cmBB.getYSize() / chunkSize) * (cmBB.getZSize() / chunkSize);
             int numChunks_partial = partitionBoxes->size();
 
             cout << lvr2::timestamp << "Saving " << numChunks_global - numChunks_partial << " Chunks compared to full reconstruction" << endl;
@@ -231,7 +182,7 @@ namespace lvr2
         {
             // use KD-Tree
             std::cout << timestamp << "generating tree" << std::endl;
-            BigGridKdTree<BaseVecT> gridKd(bg.getBB(), m_nodeSize, &bg, m_bgVoxelSize);
+            BigGridKdTree<BaseVecT> gridKd(bg.getBB(), m_options.nodeSize, &bg, m_options.bgVoxelSize);
             gridKd.insert(bg.pointSize(), bg.getBB().getCentroid());
             ofstream partBoxOfs("KdTree.ser");
             partitionBoxes = shared_ptr<vector<BoundingBox<BaseVecT>>>(new vector<BoundingBox<BaseVecT>>(gridKd.getLeafs().size()));
@@ -249,23 +200,46 @@ namespace lvr2
 
         std::cout << timestamp << "got: " << partitionBoxes->size() << " chunks." << std::endl;
 
-        std::cout << lvr2::timestamp << "Number of VoxelSizes: " << m_voxelSizes.size() << std::endl;
-
-        for(int h = 0; h < m_voxelSizes.size(); h++)
+        std::cout << lvr2::timestamp << "VoxelSizes: ";
+        for (auto v : m_options.voxelSizes)
         {
-            float voxelSize = m_voxelSizes[h];
+            std::cout << v << " ";
+        }
+        std::cout << std::endl;
+
+        bool createBigMesh = m_options.hasOutput(LSROutput::BigMesh);
+        bool createChunksPly = chunkManager && m_options.hasOutput(LSROutput::ChunksPly);
+        bool createChunksHdf5 = chunkManager && m_options.hasOutput(LSROutput::ChunksHdf5);
+
+
+        for(int h = 0; h < m_options.voxelSizes.size(); h++)
+        {
+            float voxelSize = m_options.voxelSizes[h];
             float overlap = 5 * voxelSize;
             BaseVecT overlapVector(overlap, overlap, overlap);
 
             std::shared_ptr<HighFive::File> chunk_file = nullptr;
-            if (m_debugChunks && h == 0 && chunkManager)
+            if (createChunksHdf5 && h == 0)
             {
                 chunk_file = hdf5util::open("chunks.h5", HighFive::File::Truncate);
                 auto root = chunk_file->getGroup("/");
 
-                hdf5util::setAttribute(root, "chunk_size", m_chunkSize);
+                hdf5util::setAttribute(root, "chunk_size", chunkSize);
                 hdf5util::setAttribute(root, "voxel_size", voxelSize);
                 hdf5util::setAttribute(root, "overlap", overlap);
+            }
+            if (createChunksPly && h == 0)
+            {
+                boost::filesystem::remove_all("chunks");
+                boost::filesystem::create_directories("chunks");
+
+                YAML::Node metadata;
+                metadata["chunk_size"] = chunkSize;
+                metadata["voxel_size"] = voxelSize;
+                metadata["overlap"] = overlap;
+
+                std::ofstream out("chunks/chunk_metadata.yaml");
+                out << metadata;
             }
 
             // V-Grid: vector to save the new chunk names - which chunks have to be reconstructed
@@ -284,14 +258,14 @@ namespace lvr2
 
                 BoundingBox<BaseVecT> gridbb(partitionBox.getMin() - overlapVector, partitionBox.getMax() + overlapVector);
 
-                if (bg.estimateSizeofBox(gridbb) < MIN_POINTS_PER_CHUNK)
+                if (bg.estimateSizeofBox(gridbb) < minPointsPerChunk)
                 {
                     partitionBoxesSkipped++;
                     continue;
                 }
 
                 size_t numPoints;
-                floatArr points = bg.points(gridbb, numPoints, MIN_POINTS_PER_CHUNK);
+                floatArr points = bg.points(gridbb, numPoints, minPointsPerChunk);
 
                 if (!points)
                 {
@@ -303,11 +277,11 @@ namespace lvr2
 
                 string name_id;
                 BaseVector<int> chunkCoords;
-                if (chunkManager)
+                if (useVGrid)
                 {
-                    chunkCoords.x = floor(partitionBox.getCentroid().x / m_chunkSize);
-                    chunkCoords.y = floor(partitionBox.getCentroid().y / m_chunkSize);
-                    chunkCoords.z = floor(partitionBox.getCentroid().z / m_chunkSize);
+                    chunkCoords.x = floor(partitionBox.getCentroid().x / chunkSize);
+                    chunkCoords.y = floor(partitionBox.getCentroid().y / chunkSize);
+                    chunkCoords.z = floor(partitionBox.getCentroid().z / chunkSize);
                     name_id = std::to_string(chunkCoords.x) + "_" + std::to_string(chunkCoords.y) + "_" + std::to_string(chunkCoords.z);
                 }
                 else
@@ -325,53 +299,60 @@ namespace lvr2
                 {
                     size_t numNormals;
                     lvr2::floatArr normals = bg.normals(gridbb, numNormals);
-
-                    p_loader->setNormalArray(normals, numNormals);
-                    hasNormals = true;
-                    cout << "got " << numNormals << " normals" << endl;
+                    if (numNormals != numPoints)
+                    {
+                        std::cerr << "ERROR: Number of normals does not match number of points" << std::endl;
+                    }
+                    else
+                    {
+                        p_loader->setNormalArray(normals, numNormals);
+                        hasNormals = true;
+                    }
                 }
 
-                lvr2::PointBufferPtr p_loader_reduced;
-                float reductionThreshold = std::pow(gridbb.getLongestSide() / voxelSize, 3); // number of voxels in the chunk
-                if(numPoints > reductionThreshold || numPoints > 100'000'000)
+                if (m_options.useGPU)
                 {
-                    // reduction is necessary not just as a speedup, but also to avoid GPU memory overflow
-                    std::cout << timestamp << "Reducing point cloud starting with " << numPoints << " points" << std::endl;
-                    OctreeReduction oct(p_loader, voxelSize / 2.0, 20);
-                    p_loader_reduced = oct.getReducedPoints();
-                }
-                else
-                {
-                    p_loader_reduced = p_loader;
+                    float targetSize = voxelSize / 8; // octree divisions cut the size in half
+                        // -> voxelSize / 8 means log2(8) = 3 subdivisions of a voxel
+                        // with 8 splits per division => 8^3 = ~512 points per voxel as absolute maximum
+
+                    while (numPoints > maxPointsPerChunk)
+                    {
+                        // reduction is necessary to avoid GPU memory overflow
+                        std::cout << timestamp << "Chunk has too many points: " << numPoints << ". Reducing." << std::endl;
+                        OctreeReduction oct(p_loader, targetSize, 5);
+                        p_loader = oct.getReducedPoints();
+                        numPoints = p_loader->numPoints();
+                        targetSize *= 2; // bigger voxel size means more points removed during reduction in the next iteration
+                    }
                 }
 
                 lvr2::PointsetSurfacePtr<Vec> surface =
-                    make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader_reduced, "FLANN", m_kn, m_ki, m_kd, m_useRansac);
+                    make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader, "FLANN", m_options.kn, m_options.ki, m_options.kd, m_options.useRansac);
 
-                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(voxelSize, surface, gridbb, true, m_extrude);
+                auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(voxelSize, surface, gridbb, true, m_options.extrude);
 
-#ifdef GPU_FOUND
-                if (!hasNormals && m_useGPU)
+                if (!hasNormals && m_options.useGPU)
                 {
                     // std::vector<float> flipPoint = std::vector<float>{100, 100, 100};
-                    size_t num_points = p_loader_reduced->numPoints();
-                    floatArr points = p_loader_reduced->getPointArray();
-                    floatArr normals = floatArr(new float[num_points * 3]);
+                    floatArr points = p_loader->getPointArray();
+                    floatArr normals = floatArr(new float[numPoints * 3]);
                     std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
-                    GpuSurface gpu_surface(points, num_points);
 
-                    gpu_surface.setKn(m_kn);
-                    gpu_surface.setKi(m_ki);
-                    gpu_surface.setKd(m_kd);
-                    gpu_surface.setFlippoint(m_flipPoint[0], m_flipPoint[1], m_flipPoint[2]);
+                    GpuSurface gpu_surface(points, numPoints);
+
+                    gpu_surface.setKn(m_options.kn);
+                    gpu_surface.setKi(m_options.ki);
+                    gpu_surface.setKd(m_options.kd);
+                    gpu_surface.setFlippoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
 
                     gpu_surface.calculateNormals();
                     gpu_surface.getNormals(normals);
 
-                    p_loader_reduced->setNormalArray(normals, num_points);
+                    p_loader->setNormalArray(normals, numPoints);
                     hasNormals = true;
 
-                    if(m_useGPUDistances)
+                    if(m_options.useGPUDistances)
                     {
                         auto& query_points = ps_grid->getQueryPoints();
 
@@ -382,7 +363,6 @@ namespace lvr2
                         std::cout << timestamp << "Done." << std::endl;
                     }
                 }
-#endif
 
                 if (!hasNormals)
                 {
@@ -398,20 +378,6 @@ namespace lvr2
                     addTSDFChunkManager(chunkCoords.x, chunkCoords.y, chunkCoords.z, ps_grid, chunkManager, layerName);
                     // also save the grid coordinates of the chunk added to the ChunkManager
                     newChunks.push_back(chunkCoords);
-
-                    // save the mesh of the chunk
-                    if (m_debugChunks && h == 0)
-                    {
-                        auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
-                        lvr2::PMPMesh<Vec> mesh;
-                        reconstruction->getMesh(mesh);
-                        if (mesh.numFaces() > 0)
-                        {
-                            auto group = chunk_file->createGroup("/chunks/" + name_id);
-                            mesh.getSurfaceMesh().write(group);
-                            chunk_file->flush();
-                        }
-                    }
                 }
                 else
                 {
@@ -419,6 +385,27 @@ namespace lvr2
                     ss2 << name_id << ".ser";
                     ps_grid->saveCells(ss2.str());
                     grid_files.push_back(ss2.str());
+                }
+
+                // save the mesh of the chunk
+                if ((createChunksHdf5 || createChunksPly) && h == 0)
+                {
+                    auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
+                    lvr2::PMPMesh<Vec> mesh;
+                    reconstruction->getMesh(mesh);
+                    if (mesh.numFaces() > 0)
+                    {
+                        if (createChunksHdf5)
+                        {
+                            auto group = chunk_file->createGroup("/chunks/" + name_id);
+                            mesh.getSurfaceMesh().write(group);
+                            chunk_file->flush();
+                        }
+                        else if (createChunksPly)
+                        {
+                            mesh.getSurfaceMesh().write("chunks/" + name_id + ".ply");
+                        }
+                    }
                 }
 
                 // also save the "real" bounding box without overlap
@@ -429,7 +416,7 @@ namespace lvr2
 
             std::cout << timestamp << "finished" << std::endl;
 
-            if(m_bigMesh && h == 0)
+            if(createBigMesh && h == 0)
             {
                 //combine chunks
                 BoundingBox<BaseVecT> cbb(bb.getMin() - overlapVector, bb.getMax() + overlapVector);
@@ -465,43 +452,43 @@ namespace lvr2
 
                 reconstruction->getMesh(mesh);
 
-                if (m_removeDanglingArtifacts) {
+                if (m_options.removeDanglingArtifacts) {
                     cout << timestamp << "Removing dangling artifacts" << endl;
-                    removeDanglingCluster(mesh, static_cast<size_t>(m_removeDanglingArtifacts));
+                    removeDanglingCluster(mesh, static_cast<size_t>(m_options.removeDanglingArtifacts));
                 }
 
                 // Magic number from lvr1 `cleanContours`...
-                cleanContours(mesh, m_cleanContours, 0.0001);
+                cleanContours(mesh, m_options.cleanContours, 0.0001);
 
                 // Fill small holes if requested
-                if (m_fillHoles) {
-                    naiveFillSmallHoles(mesh, m_fillHoles, false);
+                if (m_options.fillHoles) {
+                    naiveFillSmallHoles(mesh, m_options.fillHoles, false);
                 }
 
                 // Calculate normals for vertices
                 auto faceNormals = calcFaceNormals(mesh);
 
                 ClusterBiMap<FaceHandle> clusterBiMap;
-                if (m_optimizePlanes) {
+                if (m_options.optimizePlanes) {
                     clusterBiMap = iterativePlanarClusterGrowing(mesh,
                                                                  faceNormals,
-                                                                 m_planeNormalThreshold,
-                                                                 m_planeIterations,
-                                                                 m_minPlaneSize);
+                                                                 m_options.planeNormalThreshold,
+                                                                 m_options.planeIterations,
+                                                                 m_options.minPlaneSize);
 
-                    if (m_smallRegionThreshold > 0) {
+                    if (m_options.smallRegionThreshold > 0) {
                         deleteSmallPlanarCluster(
-                                mesh, clusterBiMap, static_cast<size_t>(m_smallRegionThreshold));
+                                mesh, clusterBiMap, static_cast<size_t>(m_options.smallRegionThreshold));
                     }
 
                     double end_s = lvr2::timestamp.getElapsedTimeInS();
 
-                    if (m_retesselate) {
+                    if (m_options.retesselate) {
                         Tesselator<Vec>::apply(
-                                mesh, clusterBiMap, faceNormals, m_lineFusionThreshold);
+                                mesh, clusterBiMap, faceNormals, m_options.lineFusionThreshold);
                     }
                 } else {
-                    clusterBiMap = planarClusterGrowing(mesh, faceNormals, m_planeNormalThreshold);
+                    clusterBiMap = planarClusterGrowing(mesh, faceNormals, m_options.planeNormalThreshold);
                 }
 
 
@@ -571,19 +558,19 @@ namespace lvr2
                                                                             std::shared_ptr<ChunkHashGrid> chunkHashGrid,
                                                                             float voxelSize) {
         string layerName = "tsdf_values_" + std::to_string(voxelSize);
-        int chunksize = m_chunkSize;
+        float chunkSize = chunkHashGrid->getChunkSize();
 
         std::vector<PointBufferPtr> tsdfChunks;
         std::vector<BoundingBox<BaseVecT>> partitionBoxesNew = std::vector<BoundingBox<BaseVecT>>();
         BoundingBox<BaseVecT> completeBB = BoundingBox<BaseVecT>();
 
-        int xMin = (int) (newChunksBB.getMin().x / m_chunkSize);
-        int yMin = (int) (newChunksBB.getMin().y / m_chunkSize);
-        int zMin = (int) (newChunksBB.getMin().z / m_chunkSize);
+        int xMin = (int) (newChunksBB.getMin().x / chunkSize);
+        int yMin = (int) (newChunksBB.getMin().y / chunkSize);
+        int zMin = (int) (newChunksBB.getMin().z / chunkSize);
 
-        int xMax = (int) (newChunksBB.getMax().x / m_chunkSize);
-        int yMax = (int) (newChunksBB.getMax().y / m_chunkSize);
-        int zMax = (int) (newChunksBB.getMax().z / m_chunkSize);
+        int xMax = (int) (newChunksBB.getMax().x / chunkSize);
+        int yMax = (int) (newChunksBB.getMax().y / chunkSize);
+        int zMax = (int) (newChunksBB.getMax().z / chunkSize);
 
         std::cout << "DEBUG: New Chunks from (" << xMin << ", " << yMin << ", " << zMin
                   << ") - to (" << xMax << ", " << yMax << ", " << zMax << ")." << std::endl;
@@ -596,8 +583,8 @@ namespace lvr2
 
 
                     if (chunk) {
-                        BaseVecT min(i * chunksize, j * chunksize, k * chunksize);
-                        BaseVecT max(i * chunksize + chunksize, j * chunksize + chunksize, k * chunksize + chunksize);
+                        BaseVecT min(i * chunkSize, j * chunkSize, k * chunkSize);
+                        BaseVecT max((i + 1) * chunkSize, (j + 1) * chunkSize, (k + 1) * chunkSize);
 
                         BoundingBox<BaseVecT> temp(min, max);
                         partitionBoxesNew.push_back(temp);
@@ -618,17 +605,17 @@ namespace lvr2
         lvr2::HalfEdgeMesh<Vec> mesh;
         reconstruction->getMesh(mesh);
 
-        if (m_removeDanglingArtifacts) {
+        if (m_options.removeDanglingArtifacts) {
             cout << timestamp << "Removing dangling artifacts" << endl;
-            removeDanglingCluster(mesh, static_cast<size_t>(m_removeDanglingArtifacts));
+            removeDanglingCluster(mesh, static_cast<size_t>(m_options.removeDanglingArtifacts));
         }
 
-        if (m_fillHoles) {
-            naiveFillSmallHoles(mesh, m_fillHoles, false);
+        if (m_options.fillHoles) {
+            naiveFillSmallHoles(mesh, m_options.fillHoles, false);
         }
 
 
-        if (m_debugChunks)
+        if (m_options.hasOutput(LSROutput::ChunksPly))
         {
             auto faceNormals = calcFaceNormals(mesh);
             // Finalize mesh
@@ -652,7 +639,7 @@ namespace lvr2
         unsigned long timeCalc;
         unsigned long timeReconstruct;
 
-        m_chunkSize = chunkManager->getChunkSize();
+        float chunkSize = chunkManager->getChunkSize();
 
         if(project->project->positions.size() != project->changed.size())
         {
@@ -667,7 +654,7 @@ namespace lvr2
         }
 
         cout << lvr2::timestamp << "Starting BigGrid" << endl;
-        BigGrid<BaseVecT> bg( m_bgVoxelSize ,project, m_scale);
+        BigGrid<BaseVecT> bg( m_options.bgVoxelSize ,project, m_options.scale);
         cout << lvr2::timestamp << "BigGrid finished " << endl;
 
         BoundingBox<BaseVecT> bb = bg.getBB();
@@ -682,11 +669,11 @@ namespace lvr2
         cout << lvr2::timestamp << "generating VGrid" << endl;
 
         VirtualGrid<BaseVecT> vGrid(
-                bg.getpartialBB(), m_chunkSize, m_bgVoxelSize);
+                bg.getpartialBB(), chunkSize, m_options.bgVoxelSize);
         vGrid.calculateBoxes();
         partitionBoxes = vGrid.getBoxes();
-        BaseVecT addMin = BaseVecT(std::floor(partbb.getMin().x / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().y / m_chunkSize) * m_chunkSize, std::floor(partbb.getMin().z / m_chunkSize) * m_chunkSize);
-        BaseVecT addMax = BaseVecT(std::ceil(partbb.getMax().x / m_chunkSize) * m_chunkSize, std::ceil(partbb.getMax().y / m_chunkSize) * m_chunkSize, std::ceil(partbb.getMax().z / m_chunkSize) * m_chunkSize);
+        BaseVecT addMin = BaseVecT(std::floor(partbb.getMin().x / chunkSize) * chunkSize, std::floor(partbb.getMin().y / chunkSize) * chunkSize, std::floor(partbb.getMin().z / chunkSize) * chunkSize);
+        BaseVecT addMax = BaseVecT(std::ceil(partbb.getMax().x / chunkSize) * chunkSize, std::ceil(partbb.getMax().y / chunkSize) * chunkSize, std::ceil(partbb.getMax().z / chunkSize) * chunkSize);
         newChunksBB.expand(addMin);
         newChunksBB.expand(addMax);
         cout << lvr2::timestamp << "finished vGrid" << endl;
@@ -695,15 +682,15 @@ namespace lvr2
 
         // we use the BB of all scans (including old ones) they are already hashed in the cm
         // and we can't make the BB smaller
-        BaseVecT addCMBBMin = BaseVecT(std::floor(bb.getMin().x / m_chunkSize) * m_chunkSize, std::floor(bb.getMin().y / m_chunkSize) * m_chunkSize, std::floor(bb.getMin().z / m_chunkSize) * m_chunkSize);
-        BaseVecT addCMBBMax = BaseVecT(std::ceil(bb.getMax().x / m_chunkSize) * m_chunkSize, std::ceil(bb.getMax().y / m_chunkSize) * m_chunkSize, std::ceil(bb.getMax().z / m_chunkSize) * m_chunkSize);
+        BaseVecT addCMBBMin = BaseVecT(std::floor(bb.getMin().x / chunkSize) * chunkSize, std::floor(bb.getMin().y / chunkSize) * chunkSize, std::floor(bb.getMin().z / chunkSize) * chunkSize);
+        BaseVecT addCMBBMax = BaseVecT(std::ceil(bb.getMax().x / chunkSize) * chunkSize, std::ceil(bb.getMax().y / chunkSize) * chunkSize, std::ceil(bb.getMax().z / chunkSize) * chunkSize);
         cmBB.expand(addCMBBMin);
         cmBB.expand(addCMBBMax);
 
         // TODO: It breaks here
 
         chunkManager->setBoundingBox(cmBB);
-        int numChunks_global = (cmBB.getXSize() / m_chunkSize) * (cmBB.getYSize() / m_chunkSize) * (cmBB.getZSize() / m_chunkSize);
+        int numChunks_global = (cmBB.getXSize() / chunkSize) * (cmBB.getYSize() / chunkSize) * (cmBB.getZSize() / chunkSize);
         int numChunks_partial = partitionBoxes->size();
 
         cout << lvr2::timestamp << "Saving " << numChunks_global - numChunks_partial << " Chunks compared to full reconstruction" << endl;
@@ -747,10 +734,13 @@ namespace lvr2
     template<typename BaseVecT>
     uint* LargeScaleReconstruction<BaseVecT>::mpiScheduler(std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes, BigGrid<BaseVecT>& bg, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager)
     {
-        uint* partitionBoxesSkipped = new uint[m_voxelSizes.size()]();
-        for(int h = 0; h < m_voxelSizes.size(); h++)
+        /// Minimum number of points needed to consider a chunk. Chunks smaller than this are skipped.
+        size_t minPointsPerChunk = std::max(m_options.ki, std::max(m_options.kd, m_options.kn)) * 2;
+
+        uint* partitionBoxesSkipped = new uint[m_options.voxelSizes.size()]();
+        for(int h = 0; h < m_options.voxelSizes.size(); h++)
         {
-            float voxelSize = m_voxelSizes[h];
+            float voxelSize = m_options.voxelSizes[h];
             float overlap = 5 * voxelSize;
             BaseVecT overlapVector(overlap, overlap, overlap);
 
@@ -765,7 +755,7 @@ namespace lvr2
 
                 BoundingBox<BaseVecT> gridbb(partitionBoxes->at(i).getMin() - overlapVector, partitionBoxes->at(i).getMax() + overlapVector);
 
-                floatArr points = bg.points(gridbb, numPoints, MIN_POINTS_PER_CHUNK);
+                floatArr points = bg.points(gridbb, numPoints, minPointsPerChunk);
 
                 if (!points)
                 {
@@ -843,12 +833,14 @@ namespace lvr2
     {
         vector<BoundingBox<BaseVecT>> partitionBoxesNew;
         unsigned long timeSum = 0;
-        for(int h = 0; h < m_voxelSizes.size(); h++)
+        float chunkSize = chunkManager->getChunkSize();
+
+        for(int h = 0; h < m_options.voxelSizes.size(); h++)
         {
             // vector to save the new chunk names - which chunks have to be reconstructed
             vector<BaseVector<int>> newChunks = vector<BaseVector<int>>();
 
-            string layerName = "tsdf_values_" + std::to_string(m_voxelSizes[h]);
+            string layerName = "tsdf_values_" + std::to_string(m_options.voxelSizes[h]);
 
             for (int i = 0; i < partitionBoxes->size() - partitionBoxesSkipped[h]; i++)
             {
@@ -880,9 +872,9 @@ namespace lvr2
 
 
                 unsigned long timeStart = lvr2::timestamp.getCurrentTimeInMs();
-                int x = (int) floor(partitionBoxes->at(chunk).getCentroid().x / m_chunkSize);
-                int y = (int) floor(partitionBoxes->at(chunk).getCentroid().y / m_chunkSize);
-                int z = (int) floor(partitionBoxes->at(chunk).getCentroid().z / m_chunkSize);
+                int x = (int) floor(partitionBoxes->at(chunk).getCentroid().x / chunkSize);
+                int y = (int) floor(partitionBoxes->at(chunk).getCentroid().y / chunkSize);
+                int z = (int) floor(partitionBoxes->at(chunk).getCentroid().z / chunkSize);
 
 
                 addTSDFChunkManager(x, y, z, ps_grid, chunkManager, layerName);
@@ -900,10 +892,10 @@ namespace lvr2
             cout << "ChunkManagerIO Time: " <<(double) (timeSum / 1000.0) << " s" << endl;
             cout << lvr2::timestamp << "finished" << endl;
 
-            if(m_bigMesh && h == 0)
+            if(h == 0 && m_options.hasOutput(LSROutput::BigMesh))
             {
                 //combine chunks
-                float voxelSize = m_voxelSizes[h];
+                float voxelSize = m_options.voxelSizes[h];
                 float overlap = 5 * voxelSize;
                 BaseVecT overlapVector(overlap, overlap, overlap);
                 auto vmax = cbb.getMax() - overlapVector;
@@ -925,11 +917,10 @@ namespace lvr2
                         tsdfChunks.push_back(chunk.get());
                     } else {
                         std::cout << "WARNING - Could not find chunk (" << coord.x << ", " << coord.y << ", " << coord.z
-                                  << ") in layer: " << "tsdf_values_" + std::to_string(m_voxelSizes[0]) << std::endl;
+                                  << ") in layer: " << "tsdf_values_" + std::to_string(voxelSize) << std::endl;
                     }
                 }
-                auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, cbb,
-                                                                                   m_voxelSizes[0]);
+                auto hg = std::make_shared<HashGrid<BaseVecT, lvr2::FastBox<Vec>>>(tsdfChunks, partitionBoxesNew, cbb, voxelSize);
                 tsdfChunks.clear();
                 auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
 
@@ -937,43 +928,43 @@ namespace lvr2
 
                 reconstruction->getMesh(mesh);
 
-                if (m_removeDanglingArtifacts) {
+                if (m_options.removeDanglingArtifacts) {
                     cout << timestamp << "Removing dangling artifacts" << endl;
-                    removeDanglingCluster(mesh, static_cast<size_t>(m_removeDanglingArtifacts));
+                    removeDanglingCluster(mesh, static_cast<size_t>(m_options.removeDanglingArtifacts));
                 }
 
                 // Magic number from lvr1 `cleanContours`...
-                cleanContours(mesh, m_cleanContours, 0.0001);
+                cleanContours(mesh, m_options.cleanContours, 0.0001);
 
                 // Fill small holes if requested
-                if (m_fillHoles) {
-                    naiveFillSmallHoles(mesh, m_fillHoles, false);
+                if (m_options.fillHoles) {
+                    naiveFillSmallHoles(mesh, m_options.fillHoles, false);
                 }
 
                 // Calculate normals for vertices
                 auto faceNormals = calcFaceNormals(mesh);
 
                 ClusterBiMap<FaceHandle> clusterBiMap;
-                if (m_optimizePlanes) {
+                if (m_options.optimizePlanes) {
                     clusterBiMap = iterativePlanarClusterGrowing(mesh,
                                                                  faceNormals,
-                                                                 m_planeNormalThreshold,
-                                                                 m_planeIterations,
-                                                                 m_minPlaneSize);
+                                                                 m_options.planeNormalThreshold,
+                                                                 m_options.planeIterations,
+                                                                 m_options.minPlaneSize);
 
-                    if (m_smallRegionThreshold > 0) {
+                    if (m_options.smallRegionThreshold > 0) {
                         deleteSmallPlanarCluster(
-                                mesh, clusterBiMap, static_cast<size_t>(m_smallRegionThreshold));
+                                mesh, clusterBiMap, static_cast<size_t>(m_options.smallRegionThreshold));
                     }
 
                     double end_s = lvr2::timestamp.getElapsedTimeInS();
 
-                    if (m_retesselate) {
+                    if (m_options.retesselate) {
                         Tesselator<Vec>::apply(
-                                mesh, clusterBiMap, faceNormals, m_lineFusionThreshold);
+                                mesh, clusterBiMap, faceNormals, m_options.lineFusionThreshold);
                     }
                 } else {
-                    clusterBiMap = planarClusterGrowing(mesh, faceNormals, m_planeNormalThreshold);
+                    clusterBiMap = planarClusterGrowing(mesh, faceNormals, m_options.planeNormalThreshold);
                 }
 
 
@@ -1048,24 +1039,19 @@ namespace lvr2
               p_loader->setNormalArray(normals, numNormals);
             }
 
-            //if(numPoints > (m_chunkSize*500000)) // reduction TODO add options
-            /*if(false)
-            {
-                OctreeReduction oct(p_loader, m_voxelSizes[h], 20);
-                p_loader_reduced = oct.getReducedPoints();
-            }
-            else
-            {
-                p_loader_reduced = p_loader;
-            }*/
+            // if(numPoints > (chunkSize*500000)) // reduction TODO add options
+            // {
+            //     OctreeReduction oct(p_loader, m_voxelSizes[h], 20);
+            //     p_loader = oct.getReducedPoints();
+            // }
 
             lvr2::PointsetSurfacePtr<Vec> surface;
             surface = make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader,
                                                                      "FLANN",
-                                                                     m_kn,
-                                                                     m_ki,
-                                                                     m_kd,
-                                                                     m_useRansac);
+                                                                     m_options.kn,
+                                                                     m_options.ki,
+                                                                     m_options.kd,
+                                                                     m_options.useRansac);
 
             //calculate important stuff for reconstruction
             if (calcNorm)
@@ -1073,7 +1059,7 @@ namespace lvr2
                 surface->calculateSurfaceNormals();
             }
             auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
-                    m_voxelSizes[h], surface, gridbb, true, m_extrude);
+                    m_options.voxelSizes[h], surface, gridbb, true, m_options.extrude);
 
             ps_grid->setBB(gridbb);
             ps_grid->calcIndices();

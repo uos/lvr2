@@ -38,6 +38,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <chrono>
 
 using std::stringstream;
 using std::cout;
@@ -124,7 +125,10 @@ protected:
     boost::mutex 	m_mutex;
 
     /// The current progress in percent
-    int			m_percent;
+    int			    m_percent;
+
+    /// The starting time of the progress bar
+    std::chrono::time_point<std::chrono::system_clock> m_start;
 
     /// A string stream for output generation
     stringstream	m_stream;

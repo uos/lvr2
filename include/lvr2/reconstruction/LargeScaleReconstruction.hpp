@@ -38,13 +38,22 @@
 
 namespace lvr2
 {
+    enum class LSROutput
+    {
+        // Output one big Mesh. Uses A LOT of memory.
+        BigMesh,
+        // Output one mesh per chunk as ply.
+        ChunksPly,
+        // Output one h5 file containing one mesh per chunk.
+        ChunksHdf5,
+    };
+
     struct LSROptions
     {
-        //flag to trigger .ply output of big Mesh
-        bool bigMesh = true;
-
-        // flag to trigger .ply output of chunks
-        bool debugChunks = false;
+        // what to produce as output
+        std::unordered_set<LSROutput> output{LSROutput::BigMesh};
+        bool hasOutput(LSROutput o) const
+        { return output.find(o) != output.end(); }
 
         // flag to trigger GPU usage
         bool useGPU = false;
@@ -53,12 +62,12 @@ namespace lvr2
         std::vector<float> voxelSizes{0.1};
 
         // voxelsize for the BigGrid.
-        float bgVoxelSize = 1;
+        float bgVoxelSize = 10;
 
         // scale factor.
         float scale = 1;
 
-        // Max. Number of Points in a leaf (used to devide pointcloud).
+        // Max. Number of Points in a leaf when using kd-tree.
         uint nodeSize = 1000000;
 
         // int flag to trigger partition-method (0 = kd-Tree; 1 = VGrid)
@@ -130,7 +139,8 @@ namespace lvr2
             return dest;
         }
 
-        bool useGPUDistances;
+        // Use GPU for signed distance computation
+        bool useGPUDistances = false;
     };
 
     template <typename BaseVecT>
@@ -140,25 +150,9 @@ namespace lvr2
 
     public:
         /**
-         * Constructor - uses default parameter for reconstruction
-         */
-        LargeScaleReconstruction();
-
-
-        /**
-         * Constructor with parameters
-         */
-        LargeScaleReconstruction(vector<float> voxelSizes, float bgVoxelSize, float scale,
-                uint nodeSize, int partMethod,int ki, int kd, int kn, bool useRansac, std::vector<float> flipPoint,
-                bool extrude, int removeDanglingArtifacts, int cleanContours, int fillHoles, bool optimizePlanes,
-                float getNormalThreshold, int planeIterations, int minPlaneSize, int smallRegionThreshold,
-                bool retesselate, float lineFusionThreshold, bool bigMesh, bool debugChunks, bool useGPU, bool useGPUDistances = false);
-
-        /**
          * Constructor with parameters in a struct
-         *
          */
-         LargeScaleReconstruction(LSROptions options);
+         LargeScaleReconstruction(LSROptions options = LSROptions());
 
         /**
          * splits the given PointClouds and calculates the reconstruction
@@ -229,92 +223,7 @@ namespace lvr2
         void mpiCollector(std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager, uint* partitionBoxesSkipped);
 
 
-        //flag to trigger .ply output of big Mesh
-        bool m_bigMesh = true;
-
-        // flag to trigger .ply output of chunks
-        bool m_debugChunks = false;
-
-        // flag to trigger GPU usage
-        bool m_useGPU = false;
-
-        bool m_useGPUDistances = false;
-
-        // path to hdf5 path containing previously reconstructed scans (or no scans) only
-        string m_filePath;
-
-        // voxelsize for reconstruction. Default: 10
-        vector <float> m_voxelSizes;
-
-        // voxelsize for the BigGrid. Default: 10
-        float m_bgVoxelSize;
-
-        // scale factor. Default: 1
-        float m_scale;
-
-        //ChunkSize, should be constant through all processes . Default: 20
-        float m_chunkSize;
-
-        // Max. Number of Points in a leaf (used to devide pointcloud). Default: 1000000
-        uint m_nodeSize;
-
-        // int flag to trigger partition-method (0 = kd-Tree; 1 = VGrid)
-        int m_partMethod;
-
-        //Number of normals used in the normal interpolation process. Default: 10
-        int m_ki;
-
-        //Number of normals used for distance function evaluation. Default: 5
-        int m_kd;
-
-        // Size of k-neighborhood used for normal estimation. Default: 10
-        int m_kn;
-
-        // flipPoint for GPU normal computation
-        std::vector<float> m_flipPoint;
-
-        //Set this flag for RANSAC based normal estimation. Default: false
-        bool m_useRansac;
-
-        // Do not extend grid. Can be used  to avoid artifacts in dense data sets but. Disabling
-        // will possibly create additional holes in sparse data sets. Default: false
-        bool m_extrude;
-
-        /*
-         * Definition from here on are for the combine-process of partial meshes
-         */
-
-        // flag to trigger the removal of dangling artifacts. Default: 0
-        int m_removeDanglingArtifacts;
-
-        //Remove noise artifacts from contours. Same values are between 2 and 4. Default: 0
-        int m_cleanContours;
-
-        //Maximum size for hole filling. Default: 0
-        int m_fillHoles;
-
-        // Shift all triangle vertices of a cluster onto their shared plane. Default: false
-        bool m_optimizePlanes;
-
-        // (Plane Normal Threshold) Normal threshold for plane optimization. Default: 0.85
-        float m_planeNormalThreshold;
-
-        // Number of iterations for plane optimization. Default: 3
-        int m_planeIterations;
-
-        // Minimum value for plane optimization. Default: 7
-        int m_minPlaneSize;
-
-        // Threshold for small region removal. If 0 nothing will be deleted. Default: 0
-        int m_smallRegionThreshold;
-
-        // Retesselate regions that are in a regression plane. Implies --optimizePlanes. Default: false
-        bool m_retesselate;
-
-        // Threshold for fusing line segments while tesselating. Default: 0.01
-        float m_lineFusionThreshold;
-
-
+        LSROptions m_options;
     };
 } // namespace lvr2
 
