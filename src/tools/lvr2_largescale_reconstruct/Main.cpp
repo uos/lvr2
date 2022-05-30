@@ -196,7 +196,7 @@ int main(int argc, char** argv)
     std::shared_ptr<ChunkHashGrid> cm = nullptr;
     if (options.m_partMethod == 1)
     {
-        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.m_chunkSize));
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.m_options.bgVoxelSize));
     }
 
     BoundingBox<Vec> bb;

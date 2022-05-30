@@ -133,50 +133,45 @@ namespace lvr2
         size_t minPointsPerChunk = std::max(m_options.ki, std::max(m_options.kd, m_options.kn)) * 2;
 
         /// Maximum number of points in a chunk to avoid GPU memory overflow. Chunks bigger than this are reduced.
-        size_t maxPointsPerChunk = 150'000'000;
+        size_t maxPointsPerChunk = 130'000'000;
 
+        float chunkSize = m_options.bgVoxelSize;
 
         std::cout << timestamp << "Starting BigGrid" << std::endl;
-        BigGrid<BaseVecT> bg(m_options.bgVoxelSize, project, m_options.scale);
+        BigGrid<BaseVecT> bg(chunkSize, project, m_options.scale, m_options.extrude);
         std::cout << timestamp << "BigGrid finished " << std::endl;
 
-        BoundingBox<BaseVecT> bb = bg.getBB();
+        BoundingBox<BaseVecT> bgBB = bg.getBB();
 
         std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes;
         vector<BoundingBox<BaseVecT>> partitionBoxesNew;
+        vector<BaseVector<int>> partitionChunkCoords;
 
-        float chunkSize;
         if (useVGrid)
         {
-            // use V-Grid
-            chunkSize = chunkManager->getChunkSize();
+            // BigGrid is essentially a V-Grid that already knows where all the points are,
+            // so just recycle the cells as partitions.
 
-            BoundingBox<BaseVecT> cmBB = BoundingBox<BaseVecT>();
+            auto& cells = bg.getCells();
+            partitionBoxes.reset(new vector<BoundingBox<BaseVecT>>());
+            partitionBoxes->reserve(cells.size());
 
-            BoundingBox<BaseVecT> partbb = bg.getpartialBB();
-            std::cout << timestamp << "Generating VGrid" << std::endl;
+            // ChunkManager BoundingBox: must contain all old chunks and newly added chunks
+            BoundingBox<BaseVecT> cmBB = bgBB;
+            // newChunks BoundingBox: contains only newly added chunks
+            newChunksBB = BoundingBox<BaseVecT>();
 
-            VirtualGrid<BaseVecT> vGrid(partbb, chunkSize, m_options.bgVoxelSize);
-            vGrid.calculateBoxes();
-            partitionBoxes = vGrid.getBoxes();
-            BaseVecT addMin = BaseVecT(std::floor(partbb.getMin().x / chunkSize) * chunkSize, std::floor(partbb.getMin().y / chunkSize) * chunkSize, std::floor(partbb.getMin().z / chunkSize) * chunkSize);
-            BaseVecT addMax = BaseVecT(std::ceil(partbb.getMax().x / chunkSize) * chunkSize, std::ceil(partbb.getMax().y / chunkSize) * chunkSize, std::ceil(partbb.getMax().z / chunkSize) * chunkSize);
-            newChunksBB.expand(addMin);
-            newChunksBB.expand(addMax);
-
-            std::cout << timestamp << "Finished vGrid" << endl;
-
-            // we use the BB of all scans (including old ones) they are already hashed in the cm
-            // and we can't make the BB smaller
-            BaseVecT addCMBBMin = BaseVecT(std::floor(bb.getMin().x / chunkSize) * chunkSize, std::floor(bb.getMin().y / chunkSize) * chunkSize, std::floor(bb.getMin().z / chunkSize) * chunkSize);
-            BaseVecT addCMBBMax = BaseVecT(std::ceil(bb.getMax().x / chunkSize) * chunkSize, std::ceil(bb.getMax().y / chunkSize) * chunkSize, std::ceil(bb.getMax().z / chunkSize) * chunkSize);
-            cmBB.expand(addCMBBMin);
-            cmBB.expand(addCMBBMax);
+            BaseVecT cellSize(chunkSize, chunkSize, chunkSize);
+            for (auto& [ index, cell ] : cells)
+            {
+                BaseVecT pos = BaseVecT(index.x(), index.y(), index.z()) * chunkSize;
+                BoundingBox<BaseVecT> bb(pos, pos + cellSize);
+                newChunksBB.expand(bb);
+                partitionBoxes->push_back(bb);
+                partitionChunkCoords.emplace_back(index.x(), index.y(), index.z());
+            }
+            cmBB.expand(newChunksBB);
             chunkManager->setBoundingBox(cmBB);
-            int numChunks_global = (cmBB.getXSize() / chunkSize) * (cmBB.getYSize() / chunkSize) * (cmBB.getZSize() / chunkSize);
-            int numChunks_partial = partitionBoxes->size();
-
-            cout << lvr2::timestamp << "Saving " << numChunks_global - numChunks_partial << " Chunks compared to full reconstruction" << endl;
         }
         else
         {
@@ -198,7 +193,7 @@ namespace lvr2
             std::cout << timestamp << "Finished tree" << std::endl;
         }
 
-        std::cout << timestamp << "got: " << partitionBoxes->size() << " chunks." << std::endl;
+        std::cout << timestamp << "got: " << bg.getCells().size() << " chunks." << std::endl;
 
         std::cout << lvr2::timestamp << "VoxelSizes: ";
         for (auto v : m_options.voxelSizes)
@@ -212,7 +207,7 @@ namespace lvr2
         bool createChunksHdf5 = chunkManager && m_options.hasOutput(LSROutput::ChunksHdf5);
 
 
-        for(int h = 0; h < m_options.voxelSizes.size(); h++)
+        for(size_t h = 0; h < m_options.voxelSizes.size(); h++)
         {
             float voxelSize = m_options.voxelSizes[h];
             float overlap = 5 * voxelSize;
@@ -250,9 +245,9 @@ namespace lvr2
 
             string layerName = "tsdf_values_" + std::to_string(voxelSize);
 
-            uint partitionBoxesSkipped = 0;
+            size_t partitionBoxesSkipped = 0;
 
-            for (int i = 0; i < partitionBoxes->size(); i++)
+            for (size_t i = 0; i < partitionBoxes->size(); i++)
             {
                 auto& partitionBox = partitionBoxes->at(i);
 
@@ -276,12 +271,9 @@ namespace lvr2
                 std::cout << timestamp << "Processing Partition " << i << "/" << (partitionBoxes->size() - 1) << std::endl;
 
                 string name_id;
-                BaseVector<int> chunkCoords;
                 if (useVGrid)
                 {
-                    chunkCoords.x = floor(partitionBox.getCentroid().x / chunkSize);
-                    chunkCoords.y = floor(partitionBox.getCentroid().y / chunkSize);
-                    chunkCoords.z = floor(partitionBox.getCentroid().z / chunkSize);
+                    auto& chunkCoords = partitionChunkCoords[i];
                     name_id = std::to_string(chunkCoords.x) + "_" + std::to_string(chunkCoords.y) + "_" + std::to_string(chunkCoords.z);
                 }
                 else
@@ -375,6 +367,7 @@ namespace lvr2
 
                 if (chunkManager)
                 {
+                    auto& chunkCoords = partitionChunkCoords[i];
                     addTSDFChunkManager(chunkCoords.x, chunkCoords.y, chunkCoords.z, ps_grid, chunkManager, layerName);
                     // also save the grid coordinates of the chunk added to the ChunkManager
                     newChunks.push_back(chunkCoords);
@@ -419,7 +412,7 @@ namespace lvr2
             if(createBigMesh && h == 0)
             {
                 //combine chunks
-                BoundingBox<BaseVecT> cbb(bb.getMin() - overlapVector, bb.getMax() + overlapVector);
+                BoundingBox<BaseVecT> cbb(bgBB.getMin() - overlapVector, bgBB.getMax() + overlapVector);
 
                 std::shared_ptr<HashGrid<BaseVecT, lvr2::FastBox<Vec>>> hg;
 
@@ -690,8 +683,8 @@ namespace lvr2
         // TODO: It breaks here
 
         chunkManager->setBoundingBox(cmBB);
-        int numChunks_global = (cmBB.getXSize() / chunkSize) * (cmBB.getYSize() / chunkSize) * (cmBB.getZSize() / chunkSize);
-        int numChunks_partial = partitionBoxes->size();
+        size_t numChunks_global = (cmBB.getXSize() / chunkSize) * (cmBB.getYSize() / chunkSize) * (cmBB.getZSize() / chunkSize);
+        size_t numChunks_partial = partitionBoxes->size();
 
         cout << lvr2::timestamp << "Saving " << numChunks_global - numChunks_partial << " Chunks compared to full reconstruction" << endl;
 

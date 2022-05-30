@@ -75,9 +75,6 @@ public:
     /// the input file
     fs::path m_inputFile;
 
-    /// gridsize for virtual grid
-    float m_chunkSize = 20;
-
     /// sets partition method to kd-tree or virtual grid
     int m_partMethod = 1;
 

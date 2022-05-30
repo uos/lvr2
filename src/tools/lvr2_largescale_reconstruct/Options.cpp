@@ -43,11 +43,12 @@ std::istream& operator>>(std::istream& in, LSROutput& output)
 {
     std::string token;
     in >> token;
-    if (token == "bigMesh" || token == "mesh")
+    std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+    if (token == "bigmesh" || token == "mesh")
         output = LSROutput::BigMesh;
-    else if (token == "chunks" || token == "chunksPly")
+    else if (token == "chunks" || token == "chunksply")
         output = LSROutput::ChunksPly;
-    else if (token == "chunksHdf5")
+    else if (token == "chunkshdf5")
         output = LSROutput::ChunksHdf5;
     else
         in.setstate(std::ios_base::failbit);
@@ -94,6 +95,8 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     // convert output from std::unordered_set to vector for boost::program_options
     std::vector<lvr2::LSROutput> output(m_options.output.begin(), m_options.output.end());
 
+    bool noExtrude = false;
+
     m_descr.add_options()
     ("help", bool_switch(&m_help),
      "Produce this help message")
@@ -104,16 +107,13 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("voxelSizes,v", value<std::vector<float>>(&m_options.voxelSizes)->multitoken()->default_value(m_options.voxelSizes),
      "Voxelsize of grid used for reconstruction. multitoken option: it is possible to enter more then one voxelsize")
 
-    ("bgVoxelSize,b", value<float>(&m_options.bgVoxelSize)->default_value(m_options.bgVoxelSize),
-     "Voxelsize of the bigGrid.")
-
     ("partMethod", value<int>(&m_partMethod)->default_value(m_partMethod),
      "Option to change the partition-process to a gridbase partition (0 = kd-Tree; 1 = VGrid)")
 
-    ("chunkSize", value<float>(&m_chunkSize)->default_value(m_chunkSize),
+    ("chunkSize", value<float>(&m_options.bgVoxelSize)->default_value(m_options.bgVoxelSize),
      "Set the chunksize for the virtual grid.")
 
-    ("extrude", bool_switch(&m_options.extrude),
+    ("noExtrude,E", bool_switch(&noExtrude),
      "Do not extend grid. Can be used to avoid artifacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
 
     ("useRansac", bool_switch(&m_options.useRansac),
@@ -134,8 +134,8 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("planeIterations", value<int>(&m_options.planeIterations)->default_value(m_options.planeIterations),
      "Number of iterations for plane optimization.")
 
-    ("removeDanglingArtifacts,rda", value<int>(&m_options.removeDanglingArtifacts)->default_value(m_options.removeDanglingArtifacts),
-     "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces.")
+    ("removeDanglingArtifacts,r", value<int>(&m_options.removeDanglingArtifacts)->default_value(m_options.removeDanglingArtifacts),
+     "Remove dangling artifacts, i.e. remove not connected surfaces smaller than n.")
 
     ("smallRegionThreshold", value<int>(&m_options.smallRegionThreshold)->default_value(m_options.smallRegionThreshold),
      "Threshold for small region removal. If 0 nothing will be deleted.")
@@ -174,11 +174,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
      "Flippoint, used for GPU normal calculation, multitoken option: use it like this: --flipPoint x y z")
 
     ("output,O", value<std::vector<lvr2::LSROutput>>(&output)->multitoken()->default_value(output),
-     "What to generate with the reconstruction. Supports multiple options. Possible values are:\n"
-     "  bigMesh | mesh: Output one big Mesh. Uses A LOT of memory.\n"
-     "  chunksPly | chunks : Output one mesh per chunk into \"chunks/x_y_z.ply\".\n"
-     "  chunksHdf5: Output one mesh per chunk into \"chunks.h5\".\n"
-     "Chunk options require --partMethod to be 1 (VGrid, the default).")
+     "What to generate with the reconstruction. Supports multiple options. See below for details.")
 
     ("scale", value<float>(&m_options.scale)->default_value(m_options.scale),
      "Scaling factor, applied to all input points")
@@ -219,6 +215,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         return;
     }
 
+    m_options.extrude = !noExtrude;
 
     if (m_options.retesselate)
     {
@@ -250,6 +247,22 @@ bool Options::printUsage()
     {
         std::cout << std::endl;
         std::cout << m_descr << std::endl;
+        std::cout << std::endl;
+        std::cout << "OUTPUT OPTIONS" << std::endl;
+        std::cout << "    Options --output, -O accept one or more of the following tokens:" << std::endl;
+        std::cout << "        bigMesh   | mesh   : Output one big Mesh. Uses A LOT of memory." << std::endl;
+        std::cout << "        chunksPly | chunks : Output one mesh per chunk into \"chunks/x_y_z.ply\"." << std::endl;
+        std::cout << "        chunksHdf5         : Output one mesh per chunk into \"chunks.h5\"." << std::endl;
+        std::cout << "                             Meshes in the hdf5 file are stored using a PMPMesh." << std::endl;
+        std::cout << "                             Use PMPMesh.getSurfaceMesh().read(Group) to read them." << std::endl;
+        std::cout << std::endl;
+        std::cout << "    Chunk options require --partMethod to be 1 (VGrid, the default)." << std::endl;
+        std::cout << "    Multiple Options can be used simultaneously:" << std::endl;
+        std::cout << "        lvr2_largescale_reconstruct -O mesh chunks chunksHdf5" << std::endl;
+        std::cout << "    Generates all possible output." << std::endl;
+        std::cout << std::endl;
+        std::cout << "    By default, only the big mesh is generated. This should be disabled for any" << std::endl;
+        std::cout << "    truly large datasets." << std::endl;
         m_printed = true;
         return true;
     }

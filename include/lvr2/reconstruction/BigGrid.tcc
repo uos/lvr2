@@ -59,8 +59,9 @@ template <typename BaseVecT>
 BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
                            float voxelsize,
                            float scale,
+                           bool extrude,
                            size_t bufferSize)
-    : m_numPoints(0), m_extrude(false), m_scale(scale), m_hasNormal(false), m_hasColor(false),
+    : m_numPoints(0), m_extrude(extrude), m_scale(scale), m_hasNormal(false), m_hasColor(false),
       m_pointBufferSize(1024)
 {
 
@@ -102,7 +103,7 @@ template<typename LineType>
 void BigGrid<BaseVecT>::initFromLineReader(LineReader& lineReader)
 {
     size_t rsize = 0;
-    Eigen::Vector3i index;
+    Vector3i index;
 
     while (lineReader.ok())
     {
@@ -111,7 +112,7 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader& lineReader)
         {
             break;
         }
-        for (int i = 0; i < rsize; i++)
+        for (size_t i = 0; i < rsize; i++)
         {
             auto& in = a.get()[i].point;
             auto point = BaseVecT(in.x, in.y, in.z) * m_scale;
@@ -126,7 +127,7 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader& lineReader)
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    getCellInfo(index + Eigen::Vector3i(
+                    getCellInfo(index + Vector3i(
                         HGCreateTable[j][0],
                         HGCreateTable[j][1],
                         HGCreateTable[j][2]
@@ -187,7 +188,7 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader& lineReader)
         {
             break;
         }
-        for (int i = 0; i < rsize; i++)
+        for (size_t i = 0; i < rsize; i++)
         {
             auto& in = a.get()[i];
             auto point = BaseVecT(in.point.x, in.point.y, in.point.z) * m_scale;
@@ -215,9 +216,9 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader& lineReader)
 
 
 template <typename BaseVecT>
-BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale)
+BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale, bool extrude)
         : m_numPoints(0),
-          m_extrude(false),
+          m_extrude(extrude),
           m_scale(scale),
           m_hasNormal(false),
           m_hasColor(false)
@@ -234,7 +235,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
     // Vector of all computed bounding boxes
     std::vector<BoundingBox<BaseVecT>> scanBoxes(numScans);
-    std::vector<std::unordered_map<Eigen::Vector3i, CellInfo, Hasher>> scanCells(numScans);
+    std::vector<std::unordered_map<Vector3i, CellInfo>> scanCells(numScans);
     std::vector<bool> ignoredOrInvalid(numScans, false);
 
     std::stringstream ss;
@@ -242,7 +243,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
     lvr2::ProgressBar progressLoading(numScans, ss.str());
 
     // Iterate through ALL points to calculate transformed boundingboxes of scans
-    for (int i = 0; i < numScans; i++)
+    for (size_t i = 0; i < numScans; i++)
     {
         ScanPositionPtr pos = project->project->positions.at(i);
         if (!pos || pos->lidars.empty())
@@ -276,6 +277,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             }
         }
         ScanPtr scan = lidar->scans[0];
+        bool wasLoaded = scan->loaded();
         scan->load();
 
         size_t numPoints = scan->points->numPoints();
@@ -290,10 +292,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         #pragma omp parallel
         {
             BoundingBox<BaseVecT> local_bb;
-            std::unordered_map<Eigen::Vector3i, CellInfo, Hasher> local_cells;
+            std::unordered_map<Vector3i, CellInfo> local_cells;
 
             #pragma omp for schedule(static) nowait
-            for (int k = 0; k < numPoints; k++)
+            for (size_t k = 0; k < numPoints; k++)
             {
                 Eigen::Vector4d original(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
                 Eigen::Vector4d transPoint = finalPose * original;
@@ -301,14 +303,14 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 auto point = BaseVecT(transPoint[0], transPoint[1], transPoint[2]) * m_scale;
                 local_bb.expand(point);
 
-                Eigen::Vector3i index = calcIndex(point);
+                Vector3i index = calcIndex(point);
                 local_cells[index].size++;
 
                 if (this->m_extrude)
                 {
                     for (int j = 0; j < 8; j++)
                     {
-                        local_cells[index + Eigen::Vector3i(
+                        local_cells[index + Vector3i(
                             HGCreateTable[j][0],
                             HGCreateTable[j][1],
                             HGCreateTable[j][2]
@@ -321,9 +323,9 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
                 box.expand(local_bb);
                 m_bb.expand(local_bb);
 
-                for (auto& cell : local_cells)
+                for (auto& [ index, cell ] : local_cells)
                 {
-                    scanCell[cell.first].size += cell.second.size;
+                    scanCell[index].size += cell.size;
                 }
             }
         }
@@ -333,13 +335,18 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
             m_partialbb.expand(box);
         }
 
-        scan->release();
+        // unload scan to save memory. Scans that were already loaded might not have a way of
+        // loading them again, so keep them loaded for now
+        if (!wasLoaded)
+        {
+            scan->release();
+        }
 
         ++progressLoading;
     }
     std::cout << std::endl;
 
-    for (int i = 0; i < numScans; i++)
+    for (size_t i = 0; i < numScans; i++)
     {
         if (ignoredOrInvalid[i])
         {
@@ -387,7 +394,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
     ss << timestamp << "Building grid: filling cells";
     lvr2::ProgressBar progressFilling(numScans, ss.str());
 
-    for (int i = 0; i < numScans; i++)
+    for (size_t i = 0; i < numScans; i++)
     {
         if (ignoredOrInvalid[i])
         {
@@ -402,7 +409,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         size_t numPoints = scan->points->numPoints();
         boost::shared_array<float> points = scan->points->getPointArray();
 
-        for (int k = 0; k < numPoints; k++)
+        for (size_t k = 0; k < numPoints; k++)
         {
             Eigen::Vector4d original(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
             Eigen::Vector4d transPoint = finalPose * original;
@@ -460,7 +467,7 @@ BigGrid<BaseVecT>::BigGrid(std::string path)
 
     for (size_t i = 0; i < gridSize; i++)
     {
-        Eigen::Vector3i index;
+        Vector3i index;
         fread(ifs, index.x()); fread(ifs, index.y()); fread(ifs, index.z());
 
         auto& c = getCellInfo(index);
@@ -538,14 +545,14 @@ size_t BigGrid<BaseVecT>::pointSize()
 }
 
 template <typename BaseVecT>
-size_t BigGrid<BaseVecT>::pointSize(const Eigen::Vector3i& index)
+size_t BigGrid<BaseVecT>::pointSize(const Vector3i& index)
 {
     auto it = m_cells.find(index);
     return it != m_cells.end() ? it->second.size : 0;
 }
 
 template <typename BaseVecT>
-lvr2::floatArr BigGrid<BaseVecT>::points(const Eigen::Vector3i& index, size_t& numPoints)
+lvr2::floatArr BigGrid<BaseVecT>::points(const Vector3i& index, size_t& numPoints)
 {
     lvr2::floatArr points;
     auto it = m_cells.find(index);
@@ -557,7 +564,7 @@ lvr2::floatArr BigGrid<BaseVecT>::points(const Eigen::Vector3i& index, size_t& n
 
         float* cellData = (float*)m_PointFile.data() + 3 * cell.offset;
 
-        std::copy(cellData, cellData + 3 * cell.size, points.get());
+        std::copy_n(cellData, 3 * cell.size, points.get());
 
         numPoints = cell.size;
     }
@@ -602,7 +609,7 @@ lvr2::floatArr BigGrid<BaseVecT>::points(const BoundingBox<BaseVecT>& bb, size_t
         {
             if (p[0] >= min.x && p[0] <= max.x && p[1] >= min.y && p[1] <= max.y && p[2] >= min.z && p[2] <= max.z)
             {
-                cellOut = std::copy(p, p + 3, cellOut);
+                cellOut = std::copy_n(p, 3, cellOut);
             }
         }
 
@@ -662,7 +669,7 @@ lvr2::floatArr BigGrid<BaseVecT>::normals(const BoundingBox<BaseVecT>& bb, size_
         {
             if (p[0] >= min.x && p[0] <= max.x && p[1] >= min.y && p[1] <= max.y && p[2] >= min.z && p[2] <= max.z)
             {
-                cellOut = std::copy(cellIn, cellIn + 3, cellOut);
+                cellOut = std::copy_n(cellIn, 3, cellOut);
             }
         }
 
@@ -722,7 +729,7 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(const BoundingBox<BaseVecT>& bb, size_t
         {
             if (p[0] >= min.x && p[0] <= max.x && p[1] >= min.y && p[1] <= max.y && p[2] >= min.z && p[2] <= max.z)
             {
-                cellOut = std::copy(cellIn, cellIn + 3, cellOut);
+                cellOut = std::copy_n(cellIn, 3, cellOut);
             }
         }
 
@@ -744,7 +751,7 @@ lvr2::floatArr BigGrid<BaseVecT>::getPointCloud(size_t& numPoints)
     lvr2::floatArr points(new float[3 * numPoints]);
 
     float* pointData = (float*)m_PointFile.data();
-    std::copy(pointData, pointData + 3 * numPoints, points.get());
+    std::copy_n(pointData, 3 * numPoints, points.get());
 
     return points;
 }
@@ -753,7 +760,7 @@ template <typename BaseVecT>
 size_t BigGrid<BaseVecT>::getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<std::pair<const CellInfo*, size_t>>& cellCounts) const
 {
     auto min = bb.getMin(), max = bb.getMax();
-    Eigen::Vector3i indexMin, indexMax;
+    Vector3i indexMin, indexMax;
     calcIndex(min, indexMin);
     calcIndex(max, indexMax);
 
@@ -802,7 +809,7 @@ template <typename BaseVecT>
 size_t BigGrid<BaseVecT>::estimateSizeofBox(const BoundingBox<BaseVecT>& bb) const
 {
     auto min = bb.getMin(), max = bb.getMax();
-    Eigen::Vector3i indexMin, indexMax;
+    Vector3i indexMin, indexMax;
     calcIndex(min, indexMin);
     calcIndex(max, indexMax);
 
