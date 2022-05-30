@@ -304,15 +304,12 @@ namespace lvr2
 
                 if (m_options.useGPU)
                 {
-                    float targetSize = voxelSize / 8; // octree divisions cut the size in half
-                        // -> voxelSize / 8 means log2(8) = 3 subdivisions of a voxel
-                        // with 8 splits per division => 8^3 = ~512 points per voxel as absolute maximum
-
+                    float targetSize = voxelSize / 4;
                     while (numPoints > maxPointsPerChunk)
                     {
                         // reduction is necessary to avoid GPU memory overflow
                         std::cout << timestamp << "Chunk has too many points: " << numPoints << ". Reducing." << std::endl;
-                        OctreeReduction oct(p_loader, targetSize, 5);
+                        OctreeReduction oct(p_loader, targetSize, 10);
                         p_loader = oct.getReducedPoints();
                         numPoints = p_loader->numPoints();
                         targetSize *= 2; // bigger voxel size means more points removed during reduction in the next iteration
@@ -338,7 +335,27 @@ namespace lvr2
                     gpu_surface.setKd(m_options.kd);
                     gpu_surface.setFlippoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
 
-                    gpu_surface.calculateNormals();
+                    try
+                    {
+                        gpu_surface.calculateNormals();
+                    }
+                    catch(std::runtime_error& e)
+                    {
+                        std::string msg = e.what();
+                        if (msg.find("out of memory") == std::string::npos)
+                        {
+                            throw; // forward any other exceptions
+                        }
+                        std::cerr << "ERROR: Not enough GPU memory. Reducing Points further." << std::endl;
+                        maxPointsPerChunk = maxPointsPerChunk * 0.8;
+                        if (maxPointsPerChunk < minPointsPerChunk)
+                        {
+                            std::cerr << "Your GPU is garbage. Switching back to CPU" << std::endl;
+                            m_options.useGPU = false;
+                        }
+                        i--; // retry this partition
+                        continue;
+                    }
                     gpu_surface.getNormals(normals);
 
                     p_loader->setNormalArray(normals, numPoints);
