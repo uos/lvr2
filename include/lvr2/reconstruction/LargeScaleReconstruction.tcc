@@ -403,15 +403,32 @@ namespace lvr2
                     auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
                     lvr2::PMPMesh<Vec> mesh;
                     reconstruction->getMesh(mesh);
+
                     if (mesh.numFaces() > 0)
                     {
+                        // run cleanup on the mesh.
+                        // cleanContours and optimizePlanes might mess with the chunk borders
+
+                        if (m_options.removeDanglingArtifacts)
+                        {
+                            cout << timestamp << "Removing dangling artifacts" << endl;
+                            removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
+                        }
+                        if (m_options.fillHoles)
+                        {
+                            mesh.fillHoles(m_options.fillHoles);
+                        }
+
+                        // save the mesh according to the chosen format(s)
                         if (createChunksHdf5)
                         {
+                            mesh.getSurfaceMesh().garbage_collection();
+
                             auto group = chunk_file->createGroup("/chunks/" + name_id);
                             mesh.getSurfaceMesh().write(group);
                             chunk_file->flush();
                         }
-                        else if (createChunksPly)
+                        if (createChunksPly)
                         {
                             mesh.getSurfaceMesh().write("chunks/" + name_id + ".ply");
                         }
@@ -458,63 +475,60 @@ namespace lvr2
 
                 auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(hg);
 
-                lvr2::HalfEdgeMesh<Vec> mesh;
+                lvr2::PMPMesh<Vec> mesh;
 
                 reconstruction->getMesh(mesh);
 
-                if (m_options.removeDanglingArtifacts) {
+                if (m_options.removeDanglingArtifacts)
+                {
                     cout << timestamp << "Removing dangling artifacts" << endl;
-                    removeDanglingCluster(mesh, static_cast<size_t>(m_options.removeDanglingArtifacts));
+                    removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
                 }
 
                 // Magic number from lvr1 `cleanContours`...
                 cleanContours(mesh, m_options.cleanContours, 0.0001);
 
                 // Fill small holes if requested
-                if (m_options.fillHoles) {
-                    naiveFillSmallHoles(mesh, m_options.fillHoles, false);
+                if (m_options.fillHoles)
+                {
+                    mesh.fillHoles(m_options.fillHoles);
                 }
 
-                // Calculate normals for vertices
-                auto faceNormals = calcFaceNormals(mesh);
+                if (m_options.optimizePlanes)
+                {
+                    auto faceNormals = calcFaceNormals(mesh);
+                    auto clusterBiMap = iterativePlanarClusterGrowing(mesh, faceNormals, m_options.planeNormalThreshold, m_options.planeIterations, m_options.minPlaneSize);
 
-                ClusterBiMap<FaceHandle> clusterBiMap;
-                if (m_options.optimizePlanes) {
-                    clusterBiMap = iterativePlanarClusterGrowing(mesh,
-                                                                 faceNormals,
-                                                                 m_options.planeNormalThreshold,
-                                                                 m_options.planeIterations,
-                                                                 m_options.minPlaneSize);
-
-                    if (m_options.smallRegionThreshold > 0) {
-                        deleteSmallPlanarCluster(
-                                mesh, clusterBiMap, static_cast<size_t>(m_options.smallRegionThreshold));
+                    if (m_options.smallRegionThreshold > 0)
+                    {
+                        deleteSmallPlanarCluster(mesh, clusterBiMap, static_cast<size_t>(m_options.smallRegionThreshold));
                     }
 
-                    double end_s = lvr2::timestamp.getElapsedTimeInS();
-
-                    if (m_options.retesselate) {
-                        Tesselator<Vec>::apply(
-                                mesh, clusterBiMap, faceNormals, m_options.lineFusionThreshold);
+                    if (m_options.retesselate)
+                    {
+                        Tesselator<Vec>::apply(mesh, clusterBiMap, faceNormals, m_options.lineFusionThreshold);
                     }
-                } else {
-                    clusterBiMap = planarClusterGrowing(mesh, faceNormals, m_options.planeNormalThreshold);
                 }
 
+                if (mesh.numFaces() > 0)
+                {
+                    // Finalize mesh
+                    lvr2::SimpleFinalizer<Vec> finalize;
+                    auto meshBuffer = finalize.apply(mesh);
 
+                    time_t now = time(0);
 
-                // Finalize mesh
-                lvr2::SimpleFinalizer<Vec> finalize;
-                auto meshBuffer = finalize.apply(mesh);
+                    tm *time = localtime(&now);
+                    stringstream largeScale;
+                    largeScale << 1900 + time->tm_year << "_" << 1+ time->tm_mon << "_" << time->tm_mday << "_" <<  time->tm_hour << "h_" << 1 + time->tm_min << "m_" << 1 + time->tm_sec << "s.ply";
 
-                time_t now = time(0);
-
-                tm *time = localtime(&now);
-                stringstream largeScale;
-                largeScale << 1900 + time->tm_year << "_" << 1+ time->tm_mon << "_" << time->tm_mday << "_" <<  time->tm_hour << "h_" << 1 + time->tm_min << "m_" << 1 + time->tm_sec << "s.ply";
-
-                auto m = ModelPtr(new Model(meshBuffer));
-                ModelFactory::saveModel(m, largeScale.str());
+                    auto m = ModelPtr(new Model(meshBuffer));
+                    ModelFactory::saveModel(m, largeScale.str());
+                }
+                else
+                {
+                    std::cout << "Warning: Mesh is empty!" << std::endl;
+                }
             }
             std::cout << lvr2::timestamp << "added/changed " << newChunks.size() << " chunks in layer " << layerName << std::endl;
         }
@@ -966,8 +980,6 @@ namespace lvr2
                         deleteSmallPlanarCluster(
                                 mesh, clusterBiMap, static_cast<size_t>(m_options.smallRegionThreshold));
                     }
-
-                    double end_s = lvr2::timestamp.getElapsedTimeInS();
 
                     if (m_options.retesselate) {
                         Tesselator<Vec>::apply(
