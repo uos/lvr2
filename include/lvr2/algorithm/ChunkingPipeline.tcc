@@ -259,7 +259,7 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
     std::cout << timestamp << "Starting large scale reconstruction..." << std::endl;
     LargeScaleReconstruction<BaseVecT> lsr(m_lsrOptions);
     BoundingBox<BaseVecT> newChunksBB;
-    lsr.mpiChunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager);
+    lsr.chunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager);
     std::cout << timestamp << "Finished large scale reconstruction!" << std::endl;
 
     for (auto layer : m_lsrOptions.voxelSizes)

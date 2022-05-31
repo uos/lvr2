@@ -254,7 +254,6 @@ void MeshIO<BaseIO>::loadVertices(std::string mesh_name, MeshBufferPtr mesh) con
             );
             // setVertices takes ownership of the array; std::move is needed because it expects an rvalue&
             mesh->setVertices(std::move(vertices), meta.shape[0]);
-            mesh->setTextureCoordinates(floatArr(new float[meta.shape[0] * 2])); // Allocate space for texture coordinates
         }
         else
         {
@@ -339,7 +338,7 @@ void MeshIO<BaseIO>::loadVertices(std::string mesh_name, MeshBufferPtr mesh) con
                 *tex_coord_desc.data,
                 meta.shape
             );
-            mesh->setTextureCoordinates(std::move(coords));
+            mesh->setTextureCoordinates(coords);
         }
         else
         {
@@ -347,6 +346,16 @@ void MeshIO<BaseIO>::loadVertices(std::string mesh_name, MeshBufferPtr mesh) con
         }
     }
     
+}
+
+
+template <typename FeatureBase>
+std::vector<std::string> MeshIO<FeatureBase>::getAvailableMeshes() const
+{
+    std::vector<std::string> ret;
+    m_baseIO->m_kernel->subGroupNames( "meshes", ret);
+
+    return ret;
 }
 
 } // namespace meshio

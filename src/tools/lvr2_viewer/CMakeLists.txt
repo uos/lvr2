@@ -76,6 +76,7 @@ set(LVR2_VIEWER_SOURCES
     widgets/LVRCameraModelItem.cpp
     widgets/LVRImageModelItem.cpp
     widgets/LVRExtrinsicsItem.cpp
+    widgets/LVRMeshOpenDialog.cpp
 )
 
 #if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
@@ -112,6 +113,7 @@ set(LVR2_VIEWER_MOCS
     widgets/LVRHistogram.hpp
     widgets/LVRScanProjectOpenDialog.hpp
     widgets/LVRReductionAlgorithmDialog.hpp
+    widgets/LVRMeshOpenDialog.hpp
 )
 
 #####################################################################################
@@ -144,6 +146,7 @@ list(APPEND LVR2_VIEWER_UIS
    ui/LVRHistogram.ui
    ui/LVRScanProjectOpenDialogUI.ui
    ui/LVRReductionAlgorithmDialogUI.ui
+   ui/LVRMeshOpenDialogUI.ui
 )
 
 #####################################################################################

@@ -73,7 +73,7 @@ Options::Options(int argc, char** argv)
         ("cleanContours", value<int>(&m_cleanContourIterations)->default_value(0), "Remove noise artifacts from contours. Same values are between 2 and 4")
         ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
         ("fillHoles,f", value<int>(&m_fillHoles)->default_value(0), "Maximum size for hole filling")
-        ("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
+        ("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the clusters with less than n triangles")
         ("pnt", value<float>(&m_planeNormalThreshold)->default_value(0.85), "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
         ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(10), "Threshold for small region removal. If 0 nothing will be deleted.")
         ("writeClassificationResult,w", "Write classification results to file 'clusters.clu'")
@@ -113,10 +113,16 @@ Options::Options(int argc, char** argv)
         ("useGPU", "GPU normal estimation")
         ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint --flipPoint x y z" )
         ("texFromImages,q", "Foo Bar ............")
-        ("scanPositionIndex", value<int>(&m_scanPositionIndex)->default_value(0), "Index of the h5 Scan Position used for the reconstructor")
+        ("scanPositionIndex", value<int>(&m_scanPositionIndex),"Index of the h5 Scan Position used for the reconstructor")
         ("minSpectralChannel", value<int>(&m_minSpectralChannel)->default_value(0), "Minimum Spectral Channel Index for Ranged Texture Generation")
         ("maxSpectralChannel", value<int>(&m_maxSpectralChannel)->default_value(0), "Maximum Spectral Channel Index for Ranged Texture Generation")
         ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
+        ("transformScanPosition", "Transform the scan with the scanpositions pose when using --scanPositionIndex")
+        ("outputMeshName", value<string>(&m_meshName)->default_value("default"), "The name of the saved mesh")
+        ("inputMeshName", value<string>(&m_inputMeshName), "The name of the mesh to load from the file")
+        ("inputMeshFile", value<string>(&m_inputMeshFile), "The file to load the mesh from")
+        ("reduceScan", value<float>(&m_octreeVoxelSize)->default_value(0.0f), "Use Octree reduction algorithm with the given gridsize when after loading the scans")
+        ("reduceScanMinPoints", value<size_t>(&m_octreeMinPoints)->default_value(1), "The number of points an octree voxel has to contain to be considered occupied")
     ;
 
     setup();
@@ -472,6 +478,11 @@ bool Options::texturesFromImages() const
     return m_variables.count("texFromImages");
 }
 
+bool Options::hasScanPositionIndex() const
+{
+    return m_variables.count("scanPositionIndex");
+}
+
 int Options::getScanPositionIndex() const
 {
     return m_scanPositionIndex;
@@ -490,6 +501,41 @@ int Options::getMaxSpectralChannel() const
 string Options::getProjectDir() const
 {
     return m_variables["projectDir"].as<string>();
+}
+
+std::string Options::getMeshName() const
+{
+    return m_meshName;
+}
+
+bool Options::transformScanPosition() const
+{
+    return m_variables.count("transformScanPosition");
+}
+
+bool Options::useExistingMesh() const
+{
+    return m_variables.count("inputMeshName");
+}
+
+string Options::getInputMeshName() const
+{
+    return m_inputMeshName;
+}
+
+string Options::getInputMeshFile() const
+{
+    return m_inputMeshFile;
+}
+
+float Options::getOctreeVoxelSize() const
+{
+    return m_octreeVoxelSize;
+}
+
+size_t Options::getOctreeMinPoints() const
+{
+    return m_octreeMinPoints;
 }
 
 Options::~Options() {

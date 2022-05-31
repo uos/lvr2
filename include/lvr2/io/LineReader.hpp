@@ -120,6 +120,29 @@ struct __attribute__((packed)) xyzc : xyz
 #pragma pack(pop)
 #endif
 
+template<typename LineType>
+struct LineTypeTraits
+{
+    static const bool hasNormal = false;
+    static const bool hasColor = false;
+};
+template<>
+struct LineTypeTraits<xyzn>
+{
+    static const bool hasNormal = true;
+};
+template<>
+struct LineTypeTraits<xyzc>
+{
+    static const bool hasColor = true;
+};
+template<>
+struct LineTypeTraits<xyznc>
+{
+    static const bool hasNormal = true;
+    static const bool hasColor = true;
+};
+
 
 class LineReader
 {

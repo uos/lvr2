@@ -165,7 +165,6 @@ public:
         return parray_->vector();
     }
 
-private:
     PropertyArray<T>& array()
     {
         assert(parray_ != nullptr);
