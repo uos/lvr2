@@ -56,7 +56,10 @@
 #include "lvr2/algorithm/Texturizer.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp" // Has to be included before anything includes opencv stuff, see https://github.com/flann-lib/flann/issues/214 
 #include "lvr2/algorithm/SpectralTexturizer.hpp"
-#include "lvr2/algorithm/RaycastingTexturizer.hpp"
+
+#ifdef LVR2_USE_EMBREE
+    #include "lvr2/algorithm/RaycastingTexturizer.hpp"
+#endif
 
 #include "lvr2/reconstruction/BilinearFastBox.hpp"
 #include "lvr2/reconstruction/TetraederBox.hpp"
@@ -572,8 +575,9 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
 }
 
 template <typename MeshVec, typename ClusterVec>
-void addRGBTexturizer(const reconstruct::Options& options, lvr2::Materializer<Vec>& materializer, const BaseMesh<MeshVec>& mesh, const ClusterBiMap<ClusterVec> clusters)
+void addRaycastingTexturizer(const reconstruct::Options& options, lvr2::Materializer<Vec>& materializer, const BaseMesh<MeshVec>& mesh, const ClusterBiMap<ClusterVec> clusters)
 {
+#ifdef LVR2_USE_EMBREE
     boost::filesystem::path selectedFile( options.getInputFileName());
     std::string extension = selectedFile.extension().string();
     std::string filePath = selectedFile.generic_path().string();
@@ -622,6 +626,10 @@ void addRGBTexturizer(const reconstruct::Options& options, lvr2::Materializer<Ve
     );
 
     materializer.addTexturizer(texturizer);
+#else
+    std::cout << timestamp << "This software was compiled without support for Embree!\n";
+    std::cout << timestamp << "The RaycastingTexturizer needs the Embree library." << std::endl;
+#endif
 }
 
 template <typename BaseMeshT, typename BaseVecT>
@@ -957,7 +965,19 @@ int main(int argc, char** argv)
         {
             addSpectralTexturizers(options, materializer);
 
-            addRGBTexturizer(options, materializer, mesh, clusterBiMap);
+#ifdef LVR2_USE_EMBREE
+            if (options.useRaycastingTexturizer())
+            {
+                addRaycastingTexturizer(options, materializer, mesh, clusterBiMap);
+            }
+            else
+            {
+                materializer.addTexturizer(texturizer);
+            }
+#else
+            materializer.addTexturizer(texturizer);
+#endif
+            
         }
     }
 

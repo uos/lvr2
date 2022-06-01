@@ -123,7 +123,10 @@ Options::Options(int argc, char** argv)
         ("inputMeshFile", value<string>(&m_inputMeshFile), "The file to load the mesh from")
         ("reduceScan", value<float>(&m_octreeVoxelSize)->default_value(0.0f), "Use Octree reduction algorithm with the given gridsize when after loading the scans")
         ("reduceScanMinPoints", value<size_t>(&m_octreeMinPoints)->default_value(1), "The number of points an octree voxel has to contain to be considered occupied")
-    ;
+#ifdef LVR2_USE_EMBREE
+        ("useRaycastingTexturizer", "If this flag is set the RaycastingTexturizer is used. This uses raycasting for occlusion testing when generating the textures.")
+#endif
+   ;
 
     setup();
 }
@@ -536,6 +539,11 @@ float Options::getOctreeVoxelSize() const
 size_t Options::getOctreeMinPoints() const
 {
     return m_octreeMinPoints;
+}
+
+bool Options::useRaycastingTexturizer() const
+{
+    return m_variables.count("useRaycastingTexturizer");
 }
 
 Options::~Options() {
