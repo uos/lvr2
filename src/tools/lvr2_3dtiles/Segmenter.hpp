@@ -71,13 +71,9 @@ void segment_mesh(pmp::SurfaceMesh& input_mesh,
                   std::vector<MeshSegment>& large_segments,
                   std::shared_ptr<HighFive::File> mesh_file);
 
-SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, std::shared_ptr<HighFive::File> mesh_file, bool print = true);
-SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& segment, float chunk_size, std::shared_ptr<HighFive::File> mesh_file);
-SegmentTree::Ptr split_mesh_medium(MeshSegment& segment, float chunk_size, std::shared_ptr<HighFive::File> mesh_file);
-
-inline SegmentTree::Ptr split_mesh(MeshSegment& segment, float chunk_size, std::shared_ptr<HighFive::File> mesh_file)
-{
-    return split_mesh_bottom_up(segment, chunk_size, mesh_file);
-}
+SegmentTree::Ptr split_mesh(MeshSegment& segment,
+                            float chunk_size,
+                            std::shared_ptr<HighFive::File> mesh_file,
+                            int combine_depth = -1);
 
 } // namespace lvr2

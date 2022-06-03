@@ -78,6 +78,7 @@ int main(int argc, char** argv)
     fs::path output_dir = "chunk.3dtiles";
     bool calc_normals;
     float chunk_size = -1;
+    int combine_depth = 2;
     std::vector<fs::path> mesh_out_files;
     bool fix_mesh;
     bool assign_colors;
@@ -107,6 +108,9 @@ int main(int argc, char** argv)
 
         ("chunkSize,c", value<float>(&chunk_size)->default_value(chunk_size),
          "When loading a Mesh: Split the Mesh into parts with this size.")
+
+        ("combineDepth,d", value<int>(&combine_depth)->default_value(combine_depth),
+         "How many layers to combine and simplify. -1 means all.")
 
         ("fix,f", bool_switch(&fix_mesh),
          "Fixes some common errors in meshes that might break this algorithm.\n"
@@ -188,6 +192,7 @@ int main(int argc, char** argv)
     pmp::BoundingBox bb;
     Eigen::Vector3i num_chunks = Eigen::Vector3i::Zero();
     std::vector<std::string> texture_files;
+    float max_merge_dist = 1e-10;
 
     std::cout << timestamp << "Reading mesh " << input_file;
 
@@ -207,6 +212,7 @@ int main(int argc, char** argv)
         YAML::Node metadata = YAML::LoadFile(path + "chunk_metadata.yaml");
         chunk_size = metadata["chunk_size"].as<float>();
         float voxel_size = metadata["voxel_size"].as<float>();
+        max_merge_dist = voxel_size / 8.0f;
 
         std::vector<std::string> chunk_files;
         for (auto& entry : fs::directory_iterator(input_file))
@@ -231,6 +237,7 @@ int main(int argc, char** argv)
 
             chunk_size = hdf5util::getAttribute<float>(root, "chunk_size").get();
             float voxel_size = hdf5util::getAttribute<float>(root, "voxel_size").get();
+            max_merge_dist = voxel_size / 8.0f;
 
             auto chunk_group = std::make_shared<HighFive::Group>(root.getGroup("/chunks"));
             std::vector<std::string> chunk_files = chunk_group->listObjectNames();
@@ -437,7 +444,7 @@ int main(int argc, char** argv)
 
         std::cout << timestamp << "Partitioning chunks                " << std::endl;
         auto& tile = root.children.emplace_back();
-        auto chunk_root = SegmentTree::octree_partition(chunks, num_chunks, 2);
+        auto chunk_root = SegmentTree::octree_partition(chunks, num_chunks, combine_depth);
         chunk_root->segment().filename = path + "c";
         root_segment.add_child(std::move(chunk_root));
 
@@ -470,7 +477,7 @@ int main(int argc, char** argv)
             auto& tree = segment_trees.emplace_back();
             if (chunk_size > 0)
             {
-                tree = split_mesh(segment, chunk_size, mesh_file);
+                tree = split_mesh(segment, chunk_size, mesh_file, combine_depth);
                 *progress += segment.mesh->n_faces();
             }
             else
@@ -501,7 +508,7 @@ int main(int argc, char** argv)
     }
 
     std::cout << timestamp << "Constructed tree with depth " << root_segment.m_depth << ". Creating meta-segments" << std::endl;
-    root_segment.simplify(mesh_file);
+    root_segment.simplify(mesh_file, max_merge_dist);
 
     root_segment.fill_tile(root, "");
 
@@ -641,12 +648,13 @@ Eigen::Vector3i read_chunks(std::vector<std::pair<pmp::Point, MeshSegment>>& chu
         }
 
         // remove overlap
-        pmp::BoundingBox expected_bb;
-        expected_bb += chunk_pos * chunk_size;
-        expected_bb += (chunk_pos + pmp::Point::Constant(1)) * chunk_size + pmp::Point::Constant(voxel_size * 1.1);
-        auto f_delete = mesh.add_face_property<bool>("f:mark_delete");
+        pmp::Point scaled = chunk_pos * chunk_size;
+        pmp::BoundingBox expected_bb(scaled, scaled + pmp::Point::Constant(chunk_size));
+        // the bounding box ends exactly in the middle of a voxel. => move it over by half a voxel
+        expected_bb.min() += pmp::Point::Constant(voxel_size * 0.49);
+        expected_bb.max() += pmp::Point::Constant(voxel_size * 0.51);
         auto v_feature = mesh.add_vertex_property<bool>("v:feature", false);
-        bool has_features = false;
+        std::vector<pmp::Face> faces_to_delete;
         #pragma omp parallel for schedule(dynamic,64)
         for (size_t i = 0; i < mesh.n_faces(); i++)
         {
@@ -656,22 +664,19 @@ Eigen::Vector3i read_chunks(std::vector<std::pair<pmp::Point, MeshSegment>>& chu
                 if (!expected_bb.contains(mesh.position(vH)))
                 {
                     #pragma omp critical
-                    f_delete[fH] = true;
+                    faces_to_delete.push_back(fH);
                     break;
                 }
             }
-            if (f_delete[fH])
-            {
-                has_features = true;
-                #pragma omp critical
-                for (auto vH : mesh.vertices(fH))
-                {
-                    v_feature[vH] = true;
-                }
-            }
         }
-        mesh.delete_many_faces(f_delete);
-        mesh.remove_face_property(f_delete);
+        for (auto fH : faces_to_delete)
+        {
+            for (auto vH : mesh.vertices(fH))
+            {
+                v_feature[vH] = true;
+            }
+            mesh.delete_face(fH);
+        }
         mesh.garbage_collection();
         mesh.add_edge_property<bool>("e:feature", false);
 
@@ -719,9 +724,10 @@ Eigen::Vector3i read_chunks(std::vector<std::pair<pmp::Point, MeshSegment>>& chu
     }
     Eigen::Vector3i num_chunks = max_chunk - min_chunk + Eigen::Vector3i::Ones();
 
-    std::cout << timestamp << "Found " << num_chunks.x() << "x" << num_chunks.y() << "x" << num_chunks.z()
-              << " Chunks from " << min_chunk.transpose() << " to " << max_chunk.transpose() << std::endl;
+    std::cout << timestamp << "Found " << chunks.size() << " Chunks from " << min_chunk.transpose()
+              << " to " << max_chunk.transpose() << std::endl;
 
+    // move indices to be in [0, num_chunks)
     for (auto& [ chunk_pos, segment ] : chunks)
     {
         chunk_pos -= min_chunk.cast<float>();

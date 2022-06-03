@@ -39,16 +39,16 @@
 namespace lvr2
 {
 
-void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print);
+void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, bool print);
 
 // SegmentTree
 
-void SegmentTree::simplify(std::shared_ptr<HighFive::File> mesh_file, bool print)
+void SegmentTree::simplify(std::shared_ptr<HighFive::File> mesh_file, float max_merge_dist, bool print)
 {
     std::vector<MeshSegment::Inner> meshes;
     size_t num_threads = mesh_file ? 1 : OpenMPConfig::getNumThreads();
 
-    while (!combine_if_possible(mesh_file, print))
+    while (!combine_if_possible(mesh_file, max_merge_dist, print))
     {
         collect_simplifyable(meshes);
 
@@ -186,7 +186,7 @@ SegmentTree::Ptr SegmentTree::octree_split_recursive(SegmentTree** start, Segmen
         }
     }
 
-    node->m_skipped = combine_depth < 0 || node->m_depth > combine_depth;
+    node->m_skipped = combine_depth >= 0 && node->m_depth > combine_depth;
 
     return SegmentTree::Ptr(node);
 }
@@ -280,9 +280,9 @@ void SegmentTreeNode::update_children(int combine_depth)
         m_meta_segment.texture_file = child->segment().texture_file;
         m_depth = std::max(m_depth, child->m_depth + 1);
     }
-    m_skipped = combine_depth < 0 || m_depth > combine_depth;
+    m_skipped = combine_depth >= 0 && m_depth > combine_depth;
 }
-bool SegmentTreeNode::combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, bool print)
+bool SegmentTreeNode::combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, float max_merge_dist, bool print)
 {
     if (m_simplified)
     {
@@ -296,7 +296,7 @@ bool SegmentTreeNode::combine_if_possible(const std::shared_ptr<HighFive::File>&
     size_t count = 0;
     for (auto& child : m_children)
     {
-        if (child->combine_if_possible(mesh_file, print))
+        if (child->combine_if_possible(mesh_file, max_merge_dist, print))
         {
             count++;
         }
@@ -322,8 +322,7 @@ bool SegmentTreeNode::combine_if_possible(const std::shared_ptr<HighFive::File>&
     auto& mesh = pmp_mesh.getSurfaceMesh();
     mesh.join_mesh(meshes);
 
-    remove_overlapping_features(mesh, print);
-    mesh.garbage_collection();
+    remove_overlapping_features(mesh, max_merge_dist, print);
 
     if (!mesh.has_vertex_property("v:quadric"))
     {
@@ -425,20 +424,15 @@ void SegmentTreeLeaf::print(size_t indent)
 
 // other functions
 
-void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print)
+void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, bool print)
 {
-    return; // FIXME: fix this function and remove this line
-
-    auto v_original = mesh.get_vertex_property<pmp::Vertex>("v:original");
-    if (!v_original)
+    auto v_feature = mesh.get_vertex_property<bool>("v:feature");
+    if (!v_feature)
     {
         return;
     }
-    auto f_boundary = mesh.get_face_property<bool>("f:boundary");
-    auto v_merge_count = mesh.get_vertex_property<uint32_t>("v:merge_count");
-    auto v_feature = mesh.get_vertex_property<bool>("v:feature");
 
-    std::unordered_map<pmp::Vertex, std::vector<pmp::Vertex>> original_to_current;
+    std::vector<pmp::Vertex> candidates;
     #pragma omp parallel for schedule(dynamic,64)
     for (size_t i = 0; i < mesh.vertices_size(); i++)
     {
@@ -446,28 +440,62 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print)
         if (!mesh.is_deleted(vH) && v_feature[vH])
         {
             #pragma omp critical
-            original_to_current[v_original[vH]].push_back(vH);
+            candidates.push_back(vH);
         }
     }
 
-    for (auto it = original_to_current.begin(); it != original_to_current.end();)
+    std::vector<pmp::Point> positions(candidates.size());
+    std::vector<size_t> merged_into(candidates.size());
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < candidates.size(); i++)
     {
-        if (it->second.size() < 2)
+        positions[i] = mesh.position(candidates[i]);
+        merged_into[i] = i;
+    }
+
+    // this would ideally be done with a kd-tree, but there is currently no index-preserving kd-tree
+    // implementation and making one just for this is not worth the effort
+
+    float max_dist_sq = max_distance * max_distance;
+    #pragma omp parallel for
+    for (size_t i = 1; i < candidates.size(); i++)
+    {
+        for (size_t j = 0; j < i; j++)
         {
-            it = original_to_current.erase(it);
-        }
-        else
-        {
-            ++it;
+            float dist_sq = (positions[i] - positions[j]).squaredNorm();
+            if (dist_sq < max_dist_sq)
+            {
+                merged_into[i] = j;
+                break;
+            }
         }
     }
 
-    std::cout << timestamp << "Found " << original_to_current.size() << " vertices to replace." << std::endl; // TODO: temp
-
-    auto map_vertex = [&original_to_current](pmp::Vertex vH) -> pmp::Vertex
+    std::unordered_map<pmp::Vertex, pmp::Vertex> merge_map;
+    #pragma omp parallel for
+    for (size_t i = 0; i < candidates.size(); i++)
     {
-        auto it = original_to_current.find(vH);
-        return it != original_to_current.end() ? it->second[0] : vH;
+        if (merged_into[i] != i)
+        {
+            size_t target = merged_into[i];
+            while (merged_into[target] != target)
+            {
+                target = merged_into[target];
+            }
+            #pragma omp critical
+            merge_map[candidates[i]] = candidates[target];
+        }
+    }
+
+    if (merge_map.empty())
+    {
+        return;
+    }
+
+    auto map_vertex = [&merge_map](pmp::Vertex vH) -> pmp::Vertex
+    {
+        auto it = merge_map.find(vH);
+        return it != merge_map.end() ? it->second : vH;
     };
 
     std::unordered_map<pmp::Face, std::vector<pmp::Vertex>> deleted_faces;
@@ -475,7 +503,7 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print)
     for (size_t i = 0; i < mesh.faces_size(); i++)
     {
         pmp::Face fH(i);
-        if (mesh.is_deleted(fH) || !f_boundary[fH])
+        if (mesh.is_deleted(fH))
         {
             continue;
         }
@@ -494,106 +522,64 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print)
         }
         #pragma omp critical
         {
-            auto v_it = mesh.vertices(fH);
-            deleted_faces[fH] =
+            auto& vertices = deleted_faces[fH];
+            vertices.reserve(3);
+            for (auto vH : mesh.vertices(fH))
             {
-                map_vertex(*v_it),
-                map_vertex(*++v_it),
-                map_vertex(*++v_it),
-            };
+                vertices.push_back(map_vertex(vH));
+            }
         }
     }
-
-    std::cout << timestamp << "Deleting " << deleted_faces.size() << " faces." << std::endl; // TODO: temp
 
     for (auto& f : deleted_faces)
     {
         mesh.delete_face(f.first);
     }
 
-    std::cout << timestamp << "Removed " << deleted_faces.size() << " faces." << std::endl; // TODO: temp
-
-    std::vector<pmp::Face> new_faces;
-    for (auto& entry : deleted_faces)
+    size_t added = 0;
+    auto fprop_map = mesh.gen_fprop_map(mesh);
+    auto vprop_map = mesh.gen_vprop_map(mesh);
+    for (auto& [ fH, vertices ] : deleted_faces)
     {
+        for (auto& vH : vertices)
+        {
+            vH = map_vertex(vH);
+            if (mesh.is_deleted(vH))
+            {
+                auto new_vH = mesh.add_vertex(mesh.position(vH));
+                mesh.copy_vprops(mesh, vH, new_vH, vprop_map);
+                merge_map[vH] = new_vH;
+                vH = new_vH;
+            }
+        }
         try
         {
-            auto new_id = mesh.add_face(entry.second);
-            mesh.copy_fprops(mesh, entry.first, new_id);
-            new_faces.push_back(new_id);
+            auto new_fH = mesh.add_face(vertices);
+            mesh.copy_fprops(mesh, fH, new_fH, fprop_map);
+            added++;
         }
         catch (const pmp::TopologyException&)
         {}
-    }
-    if (print)
-    {
-        std::cout << "Stitched " << original_to_current.size() << " vertices, re-adding " << deleted_faces.size() << " faces";
-        if (deleted_faces.size() != new_faces.size())
-        {
-            std::cout << " (" << (deleted_faces.size() - new_faces.size()) << " failed)";
-        }
-        std::cout << std::endl;
     }
 
     mesh.remove_degenerate_faces();
     mesh.duplicate_non_manifold_vertices();
 
-    for (auto& entry : original_to_current)
+    for (auto& [ src, target ] : merge_map)
     {
-        size_t decrement = entry.second.size() - 1;
-        v_merge_count[entry.second[0]] -= decrement;
-    }
-
-    for (auto fH : new_faces)
-    {
-        bool boundary = false;
-        for (auto vH : mesh.vertices(fH))
+        v_feature[target] = false;
+        if (!mesh.is_deleted(src))
         {
-            if (v_merge_count[vH] > 1)
-            {
-                boundary = true;
-                break;
-            }
-        }
-        f_boundary[fH] = boundary;
-    }
-
-    size_t cleared = 0, remaining = 0;
-    for (auto& entry : original_to_current)
-    {
-        auto vH = entry.second[0];
-        bool feature = false;
-        for (auto fH : mesh.faces(vH))
-        {
-            if (f_boundary[fH])
-            {
-                feature = true;
-                break;
-            }
-        }
-        if (!feature)
-        {
-            v_feature[vH] = false;
-            ++cleared;
-        }
-        else
-        {
-            ++remaining;
+            std::cout << "ERROR: Vertex " << src << " not deleted!" << std::endl;
         }
     }
 
     if (print)
     {
-        std::cout << "Cleared " << cleared << " vertices." << (remaining == 0 ? " Mesh now feature free." : "") << std::endl;
+        std::cout << timestamp << "Stitched " << merge_map.size() << " boundary vertices, re-adding " << added << " faces" << std::endl;
     }
-    if (remaining == 0)
-    {
-        mesh.remove_face_property(f_boundary);
-        mesh.remove_vertex_property(v_original);
-        mesh.remove_vertex_property(v_merge_count);
-        mesh.remove_vertex_property(v_feature);
-        mesh.remove_edge_property<bool>("e:feature");
-    }
+
+    mesh.garbage_collection();
 }
 
 } // namespace lvr2

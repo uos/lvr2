@@ -85,13 +85,13 @@ public:
     static Ptr octree_partition(std::vector<MeshSegment>& segments, int combine_depth = -1);
     static Ptr octree_partition(std::vector<SegmentTree::Ptr>& segments);
     static Ptr octree_partition(std::vector<std::pair<pmp::Point, MeshSegment>>& chunks, const Eigen::Vector3i& num_chunks, int combine_depth = -1);
-    void simplify(std::shared_ptr<HighFive::File> mesh_file, bool print = true);
+    void simplify(std::shared_ptr<HighFive::File> mesh_file, float max_merge_dist, bool print = true);
     virtual void print(size_t indent = 0) = 0;
     virtual void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) = 0;
     virtual void update_children(int combine_depth = -1) = 0;
     virtual void collect_segments(std::vector<MeshSegment>& segments) = 0;
 
-    virtual bool combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, bool print) = 0;
+    virtual bool combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, float max_merge_dist, bool print) = 0;
     virtual void collect_simplifyable(std::vector<MeshSegment::Inner>& meshes) = 0;
     virtual MeshSegment& segment() = 0;
     virtual bool is_leaf() = 0;
@@ -129,7 +129,7 @@ public:
     void update_children(int combine_depth = -1) override;
     void collect_segments(std::vector<MeshSegment>& segments) override;
 
-    bool combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, bool print) override;
+    bool combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, float max_merge_dist, bool print) override;
     void collect_simplifyable(std::vector<MeshSegment::Inner>& meshes) override;
     MeshSegment& segment() override
     {
@@ -180,7 +180,7 @@ public:
         segments.push_back(m_segment);
     }
 
-    bool combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, bool print) override
+    bool combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, float max_merge_dist, bool print) override
     {
         return true;
     }

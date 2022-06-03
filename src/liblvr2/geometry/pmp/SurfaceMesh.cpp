@@ -363,9 +363,11 @@ Face SurfaceMesh::add_face(const std::vector<Vertex>& vertices)
                 outer_prev = inner_next.opposite();
                 outer_next = inner_prev.opposite();
                 boundary_prev = outer_prev;
+                CirculatorLoopDetector loop_detector(boundary_prev);
                 do
                 {
                     boundary_prev = next_halfedge(boundary_prev).opposite();
+                    loop_detector.loop_detection(boundary_prev);
                 } while (!is_boundary(boundary_prev) || boundary_prev == inner_prev);
                 boundary_next = next_halfedge(boundary_prev);
                 assert(is_boundary(boundary_prev));
@@ -614,6 +616,7 @@ void SurfaceMesh::duplicate_non_manifold_vertices()
                 reachable[h] = true;
     }
     size_t count = 0;
+    auto vprop_map = gen_vprop_map(*this);
     #pragma omp parallel reduction(+:count)
     {
         std::vector<Halfedge> unreachable;
@@ -635,7 +638,7 @@ void SurfaceMesh::duplicate_non_manifold_vertices()
                 Vertex v = from_vertex(h);
                 Point p = position(v);
                 Vertex new_v = add_vertex(p);
-                copy_vprops(*this, v, new_v);
+                copy_vprops(*this, v, new_v, vprop_map);
                 set_halfedge(new_v, h);
                 for (Halfedge h : halfedges(new_v))
                 {
@@ -989,12 +992,19 @@ void SurfaceMesh::flip(Edge e)
 
 void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
                              FaceProperty<IndexType>& face_dist,
-                             VertexProperty<IndexType>& vertex_dist,
-                             HalfedgeProperty<IndexType>& halfedge_dist)
+                             VertexProperty<IndexType>& vertex_dist)
 {
+    garbage_collection();
+
+    std::vector<IndexMap> fprop_maps, vprop_maps, eprop_maps, hprop_maps;
     for (auto& mesh : output)
     {
+        mesh.clear();
         mesh.copy_properties(*this);
+        fprop_maps.push_back(mesh.gen_fprop_map(*this));
+        vprop_maps.push_back(mesh.gen_vprop_map(*this));
+        eprop_maps.push_back(mesh.gen_eprop_map(*this));
+        hprop_maps.push_back(mesh.gen_hprop_map(*this));
     }
 
     auto f_map = add_face_property<Face>("f:split_map");
@@ -1005,15 +1015,9 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
 
     size_t num_threads = std::min((size_t)omp_get_max_threads(), n);
 
-    std::vector<size_t> next_face(n);
-    std::vector<size_t> next_vertex(n);
-    std::vector<size_t> next_edge(n);
-    for (size_t i = 0; i < n; i++)
-    {
-        next_face[i] = output[i].faces_size();
-        next_vertex[i] = output[i].vertices_size();
-        next_edge[i] = output[i].edges_size();
-    }
+    std::vector<size_t> next_face(n, 0);
+    std::vector<size_t> next_vertex(n, 0);
+    std::vector<size_t> next_edge(n, 0);
 
     #pragma omp parallel num_threads(num_threads)
     {
@@ -1035,23 +1039,21 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
         }
         for (Edge e : edges())
         {
-            Halfedge h = e.halfedge(0);
-            auto id = halfedge_dist[h];
-            if (id != halfedge_dist[e.halfedge(1)])
-            {
-                throw std::runtime_error("This should not occur");
-            }
+            auto id = vertex_dist[vertex(e, 0)];
+            if (id != vertex_dist[vertex(e, 1)])
+                throw std::runtime_error("Edge split error");
             if (id >= start && id < end)
             {
+                auto h = e.halfedge(0);
                 h_map[h] = Edge(next_edge[id]++).halfedge(0);
                 h_map[h.opposite()] = h_map[h].opposite();
             }
         }
         for (size_t i = start; i < end; i++)
         {
-            output[i].new_faces   (next_face  [i] - output[i].faces_size());
-            output[i].new_vertices(next_vertex[i] - output[i].vertices_size());
-            output[i].new_edges   (next_edge  [i] - output[i].edges_size());
+            output[i].new_faces(next_face[i]);
+            output[i].new_vertices(next_vertex[i]);
+            output[i].new_edges(next_edge[i]);
         }
     }
 
@@ -1059,20 +1061,22 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
     for (size_t i = 0; i < faces_size(); i++)
     {
         Face f(i);
-        if (is_deleted(f) || face_dist[f] >= n)
+        auto id = face_dist[f];
+        if (is_deleted(f) || id >= n)
             continue;
-        auto& mesh = output[face_dist[f]];
-        mesh.copy_fprops(*this, f, f_map[f]);
+        auto& mesh = output[id];
+        mesh.copy_fprops(*this, f, f_map[f], fprop_maps[id]);
         mesh.set_halfedge(f_map[f], h_map[halfedge(f)]);
     }
     #pragma omp parallel for schedule(static,256)
     for (size_t i = 0; i < vertices_size(); i++)
     {
         Vertex v(i);
-        if (is_deleted(v) || vertex_dist[v] >= n)
+        auto id = vertex_dist[v];
+        if (is_deleted(v) || id >= n)
             continue;
-        auto& mesh = output[vertex_dist[v]];
-        mesh.copy_vprops(*this, v, v_map[v]);
+        auto& mesh = output[id];
+        mesh.copy_vprops(*this, v, v_map[v], vprop_maps[id]);
         mesh.position(v_map[v]) = position(v);
         Halfedge h = halfedge(v);
         if (h.is_valid())
@@ -1082,11 +1086,13 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
     for (size_t i = 0; i < halfedges_size(); i++)
     {
         Halfedge h(i);
-        if (is_deleted(h) || halfedge_dist[h] >= n)
+        auto id = vertex_dist[to_vertex(h)];
+        if (is_deleted(h) || id >= n)
             continue;
-        auto& mesh = output[halfedge_dist[h]];
-        mesh.copy_hprops(*this, h, h_map[h]);
-        mesh.copy_eprops(*this, h.edge(), h_map[h].edge());
+        auto& mesh = output[id];
+        mesh.copy_hprops(*this, h, h_map[h], hprop_maps[id]);
+        if (i % 2 == 0)
+            mesh.copy_eprops(*this, h.edge(), h_map[h].edge(), eprop_maps[id]);
         auto& in = hconn_[h];
         auto& out = mesh.hconn_[h_map[h]];
         out.vertex_ = v_map[in.vertex_];
@@ -1096,12 +1102,6 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
             out.face_ = f_map[in.face_];
     }
 
-    #pragma omp parallel for
-    for (size_t i = 0; i < n; i++)
-    {
-        output[i].remove_degenerate_faces();
-    }
-
     remove_face_property(f_map);
     remove_vertex_property(v_map);
     remove_halfedge_property(h_map);
@@ -1109,15 +1109,20 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
     {
         mesh.remove_face_property<IndexType>(face_dist.name());
         mesh.remove_vertex_property<IndexType>(vertex_dist.name());
-        mesh.remove_halfedge_property<IndexType>(halfedge_dist.name());
     }
 }
 
 void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<IndexType>& face_dist)
 {
+    std::vector<IndexMap> fprop_maps, vprop_maps, eprop_maps, hprop_maps;
     for (auto& mesh : output)
     {
+        mesh.clear();
         mesh.copy_properties(*this);
+        fprop_maps.push_back(mesh.gen_fprop_map(*this));
+        vprop_maps.push_back(mesh.gen_vprop_map(*this));
+        eprop_maps.push_back(mesh.gen_eprop_map(*this));
+        hprop_maps.push_back(mesh.gen_hprop_map(*this));
     }
 
     auto h_map = add_halfedge_property<Halfedge>("h:split_map");
@@ -1148,7 +1153,7 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
             auto& boundary = boundaries[id];
 
             Face out_f = mesh.new_face();
-            mesh.copy_fprops(*this, f, out_f);
+            mesh.copy_fprops(*this, f, out_f, fprop_maps[id]);
             face_edges.clear();
             for (Halfedge h : halfedges(f))
             {
@@ -1168,9 +1173,9 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
                         out_h = mesh.new_edge();
                     else
                         out_h = mesh.new_edge().opposite();
-                    mesh.copy_eprops(*this, h.edge(), out_h.edge());
+                    mesh.copy_eprops(*this, h.edge(), out_h.edge(), eprop_maps[id]);
                 }
-                mesh.copy_hprops(*this, h, out_h);
+                mesh.copy_hprops(*this, h, out_h, hprop_maps[id]);
                 mesh.set_face(out_h, out_f);
                 h_map[h] = out_h;
                 face_edges.push_back(out_h);
@@ -1180,7 +1185,7 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
                 if (!out_v.is_valid())
                 {
                     out_v = mesh.add_vertex(position(v));
-                    mesh.copy_vprops(*this, v, out_v);
+                    mesh.copy_vprops(*this, v, out_v, vprop_maps[id]);
                     mesh.set_halfedge(out_v, out_h.opposite());
                 }
                 mesh.set_vertex(out_h, out_v);
@@ -1230,6 +1235,9 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output, FaceProperty<Inde
 
 void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
 {
+    clear();
+
+    std::vector<IndexMap> fprop_maps, vprop_maps, eprop_maps, hprop_maps;
     size_t added_faces = 0, added_vertices = 0, added_edges = 0;
     std::vector<IndexType> face_offsets = { 0 };
     std::vector<IndexType> vertex_offsets = { 0 };
@@ -1237,6 +1245,10 @@ void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
     for (auto mesh : input)
     {
         copy_properties(*mesh);
+        fprop_maps.push_back(gen_fprop_map(*mesh));
+        vprop_maps.push_back(gen_vprop_map(*mesh));
+        eprop_maps.push_back(gen_eprop_map(*mesh));
+        hprop_maps.push_back(gen_hprop_map(*mesh));
 
         if (mesh->has_garbage())
             throw InvalidInputException("SurfaceMesh::join_mesh: Input Mesh has garbage");
@@ -1263,18 +1275,22 @@ void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
         IndexType face_offset = face_offsets[i];
         IndexType vertex_offset = vertex_offsets[i];
         IndexType halfedge_offset = halfedge_offsets[i];
+        auto& fprop_map = fprop_maps[i];
+        auto& vprop_map = vprop_maps[i];
+        auto& eprop_map = eprop_maps[i];
+        auto& hprop_map = hprop_maps[i];
         #pragma omp parallel for schedule(static,256)
         for (size_t j = 0; j < mesh.faces_size(); j++)
         {
             Face f(j), fm(face_offset + j);
-            copy_fprops(mesh, f, fm);
+            copy_fprops(mesh, f, fm, fprop_map);
             set_halfedge(fm, Halfedge(halfedge_offset + mesh.halfedge(f).idx()));
         }
         #pragma omp parallel for schedule(static,256)
         for (size_t j = 0; j < mesh.vertices_size(); j++)
         {
             Vertex v(j), vm(vertex_offset + j);
-            copy_vprops(mesh, v, vm);
+            copy_vprops(mesh, v, vm, vprop_map);
             position(vm) = mesh.position(v);
             Halfedge h = mesh.halfedge(v);
             if (h.is_valid())
@@ -1284,9 +1300,9 @@ void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
         for (size_t j = 0; j < mesh.halfedges_size(); j++)
         {
             Halfedge h(j), hm(halfedge_offset + j);
-            copy_hprops(mesh, h, hm);
+            copy_hprops(mesh, h, hm, hprop_map);
             if (h.idx() < h.opposite().idx())
-                copy_eprops(mesh, h.edge(), hm.edge());
+                copy_eprops(mesh, h.edge(), hm.edge(), eprop_map);
             auto& in = mesh.hconn_[h];
             auto& out = hconn_[hm];
             out.vertex_ = Vertex(vertex_offset + in.vertex_.idx());
@@ -1298,60 +1314,6 @@ void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
     }
 
     remove_degenerate_faces();
-}
-
-void SurfaceMesh::stitch_boundary(Halfedge h0, Halfedge h1)
-{
-    auto o0 = h0.opposite();
-    auto o1 = h1.opposite();
-
-    if (!is_boundary(h0) || !is_boundary(h1) || is_boundary(o0) || is_boundary(o1))
-        throw InvalidInputException("SurfaceMesh::stitch_boundary: invalid halfedge pair");
-
-    // merge vertices (has to happen before modifying the connectivity)
-    auto v0 = from_vertex(h0);
-    auto other_v0 = to_vertex(h1);
-    auto v1 = to_vertex(h0);
-    auto other_v1 = from_vertex(h1);
-
-    if (other_v0 != v0)
-    {
-        for (auto h_out : halfedges(other_v0))
-            set_vertex(h_out.opposite(), v0);
-        vdeleted_[other_v0] = true;
-        ++deleted_vertices_;
-    }
-
-    if (other_v1 != v1)
-    {
-        for (auto h_out : halfedges(other_v1))
-            set_vertex(h_out.opposite(), v1);
-        vdeleted_[other_v1] = true;
-        ++deleted_vertices_;
-    }
-    else if (halfedge(v1) == h1) // vertex stays, but its outgoing edge will be deleted
-        set_halfedge(v1, o0);
-
-    // re-link next/prev halfedges of h0 and h1
-    if (next_halfedge(h1) != h0)
-        set_next_halfedge(prev_halfedge(h0), next_halfedge(h1));
-    if (next_halfedge(h0) != h1)
-        set_next_halfedge(prev_halfedge(h1), next_halfedge(h0));
-
-    // copy properties from o1 to h0
-    set_face(h0, face(o1));
-    set_next_halfedge(h0, next_halfedge(o1));
-    set_prev_halfedge(h0, prev_halfedge(o1));
-    copy_hprops(*this, o1, h0);
-
-    set_halfedge(face(o1), h0);
-
-    edeleted_[h1.edge()] = true;
-    ++deleted_edges_;
-    has_garbage_ = true;
-
-    adjust_outgoing_halfedge(v0);
-    adjust_outgoing_halfedge(v1);
 }
 
 bool SurfaceMesh::is_collapse_ok(Halfedge v0v1)
@@ -1665,12 +1627,10 @@ void SurfaceMesh::delete_face(Face f)
     // boundary edges of face f to be deleted
     std::vector<Edge>& deleted_edges = delete_deleted_edges_;
     deleted_edges.clear();
-    deleted_edges.reserve(3);
 
     // vertices of face f for updating their outgoing halfedge
     std::vector<Vertex>& vertices = temp_face_vertices_;
     vertices.clear();
-    vertices.reserve(3);
 
     // for all halfedges of face f do:
     //   1) invalidate face handle.
@@ -1749,9 +1709,9 @@ void SurfaceMesh::delete_face(Face f)
     }
 
     // update outgoing halfedge handles of remaining vertices
-    auto vit(vertices.begin()), vend(vertices.end());
-    for (; vit != vend; ++vit)
-        adjust_outgoing_halfedge(*vit);
+    for (auto v : vertices)
+        if (!is_deleted(v))
+            adjust_outgoing_halfedge(v);
 
     has_garbage_ = true;
 }

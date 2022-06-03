@@ -1504,6 +1504,7 @@ public:
     //! prints the names of all properties
     void property_stats() const;
 
+
     void copy_properties(const SurfaceMesh& src)
     {
         oprops_.copy(src.oprops_);
@@ -1513,25 +1514,43 @@ public:
         fprops_.copy(src.fprops_);
     }
 
-    void copy_fprops(const SurfaceMesh& src, Face src_f, Face target_f)
+    using IndexMap = PropertyContainer::IndexMap;
+    IndexMap gen_fprop_map(const SurfaceMesh& src)
     {
         constexpr size_t OFFSET = 2; // connectivity, deleted
-        fprops_.copy_props(src.fprops_, src_f.idx(), target_f.idx(), OFFSET);
+        return fprops_.gen_map(src.fprops_, OFFSET);
     }
-    void copy_vprops(const SurfaceMesh& src, Vertex src_v, Vertex target_v)
+    IndexMap gen_vprop_map(const SurfaceMesh& src)
     {
         constexpr size_t OFFSET = 3; // point, connectivity, deleted
-        vprops_.copy_props(src.vprops_, src_v.idx(), target_v.idx(), OFFSET);
+        return vprops_.gen_map(src.vprops_, OFFSET);
     }
-    void copy_eprops(const SurfaceMesh& src, Edge src_e, Edge target_e)
+    IndexMap gen_eprop_map(const SurfaceMesh& src)
     {
         constexpr size_t OFFSET = 1; // deleted
-        eprops_.copy_props(src.eprops_, src_e.idx(), target_e.idx(), OFFSET);
+        return eprops_.gen_map(src.eprops_, OFFSET);
     }
-    void copy_hprops(const SurfaceMesh& src, Halfedge src_h, Halfedge target_h)
+    IndexMap gen_hprop_map(const SurfaceMesh& src)
     {
         constexpr size_t OFFSET = 1; // connectivity
-        hprops_.copy_props(src.hprops_, src_h.idx(), target_h.idx(), OFFSET);
+        return hprops_.gen_map(src.hprops_, OFFSET);
+    }
+
+    void copy_fprops(const SurfaceMesh& src, Face src_f, Face target_f, const IndexMap& map)
+    {
+        fprops_.copy_props(src.fprops_, src_f.idx(), target_f.idx(), map);
+    }
+    void copy_vprops(const SurfaceMesh& src, Vertex src_v, Vertex target_v, const IndexMap& map)
+    {
+        vprops_.copy_props(src.vprops_, src_v.idx(), target_v.idx(), map);
+    }
+    void copy_eprops(const SurfaceMesh& src, Edge src_e, Edge target_e, const IndexMap& map)
+    {
+        eprops_.copy_props(src.eprops_, src_e.idx(), target_e.idx(), map);
+    }
+    void copy_hprops(const SurfaceMesh& src, Halfedge src_h, Halfedge target_h, const IndexMap& map)
+    {
+        hprops_.copy_props(src.hprops_, src_h.idx(), target_h.idx(), map);
     }
 
     //!@}
@@ -1809,8 +1828,7 @@ public:
     //! one subset (or PMP_INVALID_INDEX) and may not be shared.
     void split_mesh(std::vector<SurfaceMesh>& output,
                     FaceProperty<IndexType>& face_dist,
-                    VertexProperty<IndexType>& vertex_dist,
-                    HalfedgeProperty<IndexType>& halfedge_dist);
+                    VertexProperty<IndexType>& vertex_dist);
 
     //! Split the mesh into subset meshes. Vertices and edges can be shared between subsets.
     void split_mesh(std::vector<SurfaceMesh>& output,
@@ -1821,7 +1839,7 @@ public:
 
     //! Unifies h0 and h1 into a single edge, combining adjacent vertices.
     //! Requires both halfedges to be boundary halfedges.
-    void stitch_boundary(Halfedge h0, Halfedge h1);
+    // void stitch_boundary(Halfedge h0, Halfedge h1);
 
     //! are there any deleted entities?
     inline bool has_garbage() const { return has_garbage_; }

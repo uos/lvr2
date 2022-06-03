@@ -383,20 +383,44 @@ public:
 
     void copy(const PropertyContainer& src)
     {
-        for (size_t i = parrays_.size(); i < src.parrays_.size(); ++i)
+        std::unordered_map<std::string, size_t> map;
+        for (size_t i = 0; i < parrays_.size(); ++i)
+            map[parrays_[i]->name()] = i;
+
+        for (auto& src_prop : src.parrays_)
         {
-            BasePropertyArray* p = src.parrays_[i]->empty_copy();
-            p->resize(size_);
-            parrays_.push_back(p);
+            if (map.find(src_prop->name()) == map.end())
+            {
+                BasePropertyArray* p = src_prop->empty_copy();
+                p->resize(size_);
+                parrays_.push_back(p);
+            }
         }
     }
 
-    void copy_props(const PropertyContainer& src, size_t src_i, size_t target_i, size_t offset)
+    /// maps from src->index to this->index
+    using IndexMap = std::vector<std::pair<IndexType, IndexType>>;
+    IndexMap gen_map(const PropertyContainer& src, size_t offset) const
     {
-        size_t end = std::min(n_properties(), src.n_properties());
-        for (size_t i = offset; i < end; ++i)
+        std::unordered_map<std::string, size_t> map;
+        for (size_t i = 0; i < parrays_.size(); ++i)
+            map[parrays_[i]->name()] = i;
+
+        IndexMap ret;
+        for (size_t src_i = offset; src_i < src.parrays_.size(); ++src_i)
         {
-            parrays_[i]->copy_prop(src.parrays_[i], src_i, target_i);
+            auto it = map.find(src.parrays_[src_i]->name());
+            if (it != map.end())
+                ret.emplace_back(src_i, it->second);
+        }
+        return ret;
+    }
+
+    void copy_props(const PropertyContainer& src, size_t src_i, size_t target_i, const IndexMap& map)
+    {
+        for (auto& [ a, b ] : map)
+        {
+            parrays_[b]->copy_prop(src.parrays_[a], src_i, target_i);
         }
     }
 
