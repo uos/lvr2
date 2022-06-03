@@ -48,12 +48,11 @@ include_directories(include)
 # Compiler specific settings
 ###############################################################################
 
-# Include debug symbols and disable optimizations when debugging
-if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+# Add -O0 to remove optimizations when using gcc
+if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
-    add_compile_options(-O0 -g)
-endif(CMAKE_BUILD_TYPE MATCHES DEBUG)
+endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)
   list(APPEND LVR2_DEFINITIONS -DNOMINMAX)

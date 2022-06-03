@@ -496,6 +496,11 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
 
     cout << timestamp << "Found " << contours.size() << " holes" << endl;
 
+    if (contours.empty())
+    {
+        return;
+    }
+
     string comment = timestamp.getElapsedTime() + "Removing holes";
     ProgressBar progress(contours.size(), comment);
 
@@ -505,13 +510,15 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
     // now fill the found holes
     if (simple)
     {
+        std::unordered_set<pmp::Vertex> seen;
+        vector<pmp::Vertex> contour;
         for (pmp::Halfedge contour_heH : contours)
         {
             ++progress;
+            seen.clear();
+            contour.clear();
             try
             {
-                std::unordered_set<pmp::Vertex> seen;
-                vector<pmp::Vertex> contour;
                 pmp::Halfedge heH = contour_heH;
                 do
                 {
@@ -537,6 +544,12 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
                 if (contour.size() == 3)
                 {
                     addFace(contour[0], contour[1], contour[2]);
+                    continue;
+                }
+                if (contour.size() == 4)
+                {
+                    addFace(contour[0], contour[1], contour[2]);
+                    addFace(contour[2], contour[3], contour[0]);
                     continue;
                 }
 
@@ -600,7 +613,7 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
         }
     }
     cout << endl;
-    cout << "Filled " << filled << " / " << contours.size() << " holes" << endl;
+    cout << timestamp << "Filled " << filled << " / " << contours.size() << " holes" << endl;
 }
 
 template<typename BaseVecT>

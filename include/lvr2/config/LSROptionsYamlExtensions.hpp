@@ -48,8 +48,8 @@ struct convert<lvr2::LSROptions>
     {
         Node node;
 
-        node["bigMesh"] = options.bigMesh;
-        node["debugChunks"] = options.debugChunks;
+        node["bigMesh"] = options.hasOutput(lvr2::LSROutput::BigMesh);
+        node["debugChunks"] = options.hasOutput(lvr2::LSROutput::ChunksPly);
         node["useGPU"] = options.useGPU;
         node["voxelSizes"] = options.voxelSizes;
         node["bgVoxelSize"] = options.bgVoxelSize;
@@ -85,12 +85,12 @@ struct convert<lvr2::LSROptions>
 
         if (node["bigMesh"])
         {
-            options.bigMesh = node["bigMesh"].as<bool>();
+            options.output.insert(lvr2::LSROutput::BigMesh);
         }
 
         if (node["debugChunks"])
         {
-            options.debugChunks = node["debugChunks"].as<bool>();
+            options.output.insert(lvr2::LSROutput::ChunksPly);
         }
 
         if (node["useGPU"])

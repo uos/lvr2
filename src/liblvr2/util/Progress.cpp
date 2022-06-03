@@ -138,9 +138,9 @@ void ProgressBar::print_bar()
 {
 	using namespace std::chrono;
 
-	if (m_percent == 100)
+	if (m_percent >= 100)
 	{
-		cout << "\r" << m_prefix << " 100%                " << flush;
+		cout << "\r" << m_prefix << " " << m_percent << "%                " << flush;
 		return;
 	}
 	// calculate eta based on time difference since m_start

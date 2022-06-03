@@ -38,9 +38,8 @@
 
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/io/DataStruct.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <string>
 #include <unordered_map>
@@ -69,7 +68,7 @@ class BigGrid
      * @param cloudPath path to PointCloud in ASCII xyz Format // Todo: Add other file formats
      * @param voxelsize
      */
-    BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scale = 0, size_t bufferSize = 1024);
+    BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scale = 0, bool extrude = false, size_t bufferSize = 1024);
 
     /**
      * Constructor: specific case for incremental reconstruction/chunking. also compatible with simple reconstruction
@@ -77,7 +76,7 @@ class BigGrid
      * @param project ScanProject, which contain one or more Scans
      * @param scale scale value of for current scans
      */
-    BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale = 0);
+    BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale = 0, bool extrude = false);
 
     BigGrid(std::string path);
 
@@ -96,7 +95,7 @@ class BigGrid
      * @param index
      * @return amount of points, 0 if voxel does not exsist
      */
-    size_t pointSize(const Eigen::Vector3i& index);
+    size_t pointSize(const Vector3i& index);
 
     /**
      * Points of  Voxel at position i,j,k
@@ -104,7 +103,7 @@ class BigGrid
      * @param numPoints, amount of points in lvr2::floatArr
      * @return lvr2::floatArr, containing points
      */
-    lvr2::floatArr points(const Eigen::Vector3i& index, size_t& numPoints);
+    lvr2::floatArr points(const Vector3i& index, size_t& numPoints);
 
     /**
      * @brief Returns the points within a bounding box
@@ -177,22 +176,27 @@ class BigGrid
 
     virtual ~BigGrid() = default;
 
-    void calcIndex(const BaseVecT& vec, Eigen::Vector3i& index) const
+    void calcIndex(const BaseVecT& vec, Vector3i& index) const
     {
-        index.x() = std::round(vec.x / m_voxelSize);
-        index.y() = std::round(vec.y / m_voxelSize);
-        index.z() = std::round(vec.z / m_voxelSize);
+        index.x() = std::floor(vec.x / m_voxelSize);
+        index.y() = std::floor(vec.y / m_voxelSize);
+        index.z() = std::floor(vec.z / m_voxelSize);
     }
-    Eigen::Vector3i calcIndex(const BaseVecT& vec) const
+    Vector3i calcIndex(const BaseVecT& vec) const
     {
-        Eigen::Vector3i ret;
+        Vector3i ret;
         calcIndex(vec, ret);
         return ret;
     }
 
-    inline bool exists(const Eigen::Vector3i& index)
+    inline bool exists(const Vector3i& index)
     {
         return m_cells.find(index) != m_cells.end();
+    }
+
+    const std::unordered_map<Vector3i, CellInfo>& getCells() const
+    {
+        return m_cells;
     }
 
     inline bool hasColors() { return m_hasColor; }
@@ -223,26 +227,12 @@ private:
     {
         return getCellInfo(calcIndex(vec));
     }
-    CellInfo& getCellInfo(const Eigen::Vector3i& index)
+    CellInfo& getCellInfo(const Vector3i& index)
     {
         return m_cells[index];
     }
 
-    class Hasher
-    {
-    public:
-        size_t operator()(const Eigen::Vector3i& index) const
-        {
-            /// slightly simplified FNV-1a hash function
-            uint64_t hash = 14695981039346656037UL;
-            hash = (hash ^ (*(uint32_t*)&index.x())) * 1099511628211UL;
-            hash = (hash ^ (*(uint32_t*)&index.y())) * 1099511628211UL;
-            hash = (hash ^ (*(uint32_t*)&index.z())) * 1099511628211UL;
-            return hash;
-        }
-    };
-
-    std::unordered_map<Eigen::Vector3i, CellInfo, Hasher> m_cells;
+    std::unordered_map<Vector3i, CellInfo> m_cells;
     float m_scale;
 };
 

@@ -38,17 +38,16 @@
 #include "lvr2/registration/OctreeReduction.hpp"
 #include "lvr2/util/IOUtils.hpp"
 
-#include <vector>
+#include <random>
 
 namespace lvr2
 {
 
-OctreeReduction::OctreeReduction(PointBufferPtr& pointBuffer, float voxelSize, size_t minPointsPerVoxel, VoxelSamplingPolicy samplingPolicy)
+OctreeReduction::OctreeReduction(PointBufferPtr& pointBuffer, float voxelSize, size_t maxPointsPerVoxel)
     : m_voxelSize(voxelSize),
-      m_minPointsPerVoxel(minPointsPerVoxel),
+      m_maxPointsPerVoxel(maxPointsPerVoxel),
       m_numPoints(pointBuffer->numPoints()),
-      m_pointBuffer(pointBuffer),
-      m_samplingPolicy(samplingPolicy)
+      m_pointBuffer(pointBuffer)
 {
     auto pts_opt = pointBuffer->getChannel<float>("points");
     if (pts_opt)
@@ -73,13 +72,12 @@ OctreeReduction::OctreeReduction(PointBufferPtr& pointBuffer, float voxelSize, s
     }
 }
 
-OctreeReduction::OctreeReduction(Vector3f* points, size_t& n, float voxelSize, size_t minPointsPerVoxel, VoxelSamplingPolicy samplingPolicy)
+OctreeReduction::OctreeReduction(Vector3f* points, size_t& n, float voxelSize, size_t maxPointsPerVoxel)
     : m_voxelSize(voxelSize),
-      m_minPointsPerVoxel(minPointsPerVoxel),
+      m_maxPointsPerVoxel(maxPointsPerVoxel),
       m_numPoints(n),
       m_points(points),
-      m_pointBuffer(nullptr),
-      m_samplingPolicy(samplingPolicy)
+      m_pointBuffer(nullptr)
 {
     init();
     n = m_numPoints;
@@ -87,8 +85,6 @@ OctreeReduction::OctreeReduction(Vector3f* points, size_t& n, float voxelSize, s
 
 void OctreeReduction::init()
 {
-    m_randomEngine.seed(std::random_device()());
-
     m_flags = new bool[m_numPoints];
     std::fill_n(m_flags, m_numPoints, false);
 
@@ -127,7 +123,7 @@ void OctreeReduction::init()
     }
     m_numPoints = l;
 
-    delete m_flags;
+    delete[] m_flags;
     m_flags = nullptr;
 }
 
@@ -143,7 +139,7 @@ PointBufferPtr OctreeReduction::getReducedPoints()
 void OctreeReduction::createOctree(size_t start, size_t n, const Vector3f& min, const Vector3f& max, unsigned int level)
 {
     // Stop recursion - not enough points in voxel
-    if (n <= m_minPointsPerVoxel)
+    if (n <= m_maxPointsPerVoxel)
     {
         return;
     }
@@ -155,7 +151,23 @@ void OctreeReduction::createOctree(size_t start, size_t n, const Vector3f& min, 
     // Stop recursion if voxel size is below given limit
     if (max[axis] - min[axis] <= m_voxelSize)
     {
-        sampleRange(start, n, center);
+        // Mark all points in voxel as deleted and then un-mark the ones to keep
+        std::fill_n(m_flags + start, n, true);
+
+        static thread_local std::mt19937 randomEngine; // one random engine per omp thread
+        static thread_local bool engineInitialized = false;
+        if (!engineInitialized)
+        {
+            randomEngine.seed(std::random_device()());
+            engineInitialized = true;
+        }
+
+        std::uniform_int_distribution<int> dist(start, start + n - 1);
+        for (size_t i = 0; i < m_maxPointsPerVoxel; i++)
+        {
+            // Randomly select points to keep. This may select the same point multiple times, but that's fine.
+            m_flags[dist(randomEngine)] = false;
+        }
         return;
     }
 
@@ -170,12 +182,12 @@ void OctreeReduction::createOctree(size_t start, size_t n, const Vector3f& min, 
 
     size_t numPointsLeft = startRight - start;
     size_t numPointsRight = (start + n) - startRight;
-    bool leftSplit = numPointsLeft > m_minPointsPerVoxel;
-    bool rightSplit = numPointsRight > m_minPointsPerVoxel;
+    bool leftSplit = numPointsLeft > m_maxPointsPerVoxel;
+    bool rightSplit = numPointsRight > m_maxPointsPerVoxel;
 
     if (leftSplit && rightSplit)
     {
-        // both trees needed => spawn left es task, do right on this thread
+        // both trees needed => spawn left as task, do right on this thread
         #pragma omp task
         createOctree(start,      numPointsLeft,  lMin, lMax, level + 1);
 
@@ -220,38 +232,6 @@ size_t OctreeReduction::splitPoints(size_t start, size_t n, unsigned int axis, f
         }
     }
     return l;
-}
-
-void OctreeReduction::sampleRange(size_t start, size_t n, const Vector3f& center)
-{
-    size_t sample_index = 0;
-
-    if (m_samplingPolicy == CLOSEST_TO_CENTER)
-    {
-        // keep the Point closest to the center
-        float minDist = std::numeric_limits<float>::max();
-        for (size_t i = 0; i < n; i++)
-        {
-            float dist = (m_points[start + i] - center).squaredNorm();
-            if (dist < minDist)
-            {
-                sample_index = i;
-                minDist = dist;
-            }
-        }
-    }
-    else if (m_samplingPolicy == RANDOM_SAMPLE)
-    {
-        // Keep a random sample
-        std::uniform_int_distribution<int> dist(0, n - 1);
-        sample_index = dist(m_randomEngine);
-    }
-
-    // flag all other Points for deletion
-    for (size_t i = 0; i < n; i++)
-    {
-        m_flags[start + i] = i != sample_index;
-    }
 }
 
 } // namespace lvr2

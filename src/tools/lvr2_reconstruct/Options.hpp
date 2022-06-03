@@ -367,6 +367,8 @@ public:
 
     size_t getOctreeMinPoints() const;
 
+    bool useRaycastingTexturizer() const;
+
 private:
 
     /// The set voxelsize
