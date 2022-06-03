@@ -1,5 +1,7 @@
 if(NOT CESIUM_NATIVE_FOUND)
     message(WARNING "lvr2_3dtiles requires cesium-native in ext directory to be built. Skipping lvr2_3dtiles")
+    add_custom_target(lvr2_3dtiles
+                      COMMAND echo "ERROR: building lvr2_3dtiles requires cesium-native in ext directory. Please run 'git clone --recursive https://github.com/CesiumGS/cesium-native.git && git checkout v0.16.0' in ext/ and run cmake again.")
     return()
 endif()
 
