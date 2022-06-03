@@ -62,7 +62,8 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
                   const pmp::BoundingBox& bb,
                   float chunk_size,
                   std::vector<std::pair<pmp::Point, MeshSegment>>& chunks,
-                  std::vector<MeshSegment>& large_segments)
+                  std::vector<MeshSegment>& large_segments,
+                  std::shared_ptr<HighFive::File> mesh_file)
 {
     mesh.garbage_collection(); // ensure that we never need to check mesh.is_deleted(...)
 
@@ -229,7 +230,9 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
         if (is_large[i])
         {
             MeshSegment& out = large_segments.emplace_back();
-            out.mesh.reset(new pmp::SurfaceMesh(std::move(meshes[i])));
+            PMPMesh<BaseVector<float>> pmp_mesh;
+            pmp_mesh.getSurfaceMesh() = std::move(meshes[i]);
+            out.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
             out.bb = meta_data[i].bb;
         }
     }
@@ -238,8 +241,10 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
         auto& [ chunk_pos, segment ] = chunks.emplace_back();
         chunk_pos = chunk_position(chunk_id, 1, num_chunks);
 
-        segment.mesh.reset(new pmp::SurfaceMesh(std::move(meshes[index])));
-        segment.mesh->add_object_property<pmp::IndexType>("o:chunk_id")[0] = index;
+        meshes[index].add_object_property<pmp::IndexType>("o:chunk_id")[0] = index;
+        PMPMesh<BaseVector<float>> pmp_mesh;
+        pmp_mesh.getSurfaceMesh() = std::move(meshes[index]);
+        segment.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
         segment.bb = meta_data[index].bb;
     }
 
@@ -247,14 +252,15 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
               << chunks.size() << " chunks" << std::endl;
 }
 
-SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& in_segment, float chunk_size)
+SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& in_segment, float chunk_size, std::shared_ptr<HighFive::File> mesh_file)
 {
     if (in_segment.bb.longest_axis_size() <= chunk_size)
     {
         return SegmentTree::Ptr(new SegmentTreeLeaf(in_segment));
     }
 
-    auto& mesh = *in_segment.mesh;
+    auto pmp_mesh = in_segment.mesh->get();
+    auto& mesh = pmp_mesh->getSurfaceMesh();
     mesh.garbage_collection(); // ensure that we never need to check mesh.is_deleted(...)
 
     pmp::Point size_of_segment = in_segment.bb.max() - in_segment.bb.min();
@@ -320,16 +326,18 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& in_segment, float chunk_size)
         auto& [ chunk_pos, out_segment ] = chunks.emplace_back();
         chunk_pos = chunk_position(chunk_id, 1, num_chunks);
 
-        out_segment.mesh.reset(new pmp::SurfaceMesh(std::move(meshes[index])));
-        out_segment.mesh->add_object_property<pmp::IndexType>("o:chunk_id")[0] = index;
-        out_segment.bb = out_segment.mesh->bounds();
+        out_segment.bb = meshes[index].bounds();
+        meshes[index].add_object_property<pmp::IndexType>("o:chunk_id")[0] = index;
+        PMPMesh<BaseVector<float>> pmp_mesh;
+        pmp_mesh.getSurfaceMesh() = std::move(meshes[index]);
+        out_segment.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
         out_segment.texture_file = in_segment.texture_file;
     }
 
     auto tree = SegmentTree::octree_partition(chunks, num_chunks, 2);
 
     std::vector<pmp::IndexType> combine_map(meshes.size(), pmp::PMP_MAX_INDEX);
-    std::vector<std::shared_ptr<pmp::SurfaceMesh>> combined_meshes;
+    std::vector<MeshSegment*> combined_meshes;
 
     std::vector<SegmentTree*> queue;
     queue.push_back(tree.get());
@@ -350,14 +358,14 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& in_segment, float chunk_size)
             }
             continue;
         }
-        node->segment().mesh.reset(new pmp::SurfaceMesh());
 
         pmp::IndexType new_id = combined_meshes.size();
-        combined_meshes.push_back(node->segment().mesh);
+        combined_meshes.push_back(&node->segment());
 
         for (auto& child : node->children())
         {
-            auto& mesh = *child->segment().mesh;
+            auto pmp_mesh = child->segment().mesh->get();
+            auto& mesh = pmp_mesh->getSurfaceMesh();
             auto o_prop = mesh.get_object_property<pmp::IndexType>("o:chunk_id");
             pmp::IndexType old_id = o_prop[0];
             combine_map[old_id] = new_id;
@@ -451,7 +459,9 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& in_segment, float chunk_size)
     #pragma omp parallel for
     for (size_t i = 0; i < combined_meshes.size(); i++)
     {
-        *combined_meshes[i] = std::move(meshes[i]);
+        PMPMesh<BaseVector<float>> pmp_mesh;
+        pmp_mesh.getSurfaceMesh() = std::move(meshes[i]);
+        combined_meshes[i]->mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
         if (feature_count > 0)
         {
             combined_meshes[i]->add_edge_property("e:feature", false);
@@ -464,14 +474,15 @@ SegmentTree::Ptr split_mesh_bottom_up(MeshSegment& in_segment, float chunk_size)
     return tree;
 }
 
-SegmentTree::Ptr split_mesh_medium(MeshSegment& segment, float chunk_size)
+SegmentTree::Ptr split_mesh_medium(MeshSegment& segment, float chunk_size, std::shared_ptr<HighFive::File> mesh_file)
 {
     if (segment.bb.longest_axis_size() < chunk_size)
     {
         return SegmentTree::Ptr(new SegmentTreeLeaf(segment));
     }
 
-    auto& mesh = *segment.mesh;
+    auto pmp_mesh = segment.mesh->get();
+    auto& mesh = pmp_mesh->getSurfaceMesh();
     mesh.garbage_collection(); // ensure that we never need to check mesh.is_deleted(...)
 
     struct SplitData
@@ -655,7 +666,9 @@ SegmentTree::Ptr split_mesh_medium(MeshSegment& segment, float chunk_size)
     for (size_t i = 0; i < leafs.size(); i++)
     {
         MeshSegment segment;
-        segment.mesh.reset(new pmp::SurfaceMesh(std::move(meshes[i])));
+        PMPMesh<BaseVector<float>> pmp_mesh;
+        pmp_mesh.getSurfaceMesh() = std::move(meshes[i]);
+        segment.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
         segment.bb = leaf_bbs[i];
         leafs[i].second->add_child(SegmentTree::Ptr(new SegmentTreeLeaf(segment)));
     }
@@ -665,7 +678,7 @@ SegmentTree::Ptr split_mesh_medium(MeshSegment& segment, float chunk_size)
     return SegmentTree::Ptr(root);
 }
 
-SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, bool print)
+SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, std::shared_ptr<HighFive::File> mesh_file, bool print)
 {
     int total_depth = std::ceil(std::log2(segment.bb.longest_axis_size() / chunk_size));
     pmp::Point size = segment.bb.max() - segment.bb.min();
@@ -679,7 +692,8 @@ SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, boo
         return SegmentTree::Ptr(new SegmentTreeLeaf(segment));
     }
 
-    auto& base_mesh = *segment.mesh;
+    auto pmp_mesh = segment.mesh->get();
+    auto& base_mesh = pmp_mesh->getSurfaceMesh();
 
     if (!base_mesh.has_vertex_property("v:quadric"))
     {
@@ -800,8 +814,8 @@ SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, boo
             continue;
         }
         MeshSegment segment;
-        segment.mesh.reset(new pmp::SurfaceMesh(std::move(mesh)));
-        segment.bb = segment.mesh->bounds();
+        // segment.mesh.reset(new pmp::SurfaceMesh(std::move(mesh))); // FIXME:
+        // segment.bb = segment.mesh->bounds();
         row.push_back(SegmentTree::Ptr(new SegmentTreeLeaf(segment)));
     }
 
@@ -826,7 +840,7 @@ SegmentTree::Ptr split_mesh_top_down(MeshSegment& segment, float chunk_size, boo
             }
             else
             {
-                node->segment().mesh.reset(new pmp::SurfaceMesh(std::move(layers[layer][block / 8])));
+                // node->segment().mesh.reset(new pmp::SurfaceMesh(std::move(layers[layer][block / 8]))); // FIXME:
                 next_row.push_back(SegmentTree::Ptr(node));
             }
         }

@@ -863,6 +863,10 @@ void SurfaceMeshIO::read_hdf5(const HighFive::Group& group, SurfaceMesh& mesh)
     auto vn = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_vertices").get();
     auto en = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_edges").get();
     auto fn = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_faces").get();
+
+    if (fn == 0)
+        return;
+
     mesh.vprops_.resize(vn);
     mesh.eprops_.resize(en);
     mesh.hprops_.resize(en * 2);
@@ -1033,9 +1037,23 @@ void write_prop(HighFive::Group& group, const Property<T>& prop, size_t n, const
     if (prop)
     {
         std::vector<size_t> dims = { n * sizeof(T) };
-        HighFive::DataSpace dataSpace(dims);
-        HighFive::DataSetCreateProps properties;
-        group.createDataSet<char>(name, dataSpace, properties).write_raw((char*)prop.data());
+        char* data = (char*)prop.data();
+        if (group.exist(name))
+        {
+            auto set = group.getDataSet(name);
+            if (set.getDimensions() != dims)
+            {
+                set.resize(dims);
+            }
+            set.write_raw(data);
+        }
+        else
+        {
+            HighFive::DataSpace dataSpace(dims);
+            HighFive::DataSetCreateProps properties;
+            properties.add(HighFive::Chunking({ dims[0] }));
+            group.createDataSet<char>(name, dataSpace, properties).write_raw(data);
+        }
     }
 }
 template<typename T>
@@ -1059,6 +1077,9 @@ void SurfaceMeshIO::write_hdf5(HighFive::Group& group, const SurfaceMesh& mesh)
     lvr2::hdf5util::setAttribute(group, "n_vertices", (uint64_t)mesh.n_vertices());
     lvr2::hdf5util::setAttribute(group, "n_edges", (uint64_t)mesh.n_edges());
     lvr2::hdf5util::setAttribute(group, "n_faces", (uint64_t)mesh.n_faces());
+
+    if (mesh.n_faces() == 0)
+        return;
 
     uint8_t version = 2;
     lvr2::hdf5util::setAttribute(group, "version", version);

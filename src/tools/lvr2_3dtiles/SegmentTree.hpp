@@ -35,7 +35,8 @@
 #pragma once
 
 #include "CesiumPmpInterop.hpp"
-#include "lvr2/geometry/PMPMesh.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
+#include "lvr2/geometry/LazyMesh.hpp"
 #include "lvr2/util/Progress.hpp"
 
 namespace lvr2
@@ -43,7 +44,10 @@ namespace lvr2
 
 struct MeshSegment
 {
-    std::shared_ptr<pmp::SurfaceMesh> mesh = nullptr;
+    using Mesh = LazyMesh<BaseVector<float>>;
+    using Inner = std::shared_ptr<Mesh>;
+
+    Inner mesh = nullptr;
     pmp::BoundingBox bb;
     std::string filename = "";
     std::shared_ptr<std::string> texture_file = nullptr;
@@ -81,14 +85,14 @@ public:
     static Ptr octree_partition(std::vector<MeshSegment>& segments, int combine_depth = -1);
     static Ptr octree_partition(std::vector<SegmentTree::Ptr>& segments);
     static Ptr octree_partition(std::vector<std::pair<pmp::Point, MeshSegment>>& chunks, const Eigen::Vector3i& num_chunks, int combine_depth = -1);
-    void simplify(bool print = true);
+    void simplify(std::shared_ptr<HighFive::File> mesh_file, bool print = true);
     virtual void print(size_t indent = 0) = 0;
     virtual void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) = 0;
     virtual void update_children(int combine_depth = -1) = 0;
     virtual void collect_segments(std::vector<MeshSegment>& segments) = 0;
 
-    virtual bool combine_if_possible(bool print) = 0;
-    virtual void collect_simplifyable(std::vector<std::shared_ptr<pmp::SurfaceMesh>>& meshes) = 0;
+    virtual bool combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, bool print) = 0;
+    virtual void collect_simplifyable(std::vector<MeshSegment::Inner>& meshes) = 0;
     virtual MeshSegment& segment() = 0;
     virtual bool is_leaf() = 0;
     virtual size_t num_children() = 0;
@@ -125,8 +129,8 @@ public:
     void update_children(int combine_depth = -1) override;
     void collect_segments(std::vector<MeshSegment>& segments) override;
 
-    bool combine_if_possible(bool print) override;
-    void collect_simplifyable(std::vector<std::shared_ptr<pmp::SurfaceMesh>>& meshes) override;
+    bool combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, bool print) override;
+    void collect_simplifyable(std::vector<MeshSegment::Inner>& meshes) override;
     MeshSegment& segment() override
     {
         return m_meta_segment;
@@ -176,11 +180,11 @@ public:
         segments.push_back(m_segment);
     }
 
-    bool combine_if_possible(bool print) override
+    bool combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, bool print) override
     {
         return true;
     }
-    void collect_simplifyable(std::vector<std::shared_ptr<pmp::SurfaceMesh>>& meshes) override
+    void collect_simplifyable(std::vector<MeshSegment::Inner>& meshes) override
     {
         m_simplified = true;
     }

@@ -66,6 +66,7 @@ public:
     PMPMesh()
     {}
     PMPMesh(MeshBufferPtr ptr);
+    virtual ~PMPMesh() = default;
 
     // ========================================================================
     // = Implementing the `BaseMesh` interface (see BaseMesh for docs)

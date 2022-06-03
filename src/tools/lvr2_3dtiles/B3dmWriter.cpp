@@ -135,7 +135,8 @@ void write_b3dm(const fs::path& output_dir, const MeshSegment& segment, bool pri
         throw std::runtime_error("Could not open " + output_path);
     }
 
-    auto& mesh = *segment.mesh;
+    auto pmp_mesh = segment.mesh->get();
+    auto& mesh = pmp_mesh->getSurfaceMesh();
 
     if (mesh.n_faces() < mesh.faces_size() * 2 / 3)
     {

@@ -34,6 +34,7 @@
 
 #include "SegmentTree.hpp"
 #include "lvr2/algorithm/pmp/SurfaceSimplification.h"
+#include "lvr2/config/lvropenmp.hpp"
 
 namespace lvr2
 {
@@ -42,19 +43,14 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, bool print);
 
 // SegmentTree
 
-void SegmentTree::simplify(bool print)
+void SegmentTree::simplify(std::shared_ptr<HighFive::File> mesh_file, bool print)
 {
-    std::vector<std::shared_ptr<pmp::SurfaceMesh>> meshes;
+    std::vector<MeshSegment::Inner> meshes;
+    size_t num_threads = mesh_file ? 1 : OpenMPConfig::getNumThreads();
 
-    while (!combine_if_possible(print))
+    while (!combine_if_possible(mesh_file, print))
     {
         collect_simplifyable(meshes);
-
-        // larger meshes tend to take longer, so have OpenMP schedule them first
-        std::sort(meshes.begin(), meshes.end(), [](auto & a, auto & b)
-        {
-            return a->n_vertices() > b->n_vertices();
-        });
 
         ProgressBar* progress = nullptr;
         std::vector<std::pair<size_t, float>> results;
@@ -68,16 +64,20 @@ void SegmentTree::simplify(bool print)
             }
             progress = new ProgressBar(total_count, "Simplifying Layer");
         }
-        #pragma omp parallel for schedule(dynamic,1)
+        #pragma omp parallel for schedule(dynamic,1) num_threads(num_threads)
         for (size_t i = 0; i < meshes.size(); i++)
         {
-            auto& mesh = *meshes[i];
+            auto pmp_mesh = meshes[i]->get();
+            auto& mesh = pmp_mesh->getSurfaceMesh();
             size_t old_num_vertices = mesh.n_vertices();
             pmp::SurfaceSimplification simplify(mesh, true);
             constexpr float TARGET_RATIO = 0.2;
             simplify.simplify(old_num_vertices * TARGET_RATIO);
 
             // TODO: remove small faces
+
+            mesh.garbage_collection();
+            pmp_mesh->changed();
 
             if (print)
             {
@@ -282,11 +282,10 @@ void SegmentTreeNode::update_children(int combine_depth)
     }
     m_skipped = combine_depth < 0 || m_depth > combine_depth;
 }
-bool SegmentTreeNode::combine_if_possible(bool print)
+bool SegmentTreeNode::combine_if_possible(const std::shared_ptr<HighFive::File>& mesh_file, bool print)
 {
     if (m_simplified)
     {
-        m_meta_segment.mesh->garbage_collection();
         return true;
     }
     if (m_meta_segment.mesh != nullptr)
@@ -297,7 +296,7 @@ bool SegmentTreeNode::combine_if_possible(bool print)
     size_t count = 0;
     for (auto& child : m_children)
     {
-        if (child->combine_if_possible(print))
+        if (child->combine_if_possible(mesh_file, print))
         {
             count++;
         }
@@ -306,29 +305,35 @@ bool SegmentTreeNode::combine_if_possible(bool print)
     {
         return false;
     }
+    if (m_skipped)
+    {
+        m_simplified = true;
+        return true;
+    }
 
+    std::vector<std::shared_ptr<PMPMesh<BaseVector<float>>>> pmp_meshes;
     std::vector<pmp::SurfaceMesh*> meshes;
     for (auto& child : m_children)
     {
-        meshes.push_back(child->segment().mesh.get());
+        pmp_meshes.push_back(child->segment().mesh->get());
+        meshes.push_back(&pmp_meshes.back()->getSurfaceMesh());
     }
-    auto mesh = new pmp::SurfaceMesh();
-    if (!m_skipped)
+    PMPMesh<BaseVector<float>> pmp_mesh;
+    auto& mesh = pmp_mesh.getSurfaceMesh();
+    mesh.join_mesh(meshes);
+
+    remove_overlapping_features(mesh, print);
+    mesh.garbage_collection();
+
+    if (!mesh.has_vertex_property("v:quadric"))
     {
-        mesh->join_mesh(meshes);
-
-        remove_overlapping_features(*mesh, print);
-
-        if (!mesh->has_vertex_property("v:quadric"))
-        {
-            pmp::SurfaceSimplification::calculate_quadrics(*mesh);
-        }
+        pmp::SurfaceSimplification::calculate_quadrics(mesh);
     }
-    m_meta_segment.mesh.reset(mesh);
+    m_meta_segment.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
     // only return true after simplification is done
     return false;
 }
-void SegmentTreeNode::collect_simplifyable(std::vector<std::shared_ptr<pmp::SurfaceMesh>>& meshes)
+void SegmentTreeNode::collect_simplifyable(std::vector<MeshSegment::Inner>& meshes)
 {
     if (m_simplified)
     {
@@ -336,11 +341,7 @@ void SegmentTreeNode::collect_simplifyable(std::vector<std::shared_ptr<pmp::Surf
     }
     if (m_meta_segment.mesh != nullptr)
     {
-        if (!m_skipped)
-        {
-            meshes.push_back(m_meta_segment.mesh);
-        }
-
+        meshes.push_back(m_meta_segment.mesh);
         m_simplified = true;
     }
     else
@@ -364,24 +365,15 @@ void SegmentTreeNode::fill_tile(Cesium3DTiles::Tile& tile, const std::string& fi
         m_children[i]->fill_tile(tile.children[i], prefix + std::to_string(i));
     }
 
-    if (m_skipped)
-    {
-        double sum = 0;
-        for (auto& child : tile.children)
-        {
-            sum += child.geometricError;
-        }
-        tile.geometricError = (sum + 1) * 10;
-    }
-    else
+    if (!m_skipped)
     {
         m_meta_segment.filename = prefix + "_.b3dm";
         Cesium3DTiles::Content content;
         content.uri = m_meta_segment.filename;
         tile.content = content;
-        tile.geometricError = geometric_error();
         tile.refine = Cesium3DTiles::Tile::Refine::REPLACE;
     }
+    tile.geometricError = geometric_error();
     convert_bounding_box(m_meta_segment.bb, tile.boundingVolume);
 
     m_finalized = true;

@@ -184,13 +184,20 @@ namespace std
 template<typename T>
 struct hash<lvr2::Vector3<T>>
 {
-    size_t operator()(lvr2::Vector3<T> const& p) const noexcept
+    size_t operator()(lvr2::Vector3<T> const& point) const noexcept
     {
-        /// slightly simplified FNV-1a hash function
+        // FNV-1a hash function
         uint64_t hash = 14695981039346656037UL;
-        hash = (hash ^ std::hash<T>()(p.x())) * 1099511628211UL;
-        hash = (hash ^ std::hash<T>()(p.y())) * 1099511628211UL;
-        hash = (hash ^ std::hash<T>()(p.z())) * 1099511628211UL;
+        unsigned char* p = point.data();
+        unsigned char* end = p + 3 * sizeof(T);
+        for (; p != end; ++p)
+        {
+            hash = (hash ^ *p) * 1099511628211UL;
+        }
+        if constexpr(sizeof(size_t) != sizeof(uint64_t))
+        {
+            hash = (hash ^ (hash >> 32)) & 0xFFFFFFFF;
+        }
         return hash;
     }
 };

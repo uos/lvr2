@@ -101,6 +101,16 @@ public:
                 return false;
         return true;
     }
+    BoundingBox overlap(const BoundingBox& bb) const
+    {
+        BoundingBox result;
+        for (int i = 0; i < 3; ++i)
+        {
+            result.min_[i] = std::max(min_[i], bb.min_[i]);
+            result.max_[i] = std::min(max_[i], bb.max_[i]);
+        }
+        return result;
+    }
 
     std::array<BoundingBox, 2> split(int axis, float threshold) const
     {

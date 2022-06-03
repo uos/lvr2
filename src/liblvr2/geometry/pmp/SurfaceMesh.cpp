@@ -1238,7 +1238,9 @@ void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
     {
         copy_properties(*mesh);
 
-        mesh->garbage_collection();
+        if (mesh->has_garbage())
+            throw InvalidInputException("SurfaceMesh::join_mesh: Input Mesh has garbage");
+
         added_faces += mesh->n_faces();
         added_vertices += mesh->n_vertices();
         added_edges += mesh->n_edges();
