@@ -91,13 +91,14 @@ void SegmentTree::simplify(std::shared_ptr<HighFive::File> mesh_file, float max_
                 }
             }
         }
-        meshes.clear();
 
         if (print)
         {
             std::cout << "\r";
             if (!results.empty())
             {
+                std::cout << "Simplification: " << results.size() << " / " << meshes.size()
+                          << " meshes not fully simplified: [format: num_faces(reduction_ratio%)]" << std::endl;
                 for (auto [ n, ratio ] : results)
                 {
                     std::cout << n << "(" << ratio << "%)  ";
@@ -106,6 +107,8 @@ void SegmentTree::simplify(std::shared_ptr<HighFive::File> mesh_file, float max_
             }
             std::cout << timestamp << "layer complete               " << std::endl;
         }
+
+        meshes.clear();
     }
     // print();
 }
@@ -129,7 +132,8 @@ SegmentTree::Ptr SegmentTree::octree_partition(std::vector<SegmentTree::Ptr>& se
     }
     segments.clear();
 
-    auto ret = octree_split_recursive(temp_segments.data(), temp_segments.data() + temp_segments.size(), -1);
+    int combine_depth = 0; // no combination of unrelated segments
+    auto ret = octree_split_recursive(temp_segments.data(), temp_segments.data() + temp_segments.size(), combine_depth);
     for (auto& ptr : temp_segments)
     {
         if (ptr != nullptr)
@@ -322,7 +326,7 @@ bool SegmentTreeNode::combine_if_possible(const std::shared_ptr<HighFive::File>&
     auto& mesh = pmp_mesh.getSurfaceMesh();
     mesh.join_mesh(meshes);
 
-    remove_overlapping_features(mesh, max_merge_dist, print);
+    remove_overlapping_features(mesh, max_merge_dist, false);
 
     if (!mesh.has_vertex_property("v:quadric"))
     {
@@ -498,7 +502,7 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, boo
         return it != merge_map.end() ? it->second : vH;
     };
 
-    std::unordered_map<pmp::Face, std::vector<pmp::Vertex>> deleted_faces;
+    std::vector<std::tuple<pmp::Face, std::vector<pmp::Vertex>, std::vector<pmp::Point>>> deleted_faces;
     #pragma omp parallel for schedule(dynamic,64)
     for (size_t i = 0; i < mesh.faces_size(); i++)
     {
@@ -510,11 +514,7 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, boo
         bool has_merged = false;
         for (auto vH : mesh.vertices(fH))
         {
-            if (map_vertex(vH) != vH)
-            {
-                has_merged = true;
-                break;
-            }
+            has_merged = has_merged || map_vertex(vH) != vH;
         }
         if (!has_merged)
         {
@@ -522,31 +522,46 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, boo
         }
         #pragma omp critical
         {
-            auto& vertices = deleted_faces[fH];
-            vertices.reserve(3);
+            auto& [ id, vert, pos ] = deleted_faces.emplace_back();
+            id = fH;
+            vert.reserve(3);
+            pos.reserve(3);
             for (auto vH : mesh.vertices(fH))
             {
-                vertices.push_back(map_vertex(vH));
+                vert.push_back(vH);
+                pos.push_back(mesh.position(vH));
             }
         }
     }
 
     for (auto& f : deleted_faces)
     {
-        mesh.delete_face(f.first);
+        mesh.delete_face(std::get<0>(f));
+    }
+
+    for (auto& [ src, target ] : merge_map)
+    {
+        v_feature[target] = false;
+        if (!mesh.is_deleted(src))
+        {
+            std::cout << "ERROR: Vertex " << src << " not deleted! ";
+            std::cout << "valence: " << mesh.valence(src);
+            std::cout << std::endl;
+        }
     }
 
     size_t added = 0;
     auto fprop_map = mesh.gen_fprop_map(mesh);
     auto vprop_map = mesh.gen_vprop_map(mesh);
-    for (auto& [ fH, vertices ] : deleted_faces)
+    for (auto& [ fH, vertices, positions ] : deleted_faces)
     {
-        for (auto& vH : vertices)
+        for (size_t i = 0; i < 3; i++)
         {
+            auto& vH = vertices[i];
             vH = map_vertex(vH);
             if (mesh.is_deleted(vH))
             {
-                auto new_vH = mesh.add_vertex(mesh.position(vH));
+                auto new_vH = mesh.add_vertex(positions[i]);
                 mesh.copy_vprops(mesh, vH, new_vH, vprop_map);
                 merge_map[vH] = new_vH;
                 vH = new_vH;
@@ -562,17 +577,8 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, boo
         {}
     }
 
-    mesh.remove_degenerate_faces();
-    mesh.duplicate_non_manifold_vertices();
-
-    for (auto& [ src, target ] : merge_map)
-    {
-        v_feature[target] = false;
-        if (!mesh.is_deleted(src))
-        {
-            std::cout << "ERROR: Vertex " << src << " not deleted!" << std::endl;
-        }
-    }
+    mesh.remove_degenerate_faces(print);
+    mesh.duplicate_non_manifold_vertices(print);
 
     if (print)
     {

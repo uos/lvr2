@@ -404,41 +404,54 @@ SegmentTree::Ptr split_mesh(MeshSegment& in_segment,
         auto v_feature = mesh.add_vertex_property<bool>("v:feature");
         mesh.add_edge_property("e:feature", false);
 
-        std::vector<pmp::Vertex> vertices;
-        vertices.reserve(3);
-        auto fprop_map = mesh.gen_fprop_map(mesh);
-        auto vprop_map = mesh.gen_vprop_map(mesh);
+        std::vector<std::vector<pmp::Vertex>> vertices;
+        std::vector<std::vector<pmp::Point>> vertex_positions;
+        std::unordered_map<pmp::IndexType, std::unordered_map<pmp::Vertex, pmp::Vertex>> vertex_map;
+
         for (auto fH : feature_faces)
         {
-            vertices.clear();
+            auto& vert = vertices.emplace_back();
+            auto& pos = vertex_positions.emplace_back();
+            for (auto vH : mesh.vertices(fH))
+            {
+                vert.push_back(vH);
+                pos.push_back(mesh.position(vH));
+            }
+        }
+
+        auto fprop_map = mesh.gen_fprop_map(mesh);
+        auto vprop_map = mesh.gen_vprop_map(mesh);
+        for (size_t i = 0; i < feature_faces.size(); i++)
+        {
+            auto fH = feature_faces[i];
+            auto& vert = vertices[i];
+            auto& pos = vertex_positions[i];
             auto target_id = f_chunk_id[fH];
-            for (pmp::Vertex vH : mesh.vertices(fH))
-            {
-                v_feature[vH] = true;
-                if (v_chunk_id[vH] != target_id)
-                {
-                    auto new_vH = mesh.add_vertex(mesh.position(vH));
-                    mesh.copy_vprops(mesh, vH, new_vH, vprop_map);
-                    vH = new_vH;
-                    v_chunk_id[vH] = target_id;
-                }
-                vertices.push_back(vH);
-            }
+
             mesh.delete_face(fH);
-            for (auto& vH : vertices)
+
+            auto& v_map = vertex_map[target_id];
+            for (size_t j = 0; j < 3; j++)
             {
-                if (mesh.is_deleted(vH))
+                auto& vH = vert[j];
+                auto it = v_map.find(vH);
+                if (it != v_map.end())
                 {
-                    auto new_vH = mesh.add_vertex(mesh.position(vH));
+                    vH = it->second;
+                }
+                if (mesh.is_deleted(vH) || v_chunk_id[vH] != target_id)
+                {
+                    auto new_vH = mesh.add_vertex(pos[j]);
                     mesh.copy_vprops(mesh, vH, new_vH, vprop_map);
+                    v_chunk_id[new_vH] = target_id;
+                    v_map[vH] = new_vH;
                     vH = new_vH;
                 }
             }
-            auto new_fH = mesh.add_face(vertices);
+            auto new_fH = mesh.add_face(vert);
             mesh.copy_fprops(mesh, fH, new_fH, fprop_map);
         }
     }
-
 
     meshes.clear();
     meshes.resize(combined_meshes.size());

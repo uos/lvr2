@@ -1799,10 +1799,10 @@ public:
     }
 
     //! attempts to fix non-manifold vertices by inserting a new vertex per connected patch
-    void duplicate_non_manifold_vertices();
+    void duplicate_non_manifold_vertices(bool print = true);
 
     //! removes any broken faces
-    void remove_degenerate_faces();
+    void remove_degenerate_faces(bool print = true);
 
     //! deletes the vertex \p v from the mesh
     void delete_vertex(Vertex v);

@@ -601,7 +601,7 @@ bool SurfaceMesh::is_quad_mesh() const
     return is_quad_mesh;
 }
 
-void SurfaceMesh::duplicate_non_manifold_vertices()
+void SurfaceMesh::duplicate_non_manifold_vertices(bool print)
 {
     auto reachable = add_halfedge_property<uint8_t>("h:reachable", false);
     // reachable should be HalfedgeProperty<bool>, but std::vector<bool> is specialized as a
@@ -650,7 +650,7 @@ void SurfaceMesh::duplicate_non_manifold_vertices()
             }
         }
     }
-    if (count > 0)
+    if (print && count > 0)
     {
         std::cout << "Duplicated " << count << " non-manifold vertices" << std::endl;
     }
@@ -658,7 +658,7 @@ void SurfaceMesh::duplicate_non_manifold_vertices()
     remove_halfedge_property(reachable);
 }
 
-void SurfaceMesh::remove_degenerate_faces()
+void SurfaceMesh::remove_degenerate_faces(bool print)
 {
     size_t nf = n_faces(), ne = n_edges();
 
@@ -681,13 +681,16 @@ void SurfaceMesh::remove_degenerate_faces()
         }
     }
 
-    // remove_loop_helper removes one edge and possibly one face
-    size_t f_diff = nf - n_faces();
-    if (f_diff > 0)
-        std::cout << "Removed " << f_diff << " degenerate faces" << std::endl;
-    size_t e_diff = ne - n_edges() - f_diff;
-    if (e_diff > 0)
-        std::cout << "Removed " << e_diff << " degenerate edges without a face" << std::endl;
+    if (print)
+    {
+        // remove_loop_helper removes one edge and possibly one face
+        size_t f_diff = nf - n_faces();
+        if (f_diff > 0)
+            std::cout << "Removed " << f_diff << " degenerate faces" << std::endl;
+        size_t e_diff = ne - n_edges() - f_diff;
+        if (e_diff > 0)
+            std::cout << "Removed " << e_diff << " degenerate edges without a face" << std::endl;
+    }
 }
 
 void SurfaceMesh::split(Face f, Vertex v)
