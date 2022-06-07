@@ -329,8 +329,7 @@ int main(int argc, char** argv)
     else if (pmp::SurfaceMeshIO::supported_extensions().count(input_file_extension))
     {
         std::cout << " using pmp::SurfaceMeshIO" << std::endl;
-        pmp::SurfaceMeshIO io(input_file.string(), pmp::IOFlags());
-        io.read(mesh.getSurfaceMesh());
+        mesh.getSurfaceMesh().read(input_file.string());
     }
     else
     {

@@ -427,6 +427,20 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         ++progressFilling;
     }
     std::cout << std::endl;
+
+    bool failed = false;
+    for (auto& [ index, cell ] : m_cells)
+    {
+        if (cell.inserted != cell.size)
+        {
+            std::cout << timestamp << "Cell " << index.transpose() << ": " << cell.inserted << "/" << cell.size << std::endl;
+            failed = true;
+        }
+    }
+    if (failed)
+    {
+        throw std::runtime_error("BigGrid creation failed: Inconsistent number of points in cells");
+    }
 }
 
 template<typename T>

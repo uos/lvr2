@@ -66,7 +66,13 @@ public:
     PMPMesh()
     {}
     PMPMesh(MeshBufferPtr ptr);
+    PMPMesh(const HighFive::Group& group);
     virtual ~PMPMesh() = default;
+
+    /// Reads the mesh from a group. group must be written to with write(group)
+    void read(const HighFive::Group& group);
+    /// Writes the mesh into the given group
+    void write(HighFive::Group& group) const;
 
     // ========================================================================
     // = Implementing the `BaseMesh` interface (see BaseMesh for docs)

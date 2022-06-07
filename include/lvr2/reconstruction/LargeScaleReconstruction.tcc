@@ -205,16 +205,16 @@ namespace lvr2
         bool createBigMesh = m_options.hasOutput(LSROutput::BigMesh);
         bool createChunksPly = chunkManager && m_options.hasOutput(LSROutput::ChunksPly);
         bool createChunksHdf5 = chunkManager && m_options.hasOutput(LSROutput::ChunksHdf5);
-
+        bool create3dTiles = chunkManager && m_options.hasOutput(LSROutput::Tiles3d);
 
         for(size_t h = 0; h < m_options.voxelSizes.size(); h++)
         {
             float voxelSize = m_options.voxelSizes[h];
-            float overlap = 5 * voxelSize;
+            float overlap = 10 * voxelSize;
             BaseVecT overlapVector(overlap, overlap, overlap);
 
             std::shared_ptr<HighFive::File> chunk_file = nullptr;
-            if (createChunksHdf5 && h == 0)
+            if ((createChunksHdf5 || create3dTiles) && h == 0)
             {
                 chunk_file = hdf5util::open("chunks.h5", HighFive::File::Truncate);
                 auto root = chunk_file->getGroup("/");
@@ -398,7 +398,7 @@ namespace lvr2
                 }
 
                 // save the mesh of the chunk
-                if ((createChunksHdf5 || createChunksPly) && h == 0)
+                if ((createChunksHdf5 || createChunksPly || create3dTiles) && h == 0)
                 {
                     auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
                     lvr2::PMPMesh<Vec> mesh;
@@ -420,7 +420,7 @@ namespace lvr2
                         }
 
                         // save the mesh according to the chosen format(s)
-                        if (createChunksHdf5)
+                        if (createChunksHdf5 || create3dTiles)
                         {
                             mesh.getSurfaceMesh().garbage_collection();
 
@@ -530,6 +530,19 @@ namespace lvr2
                     std::cout << "Warning: Mesh is empty!" << std::endl;
                 }
             }
+
+            if (create3dTiles && h == 0)
+            {
+                // TODO: create 3d tiles from chunk_file
+
+                if (!createChunksHdf5)
+                {
+                    std::string filename = chunk_file->getName();
+                    chunk_file.reset();
+                    boost::filesystem::remove(filename);
+                }
+            }
+
             std::cout << lvr2::timestamp << "added/changed " << newChunks.size() << " chunks in layer " << layerName << std::endl;
         }
 
@@ -765,7 +778,7 @@ namespace lvr2
         for(int h = 0; h < m_options.voxelSizes.size(); h++)
         {
             float voxelSize = m_options.voxelSizes[h];
-            float overlap = 5 * voxelSize;
+            float overlap = 10 * voxelSize;
             BaseVecT overlapVector(overlap, overlap, overlap);
 
             // send chunks
@@ -920,7 +933,7 @@ namespace lvr2
             {
                 //combine chunks
                 float voxelSize = m_options.voxelSizes[h];
-                float overlap = 5 * voxelSize;
+                float overlap = 10 * voxelSize;
                 BaseVecT overlapVector(overlap, overlap, overlap);
                 auto vmax = cbb.getMax() - overlapVector;
                 auto vmin = cbb.getMin() + overlapVector;

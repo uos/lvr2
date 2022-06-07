@@ -46,6 +46,8 @@ namespace lvr2
         ChunksPly,
         // Output one h5 file containing one mesh per chunk.
         ChunksHdf5,
+        // Output a 3D Tiles tileset
+        Tiles3d,
     };
 
     struct LSROptions

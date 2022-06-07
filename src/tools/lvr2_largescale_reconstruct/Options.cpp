@@ -50,6 +50,8 @@ std::istream& operator>>(std::istream& in, LSROutput& output)
         output = LSROutput::ChunksPly;
     else if (token == "chunkshdf5")
         output = LSROutput::ChunksHdf5;
+    else if (token == "tiles3d" || token == "3dtiles" || token == "3d-tiles")
+        output = LSROutput::Tiles3d;
     else
         in.setstate(std::ios_base::failbit);
     return in;
@@ -61,6 +63,7 @@ std::ostream& operator<<(std::ostream& out, LSROutput output)
     case LSROutput::BigMesh:    out << "bigMesh";    break;
     case LSROutput::ChunksPly:  out << "chunksPly";  break;
     case LSROutput::ChunksHdf5: out << "chunksHdf5"; break;
+    case LSROutput::Tiles3d:    out << "3dtiles";    break;
     }
     return out;
 }
@@ -248,21 +251,27 @@ bool Options::printUsage()
         std::cout << std::endl;
         std::cout << m_descr << std::endl;
         std::cout << std::endl;
-        std::cout << "OUTPUT OPTIONS" << std::endl;
-        std::cout << "    Options --output, -O accept one or more of the following tokens:" << std::endl;
-        std::cout << "        bigMesh   | mesh   : Output one big Mesh. Uses A LOT of memory." << std::endl;
-        std::cout << "        chunksPly | chunks : Output one mesh per chunk into \"chunks/x_y_z.ply\"." << std::endl;
-        std::cout << "        chunksHdf5         : Output one mesh per chunk into \"chunks.h5\"." << std::endl;
-        std::cout << "                             Meshes in the hdf5 file are stored using a PMPMesh." << std::endl;
-        std::cout << "                             Use PMPMesh.getSurfaceMesh().read(Group) to read them." << std::endl;
-        std::cout << std::endl;
-        std::cout << "    Chunk options require --partMethod to be 1 (VGrid, the default)." << std::endl;
-        std::cout << "    Multiple Options can be used simultaneously:" << std::endl;
-        std::cout << "        lvr2_largescale_reconstruct -O mesh chunks chunksHdf5" << std::endl;
-        std::cout << "    Generates all possible output." << std::endl;
-        std::cout << std::endl;
-        std::cout << "    By default, only the big mesh is generated. This should be disabled for any" << std::endl;
-        std::cout << "    truly large datasets." << std::endl;
+        std::cout << R"======(OUTPUT OPTIONS
+    Options --output, -O accept one or more of the following tokens:
+        bigMesh | mesh
+            Output one big Mesh. Uses A LOT of memory.
+            Filename will be current date.
+        chunksPly | chunks
+            Output one mesh per chunk into "chunks/x_y_z.ply".
+        chunksHdf5
+            Output one mesh per chunk into "chunks.h5". Meshes in the
+            hdf5 file are stored using a PMPMesh.
+            Use PMPMesh(HighFive::Group) to read them.
+        3dTiles | tiles3d | 3d-tiles
+            Output a 3D Tiles tileset for rendering to "mesh.3dtiles".
+
+    Chunk options and 3dTiles require --partMethod 1 (VGrid, the default).
+    Multiple Options can be used simultaneously:
+        lvr2_largescale_reconstruct -O mesh chunks chunksHdf5 3dTiles
+    Generates all possible output (not recommended).
+
+    By default, only the big mesh is generated. This should be disabled for any
+    truly large datasets.)======" << std::endl;
         m_printed = true;
         return true;
     }

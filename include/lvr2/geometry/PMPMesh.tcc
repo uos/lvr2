@@ -169,6 +169,23 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
 }
 
 template<typename BaseVecT>
+PMPMesh<BaseVecT>::PMPMesh(const HighFive::Group& group)
+{
+    read(group);
+}
+
+template<typename BaseVecT>
+void PMPMesh<BaseVecT>::read(const HighFive::Group& group)
+{
+    m_mesh.read(group);
+}
+template<typename BaseVecT>
+void PMPMesh<BaseVecT>::write(HighFive::Group& group) const
+{
+    m_mesh.write(group);
+}
+
+template<typename BaseVecT>
 EdgeCollapseResult PMPMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 {
     pmp::Halfedge heH = edgeH.halfedge();

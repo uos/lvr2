@@ -188,13 +188,13 @@ struct hash<lvr2::Vector3<T>>
     {
         // FNV-1a hash function
         uint64_t hash = 14695981039346656037UL;
-        unsigned char* p = point.data();
+        unsigned char* p = (unsigned char*)point.data();
         unsigned char* end = p + 3 * sizeof(T);
         for (; p != end; ++p)
         {
             hash = (hash ^ *p) * 1099511628211UL;
         }
-        if constexpr(sizeof(size_t) != sizeof(uint64_t))
+        if constexpr(sizeof(size_t) < sizeof(uint64_t))
         {
             hash = (hash ^ (hash >> 32)) & 0xFFFFFFFF;
         }

@@ -91,7 +91,7 @@ std::shared_ptr<typename LazyMesh<BaseVecT>::MeshWrapper> LazyMesh<BaseVecT>::ge
     if (!ret)
     {
         ret.reset(new MeshWrapper(this));
-        ret->getSurfaceMesh().read(*m_source);
+        ret->read(*m_source);
         m_mesh = ret;
     }
 
@@ -101,7 +101,7 @@ std::shared_ptr<typename LazyMesh<BaseVecT>::MeshWrapper> LazyMesh<BaseVecT>::ge
 template<typename BaseVecT>
 void LazyMesh<BaseVecT>::update(const PMPMesh<BaseVecT>& mesh)
 {
-    mesh.getSurfaceMesh().write(*m_source);
+    mesh.write(*m_source);
 }
 
 } // namespace lvr2
