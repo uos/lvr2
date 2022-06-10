@@ -51,9 +51,14 @@ void SegmentTree::simplify(std::shared_ptr<HighFive::File> mesh_file, float max_
     while (!combine_if_possible(mesh_file, max_merge_dist, print))
     {
         collect_simplifyable(meshes);
+        // sort meshes descending by number of vertices for better omp scheduling
+        std::sort(meshes.begin(), meshes.end(), [](const auto & a, const auto & b)
+        {
+            return a->n_vertices() > b->n_vertices();
+        });
 
         ProgressBar* progress = nullptr;
-        std::vector<std::pair<size_t, float>> results;
+        size_t fully_simplified = 0;
 
         if (print)
         {
@@ -64,7 +69,7 @@ void SegmentTree::simplify(std::shared_ptr<HighFive::File> mesh_file, float max_
             }
             progress = new ProgressBar(total_count, "Simplifying Layer");
         }
-        #pragma omp parallel for schedule(dynamic,1) num_threads(num_threads)
+        #pragma omp parallel for schedule(dynamic,1) num_threads(num_threads) reduction(+:fully_simplified)
         for (size_t i = 0; i < meshes.size(); i++)
         {
             auto pmp_mesh = meshes[i]->get();
@@ -83,11 +88,9 @@ void SegmentTree::simplify(std::shared_ptr<HighFive::File> mesh_file, float max_
             {
                 *progress += old_num_vertices;
                 float ratio = (float)mesh.n_vertices() / old_num_vertices;
-                ratio = std::floor(ratio * 1000) / 10;
-                if (ratio > TARGET_RATIO * 110 && mesh.n_faces() > 10000)
+                if (ratio > TARGET_RATIO * 1.1)
                 {
-                    #pragma omp critical
-                    results.emplace_back(mesh.n_faces(), ratio);
+                    fully_simplified++;
                 }
             }
         }
@@ -95,15 +98,10 @@ void SegmentTree::simplify(std::shared_ptr<HighFive::File> mesh_file, float max_
         if (print)
         {
             std::cout << "\r";
-            if (!results.empty())
+            if (fully_simplified > 0)
             {
-                std::cout << "Simplification: " << results.size() << " / " << meshes.size()
-                          << " meshes not fully simplified: [format: num_faces(reduction_ratio%)]" << std::endl;
-                for (auto [ n, ratio ] : results)
-                {
-                    std::cout << n << "(" << ratio << "%)  ";
-                }
-                std::cout << "                       " << std::endl;
+                std::cout << timestamp << "Simplification: " << fully_simplified << " / " << meshes.size()
+                          << " meshes reached simplification limit" << std::endl;
             }
             std::cout << timestamp << "layer complete               " << std::endl;
         }
@@ -114,34 +112,25 @@ void SegmentTree::simplify(std::shared_ptr<HighFive::File> mesh_file, float max_
 }
 SegmentTree::Ptr SegmentTree::octree_partition(std::vector<MeshSegment>& segments, int combine_depth)
 {
-    std::vector<SegmentTree*> temp_segments(segments.size());
+    std::vector<SegmentTree*> ptrs(segments.size());
     for (size_t i = 0; i < segments.size(); ++i)
     {
-        temp_segments[i] = new SegmentTreeLeaf(segments[i]);
+        ptrs[i] = new SegmentTreeLeaf(segments[i]);
     }
 
-    return octree_split_recursive(temp_segments.data(), temp_segments.data() + temp_segments.size(),
-                                  combine_depth);
+    return octree_split_recursive(ptrs.data(), ptrs.data() + ptrs.size(), combine_depth);
 }
 SegmentTree::Ptr SegmentTree::octree_partition(std::vector<SegmentTree::Ptr>& segments)
 {
-    std::vector<SegmentTree*> temp_segments(segments.size());
+    std::vector<SegmentTree*> ptrs(segments.size());
     for (size_t i = 0; i < segments.size(); ++i)
     {
-        temp_segments[i] = segments[i].release();
+        ptrs[i] = segments[i].release();
     }
     segments.clear();
 
     int combine_depth = 0; // no combination of unrelated segments
-    auto ret = octree_split_recursive(temp_segments.data(), temp_segments.data() + temp_segments.size(), combine_depth);
-    for (auto& ptr : temp_segments)
-    {
-        if (ptr != nullptr)
-        {
-            throw std::runtime_error("SegmentTree::octree_partition: not all segments were released");
-        }
-    }
-    return ret;
+    return octree_split_recursive(ptrs.data(), ptrs.data() + ptrs.size(), combine_depth);
 }
 SegmentTree::Ptr SegmentTree::octree_split_recursive(SegmentTree** start, SegmentTree** end, int combine_depth)
 {
@@ -194,39 +183,42 @@ SegmentTree::Ptr SegmentTree::octree_split_recursive(SegmentTree** start, Segmen
 
     return SegmentTree::Ptr(node);
 }
-SegmentTree::Ptr SegmentTree::octree_partition(std::vector<std::pair<pmp::Point, MeshSegment>>& chunks, const Eigen::Vector3i& num_chunks, int combine_depth)
+SegmentTree::Ptr SegmentTree::octree_partition(std::unordered_map<Vector3i, MeshSegment>& chunks, int combine_depth)
 {
-    std::vector<std::pair<pmp::Point, SegmentTree::Ptr>> nodes;
-
-    for (auto [ chunk_pos, segment ] : chunks)
+    Vector3i min = Vector3i::Constant(std::numeric_limits<Vector3i::value_type>::max());
+    for (auto& [ chunk_pos, _ ] : chunks)
     {
-        auto leaf = new SegmentTreeLeaf(segment);
-        nodes.emplace_back(chunk_pos, SegmentTree::Ptr(leaf));
+        min = min.cwiseMin(chunk_pos);
     }
 
-    std::unordered_map<pmp::IndexType, SegmentTreeNode*> parents;
-    Eigen::Vector3i parent_num_chunks = num_chunks / 2;
+    std::unordered_map<Vector3i, SegmentTree::Ptr> nodes;
+    nodes.reserve(chunks.size());
+    for (auto& [ chunk_pos, segment ] : chunks)
+    {
+        auto leaf = new SegmentTreeLeaf(segment);
+        nodes[chunk_pos - min].reset(leaf);
+    }
+
+    std::unordered_map<Vector3i, SegmentTreeNode*> parents;
 
     while (nodes.size() != 1)
     {
-        parent_num_chunks = parent_num_chunks.cwiseMax(1);
         for (auto& [ chunk_pos, node ] : nodes)
         {
-            auto parent_id = chunk_index(chunk_pos / 2, 1, parent_num_chunks);
-            auto parent = parents.find(parent_id);
+            Vector3i parent_pos = chunk_pos / 2;
+            auto parent = parents.find(parent_pos);
             if (parent == parents.end())
             {
-                parent = parents.emplace(parent_id, new SegmentTreeNode()).first;
+                parent = parents.emplace(parent_pos, new SegmentTreeNode()).first;
             }
             parent->second->add_child(std::move(node));
         }
         nodes.clear();
-        for (auto [ chunk_id, node ] : parents)
+        for (auto [ chunk_pos, node ] : parents)
         {
-            auto pos = chunk_position(chunk_id, 1, parent_num_chunks);
             if (node->num_children() == 1)
             {
-                nodes.emplace_back(pos, std::move(node->children()[0]));
+                nodes[chunk_pos] = std::move(node->children()[0]);
                 delete node;
                 continue;
             }
@@ -254,12 +246,11 @@ SegmentTree::Ptr SegmentTree::octree_partition(std::vector<std::pair<pmp::Point,
                 }
                 node->children().swap(new_children);
             }
-            nodes.emplace_back(pos, SegmentTree::Ptr(node));
+            nodes[chunk_pos].reset(node);
         }
         parents.clear();
-        parent_num_chunks /= 2;
     }
-    auto& ret = nodes[0].second;
+    auto& ret = nodes.begin()->second;
     ret->update_children(combine_depth);
     return std::move(ret);
 }
@@ -448,12 +439,9 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, boo
         }
     }
 
-    std::vector<pmp::Point> positions(candidates.size());
     std::vector<size_t> merged_into(candidates.size());
-    #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < candidates.size(); i++)
     {
-        positions[i] = mesh.position(candidates[i]);
         merged_into[i] = i;
     }
 
@@ -464,9 +452,10 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, boo
     #pragma omp parallel for
     for (size_t i = 1; i < candidates.size(); i++)
     {
+        auto& pos = mesh.position(candidates[i]);
         for (size_t j = 0; j < i; j++)
         {
-            float dist_sq = (positions[i] - positions[j]).squaredNorm();
+            float dist_sq = (pos - mesh.position(candidates[j])).squaredNorm();
             if (dist_sq < max_dist_sq)
             {
                 merged_into[i] = j;
@@ -496,13 +485,16 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, boo
         return;
     }
 
+    auto fprop_map = mesh.gen_fprop_map(mesh);
+    auto vprop_map = mesh.gen_vprop_map(mesh);
+
     auto map_vertex = [&merge_map](pmp::Vertex vH) -> pmp::Vertex
     {
         auto it = merge_map.find(vH);
         return it != merge_map.end() ? it->second : vH;
     };
 
-    std::vector<std::tuple<pmp::Face, std::vector<pmp::Vertex>, std::vector<pmp::Point>>> deleted_faces;
+    std::vector<pmp::Face> feature_faces;
     #pragma omp parallel for schedule(dynamic,64)
     for (size_t i = 0; i < mesh.faces_size(); i++)
     {
@@ -511,32 +503,34 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, boo
         {
             continue;
         }
-        bool has_merged = false;
         for (auto vH : mesh.vertices(fH))
         {
-            has_merged = has_merged || map_vertex(vH) != vH;
-        }
-        if (!has_merged)
-        {
-            continue; // the face would not change
-        }
-        #pragma omp critical
-        {
-            auto& [ id, vert, pos ] = deleted_faces.emplace_back();
-            id = fH;
-            vert.reserve(3);
-            pos.reserve(3);
-            for (auto vH : mesh.vertices(fH))
+            if (map_vertex(vH) != vH)
             {
-                vert.push_back(vH);
-                pos.push_back(mesh.position(vH));
+                #pragma omp critical
+                feature_faces.push_back(fH);
+                break;
             }
         }
     }
 
-    for (auto& f : deleted_faces)
+    std::unordered_map<pmp::Vertex, pmp::Point> vertex_positions;
+    std::unordered_map<pmp::Face, std::vector<pmp::Vertex>> deleted_faces;
+    for (auto fH : feature_faces)
     {
-        mesh.delete_face(std::get<0>(f));
+        auto& vertices = deleted_faces[fH];
+        vertices.reserve(3);
+        for (auto vH : mesh.vertices(fH))
+        {
+            vH = map_vertex(vH);
+            vertices.push_back(vH);
+            vertex_positions[vH] = mesh.position(vH);
+        }
+    }
+
+    for (auto& [ fH, vertices ] : deleted_faces)
+    {
+        mesh.delete_face(fH);
     }
 
     for (auto& [ src, target ] : merge_map)
@@ -544,28 +538,44 @@ void remove_overlapping_features(pmp::SurfaceMesh& mesh, float max_distance, boo
         v_feature[target] = false;
         if (!mesh.is_deleted(src))
         {
-            std::cout << "ERROR: Vertex " << src << " not deleted! ";
-            std::cout << "valence: " << mesh.valence(src);
-            std::cout << std::endl;
+            if (mesh.valence(src) == 0)
+            {
+                mesh.delete_vertex(src);
+            }
+            else
+            {
+                std::cout << "Warning: Vertex " << src << " should have been deleted, but it is not." << std::endl;
+            }
+        }
+    }
+
+    merge_map.clear();
+
+    for (auto& [ vH, pos ] : vertex_positions)
+    {
+        if (mesh.is_deleted(vH))
+        {
+            auto new_vH = mesh.add_vertex(pos);
+            mesh.copy_vprops(mesh, vH, new_vH, vprop_map);
+            merge_map[vH] = new_vH;
+        }
+        else
+        {
+            merge_map[vH] = vH;
         }
     }
 
     size_t added = 0;
-    auto fprop_map = mesh.gen_fprop_map(mesh);
-    auto vprop_map = mesh.gen_vprop_map(mesh);
-    for (auto& [ fH, vertices, positions ] : deleted_faces)
+    for (auto& [ fH, vertices ] : deleted_faces)
     {
-        for (size_t i = 0; i < 3; i++)
+        for (auto& vH : vertices)
         {
-            auto& vH = vertices[i];
-            vH = map_vertex(vH);
-            if (mesh.is_deleted(vH))
-            {
-                auto new_vH = mesh.add_vertex(positions[i]);
-                mesh.copy_vprops(mesh, vH, new_vH, vprop_map);
-                merge_map[vH] = new_vH;
-                vH = new_vH;
-            }
+            vH = merge_map[vH];
+        }
+        if (vertices[0] == vertices[1] || vertices[0] == vertices[2] || vertices[1] == vertices[2])
+        {
+            // side effect of merging based on a distance threshold: some faces become degenerate
+            continue;
         }
         try
         {

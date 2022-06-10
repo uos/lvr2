@@ -103,9 +103,9 @@ public:
     /**
      * @brief Writes the texture to an image file
      *
-     * The file name will be texture_<INDEX>.ppm and the used file format is Portable Pixel Map (ppm).
+     * If no filename is provided, file will be called texture_<INDEX>.ppm
      */
-    void save();
+    void save(const std::string& file_name = "");
 
     /// Texture index
     int m_index;

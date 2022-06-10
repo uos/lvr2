@@ -38,6 +38,7 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/LazyMesh.hpp"
 #include "lvr2/util/Progress.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
 namespace lvr2
 {
@@ -53,30 +54,6 @@ struct MeshSegment
     std::shared_ptr<std::string> texture_file = nullptr;
 };
 
-/**
- * @brief Calculates a 1D Chunk-index from a 3D position
- *
- * @param p the 3D position
- * @param chunk_size the size of a chunk
- * @param num_chunks the number of chunks along each axis
- * @return pmp::IndexType the 1D Chunk-index
- */
-inline pmp::IndexType chunk_index(const pmp::Point& p, float chunk_size, const Eigen::Vector3i& num_chunks)
-{
-    return std::floor(p.x() / chunk_size)
-           + std::floor(p.y() / chunk_size) * num_chunks.x()
-           + std::floor(p.z() / chunk_size) * num_chunks.x() * num_chunks.y();
-}
-/**
- * @brief Inverse of chunk_index
- */
-inline pmp::Point chunk_position(pmp::IndexType index, float chunk_size, const Eigen::Vector3i& num_chunks)
-{
-    return pmp::Point(index % num_chunks.x(),
-                      (index / num_chunks.x()) % num_chunks.y(),
-                      (index / num_chunks.x() / num_chunks.y())) * chunk_size;
-}
-
 class SegmentTree
 {
 public:
@@ -84,7 +61,7 @@ public:
 
     static Ptr octree_partition(std::vector<MeshSegment>& segments, int combine_depth = -1);
     static Ptr octree_partition(std::vector<SegmentTree::Ptr>& segments);
-    static Ptr octree_partition(std::vector<std::pair<pmp::Point, MeshSegment>>& chunks, const Eigen::Vector3i& num_chunks, int combine_depth = -1);
+    static Ptr octree_partition(std::unordered_map<Vector3i, MeshSegment>& chunks, int combine_depth = -1);
     void simplify(std::shared_ptr<HighFive::File> mesh_file, float max_merge_dist, bool print = true);
     virtual void print(size_t indent = 0) = 0;
     virtual void fill_tile(Cesium3DTiles::Tile& tile, const std::string& filename_prefix) = 0;
@@ -103,6 +80,13 @@ public:
     bool m_finalized = false;
 
 protected:
+    /**
+     * @brief @see Cesium3DTiles::Tile::geometricError
+     * 
+     * Gives a metric for how necessary it is to replace a tile with its children.
+     * Returns 0 for leaf nodes because they cannot be replaced and higher values
+     * for higher nodes.
+     */
     double geometric_error() const
     {
         return m_depth == 0 ? 0.0 : std::pow(10, m_depth - 1);

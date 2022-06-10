@@ -38,6 +38,9 @@
 #include "lvr2/texture/Texture.hpp"
 #include "lvr2/display/GlTexture.hpp"
 
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
+
 namespace lvr2 {
 
 Texture::Texture()
@@ -208,15 +211,21 @@ Texture::Texture(
     std::copy(oldTexture->m_pixels, oldTexture->m_pixels + copy_len, m_data);
 }
 
-void Texture::save()
+void Texture::save(const std::string& file_name)
 {
-    //write image file
-    char fn[255];
-    sprintf(fn, "texture_%d.ppm", m_index);
-    PPMIO* pio = new PPMIO;
-    pio->setDataArray(this->m_data, m_width, m_height);
-    pio->write(string(fn));
-    delete pio;
+    if (!file_name.empty())
+    {
+        cv::Mat image(m_height, m_width, CV_8UC3, m_data);
+        cv::imwrite(file_name, image);
+    }
+    else
+    {
+        //write image file
+        std::string name = "texture_" + std::to_string(m_index) + ".ppm";
+        PPMIO pio;
+        pio.setDataArray(this->m_data, m_width, m_height);
+        pio.write(name);
+    }
 }
 
 Texture::~Texture() {

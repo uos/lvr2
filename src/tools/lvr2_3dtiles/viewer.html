@@ -58,18 +58,10 @@ const char* VIEWER_HTML = R"=======(
         });
         window['viewer'] = viewer;
 
-        var lower_args = new URLSearchParams(window.location.search.toLowerCase().replace(/[-_]/, ''));
-        var debug = ['debug', 'showdebug', 'debugdisplay'].some(x => lower_args.has(x));
-        var show_bb = debug || ['bb', 'boundingbox', 'showbb', 'showboundingbox'].some(x => lower_args.has(x));
-
         var tileset = viewer.scene.primitives.add(
-            new Cesium.Cesium3DTileset({
-                url: "tileset.json",
-                debugShowBoundingVolume: show_bb,
-                debugShowRenderingStatistics: debug,
-                debugShowMemoryUsage: debug,
-            })
+            new Cesium.Cesium3DTileset({ url: "tileset.json" })
         );
+        window['tileset'] = tileset;
 
         tileset.lightColor = new Cesium.Cartesian3(3, 2.8, 2.4);
 
@@ -84,6 +76,19 @@ const char* VIEWER_HTML = R"=======(
             .otherwise(function (error) {
                 throw error;
             });
+
+        function freeze() {
+            tileset.debugFreezeFrame = !tileset.debugFreezeFrame;
+        }
+        function colors() {
+            tileset.debugColorizeTiles = !tileset.debugColorizeTiles;
+        }
+        function bb() {
+            tileset.debugShowBoundingVolume = !tileset.debugShowBoundingVolume;
+        }
+        function stats() {
+            tileset.debugShowStatistics = !tileset.debugShowStatistics;
+        }
     </script>
 </body>
 

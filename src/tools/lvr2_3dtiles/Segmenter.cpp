@@ -38,6 +38,22 @@
 namespace lvr2
 {
 
+void chunk_index(const pmp::Point& vec, float chunk_size, Vector3i& index)
+{
+    index.x() = std::floor(vec.x() / chunk_size);
+    index.y() = std::floor(vec.y() / chunk_size);
+    index.z() = std::floor(vec.z() / chunk_size);
+}
+Vector3i chunk_index(const pmp::Point& vec, float chunk_size)
+{
+    Vector3i ret;
+    chunk_index(vec, chunk_size, ret);
+    return ret;
+}
+
+template<typename T>
+using ChunkMap = std::unordered_map<Vector3i, T>;
+
 struct consistency_error : public std::runtime_error
 {
     consistency_error(size_t expected, size_t found, const char* name)
@@ -61,7 +77,7 @@ struct SegmentMetaData
 void segment_mesh(pmp::SurfaceMesh& mesh,
                   const pmp::BoundingBox& bb,
                   float chunk_size,
-                  std::vector<std::pair<pmp::Point, MeshSegment>>& chunks,
+                  ChunkMap<MeshSegment>& chunks,
                   std::vector<MeshSegment>& large_segments,
                   std::shared_ptr<HighFive::File> mesh_file)
 {
@@ -139,16 +155,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
 
     // ==================== merge small segments within a chunk together ====================
 
-    std::unordered_map<pmp::IndexType, SegmentId> chunk_map;
-    pmp::Point total_size = bb.max() - bb.min();
-    pmp::Point size = total_size / chunk_size;
-    Eigen::Vector3i num_chunks(std::ceil(size.x()), std::ceil(size.y()), std::ceil(size.z()));
-
-    // align the chunking to the center of the segment:
-    // modify the offset so that there is equal overlap on all sides
-    pmp::Point size_of_chunks = num_chunks.cast<float>() * chunk_size;
-    pmp::Point chunk_offset = bb.min() - (size_of_chunks - total_size) / 2.0f;
-
+    ChunkMap<SegmentId> chunk_map;
     std::vector<SegmentId> segment_map(segments.size(), INVALID_SEGMENT);
     std::vector<SegmentMetaData> meta_data;
     std::vector<bool> is_large;
@@ -171,7 +178,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
         }
 
         // all other segments are merged based on the chunk that their center lies in
-        auto chunk_id = chunk_index(segment.bb.center() - chunk_offset, chunk_size, num_chunks);
+        auto chunk_id = chunk_index(segment.bb.center(), chunk_size);
         auto elem = chunk_map.find(chunk_id);
         if (elem == chunk_map.end())
         {
@@ -229,8 +236,7 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
     }
     for (auto [ chunk_id, index ] : chunk_map)
     {
-        auto& [ chunk_pos, segment ] = chunks.emplace_back();
-        chunk_pos = chunk_position(chunk_id, 1, num_chunks);
+        auto& segment = chunks[chunk_id];
 
         meshes[index].add_object_property<pmp::IndexType>("o:chunk_id")[0] = index;
         PMPMesh<BaseVector<float>> pmp_mesh;
@@ -266,135 +272,67 @@ SegmentTree::Ptr split_mesh(MeshSegment& in_segment,
     pmp::Point size_of_chunks = num_chunks.cast<float>() * chunk_size;
     pmp::Point chunk_offset = in_segment.bb.min() - (size_of_chunks - size_of_segment) / 2.0f;
 
-    auto v_chunk_id = mesh.add_vertex_property<pmp::IndexType>("v:chunk_id", pmp::PMP_MAX_INDEX);
-    #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < mesh.vertices_size(); i++)
-    {
-        v_chunk_id[pmp::Vertex(i)] = chunk_index(mesh.position(pmp::Vertex(i)) - chunk_offset, chunk_size, num_chunks);
-    }
+    ChunkMap<pmp::IndexType> chunk_map;
+    std::vector<pmp::Face> feature_faces;
 
+    auto v_chunk_id = mesh.add_vertex_property<pmp::IndexType>("v:chunk_id", pmp::PMP_MAX_INDEX);
     auto f_chunk_id = mesh.add_face_property<pmp::IndexType>("f:chunk_id", pmp::PMP_MAX_INDEX);
-    std::unordered_map<pmp::IndexType, size_t> face_counts;
+
     #pragma omp parallel
     {
-        std::unordered_map<pmp::IndexType, size_t> local_face_counts;
-        #pragma omp for schedule(static) nowait
+        ChunkMap<pmp::IndexType> local_chunk_map; // copy of chunk_map to avoid having to lock on
+                                                  // every lookup. updated when necessary
+
+        #pragma omp for schedule(static)
         for (size_t i = 0; i < mesh.faces_size(); i++)
         {
             pmp::Face fH(i);
-            auto chunk_id = v_chunk_id[mesh.to_vertex(mesh.halfedge(fH))];
-            f_chunk_id[fH] = chunk_id;
-            local_face_counts[chunk_id]++;
-        }
-        #pragma omp critical
-        {
-            for (auto [ chunk_id, count ] : local_face_counts)
+            auto pos = mesh.position(mesh.to_vertex(mesh.halfedge(fH)));
+            auto chunk_id = chunk_index(pos - chunk_offset, chunk_size);
+            auto it = local_chunk_map.find(chunk_id);
+            if (it != local_chunk_map.end())
             {
-                face_counts[chunk_id] += count;
+                f_chunk_id[fH] = it->second;
             }
-        }
-    }
-
-    std::unordered_map<pmp::IndexType, pmp::IndexType> chunk_map;
-    std::vector<pmp::SurfaceMesh> meshes;
-    chunk_map.reserve(face_counts.size());
-    meshes.reserve(face_counts.size());
-    for (auto [ chunk_id, face_count ] : face_counts)
-    {
-        auto [ index, mesh ] = push_and_get_index(meshes);
-        chunk_map[chunk_id] = index;
-        mesh.reserve(0, face_count * 3 / 2, face_count);
-    }
-
-    #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < mesh.faces_size(); i++)
-    {
-        f_chunk_id[pmp::Face(i)] = chunk_map[f_chunk_id[pmp::Face(i)]];
-    }
-
-    mesh.split_mesh(meshes, f_chunk_id);
-
-    std::vector<std::pair<pmp::Point, MeshSegment>> chunks;
-    for (auto [ chunk_id, index ] : chunk_map)
-    {
-        auto& [ chunk_pos, out_segment ] = chunks.emplace_back();
-        chunk_pos = chunk_position(chunk_id, 1, num_chunks);
-
-        out_segment.bb = meshes[index].bounds();
-        meshes[index].remove_vertex_property<pmp::IndexType>(v_chunk_id.name());
-        meshes[index].add_object_property<pmp::IndexType>("o:chunk_id")[0] = index;
-        PMPMesh<BaseVector<float>> pmp_mesh;
-        pmp_mesh.getSurfaceMesh() = std::move(meshes[index]);
-        out_segment.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
-        out_segment.texture_file = in_segment.texture_file;
-    }
-
-    auto tree = SegmentTree::octree_partition(chunks, num_chunks, combine_depth);
-
-    std::vector<pmp::IndexType> combine_map(meshes.size(), pmp::PMP_MAX_INDEX);
-    std::vector<MeshSegment*> combined_meshes;
-
-    std::vector<SegmentTree*> queue;
-    queue.push_back(tree.get());
-    while (!queue.empty())
-    {
-        auto current = queue.back();
-        queue.pop_back();
-        if (current->is_leaf())
-        {
-            continue;
-        }
-        SegmentTreeNode* node = dynamic_cast<SegmentTreeNode*>(current);
-        if (node->m_depth > 1)
-        {
-            for (auto& child : node->children())
-            {
-                queue.push_back(child.get());
-            }
-            continue;
-        }
-
-        pmp::IndexType new_id = combined_meshes.size();
-        combined_meshes.push_back(&node->segment());
-
-        for (auto& child : node->children())
-        {
-            auto pmp_mesh = child->segment().mesh->get();
-            auto& mesh = pmp_mesh->getSurfaceMesh();
-            auto o_prop = mesh.get_object_property<pmp::IndexType>("o:chunk_id");
-            pmp::IndexType old_id = o_prop[0];
-            combine_map[old_id] = new_id;
-
-            mesh.remove_object_property(o_prop);
-        }
-    }
-
-    #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < mesh.vertices_size(); i++)
-    {
-        pmp::Vertex vH(i);
-        auto& id = v_chunk_id[vH];
-        auto it = chunk_map.find(id);
-        // id not found in chunk_map means there was no complete face in the chunk, just the vertex
-        id = it != chunk_map.end() ? it->second : f_chunk_id[*mesh.faces(vH)];
-        id = combine_map[id];
-    }
-
-    std::vector<pmp::Face> feature_faces;
-    #pragma omp parallel for schedule(dynamic,64)
-    for (size_t i = 0; i < mesh.faces_size(); i++)
-    {
-        pmp::Face fH(i);
-        auto& id = f_chunk_id[fH];
-        id = combine_map[id];
-
-        for (auto vH : mesh.vertices(fH))
-        {
-            if (v_chunk_id[vH] != id)
+            else
             {
                 #pragma omp critical
-                feature_faces.push_back(fH);
-                break;
+                {
+                    it = chunk_map.find(chunk_id);
+                    if (it == chunk_map.end())
+                    {
+                        pmp::IndexType id = chunk_map.size();
+                        it = chunk_map.emplace(chunk_id, id).first;
+                    }
+                    f_chunk_id[fH] = it->second;
+                    local_chunk_map = chunk_map;
+                }
+            }
+        }
+
+        #pragma omp for schedule(static)
+        for (size_t i = 0; i < mesh.vertices_size(); i++)
+        {
+            pmp::Vertex vH(i);
+            auto chunk_id = chunk_index(mesh.position(vH) - chunk_offset, chunk_size);
+            auto it = chunk_map.find(chunk_id);
+            v_chunk_id[vH] = it != chunk_map.end() ? it->second : f_chunk_id[*mesh.faces(vH)];
+        }
+
+        #pragma omp for schedule(dynamic,64)
+        for (size_t i = 0; i < mesh.faces_size(); i++)
+        {
+            pmp::Face fH(i);
+            auto id = f_chunk_id[fH];
+
+            for (auto vH : mesh.vertices(fH))
+            {
+                if (v_chunk_id[vH] != id)
+                {
+                    #pragma omp critical
+                    feature_faces.push_back(fH);
+                    break;
+                }
             }
         }
     }
@@ -404,71 +342,74 @@ SegmentTree::Ptr split_mesh(MeshSegment& in_segment,
         auto v_feature = mesh.add_vertex_property<bool>("v:feature");
         mesh.add_edge_property("e:feature", false);
 
-        std::vector<std::vector<pmp::Vertex>> vertices;
-        std::vector<std::vector<pmp::Point>> vertex_positions;
         std::unordered_map<pmp::IndexType, std::unordered_map<pmp::Vertex, pmp::Vertex>> vertex_map;
-
-        for (auto fH : feature_faces)
-        {
-            auto& vert = vertices.emplace_back();
-            auto& pos = vertex_positions.emplace_back();
-            for (auto vH : mesh.vertices(fH))
-            {
-                vert.push_back(vH);
-                pos.push_back(mesh.position(vH));
-            }
-        }
+        std::vector<pmp::Vertex> vertices;
+        std::vector<pmp::Point> positions;
+        vertices.reserve(3);
+        positions.reserve(3);
 
         auto fprop_map = mesh.gen_fprop_map(mesh);
         auto vprop_map = mesh.gen_vprop_map(mesh);
-        for (size_t i = 0; i < feature_faces.size(); i++)
+        for (auto fH : feature_faces)
         {
-            auto fH = feature_faces[i];
-            auto& vert = vertices[i];
-            auto& pos = vertex_positions[i];
             auto target_id = f_chunk_id[fH];
+            auto& v_map = vertex_map[target_id];
 
+            vertices.clear();
+            positions.clear();
+            for (auto vH : mesh.vertices(fH))
+            {
+                vertices.push_back(vH);
+                positions.push_back(mesh.position(vH));
+                if (v_chunk_id[vH] != target_id)
+                {
+                    v_feature[vH] = true;
+                }
+            }
             mesh.delete_face(fH);
 
-            auto& v_map = vertex_map[target_id];
-            for (size_t j = 0; j < 3; j++)
+            for (size_t i = 0; i < 3; i++)
             {
-                auto& vH = vert[j];
+                auto& vH = vertices[i];
                 auto it = v_map.find(vH);
                 if (it != v_map.end())
                 {
                     vH = it->second;
                 }
-                if (mesh.is_deleted(vH) || v_chunk_id[vH] != target_id)
+                else if (mesh.is_deleted(vH) || v_chunk_id[vH] != target_id)
                 {
-                    auto new_vH = mesh.add_vertex(pos[j]);
+                    auto new_vH = mesh.add_vertex(positions[i]);
                     mesh.copy_vprops(mesh, vH, new_vH, vprop_map);
                     v_chunk_id[new_vH] = target_id;
                     v_map[vH] = new_vH;
                     vH = new_vH;
                 }
             }
-            auto new_fH = mesh.add_face(vert);
+            auto new_fH = mesh.add_face(vertices);
             mesh.copy_fprops(mesh, fH, new_fH, fprop_map);
         }
     }
 
-    meshes.clear();
-    meshes.resize(combined_meshes.size());
+    std::vector<pmp::SurfaceMesh> meshes(chunk_map.size());
+
     mesh.split_mesh(meshes, f_chunk_id, v_chunk_id);
 
     mesh.remove_face_property(f_chunk_id);
     mesh.remove_vertex_property(v_chunk_id);
 
-    #pragma omp parallel for
-    for (size_t i = 0; i < combined_meshes.size(); i++)
+    ChunkMap<MeshSegment> chunks;
+    for (auto [ chunk_id, index ] : chunk_map)
     {
+        auto& out_segment = chunks[chunk_id];
+        out_segment.bb = meshes[index].bounds();
+
         PMPMesh<BaseVector<float>> pmp_mesh;
-        pmp_mesh.getSurfaceMesh() = std::move(meshes[i]);
-        combined_meshes[i]->mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
+        pmp_mesh.getSurfaceMesh() = std::move(meshes[index]);
+        out_segment.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
+        out_segment.texture_file = in_segment.texture_file;
     }
 
-    return tree;
+    return SegmentTree::octree_partition(chunks, combine_depth);
 }
 
 } // namespace lvr2
