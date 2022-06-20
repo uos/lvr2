@@ -444,9 +444,21 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
 endif()
 
 # Cesium-native
-if(EXISTS ${PROJECT_SOURCE_DIR}/ext/cesium-native/CMakeLists.txt)
-    add_subdirectory(ext/cesium-native)
-    set(CESIUM_NATIVE_FOUND TRUE)
+option(WITH_3DTILES "Compile with 3DTiles support" OFF)
+if(WITH_3DTILES)
+  include(ExternalProject)
+  ExternalProject_Add(cesium-native
+    PREFIX cesium-native
+    GIT_REPOSITORY "https://github.com/CesiumGS/cesium-native"
+    GIT_TAG "v0.16.0"
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=install"
+    LOG_INSTALL ON
+  )
+  ExternalProject_Get_Property(cesium-native BINARY_DIR)
+  include_directories(${BINARY_DIR}/install/include)
+  link_directories(${BINARY_DIR}/install/lib)
+
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_3DTILES)
 endif()
 
 ###############################################################################

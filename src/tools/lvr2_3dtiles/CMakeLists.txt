@@ -1,7 +1,6 @@
-if(NOT CESIUM_NATIVE_FOUND)
-    message(WARNING "lvr2_3dtiles requires cesium-native in ext directory to be built. Skipping lvr2_3dtiles")
+if(NOT WITH_3DTILES)
     add_custom_target(lvr2_3dtiles
-                      COMMAND echo "ERROR: building lvr2_3dtiles requires cesium-native in ext directory. Please run 'git clone --recursive https://github.com/CesiumGS/cesium-native.git && git checkout v0.16.0' in ext/ and run cmake again.")
+                      COMMAND echo "ERROR: building lvr2_3dtiles requires  -DWITH_3DTILES=ON  cmake flag.")
     return()
 endif()
 
@@ -22,21 +21,8 @@ set(TILES_SOURCES
 
 set(LVR2_3DTILES_DEPENDENCIES
     lvr2_static
-    Cesium3DTiles
-    Cesium3DTilesWriter
-    CesiumGltf
-    CesiumGltfWriter
     ${LVR2_LIB_DEPENDENCIES}
 )
-
-get_target_property(CESIUM_INCLUDES Cesium3DTiles INCLUDE_DIRECTORIES)
-include_directories(${CESIUM_INCLUDES})
-get_target_property(CESIUM_INCLUDES Cesium3DTilesWriter INCLUDE_DIRECTORIES)
-include_directories(${CESIUM_INCLUDES})
-get_target_property(CESIUM_INCLUDES CesiumGltf INCLUDE_DIRECTORIES)
-include_directories(${CESIUM_INCLUDES})
-get_target_property(CESIUM_INCLUDES CesiumGltfWriter INCLUDE_DIRECTORIES)
-include_directories(${CESIUM_INCLUDES})
 
 #####################################################################################
 # Add executable

@@ -39,6 +39,7 @@
 #include "lvr2/io/modelio/LasIO.hpp"
 #include "lvr2/io/modelio/DatIO.hpp"
 #include "lvr2/io/modelio/STLIO.hpp"
+#include "lvr2/io/modelio/B3dmIO.hpp"
 
 // #include "lvr2/io/HDF5IO.hpp"
 // #include "lvr2/io/WaveformIO.hpp"
@@ -95,9 +96,17 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new LasIO;
     }
-    else if (extension ==".dat")
+    else if (extension == ".dat")
     {
         io = new DatIO;
+    }
+    else if (extension == ".b3dm")
+    {
+#ifdef LVR2_USE_3DTILES
+        io = new B3dmIO;
+#else
+        throw std::runtime_error("Tried to read a b3dm file, but 3dtiles support is not enabled");
+#endif
     }
     // else if (extension ==".lwf")
     // {
@@ -223,6 +232,14 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     else if (extension == ".stl")
     {
         io = new STLIO;
+    }
+    else if (extension == ".b3dm")
+    {
+#ifdef LVR2_USE_3DTILES
+        io = new B3dmIO;
+#else
+        throw std::runtime_error("Tried to write a b3dm file, but 3dtiles support is not enabled");
+#endif
     }
 #ifdef LVR2_USE_PCL
     else if (extension == ".pcd")

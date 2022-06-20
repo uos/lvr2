@@ -54,6 +54,7 @@ set(LVR2_SOURCES
     io/modelio/STLIO.cpp
     io/modelio/UosIO.cpp
     io/modelio/PCDIO.cpp
+    io/modelio/B3dmIO.cpp
     io/kernels/DirectoryKernel.cpp
     io/kernels/HDF5Kernel.cpp
     io/LineReader.cpp
@@ -125,6 +126,16 @@ set(LVR2_SOURCES ${LVR2_SOURCES}
   io/KinectIO.cpp)
 endif()
 
+if(WITH_3DTILES)
+    list(APPEND LVR2_LIB_DEPENDENCIES
+        Cesium3DTiles
+        Cesium3DTilesWriter
+        CesiumGltf
+        CesiumGltfWriter
+        CesiumJsonWriter
+    )
+endif(WITH_3DTILES)
+
 #####################################################################################
 # Draco Geometry Compression
 #####################################################################################
@@ -181,6 +192,10 @@ endif(UNIX)
 #####################################################################################
 
 add_library(lvr2core OBJECT ${LVR2_SOURCES})
+
+if(WITH_3DTILES)
+    add_dependencies(lvr2core cesium-native)
+endif(WITH_3DTILES)
 
 #####################################################################################
 # Build static library
