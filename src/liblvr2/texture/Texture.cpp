@@ -40,6 +40,7 @@
 
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 
 namespace lvr2 {
 
@@ -216,7 +217,9 @@ void Texture::save(const std::string& file_name)
     if (!file_name.empty())
     {
         cv::Mat image(m_height, m_width, CV_8UC3, m_data);
-        cv::imwrite(file_name, image);
+        cv::Mat bgr;
+        cv::cvtColor(image, bgr, cv::COLOR_RGB2BGR);
+        cv::imwrite(file_name, bgr);
     }
     else
     {

@@ -148,11 +148,11 @@ void write_b3dm(const fs::path& output_dir, const MeshSegment& segment, bool pri
     const auto colors = mesh.get_vertex_property<pmp::Color>("v:color");
     const auto tex = mesh.get_vertex_property<pmp::TexCoord>("v:tex");
 
-    if (!tex && segment.texture_file)
+    if (!tex && segment.texture)
     {
         throw std::runtime_error("Texture file specified, but no texture coordinates found");
     }
-    bool use_tex = tex && segment.texture_file;
+    bool use_tex = tex && segment.texture;
 
     CesiumGltf::Model model;
     std::vector<std::byte> buffer;
@@ -169,33 +169,6 @@ void write_b3dm(const fs::path& output_dir, const MeshSegment& segment, bool pri
     auto [ primitive_id, primitive ] = push_and_get_index(out_mesh.primitives);
     primitive.mode = CesiumGltf::MeshPrimitive::Mode::TRIANGLES;
     primitive.material = material_id;
-
-    if (use_tex)
-    {
-        auto [ image_id, image ] = push_and_get_index(model.images);
-        image.uri = *segment.texture_file;
-
-        auto [ sampler_id, sampler ] = push_and_get_index(model.samplers);
-        using CesiumGltf::Sampler;
-        sampler.magFilter = Sampler::MagFilter::LINEAR;
-        sampler.minFilter = Sampler::MinFilter::LINEAR_MIPMAP_LINEAR;
-        sampler.wrapS = Sampler::WrapS::CLAMP_TO_EDGE;
-        sampler.wrapT = Sampler::WrapT::CLAMP_TO_EDGE;
-
-        auto [ texture_id, texture ] = push_and_get_index(model.textures);
-        texture.source = image_id;
-        texture.sampler = sampler_id;
-
-        CesiumGltf::TextureInfo info;
-        info.index = texture_id;
-
-        CesiumGltf::MaterialPBRMetallicRoughness pbr;
-        pbr.baseColorTexture = info;
-        pbr.metallicFactor = 0;
-        pbr.roughnessFactor = 0.5;
-
-        material.pbrMetallicRoughness = pbr;
-    }
 
     auto [ node_id, node ] = push_and_get_index(model.nodes);
     node.mesh = out_mesh_id;
@@ -251,6 +224,44 @@ void write_b3dm(const fs::path& output_dir, const MeshSegment& segment, bool pri
 
     primitive.indices = face_accessor_id;
 
+    // add texture to buffer
+    size_t texture_byte_offset;
+    if (use_tex)
+    {
+        texture_byte_offset = byte_offset;
+        size_t texture_byte_length = segment.texture->size();
+        byte_offset += texture_byte_length;
+    
+        auto [ texture_buffer_view_id, texture_buffer_view ] = push_and_get_index(model.bufferViews);
+        texture_buffer_view.buffer = 0;
+        texture_buffer_view.byteOffset = texture_byte_offset;
+        texture_buffer_view.byteLength = texture_byte_length;
+
+        auto [ image_id, image ] = push_and_get_index(model.images);
+        image.bufferView = texture_buffer_view_id;
+        image.mimeType = CesiumGltf::ImageSpec::MimeType::image_png;
+
+        auto [ sampler_id, sampler ] = push_and_get_index(model.samplers);
+        using CesiumGltf::Sampler;
+        sampler.magFilter = Sampler::MagFilter::LINEAR;
+        sampler.minFilter = Sampler::MinFilter::LINEAR_MIPMAP_LINEAR;
+        sampler.wrapS = Sampler::WrapS::CLAMP_TO_EDGE;
+        sampler.wrapT = Sampler::WrapT::CLAMP_TO_EDGE;
+
+        auto [ texture_id, texture ] = push_and_get_index(model.textures);
+        texture.source = image_id;
+        texture.sampler = sampler_id;
+
+        CesiumGltf::TextureInfo info;
+        info.index = texture_id;
+
+        CesiumGltf::MaterialPBRMetallicRoughness pbr;
+        pbr.baseColorTexture = info;
+        pbr.metallicFactor = 0;
+        pbr.roughnessFactor = 0.5;
+
+        material.pbrMetallicRoughness = pbr;
+    }
 
     auto [ buffer_id, raw_buffer ] = push_and_get_index(model.buffers);
     size_t total_byte_length = byte_offset;
@@ -261,6 +272,12 @@ void write_b3dm(const fs::path& output_dir, const MeshSegment& segment, bool pri
     {
         writer.add_metadata(buffer, model, primitive);
     }
+
+    if (use_tex)
+    {
+        std::copy_n(segment.texture->data(), segment.texture->size(), (unsigned char*)buffer.data() + texture_byte_offset);
+    }
+
     uint32_t* face_out = (uint32_t*)(buffer.data() + face_byte_offset);
 
     ProgressBar* progress = nullptr;
@@ -287,7 +304,7 @@ void write_b3dm(const fs::path& output_dir, const MeshSegment& segment, bool pri
     std::cout << "\r";
 
     // consistency check
-    auto face_difference = face_out - (uint32_t*)(buffer.data() + buffer.size());
+    auto face_difference = face_out - (uint32_t*)(buffer.data() + face_byte_offset + face_byte_length);
     if (face_difference % 3 != 0)
     {
         std::cerr << "Mesh had a non-triangle" << std::endl;

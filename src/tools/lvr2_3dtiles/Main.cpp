@@ -192,7 +192,7 @@ int main(int argc, char** argv)
     std::unordered_map<Vector3i, MeshSegment> chunks;
     std::vector<MeshSegment> segments;
     pmp::BoundingBox bb;
-    std::vector<std::string> texture_files;
+    std::vector<std::vector<unsigned char>> textures;
     float max_merge_dist = 1e-8f;
 
     std::cout << timestamp << "Reading mesh " << input_file;
@@ -268,16 +268,18 @@ int main(int argc, char** argv)
             if (!buffer->getMaterials().empty() && !assign_colors)
             {
                 auto materials = buffer->getMaterials();
-                auto textures = buffer->getTextures();
+                auto in_textures = buffer->getTextures();
 
-                texture_files.resize(textures.size());
-                for (size_t i = 0; i < textures.size(); ++i)
+                textures.resize(in_textures.size());
+                for (size_t i = 0; i < in_textures.size(); ++i)
                 {
-                    auto out_filename = "texture.png";
-                    texture_files[textures[i].m_index] = out_filename;
-                    auto out_path = output_dir / "segments" / ("s" + std::to_string(textures[i].m_index)) / out_filename;
-                    fs::create_directories(out_path.parent_path());
-                    textures[i].save(out_path.string());
+                    cv::Mat image(in_textures[i].m_height, in_textures[i].m_width, CV_8UC3, in_textures[i].m_data);
+                    cv::Mat bgr;
+                    cv::cvtColor(image, bgr, cv::COLOR_RGB2BGR);
+                    std::vector<int> compression_params;
+                    compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+                    compression_params.push_back(9);
+                    cv::imencode(".png", bgr, textures[in_textures[i].m_index], compression_params);
                 }
 
                 std::vector<pmp::IndexType> mat_to_texture(materials.size(), pmp::PMP_MAX_INDEX);
@@ -364,7 +366,7 @@ int main(int argc, char** argv)
     {
         // chunks were loaded, no further splitting required
     }
-    else if (!texture_files.empty())
+    else if (!textures.empty())
     {
         auto f_dist = surface_mesh.get_face_property<pmp::IndexType>("f:material");
         auto v_dist = surface_mesh.add_vertex_property<pmp::IndexType>("v:material", pmp::PMP_MAX_INDEX);
@@ -385,7 +387,7 @@ int main(int argc, char** argv)
                 }
             }
         }
-        std::vector<pmp::SurfaceMesh> meshes(texture_files.size());
+        std::vector<pmp::SurfaceMesh> meshes(textures.size());
         surface_mesh.split_mesh(meshes, f_dist, v_dist);
         surface_mesh.remove_vertex_property(v_dist);
 
@@ -396,7 +398,7 @@ int main(int argc, char** argv)
             mesh.getSurfaceMesh() = std::move(meshes[i]);
             segments[i].bb = mesh.getSurfaceMesh().bounds();
             segments[i].mesh.reset(new LazyMesh(mesh, mesh_file));
-            segments[i].texture_file.reset(new std::string(texture_files[i]));
+            segments[i].texture.reset(new std::vector(textures[i]));
         }
     }
     else if (chunk_size > 0)
@@ -483,7 +485,10 @@ int main(int argc, char** argv)
             }
             else
             {
-                tree.reset(new SegmentTreeLeaf(segment));
+                // no splitting, just create a single segment with a parent node for simplification
+                auto node = new SegmentTreeNode();
+                node->add_child(SegmentTree::Ptr(new SegmentTreeLeaf(segment)));
+                tree.reset(node);
             }
             tree->segment().filename = path + "s";
         }
@@ -524,10 +529,10 @@ int main(int argc, char** argv)
     root.transform =
     {
         // 4x4 matrix to place the object somewhere on the globe
-        0.9686356343768793, 0.24848542777253734, 0, 0,
-        -0.15986465724980844, 0.62317780594908875, 0.765566922962899, 0,
-        0.1902322243409411, -0.7415554020821229, 0.643356267137516, 0,
-        1215107.7612304366, -4736682.902037748, 4081926.095098698, 1
+        -1, 0, 0, 0,
+        0, 0, 1, 0,
+        0, 1, 0, 0,
+        0, 6381000, 0, 1
     };
     for (size_t x = 0; x < 3; x++)
     {

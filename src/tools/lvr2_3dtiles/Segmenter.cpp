@@ -406,7 +406,7 @@ SegmentTree::Ptr split_mesh(MeshSegment& in_segment,
         PMPMesh<BaseVector<float>> pmp_mesh;
         pmp_mesh.getSurfaceMesh() = std::move(meshes[index]);
         out_segment.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
-        out_segment.texture_file = in_segment.texture_file;
+        out_segment.texture = in_segment.texture;
     }
 
     return SegmentTree::octree_partition(chunks, combine_depth);

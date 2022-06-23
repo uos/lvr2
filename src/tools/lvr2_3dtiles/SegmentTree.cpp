@@ -260,7 +260,7 @@ SegmentTree::Ptr SegmentTree::octree_partition(std::unordered_map<Vector3i, Mesh
 void SegmentTreeNode::add_child(SegmentTree::Ptr child)
 {
     m_meta_segment.bb += child->segment().bb;
-    m_meta_segment.texture_file = child->segment().texture_file;
+    m_meta_segment.texture = child->segment().texture;
     m_depth = std::max(m_depth, child->m_depth + 1);
     m_children.push_back(std::move(child));
 }
@@ -272,7 +272,7 @@ void SegmentTreeNode::update_children(int combine_depth)
     {
         child->update_children(combine_depth);
         m_meta_segment.bb += child->segment().bb;
-        m_meta_segment.texture_file = child->segment().texture_file;
+        m_meta_segment.texture = child->segment().texture;
         m_depth = std::max(m_depth, child->m_depth + 1);
     }
     m_skipped = combine_depth >= 0 && m_depth > combine_depth;
