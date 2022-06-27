@@ -111,8 +111,7 @@ void SurfaceMeshIO::read_obj(SurfaceMesh& mesh)
     std::vector<TexCoord> all_tex_coords; //individual texture coordinates
     std::vector<int>
         halfedge_tex_idx; //texture coordinates sorted for halfedges
-    HalfedgeProperty<TexCoord> tex_coords =
-        mesh.halfedge_property<TexCoord>("h:tex");
+    auto tex_coords = mesh.halfedge_property<TexCoord>("h:tex");
     bool with_tex_coord = false;
 
     // open file (in ASCII mode)
@@ -657,7 +656,7 @@ void SurfaceMeshIO::write_off(const SurfaceMesh& mesh)
     fprintf(out, "OFF\n%zu %zu 0\n", mesh.n_vertices(), mesh.n_faces());
 
     // vertices, and optionally normals and texture coordinates
-    VertexProperty<Point> points = mesh.get_vertex_property<Point>("v:point");
+    auto points = mesh.get_vertex_property<Point>("v:point");
     for (SurfaceMesh::VertexIterator vit = mesh.vertices_begin();
          vit != mesh.vertices_end(); ++vit)
     {
@@ -789,12 +788,9 @@ void SurfaceMeshIO::read_pmp(SurfaceMesh& mesh)
     mesh.fprops_.resize(nf);
 
     // get properties
-    auto vconn =
-        mesh.vertex_property<SurfaceMesh::VertexConnectivity>("v:connectivity");
-    auto hconn = mesh.halfedge_property<SurfaceMesh::HalfedgeConnectivity>(
-        "h:connectivity");
-    auto fconn =
-        mesh.face_property<SurfaceMesh::FaceConnectivity>("f:connectivity");
+    auto vconn = mesh.vertex_property<SurfaceMesh::VertexConnectivity>("v:connectivity");
+    auto hconn = mesh.halfedge_property<SurfaceMesh::HalfedgeConnectivity>("h:connectivity");
+    auto fconn = mesh.face_property<SurfaceMesh::FaceConnectivity>("f:connectivity");
     auto point = mesh.vertex_property<Point>("v:point");
 
     // read properties from file
@@ -968,12 +964,9 @@ void SurfaceMeshIO::write_pmp(const SurfaceMesh& mesh)
         throw IOException("Failed to open file: " + filename_);
 
     // get properties
-    auto vconn = mesh.get_vertex_property<SurfaceMesh::VertexConnectivity>(
-        "v:connectivity");
-    auto hconn = mesh.get_halfedge_property<SurfaceMesh::HalfedgeConnectivity>(
-        "h:connectivity");
-    auto fconn =
-        mesh.get_face_property<SurfaceMesh::FaceConnectivity>("f:connectivity");
+    auto vconn = mesh.get_vertex_property<SurfaceMesh::VertexConnectivity>("v:connectivity");
+    auto hconn = mesh.get_halfedge_property<SurfaceMesh::HalfedgeConnectivity>("h:connectivity");
+    auto fconn =mesh.get_face_property<SurfaceMesh::FaceConnectivity>("f:connectivity");
     auto point = mesh.get_vertex_property<Point>("v:point");
 
     // how many elements?
@@ -1032,7 +1025,7 @@ void SurfaceMeshIO::write_pmp(const SurfaceMesh& mesh)
 }
 
 template<typename T>
-void write_prop(HighFive::Group& group, const Property<T>& prop, size_t n, const std::string& name)
+void write_prop(HighFive::Group& group, const ConstProperty<T>& prop, size_t n, const std::string& name)
 {
     if (prop)
     {

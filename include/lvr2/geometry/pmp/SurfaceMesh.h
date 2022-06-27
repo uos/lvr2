@@ -212,115 +212,34 @@ namespace pmp
 
 // Property Types
 
-//! Vertex property of type T
-template <class T>
-class VertexProperty : public Property<T>
-{
-public:
-    //! default constructor
-    explicit VertexProperty() {}
-    explicit VertexProperty(Property<T> p) : Property<T>(p) {}
-
-    //! access the data stored for vertex \p v
-    typename Property<T>::reference operator[](Vertex v)
-    {
-        return Property<T>::operator[](v.idx());
-    }
-
-    //! access the data stored for vertex \p v
-    typename Property<T>::const_reference operator[](Vertex v) const
-    {
-        return Property<T>::operator[](v.idx());
-    }
+#define MACRO_GEN_HANDLE_PROPERTY(type) \
+template <class T> \
+class type ## Property : public Property<T> \
+{ \
+public: \
+    explicit type ## Property() {} \
+    explicit type ## Property(Property<T> p) : Property<T>(p) {} \
+\
+    typename Property<T>::reference operator[](type v) \
+    { return Property<T>::operator[](v.idx()); } \
+    typename Property<T>::const_reference operator[](type v) const \
+    { return Property<T>::operator[](v.idx()); } \
+}; \
+template <class T> \
+class type ## ConstProperty : public ConstProperty<T> \
+{ \
+public: \
+    explicit type ## ConstProperty() {} \
+    explicit type ## ConstProperty(ConstProperty<T> p) : ConstProperty<T>(p) {} \
+\
+    typename ConstProperty<T>::const_reference operator[](type v) const \
+    { return ConstProperty<T>::operator[](v.idx()); } \
 };
 
-//! Halfedge property of type T
-template <class T>
-class HalfedgeProperty : public Property<T>
-{
-public:
-    //! default constructor
-    explicit HalfedgeProperty() {}
-    explicit HalfedgeProperty(Property<T> p) : Property<T>(p) {}
-
-    //! access the data stored for halfedge \p h
-    typename Property<T>::reference operator[](Halfedge h)
-    {
-        return Property<T>::operator[](h.idx());
-    }
-
-    //! access the data stored for halfedge \p h
-    typename Property<T>::const_reference operator[](Halfedge h) const
-    {
-        return Property<T>::operator[](h.idx());
-    }
-};
-
-//! Edge property of type T
-template <class T>
-class EdgeProperty : public Property<T>
-{
-public:
-    //! default constructor
-    explicit EdgeProperty() {}
-    explicit EdgeProperty(Property<T> p) : Property<T>(p) {}
-
-    //! access the data stored for edge \p e
-    typename Property<T>::reference operator[](Edge e)
-    {
-        return Property<T>::operator[](e.idx());
-    }
-
-    //! access the data stored for edge \p e
-    typename Property<T>::const_reference operator[](Edge e) const
-    {
-        return Property<T>::operator[](e.idx());
-    }
-};
-
-//! Face property of type T
-template <class T>
-class FaceProperty : public Property<T>
-{
-public:
-    //! default constructor
-    explicit FaceProperty() {}
-    explicit FaceProperty(Property<T> p) : Property<T>(p) {}
-
-    //! access the data stored for face \p f
-    typename Property<T>::reference operator[](Face f)
-    {
-        return Property<T>::operator[](f.idx());
-    }
-
-    //! access the data stored for face \p f
-    typename Property<T>::const_reference operator[](Face f) const
-    {
-        return Property<T>::operator[](f.idx());
-    }
-};
-
-//! Object property of type T
-template <class T>
-class ObjectProperty : public Property<T>
-{
-public:
-    //! default constructor
-    explicit ObjectProperty() {}
-    explicit ObjectProperty(Property<T> p) : Property<T>(p) {}
-
-    //! access the data stored for the object
-    typename Property<T>::reference operator[](IndexType idx)
-    {
-        return Property<T>::operator[](idx);
-    }
-
-    //! access the data stored for the object
-    typename Property<T>::const_reference operator[](IndexType idx) const
-    {
-        return Property<T>::operator[](idx);
-    }
-};
+MACRO_GEN_HANDLE_PROPERTY(Vertex) // generates VertexProperty and VertexConstProperty
+MACRO_GEN_HANDLE_PROPERTY(Halfedge) // generates HalfedgeProperty and HalfedgeConstProperty
+MACRO_GEN_HANDLE_PROPERTY(Edge) // generates EdgeProperty and EdgeConstProperty
+MACRO_GEN_HANDLE_PROPERTY(Face) // generates FaceProperty and FaceConstProperty
 
 //! A halfedge data structure for polygonal meshes.
 class SurfaceMesh
@@ -1206,32 +1125,40 @@ public:
     //! fails if a property named \p name exists already, since the name has to
     //! be unique. in this case it returns an invalid property
     template <class T>
-    ObjectProperty<T> add_object_property(const std::string& name,
-                                          const T t = T())
+    Property<T> add_object_property(const std::string& name,
+                                    const T t = T())
     {
-        return ObjectProperty<T>(oprops_.add<T>(name, t));
+        return Property<T>(oprops_.add<T>(name, t));
     }
 
     //! get the object property named \p name of type \p T. returns an invalid
-    //! ObjectProperty if the property does not exist or if the type does not
+    //! Property if the property does not exist or if the type does not
     //! match.
     template <class T>
-    ObjectProperty<T> get_object_property(const std::string& name) const
+    Property<T> get_object_property(const std::string& name)
     {
-        return ObjectProperty<T>(oprops_.get<T>(name));
+        return Property<T>(oprops_.get<T>(name));
+    }
+    //! get the object property named \p name of type \p T. returns an invalid
+    //! Property if the property does not exist or if the type does not
+    //! match.
+    template <class T>
+    ConstProperty<T> get_object_property(const std::string& name) const
+    {
+        return Property<T>(oprops_.get<T>(name));
     }
 
     //! if a object property of type \p T with name \p name exists, it is
     //! returned.  otherwise this property is added (with default value \p t)
     template <class T>
-    ObjectProperty<T> object_property(const std::string& name, const T t = T())
+    Property<T> object_property(const std::string& name, const T t = T())
     {
-        return ObjectProperty<T>(oprops_.get_or_add<T>(name, t));
+        return Property<T>(oprops_.get_or_add<T>(name, t));
     }
 
     //! remove the object property \p p
     template <class T>
-    void remove_object_property(ObjectProperty<T>& p)
+    void remove_object_property(Property<T>& p)
     {
         oprops_.remove(p);
     }
@@ -1271,9 +1198,18 @@ public:
     //! invalid VertexProperty if the property does not exist or if the
     //! type does not match.
     template <class T>
-    VertexProperty<T> get_vertex_property(const std::string& name) const
+    VertexProperty<T> get_vertex_property(const std::string& name)
     {
         return VertexProperty<T>(vprops_.get<T>(name));
+    }
+
+    //! get the vertex property named \p name of type \p T. returns an
+    //! invalid VertexProperty if the property does not exist or if the
+    //! type does not match.
+    template <class T>
+    VertexConstProperty<T> get_vertex_property(const std::string& name) const
+    {
+        return VertexConstProperty<T>(vprops_.get<T>(name));
     }
 
     //! if a vertex property of type \p T with name \p name exists, it is
@@ -1329,18 +1265,36 @@ public:
     //! invalid VertexProperty if the property does not exist or if the
     //! type does not match.
     template <class T>
-    HalfedgeProperty<T> get_halfedge_property(const std::string& name) const
+    HalfedgeProperty<T> get_halfedge_property(const std::string& name)
     {
         return HalfedgeProperty<T>(hprops_.get<T>(name));
+    }
+
+    //! get the halfedge property named \p name of type \p T. returns an
+    //! invalid VertexProperty if the property does not exist or if the
+    //! type does not match.
+    template <class T>
+    HalfedgeConstProperty<T> get_halfedge_property(const std::string& name) const
+    {
+        return HalfedgeConstProperty<T>(hprops_.get<T>(name));
     }
 
     //! get the edge property named \p name of type \p T. returns an
     //! invalid VertexProperty if the property does not exist or if the
     //! type does not match.
     template <class T>
-    EdgeProperty<T> get_edge_property(const std::string& name) const
+    EdgeProperty<T> get_edge_property(const std::string& name)
     {
         return EdgeProperty<T>(eprops_.get<T>(name));
+    }
+
+    //! get the edge property named \p name of type \p T. returns an
+    //! invalid VertexProperty if the property does not exist or if the
+    //! type does not match.
+    template <class T>
+    EdgeConstProperty<T> get_edge_property(const std::string& name) const
+    {
+        return EdgeConstProperty<T>(eprops_.get<T>(name));
     }
 
     //! if a halfedge property of type \p T with name \p name exists, it is
@@ -1455,9 +1409,18 @@ public:
     //! VertexProperty if the property does not exist or if the type does not
     //! match.
     template <class T>
-    FaceProperty<T> get_face_property(const std::string& name) const
+    FaceProperty<T> get_face_property(const std::string& name)
     {
         return FaceProperty<T>(fprops_.get<T>(name));
+    }
+
+    //! get the face property named \p name of type \p T. returns an invalid
+    //! VertexProperty if the property does not exist or if the type does not
+    //! match.
+    template <class T>
+    FaceConstProperty<T> get_face_property(const std::string& name) const
+    {
+        return FaceConstProperty<T>(fprops_.get<T>(name));
     }
 
     //! if a face property of type \p T with name \p name exists, it is
@@ -1854,6 +1817,9 @@ public:
 
     //! \return vector of point positions
     std::vector<Point>& positions() { return vpoint_.vector(); }
+
+    //! \return vector of point positions
+    const std::vector<Point>& positions() const { return vpoint_.vector(); }
 
     //! compute the bounding box of the object
     BoundingBox bounds() const;

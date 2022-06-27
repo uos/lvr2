@@ -108,10 +108,16 @@ public: // interface of BasePropertyArray
 
 public:
     //! Get pointer to array (does not work for T==bool)
+    T* data() { return data_.data(); }
+
+    //! Get pointer to array (does not work for T==bool)
     const T* data() const { return data_.data(); }
 
     //! Get reference to the underlying vector
     std::vector<T>& vector() { return data_; }
+
+    //! Get reference to the underlying vector
+    const std::vector<T>& vector() const { return data_; }
 
     //! Access the i'th element. No range check is performed!
     reference operator[](size_t idx)
@@ -134,6 +140,11 @@ private:
 
 // specialization for bool properties
 // std::vector<bool> is a specialization that uses one bit per element, which does not allow data() access
+template <>
+inline bool* PropertyArray<bool>::data()
+{
+    throw std::runtime_error("PropertyArray<bool>::data() not supported");
+}
 template <>
 inline const bool* PropertyArray<bool>::data() const
 {
@@ -174,6 +185,12 @@ public:
         return (*parray_)[i];
     }
 
+    T* data()
+    {
+        assert(parray_ != nullptr);
+        return parray_->data();
+    }
+
     const T* data() const
     {
         assert(parray_ != nullptr);
@@ -181,6 +198,12 @@ public:
     }
 
     std::vector<T>& vector()
+    {
+        assert(parray_ != nullptr);
+        return parray_->vector();
+    }
+
+    const std::vector<T>& vector() const
     {
         assert(parray_ != nullptr);
         return parray_->vector();
@@ -206,6 +229,56 @@ public:
 
 private:
     PropertyArray<T>* parray_;
+};
+
+template <class T>
+class ConstProperty
+{
+public:
+    typedef typename PropertyArray<T>::const_reference const_reference;
+
+    friend class PropertyContainer;
+    friend class SurfaceMesh;
+
+public:
+    ConstProperty(const PropertyArray<T>* p = nullptr) : parray_(p) {}
+
+    void reset() { parray_ = nullptr; }
+
+    operator bool() const { return parray_ != nullptr; }
+
+    const_reference operator[](size_t i) const
+    {
+        assert(parray_ != nullptr);
+        return (*parray_)[i];
+    }
+
+    const T* data() const
+    {
+        assert(parray_ != nullptr);
+        return parray_->data();
+    }
+
+    const std::vector<T>& vector()
+    {
+        assert(parray_ != nullptr);
+        return parray_->vector();
+    }
+
+    const std::string& name() const
+    {
+        assert(parray_ != nullptr);
+        return parray_->name();
+    }
+
+    const PropertyArray<T>& array() const
+    {
+        assert(parray_ != nullptr);
+        return *parray_;
+    }
+
+private:
+    const PropertyArray<T>* parray_;
 };
 
 class PropertyContainer
@@ -289,13 +362,23 @@ public:
 
     // get a property by its name. returns invalid property if it does not exist.
     template <class T>
-    Property<T> get(const std::string& name) const
+    Property<T> get(const std::string& name)
     {
         for (size_t i = 0; i < parrays_.size(); ++i)
             if (parrays_[i]->name() == name)
                 return Property<T>(
                     dynamic_cast<PropertyArray<T>*>(parrays_[i]));
         return Property<T>();
+    }
+
+    // get a property by its name. returns invalid property if it does not exist.
+    template <class T>
+    ConstProperty<T> get(const std::string& name) const
+    {
+        for (size_t i = 0; i < parrays_.size(); ++i)
+            if (parrays_[i]->name() == name)
+                return ConstProperty<T>(dynamic_cast<const PropertyArray<T>*>(parrays_[i]));
+        return ConstProperty<T>();
     }
 
     // returns a property if it exists, otherwise it creates it first.
@@ -345,7 +428,7 @@ public:
     }
 
     // reserve memory for n entries in all arrays
-    void reserve(size_t n) const
+    void reserve(size_t n)
     {
         for (size_t i = 0; i < parrays_.size(); ++i)
             parrays_[i]->reserve(n);
@@ -360,7 +443,7 @@ public:
     }
 
     // free unused space in all arrays
-    void free_memory() const
+    void free_memory()
     {
         for (size_t i = 0; i < parrays_.size(); ++i)
             parrays_[i]->free_memory();
@@ -375,7 +458,7 @@ public:
     }
 
     // swap elements i0 and i1 in all arrays
-    void swap(size_t i0, size_t i1) const
+    void swap(size_t i0, size_t i1)
     {
         for (size_t i = 0; i < parrays_.size(); ++i)
             parrays_[i]->swap(i0, i1);

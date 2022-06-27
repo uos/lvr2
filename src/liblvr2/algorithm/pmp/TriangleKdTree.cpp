@@ -16,7 +16,7 @@ TriangleKdTree::TriangleKdTree(const SurfaceMesh& mesh, unsigned int max_faces,
     // init
     root_ = new Node();
     root_->faces = new Triangles();
-    VertexProperty<Point> points = mesh.get_vertex_property<Point>("v:point");
+    auto points = mesh.get_vertex_property<Point>("v:point");
 
     // collect triangles
     Triangle tri;
