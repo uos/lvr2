@@ -59,8 +59,6 @@ using Mesh = PMPMesh<BaseVector<float>>;
 
 #include "viewer.html"
 
-void paint_mesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, size_t index, float chunk_size);
-
 void read_chunks(std::unordered_map<Vector3i, MeshSegment>& chunks,
                  const std::vector<std::string>& chunk_files,
                  float chunk_size, float voxel_size,
@@ -68,6 +66,9 @@ void read_chunks(std::unordered_map<Vector3i, MeshSegment>& chunks,
                  std::shared_ptr<HighFive::File> mesh_file,
                  std::function<void(pmp::SurfaceMesh&, const std::string&)> read_mesh);
 
+void paint_mesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, size_t index, float chunk_size);
+
+bool compute_normals(pmp::SurfaceMesh& mesh);
 
 int main(int argc, char** argv)
 {
@@ -270,15 +271,16 @@ int main(int argc, char** argv)
                 auto materials = buffer->getMaterials();
                 auto in_textures = buffer->getTextures();
 
+                std::vector<int> compression_params;
+                compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+                compression_params.push_back(9);
+
                 textures.resize(in_textures.size());
                 for (size_t i = 0; i < in_textures.size(); ++i)
                 {
                     cv::Mat image(in_textures[i].m_height, in_textures[i].m_width, CV_8UC3, in_textures[i].m_data);
                     cv::Mat bgr;
                     cv::cvtColor(image, bgr, cv::COLOR_RGB2BGR);
-                    std::vector<int> compression_params;
-                    compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
-                    compression_params.push_back(9);
                     cv::imencode(".png", bgr, textures[in_textures[i].m_index], compression_params);
                 }
 
@@ -342,6 +344,12 @@ int main(int argc, char** argv)
         }
         surface_mesh.garbage_collection();
 
+        if (calc_normals)
+        {
+            std::cout << timestamp << "Calculating normals" << std::endl;
+            compute_normals(surface_mesh);
+        }
+
         for (auto file : mesh_out_files)
         {
             std::cout << timestamp << "Writing mesh to " << file << std::endl;
@@ -357,6 +365,22 @@ int main(int argc, char** argv)
         for (auto& [ _, chunk ] : chunks)
         {
             bb += chunk.bb;
+        }
+
+        if (calc_normals)
+        {
+            std::cout << timestamp << "Calculating normals" << std::endl;
+            ProgressBar progress(chunks.size(), "Calculating normals");
+            for (auto& [ _, segment ] : chunks)
+            {
+                auto pmp_mesh = segment.mesh->get();
+                if (compute_normals(pmp_mesh->getSurfaceMesh()))
+                {
+                    pmp_mesh->changed();
+                }
+                ++progress;
+            }
+            std::cout << "\r";
         }
     }
 
@@ -549,42 +573,6 @@ int main(int argc, char** argv)
     root_segment.collect_segments(all_segments);
     root_segment = {};
 
-    if (calc_normals)
-    {
-        std::cout << timestamp << "Calculating normals" << std::endl;
-        ProgressBar progress_normals(all_segments.size(), "Calculating normals");
-        for (size_t i = 0; i < all_segments.size(); i++)
-        {
-            auto pmp_mesh = all_segments[i].mesh->get();
-            pmp_mesh->changed();
-            auto& mesh = pmp_mesh->getSurfaceMesh();
-            auto v_normal = mesh.vertex_property<pmp::Normal>("v:normal");
-            auto v_feature = mesh.get_vertex_property<bool>("v:feature");
-            auto v_color = mesh.get_vertex_property<pmp::Color>("v:color");
-            bool color_features = false; // v_feature && v_color;
-            #pragma omp parallel for schedule(dynamic,64)
-            for (size_t i = 0; i < mesh.vertices_size(); i++)
-            {
-                pmp::Vertex vH(i);
-                if (mesh.is_deleted(vH))
-                {
-                    continue;
-                }
-                if (color_features && v_feature[vH])
-                {
-                    v_color[vH] = pmp::Color(1, 0, 0);
-                }
-                v_normal[vH] = pmp::SurfaceNormals::compute_vertex_normal(mesh, vH);
-                if (v_normal[vH].z() < 0)
-                {
-                    v_normal[vH] = -v_normal[vH];
-                }
-            }
-            ++progress_normals;
-        }
-    }
-    std::cout << "\r";
-
     std::cout << timestamp << "Writing " << all_segments.size() << " segments        " << std::endl;
     ProgressBar progress_write(all_segments.size(), "Writing segments");
     size_t num_threads = big ? 1 : OpenMPConfig::getNumThreads();
@@ -766,4 +754,27 @@ void paint_mesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, size_t index
                                  std::clamp(g + dg, 0.0f, 1.0f),
                                  std::clamp(b + db, 0.0f, 1.0f));
     }
+}
+
+bool compute_normals(pmp::SurfaceMesh& mesh)
+{
+    if (mesh.has_vertex_property("v:normal"))
+    {
+        return false;
+    }
+    auto v_normal = mesh.vertex_property<pmp::Normal>("v:normal");
+    #pragma omp parallel for schedule(dynamic,64)
+    for (size_t i = 0; i < mesh.vertices_size(); i++)
+    {
+        pmp::Vertex vH(i);
+        if (!mesh.is_deleted(vH))
+        {
+            v_normal[vH] = pmp::SurfaceNormals::compute_vertex_normal(mesh, vH);
+            if (v_normal[vH].z() < 0)
+            {
+                v_normal[vH] = -v_normal[vH];
+            }
+        }
+    }
+    return true;
 }
