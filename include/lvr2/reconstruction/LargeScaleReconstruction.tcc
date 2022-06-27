@@ -546,8 +546,7 @@ namespace lvr2
                 if (mesh.numFaces() > 0)
                 {
                     // Finalize mesh
-                    lvr2::SimpleFinalizer<Vec> finalize;
-                    auto meshBuffer = finalize.apply(mesh);
+                    auto meshBuffer = mesh.toMeshBuffer();
 
                     time_t now = time(0);
 

@@ -74,6 +74,15 @@ public:
     /// Writes the mesh into the given group
     void write(HighFive::Group& group) const;
 
+    /// Creates a MeshBuffer from the Mesh
+    MeshBufferPtr toMeshBuffer()
+    {
+        collectGarbage();
+        return toMeshBuffer();
+    }
+    /// const version of toMeshBuffer(). Requires that the mesh has no garbage (see collectGarbage())
+    MeshBufferPtr toMeshBuffer() const;
+
     // ========================================================================
     // = Implementing the `BaseMesh` interface (see BaseMesh for docs)
     // ========================================================================
@@ -194,6 +203,19 @@ public:
      * @param targetNumVertices the target number of vertices
      */
     void simplify(size_t targetNumVertices);
+
+    /**
+     * @brief Gets rid of deleted vertices, edges and faces.
+     *
+     * The remaining vertices, edges and faces might have their indices changed, so any
+     * external structures that use those indices must be updated manually.
+     *
+     * Does nothing if there are no deleted vertices, edges or faces.
+     */
+    void collectGarbage()
+    {
+        m_mesh.garbage_collection();
+    }
 
     pmp::SurfaceMesh& getSurfaceMesh()
     { return m_mesh; }

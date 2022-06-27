@@ -186,6 +186,96 @@ void PMPMesh<BaseVecT>::write(HighFive::Group& group) const
 }
 
 template<typename BaseVecT>
+MeshBufferPtr PMPMesh<BaseVecT>::toMeshBuffer() const
+{
+    if (m_mesh.has_garbage())
+    {
+        throw std::runtime_error("PMPMesh::toMeshBuffer: Mesh has garbage. Call collectGarbage() first.");
+    }
+
+    size_t num_vertices = m_mesh.n_vertices();
+    size_t num_faces = m_mesh.n_faces();
+
+    MeshBufferPtr buffer = std::make_shared<MeshBuffer>();
+
+    floatArr vertices(new float[num_vertices * 3]);
+    std::copy_n((float*)m_mesh.positions().data(), num_vertices * 3, vertices.get());
+    buffer->setVertices(vertices, num_vertices);
+
+    uintArr faces(new unsigned int[num_faces * 3]);
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < num_faces; i++)
+    {
+        auto it = m_mesh.vertices(pmp::Face(i));
+        faces[i * 3 + 0] = (*it).idx();
+        faces[i * 3 + 1] = (*++it).idx();
+        faces[i * 3 + 2] = (*++it).idx();
+    }
+    buffer->setFaceIndices(faces, num_faces);
+
+    auto src_normals = m_mesh.get_vertex_property<pmp::Normal>("v:normal");
+    if (src_normals)
+    {
+        floatArr normals(new float[num_vertices * 3]);
+        std::copy_n((float*)src_normals.data(), num_vertices * 3, normals.get());
+        buffer->setVertexNormals(normals);
+    }
+
+    auto src_colors = m_mesh.get_vertex_property<pmp::Color>("v:color");
+    if (src_colors)
+    {
+        ucharArr colors(new unsigned char[num_vertices * 3]);
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < num_vertices; i++)
+        {
+            auto c = src_colors[pmp::Vertex(i)];
+            colors[i * 3 + 0] = (unsigned char)(c.x() * 255.0f);
+            colors[i * 3 + 1] = (unsigned char)(c.y() * 255.0f);
+            colors[i * 3 + 2] = (unsigned char)(c.z() * 255.0f);
+        }
+        buffer->setVertexColors(colors);
+    }
+
+    auto src_tex = m_mesh.get_vertex_property<pmp::TexCoord>("v:tex");
+    if (src_tex)
+    {
+        floatArr tex(new float[num_vertices * 2]);
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < num_vertices; i++)
+        {
+            auto t = src_tex[pmp::Vertex(i)];
+            tex[i * 2 + 0] = t.x();
+            tex[i * 2 + 1] = t.y();
+        }
+        buffer->setTextureCoordinates(tex);
+    }
+
+    auto src_face_normal = m_mesh.get_face_property<pmp::Normal>("f:normal");
+    if (src_face_normal)
+    {
+        floatArr face_normals(new float[num_faces * 3]);
+        std::copy_n((float*)src_face_normal.data(), num_faces * 3, face_normals.get());
+        buffer->setFaceNormals(face_normals);
+    }
+
+    auto src_face_color = m_mesh.get_face_property<pmp::Color>("f:color");
+    if (src_face_color)
+    {
+        size_t w = 3;
+        ucharArr face_colors(new unsigned char[num_faces * w]);
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < num_faces; i++)
+        {
+            auto c = src_face_color[pmp::Face(i)];
+            face_colors[i * w + 0] = (unsigned char)(c.x() * 255.0f);
+            face_colors[i * w + 1] = (unsigned char)(c.y() * 255.0f);
+            face_colors[i * w + 2] = (unsigned char)(c.z() * 255.0f);
+        }
+        buffer->setFaceColors(face_colors, w);
+    }
+}
+
+template<typename BaseVecT>
 EdgeCollapseResult PMPMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 {
     pmp::Halfedge heH = edgeH.halfedge();
