@@ -202,28 +202,33 @@ namespace lvr2
         }
         std::cout << std::endl;
 
-        bool createBigMesh = m_options.hasOutput(LSROutput::BigMesh);
-        bool createChunksPly = chunkManager && m_options.hasOutput(LSROutput::ChunksPly);
-        bool createChunksHdf5 = chunkManager && m_options.hasOutput(LSROutput::ChunksHdf5);
-        bool create3dTiles = chunkManager && m_options.hasOutput(LSROutput::Tiles3d);
-
         for(size_t h = 0; h < m_options.voxelSizes.size(); h++)
         {
             float voxelSize = m_options.voxelSizes[h];
-            float overlap = 10 * voxelSize;
+            float overlap = chunkSize / 2.0f;
+            overlap = std::ceil(overlap / voxelSize) * voxelSize; // make sure overlap is divisible by voxelSize
             BaseVecT overlapVector(overlap, overlap, overlap);
 
+            bool createBigMesh = false, createChunksPly = false, createChunksHdf5 = false, create3dTiles = false;
+            // only produce output for the first voxel size
+            if (h == 0)
+            {
+                createBigMesh = m_options.hasOutput(LSROutput::BigMesh);
+                createChunksPly = chunkManager && m_options.hasOutput(LSROutput::ChunksPly);
+                createChunksHdf5 = chunkManager && m_options.hasOutput(LSROutput::ChunksHdf5);
+                create3dTiles = chunkManager && m_options.hasOutput(LSROutput::Tiles3d);
+            }
+
             std::shared_ptr<HighFive::File> chunk_file = nullptr;
-            if ((createChunksHdf5 || create3dTiles) && h == 0)
+            if (createChunksHdf5 || create3dTiles)
             {
                 chunk_file = hdf5util::open("chunks.h5", HighFive::File::Truncate);
                 auto root = chunk_file->getGroup("/");
 
                 hdf5util::setAttribute(root, "chunk_size", chunkSize);
                 hdf5util::setAttribute(root, "voxel_size", voxelSize);
-                hdf5util::setAttribute(root, "overlap", overlap);
             }
-            if (createChunksPly && h == 0)
+            if (createChunksPly)
             {
                 boost::filesystem::remove_all("chunks");
                 boost::filesystem::create_directories("chunks");
@@ -231,7 +236,6 @@ namespace lvr2
                 YAML::Node metadata;
                 metadata["chunk_size"] = chunkSize;
                 metadata["voxel_size"] = voxelSize;
-                metadata["overlap"] = overlap;
 
                 std::ofstream out("chunks/chunk_metadata.yaml");
                 out << metadata;
@@ -398,7 +402,7 @@ namespace lvr2
                 }
 
                 // save the mesh of the chunk
-                if ((createChunksHdf5 || createChunksPly || create3dTiles) && h == 0)
+                if (createChunksHdf5 || createChunksPly || create3dTiles)
                 {
                     auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
                     lvr2::PMPMesh<Vec> mesh;
@@ -419,18 +423,47 @@ namespace lvr2
                             mesh.fillHoles(m_options.fillHoles);
                         }
 
+                        auto& surfaceMesh = mesh.getSurfaceMesh();
+
+                        // trim the overlap to only a single voxel to save space
+
+                        auto min = partitionBox.getMin(), max = partitionBox.getMax();
+                        pmp::BoundingBox expectedBB(pmp::Point(min.x, min.y, min.z), pmp::Point(max.x, max.y, max.z));
+                        // the bounding box ends exactly in the middle of a voxel => move it over by half a voxel
+                        // also expand by one voxel to keep some overlap
+                        expectedBB.min() += pmp::Point::Constant(voxelSize * (0.49 - 1));
+                        expectedBB.max() += pmp::Point::Constant(voxelSize * (0.51 + 1));
+                        auto fDelete = surfaceMesh.add_face_property<bool>("f:delete", false);
+                        for (size_t i = 0; i < surfaceMesh.faces_size(); i++)
+                        {
+                            pmp::Face fH(i);
+                            if (surfaceMesh.is_deleted(fH))
+                            {
+                                continue;
+                            }
+                            for (auto vH : surfaceMesh.vertices(fH))
+                            {
+                                if (!expectedBB.contains(surfaceMesh.position(vH)))
+                                {
+                                    #pragma omp critical
+                                    fDelete[fH] = true;
+                                    break;
+                                }
+                            }
+                        }
+                        surfaceMesh.delete_many_faces(fDelete);
+                        surfaceMesh.remove_face_property(fDelete);
+                        surfaceMesh.garbage_collection();
+
                         // save the mesh according to the chosen format(s)
                         if (createChunksHdf5 || create3dTiles)
                         {
-                            mesh.getSurfaceMesh().garbage_collection();
-
                             auto group = chunk_file->createGroup("/chunks/" + name_id);
-                            mesh.getSurfaceMesh().write(group);
-                            chunk_file->flush();
+                            surfaceMesh.write(group);
                         }
                         if (createChunksPly)
                         {
-                            mesh.getSurfaceMesh().write("chunks/" + name_id + ".ply");
+                            surfaceMesh.write("chunks/" + name_id + ".ply");
                         }
                     }
                 }
@@ -443,7 +476,7 @@ namespace lvr2
 
             std::cout << timestamp << "finished" << std::endl;
 
-            if(createBigMesh && h == 0)
+            if(createBigMesh)
             {
                 //combine chunks
                 BoundingBox<BaseVecT> cbb(bgBB.getMin() - overlapVector, bgBB.getMax() + overlapVector);
@@ -531,7 +564,7 @@ namespace lvr2
                 }
             }
 
-            if (create3dTiles && h == 0)
+            if (create3dTiles)
             {
                 // TODO: create 3d tiles from chunk_file
 
@@ -654,7 +687,6 @@ namespace lvr2
 
         if (m_options.hasOutput(LSROutput::ChunksPly))
         {
-            auto faceNormals = calcFaceNormals(mesh);
             // Finalize mesh
             lvr2::SimpleFinalizer<Vec> finalize;
             auto meshBuffer = finalize.apply(mesh);
@@ -778,7 +810,7 @@ namespace lvr2
         for(int h = 0; h < m_options.voxelSizes.size(); h++)
         {
             float voxelSize = m_options.voxelSizes[h];
-            float overlap = 10 * voxelSize;
+            float overlap = 20 * voxelSize;
             BaseVecT overlapVector(overlap, overlap, overlap);
 
             // send chunks
@@ -933,7 +965,7 @@ namespace lvr2
             {
                 //combine chunks
                 float voxelSize = m_options.voxelSizes[h];
-                float overlap = 10 * voxelSize;
+                float overlap = 20 * voxelSize;
                 BaseVecT overlapVector(overlap, overlap, overlap);
                 auto vmax = cbb.getMax() - overlapVector;
                 auto vmin = cbb.getMin() + overlapVector;
