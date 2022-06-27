@@ -52,7 +52,7 @@ struct MeshSegment
     pmp::BoundingBox bb;
     std::string filename = "";
     /// Texture as png encoded bytes
-    std::shared_ptr<std::vector<unsigned char>> texture;
+    std::shared_ptr<Texture> texture;
 };
 
 class SegmentTree

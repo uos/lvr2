@@ -38,11 +38,11 @@
 #include "lvr2/geometry/pmp/SurfaceMeshIO.h"
 #include "lvr2/algorithm/pmp/SurfaceNormals.h"
 #include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/modelio/B3dmIO.hpp"
 #include "lvr2/io/meshio/HDF5IO.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/config/lvropenmp.hpp"
-#include "B3dmWriter.hpp"
 #include "Segmenter.hpp"
 
 #include <boost/filesystem.hpp>
@@ -54,6 +54,7 @@
 
 using namespace lvr2;
 using namespace Cesium3DTiles;
+namespace fs = boost::filesystem;
 
 using Mesh = PMPMesh<BaseVector<float>>;
 
@@ -193,7 +194,7 @@ int main(int argc, char** argv)
     std::unordered_map<Vector3i, MeshSegment> chunks;
     std::vector<MeshSegment> segments;
     pmp::BoundingBox bb;
-    std::vector<std::vector<unsigned char>> textures;
+    std::vector<Texture> textures;
     float max_merge_dist = 1e-8f;
 
     std::cout << timestamp << "Reading mesh " << input_file;
@@ -268,22 +269,9 @@ int main(int argc, char** argv)
 
             if (!buffer->getMaterials().empty() && !assign_colors)
             {
+                textures = buffer->getTextures();
+
                 auto materials = buffer->getMaterials();
-                auto in_textures = buffer->getTextures();
-
-                std::vector<int> compression_params;
-                compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
-                compression_params.push_back(9);
-
-                textures.resize(in_textures.size());
-                for (size_t i = 0; i < in_textures.size(); ++i)
-                {
-                    cv::Mat image(in_textures[i].m_height, in_textures[i].m_width, CV_8UC3, in_textures[i].m_data);
-                    cv::Mat bgr;
-                    cv::cvtColor(image, bgr, cv::COLOR_RGB2BGR);
-                    cv::imencode(".png", bgr, textures[in_textures[i].m_index], compression_params);
-                }
-
                 std::vector<pmp::IndexType> mat_to_texture(materials.size(), pmp::PMP_MAX_INDEX);
                 for (size_t i = 0; i < materials.size(); i++)
                 {
@@ -422,7 +410,7 @@ int main(int argc, char** argv)
             mesh.getSurfaceMesh() = std::move(meshes[i]);
             segments[i].bb = mesh.getSurfaceMesh().bounds();
             segments[i].mesh.reset(new LazyMesh(mesh, mesh_file));
-            segments[i].texture.reset(new std::vector(textures[i]));
+            segments[i].texture.reset(new Texture(textures[i]));
         }
     }
     else if (chunk_size > 0)
@@ -576,11 +564,27 @@ int main(int argc, char** argv)
     std::cout << timestamp << "Writing " << all_segments.size() << " segments        " << std::endl;
     ProgressBar progress_write(all_segments.size(), "Writing segments");
     size_t num_threads = big ? 1 : OpenMPConfig::getNumThreads();
-    #pragma omp parallel for num_threads(num_threads)
-    for (size_t i = 0; i < all_segments.size(); i++)
+    #pragma omp parallel num_threads(num_threads)
     {
-        write_b3dm(output_dir, all_segments[i], false);
-        ++progress_write;
+        auto model = std::make_shared<Model>();
+        B3dmIO io;
+        io.setModel(model);
+
+        #pragma omp for
+        for (size_t i = 0; i < all_segments.size(); i++)
+        {
+            auto& segment = all_segments[i];
+            std::string filename = (output_dir / segment.filename).string();
+            auto pmp_mesh = segment.mesh->get();
+            model->m_mesh = pmp_mesh->toMeshBuffer();
+            if (segment.texture)
+            {
+                model->m_mesh->getTextures().push_back(*segment.texture);
+            }
+            pmp_mesh.reset();
+            io.save(filename);
+            ++progress_write;
+        }
     }
     std::cout << "\r";
 

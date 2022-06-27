@@ -273,6 +273,8 @@ MeshBufferPtr PMPMesh<BaseVecT>::toMeshBuffer() const
         }
         buffer->setFaceColors(face_colors, w);
     }
+
+    return buffer;
 }
 
 template<typename BaseVecT>

@@ -78,7 +78,7 @@ public:
     MeshBufferPtr toMeshBuffer()
     {
         collectGarbage();
-        return toMeshBuffer();
+        return ((const PMPMesh<BaseVecT>*)this)->toMeshBuffer(); // force-call to const version
     }
     /// const version of toMeshBuffer(). Requires that the mesh has no garbage (see collectGarbage())
     MeshBufferPtr toMeshBuffer() const;

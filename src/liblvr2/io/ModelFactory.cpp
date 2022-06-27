@@ -100,14 +100,12 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new DatIO;
     }
+#ifdef LVR2_USE_3DTILES
     else if (extension == ".b3dm")
     {
-#ifdef LVR2_USE_3DTILES
         io = new B3dmIO;
-#else
-        throw std::runtime_error("Tried to read a b3dm file, but 3dtiles support is not enabled");
-#endif
     }
+#endif
     // else if (extension ==".lwf")
     // {
 	// io = new WaveformIO;
@@ -233,14 +231,12 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new STLIO;
     }
+#ifdef LVR2_USE_3DTILES
     else if (extension == ".b3dm")
     {
-#ifdef LVR2_USE_3DTILES
         io = new B3dmIO;
-#else
-        throw std::runtime_error("Tried to write a b3dm file, but 3dtiles support is not enabled");
-#endif
     }
+#endif
 #ifdef LVR2_USE_PCL
     else if (extension == ".pcd")
     {
