@@ -238,7 +238,6 @@ void segment_mesh(pmp::SurfaceMesh& mesh,
     {
         auto& segment = chunks[chunk_id];
 
-        meshes[index].add_object_property<pmp::IndexType>("o:chunk_id")[0] = index;
         PMPMesh<BaseVector<float>> pmp_mesh;
         pmp_mesh.getSurfaceMesh() = std::move(meshes[index]);
         segment.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
@@ -406,7 +405,6 @@ SegmentTree::Ptr split_mesh(MeshSegment& in_segment,
         PMPMesh<BaseVector<float>> pmp_mesh;
         pmp_mesh.getSurfaceMesh() = std::move(meshes[index]);
         out_segment.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
-        out_segment.texture = in_segment.texture;
     }
 
     return SegmentTree::octree_partition(chunks, combine_depth);

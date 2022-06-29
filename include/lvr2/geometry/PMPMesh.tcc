@@ -166,6 +166,16 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
             }
         }
     }
+
+    auto& textures = ptr->getTextures();
+    if (textures.size() == 1)
+    {
+        setTexture(textures[0]);
+        // One mesh can generally only have one texture.
+        // More than one texture is only possible if the mesh is split according to materials,
+        // but that has to happen externally, and so we also leave assigning the textures up to
+        // the splitting process.
+    }
 }
 
 template<typename BaseVecT>
@@ -272,6 +282,12 @@ MeshBufferPtr PMPMesh<BaseVecT>::toMeshBuffer() const
             face_colors[i * w + 2] = (unsigned char)(c.z() * 255.0f);
         }
         buffer->setFaceColors(face_colors, w);
+    }
+
+    auto texture = getTexture();
+    if (texture)
+    {
+        buffer->getTextures() = { *texture };
     }
 
     return buffer;

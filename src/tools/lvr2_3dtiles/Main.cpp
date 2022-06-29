@@ -408,9 +408,9 @@ int main(int argc, char** argv)
         {
             Mesh mesh;
             mesh.getSurfaceMesh() = std::move(meshes[i]);
+            mesh.setTexture(textures[i]);
             segments[i].bb = mesh.getSurfaceMesh().bounds();
             segments[i].mesh.reset(new LazyMesh(mesh, mesh_file));
-            segments[i].texture.reset(new Texture(textures[i]));
         }
     }
     else if (chunk_size > 0)
@@ -577,10 +577,6 @@ int main(int argc, char** argv)
             std::string filename = (output_dir / segment.filename).string();
             auto pmp_mesh = segment.mesh->get();
             model->m_mesh = pmp_mesh->toMeshBuffer();
-            if (segment.texture)
-            {
-                model->m_mesh->getTextures().push_back(*segment.texture);
-            }
             pmp_mesh.reset();
             io.save(filename);
             ++progress_write;

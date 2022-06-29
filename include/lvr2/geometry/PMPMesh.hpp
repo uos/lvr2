@@ -217,6 +217,19 @@ public:
         m_mesh.garbage_collection();
     }
 
+    void setTexture(const Texture& texture)
+    {
+        m_mesh.object_property<Texture>("o:texture") = texture;
+    }
+    boost::optional<Texture&> getTexture()
+    {
+        return m_mesh.get_object_property<Texture>("o:texture");
+    }
+    boost::optional<const Texture&> getTexture() const
+    {
+        return m_mesh.get_object_property<Texture>("o:texture");
+    }
+
     pmp::SurfaceMesh& getSurfaceMesh()
     { return m_mesh; }
     const pmp::SurfaceMesh& getSurfaceMesh() const

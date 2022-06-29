@@ -16,6 +16,7 @@
 #include "BoundingBox.h"
 
 #include <highfive/H5Group.hpp>
+#include <boost/optional.hpp>
 
 namespace pmp
 {
@@ -1125,35 +1126,36 @@ public:
     //! fails if a property named \p name exists already, since the name has to
     //! be unique. in this case it returns an invalid property
     template <class T>
-    Property<T> add_object_property(const std::string& name,
-                                    const T t = T())
+    T& add_object_property(const std::string& name, const T t = T())
     {
-        return Property<T>(oprops_.add<T>(name, t));
+        return oprops_.add<T>(name, t)[0];
     }
 
     //! get the object property named \p name of type \p T. returns an invalid
     //! Property if the property does not exist or if the type does not
     //! match.
     template <class T>
-    Property<T> get_object_property(const std::string& name)
+    boost::optional<T&> get_object_property(const std::string& name)
     {
-        return Property<T>(oprops_.get<T>(name));
+        auto prop = oprops_.get<T>(name);
+        return prop ? boost::optional<T&>(prop[0]) : boost::none;
     }
     //! get the object property named \p name of type \p T. returns an invalid
     //! Property if the property does not exist or if the type does not
     //! match.
     template <class T>
-    ConstProperty<T> get_object_property(const std::string& name) const
+    boost::optional<const T&> get_object_property(const std::string& name) const
     {
-        return Property<T>(oprops_.get<T>(name));
+        auto prop = oprops_.get<T>(name);
+        return prop ? boost::optional<const T&>(prop[0]) : boost::none;
     }
 
     //! if a object property of type \p T with name \p name exists, it is
     //! returned.  otherwise this property is added (with default value \p t)
     template <class T>
-    Property<T> object_property(const std::string& name, const T t = T())
+    T& object_property(const std::string& name, const T t = T())
     {
-        return Property<T>(oprops_.get_or_add<T>(name, t));
+        return oprops_.get_or_add<T>(name, t)[0];
     }
 
     //! remove the object property \p p

@@ -1004,6 +1004,7 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
     {
         mesh.clear();
         mesh.copy_properties(*this);
+        mesh.oprops_ = oprops_;
         fprop_maps.push_back(mesh.gen_fprop_map(*this));
         vprop_maps.push_back(mesh.gen_vprop_map(*this));
         eprop_maps.push_back(mesh.gen_eprop_map(*this));
@@ -1117,7 +1118,12 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
 
 void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
 {
+    if (input.empty())
+        return;
+
     garbage_collection();
+
+    oprops_ = input[0]->oprops_;
 
     std::vector<IndexMap> fprop_maps, vprop_maps, eprop_maps, hprop_maps;
     size_t added_faces = 0, added_vertices = 0, added_edges = 0;
