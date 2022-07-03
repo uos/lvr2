@@ -37,12 +37,12 @@
 
 #pragma once
 
+#ifdef LVR2_USE_3DTILES
+
 #include "lvr2/io/modelio/ModelIOBase.hpp"
 
 namespace lvr2
 {
-
-#ifdef LVR2_USE_3DTILES
 
 class B3dmIO : public ModelIOBase
 {
@@ -68,9 +68,13 @@ public:
      *
      * \param filename           Filename of file to read.
      **/
-    ModelPtr read(std::string filename) override;
+    ModelPtr read(std::string filename) override
+    {
+        throw std::runtime_error("Not implemented yet");
+    }
+
 };
 
-#endif // LVR2_USE_3DTILES
-
 } // namespace lvr2
+
+#endif // LVR2_USE_3DTILES

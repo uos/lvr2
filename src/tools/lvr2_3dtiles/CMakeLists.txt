@@ -10,8 +10,6 @@ endif()
 
 set(TILES_SOURCES
     Main.cpp
-    Segmenter.cpp
-    SegmentTree.cpp
 )
 
 #####################################################################################

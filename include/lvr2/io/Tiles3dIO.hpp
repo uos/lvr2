@@ -26,54 +26,50 @@
  */
 
 /**
- * Segmenter.hpp
+ * Tiles3dIO.hpp
  *
- * @date   03.02.2022
+ * @date   01.07.2022
  * @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
 #pragma once
 
-#include "SegmentTree.hpp"
-#include "lvr2/geometry/PMPMesh.hpp"
+#ifdef LVR2_USE_3DTILES
+
+#include "lvr2/algorithm/HLODTree.hpp"
 
 #include <Cesium3DTiles/Tile.h>
 
 namespace lvr2
 {
 
-/**
- * @brief creates a new value at the end of a vector and returns its index and a reference to that value
- *
- * @param vec the vector to append to
- * @return std::pair<size_t, T&> the index and reference to the new value
- */
-template<typename T>
-inline std::pair<size_t, T&> push_and_get_index(std::vector<T>& vec, T&& value = T())
+template<typename BaseVecT>
+class Tiles3dIO
 {
-    size_t index = vec.size();
-    vec.push_back(std::move(value));
-    return std::make_pair(index, std::ref(vec.back()));
-}
+public:
+    using TreePtr = typename HLODTree<BaseVecT>::Ptr;
+    using TreeConstPtr = const typename HLODTree<BaseVecT>::Ptr;
 
-/**
- * @brief partitions all connected regions of a mesh, and bundles small segments into chunks
- *
- * @param input_mesh the mesh to partition
- * @param small_segments a vector to store the segments in
- * @param large_segments a vector to store extracted segments in
- * @param chunk_size the size of a chunk to determine and bundle small segments
- */
-void segment_mesh(pmp::SurfaceMesh& input_mesh,
-                  const pmp::BoundingBox& bb,
-                  float chunk_size,
-                  std::unordered_map<Vector3i, MeshSegment>& chunks,
-                  std::vector<MeshSegment>& large_segments,
-                  std::shared_ptr<HighFive::File> mesh_file);
+    Tiles3dIO(const std::string& directory);
+    ~Tiles3dIO() = default;
 
-SegmentTree::Ptr split_mesh(MeshSegment& segment,
-                            float chunk_size,
-                            std::shared_ptr<HighFive::File> mesh_file,
-                            int combine_depth = -1);
+    void write(TreeConstPtr& tree, float scale = 1.0f);
+    void read(TreePtr& tree)
+    {
+        throw std::runtime_error("Not implemented yet");
+    }
+
+private:
+    void writeTiles(Cesium3DTiles::Tile& tile,
+                    TreeConstPtr& tree,
+                    const std::string& outputDir,
+                    const std::string& prefix = "");
+
+    std::string m_rootDir;
+};
 
 } // namespace lvr2
+
+#include "Tiles3dIO.tcc"
+
+#endif // LVR2_USE_3DTILES

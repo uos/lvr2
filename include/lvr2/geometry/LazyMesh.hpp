@@ -55,8 +55,6 @@ public:
     /**
      * @brief A thin wrapper around a PMPMesh. Note that the mesh is unloaded when this object is destroyed.
      *
-     * IMPORTANT: If you make any changes to the mesh, you have to call changed() on this object!
-     * 
      * This object can only be obtained inside of a shared_ptr through LazeMesh::get(). In order for
      * the loading and unloading of the LazyMesh to work properly, it is highly recommended to keep
      * this object in the shared_ptr as long as it is needed.
@@ -71,13 +69,13 @@ public:
                 m_parent->update(*this);
             }
         }
-        void changed()
-        {
-            m_changed = true;
-        }
     private:
+        // make sure MeshWrapper is kept as a shared_ptr by removing all constructors/assignments
         MeshWrapper() = delete;
         MeshWrapper(const MeshWrapper&) = delete;
+        MeshWrapper& operator=(const MeshWrapper&) = delete;
+        MeshWrapper(MeshWrapper&&) = delete;
+        MeshWrapper& operator=(MeshWrapper&&) = delete;
 
         friend class LazyMesh;
         MeshWrapper(LazyMesh* parent) : m_parent(parent) {}
@@ -107,17 +105,32 @@ public:
      */
     LazyMesh(const HighFive::Group& group);
 
+    // move constructor/assignment
+    LazyMesh(LazyMesh&&) = default;
+    LazyMesh& operator=(LazyMesh&&) = default;
+
     virtual ~LazyMesh();
 
     /**
-     * @brief Gain access to the mesh, loading it if necessary.
-     *
-     * IMPORTANT: If you make any changes to the mesh, you have to call changed() on it!
+     * @brief Gain read-only access to the mesh, loading it if necessary.
      *
      * @return MeshWrapper A wrapper around the mesh. The mesh is unloaded as soon as the last
      *         reference to the wrapper is destroyed.
      */
-    std::shared_ptr<MeshWrapper> get();
+    std::shared_ptr<const MeshWrapper> get();
+
+    /**
+     * @brief Gain access to the mesh, loading it if necessary. The mesh in the underlying file is
+     *        updated once the returned wrapper is destroyed.
+     *
+     * The instance returned by this is shared with those returned by get(). This allows calling
+     * get() first and modify() only once you want to make changes to the mesh, without having to
+     * load the mesh again.
+     *
+     * @return MeshWrapper A wrapper around the mesh. The mesh is unloaded as soon as the last
+     *         reference to the wrapper is destroyed.
+     */
+    std::shared_ptr<MeshWrapper> modify();
 
     /// Get the number of faces without loading the full mesh.
     size_t n_faces() const
@@ -131,7 +144,19 @@ public:
         auto inner = m_mesh.lock();
         return inner ? inner->numVertices() : hdf5util::getAttribute<uint64_t>(*m_source, "n_vertices").value();
     }
+
+    /// Returns the file this mesh is stored in (if any). Useful for creating a new LazyMesh in the same file.
+    std::shared_ptr<HighFive::File> getFile() const
+    {
+        return m_file;
+    }
 private:
+    // delete unwanted constructors/assignments
+    LazyMesh() = delete;
+    LazyMesh(const LazyMesh&) = delete;
+    LazyMesh& operator=(const LazyMesh&) = delete;
+
+    std::shared_ptr<MeshWrapper> getInternal();
     void update(const PMPMesh<BaseVecT>& mesh);
 
     static std::unique_ptr<HighFive::Group> nextGroup(const std::shared_ptr<HighFive::File>& file);
@@ -142,6 +167,8 @@ private:
     std::shared_ptr<MeshWrapper> m_keepLoadedHelper;
     /// The Group in which the mesh is stored. nullptr if the mesh is permanently loaded.
     std::unique_ptr<HighFive::Group> m_source;
+    /// The file in which the mesh is stored. nullptr if the mesh is permanently loaded.
+    std::shared_ptr<HighFive::File> m_file;
 };
 
 } // namespace lvr2

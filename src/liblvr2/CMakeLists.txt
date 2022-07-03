@@ -2,6 +2,7 @@ set(LVR2_SOURCES
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
     algorithm/ChunkHashGrid.cpp
+    algorithm/HLODTree.cpp
     algorithm/pmp/DifferentialGeometry.cpp
     algorithm/pmp/DistancePointTriangle.cpp
     algorithm/pmp/DifferentialGeometry.cpp
@@ -61,6 +62,7 @@ set(LVR2_SOURCES
     # io/HDF5IO.cpp
     io/GridIO.cpp
     io/ModelFactory.cpp
+    io/Tiles3dIO.cpp
     # io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/schema/ScanProjectSchemaRaw.cpp

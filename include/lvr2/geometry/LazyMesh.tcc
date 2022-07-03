@@ -39,7 +39,7 @@ namespace lvr2
 
 template<typename BaseVecT>
 LazyMesh<BaseVecT>::LazyMesh(PMPMesh<BaseVecT>& src, std::shared_ptr<HighFive::File> file)
-    : m_source(file ? nextGroup(file) : nullptr)
+    : m_source(file ? nextGroup(file) : nullptr), m_file(file)
 {
     if (m_source)
     {
@@ -84,7 +84,19 @@ std::unique_ptr<HighFive::Group> LazyMesh<BaseVecT>::nextGroup(const std::shared
 }
 
 template<typename BaseVecT>
-std::shared_ptr<typename LazyMesh<BaseVecT>::MeshWrapper> LazyMesh<BaseVecT>::get()
+std::shared_ptr<const typename LazyMesh<BaseVecT>::MeshWrapper> LazyMesh<BaseVecT>::get()
+{
+    return getInternal();
+}
+template<typename BaseVecT>
+std::shared_ptr<typename LazyMesh<BaseVecT>::MeshWrapper> LazyMesh<BaseVecT>::modify()
+{
+    auto ret = getInternal();
+    ret->m_changed = true;
+    return ret;
+}
+template<typename BaseVecT>
+std::shared_ptr<typename LazyMesh<BaseVecT>::MeshWrapper> LazyMesh<BaseVecT>::getInternal()
 {
     auto ret = m_mesh.lock();
 

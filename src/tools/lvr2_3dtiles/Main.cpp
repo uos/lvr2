@@ -28,48 +28,41 @@
 
 #include <iostream>
 #include <memory>
-#include <tuple>
-#include <stdlib.h>
-
-#include <boost/optional.hpp>
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/LazyMesh.hpp"
 #include "lvr2/geometry/pmp/SurfaceMeshIO.h"
 #include "lvr2/algorithm/pmp/SurfaceNormals.h"
+#include "lvr2/algorithm/HLODTree.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/modelio/B3dmIO.hpp"
+#include "lvr2/io/Tiles3dIO.hpp"
 #include "lvr2/io/meshio/HDF5IO.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/config/lvropenmp.hpp"
-#include "Segmenter.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-#include <Cesium3DTiles/Tileset.h>
-#include <Cesium3DTiles/Tile.h>
-#include <Cesium3DTilesWriter/TilesetWriter.h>
-
 using namespace lvr2;
-using namespace Cesium3DTiles;
 namespace fs = boost::filesystem;
 
-using Mesh = PMPMesh<BaseVector<float>>;
+using Vec = BaseVector<float>;
+using Mesh = PMPMesh<Vec>;
+using Tree = HLODTree<Vec>;
+using IO = Tiles3dIO<Vec>;
 
 #include "viewer.html"
 
-void read_chunks(std::unordered_map<Vector3i, MeshSegment>& chunks,
+void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
                  const std::vector<std::string>& chunk_files,
                  float chunk_size, float voxel_size,
-                 bool& assign_colors,
                  std::shared_ptr<HighFive::File> mesh_file,
                  std::function<void(pmp::SurfaceMesh&, const std::string&)> read_mesh);
 
 void paint_mesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, size_t index, float chunk_size);
 
-bool compute_normals(pmp::SurfaceMesh& mesh);
+void compute_normals(pmp::SurfaceMesh& mesh);
 
 int main(int argc, char** argv)
 {
@@ -79,10 +72,9 @@ int main(int argc, char** argv)
     bool calc_normals;
     float chunk_size = -1;
     int combine_depth = 2;
-    float scale = 1.0f;
+    float scale = 100.0f;
     std::vector<fs::path> mesh_out_files;
     bool fix_mesh;
-    bool assign_colors;
     bool big;
 
     try
@@ -120,12 +112,10 @@ int main(int argc, char** argv)
         ("writeMesh,w", value<std::vector<fs::path>>(&mesh_out_files)->multitoken(),
          "Save the mesh after --fix has been applied.")
 
-        ("assignColors,C", bool_switch(&assign_colors),
-         "Use existing colors on to vertices. If there are no colors in the input,\n"
-         "assigned one color per chunk for visualization purposes.")
-
         ("scale,s", value<float>(&scale)->default_value(scale),
-         "Scale the mesh.")
+         "Scale the mesh.\n"
+         "This defaults to 100 because small meshes are hard to navigate in the default html viewer.\n"
+         "Only change this if you use a different viewer and/or you have an accurate position on the globe.")
 
         ("help,h", bool_switch(&help),
          "Print this message here.")
@@ -191,11 +181,9 @@ int main(int argc, char** argv)
     fs::create_directories(output_dir);
 
     Mesh mesh;
-    std::unordered_map<Vector3i, MeshSegment> chunks;
-    std::vector<MeshSegment> segments;
-    pmp::BoundingBox bb;
+    std::unordered_map<Vector3i, Tree::Ptr> chunks;
+    std::vector<Tree::Ptr> segments;
     std::vector<Texture> textures;
-    float max_merge_dist = 1e-8f;
 
     std::cout << timestamp << "Reading mesh " << input_file;
 
@@ -217,7 +205,6 @@ int main(int argc, char** argv)
         YAML::Node metadata = YAML::LoadFile(path + "chunk_metadata.yaml");
         chunk_size = metadata["chunk_size"].as<float>();
         float voxel_size = metadata["voxel_size"].as<float>();
-        max_merge_dist = voxel_size / 8.0f;
 
         std::vector<std::string> chunk_files;
         for (auto& entry : fs::directory_iterator(input_file))
@@ -225,7 +212,7 @@ int main(int argc, char** argv)
             chunk_files.push_back(entry.path().string());
         }
 
-        read_chunks(chunks, chunk_files, chunk_size, voxel_size, assign_colors, mesh_file, [&path](auto & mesh, auto & filename)
+        read_chunks(chunks, chunk_files, chunk_size, voxel_size, mesh_file, [&path](auto & mesh, auto & filename)
         {
             mesh.read(path + filename);
         });
@@ -240,12 +227,11 @@ int main(int argc, char** argv)
 
             chunk_size = hdf5util::getAttribute<float>(root, "chunk_size").get();
             float voxel_size = hdf5util::getAttribute<float>(root, "voxel_size").get();
-            max_merge_dist = voxel_size / 8.0f;
 
             auto chunk_group = std::make_shared<HighFive::Group>(root.getGroup("/chunks"));
             std::vector<std::string> chunk_files = chunk_group->listObjectNames();
 
-            read_chunks(chunks, chunk_files, chunk_size, voxel_size, assign_colors, mesh_file, [&chunk_group](auto & mesh, auto & group_name)
+            read_chunks(chunks, chunk_files, chunk_size, voxel_size, mesh_file, [&chunk_group](auto & mesh, auto & group_name)
             {
                 mesh.read(chunk_group->getGroup(group_name));
             });
@@ -267,7 +253,7 @@ int main(int argc, char** argv)
             std::cout << timestamp << "Converting to PMPMesh" << std::endl;
             mesh = Mesh(buffer);
 
-            if (!buffer->getMaterials().empty() && !assign_colors)
+            if (!buffer->getMaterials().empty())
             {
                 textures = buffer->getTextures();
 
@@ -345,38 +331,30 @@ int main(int argc, char** argv)
             flags.use_binary = true;
             surface_mesh.write(file.string(), flags);
         }
-
-        bb = surface_mesh.bounds();
     }
     else if (!chunks.empty())
     {
-        for (auto& [ _, chunk ] : chunks)
-        {
-            bb += chunk.bb;
-        }
-
         if (calc_normals)
         {
             std::cout << timestamp << "Calculating normals" << std::endl;
             ProgressBar progress(chunks.size(), "Calculating normals");
-            for (auto& [ _, segment ] : chunks)
+            for (auto& [ _, chunk ] : chunks)
             {
-                auto pmp_mesh = segment.mesh->get();
-                if (compute_normals(pmp_mesh->getSurfaceMesh()))
-                {
-                    pmp_mesh->changed();
-                }
+                auto pmp_mesh = chunk->mesh()->modify();
+                compute_normals(pmp_mesh->getSurfaceMesh());
                 ++progress;
             }
             std::cout << "\r";
         }
     }
 
-    // ==================== Split Mesh ====================
+    // ==================== Split Mesh and create Tree ====================
+
+    Tree::Ptr tree;
 
     if (!chunks.empty())
     {
-        // chunks were loaded, no further splitting required
+        tree = Tree::partition(std::move(chunks), combine_depth);
     }
     else if (!textures.empty())
     {
@@ -409,182 +387,49 @@ int main(int argc, char** argv)
             Mesh mesh;
             mesh.getSurfaceMesh() = std::move(meshes[i]);
             mesh.setTexture(textures[i]);
-            segments[i].bb = mesh.getSurfaceMesh().bounds();
-            segments[i].mesh.reset(new LazyMesh(mesh, mesh_file));
-        }
-    }
-    else if (chunk_size > 0)
-    {
-        std::cout << timestamp << "Segmenting mesh" << std::endl;
-        segment_mesh(surface_mesh, bb, chunk_size * 2, chunks, segments, mesh_file);
-        // chunk_size * 2 to merge the small segments into larger chunks, otherwise we get a lot of small chunks
-    }
-    else
-    {
-        auto& out = segments.emplace_back();
-        out.mesh.reset(new LazyMesh(mesh, mesh_file));
-        out.bb = bb;
-        out.filename = "mesh.b3dm";
-    }
-    mesh = {};
-
-    // ==================== Assign Colors ====================
-
-    if (assign_colors)
-    {
-        std::cout << timestamp << "Assigning colors" << std::endl;
-        size_t index = 0;
-        for (auto& [ _, segment ] : chunks)
-        {
-            auto pmp_mesh = segment.mesh->get();
-            paint_mesh(pmp_mesh->getSurfaceMesh(), segment.bb, index++, chunk_size);
-            pmp_mesh->changed();
-        }
-        for (auto& segment : segments)
-        {
-            auto pmp_mesh = segment.mesh->get();
-            paint_mesh(pmp_mesh->getSurfaceMesh(), segment.bb, index++, chunk_size);
-            pmp_mesh->changed();
-        }
-    }
-
-    // ==================== Convert to tree ====================
-
-    SegmentTreeNode root_segment;
-    root_segment.m_skipped = true;
-
-    if (!chunks.empty())
-    {
-        std::string path = "chunks/";
-        fs::create_directories(output_dir / path);
-
-        std::cout << timestamp << "Partitioning chunks                " << std::endl;
-        auto chunk_root = SegmentTree::octree_partition(chunks, combine_depth);
-        chunk_root->segment().filename = path + "c";
-        root_segment.add_child(std::move(chunk_root));
-
-        chunks.clear();
-    }
-
-    if (!segments.empty())
-    {
-        ProgressBar* progress = nullptr;
-        if (chunk_size > 0)
-        {
-            std::cout << timestamp << "Splitting " << segments.size() << " large segments" << std::endl;
-            size_t total_faces = 0;
-            for (auto& segment : segments)
-            {
-                total_faces += segment.mesh->n_faces();
-            }
-            progress = new ProgressBar(total_faces, "Splitting segments");
-        }
-
-        std::vector<SegmentTree::Ptr> segment_trees;
-
-        for (size_t i = 0; i < segments.size(); i++)
-        {
-            auto& segment = segments[i];
-            std::string path = "segments/s" + std::to_string(i) + "/";
-
-            fs::create_directories(output_dir / path);
-
-            auto& tree = segment_trees.emplace_back();
+            LazyMesh lazy_mesh(mesh, mesh_file);
             if (chunk_size > 0)
             {
-                tree = split_mesh(segment, chunk_size, mesh_file, combine_depth);
-                *progress += segment.mesh->n_faces();
+                segments[i] = Tree::partition(lazy_mesh, chunk_size, combine_depth);
             }
             else
             {
-                // no splitting, just create a single segment with a parent node for simplification
-                auto node = new SegmentTreeNode();
-                node->add_child(SegmentTree::Ptr(new SegmentTreeLeaf(segment)));
-                tree.reset(node);
+                auto bb = mesh.getSurfaceMesh().bounds();
+                std::vector<Tree::Ptr> leaves;
+                leaves.emplace_back(Tree::leaf(std::move(lazy_mesh), bb));
+                segments[i] = Tree::node(std::move(leaves));
             }
-            tree->segment().filename = path + "s";
         }
-        if (progress != nullptr)
+        tree = Tree::partition(std::move(segments), 0);
+    }
+    else
+    {
+        LazyMesh lazy_mesh(mesh, mesh_file);
+        if (chunk_size > 0)
         {
-            std::cout << "\r";
-        }
-
-        if (segment_trees.size() > 50)
-        {
-            auto segment_root = SegmentTree::octree_partition(segment_trees);
-            root_segment.add_child(std::move(segment_root));
+            std::cout << timestamp << "Segmenting mesh" << std::endl;
+            tree = Tree::partition(lazy_mesh, chunk_size, combine_depth);
         }
         else
         {
-            for (auto& tree : segment_trees)
-            {
-                root_segment.add_child(std::move(tree));
-            }
+            auto bb = surface_mesh.bounds();
+            tree = Tree::leaf(std::move(lazy_mesh), bb);
         }
-
-        segments.clear();
     }
+    mesh = {};
 
-    std::cout << timestamp << "Constructed tree with depth " << root_segment.m_depth << ". Creating LOD" << std::endl;
-    root_segment.simplify(mesh_file, max_merge_dist);
+    tree->refresh();
+    std::cout << timestamp << "Constructed tree with depth " << tree->depth() << ". Creating LOD" << std::endl;
+    tree->finalize(big);
 
     // ==================== Write to file ====================
 
     std::cout << timestamp << "Creating 3D Tiles" << std::endl;
 
-    Cesium3DTiles::Tileset tileset;
-    tileset.asset.version = "1.0";
-    tileset.geometricError = 1e6; // tileset should always be rendered -> set error very high
-                                  // note: geometricError on Tileset does the opposite of the one on Tile
-    auto& root = tileset.root;
-    root.refine = Cesium3DTiles::Tile::Refine::ADD;
-    root.transform =
-    {
-        // 4x4 matrix to place the object somewhere on the globe
-        -1, 0, 0, 0,
-        0, 0, 1, 0,
-        0, 1, 0, 0,
-        0, 6381000, 0, 1
-    };
-    for (size_t x = 0; x < 3; x++)
-    {
-        for (size_t y = 0; y < 3; y++)
-        {
-            root.transform[y * 4 + x] *= scale;
-        }
-    }
+    IO io(output_dir.string());
+    io.write(tree, scale);
 
-    convert_bounding_box(bb, root.boundingVolume);
-    root_segment.fill_tile(root, "");
-
-    std::vector<MeshSegment> all_segments;
-    root_segment.collect_segments(all_segments);
-    root_segment = {};
-
-    std::cout << timestamp << "Writing " << all_segments.size() << " segments        " << std::endl;
-    ProgressBar progress_write(all_segments.size(), "Writing segments");
-    size_t num_threads = big ? 1 : OpenMPConfig::getNumThreads();
-    #pragma omp parallel num_threads(num_threads)
-    {
-        auto model = std::make_shared<Model>();
-        B3dmIO io;
-        io.setModel(model);
-
-        #pragma omp for
-        for (size_t i = 0; i < all_segments.size(); i++)
-        {
-            auto& segment = all_segments[i];
-            std::string filename = (output_dir / segment.filename).string();
-            auto pmp_mesh = segment.mesh->get();
-            model->m_mesh = pmp_mesh->toMeshBuffer();
-            pmp_mesh.reset();
-            io.save(filename);
-            ++progress_write;
-        }
-    }
-    std::cout << "\r";
-
-    all_segments.clear();
+    tree.reset();
 
     if (mesh_file)
     {
@@ -593,51 +438,15 @@ int main(int argc, char** argv)
         fs::remove(name);
     }
 
-    Cesium3DTilesWriter::TilesetWriter writer;
-    auto result = writer.writeTileset(tileset);
-
-    if (!result.warnings.empty())
-    {
-        std::cerr << "Warnings writing tileset: " << std::endl;
-        for (auto& e : result.warnings)
-        {
-            std::cerr << e << std::endl;
-        }
-    }
-    if (!result.errors.empty())
-    {
-        std::cerr << "Errors writing tileset: " << std::endl;
-        for (auto& e : result.errors)
-        {
-            std::cerr << e << std::endl;
-        }
-        return EXIT_FAILURE;
-    }
-
-    fs::path tileset_file = output_dir / "tileset.json";
-    std::cout << timestamp << "Writing " << tileset_file << std::endl;
-
-    std::ofstream tileset_out(tileset_file.string(), std::ios::binary);
-    tileset_out.write((char*)result.tilesetBytes.data(), result.tilesetBytes.size());
-    tileset_out.close();
-
-    fs::path viewer_file = output_dir / "index.html";
-    std::cout << timestamp << "Writing " << viewer_file << std::endl;
-
-    std::ofstream viewer_out(viewer_file.string());
-    viewer_out << VIEWER_HTML;
-    viewer_out.close();
-
     std::cout << timestamp << "Finished" << std::endl;
 
     return 0;
 }
 
 
-void read_chunks(std::unordered_map<Vector3i, MeshSegment>& chunks,
+void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
                  const std::vector<std::string>& chunk_files,
                  float chunk_size, float voxel_size,
-                 bool& assign_colors,
                  std::shared_ptr<HighFive::File> mesh_file,
                  std::function<void(pmp::SurfaceMesh&, const std::string&)> read_mesh)
 {
@@ -701,20 +510,12 @@ void read_chunks(std::unordered_map<Vector3i, MeshSegment>& chunks,
             continue;
         }
 
-        auto& segment = chunks[chunk_pos];
-        segment.bb = mesh.bounds();
+        auto bb = mesh.bounds();
+        chunks.emplace(chunk_pos, Tree::leaf(LazyMesh(pmp_mesh, mesh_file), bb));
 
-        if (assign_colors)
-        {
-            paint_mesh(mesh, segment.bb, i, chunk_size);
-        }
-
-        segment.mesh.reset(new LazyMesh(pmp_mesh, mesh_file));
         ++progress;
     }
     std::cout << std::endl;
-
-    assign_colors = false; // already assigned
 
     if (empty > 0)
     {
@@ -756,11 +557,11 @@ void paint_mesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, size_t index
     }
 }
 
-bool compute_normals(pmp::SurfaceMesh& mesh)
+void compute_normals(pmp::SurfaceMesh& mesh)
 {
     if (mesh.has_vertex_property("v:normal"))
     {
-        return false;
+        return;
     }
     auto v_normal = mesh.vertex_property<pmp::Normal>("v:normal");
     #pragma omp parallel for schedule(dynamic,64)
@@ -776,5 +577,4 @@ bool compute_normals(pmp::SurfaceMesh& mesh)
             }
         }
     }
-    return true;
 }

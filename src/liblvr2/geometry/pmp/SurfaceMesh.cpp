@@ -1116,7 +1116,7 @@ void SurfaceMesh::split_mesh(std::vector<SurfaceMesh>& output,
     }
 }
 
-void SurfaceMesh::join_mesh(const std::vector<SurfaceMesh*>& input)
+void SurfaceMesh::join_mesh(const std::vector<const SurfaceMesh*>& input)
 {
     if (input.empty())
         return;

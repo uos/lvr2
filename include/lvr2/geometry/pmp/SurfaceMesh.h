@@ -1798,7 +1798,7 @@ public:
                     VertexProperty<IndexType>& vertex_dist);
 
     //! Adds everything in the input meshes to the current mesh.
-    void join_mesh(const std::vector<SurfaceMesh*>& input);
+    void join_mesh(const std::vector<const SurfaceMesh*>& input);
 
     //! Unifies h0 and h1 into a single edge, combining adjacent vertices.
     //! Requires both halfedges to be boundary halfedges.

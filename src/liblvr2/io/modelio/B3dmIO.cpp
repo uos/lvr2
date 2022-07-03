@@ -125,7 +125,11 @@ float* add_attribute(std::vector<std::byte>& buffer,
 
 void B3dmIO::save(std::string filename)
 {
-    auto& mesh = m_model->m_mesh;
+    auto mesh = m_model->m_mesh;
+    if (!mesh)
+    {
+        throw std::runtime_error("B3dmIO can only save meshes");
+    }
 
     size_t num_vertices = mesh->numVertices();
     size_t num_faces = mesh->numFaces();
@@ -352,12 +356,6 @@ void B3dmIO::save(std::string filename)
 
     file.write((char*)gltf.gltfBytes.data(), gltf.gltfBytes.size());
 }
-
-ModelPtr B3dmIO::read(std::string filename)
-{
-    return ModelPtr(); // TODO: implement
-}
-
 
 } // namespace lvr2
 
