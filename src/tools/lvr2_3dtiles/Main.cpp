@@ -52,15 +52,11 @@ using Mesh = PMPMesh<Vec>;
 using Tree = HLODTree<Vec>;
 using IO = Tiles3dIO<Vec>;
 
-#include "viewer.html"
-
 void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
                  const std::vector<std::string>& chunk_files,
                  float chunk_size, float voxel_size,
                  std::shared_ptr<HighFive::File> mesh_file,
                  std::function<void(pmp::SurfaceMesh&, const std::string&)> read_mesh);
-
-void paint_mesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, size_t index, float chunk_size);
 
 void compute_normals(pmp::SurfaceMesh& mesh);
 
@@ -197,6 +193,7 @@ int main(int argc, char** argv)
 
     if (fs::is_directory(input_file))
     {
+        std::cout << " from chunks in a folder" << std::endl;
         std::string path = input_file.string();
         if (path.back() != '/')
         {
@@ -223,7 +220,7 @@ int main(int argc, char** argv)
         const auto root = kernel->m_hdf5File->getGroup("/");
         if (root.hasAttribute("chunk_size"))
         {
-            std::cout << " from chunks" << std::endl;
+            std::cout << " from chunks in Hdf5" << std::endl;
 
             chunk_size = hdf5util::getAttribute<float>(root, "chunk_size").get();
             float voxel_size = hdf5util::getAttribute<float>(root, "voxel_size").get();
@@ -523,38 +520,6 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
     }
 
     std::cout << timestamp << "Found " << chunks.size() << " Chunks" << std::endl;
-}
-
-void paint_mesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, size_t index, float chunk_size)
-{
-    float step_size = chunk_size > 0 ? chunk_size : 10;
-    float variation = 0.1;
-    if (mesh.has_vertex_property("v:color"))
-    {
-        return;
-    }
-    auto v_color = mesh.add_vertex_property<pmp::Color>("v:color");
-    float r = std::abs(std::sin(index * 2));
-    float g = std::abs(std::cos(index));
-    float b = std::abs(std::sin(index * 30));
-    float min_z = bb.min().z();
-    float max_z = bb.max().z();
-    #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < mesh.vertices_size(); i++)
-    {
-        pmp::Vertex vH(i);
-        if (mesh.is_deleted(vH))
-        {
-            continue;
-        }
-        auto pos = mesh.position(vH);
-        float dr = std::sin(pos.x() / step_size) * variation;
-        float dg = std::sin(pos.y() / step_size) * variation;
-        float db = ((pos.z() - min_z) / (max_z - min_z) - 0.5f) * variation;
-        v_color[vH] = pmp::Color(std::clamp(r + dr, 0.0f, 1.0f),
-                                 std::clamp(g + dg, 0.0f, 1.0f),
-                                 std::clamp(b + db, 0.0f, 1.0f));
-    }
 }
 
 void compute_normals(pmp::SurfaceMesh& mesh)
