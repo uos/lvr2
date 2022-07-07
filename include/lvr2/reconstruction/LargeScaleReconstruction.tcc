@@ -320,7 +320,7 @@ namespace lvr2
                     make_shared<lvr2::AdaptiveKSearchSurface<Vec>>(p_loader, "FLANN", m_options.kn, m_options.ki, m_options.kd, m_options.useRansac);
 
                 auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(voxelSize, surface, gridbb, true, m_options.extrude);
-
+#ifdef GPU_FOUND
                 if (!hasNormals && m_options.useGPU)
                 {
                     // std::vector<float> flipPoint = std::vector<float>{100, 100, 100};
@@ -372,7 +372,9 @@ namespace lvr2
                         std::cout << timestamp << "Done." << std::endl;
                     }
                 }
-
+#else
+                std::cout << timestamp << "Warning: useGPU specified but no GPU found. Reverting to CPU" << std::endl;
+#endif
                 if (!hasNormals)
                 {
                     surface->calculateSurfaceNormals();
