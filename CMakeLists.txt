@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.10)
 project(LAS_VEGAS VERSION 2)
 
 if(MSVC)
@@ -143,13 +143,20 @@ endif(WITH_CV_NONFREE)
 #------------------------------------------------------------------------------
 find_package(FLANN REQUIRED)
 if(FLANN_FOUND)
-  message(STATUS "Found FLANN")
-  include_directories(${FLANN_DIR})
+	message(STATUS "Found FLANN library: ${FLANN_INCLUDE_DIR}")
+	include_directories(${FLANN_INCLUDRE_DIR})
 endif(FLANN_FOUND)
 
-find_package(Lz4 REQUIRED)
-include_directories(  ${LZ4_INCLUDE_DIR} )
-message(STATUS "Found LZ4 library: ${LZ4_LIBRARY}")
+find_package(Lz4)
+if(LZ4_FOUND)
+  include_directories(  ${LZ4_INCLUDE_DIR} )
+  message(STATUS "Found LZ4 library: ${LZ4_INCLUDE_DIR}")
+else(LZ4_FOUND)
+  find_package(PkgConfig)
+  pkg_search_module(LZ4 lz4 liblz4)
+  include_directories(${LZ4_INCLUDEDIR})
+  message(STATUS "Found LZ4 library: ${LZ4_INCLUDE_DIR}")
+endif(LZ4_FOUND)
 
 
 #------------------------------------------------------------------------------
@@ -177,7 +184,7 @@ if(OPENCL_FOUND)
     if(OpenCL_NEW_API)
       list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL_NEW_API)
     endif(OpenCL_NEW_API)
-endif()
+endif(OPENCL_FOUND)
 
 
 #------------------------------------------------------------------------------
@@ -343,9 +350,9 @@ endif(OPENMP_FOUND)
 # Searching for OpenGL
 #------------------------------------------------------------------------------
 
-find_package(OpenGL REQUIRED)
+find_package(OpenGL COMPONENTS OpenGL)
 include_directories(${OPENGL_INCLUDE_DIR})
-message(STATUS "Found OpenGL")
+message(STATUS "Found OpenGL: ${OPENGL_INCLUDE_DIR}")
 
 if(APPLE)
   include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
@@ -359,9 +366,21 @@ endif(APPLE)
 ## Searching for glut
 #------------------------------------------------------------------------------
 
-find_package(GLUT REQUIRED)
-message(STATUS "Found OpenGL Utility Toolkit" )
-include_directories(${GLUT_INCLUDE_DIR})
+find_package(GLUT)
+if(GLUT_FOUND)
+  message(STATUS "Found OpenGL Utility Toolkit via cmake: ${GLUT_INCLUDE_DIRS}" )
+  include_directories(${GLUT_INCLUDE_DIRS})
+  
+else(GLUT_FOUND)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(GLUT glut freeglut FREEGLUT REQUIRED)
+  message(STATUS "Found OpenGL Utility Toolkit via pkg_config: ${GLUT_LIBDIR} ${FREEGLUT_LIBDIR}" )
+  include_directories(${GLUT_INCLUDEDIR})
+  link_directories(${GLUT_LIBDIR})
+endif(GLUT_FOUND)
+
+message(STATUS "GLUT: ${pkgcfg_lib_GLUT_glut}")
+set(GLUT_LIBRARIES ${pkgcfg_lib_GLUT_glut})
 
 #------------------------------------------------------------------------------
 ## Searching for libfreenect
@@ -631,6 +650,8 @@ endif()
 if(embree_FOUND)
 list(APPEND LVR2_LIB_DEPENDENCIES ${EMBREE_LIBRARY})
 endif()
+
+message(STATUS "LVR library dependencies: ${LVR2_LIB_DEPENDENCIES}")
 
 ###############################################################################
 # LIBRARIES
