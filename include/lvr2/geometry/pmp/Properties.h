@@ -12,6 +12,9 @@
 #include <typeinfo>
 #include <iostream>
 
+#include <highfive/H5Group.hpp>
+#include <highfive/H5DataSet.hpp>
+
 namespace pmp {
 
 class BasePropertyArray
@@ -32,14 +35,14 @@ public:
     //! Free unused memory.
     virtual void free_memory() = 0;
 
-    //! Extend the number of elements by n.
-    virtual void push_back(size_t n = 1) = 0;
+    //! Clear the array.
+    virtual void clear() = 0;
 
     //! Let two elements swap their storage place.
     virtual void swap(size_t i0, size_t i1) = 0;
 
     //! Copy an element from another array.
-    virtual void copy_prop(BasePropertyArray* src, size_t src_i, size_t dst_i) = 0;
+    virtual void copy_prop(const BasePropertyArray* src, size_t src_i, size_t dst_i) = 0;
 
     //! Return a deep copy of self.
     virtual BasePropertyArray* clone() const = 0;
@@ -47,13 +50,52 @@ public:
     //! Return an empty copy of self.
     virtual BasePropertyArray* empty_copy() const = 0;
 
+    //! Write contents into group and clear the array.
+    void unload(HighFive::Group& group)
+    {
+        auto [ start, len ] = raw_data();
+        std::vector<size_t> dims = { len };
+        if (group.exist(name_))
+        {
+            auto dataset = group.getDataSet(name_);
+            if (dataset.getDimensions() != dims)
+            {
+                dataset.resize(dims);
+            }
+            dataset.write_raw(start);
+        }
+        else
+        {
+            HighFive::DataSpace dataSpace(dims);
+            HighFive::DataSetCreateProps properties;
+            properties.add(HighFive::Chunking({ dims[0] }));
+            group.createDataSet<uint8_t>(name_, dataSpace, properties).write_raw(start);
+        }
+        clear();
+    }
+
+    //! Restore contents from group after unload().
+    void restore(const HighFive::Group& group)
+    {
+        auto [ start, len ] = raw_data();
+        auto dataset = group.getDataSet(name_);
+        if (dataset.getDimensions()[0] != len)
+        {
+            throw std::runtime_error("PropertyArray::restore: Dimension mismatch");
+        }
+        dataset.read(start);
+    }
+
     //! Return the type_info of the property
-    virtual const std::type_info& type() = 0;
+    virtual const std::type_info& type() const = 0;
 
     //! Return the name of the property
     const std::string& name() const { return name_; }
 
 protected:
+    //! Return the raw data pointer and length.
+    virtual std::pair<uint8_t*, size_t> raw_data() = 0;
+
     std::string name_;
 };
 
@@ -76,25 +118,25 @@ public: // interface of BasePropertyArray
 
     void resize(size_t n) override { data_.resize(n, value_); }
 
-    void push_back(size_t n = 1) override { data_.insert(data_.end(), n, value_); }
-
     void free_memory() override { data_.shrink_to_fit(); }
+
+    void clear() override { VectorType().swap(data_); }
 
     void swap(size_t i0, size_t i1) override
     {
         std::swap(data_[i0], data_[i1]);
     }
 
-    void copy_prop(BasePropertyArray* src, size_t src_i, size_t dst_i) override
+    void copy_prop(const BasePropertyArray* src, size_t src_i, size_t dst_i) override
     {
-        PropertyArray<T>* src_prop = dynamic_cast<PropertyArray<T>*>(src);
+        auto src_prop = dynamic_cast<const PropertyArray<T>*>(src);
         assert(src_prop);
         data_[dst_i] = src_prop->data_[src_i];
     }
 
     BasePropertyArray* clone() const override
     {
-        PropertyArray<T>* p = new PropertyArray<T>(name_, value_);
+        auto p = new PropertyArray<T>(name_, value_);
         p->data_ = data_;
         return p;
     }
@@ -104,7 +146,7 @@ public: // interface of BasePropertyArray
         return new PropertyArray<T>(name_, value_);
     }
 
-    const std::type_info& type() override { return typeid(T); }
+    const std::type_info& type() const override { return typeid(T); }
 
 public:
     //! Get pointer to array (does not work for T==bool)
@@ -114,10 +156,10 @@ public:
     const T* data() const { return data_.data(); }
 
     //! Get reference to the underlying vector
-    std::vector<T>& vector() { return data_; }
+    VectorType& vector() { return data_; }
 
     //! Get reference to the underlying vector
-    const std::vector<T>& vector() const { return data_; }
+    const VectorType& vector() const { return data_; }
 
     //! Access the i'th element. No range check is performed!
     reference operator[](size_t idx)
@@ -134,6 +176,10 @@ public:
     }
 
 private:
+    std::pair<uint8_t*, size_t> raw_data() override
+    {
+        return std::make_pair((uint8_t*)data_.data(), data_.size() * sizeof(T));
+    }
     VectorType data_;
     ValueType value_;
 };
@@ -155,19 +201,27 @@ inline void PropertyArray<bool>::swap(size_t i0, size_t i1)
 {
     data_.swap(data_[i0], data_[i1]);
 }
+template <>
+inline std::pair<uint8_t*, size_t> PropertyArray<bool>::raw_data()
+{
+    auto begin = data_.begin()._M_p;
+    auto end = (data_.end() - 1)._M_p + 1; // -1 + 1 to get a past-the-end whole pointer, not past-the-end bit
+    return std::make_pair((uint8_t*)begin, (end - begin) * sizeof(*begin));
+}
 
 template <class T>
 class Property
 {
 public:
-    typedef typename PropertyArray<T>::reference reference;
-    typedef typename PropertyArray<T>::const_reference const_reference;
+    typedef PropertyArray<T> ArrayType;
+    typedef typename ArrayType::reference reference;
+    typedef typename ArrayType::const_reference const_reference;
 
     friend class PropertyContainer;
     friend class SurfaceMesh;
 
 public:
-    Property(PropertyArray<T>* p = nullptr) : parray_(p) {}
+    Property(ArrayType* p = nullptr) : parray_(p) {}
 
     void reset() { parray_ = nullptr; }
 
@@ -197,13 +251,13 @@ public:
         return parray_->data();
     }
 
-    std::vector<T>& vector()
+    typename ArrayType::VectorType& vector()
     {
         assert(parray_ != nullptr);
         return parray_->vector();
     }
 
-    const std::vector<T>& vector() const
+    const typename ArrayType::VectorType& vector() const
     {
         assert(parray_ != nullptr);
         return parray_->vector();
@@ -215,33 +269,34 @@ public:
         return parray_->name();
     }
 
-    PropertyArray<T>& array()
+    ArrayType& array()
     {
         assert(parray_ != nullptr);
         return *parray_;
     }
 
-    const PropertyArray<T>& array() const
+    const ArrayType& array() const
     {
         assert(parray_ != nullptr);
         return *parray_;
     }
 
 private:
-    PropertyArray<T>* parray_;
+    ArrayType* parray_;
 };
 
 template <class T>
 class ConstProperty
 {
 public:
-    typedef typename PropertyArray<T>::const_reference const_reference;
+    typedef PropertyArray<T> ArrayType;
+    typedef typename ArrayType::const_reference const_reference;
 
     friend class PropertyContainer;
     friend class SurfaceMesh;
 
 public:
-    ConstProperty(const PropertyArray<T>* p = nullptr) : parray_(p) {}
+    ConstProperty(const ArrayType* p = nullptr) : parray_(p) {}
     ConstProperty(const Property<T>& p) : ConstProperty(&p.array()) {}
 
     void reset() { parray_ = nullptr; }
@@ -260,7 +315,7 @@ public:
         return parray_->data();
     }
 
-    const std::vector<T>& vector()
+    const typename ArrayType::VectorType& vector()
     {
         assert(parray_ != nullptr);
         return parray_->vector();
@@ -272,14 +327,60 @@ public:
         return parray_->name();
     }
 
-    const PropertyArray<T>& array() const
+    const ArrayType& array() const
     {
         assert(parray_ != nullptr);
         return *parray_;
     }
 
 private:
-    const PropertyArray<T>* parray_;
+    const ArrayType* parray_;
+};
+
+/**
+ * @brief map between identical properties from different containers
+ *
+ * Semantics: Copy from property 'in' to property 'out'. The properties may be from different meshes.
+ * output_mesh.property_out[index_out] = input_mesh.property_in[index_in]
+ *
+ * becomes:
+ * property_map.add(input_mesh.property_in, output_mesh.property_out);
+ * property_map.copy(index_in, index_out);
+ *
+ * @tparam HandleT type of the handle used by the properties
+ */
+template<typename HandleT>
+class PropertyMap
+{
+public:
+    /**
+     * @brief Add two properties of the same type to the map.
+     *
+     * @param in The property to copy from
+     * @param out The property to copy to
+     */
+    void add(const BasePropertyArray* in, BasePropertyArray* out)
+    {
+        if (in->type() != out->type())
+            throw std::runtime_error("PropertyMap::add(): types do not match");
+        properties_.emplace_back(in, out);
+    }
+
+    /**
+     * @brief Copy from in_handle in all 'in' properties to out_handle in all 'out' properties.
+     *
+     * @param in_handle The index in the input properties to copy from
+     * @param out_handle The index in the output properties to copy to
+     */
+    void copy(HandleT in_handle, HandleT out_handle)
+    {
+        for (auto& [ in, out ] : properties_)
+        {
+            out->copy_prop(in, in_handle.idx(), out_handle.idx());
+        }
+    }
+private:
+    std::vector<std::pair<const BasePropertyArray*, BasePropertyArray*>> properties_;
 };
 
 class PropertyContainer
@@ -303,10 +404,13 @@ public:
         if (this != &rhs)
         {
             clear();
-            parrays_.resize(rhs.n_properties());
             size_ = rhs.size();
-            for (size_t i = 0; i < parrays_.size(); ++i)
-                parrays_[i] = rhs.parrays_[i]->clone();
+            for (auto& src : rhs.parrays_)
+            {
+                auto p = src->clone();
+                parrays_.push_back(p);
+                map_[src->name()] = p;
+            }
         }
         return *this;
     }
@@ -324,8 +428,8 @@ public:
     std::vector<std::string> properties() const
     {
         std::vector<std::string> names;
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            names.push_back(parrays_[i]->name());
+        for (auto& parray : parrays_)
+            names.push_back(parray->name());
         return names;
     }
 
@@ -333,60 +437,54 @@ public:
     template <class T>
     Property<T> add(const std::string& name, const T t = T())
     {
-        // if a property with this name already exists, return an invalid property
-        for (size_t i = 0; i < parrays_.size(); ++i)
-        {
-            if (parrays_[i]->name() == name)
-            {
-                std::cerr << "[PropertyContainer] A property with name \""
-                          << name
-                          << "\" already exists. Returning invalid property.\n";
-                return Property<T>();
-            }
-        }
+        if (exists(name))
+            throw std::runtime_error("PropertyContainer::add: property already exists");
 
         // otherwise add the property
-        PropertyArray<T>* p = new PropertyArray<T>(name, t);
+        auto p = new PropertyArray<T>(name, t);
         p->resize(size_);
         parrays_.push_back(p);
+        map_[name] = p;
         return Property<T>(p);
     }
 
     // do we have a property with a given name?
     bool exists(const std::string& name) const
     {
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            if (parrays_[i]->name() == name)
-                return true;
-        return false;
+        return map_.find(name) != map_.end();
     }
 
     // get a property by its name. returns invalid property if it does not exist.
     template <class T>
     Property<T> get(const std::string& name)
     {
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            if (parrays_[i]->name() == name)
-                return Property<T>(
-                    dynamic_cast<PropertyArray<T>*>(parrays_[i]));
-        return Property<T>();
+        auto it = map_.find(name);
+        if (it == map_.end())
+            return Property<T>();
+        if (it->second->type() != typeid(T))
+            throw std::runtime_error("PropertyContainer::get: type mismatch");
+
+        return Property<T>(dynamic_cast<PropertyArray<T>*>(it->second));
     }
 
     // get a property by its name. returns invalid property if it does not exist.
     template <class T>
     ConstProperty<T> get(const std::string& name) const
     {
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            if (parrays_[i]->name() == name)
-                return ConstProperty<T>(dynamic_cast<const PropertyArray<T>*>(parrays_[i]));
-        return ConstProperty<T>();
+        auto it = map_.find(name);
+        if (it == map_.end())
+            return ConstProperty<T>();
+        if (it->second->type() != typeid(T))
+            throw std::runtime_error("PropertyContainer::get: type mismatch");
+
+        return ConstProperty<T>(dynamic_cast<const PropertyArray<T>*>(it->second));
     }
 
     // returns a property if it exists, otherwise it creates it first.
     template <class T>
     Property<T> get_or_add(const std::string& name, const T t = T())
     {
-        Property<T> p = get<T>(name);
+        auto p = get<T>(name);
         if (!p)
             p = add<T>(name, t);
         return p;
@@ -395,22 +493,21 @@ public:
     // get the type of property by its name. returns typeid(void) if it does not exist.
     const std::type_info& get_type(const std::string& name)
     {
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            if (parrays_[i]->name() == name)
-                return parrays_[i]->type();
-        return typeid(void);
+        auto it = map_.find(name);
+        if (it == map_.end())
+            return typeid(void);
+        return it->second->type();
     }
 
     // delete a property
     template <class T>
     void remove(Property<T>& h)
     {
-        std::vector<BasePropertyArray*>::iterator it = parrays_.begin(),
-                                                  end = parrays_.end();
-        for (; it != end; ++it)
+        for (auto it = parrays_.begin(); it != parrays_.end(); ++it)
         {
             if (*it == h.parray_)
             {
+                map_.erase((*it)->name());
                 delete *it;
                 parrays_.erase(it);
                 h.reset();
@@ -422,94 +519,101 @@ public:
     // delete all properties
     void clear()
     {
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            delete parrays_[i];
+        for (auto& parray : parrays_)
+            delete parray;
         parrays_.clear();
+        map_.clear();
         size_ = 0;
+    }
+
+    // delete the content of all properties, but keep the properties themselves
+    void shallow_clear()
+    {
+        for (auto& parray : parrays_)
+            parray->clear();
     }
 
     // reserve memory for n entries in all arrays
     void reserve(size_t n)
     {
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            parrays_[i]->reserve(n);
+        for (auto& parray : parrays_)
+            parray->reserve(n);
     }
 
     // resize all arrays to size n
     void resize(size_t n)
     {
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            parrays_[i]->resize(n);
+        for (auto& parray : parrays_)
+            parray->resize(n);
         size_ = n;
     }
 
     // free unused space in all arrays
     void free_memory()
     {
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            parrays_[i]->free_memory();
+        for (auto& parray : parrays_)
+            parray->free_memory();
     }
 
-    // add a new element to each vector
+    // add new element(s) to each vector
     void push_back(size_t n = 1)
     {
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            parrays_[i]->push_back(n);
-        size_ += n;
+        resize(size_ + n);
     }
 
-    // swap elements i0 and i1 in all arrays
-    void swap(size_t i0, size_t i1)
+    // swap elements a and b in all properties
+    void swap(size_t a, size_t b)
     {
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            parrays_[i]->swap(i0, i1);
+        for (auto& parray : parrays_)
+            parray->swap(a, b);
+    }
+
+    // write contents to group and clear memory, but keep the properties themselves
+    void unload(HighFive::Group& group)
+    {
+        for (auto& parray : parrays_)
+            parray->unload(group);
+    }
+    // restore contents after a call to unload(group)
+    void restore(const HighFive::Group& group)
+    {
+        for (auto& parray : parrays_)
+        {
+            parray->resize(size_);
+            parray->restore(group);
+        }
     }
 
     void copy(const PropertyContainer& src)
     {
-        std::unordered_map<std::string, size_t> map;
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            map[parrays_[i]->name()] = i;
-
         for (auto& src_prop : src.parrays_)
         {
-            if (map.find(src_prop->name()) == map.end())
+            if (!exists(src_prop->name()))
             {
                 BasePropertyArray* p = src_prop->empty_copy();
                 p->resize(size_);
                 parrays_.push_back(p);
+                map_[src_prop->name()] = p;
             }
         }
     }
 
-    /// maps from src->index to this->index
-    using IndexMap = std::vector<std::pair<IndexType, IndexType>>;
-    IndexMap gen_map(const PropertyContainer& src, size_t offset) const
+    template<typename HandleT>
+    PropertyMap<HandleT> gen_copy_map(const PropertyContainer& src, size_t offset) const
     {
-        std::unordered_map<std::string, size_t> map;
-        for (size_t i = 0; i < parrays_.size(); ++i)
-            map[parrays_[i]->name()] = i;
-
-        IndexMap ret;
+        PropertyMap<HandleT> ret;
         for (size_t src_i = offset; src_i < src.parrays_.size(); ++src_i)
         {
-            auto it = map.find(src.parrays_[src_i]->name());
-            if (it != map.end())
-                ret.emplace_back(src_i, it->second);
+            auto it = map_.find(src.parrays_[src_i]->name());
+            if (it != map_.end() && it->second->type() == src.parrays_[src_i]->type())
+                ret.add(src.parrays_[src_i], it->second);
         }
         return ret;
     }
 
-    void copy_props(const PropertyContainer& src, size_t src_i, size_t target_i, const IndexMap& map)
-    {
-        for (auto& [ a, b ] : map)
-        {
-            parrays_[b]->copy_prop(src.parrays_[a], src_i, target_i);
-        }
-    }
-
 private:
     std::vector<BasePropertyArray*> parrays_;
+    std::unordered_map<std::string, BasePropertyArray*> map_;
     size_t size_;
 };
 

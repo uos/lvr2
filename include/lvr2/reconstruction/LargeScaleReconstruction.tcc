@@ -483,7 +483,7 @@ namespace lvr2
                         auto& chunkCoords = partitionChunkCoords[i];
                         Vector3i chunkPos(chunkCoords.x, chunkCoords.y, chunkCoords.z);
                         auto bb = tiles3dMesh->getSurfaceMesh().bounds();
-                        chunkMap.emplace(chunkPos, HLODTree<BaseVecT>::leaf(LazyMesh(*tiles3dMesh, chunkFile), bb));
+                        chunkMap.emplace(chunkPos, HLODTree<BaseVecT>::leaf(LazyMesh(std::move(*tiles3dMesh), chunkFile), bb));
                     }
                 }
 
@@ -604,7 +604,7 @@ namespace lvr2
             }
 
 #ifdef LVR2_USE_3DTILES
-            if (create3dTiles)
+            if (create3dTiles && !chunkMap.empty())
             {
                 std::cout << timestamp << "Creating 3D Tiles: Generating HLOD Tree" << std::endl;
                 auto tree = HLODTree<BaseVecT>::partition(std::move(chunkMap), 2);

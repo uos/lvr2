@@ -72,6 +72,7 @@ int main(int argc, char** argv)
     std::vector<fs::path> mesh_out_files;
     bool fix_mesh;
     bool big;
+    bool compress;
 
     try
     {
@@ -89,7 +90,8 @@ int main(int argc, char** argv)
 
         ("big,b", bool_switch(&big),
          "Indicates that the input is big and might not fit into memory.\n"
-         "This will make the entire process slower, but a lot less memory intensive.\n"
+         "This will make the entire process considerably slower (~4x runtime), " // TODO: double check numbers
+         "but a lot less memory intensive (usually < 1 GB instead of 2x input filesize).\n"
          "Requires the input to be already chunked.")
 
         ("calcNormals,N", bool_switch(&calc_normals),
@@ -112,6 +114,11 @@ int main(int argc, char** argv)
          "Scale the mesh.\n"
          "This defaults to 100 because small meshes are hard to navigate in the default html viewer.\n"
          "Only change this if you use a different viewer and/or you have an accurate position on the globe.")
+
+        ("compress,z", bool_switch(&compress),
+         "Compress the output meshes using Draco Compression.\n"
+         "This will significantly reduce filesize and improve loading times when remotely viewing the tiles "
+         "over a slow connection, but greatly increase loading times for local viewing.")
 
         ("help,h", bool_switch(&help),
          "Print this message here.")
@@ -178,7 +185,6 @@ int main(int argc, char** argv)
 
     Mesh mesh;
     std::unordered_map<Vector3i, Tree::Ptr> chunks;
-    std::vector<Tree::Ptr> segments;
     std::vector<Texture> textures;
 
     std::cout << timestamp << "Reading mesh " << input_file;
@@ -303,10 +309,10 @@ int main(int argc, char** argv)
         mesh = Mesh(model->m_mesh);
     }
 
-    auto& surface_mesh = mesh.getSurfaceMesh();
 
     if (mesh.numFaces() > 0)
     {
+        auto& surface_mesh = mesh.getSurfaceMesh();
         if (fix_mesh)
         {
             std::cout << timestamp << "Fixing mesh" << std::endl;
@@ -329,7 +335,8 @@ int main(int argc, char** argv)
             surface_mesh.write(file.string(), flags);
         }
     }
-    else if (!chunks.empty())
+
+    if (!chunks.empty())
     {
         if (calc_normals)
         {
@@ -353,67 +360,69 @@ int main(int argc, char** argv)
     {
         tree = Tree::partition(std::move(chunks), combine_depth);
     }
-    else if (!textures.empty())
+    else
     {
-        auto f_dist = surface_mesh.get_face_property<pmp::IndexType>("f:material");
-        auto v_dist = surface_mesh.add_vertex_property<pmp::IndexType>("v:material", pmp::PMP_MAX_INDEX);
-        #pragma omp parallel for schedule(static)
-        for (size_t i = 0; i < surface_mesh.faces_size(); i++)
+        std::vector<Mesh> meshes;
+
+        if (textures.empty())
         {
-            pmp::Face fH(i);
-            if (!surface_mesh.is_deleted(fH))
+            meshes.push_back(std::move(mesh));
+        }
+        else
+        {
+            auto& surface_mesh = mesh.getSurfaceMesh();
+            auto f_dist = surface_mesh.get_face_property<pmp::IndexType>("f:material");
+            auto v_dist = surface_mesh.add_vertex_property<pmp::IndexType>("v:material", pmp::PMP_MAX_INDEX);
+            #pragma omp parallel for schedule(static)
+            for (size_t i = 0; i < surface_mesh.faces_size(); i++)
             {
-                auto id = f_dist[fH];
-                for (auto vH : surface_mesh.vertices(fH))
+                pmp::Face fH(i);
+                if (!surface_mesh.is_deleted(fH))
                 {
-                    if (v_dist[vH] != pmp::PMP_MAX_INDEX && v_dist[vH] != id)
+                    auto id = f_dist[fH];
+                    for (auto vH : surface_mesh.vertices(fH))
                     {
-                        std::cout << "ERROR: vertex " << vH << " has multiple materials" << std::endl;
+                        if (v_dist[vH] != pmp::PMP_MAX_INDEX && v_dist[vH] != id)
+                        {
+                            std::cout << "ERROR: vertex " << vH << " has multiple materials" << std::endl;
+                        }
+                        v_dist[vH] = id;
                     }
-                    v_dist[vH] = id;
                 }
             }
-        }
-        std::vector<pmp::SurfaceMesh> meshes(textures.size());
-        surface_mesh.split_mesh(meshes, f_dist, v_dist);
-        surface_mesh.remove_vertex_property(v_dist);
+            std::vector<pmp::SurfaceMesh> split_meshes(textures.size());
+            surface_mesh.split_mesh(split_meshes, f_dist, v_dist);
 
-        segments.resize(meshes.size());
-        for (size_t i = 0; i < segments.size(); ++i)
+            mesh = {};
+
+            for (size_t i = 0; i < split_meshes.size(); ++i)
+            {
+                auto& mesh = meshes.emplace_back();
+                mesh.getSurfaceMesh() = std::move(split_meshes[i]);
+                mesh.setTexture(textures[i]);
+            }
+        }
+
+        std::vector<Tree::Ptr> segments;
+        for (auto& mesh : meshes)
         {
-            Mesh mesh;
-            mesh.getSurfaceMesh() = std::move(meshes[i]);
-            mesh.setTexture(textures[i]);
-            LazyMesh lazy_mesh(mesh, mesh_file);
+            LazyMesh lazy_mesh(std::move(mesh), mesh_file, true);
             if (chunk_size > 0)
             {
-                segments[i] = Tree::partition(lazy_mesh, chunk_size, combine_depth);
+                segments.push_back(Tree::partition(lazy_mesh, chunk_size, combine_depth));
             }
             else
             {
-                auto bb = mesh.getSurfaceMesh().bounds();
+                auto bb = lazy_mesh.get()->getSurfaceMesh().bounds();
+                lazy_mesh.allowUnload();
+                // Add the mesh as a child to a node to have one LOD
                 std::vector<Tree::Ptr> leaves;
-                leaves.emplace_back(Tree::leaf(std::move(lazy_mesh), bb));
-                segments[i] = Tree::node(std::move(leaves));
+                leaves.push_back(Tree::leaf(std::move(lazy_mesh), bb));
+                segments.push_back(Tree::node(std::move(leaves)));
             }
         }
         tree = Tree::partition(std::move(segments), 0);
     }
-    else
-    {
-        LazyMesh lazy_mesh(mesh, mesh_file);
-        if (chunk_size > 0)
-        {
-            std::cout << timestamp << "Segmenting mesh" << std::endl;
-            tree = Tree::partition(lazy_mesh, chunk_size, combine_depth);
-        }
-        else
-        {
-            auto bb = surface_mesh.bounds();
-            tree = Tree::leaf(std::move(lazy_mesh), bb);
-        }
-    }
-    mesh = {};
 
     tree->refresh();
     std::cout << timestamp << "Constructed tree with depth " << tree->depth() << ". Creating LOD" << std::endl;
@@ -424,7 +433,7 @@ int main(int argc, char** argv)
     std::cout << timestamp << "Creating 3D Tiles" << std::endl;
 
     IO io(output_dir.string());
-    io.write(tree, scale);
+    io.write(tree, compress, scale);
 
     tree.reset();
 
@@ -485,11 +494,11 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
         }
 
         auto bb = mesh.bounds();
-        chunks.emplace(chunk_pos, Tree::leaf(LazyMesh(pmp_mesh, mesh_file), bb));
+        chunks.emplace(chunk_pos, Tree::leaf(LazyMesh(std::move(pmp_mesh), mesh_file), bb));
 
         ++progress;
     }
-    std::cout << std::endl;
+    std::cout << "\r";
 
     if (empty > 0)
     {

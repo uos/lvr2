@@ -15,7 +15,6 @@
 #include "Properties.h"
 #include "BoundingBox.h"
 
-#include <highfive/H5Group.hpp>
 #include <boost/optional.hpp>
 
 namespace pmp
@@ -806,7 +805,7 @@ public:
     SurfaceMesh();
 
     //! destructor
-    virtual ~SurfaceMesh();
+    virtual ~SurfaceMesh() = default;
 
     //! copy constructor: copies \p rhs to \p *this. performs a deep copy of all
     //! properties.
@@ -867,6 +866,11 @@ public:
     void read(const HighFive::Group& group);
     void write(HighFive::Group& group) const;
 
+    //! \brief write content of the mesh into \p group and shallow_clear() the mesh.
+    void unload(HighFive::Group& group);
+    //! \brief restore content of the mesh after a call to unload( \p group ).
+    void restore(const HighFive::Group& group);
+
     //!@}
     //! \name Add new elements by hand
     //!@{
@@ -920,6 +924,14 @@ public:
 
     //! clear mesh: remove all vertices, edges, faces
     virtual void clear();
+
+    //! shallow clear mesh: remove the content of all properties (including positions and connectivity),
+    //! but keep the properties themselves.
+    //! \details This is useful after calling unload() and a subsequent restore(), if you want to save
+    //! memory. Can be undone by calling restore() again.
+    //!
+    //! Note that the n_faces() etc. methods will still return the correct values.
+    void shallow_clear();
 
     //! remove unused memory from vectors
     void free_memory();
@@ -1480,43 +1492,31 @@ public:
         fprops_.copy(src.fprops_);
     }
 
-    using IndexMap = PropertyContainer::IndexMap;
-    IndexMap gen_fprop_map(const SurfaceMesh& src)
+    //! Generate a PropertyMap to copy face properties from \p src to faces in this mesh.
+    //!
+    //! \param src The source mesh. May be *this if you want to copy within the same mesh.
+    PropertyMap<Face> gen_face_copy_map(const SurfaceMesh& src)
     {
         constexpr size_t OFFSET = 2; // connectivity, deleted
-        return fprops_.gen_map(src.fprops_, OFFSET);
+        return fprops_.gen_copy_map<Face>(src.fprops_, OFFSET);
     }
-    IndexMap gen_vprop_map(const SurfaceMesh& src)
+    //! \sa gen_face_copy_map()
+    PropertyMap<Vertex> gen_vertex_copy_map(const SurfaceMesh& src)
     {
         constexpr size_t OFFSET = 3; // point, connectivity, deleted
-        return vprops_.gen_map(src.vprops_, OFFSET);
+        return vprops_.gen_copy_map<Vertex>(src.vprops_, OFFSET);
     }
-    IndexMap gen_eprop_map(const SurfaceMesh& src)
+    //! \sa gen_face_copy_map()
+    PropertyMap<Edge> gen_edge_copy_map(const SurfaceMesh& src)
     {
         constexpr size_t OFFSET = 1; // deleted
-        return eprops_.gen_map(src.eprops_, OFFSET);
+        return eprops_.gen_copy_map<Edge>(src.eprops_, OFFSET);
     }
-    IndexMap gen_hprop_map(const SurfaceMesh& src)
+    //! \sa gen_face_copy_map()
+    PropertyMap<Halfedge> gen_halfedge_copy_map(const SurfaceMesh& src)
     {
         constexpr size_t OFFSET = 1; // connectivity
-        return hprops_.gen_map(src.hprops_, OFFSET);
-    }
-
-    void copy_fprops(const SurfaceMesh& src, Face src_f, Face target_f, const IndexMap& map)
-    {
-        fprops_.copy_props(src.fprops_, src_f.idx(), target_f.idx(), map);
-    }
-    void copy_vprops(const SurfaceMesh& src, Vertex src_v, Vertex target_v, const IndexMap& map)
-    {
-        vprops_.copy_props(src.vprops_, src_v.idx(), target_v.idx(), map);
-    }
-    void copy_eprops(const SurfaceMesh& src, Edge src_e, Edge target_e, const IndexMap& map)
-    {
-        eprops_.copy_props(src.eprops_, src_e.idx(), target_e.idx(), map);
-    }
-    void copy_hprops(const SurfaceMesh& src, Halfedge src_h, Halfedge target_h, const IndexMap& map)
-    {
-        hprops_.copy_props(src.hprops_, src_h.idx(), target_h.idx(), map);
+        return hprops_.gen_copy_map<Halfedge>(src.hprops_, OFFSET);
     }
 
     //!@}
@@ -1949,6 +1949,8 @@ public:
 private:
     //! \name Helper functions
     //!@{
+
+    void initialize();
 
     //! make sure that the outgoing halfedge of vertex \p v is a boundary
     //! halfedge if \p v is a boundary vertex.

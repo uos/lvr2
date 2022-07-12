@@ -302,8 +302,8 @@ void splitMesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, float chunkSi
         vertices.reserve(3);
         positions.reserve(3);
 
-        auto fprop_map = mesh.gen_fprop_map(mesh);
-        auto vprop_map = mesh.gen_vprop_map(mesh);
+        auto fprop_map = mesh.gen_face_copy_map(mesh);
+        auto vprop_map = mesh.gen_vertex_copy_map(mesh);
         for (auto fH : featureFaces)
         {
             auto target_id = f_chunk_id[fH];
@@ -333,14 +333,14 @@ void splitMesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, float chunkSi
                 else if (mesh.is_deleted(vH) || v_chunk_id[vH] != target_id)
                 {
                     auto new_vH = mesh.add_vertex(positions[i]);
-                    mesh.copy_vprops(mesh, vH, new_vH, vprop_map);
+                    vprop_map.copy(vH, new_vH);
                     v_chunk_id[new_vH] = target_id;
                     v_map[vH] = new_vH;
                     vH = new_vH;
                 }
             }
             auto new_fH = mesh.add_face(vertices);
-            mesh.copy_fprops(mesh, fH, new_fH, fprop_map);
+            fprop_map.copy(fH, new_fH);
         }
     }
 
@@ -458,8 +458,8 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
         return;
     }
 
-    auto fprop_map = mesh.gen_fprop_map(mesh);
-    auto vprop_map = mesh.gen_vprop_map(mesh);
+    auto fprop_map = mesh.gen_face_copy_map(mesh);
+    auto vprop_map = mesh.gen_vertex_copy_map(mesh);
 
     auto map_vertex = [&merge_map](pmp::Vertex vH) -> pmp::Vertex
     {
@@ -529,7 +529,7 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
         if (mesh.is_deleted(vH))
         {
             auto new_vH = mesh.add_vertex(pos);
-            mesh.copy_vprops(mesh, vH, new_vH, vprop_map);
+            vprop_map.copy(vH, new_vH);
             merge_map[vH] = new_vH;
         }
         else
@@ -553,7 +553,7 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
         try
         {
             auto new_fH = mesh.add_face(vertices);
-            mesh.copy_fprops(mesh, fH, new_fH, fprop_map);
+            fprop_map.copy(fH, new_fH);
             added++;
         }
         catch (const pmp::TopologyException&)

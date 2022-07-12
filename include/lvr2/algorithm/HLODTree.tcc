@@ -59,6 +59,11 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh);
 template<typename BaseVecT>
 typename HLODTree<BaseVecT>::Ptr HLODTree<BaseVecT>::partition(Mesh& src, float chunkSize, int combineDepth)
 {
+    if (src.numFaces() == 0)
+    {
+        return nullptr;
+    }
+
     using namespace HLODTree_internal;
 
     auto pmpMesh = src.modify();
@@ -77,7 +82,7 @@ typename HLODTree<BaseVecT>::Ptr HLODTree<BaseVecT>::partition(Mesh& src, float 
         {
             PMPMesh<BaseVecT> pmpMesh;
             pmpMesh.getSurfaceMesh() = std::move(chunk.mesh);
-            Mesh mesh(pmpMesh, meshFile);
+            Mesh mesh(std::move(pmpMesh), meshFile);
             chunkNodes[index] = leaf(std::move(mesh), chunk.bb);
         }
         chunkNode = partition(std::move(chunkNodes), combineDepth);
@@ -95,7 +100,7 @@ typename HLODTree<BaseVecT>::Ptr HLODTree<BaseVecT>::partition(Mesh& src, float 
             auto bb = chunk.bounds();
             PMPMesh<BaseVecT> pmpMesh;
             pmpMesh.getSurfaceMesh() = std::move(chunk);
-            Mesh mesh(pmpMesh, meshFile);
+            Mesh mesh(std::move(pmpMesh), meshFile);
             chunkNodes[index] = leaf(std::move(mesh), bb);
         }
         largeNodes.push_back(partition(std::move(chunkNodes), combineDepth));
@@ -117,6 +122,14 @@ typename HLODTree<BaseVecT>::Ptr HLODTree<BaseVecT>::partition(Mesh& src, float 
 template<typename BaseVecT>
 typename HLODTree<BaseVecT>::Ptr HLODTree<BaseVecT>::partition(std::vector<Ptr>&& subtrees, int combineDepth)
 {
+    if (subtrees.empty())
+    {
+        return nullptr;
+    }
+    else if (subtrees.size() == 1)
+    {
+        return std::move(subtrees[0]);
+    }
     auto ret = partitionRecursive(subtrees.data(), subtrees.data() + subtrees.size(), combineDepth);
     ret->refresh();
     return ret;
@@ -171,6 +184,11 @@ typename HLODTree<BaseVecT>::Ptr HLODTree<BaseVecT>::partitionRecursive(Ptr* sta
 template<typename BaseVecT>
 typename HLODTree<BaseVecT>::Ptr HLODTree<BaseVecT>::partition(std::unordered_map<Vector3i, Ptr>&& in_chunks, int combineDepth)
 {
+    if (in_chunks.empty())
+    {
+        return nullptr;
+    }
+
     Vector3i min = Vector3i::Constant(std::numeric_limits<Vector3i::value_type>::max());
     for (auto& [ index, _ ] : in_chunks)
     {
@@ -366,16 +384,20 @@ void HLODTree<BaseVecT>::combine()
     {
         return;
     }
-    std::vector<std::shared_ptr<const typename Mesh::MeshWrapper>> pmp_meshes;
+
+    std::vector<std::shared_ptr<const PMPMesh<BaseVecT>>> pmpMeshes;
     std::vector<const pmp::SurfaceMesh*> meshes;
     for (auto& child : m_children)
     {
-        pmp_meshes.push_back(child->m_mesh->get());
-        meshes.push_back(&pmp_meshes.back()->getSurfaceMesh());
+        pmpMeshes.push_back(child->m_mesh->get());
+        meshes.push_back(&pmpMeshes.back()->getSurfaceMesh());
     }
-    PMPMesh<BaseVecT> pmp_mesh;
-    auto& mesh = pmp_mesh.getSurfaceMesh();
+    PMPMesh<BaseVecT> pmpMesh;
+    auto& mesh = pmpMesh.getSurfaceMesh();
     mesh.join_mesh(meshes);
+
+    meshes.clear();
+    pmpMeshes.clear();
 
     HLODTree_internal::mergeChunkOverlap(mesh);
 
@@ -384,15 +406,15 @@ void HLODTree<BaseVecT>::combine()
         pmp::SurfaceSimplification::calculate_quadrics(mesh);
     }
 
-    auto mesh_file = m_children[0]->m_mesh->getFile();
-    m_mesh = LazyMesh(pmp_mesh, mesh_file);
+    auto meshFile = m_children[0]->m_mesh->getFile();
+    m_mesh = Mesh(std::move(pmpMesh), meshFile);
 }
 
 template<typename BaseVecT>
 bool HLODTree<BaseVecT>::simplify()
 {
-    auto pmp_mesh = m_mesh->modify();
-    auto& mesh = pmp_mesh->getSurfaceMesh();
+    auto pmpMesh = m_mesh->modify();
+    auto& mesh = pmpMesh->getSurfaceMesh();
     size_t old_num_vertices = mesh.n_vertices();
     pmp::SurfaceSimplification simplify(mesh, true);
     constexpr float TARGET_RATIO = 0.2;
@@ -420,15 +442,15 @@ bool HLODTree<BaseVecT>::collectSimplify(std::vector<HLODTree*>& canBeSimplified
         canBeSimplified.push_back(this);
         return false;
     }
-    size_t child_count = 0;
+    size_t childCount = 0;
     for (auto& child : m_children)
     {
         if (child->collectSimplify(canBeSimplified))
         {
-            child_count++;
+            childCount++;
         }
     }
-    if (child_count < m_children.size())
+    if (childCount < m_children.size())
     {
         return false;
     }
