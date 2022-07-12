@@ -242,6 +242,7 @@ public:
 
 public:
     ConstProperty(const PropertyArray<T>* p = nullptr) : parray_(p) {}
+    ConstProperty(const Property<T>& p) : ConstProperty(&p.array()) {}
 
     void reset() { parray_ = nullptr; }
 

@@ -143,9 +143,10 @@ void SurfaceCurvature::analyze_tensor(unsigned int post_smoothing_steps,
     }
 
     // precompute face normals
+    auto vpoint = mesh_.get_vertex_property<Point>("v:point");
     for (auto f : mesh_.faces())
     {
-        normal[f] = SurfaceNormals::compute_face_normal(mesh_, f).cast<double>();
+        normal[f] = SurfaceNormals::compute_face_normal(mesh_, vpoint, f).cast<double>();
     }
 
     // precompute dihedralAngle*edge_length*edge per edge

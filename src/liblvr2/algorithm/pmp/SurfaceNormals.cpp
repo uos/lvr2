@@ -5,12 +5,10 @@
 
 namespace pmp {
 
-Normal SurfaceNormals::compute_face_normal(const SurfaceMesh& mesh, Face f)
+Normal SurfaceNormals::compute_face_normal(const SurfaceMesh& mesh, const VertexConstProperty<Point>& vpoint, Face f)
 {
     Halfedge h = mesh.halfedge(f);
     Halfedge hend = h;
-
-    auto vpoint = mesh.get_vertex_property<Point>("v:point");
 
     Point p0 = vpoint[mesh.to_vertex(h)];
     h = mesh.next_halfedge(h);
@@ -41,13 +39,12 @@ Normal SurfaceNormals::compute_face_normal(const SurfaceMesh& mesh, Face f)
     }
 }
 
-Normal SurfaceNormals::compute_vertex_normal(const SurfaceMesh& mesh, Vertex v)
+Normal SurfaceNormals::compute_vertex_normal(const SurfaceMesh& mesh, const VertexConstProperty<Point>& vpoint, Vertex v)
 {
     Point nn(0, 0, 0);
 
     if (!mesh.is_isolated(v))
     {
-        auto vpoint = mesh.get_vertex_property<Point>("v:point");
         const Point p0 = vpoint[v];
 
         Normal n;
@@ -79,7 +76,7 @@ Normal SurfaceNormals::compute_vertex_normal(const SurfaceMesh& mesh, Vertex v)
                     is_triangle = (mesh.next_halfedge(mesh.next_halfedge(
                                        mesh.next_halfedge(h))) == h);
                     n = is_triangle ? p1.cross(p2).normalized()
-                                    : compute_face_normal(mesh, mesh.face(h));
+                                    : compute_face_normal(mesh, vpoint, mesh.face(h));
 
                     n *= angle;
                     nn += n;
@@ -93,14 +90,13 @@ Normal SurfaceNormals::compute_vertex_normal(const SurfaceMesh& mesh, Vertex v)
     return nn;
 }
 
-Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh,
-                                             Halfedge h, Scalar crease_angle)
+Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh, const VertexConstProperty<Point>& vpoint, Halfedge h, Scalar crease_angle)
 {
     // catch the two trivial cases
     if (crease_angle < 0.01)
-        return compute_face_normal(mesh, mesh.face(h));
+        return compute_face_normal(mesh, vpoint, mesh.face(h));
     else if (crease_angle > 179)
-        return compute_vertex_normal(mesh, mesh.from_vertex(h));
+        return compute_vertex_normal(mesh, vpoint, mesh.from_vertex(h));
 
     // avoid numerical problems
     if (crease_angle < 0.001)
@@ -111,8 +107,6 @@ Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh,
 
     if (!mesh.is_boundary(h))
     {
-        auto vpoint = mesh.get_vertex_property<Point>("v:point");
-
         const Halfedge hend = h;
         const Vertex v0 = mesh.to_vertex(h);
         const Point p0 = vpoint[v0];
@@ -122,7 +116,7 @@ Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh,
         bool is_triangle;
 
         // compute normal of h's face
-        const Point nf = compute_face_normal(mesh, mesh.face(h));
+        const Point nf = compute_face_normal(mesh, vpoint, mesh.face(h));
 
         // average over all incident faces
         do
@@ -138,7 +132,7 @@ Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh,
                 is_triangle = (mesh.next_halfedge(mesh.next_halfedge(
                                    mesh.next_halfedge(h))) == h);
                 n = is_triangle ? p1.cross(p2).normalized()
-                                : compute_face_normal(mesh, mesh.face(h));
+                                : compute_face_normal(mesh, vpoint, mesh.face(h));
 
                 // check whether normal is withing crease_angle bound
                 if (n.dot(nf) >= cos_crease_angle)
@@ -172,9 +166,9 @@ Normal SurfaceNormals::compute_corner_normal(const SurfaceMesh& mesh,
 void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh, bool force_recompute)
 {
     if (!force_recompute && mesh.has_vertex_property("v:normal"))
-    {
         return;
-    }
+
+    auto vpoint = mesh.get_vertex_property<Point>("v:point");
     auto vnormal = mesh.vertex_property<Normal>("v:normal");
     if (mesh.has_garbage())
     {
@@ -183,9 +177,7 @@ void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh, bool force_recomp
         {
             Vertex v(i);
             if (!mesh.is_deleted(v))
-            {
-                vnormal[v] = compute_vertex_normal(mesh, v);
-            }
+                vnormal[v] = compute_vertex_normal(mesh, vpoint, v);
         }
     }
     else
@@ -194,7 +186,36 @@ void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh, bool force_recomp
         for (size_t i = 0; i < mesh.vertices_size(); i++)
         {
             Vertex v(i);
-            vnormal[v] = compute_vertex_normal(mesh, v);
+            vnormal[v] = compute_vertex_normal(mesh, vpoint, v);
+        }
+
+    }
+}
+
+void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh, const Point& flip_point, bool force_recompute)
+{
+    if (!force_recompute && mesh.has_vertex_property("v:normal"))
+        return;
+
+    auto vpoint = mesh.get_vertex_property<Point>("v:point");
+    auto vnormal = mesh.vertex_property<Normal>("v:normal");
+    if (mesh.has_garbage())
+    {
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < mesh.vertices_size(); i++)
+        {
+            Vertex v(i);
+            if (!mesh.is_deleted(v))
+                vnormal[v] = compute_vertex_normal(mesh, vpoint, v, flip_point);
+        }
+    }
+    else
+    {
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < mesh.vertices_size(); i++)
+        {
+            Vertex v(i);
+            vnormal[v] = compute_vertex_normal(mesh, vpoint, v, flip_point);
         }
 
     }
@@ -203,9 +224,9 @@ void SurfaceNormals::compute_vertex_normals(SurfaceMesh& mesh, bool force_recomp
 void SurfaceNormals::compute_face_normals(SurfaceMesh& mesh, bool force_recompute)
 {
     if (!force_recompute && mesh.has_face_property("f:normal"))
-    {
         return;
-    }
+
+    auto vpoint = mesh.get_vertex_property<Point>("v:point");
     auto fnormal = mesh.face_property<Normal>("f:normal");
     if (mesh.has_garbage())
     {
@@ -214,9 +235,7 @@ void SurfaceNormals::compute_face_normals(SurfaceMesh& mesh, bool force_recomput
         {
             Face f(i);
             if (!mesh.is_deleted(f))
-            {
-                fnormal[f] = compute_face_normal(mesh, f);
-            }
+                fnormal[f] = compute_face_normal(mesh, vpoint, f);
         }
     }
     else
@@ -225,7 +244,7 @@ void SurfaceNormals::compute_face_normals(SurfaceMesh& mesh, bool force_recomput
         for (size_t i = 0; i < mesh.faces_size(); i++)
         {
             Face f(i);
-            fnormal[f] = compute_face_normal(mesh, f);
+            fnormal[f] = compute_face_normal(mesh, vpoint, f);
         }
     }
 }

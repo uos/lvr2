@@ -232,6 +232,7 @@ class type ## ConstProperty : public ConstProperty<T> \
 public: \
     explicit type ## ConstProperty() {} \
     explicit type ## ConstProperty(ConstProperty<T> p) : ConstProperty<T>(p) {} \
+    type ## ConstProperty(const type ## Property<T>& p) : ConstProperty<T>(p) {} \
 \
     typename ConstProperty<T>::const_reference operator[](type v) const \
     { return ConstProperty<T>::operator[](v.idx()); } \

@@ -29,6 +29,7 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
 #include "lvr2/algorithm/HLODTree.hpp"
+#include "lvr2/algorithm/pmp/SurfaceNormals.h"
 #include "lvr2/io/baseio/ChannelIO.hpp"
 #include "lvr2/io/baseio/ArrayIO.hpp"
 #include "lvr2/io/baseio/VariantChannelIO.hpp"
@@ -130,6 +131,8 @@ namespace lvr2
         {
             throw std::runtime_error("partMethod set to VGrid but no chunk manager given!");
         }
+
+        pmp::Point flipPoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
 
         /// Minimum number of points needed to consider a chunk. Chunks smaller than this are skipped.
         size_t minPointsPerChunk = std::max(m_options.ki, std::max(m_options.kd, m_options.kn)) * 2;
@@ -475,6 +478,8 @@ namespace lvr2
                     HLODTree<BaseVecT>::trimChunkOverlap(*tiles3dMesh, expectedBB);
                     if (tiles3dMesh->numFaces() > 0)
                     {
+                        pmp::SurfaceNormals::compute_vertex_normals(tiles3dMesh->getSurfaceMesh(), flipPoint);
+
                         auto& chunkCoords = partitionChunkCoords[i];
                         Vector3i chunkPos(chunkCoords.x, chunkCoords.y, chunkCoords.z);
                         auto bb = tiles3dMesh->getSurfaceMesh().bounds();

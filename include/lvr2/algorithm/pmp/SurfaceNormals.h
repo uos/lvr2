@@ -31,26 +31,52 @@ public:
     //! vertex property of type Normal named "v:normal".
     static void compute_vertex_normals(SurfaceMesh& mesh, bool force_recompute = false);
 
+    //! \brief Compute vertex normals for the whole \p mesh.
+    //! \details Calls compute_vertex_normal() for each vertex and adds a new
+    //! vertex property of type Normal named "v:normal".
+    //! Normals are flipped to point to \p flip_point
+    static void compute_vertex_normals(SurfaceMesh& mesh, const Point& flip_point, bool force_recompute = false);
+
     //! \brief Compute face normals for the whole \p mesh.
     //! \details Calls compute_face_normal() for each face and adds a new face
     //! property of type Normal named "f:normal".
     static void compute_face_normals(SurfaceMesh& mesh, bool force_recompute = false);
 
     //! \brief Compute the normal vector of vertex \p v.
-    static Normal compute_vertex_normal(const SurfaceMesh& mesh, Vertex v);
+    static Normal compute_vertex_normal(const SurfaceMesh& mesh, Vertex v)
+    {
+        return compute_vertex_normal(mesh, mesh.get_vertex_property<Point>("v:point"), v);
+    }
+    static Normal compute_vertex_normal(const SurfaceMesh& mesh, const VertexConstProperty<Point>& vpoint, Vertex v);
+
+    //! \brief Compute the normal vector of vertex \p v, flipped to point to \p flip_point.
+    static Normal compute_vertex_normal(const SurfaceMesh& mesh, const VertexConstProperty<Point>& vpoint, Vertex v, const Point& flip_point)
+    {
+        Normal n = compute_vertex_normal(mesh, vpoint, v);
+        return n.dot(flip_point - vpoint[v]) >= 0 ? n : -n;
+    }
 
     //! \brief Compute the normal vector of face \p f.
     //! \details Normal is computed as (normalized) sum of per-corner
     //! cross products of the two incident edges. This corresponds to
     //! the normalized vector area in \cite alexa_2011_laplace
-    static Normal compute_face_normal(const SurfaceMesh& mesh, Face f);
+    static Normal compute_face_normal(const SurfaceMesh& mesh, Face f)
+    {
+        return compute_face_normal(mesh, mesh.get_vertex_property<Point>("v:point"), f);
+    }
+    static Normal compute_face_normal(const SurfaceMesh& mesh, const VertexConstProperty<Point>& vpoint, Face f);
 
     //! \brief Compute the normal vector of the polygon corner specified by the
     //! target vertex of halfedge \p h.
     //! \details Averages incident corner normals if they are within crease_angle
     //! of the face normal. \p crease_angle is in radians, not degrees.
-    static Normal compute_corner_normal(const SurfaceMesh& mesh, Halfedge h,
-                                        Scalar crease_angle);
+    static Normal compute_corner_normal(const SurfaceMesh& mesh, Halfedge h, Scalar crease_angle)
+    {
+        return compute_corner_normal(mesh, mesh.get_vertex_property<Point>("v:point"), h, crease_angle);
+    }
+    static Normal compute_corner_normal(const SurfaceMesh& mesh, const VertexConstProperty<Point>& vpoint, Halfedge h, Scalar crease_angle);
+
+private:
 };
 
 } // namespace pmp
