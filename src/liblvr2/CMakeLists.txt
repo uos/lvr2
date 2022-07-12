@@ -55,14 +55,12 @@ set(LVR2_SOURCES
     io/modelio/STLIO.cpp
     io/modelio/UosIO.cpp
     io/modelio/PCDIO.cpp
-    io/modelio/B3dmIO.cpp
     io/kernels/DirectoryKernel.cpp
     io/kernels/HDF5Kernel.cpp
     io/LineReader.cpp
     # io/HDF5IO.cpp
     io/GridIO.cpp
     io/ModelFactory.cpp
-    io/Tiles3dIO.cpp
     # io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/schema/ScanProjectSchemaRaw.cpp
@@ -138,6 +136,16 @@ if(draco_FOUND)
         io/modelio/DracoDecoder.cpp 
         io/modelio/DrcIO.cpp)
 endif(draco_FOUND)
+
+#####################################################################################
+# 3D Tiles
+#####################################################################################
+
+if(WITH_3DTILES)
+    list(APPEND LVR2_SOURCES
+        io/Tiles3dIO.cpp
+        io/modelio/B3dmIO.cpp)
+endif()
 
 #####################################################################################
 # RiVLib

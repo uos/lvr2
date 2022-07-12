@@ -51,11 +51,6 @@ LazyMesh<BaseVecT>::LazyMesh(PMPMesh<BaseVecT>& src, std::shared_ptr<HighFive::F
         m_mesh = m_keepLoadedHelper;
     }
 }
-template<typename BaseVecT>
-LazyMesh<BaseVecT>::LazyMesh(const HighFive::Group& group)
-    : m_source(group)
-{
-}
 
 template<typename BaseVecT>
 LazyMesh<BaseVecT>::~LazyMesh()
@@ -102,18 +97,16 @@ std::shared_ptr<typename LazyMesh<BaseVecT>::MeshWrapper> LazyMesh<BaseVecT>::ge
 
     if (!ret)
     {
+        if (!m_source)
+        {
+            throw std::runtime_error("LazyMesh: unloaded an loaded a mesh without specifying a file");
+        }
         ret.reset(new MeshWrapper(this));
         ret->read(*m_source);
         m_mesh = ret;
     }
 
     return ret;
-}
-
-template<typename BaseVecT>
-void LazyMesh<BaseVecT>::update(const PMPMesh<BaseVecT>& mesh)
-{
-    mesh.write(*m_source);
 }
 
 } // namespace lvr2

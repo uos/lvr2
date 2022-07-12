@@ -107,12 +107,23 @@ public:
      * for (VertexHandle vH : boundaryVertices)
      *    v_feature[vH] = true;
      * @endcode
+     * Alternatively, if your chunks contain overlap, you may use trimChunkOverlap() to both
+     * remove the overlap and mark the vertices as features.
      *
      * @param chunks A map from and (x, y, z) chunk position to the chunk.
      *               Note that only adjacent chunks according to the integer position are combined.
      * @param combineDepth The combination depth of the hierarchy. See partition(Mesh) for details.
      */
     static Ptr partition(std::unordered_map<Vector3i, Ptr>&& chunks, int combineDepth = -1);
+
+    /**
+     * @brief Removes any parts of a mesh that are outside of the given bounding box.
+     *        The boundary of the remaining mesh is marked as a feature.
+     * 
+     * @param mesh The mesh to trim.
+     * @param expectedBB The bounding box to trim to.
+     */
+    static void trimChunkOverlap(PMPMesh<BaseVecT>& mesh, const pmp::BoundingBox& expectedBB);
 
     /**
      * @brief Create a leaf.

@@ -70,13 +70,6 @@ public:
             }
         }
     private:
-        // make sure MeshWrapper is kept as a shared_ptr by removing all constructors/assignments
-        MeshWrapper() = delete;
-        MeshWrapper(const MeshWrapper&) = delete;
-        MeshWrapper& operator=(const MeshWrapper&) = delete;
-        MeshWrapper(MeshWrapper&&) = delete;
-        MeshWrapper& operator=(MeshWrapper&&) = delete;
-
         friend class LazyMesh;
         MeshWrapper(LazyMesh* parent) : m_parent(parent) {}
         MeshWrapper(PMPMesh<BaseVecT>&& src) : PMPMesh<BaseVecT>(std::move(src)) {}
@@ -97,13 +90,6 @@ public:
      * Using the nullptr version will also move the mesh into this object, invalidating src.
      */
     LazyMesh(PMPMesh<BaseVecT>& src, std::shared_ptr<HighFive::File> file);
-
-    /**
-     * @brief Construct a new Lazy Mesh object from the mesh stored in the given group.
-     *
-     * Note that the mesh must have been created through pmp::SurfaceMesh::write(group).
-     */
-    LazyMesh(const HighFive::Group& group);
 
     // move constructor/assignment
     LazyMesh(LazyMesh&&) = default;
@@ -132,6 +118,26 @@ public:
      */
     std::shared_ptr<MeshWrapper> modify();
 
+    /**
+     * @brief Loads the mesh (if not already loaded) and keeps it in memory until this instance is
+     *        destroyed or allowUnload() is called.
+     */
+    void loadPermanently()
+    {
+        m_keepLoadedHelper = modify();
+    }
+
+    /**
+     * @brief Inverse of loadPermanently(). Allows unloading the mesh if it is not needed anymore.
+     * 
+     * Note: If you call this after creating an instance with a nullptr file, the mesh will be
+     *       permanently deleted on unload and cannot be loaded again.
+     */
+    void allowUnload()
+    {
+        m_keepLoadedHelper.reset();
+    }
+
     /// Get the number of faces without loading the full mesh.
     size_t n_faces() const
     {
@@ -150,6 +156,17 @@ public:
     {
         return m_file;
     }
+
+    /**
+     * @brief Remove the temp dir from the file. Make sure to only call this after any remaining
+     *        LazyMesh instances in the file have been destroyed.
+     * 
+     * @param file The file to remove the temp dir from.
+     */
+    static void removeTempDir(std::shared_ptr<HighFive::File> file)
+    {
+        file->getGroup("/").unlink(LAZY_MESH_TEMP_DIR + 1); // +1 to skip the leading '/'
+    }
 private:
     // delete unwanted constructors/assignments
     LazyMesh() = delete;
@@ -157,7 +174,14 @@ private:
     LazyMesh& operator=(const LazyMesh&) = delete;
 
     std::shared_ptr<MeshWrapper> getInternal();
-    void update(const PMPMesh<BaseVecT>& mesh);
+    void update(const PMPMesh<BaseVecT>& mesh)
+    {
+        if (m_source)
+        {
+            mesh.write(*m_source);
+            m_file->flush();
+        }
+    }
 
     static std::unique_ptr<HighFive::Group> nextGroup(const std::shared_ptr<HighFive::File>& file);
 

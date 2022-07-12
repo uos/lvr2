@@ -28,9 +28,11 @@
 #include <iostream>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
+#include "lvr2/algorithm/HLODTree.hpp"
 #include "lvr2/io/baseio/ChannelIO.hpp"
 #include "lvr2/io/baseio/ArrayIO.hpp"
 #include "lvr2/io/baseio/VariantChannelIO.hpp"
+#include "lvr2/io/Tiles3dIO.hpp"
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
@@ -216,14 +218,21 @@ namespace lvr2
                 createBigMesh = m_options.hasOutput(LSROutput::BigMesh);
                 createChunksPly = chunkManager && m_options.hasOutput(LSROutput::ChunksPly);
                 createChunksHdf5 = chunkManager && m_options.hasOutput(LSROutput::ChunksHdf5);
+
+#ifdef LVR2_USE_3DTILES
                 create3dTiles = chunkManager && m_options.hasOutput(LSROutput::Tiles3d);
+#endif
             }
 
-            std::shared_ptr<HighFive::File> chunk_file = nullptr;
+            // chunk map for LSROutput::Tiles3d
+            std::unordered_map<Vector3i, typename HLODTree<BaseVecT>::Ptr> chunkMap;
+
+            // file to store chunks in for LSROutput::ChunksHdf5; temp file for LSROutput::Tiles3d
+            std::shared_ptr<HighFive::File> chunkFile = nullptr;
             if (createChunksHdf5 || create3dTiles)
             {
-                chunk_file = hdf5util::open("chunks.h5", HighFive::File::Truncate);
-                auto root = chunk_file->getGroup("/");
+                chunkFile = hdf5util::open("chunks.h5", HighFive::File::Truncate);
+                auto root = chunkFile->getGroup("/");
 
                 hdf5util::setAttribute(root, "chunk_size", chunkSize);
                 hdf5util::setAttribute(root, "voxel_size", voxelSize);
@@ -401,65 +410,95 @@ namespace lvr2
                     grid_files.push_back(ss2.str());
                 }
 
+                // also save the "real" bounding box without overlap
+                partitionBoxesNew.push_back(partitionBox);
+
                 // save the mesh of the chunk
-                if (createChunksHdf5 || createChunksPly || create3dTiles)
+                if (!createChunksHdf5 && !createChunksPly && !create3dTiles)
                 {
-                    auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
-                    lvr2::PMPMesh<Vec> mesh;
-                    reconstruction->getMesh(mesh);
+                    continue;
+                }
 
-                    if (mesh.numFaces() > 0)
+                auto reconstruction = make_unique<lvr2::FastReconstruction<Vec, lvr2::FastBox<Vec>>>(ps_grid);
+                lvr2::PMPMesh<Vec> mesh;
+                reconstruction->getMesh(mesh);
+
+                if (mesh.numFaces() == 0)
+                {
+                    continue;
+                }
+
+                // run cleanup on the mesh.
+                // cleanContours and optimizePlanes might mess with the chunk borders
+
+                if (m_options.removeDanglingArtifacts)
+                {
+                    cout << timestamp << "Removing dangling artifacts" << endl;
+                    removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
+                    if (mesh.numFaces() == 0)
                     {
-                        // run cleanup on the mesh.
-                        // cleanContours and optimizePlanes might mess with the chunk borders
+                        continue;
+                    }
+                }
+                if (m_options.fillHoles)
+                {
+                    mesh.fillHoles(m_options.fillHoles);
+                }
 
-                        if (m_options.removeDanglingArtifacts)
+                bool createOtherChunks = createChunksHdf5 || createChunksPly;
+                std::unique_ptr<PMPMesh<BaseVecT>> tiles3dMesh = nullptr;
+                std::unique_ptr<PMPMesh<BaseVecT>> otherChunksMesh = nullptr;
+                if (create3dTiles && createOtherChunks)
+                {
+                    // tiles3d needs a different mesh than other chunks => create copy
+                    tiles3dMesh.reset(new PMPMesh<BaseVecT>(mesh));
+                    otherChunksMesh.reset(new PMPMesh<BaseVecT>(std::move(mesh)));
+                }
+                else if (create3dTiles)
+                {
+                    tiles3dMesh.reset(new PMPMesh<BaseVecT>(std::move(mesh)));
+                }
+                else
+                {
+                    otherChunksMesh.reset(new PMPMesh<BaseVecT>(std::move(mesh)));
+                }
+
+                pmp::Point oneVoxel = pmp::Point::Constant(voxelSize);
+                pmp::Point epsilon = pmp::Point::Constant(0.0001);
+                auto min = partitionBox.getMin(), max = partitionBox.getMax();
+                pmp::BoundingBox expectedBB(pmp::Point(min.x, min.y, min.z), pmp::Point(max.x, max.y, max.z));
+                expectedBB.min() += oneVoxel / 2 - epsilon;
+                expectedBB.max() += oneVoxel / 2 + epsilon;
+                if (create3dTiles)
+                {
+                    // completely trim overlap
+                    HLODTree<BaseVecT>::trimChunkOverlap(*tiles3dMesh, expectedBB);
+                    if (tiles3dMesh->numFaces() > 0)
+                    {
+                        auto& chunkCoords = partitionChunkCoords[i];
+                        Vector3i chunkPos(chunkCoords.x, chunkCoords.y, chunkCoords.z);
+                        auto bb = tiles3dMesh->getSurfaceMesh().bounds();
+                        chunkMap.emplace(chunkPos, HLODTree<BaseVecT>::leaf(LazyMesh(*tiles3dMesh, chunkFile), bb));
+                    }
+                }
+
+                if (createOtherChunks)
+                {
+                    // trim the overlap to only a single voxel to save space
+                    expectedBB.min() -= oneVoxel;
+                    expectedBB.max() += oneVoxel;
+                    HLODTree<BaseVecT>::trimChunkOverlap(*otherChunksMesh, expectedBB);
+
+                    pmp::SurfaceMesh& surfaceMesh = otherChunksMesh->getSurfaceMesh();
+                    if (surfaceMesh.n_faces() > 0)
+                    {
+                        surfaceMesh.remove_vertex_property<bool>("v:feature");
+                        surfaceMesh.remove_edge_property<bool>("e:feature");
+                        if (createChunksHdf5)
                         {
-                            cout << timestamp << "Removing dangling artifacts" << endl;
-                            removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
-                        }
-                        if (m_options.fillHoles)
-                        {
-                            mesh.fillHoles(m_options.fillHoles);
-                        }
-
-                        auto& surfaceMesh = mesh.getSurfaceMesh();
-
-                        // trim the overlap to only a single voxel to save space
-
-                        auto min = partitionBox.getMin(), max = partitionBox.getMax();
-                        pmp::BoundingBox expectedBB(pmp::Point(min.x, min.y, min.z), pmp::Point(max.x, max.y, max.z));
-                        // the bounding box ends exactly in the middle of a voxel => move it over by half a voxel
-                        // also expand by one voxel to keep some overlap
-                        expectedBB.min() += pmp::Point::Constant(voxelSize * (0.49 - 1));
-                        expectedBB.max() += pmp::Point::Constant(voxelSize * (0.51 + 1));
-                        auto fDelete = surfaceMesh.add_face_property<bool>("f:delete", false);
-                        for (size_t i = 0; i < surfaceMesh.faces_size(); i++)
-                        {
-                            pmp::Face fH(i);
-                            if (surfaceMesh.is_deleted(fH))
-                            {
-                                continue;
-                            }
-                            for (auto vH : surfaceMesh.vertices(fH))
-                            {
-                                if (!expectedBB.contains(surfaceMesh.position(vH)))
-                                {
-                                    #pragma omp critical
-                                    fDelete[fH] = true;
-                                    break;
-                                }
-                            }
-                        }
-                        surfaceMesh.delete_many_faces(fDelete);
-                        surfaceMesh.remove_face_property(fDelete);
-                        surfaceMesh.garbage_collection();
-
-                        // save the mesh according to the chosen format(s)
-                        if (createChunksHdf5 || create3dTiles)
-                        {
-                            auto group = chunk_file->createGroup("/chunks/" + name_id);
+                            auto group = chunkFile->createGroup("/chunks/" + name_id);
                             surfaceMesh.write(group);
+                            chunkFile->flush();
                         }
                         if (createChunksPly)
                         {
@@ -467,10 +506,6 @@ namespace lvr2
                         }
                     }
                 }
-
-                // also save the "real" bounding box without overlap
-                partitionBoxesNew.push_back(partitionBox);
-
             }
             std::cout << timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
 
@@ -563,17 +598,32 @@ namespace lvr2
                 }
             }
 
+#ifdef LVR2_USE_3DTILES
             if (create3dTiles)
             {
-                // TODO: create 3d tiles from chunk_file
+                std::cout << timestamp << "Creating 3D Tiles: Generating HLOD Tree" << std::endl;
+                auto tree = HLODTree<BaseVecT>::partition(std::move(chunkMap), 2);
+                tree->finalize(true);
+
+                std::cout << timestamp << "Creating 3D Tiles: Writing to file" << std::endl;
+                Tiles3dIO<BaseVecT> io("mesh.3dtiles");
+                io.write(tree, m_options.tiles3dCompress);
+                tree.reset();
 
                 if (!createChunksHdf5)
                 {
-                    std::string filename = chunk_file->getName();
-                    chunk_file.reset();
+                    // file was only created for 3d tiles => delete it
+                    std::string filename = chunkFile->getName();
+                    chunkFile.reset();
                     boost::filesystem::remove(filename);
                 }
+                else
+                {
+                    LazyMesh<BaseVecT>::removeTempDir(chunkFile);
+                }
+                std::cout << timestamp << "Creating 3D Tiles: Finished" << std::endl;
             }
+#endif // LVR2_USE_3DTILES
 
             std::cout << lvr2::timestamp << "added/changed " << newChunks.size() << " chunks in layer " << layerName << std::endl;
         }

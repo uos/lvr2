@@ -63,20 +63,21 @@ Tiles3dIO<BaseVecT>::Tiles3dIO(const std::string& directory)
     {
         m_rootDir += "/";
     }
+}
+
+template<typename BaseVecT>
+void Tiles3dIO<BaseVecT>::write(TreeConstPtr& tree, bool compress, float scale)
+{
     if (boost::filesystem::exists(m_rootDir))
     {
         boost::filesystem::remove_all(m_rootDir);
     }
     boost::filesystem::create_directories(m_rootDir);
     boost::filesystem::create_directory(m_rootDir + "tiles/");
-}
 
-template<typename BaseVecT>
-void Tiles3dIO<BaseVecT>::write(TreeConstPtr& tree, float scale)
-{
     Cesium3DTiles::Tileset tileset;
 
-    writeTiles(tileset.root, tree, m_rootDir, "tiles/s");
+    writeTiles(tileset.root, tree, compress, m_rootDir, "tiles/s");
 
     Tiles3dIO_internal::writeTileset(tileset, m_rootDir, scale);
 }
@@ -84,6 +85,7 @@ void Tiles3dIO<BaseVecT>::write(TreeConstPtr& tree, float scale)
 template<typename BaseVecT>
 void Tiles3dIO<BaseVecT>::writeTiles(Cesium3DTiles::Tile& tile,
                                      TreeConstPtr& tree,
+                                     bool compress,
                                      const std::string& outputDir,
                                      const std::string& prefix)
 {
@@ -96,7 +98,7 @@ void Tiles3dIO<BaseVecT>::writeTiles(Cesium3DTiles::Tile& tile,
     {
         std::string next_prefix = prefix;
         Tiles3dIO_internal::indexToName(i, next_prefix, children.size() - 1);
-        writeTiles(tile.children[i], children[i], outputDir, next_prefix);
+        writeTiles(tile.children[i], children[i], compress, outputDir, next_prefix);
     }
 
     auto mesh = tree->mesh();
@@ -121,14 +123,15 @@ void Tiles3dIO<BaseVecT>::writeTiles(Cesium3DTiles::Tile& tile,
 
         B3dmIO io;
         io.setModel(model);
-        // if (tree->isLeaf()) // TODO: add compression parameter
-        // {
-        //     io.save(outputDir + filename);
-        // }
-        // else
-        // {
-            io.saveCompressed(outputDir + filename);
-        // }
+        if (compress)
+        {
+            bool lossy = !tree->isLeaf();
+            io.saveCompressed(outputDir + filename, lossy);
+        }
+        else
+        {
+            io.save(outputDir + filename);
+        }
     }
 }
 

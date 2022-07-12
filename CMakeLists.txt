@@ -179,19 +179,6 @@ if(OPENCL_FOUND)
     endif(OpenCL_NEW_API)
 endif()
 
-
-#------------------------------------------------------------------------------
-# Searching for Draco
-#------------------------------------------------------------------------------
-if (NOT WITH_3DTILES) # 3D Tiles comes with its own Draco library => avoid conflicts
-  find_package(Draco)
-  if(draco_FOUND)
-    message(STATUS "Found Draco")
-    include_directories(${draco_INCLUDE_DIRS})
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
-  endif(draco_FOUND)
-endif(NOT WITH_3DTILES)
-
 #------------------------------------------------------------------------------
 # Searching for VTK
 #------------------------------------------------------------------------------
@@ -458,6 +445,7 @@ if(WITH_3DTILES)
                                           # this is in quotes because otherwise cmake adds a random "x86_64-linux-gnu" to lib paths. No idea why.
         -DCESIUM_TESTS_ENABLED=OFF        # don't build the tests
         -DDRACO_TRANSCODER_SUPPORTED=ON   # enable Gltf support for draco
+        -DCMAKE_CXX_FLAGS="-fPIC"         # tell cmake to compile as shared libraries
     LOG_INSTALL ON  # don't print install step to terminal (spam)
   )
   ExternalProject_Get_Property(cesium-native BINARY_DIR)
@@ -465,13 +453,24 @@ if(WITH_3DTILES)
   link_directories(${BINARY_DIR}/install/lib)
 
   ExternalProject_Get_Property(cesium-native SOURCE_DIR)
-  include_directories(${SOURCE_DIR}/extern/draco/src)
+  include_directories(${SOURCE_DIR}/extern/draco/src ${BINARY_DIR}) # draco generates include files in BINARY_DIR
   set(draco_FOUND ON)
   set(draco_LIBRARIES draco)
 
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_3DTILES -DLVR2_USE_DRACO -DDRACO_TRANSCODER_SUPPORTED)
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_3DTILES -DLVR2_USE_DRACO)
 
   set(3DTILES_LIBRARIES Cesium3DTiles Cesium3DTilesWriter CesiumGltf CesiumGltfWriter CesiumJsonWriter)
+
+else(WITH_3DTILES)
+  #------------------------------------------------------------------------------
+  # Searching for Draco
+  #------------------------------------------------------------------------------
+  find_package(Draco)
+  if(draco_FOUND)
+    message(STATUS "Found Draco")
+    include_directories(${draco_INCLUDE_DIRS})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
+  endif(draco_FOUND)
 endif(WITH_3DTILES)
 
 ###############################################################################

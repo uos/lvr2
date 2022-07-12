@@ -357,6 +357,41 @@ void splitMesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, float chunkSi
     }
 }
 
+void trimChunkOverlap(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& expectedBB)
+{
+    auto v_feature = mesh.add_vertex_property<bool>("v:feature", false);
+    auto f_delete = mesh.add_face_property<bool>("f:delete", false);
+    #pragma omp parallel for schedule(dynamic,64)
+    for (size_t i = 0; i < mesh.n_faces(); i++)
+    {
+        pmp::Face fH(i);
+        if (mesh.is_deleted(fH))
+        {
+            continue;
+        }
+        for (auto vH : mesh.vertices(fH))
+        {
+            if (expectedBB.contains(mesh.position(vH)))
+            {
+                continue;
+            }
+            #pragma omp critical
+            {
+                f_delete[fH] = true;
+                for (auto vH : mesh.vertices(fH))
+                {
+                    v_feature[vH] = true;
+                }
+            }
+            break;
+        }
+    }
+    mesh.delete_many_faces(f_delete);
+    mesh.remove_face_property(f_delete);
+    mesh.garbage_collection();
+    mesh.add_edge_property<bool>("e:feature", false);
+}
+
 void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
 {
     auto v_feature = mesh.get_vertex_property<bool>("v:feature");

@@ -12,9 +12,6 @@ set(LS_RECONSTRUCT_SOURCES
 
 set(LVR2_LS_RECONSTRUCT_DEPENDENCIES
     lvr2_static
-    lvr2_static
-    lvr2las_static
-    lvr2rply_static
     ${LVR2_LIB_DEPENDENCIES}
 )
 

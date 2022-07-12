@@ -50,8 +50,12 @@ std::istream& operator>>(std::istream& in, LSROutput& output)
         output = LSROutput::ChunksPly;
     else if (token == "chunkshdf5")
         output = LSROutput::ChunksHdf5;
-    else if (token == "tiles3d" || token == "3dtiles" || token == "3d-tiles")
+    else if (token == "3dtiles" || token == "tiles3d")
+#ifdef LVR2_USE_3DTILES
         output = LSROutput::Tiles3d;
+#else
+        throw boost::program_options::error("If you want to use " + token + ", please call cmake with  -DWITH_3DTILES=ON  ");
+#endif
     else
         in.setstate(std::ios_base::failbit);
     return in;
@@ -63,7 +67,9 @@ std::ostream& operator<<(std::ostream& out, LSROutput output)
     case LSROutput::BigMesh:    out << "bigMesh";    break;
     case LSROutput::ChunksPly:  out << "chunksPly";  break;
     case LSROutput::ChunksHdf5: out << "chunksHdf5"; break;
+#ifdef LVR2_USE_3DTILES
     case LSROutput::Tiles3d:    out << "3dtiles";    break;
+#endif
     }
     return out;
 }
@@ -182,11 +188,37 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("scale", value<float>(&m_options.scale)->default_value(m_options.scale),
      "Scaling factor, applied to all input points")
 
+    ("compress3DTiles", bool_switch(&m_options.tiles3dCompress),
+     "When generating 3D tiles: Compress Meshes with Draco compression.\n"
+     "This will significantly reduce filesize and improve loading times when remotely viewing the tiles "
+     "over a slow connection, but greatly increase loading times for local viewing.")
+
     ;
 
     try
     {
         setup();
+
+        m_options.extrude = !noExtrude;
+
+        if (m_options.retesselate)
+        {
+            m_options.optimizePlanes = true;
+        }
+        if (m_options.useGPUDistances)
+        {
+            m_options.useGPU = true;
+        }
+        if (m_numThreads > 0)
+        {
+            lvr2::OpenMPConfig::setNumThreads(m_numThreads);
+        }
+
+        m_options.output.clear();
+        for (auto& o : output)
+        {
+            m_options.output.insert(o);
+        }
 
         if (!m_variables.count("inputFile"))
         {
@@ -200,43 +232,26 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         {
             throw error("flipPoint has to be a 3D point.");
         }
+#ifdef LVR2_USE_3DTILES
+        if (m_options.tiles3dCompress && !m_options.hasOutput(lvr2::LSROutput::Tiles3d))
+        {
+            throw error("You can only compress 3D tiles if you also generate them.");
+        }
+#else
+        if (m_options.tiles3dCompress)
+        {
+            throw error("You can only compress 3D tiles if you also compile LVR2 with 3DTiles support.");
+        }
+#endif
     }
     catch(const error& e)
     {
         std::cout << e.what() << std::endl;
 
-        if (m_help)
-        {
-            printUsage();
-        }
-        else
-        {
-            std::cout << std::endl;
-            std::cout << "See --help for more information." << std::endl;
-            m_printed = true;
-        }
+        std::cout << std::endl;
+        std::cout << "See --help for more information." << std::endl;
+        m_printed = true;
         return;
-    }
-
-    m_options.extrude = !noExtrude;
-
-    if (m_options.retesselate)
-    {
-        m_options.optimizePlanes = true;
-    }
-    if (m_options.useGPUDistances)
-    {
-        m_options.useGPU = true;
-    }
-    if (m_numThreads > 0)
-    {
-        lvr2::OpenMPConfig::setNumThreads(m_numThreads);
-    }
-
-    m_options.output.clear();
-    for (auto& o : output)
-    {
-        m_options.output.insert(o);
     }
 }
 
@@ -246,12 +261,15 @@ bool Options::printUsage()
     {
         return true;
     }
-    if (m_help)
+    if (!m_help)
     {
-        std::cout << std::endl;
-        std::cout << m_descr << std::endl;
-        std::cout << std::endl;
-        std::cout << R"======(OUTPUT OPTIONS
+        return false;
+    }
+    std::cout << std::endl;
+    std::cout << m_descr << std::endl;
+    std::cout << std::endl;
+    std::cout << R"======(
+OUTPUT OPTIONS
     Options --output, -O accept one or more of the following tokens:
         bigMesh | mesh
             Output one big Mesh. Uses A LOT of memory.
@@ -262,8 +280,14 @@ bool Options::printUsage()
             Output one mesh per chunk into "chunks.h5". Meshes in the
             hdf5 file are stored using a PMPMesh.
             Use PMPMesh(HighFive::Group) to read them.
-        3dTiles | tiles3d | 3d-tiles
-            Output a 3D Tiles tileset for rendering to "mesh.3dtiles".
+        3dTiles | tiles3d
+            Output a 3D Tiles tileset for rendering to "mesh.3dtiles".)======";
+
+#ifndef LVR2_USE_3DTILES
+    std::cout << R"======(
+            To use this option, you have to reconfigure cmake with  -DWITH_3DTILES=ON  .)======";
+#endif
+    std::cout << R"======(
 
     Chunk options and 3dTiles require --partMethod 1 (VGrid, the default).
     Multiple Options can be used simultaneously:
@@ -272,10 +296,8 @@ bool Options::printUsage()
 
     By default, only the big mesh is generated. This should be disabled for any
     truly large datasets.)======" << std::endl;
-        m_printed = true;
-        return true;
-    }
-    return false;
+    m_printed = true;
+    return true;
 }
 
 } // namespace LargeScaleOptions

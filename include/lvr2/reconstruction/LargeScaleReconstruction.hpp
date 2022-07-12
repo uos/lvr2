@@ -46,8 +46,11 @@ namespace lvr2
         ChunksPly,
         // Output one h5 file containing one mesh per chunk.
         ChunksHdf5,
+
+#ifdef LVR2_USE_3DTILES
         // Output a 3D Tiles tileset
         Tiles3d,
+#endif
     };
 
     struct LSROptions
@@ -55,15 +58,20 @@ namespace lvr2
         // what to produce as output
         std::unordered_set<LSROutput> output{LSROutput::BigMesh};
         bool hasOutput(LSROutput o) const
-        { return output.find(o) != output.end(); }
+        {
+            return output.find(o) != output.end();
+        }
 
         // flag to trigger GPU usage
         bool useGPU = false;
 
+        // Use GPU for signed distance computation
+        bool useGPUDistances = false;
+
         // voxelsizes for reconstruction.
         std::vector<float> voxelSizes{0.1};
 
-        // voxelsize for the BigGrid.
+        // chunk size for the BigGrid and VGrid.
         float bgVoxelSize = 10;
 
         // scale factor.
@@ -89,14 +97,19 @@ namespace lvr2
 
         // FlipPoint for GPU normal computation
         std::vector<float> flipPoint{10000000, 10000000, 10000000};
+        vector<float> getFlipPoint() const
+        {
+            std::vector<float> dest = flipPoint;
+            if(dest.size() != 3)
+            {
+                dest = {10000000, 10000000, 10000000};
+            }
+            return dest;
+        }
 
-        // Do not extend grid. Can be used to avoid artifacts in dense data sets but. Disabling
-        // will possibly create additional holes in sparse data sets.
-        bool extrude = false;
-
-        /*
-         * Definition from here on are for the combine-process of partial meshes
-         */
+        // Extend the grid. Might avoid additional holes in sparse data sets, but can cause
+        // artifacts in dense data sets.
+        bool extrude = true;
 
         // number for the removal of dangling artifacts.
         int removeDanglingArtifacts = 0;
@@ -128,21 +141,8 @@ namespace lvr2
         // Threshold for fusing line segments while tesselating.
         float lineFusionThreshold = 0.01;
 
-        vector<float> getFlipPoint() const
-        {
-            std::vector<float> dest = flipPoint;
-            if(dest.size() != 3)
-            {
-                std::vector<float> dest = std::vector<float>();
-                dest.push_back(10000000);
-                dest.push_back(10000000);
-                dest.push_back(10000000);
-            }
-            return dest;
-        }
-
-        // Use GPU for signed distance computation
-        bool useGPUDistances = false;
+        // when generating LSROutput::Tiles3d, compress the meshes using Draco
+        bool tiles3dCompress = false;
     };
 
     template <typename BaseVecT>

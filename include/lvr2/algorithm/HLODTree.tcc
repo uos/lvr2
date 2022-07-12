@@ -51,6 +51,7 @@ struct MeshSegment
 
 void segmentMesh(pmp::SurfaceMesh& mesh, float chunkSize, std::unordered_map<Vector3i, MeshSegment>& outChunks, std::vector<MeshSegment>& outSegments);
 void splitMesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, float chunkSize, std::unordered_map<Vector3i, pmp::SurfaceMesh>& outChunks);
+void trimChunkOverlap(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& expectedBB);
 void mergeChunkOverlap(pmp::SurfaceMesh& mesh);
 
 } // namespace HLODTree_internal
@@ -242,6 +243,12 @@ typename HLODTree<BaseVecT>::Ptr HLODTree<BaseVecT>::partition(std::unordered_ma
     auto& ret = chunks.begin()->second;
     ret->refresh();
     return std::move(ret);
+}
+
+template<typename BaseVecT>
+void HLODTree<BaseVecT>::trimChunkOverlap(PMPMesh<BaseVecT>& mesh, const pmp::BoundingBox& expectedBB)
+{
+    HLODTree_internal::trimChunkOverlap(mesh.getSurfaceMesh(), expectedBB);
 }
 
 template<typename BaseVecT>

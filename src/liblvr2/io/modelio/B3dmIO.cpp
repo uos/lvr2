@@ -34,8 +34,6 @@
  * @date       13.06.2022
  */
 
-#ifdef LVR2_USE_3DTILES
-
 #include "lvr2/io/modelio/B3dmIO.hpp"
 
 #include "lvr2/io/modelio/DracoEncoder.hpp"
@@ -438,5 +436,3 @@ void write_header(std::ofstream& file, size_t body_length)
 }
 
 } // namespace lvr2
-
-#endif // LVR2_USE_3DTILES

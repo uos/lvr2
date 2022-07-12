@@ -60,11 +60,13 @@ void indexToName(int i, std::string& name, size_t max)
     if (i < 0)
     {
         // meta segment
-        while (max > 0)
+        do
         {
             name += '_';
             max /= RADIX;
         }
+        while (max > 0);
+
         return;
     }
     if (max > RADIX)

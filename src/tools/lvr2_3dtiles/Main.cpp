@@ -467,38 +467,15 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
         auto& mesh = pmp_mesh.getSurfaceMesh();
         read_mesh(mesh, name);
 
-        // remove overlap
-        pmp::Point scaled = chunk_pos.cast<float>() * chunk_size;
-        pmp::BoundingBox expected_bb(scaled, scaled + pmp::Point::Constant(chunk_size));
-        // the bounding box ends exactly in the middle of a voxel. => move it over by half a voxel
-        expected_bb.min() += pmp::Point::Constant(voxel_size * 0.49);
-        expected_bb.max() += pmp::Point::Constant(voxel_size * 0.51);
-        auto v_feature = mesh.add_vertex_property<bool>("v:feature", false);
-        auto f_delete = mesh.add_face_property<bool>("f:delete", false);
-        #pragma omp parallel for schedule(dynamic,64)
-        for (size_t i = 0; i < mesh.n_faces(); i++)
-        {
-            pmp::Face fH(i);
-            for (auto vH : mesh.vertices(fH))
-            {
-                if (!expected_bb.contains(mesh.position(vH)))
-                {
-                    #pragma omp critical
-                    {
-                        f_delete[fH] = true;
-                        for (auto vH : mesh.vertices(fH))
-                        {
-                            v_feature[vH] = true;
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-        mesh.delete_many_faces(f_delete);
-        mesh.remove_face_property(f_delete);
-        mesh.garbage_collection();
-        mesh.add_edge_property<bool>("e:feature", false);
+        pmp::Point min = chunk_pos.cast<float>() * chunk_size;
+        pmp::Point max = min + pmp::Point::Constant(chunk_size);
+        pmp::BoundingBox expected_bb(min, max);
+
+        pmp::Point one_voxel = pmp::Point::Constant(voxel_size);
+        pmp::Point epsilon = pmp::Point::Constant(0.0001);
+        expected_bb.min() += one_voxel / 2 - epsilon;
+        expected_bb.max() += one_voxel / 2 + epsilon;
+        Tree::trimChunkOverlap(pmp_mesh, expected_bb);
 
         if (mesh.n_faces() == 0)
         {

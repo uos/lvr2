@@ -50,10 +50,22 @@ public:
     using TreePtr = typename HLODTree<BaseVecT>::Ptr;
     using TreeConstPtr = const typename HLODTree<BaseVecT>::Ptr;
 
+    /**
+     * @brief Construct a new Tiles3dIO object
+     * 
+     * @param directory The directory where the tiles are stored
+     */
     Tiles3dIO(const std::string& directory);
     ~Tiles3dIO() = default;
 
-    void write(TreeConstPtr& tree, float scale = 1.0f);
+    /**
+     * @brief Writes the given tree to the directory
+     * 
+     * @param tree The tree to write
+     * @param compress if true: compress meshes with draco compression
+     * @param scale scale factor for the meshes
+     */
+    void write(TreeConstPtr& tree, bool compress = false, float scale = 1.0f);
     void read(TreePtr& tree)
     {
         throw std::runtime_error("Not implemented yet");
@@ -62,6 +74,7 @@ public:
 private:
     void writeTiles(Cesium3DTiles::Tile& tile,
                     TreeConstPtr& tree,
+                    bool compress,
                     const std::string& outputDir,
                     const std::string& prefix = "");
 
