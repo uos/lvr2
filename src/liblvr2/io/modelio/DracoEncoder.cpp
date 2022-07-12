@@ -27,7 +27,7 @@
  *
  **/
 
-#include "lvr2/io/DracoEncoder.hpp"
+#include "lvr2/io/modelio/DracoEncoder.hpp"
 #include <draco/metadata/geometry_metadata.h>
 
 namespace lvr2
@@ -60,8 +60,7 @@ int saveAttributeToDraco(ArrayType array, draco::PointCloud* drcPointcloud,
     }
 
     draco::PointAttribute attribute;
-    attribute.Init(geometryType, nullptr, size, dracoDataType, normalized, sizeof(DataType) * size,
-                   0);
+    attribute.Init(geometryType, size, dracoDataType, normalized, numPoints);
     int attribute_id = drcPointcloud->AddAttribute(attribute, true, numPoints);
 
     std::array<DataType, size> tmp;
@@ -269,18 +268,14 @@ std::unique_ptr<draco::EncoderBuffer> encodePointCloud(ModelPtr modelPtr, draco:
     return buffer;
 }
 
-/**
- * @brief transfers a mesh of a modelPtr to a draco EncoderBuffer that can be written into a file
- *
- * @param modelPtr pointer to model thats mesh shall be encoded
- * @param encoder is used to encode the modelptr to a encodeBuffer
- * @return unique pointer to a EncodeBuffer containing the draco encoded mesh that can be written
- *into a file or a nullptr in case of an error
- **/
-std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encoder& encoder)
+std::unique_ptr<draco::Mesh> createDracoMesh(ModelPtr modelPtr)
 {
-    draco::Mesh              mesh;
-    draco::GeometryMetadata* metadata = new draco::GeometryMetadata();
+    if (!modelPtr || !modelPtr->m_mesh)
+    {
+        throw std::invalid_argument("No mesh in ModelPtr");
+    }
+    auto mesh = std::make_unique<draco::Mesh>();
+    auto metadata = std::make_unique<draco::GeometryMetadata>();
 
     // load sizes and arrays from modelPtr
     size_t w;
@@ -311,8 +306,8 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
     indexArray faceMaterialIndices = modelPtr->m_mesh->getFaceMaterialIndices();
 
     // put data into draco format
-    mesh.set_num_points(numFaces * 3); // one point per corner
-    mesh.SetNumFaces(numFaces);
+    mesh->set_num_points(numFaces * 3); // one point per corner
+    mesh->SetNumFaces(numFaces);
 
     // init Attributes
     int verticesAttId                 = -1;
@@ -335,8 +330,8 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
         attribute.Init(draco::GeometryAttribute::POSITION, nullptr, 3, draco::DT_FLOAT32, false,
                        sizeof(float) * 3, 0);
         verticesAttId =
-            mesh.AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertices);
-        mesh.SetAttributeElementType(verticesAttId,
+            mesh->AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertices);
+        mesh->SetAttributeElementType(verticesAttId,
                                      draco::MeshAttributeElementType::MESH_VERTEX_ATTRIBUTE);
     }
 
@@ -346,8 +341,8 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
         attribute.Init(draco::GeometryAttribute::NORMAL, nullptr, 3, draco::DT_FLOAT32, true,
                        sizeof(float) * 3, 0);
         vertexNormalsAttId =
-            mesh.AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertices);
-        mesh.SetAttributeElementType(vertexNormalsAttId,
+            mesh->AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertices);
+        mesh->SetAttributeElementType(vertexNormalsAttId,
                                      draco::MeshAttributeElementType::MESH_VERTEX_ATTRIBUTE);
     }
 
@@ -357,8 +352,8 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
         attribute.Init(draco::GeometryAttribute::COLOR, nullptr, 3, draco::DT_UINT8, false,
                        sizeof(uint8_t) * 3, 0);
         vertexColorsAttId =
-            mesh.AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertices);
-        mesh.SetAttributeElementType(vertexColorsAttId,
+            mesh->AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertices);
+        mesh->SetAttributeElementType(vertexColorsAttId,
                                      draco::MeshAttributeElementType::MESH_VERTEX_ATTRIBUTE);
     }
 
@@ -368,8 +363,8 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
     //     attribute.Init(draco::GeometryAttribute::GENERIC, nullptr, 1, draco::DT_FLOAT32, false,
     //                    sizeof(float), 0);
     //     vertexConfidencesAttId =
-    //         mesh.AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertexConfidences);
-    //     mesh.SetAttributeElementType(vertexConfidencesAttId,
+    //         mesh->AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertexConfidences);
+    //     mesh->SetAttributeElementType(vertexConfidencesAttId,
     //                                  draco::MeshAttributeElementType::MESH_VERTEX_ATTRIBUTE);
 
     //     draco::AttributeMetadata* attributeMeta = new draco::AttributeMetadata();
@@ -385,8 +380,8 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
     //     attribute.Init(draco::GeometryAttribute::GENERIC, nullptr, 1, draco::DT_FLOAT32, false,
     //                    sizeof(float), 0);
     //     vertexIntensitiesAttId =
-    //         mesh.AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertexIntensities);
-    //     mesh.SetAttributeElementType(vertexIntensitiesAttId,
+    //         mesh->AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertexIntensities);
+    //     mesh->SetAttributeElementType(vertexIntensitiesAttId,
     //                                  draco::MeshAttributeElementType::MESH_VERTEX_ATTRIBUTE);
 
     //     draco::AttributeMetadata* attributeMeta = new draco::AttributeMetadata();
@@ -401,9 +396,9 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
         draco::GeometryAttribute attribute;
         attribute.Init(draco::GeometryAttribute::TEX_COORD, nullptr, 3, draco::DT_FLOAT32, false,
                        sizeof(float) * 3, 0);
-        vertexTextureCoordinatesAttId = mesh.AddAttribute(
+        vertexTextureCoordinatesAttId = mesh->AddAttribute(
             attribute, true, faceIndexed ? numFaces * 3 : numVertexTextureCoordinates);
-        mesh.SetAttributeElementType(vertexTextureCoordinatesAttId,
+        mesh->SetAttributeElementType(vertexTextureCoordinatesAttId,
                                      draco::MeshAttributeElementType::MESH_VERTEX_ATTRIBUTE);
     }
 
@@ -413,8 +408,8 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
         attribute.Init(draco::GeometryAttribute::GENERIC, nullptr, 1, draco::DT_UINT32, false,
                        sizeof(uint32_t), 0);
         faceMaterialIndicesAttId =
-            mesh.AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numFaces);
-        mesh.SetAttributeElementType(faceMaterialIndicesAttId,
+            mesh->AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numFaces);
+        mesh->SetAttributeElementType(faceMaterialIndicesAttId,
                                      draco::MeshAttributeElementType::MESH_FACE_ATTRIBUTE);
 
         draco::AttributeMetadata* attributeMeta = new draco::AttributeMetadata();
@@ -432,10 +427,10 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
         for (int i = 0; i < materials.size(); i++)
         {
             boost::optional<TextureHandle> opt_texture_index = materials[i].m_texture;
-            boost::optional<Rgb8Color> opt_mat_color = materials[i].m_color;
+            boost::optional<RGB8Color> opt_mat_color = materials[i].m_color;
             if(opt_mat_color)
             {
-                Rgb8Color mat_color = *opt_mat_color;
+                RGB8Color mat_color = *opt_mat_color;
                 materialData.push_back(mat_color[0]);
                 materialData.push_back(mat_color[1]);
                 materialData.push_back(mat_color[2]);
@@ -484,29 +479,29 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
             face[0] = draco::PointIndex(i.value() * 3 + 0);
             face[1] = draco::PointIndex(i.value() * 3 + 1);
             face[2] = draco::PointIndex(i.value() * 3 + 2);
-            mesh.SetFace(i, face);
+            mesh->SetFace(i, face);
 
             // positions
-            mesh.attribute(verticesAttId)
+            mesh->attribute(verticesAttId)
                 ->SetAttributeValue(draco::AttributeValueIndex(face[0].value()),
                                     vertices.get() + faces[3 * i.value() + 0] * 3);
-            mesh.attribute(verticesAttId)
+            mesh->attribute(verticesAttId)
                 ->SetAttributeValue(draco::AttributeValueIndex(face[1].value()),
                                     vertices.get() + faces[3 * i.value() + 1] * 3);
-            mesh.attribute(verticesAttId)
+            mesh->attribute(verticesAttId)
                 ->SetAttributeValue(draco::AttributeValueIndex(face[2].value()),
                                     vertices.get() + faces[3 * i.value() + 2] * 3);
 
             // normals
             if (hasFaceNormals)
             {
-                mesh.attribute(vertexNormalsAttId)
+                mesh->attribute(vertexNormalsAttId)
                     ->SetAttributeValue(draco::AttributeValueIndex(face[0].value()),
                                         vertexNormals.get() + faces[3 * i.value() + 0] * 3);
-                mesh.attribute(vertexNormalsAttId)
+                mesh->attribute(vertexNormalsAttId)
                     ->SetAttributeValue(draco::AttributeValueIndex(face[1].value()),
                                         vertexNormals.get() + faces[3 * i.value() + 1] * 3);
-                mesh.attribute(vertexNormalsAttId)
+                mesh->attribute(vertexNormalsAttId)
                     ->SetAttributeValue(draco::AttributeValueIndex(face[2].value()),
                                         vertexNormals.get() + faces[3 * i.value() + 2] * 3);
             }
@@ -520,7 +515,7 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
                     color[0] = vertexColors[3 * i.value()];
                     color[1] = vertexColors[3 * i.value() + 1];
                     color[2] = vertexColors[3 * i.value() + 2];
-                    mesh.attribute(vertexColorsAttId)
+                    mesh->attribute(vertexColorsAttId)
                         ->SetAttributeValue(draco::AttributeValueIndex(face[j].value()), color);
                 }
             }
@@ -528,13 +523,13 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
             // // confidences
             // if (numVertexConfidences > 0)
             // {
-            //     mesh.attribute(vertexConfidencesAttId)
+            //     mesh->attribute(vertexConfidencesAttId)
             //         ->SetAttributeValue(draco::AttributeValueIndex(face[0].value()),
             //                             vertexConfidences.get() + faces[3 * i.value() + 0]);
-            //     mesh.attribute(vertexConfidencesAttId)
+            //     mesh->attribute(vertexConfidencesAttId)
             //         ->SetAttributeValue(draco::AttributeValueIndex(face[1].value()),
             //                             vertexConfidences.get() + faces[3 * i.value() + 1]);
-            //     mesh.attribute(vertexConfidencesAttId)
+            //     mesh->attribute(vertexConfidencesAttId)
             //         ->SetAttributeValue(draco::AttributeValueIndex(face[2].value()),
             //                             vertexConfidences.get() + faces[3 * i.value() + 2]);
             // }
@@ -542,13 +537,13 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
             // // intensities
             // if (numVertexIntensities > 0)
             // {
-            //     mesh.attribute(vertexIntensitiesAttId)
+            //     mesh->attribute(vertexIntensitiesAttId)
             //         ->SetAttributeValue(draco::AttributeValueIndex(face[0].value()),
             //                             vertexIntensities.get() + faces[3 * i.value() + 0]);
-            //     mesh.attribute(vertexIntensitiesAttId)
+            //     mesh->attribute(vertexIntensitiesAttId)
             //         ->SetAttributeValue(draco::AttributeValueIndex(face[1].value()),
             //                             vertexIntensities.get() + faces[3 * i.value() + 1]);
-            //     mesh.attribute(vertexIntensitiesAttId)
+            //     mesh->attribute(vertexIntensitiesAttId)
             //         ->SetAttributeValue(draco::AttributeValueIndex(face[2].value()),
             //                             vertexIntensities.get() + faces[3 * i.value() + 2]);
             // }
@@ -556,15 +551,15 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
             // texture coordinates
             if (vertexTextureCoordinates)
             {
-                mesh.attribute(vertexTextureCoordinatesAttId)
+                mesh->attribute(vertexTextureCoordinatesAttId)
                     ->SetAttributeValue(draco::AttributeValueIndex(face[0].value()),
                                         vertexTextureCoordinates.get() +
                                             faces[3 * i.value() + 0] * 3);
-                mesh.attribute(vertexTextureCoordinatesAttId)
+                mesh->attribute(vertexTextureCoordinatesAttId)
                     ->SetAttributeValue(draco::AttributeValueIndex(face[1].value()),
                                         vertexTextureCoordinates.get() +
                                             faces[3 * i.value() + 1] * 3);
-                mesh.attribute(vertexTextureCoordinatesAttId)
+                mesh->attribute(vertexTextureCoordinatesAttId)
                     ->SetAttributeValue(draco::AttributeValueIndex(face[2].value()),
                                         vertexTextureCoordinates.get() +
                                             faces[3 * i.value() + 2] * 3);
@@ -573,13 +568,13 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
             // apply materialindices
             if (faceMaterialIndices)
             {
-                mesh.attribute(faceMaterialIndicesAttId)
+                mesh->attribute(faceMaterialIndicesAttId)
                     ->SetAttributeValue(draco::AttributeValueIndex(face[0].value()),
                                         faceMaterialIndices.get() + i.value());
-                mesh.attribute(faceMaterialIndicesAttId)
+                mesh->attribute(faceMaterialIndicesAttId)
                     ->SetAttributeValue(draco::AttributeValueIndex(face[1].value()),
                                         faceMaterialIndices.get() + i.value());
-                mesh.attribute(faceMaterialIndicesAttId)
+                mesh->attribute(faceMaterialIndicesAttId)
                     ->SetAttributeValue(draco::AttributeValueIndex(face[2].value()),
                                         faceMaterialIndices.get() + i.value());
             }
@@ -588,39 +583,47 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
     else
     {
         // apply positions
+        auto positions = mesh->attribute(verticesAttId);
         for (draco::AttributeValueIndex i(0); i < numVertices; i++)
         {
-            mesh.attribute(verticesAttId)->SetAttributeValue(i, vertices.get() + i.value() * 3);
+            positions->SetAttributeValue(i, vertices.get() + i.value() * 3);
         }
 
         // apply normals
-        for (draco::AttributeValueIndex i(0); i < numVertices; i++)
+        if (hasVertexNormals)
         {
-            mesh.attribute(vertexNormalsAttId)
-                ->SetAttributeValue(i, vertexNormals.get() + i.value() * 3);
+            auto normals = mesh->attribute(vertexNormalsAttId);
+            for (draco::AttributeValueIndex i(0); i < numVertices; i++)
+            {
+                normals->SetAttributeValue(i, vertexNormals.get() + i.value() * 3);
+            }
         }
 
         // apply colors
-        for (draco::AttributeValueIndex i(0); i < numVertices; i++)
+        if (hasVertexColors)
         {
-            unsigned char color[3];
-            color[0] = vertexColors[3 * i.value()];
-            color[1] = vertexColors[3 * i.value() + 1];
-            color[2] = vertexColors[3 * i.value() + 2];
-            mesh.attribute(vertexColorsAttId)->SetAttributeValue(i, color);
+            auto colors = mesh->attribute(vertexColorsAttId);
+            for (draco::AttributeValueIndex i(0); i < numVertices; i++)
+            {
+                unsigned char color[3];
+                color[0] = vertexColors[3 * i.value()];
+                color[1] = vertexColors[3 * i.value() + 1];
+                color[2] = vertexColors[3 * i.value() + 2];
+                colors->SetAttributeValue(i, color);
+            }
         }
 
         // // apply confidences
         // for (draco::AttributeValueIndex i(0); i < numVertexConfidences; i++)
         // {
-        //     mesh.attribute(vertexConfidencesAttId)
+        //     mesh->attribute(vertexConfidencesAttId)
         //         ->SetAttributeValue(i, vertexConfidences.get() + i.value());
         // }
 
         // // apply intensities
         // for (draco::AttributeValueIndex i(0); i < numVertexIntensities; i++)
         // {
-        //     mesh.attribute(vertexIntensitiesAttId)
+        //     mesh->attribute(vertexIntensitiesAttId)
         //         ->SetAttributeValue(i, vertexIntensities.get() + i.value());
         // }
 
@@ -632,15 +635,30 @@ std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encod
             {
                 face[j] = faces[3 * i.value() + j];
             }
-            mesh.SetFace(i, face);
+            mesh->SetFace(i, face);
         }
     }
 
-    mesh.AddMetadata(std::unique_ptr<draco::GeometryMetadata>(metadata));
+    mesh->AddMetadata(std::move(metadata));
+
+    return mesh;
+}
+
+/**
+ * @brief transfers a mesh of a modelPtr to a draco EncoderBuffer that can be written into a file
+ *
+ * @param modelPtr pointer to model thats mesh shall be encoded
+ * @param encoder is used to encode the modelptr to a encodeBuffer
+ * @return unique pointer to a EncodeBuffer containing the draco encoded mesh that can be written
+ *into a file or a nullptr in case of an error
+ **/
+std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encoder& encoder)
+{
+    auto mesh = createDracoMesh(modelPtr);
 
     // Encode Data
     std::unique_ptr<draco::EncoderBuffer> buffer(new draco::EncoderBuffer());
-    auto                                  status = encoder.EncodeMeshToBuffer(mesh, buffer.get());
+    auto                                  status = encoder.EncodeMeshToBuffer(*mesh, buffer.get());
 
     if (!status.ok())
     {

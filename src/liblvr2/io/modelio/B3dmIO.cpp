@@ -38,6 +38,10 @@
 
 #include "lvr2/io/modelio/B3dmIO.hpp"
 
+#include "lvr2/io/modelio/DracoEncoder.hpp"
+#include <draco/io/gltf_encoder.h>
+#include <draco/scene/scene.h>
+
 #include <CesiumGltf/Model.h>
 #include <CesiumGltfWriter/GltfWriter.h>
 
@@ -123,6 +127,18 @@ float* add_attribute(std::vector<std::byte>& buffer,
     return reinterpret_cast<float*>(buffer.data() + buffer_view.byteOffset);
 }
 
+void convert_texture(const Texture& texture, std::vector<uint8_t>& output)
+{
+    cv::Mat image(texture.m_height, texture.m_width, CV_8UC3, texture.m_data);
+    cv::Mat bgr;
+    cv::cvtColor(image, bgr, cv::COLOR_RGB2BGR);
+
+    cv::imencode(".webp", bgr, output);
+}
+const char* MIME_TYPE = "image/webp";
+
+void write_header(std::ofstream& file, size_t body_length);
+
 void B3dmIO::save(std::string filename)
 {
     auto mesh = m_model->m_mesh;
@@ -156,20 +172,6 @@ void B3dmIO::save(std::string filename)
         }
     }
 
-    std::vector<unsigned char> texture;
-    if (has_tex)
-    {
-        auto& tex = mesh->getTextures()[0];
-        cv::Mat image(tex.m_height, tex.m_width, CV_8UC3, tex.m_data);
-        cv::Mat bgr;
-        cv::cvtColor(image, bgr, cv::COLOR_RGB2BGR);
-
-        std::vector<int> compression_params;
-        compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
-        compression_params.push_back(9); // maximum compression
-        cv::imencode(".png", bgr, texture, compression_params);
-    }
-
     // ==================== Add Model Metadata ====================
 
     CesiumGltf::Model model;
@@ -181,6 +183,11 @@ void B3dmIO::save(std::string filename)
     auto [ material_id, material ] = push_id(model.materials);
     material.doubleSided = true;
 
+    MaterialPBRMetallicRoughness pbr;
+    pbr.metallicFactor = 0;
+    pbr.roughnessFactor = 1;
+    material.pbrMetallicRoughness = pbr;
+
     auto [ primitive_id, primitive ] = push_id(out_mesh.primitives);
     primitive.mode = MeshPrimitive::Mode::TRIANGLES;
     primitive.material = material_id;
@@ -190,7 +197,10 @@ void B3dmIO::save(std::string filename)
     // gltf uses y-up, but 3d tiles uses z-up and automatically transforms gltf data.
     // So we need to pre-undo that transformation to maintain consistency.
     // See the "Implementation note" section in https://github.com/CesiumGS/3d-tiles/tree/main/specification#y-up-to-z-up
-    node.matrix = {1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
+    node.matrix = { 1, 0, 0, 0,
+                    0, 0, -1, 0,
+                    0, 1, 0, 0,
+                    0, 0, 0, 1 };
 
     auto [ scene_id, scene ] = push_id(model.scenes);
     scene.nodes.push_back(node_id);
@@ -233,18 +243,20 @@ void B3dmIO::save(std::string filename)
         std::copy_n(mesh->getTextureCoordinates().get(), num_vertices * 2, out);
 
         size_t texture_offset = buffer.size();
-        buffer.resize(buffer.size() + texture.size());
-        unsigned char* out = (unsigned char*)(buffer.data() + texture_offset);
-        std::copy_n(texture.data(), texture.size(), out);
+        std::vector<uint8_t> texture_bytes;
+        convert_texture(mesh->getTextures()[0], texture_bytes);
+        buffer.resize(buffer.size() + texture_bytes.size());
+        uint8_t* out = (uint8_t*)(buffer.data() + texture_offset);
+        std::copy_n(texture_bytes.data(), texture_bytes.size(), out);
 
         auto [ texture_buffer_view_id, texture_buffer_view ] = push_id(model.bufferViews);
         texture_buffer_view.buffer = 0;
         texture_buffer_view.byteOffset = texture_offset;
-        texture_buffer_view.byteLength = texture.size();
+        texture_buffer_view.byteLength = texture_bytes.size();
 
         auto [ image_id, image ] = push_id(model.images);
         image.bufferView = texture_buffer_view_id;
-        image.mimeType = ImageSpec::MimeType::image_png;
+        image.mimeType = MIME_TYPE;
 
         auto [ sampler_id, sampler ] = push_id(model.samplers);
         sampler.magFilter = Sampler::MagFilter::LINEAR;
@@ -258,13 +270,7 @@ void B3dmIO::save(std::string filename)
 
         TextureInfo info;
         info.index = texture_id;
-
-        MaterialPBRMetallicRoughness pbr;
-        pbr.baseColorTexture = info;
-        pbr.metallicFactor = 0;
-        pbr.roughnessFactor = 1;
-
-        material.pbrMetallicRoughness = pbr;
+        material.pbrMetallicRoughness->baseColorTexture = info;
     }
 
     // add face metadata
@@ -315,6 +321,84 @@ void B3dmIO::save(std::string filename)
         throw std::runtime_error("Failed to write gltf");
     }
 
+    std::ofstream file(filename, std::ios::binary);
+
+    write_header(file, gltf.gltfBytes.size());
+
+    file.write((char*)gltf.gltfBytes.data(), gltf.gltfBytes.size());
+}
+
+void B3dmIO::saveCompressed(const std::string& filename, bool lossy)
+{
+    auto mesh = createDracoMesh(m_model);
+
+    mesh->SetCompressionEnabled(true);
+    draco::DracoCompressionOptions options;
+    options.compression_level = 10;
+    options.quantization_bits_position = lossy ? 14 : 0;
+    mesh->SetCompressionOptions(options);
+
+    draco::Scene scene;
+
+    auto mesh_id = scene.AddMesh(std::move(mesh));
+
+    auto& materials = scene.GetMaterialLibrary();
+    int material_id = 0;
+    auto material = materials.MutableMaterial(material_id);
+    material->SetDoubleSided(true);
+    material->SetMetallicFactor(0);
+    material->SetRoughnessFactor(1);
+
+    if (m_model->m_mesh->getTextures().size() == 1)
+    {
+        auto texture = m_model->m_mesh->getTextures()[0];
+        auto draco_texture = std::make_unique<draco::Texture>();
+        convert_texture(texture, draco_texture->source_image().MutableEncodedData());
+
+        draco_texture->source_image().set_mime_type(MIME_TYPE);
+        
+        material->SetTextureMap(std::move(draco_texture), draco::TextureMap::Type::COLOR, 0);
+    }
+
+    auto mesh_group_id = scene.AddMeshGroup();
+    auto mesh_group = scene.GetMeshGroup(mesh_group_id);
+    mesh_group->AddMeshIndex(mesh_id);
+    mesh_group->AddMaterialIndex(material_id);
+
+    // gltf uses y-up, but 3d tiles uses z-up and automatically transforms gltf data.
+    // So we need to pre-undo that transformation to maintain consistency.
+    // See the "Implementation note" section in https://github.com/CesiumGS/3d-tiles/tree/main/specification#y-up-to-z-up
+    Eigen::Matrix4d transform = Eigen::Matrix4d::Identity();
+    transform << 1, 0, 0, 0,
+                 0, 0, 1, 0,
+                 0, -1, 0, 0,
+                 0, 0, 0, 1;
+    draco::TrsMatrix matrix;
+    matrix.SetMatrix(transform);
+
+    auto node_id = scene.AddNode();
+    auto node = scene.GetNode(node_id);
+    node->SetMeshGroupIndex(mesh_group_id);
+    node->SetTrsMatrix(matrix);
+    scene.AddRootNodeIndex(node_id);
+
+    draco::GltfEncoder encoder;
+    draco::EncoderBuffer buffer;
+    auto status = encoder.EncodeToBuffer(scene, &buffer);
+    if (!status.ok())
+    {
+        throw std::runtime_error("draco encoding failed: " + status.error_msg_string());
+    }
+
+    std::ofstream file(filename, std::ios::binary);
+
+    write_header(file, buffer.size());
+
+    file.write(buffer.data(), buffer.size());
+}
+
+void write_header(std::ofstream& file, size_t body_length)
+{
     std::string feature_table = "{\"BATCH_LENGTH\":0}";
 
     std::string magic = "b3dm";
@@ -340,9 +424,7 @@ void B3dmIO::save(std::string filename)
         header_length++;
     }
 
-    byte_length = header_length + gltf.gltfBytes.size();
-
-    std::ofstream file(filename, std::ios::binary);
+    byte_length = header_length + body_length;
 
     file << magic;
     write_uint32(file, version);
@@ -353,8 +435,6 @@ void B3dmIO::save(std::string filename)
     write_uint32(file, batch_table_byte_length);
 
     file << feature_table;
-
-    file.write((char*)gltf.gltfBytes.data(), gltf.gltfBytes.size());
 }
 
 } // namespace lvr2

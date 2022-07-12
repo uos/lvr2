@@ -37,6 +37,15 @@ namespace lvr2
 {
 
 /**
+ * @brief encodes Model to draco Mesh
+ * 
+ * @param modelPtr 
+ * @return std::unique_ptr<draco::Mesh> 
+ */
+std::unique_ptr<draco::Mesh> createDracoMesh(ModelPtr modelPtr);
+
+
+/**
  * @brief encodes Model to draco EncodeBuffer which contents can be written into a file
  *
  * @param modelptr modelPtr to Model that shall be encoded

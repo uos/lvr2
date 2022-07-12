@@ -183,12 +183,14 @@ endif()
 #------------------------------------------------------------------------------
 # Searching for Draco
 #------------------------------------------------------------------------------
-find_package(Draco)
-if(draco_FOUND)
-  message(STATUS "Found Draco")
-  include_directories(${draco_INCLUDE_DIRS})
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
-endif(draco_FOUND)
+if (NOT WITH_3DTILES) # 3D Tiles comes with its own Draco library => avoid conflicts
+  find_package(Draco)
+  if(draco_FOUND)
+    message(STATUS "Found Draco")
+    include_directories(${draco_INCLUDE_DIRS})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
+  endif(draco_FOUND)
+endif(NOT WITH_3DTILES)
 
 #------------------------------------------------------------------------------
 # Searching for VTK
@@ -451,15 +453,26 @@ if(WITH_3DTILES)
     PREFIX cesium-native
     GIT_REPOSITORY "https://github.com/CesiumGS/cesium-native"
     GIT_TAG "v0.16.0"
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=install"
-    LOG_INSTALL ON
+    CMAKE_ARGS
+        "-DCMAKE_INSTALL_PREFIX=install"  # install into the build directory rather than /usr/local/... (which would require sudo)
+                                          # this is in quotes because otherwise cmake adds a random "x86_64-linux-gnu" to lib paths. No idea why.
+        -DCESIUM_TESTS_ENABLED=OFF        # don't build the tests
+        -DDRACO_TRANSCODER_SUPPORTED=ON   # enable Gltf support for draco
+    LOG_INSTALL ON  # don't print install step to terminal (spam)
   )
   ExternalProject_Get_Property(cesium-native BINARY_DIR)
   include_directories(${BINARY_DIR}/install/include)
   link_directories(${BINARY_DIR}/install/lib)
 
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_3DTILES)
-endif()
+  ExternalProject_Get_Property(cesium-native SOURCE_DIR)
+  include_directories(${SOURCE_DIR}/extern/draco/src)
+  set(draco_FOUND ON)
+  set(draco_LIBRARIES draco)
+
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_3DTILES -DLVR2_USE_DRACO -DDRACO_TRANSCODER_SUPPORTED)
+
+  set(3DTILES_LIBRARIES Cesium3DTiles Cesium3DTilesWriter CesiumGltf CesiumGltfWriter CesiumJsonWriter)
+endif(WITH_3DTILES)
 
 ###############################################################################
 # ADD LVR DEFINITIONS
@@ -649,6 +662,10 @@ endif()
 if(embree_FOUND)
 list(APPEND LVR2_LIB_DEPENDENCIES ${EMBREE_LIBRARY})
 endif()
+
+if(WITH_3DTILES)
+    list(APPEND LVR2_LIB_DEPENDENCIES ${3DTILES_LIBRARIES})
+endif(WITH_3DTILES)
 
 ###############################################################################
 # LIBRARIES

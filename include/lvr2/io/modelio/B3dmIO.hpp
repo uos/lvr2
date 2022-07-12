@@ -59,9 +59,17 @@ public:
     /**
      * \brief Save B3dm with previously specified data.
      *
-     * \param filename  Filename of the output file.
+     * \param filename Filename of the output file.
      **/
     void save(std::string filename) override;
+
+    /**
+     * \brief Save B3dm with previously specified data.
+     *
+     * \param filename Filename of the output file.
+     * @param lossy allow lossy compression of the data.
+     */
+    void saveCompressed(const std::string& filename, bool lossy = false);
 
     /**
      * \brief Read specified B3dm file.
@@ -72,7 +80,6 @@ public:
     {
         throw std::runtime_error("Not implemented yet");
     }
-
 };
 
 } // namespace lvr2

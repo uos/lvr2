@@ -121,7 +121,14 @@ void Tiles3dIO<BaseVecT>::writeTiles(Cesium3DTiles::Tile& tile,
 
         B3dmIO io;
         io.setModel(model);
-        io.save(outputDir + filename);
+        // if (tree->isLeaf()) // TODO: add compression parameter
+        // {
+        //     io.save(outputDir + filename);
+        // }
+        // else
+        // {
+            io.saveCompressed(outputDir + filename);
+        // }
     }
 }
 

@@ -111,42 +111,32 @@ set(LVR2_SOURCES
 #####################################################################################
 
 if(PCL_FOUND)
-set(LVR2_SOURCES ${LVR2_SOURCES}
-    io/PCDIO.cpp
-    reconstruction/PCLFiltering.cpp)
+    list(APPEND LVR2_SOURCES
+        io/PCDIO.cpp
+        reconstruction/PCLFiltering.cpp)
 endif(PCL_FOUND)
 
 if(embree_FOUND)
-list(APPEND LVR2_SOURCES 
-    algorithm/raycasting/EmbreeRaycaster.cpp
+    list(APPEND LVR2_SOURCES 
+        algorithm/raycasting/EmbreeRaycaster.cpp
 )
 endif(embree_FOUND)
 
 if(WITH_FREENECT AND LIBFREENECT_FOUND)
-set(LVR2_SOURCES ${LVR2_SOURCES} 
-  io/KinectGrabber.cpp 
-  io/KinectIO.cpp)
+    list(APPEND LVR2_SOURCES
+        io/KinectGrabber.cpp 
+        io/KinectIO.cpp)
 endif()
-
-if(WITH_3DTILES)
-    list(APPEND LVR2_LIB_DEPENDENCIES
-        Cesium3DTiles
-        Cesium3DTilesWriter
-        CesiumGltf
-        CesiumGltfWriter
-        CesiumJsonWriter
-    )
-endif(WITH_3DTILES)
 
 #####################################################################################
 # Draco Geometry Compression
 #####################################################################################
 
 if(draco_FOUND)
-set(LVR2_SOURCES ${LVR2_SOURCES}
-  io/baseio/DracoEncoder.cpp
-  io/baseio/DracoDecoder.cpp 
-  io/baseio/DrcIO.cpp)
+    list(APPEND LVR2_SOURCES
+        io/modelio/DracoEncoder.cpp
+        io/modelio/DracoDecoder.cpp 
+        io/modelio/DrcIO.cpp)
 endif(draco_FOUND)
 
 #####################################################################################
@@ -154,8 +144,8 @@ endif(draco_FOUND)
 #####################################################################################
 
 if(RiVLib_FOUND)
-  set(LVR2_SOURCES ${LVR2_SOURCES} 
-    io/baseio/RxpIO.cpp)
+    list(APPEND LVR2_SOURCES
+        io/baseio/RxpIO.cpp)
 endif()
 
 #####################################################################################

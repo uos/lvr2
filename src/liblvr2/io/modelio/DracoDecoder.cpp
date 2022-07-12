@@ -27,7 +27,7 @@
  *
  **/
 
-#include "lvr2/io/DracoDecoder.hpp"
+#include "lvr2/io/modelio/DracoDecoder.hpp"
 #include <draco/metadata/geometry_metadata.h>
 
 namespace lvr2
@@ -308,7 +308,7 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
             for (int i = 0; i < dat.size() / 4; i++)
             {
                 Material m;
-                Rgb8Color rgb;
+                RGB8Color rgb;
                 rgb[0] = static_cast<unsigned char>(dat[4 * i + 0]);
                 rgb[0] = static_cast<unsigned char>(dat[4 * i + 1]);
                 rgb[0] = static_cast<unsigned char>(dat[4 * i + 2]);
