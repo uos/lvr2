@@ -64,11 +64,7 @@ public:
     const DataPtr    dataPtr() const;
     DataPtr          dataPtr();
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    static std::string typeName()
-#else // THIS SHOULD WORK UNDER WINDOWS AS WELL BUT DOES NOT!! constexpr std::string is c++20
-    static constexpr std::string typeName()
-#endif
+    static std::string typeName() 
     {
         return boost::typeindex::type_id<T>().pretty_name();
     }

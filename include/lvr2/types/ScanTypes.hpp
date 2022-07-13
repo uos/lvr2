@@ -574,7 +574,7 @@ namespace lvr2
     struct ScanProjectEditMark
     {
         ScanProjectEditMark() = default;
-        ScanProjectEditMark(ScanProjectPtr _project) : project(project) {}
+        ScanProjectEditMark(ScanProjectPtr _project) : project(_project) {}
         ScanProjectPtr project;
         FileKernelPtr kernel;
         ScanProjectSchemaPtr schema;
