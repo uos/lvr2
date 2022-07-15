@@ -9,6 +9,8 @@
 #include "Types.h"
 #include "SurfaceMesh.h"
 
+#include <highfive/H5Group.hpp>
+
 namespace pmp {
 
 class SurfaceMeshIO
@@ -22,6 +24,9 @@ public:
     void read(SurfaceMesh& mesh);
 
     void write(const SurfaceMesh& mesh);
+
+    static void read_hdf5(const HighFive::Group& group, SurfaceMesh& mesh);
+    static void write_hdf5(HighFive::Group& group, const SurfaceMesh& mesh);
 
 private:
     void read_off(SurfaceMesh& mesh);

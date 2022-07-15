@@ -125,6 +125,15 @@ void SurfaceMesh::write(const std::string& filename, const IOFlags& flags) const
     writer.write(*this);
 }
 
+void SurfaceMesh::read(const HighFive::Group& group)
+{
+    SurfaceMeshIO::read_hdf5(group, *this);
+}
+void SurfaceMesh::write(HighFive::Group& group) const
+{
+    SurfaceMeshIO::write_hdf5(group, *this);
+}
+
 void SurfaceMesh::clear()
 {
     // remove all properties

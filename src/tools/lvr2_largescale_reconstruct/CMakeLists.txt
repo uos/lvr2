@@ -3,7 +3,6 @@
 #####################################################################################
 
 set(LS_RECONSTRUCT_SOURCES
-    LargeScaleOptions.cpp
     Options.cpp
     Main.cpp)
 

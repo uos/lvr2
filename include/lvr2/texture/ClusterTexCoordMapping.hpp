@@ -40,9 +40,11 @@
 
 #include <vector>
 #include <utility>
+#include <array>
 
 using std::vector;
 using std::pair;
+using std::array;
 
 namespace lvr2
 {

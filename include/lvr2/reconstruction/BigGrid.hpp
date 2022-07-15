@@ -25,11 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
+/**
  * BigGrid.hpp
  *
- *  Created on: Jul 17, 2017
- *      Author: Isaak Mitschke
+ * @date Jul 17, 2017
+ * @author Isaak Mitschke
+ * @author Malte Hillmann
  */
 
 #ifndef LAS_VEGAS_BIGGRID_HPP
@@ -37,19 +38,12 @@
 
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/io/DataStruct.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <string>
 #include <unordered_map>
 #include <utility>
-
-#include <tbb/concurrent_unordered_map.h>
-
-#ifndef __APPLE__
-#include <omp.h>
-#endif
 
 
 namespace lvr2
@@ -59,14 +53,10 @@ using Vec = BaseVector<float>;
 
 struct CellInfo
 {
-    CellInfo() : size(0), offset(0), inserted(0), dist_offset(0) {}
+    CellInfo() : size(0), offset(0), inserted(0) {}
     size_t size;
     size_t offset;
     size_t inserted;
-    size_t dist_offset;
-    size_t ix;
-    size_t iy;
-    size_t iz;
 };
 
 template <typename BaseVecT>
@@ -78,7 +68,7 @@ class BigGrid
      * @param cloudPath path to PointCloud in ASCII xyz Format // Todo: Add other file formats
      * @param voxelsize
      */
-    BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scale = 0, size_t bufferSize = 1024);
+    BigGrid(std::vector<std::string> cloudPath, float voxelsize, float scale = 0, bool extrude = false, size_t bufferSize = 1024);
 
     /**
      * Constructor: specific case for incremental reconstruction/chunking. also compatible with simple reconstruction
@@ -86,7 +76,7 @@ class BigGrid
      * @param project ScanProject, which contain one or more Scans
      * @param scale scale value of for current scans
      */
-    BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale = 0);
+    BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale = 0, bool extrude = false);
 
     BigGrid(std::string path);
 
@@ -102,53 +92,72 @@ class BigGrid
 
     /**
      * Amount of Points in Voxel at position i,j,k
-     * @param i
-     * @param j
-     * @param k
+     * @param index
      * @return amount of points, 0 if voxel does not exsist
      */
-    size_t pointSize(int i, int j, int k);
+    size_t pointSize(const Vector3i& index);
 
     /**
      * Points of  Voxel at position i,j,k
-     * @param i
-     * @param j
-     * @param k
+     * @param index
      * @param numPoints, amount of points in lvr2::floatArr
      * @return lvr2::floatArr, containing points
      */
-    lvr2::floatArr points(int i, int j, int k, size_t& numPoints);
+    lvr2::floatArr points(const Vector3i& index, size_t& numPoints);
 
     /**
-     *  Points that are within bounding box defined by a min and max point
-     * @param minx
-     * @param miny
-     * @param minz
-     * @param maxx
-     * @param maxy
-     * @param maxz
-     * @param numPoints number of points
-     * @return lvr2::floatArr, containing points
+     * @brief Returns the points within a bounding box
+     * 
+     * @param bb the bounding box
+     * @param numPoints the number of points is written into this variable
+     * @param minNumPoints the minimum number of points to be returned
+     * @return lvr2::floatArr the points
      */
-    lvr2::floatArr points(
-        float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
+    lvr2::floatArr points(const BoundingBox<BaseVecT>& bb, size_t& numPoints, size_t minNumPoints = 0);
 
-    lvr2::floatArr normals(
-        float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
-
-    lvr2::ucharArr colors(
-        float minx, float miny, float minz, float maxx, float maxy, float maxz, size_t& numPoints);
     /**
-     * return numbers of points in a specific area (defined by the params) of the grid
-     * @param minx
-     * @param miny
-     * @param minz
-     * @param maxx
-     * @param maxy
-     * @param maxz
-     * @return number of points in area
+     * @brief Returns the normals of points within a bounding box
+     * 
+     * @param bb the bounding box
+     * @param numNormals the number of normals is written into this variable
+     * @param minNumNormals the minimum number of normals to be returned
+     * @return lvr2::floatArr the normals
      */
-    size_t getSizeofBox(float minx, float miny, float minz, float maxx, float maxy, float maxz);
+    lvr2::floatArr normals(const BoundingBox<BaseVecT>& bb, size_t& numNormals, size_t minNumNormals = 0);
+
+    /**
+     * @brief Returns the colors of points within a bounding box
+     * 
+     * @param bb the bounding box
+     * @param numColors the number of colors is written into this variable
+     * @param minNumColors the minimum number of colors to be returned
+     * @return lvr2::ucharArr the colors
+     */
+    lvr2::ucharArr colors(const BoundingBox<BaseVecT>& bb, size_t& numColors, size_t minNumColors = 0);
+
+    /**
+     * return numbers of points in a bounding box of the grid
+     * @param bb the bounding box
+     * @return number of points in the area
+     */
+    size_t getSizeofBox(const BoundingBox<BaseVecT>& bb) const
+    {
+        std::vector<std::pair<const CellInfo*, size_t>> _unused;
+        return getSizeofBox(bb, _unused);
+    }
+    /**
+     * return numbers of points in a bounding box of the grid
+     * @param bb the bounding box
+     * @param cellCounts will be filled with <cellId, cellCount> of all cells intersecting bb
+     * @return number of points in the area
+     */
+    size_t getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<std::pair<const CellInfo*, size_t>>& cellCounts) const;
+    /**
+     * return an overestimate of the numbers of points in a bounding box of the grid
+     * @param bb the bounding box
+     * @return a number >= the actual number of points in the area
+     */
+    size_t estimateSizeofBox(const BoundingBox<BaseVecT>& bb) const;
 
     void serialize(std::string path = "serinfo.ls");
 
@@ -165,66 +174,65 @@ class BigGrid
     BoundingBox<BaseVecT>& getpartialBB() { return m_partialbb; }
 
 
-    virtual ~BigGrid();
+    virtual ~BigGrid() = default;
 
-    inline size_t hashValue(size_t i, size_t j, size_t k)
+    void calcIndex(const BaseVecT& vec, Vector3i& index) const
     {
-        return i * m_maxIndexSquare + j * m_maxIndex + k;
+        index.x() = std::floor(vec.x / m_voxelSize);
+        index.y() = std::floor(vec.y / m_voxelSize);
+        index.z() = std::floor(vec.z / m_voxelSize);
+    }
+    Vector3i calcIndex(const BaseVecT& vec) const
+    {
+        Vector3i ret;
+        calcIndex(vec, ret);
+        return ret;
     }
 
-    inline size_t getDistanceFileOffset(size_t hash)
+    inline bool exists(const Vector3i& index)
     {
-        if (exists(hash))
-        {
-            return m_gridNumPoints[hash].dist_offset;
-        }
-        else
-            return 0;
-    }
-    inline bool exists(size_t hash)
-    {
-        auto it = m_gridNumPoints.find(hash);
-        return it != m_gridNumPoints.end();
+        return m_cells.find(index) != m_cells.end();
     }
 
-    inline bool hasColors() { return m_has_color; }
-    inline bool hasNormals() { return m_has_normal; }
+    const std::unordered_map<Vector3i, CellInfo>& getCells() const
+    {
+        return m_cells;
+    }
 
-  private:
-    inline int calcIndex(float f) { return f < 0 ? f - .5 : f + .5; }
+    inline bool hasColors() { return m_hasColor; }
+    inline bool hasNormals() { return m_hasNormal; }
 
-    bool exists(int i, int j, int k);
-    void insert(float x, float y, float z);
+private:
+    template<typename LineType>
+    void initFromLineReader(LineReader& lineReader);
 
-    size_t m_maxIndexSquare;
-    size_t m_maxIndex;
-    size_t m_maxIndexX;
-    size_t m_maxIndexY;
-    size_t m_maxIndexZ;
     size_t m_numPoints;
 
     size_t m_pointBufferSize;
 
     float m_voxelSize;
     bool m_extrude;
-#ifdef LVR2_USE_OPEN_MP
-    omp_lock_t m_lock;
-#endif
-    bool m_has_normal;
-    bool m_has_color;
+    bool m_hasNormal;
+    bool m_hasColor;
 
     boost::iostreams::mapped_file m_PointFile;
-    boost::iostreams::mapped_file m_NomralFile;
+    boost::iostreams::mapped_file m_NormalFile;
     boost::iostreams::mapped_file m_ColorFile;
     BoundingBox<BaseVecT> m_bb;
 
     //BoundingBox, of unreconstructed scans
     BoundingBox<BaseVecT> m_partialbb;
 
-    std::vector<shared_ptr<Scan>> m_scans;
+    CellInfo& getCellInfo(const BaseVecT& vec)
+    {
+        return getCellInfo(calcIndex(vec));
+    }
+    CellInfo& getCellInfo(const Vector3i& index)
+    {
+        return m_cells[index];
+    }
 
-    //std::unordered_map<size_t, CellInfo> m_gridNumPoints;
-    tbb::concurrent_unordered_map<size_t, CellInfo> m_gridNumPoints;
+    std::unordered_map<Vector3i, CellInfo> m_cells;
     float m_scale;
 };
 

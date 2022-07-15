@@ -500,7 +500,7 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowingRANSAC(
     for (int i = 0; i < numIterations; ++i)
     {
         std::cout << timestamp << "Optimizing planes. Iterations "
-                  << i << " / " << numIterations << std::endl;
+                  << (i + 1) << " / " << numIterations << std::endl;
         // Generate clusters
         clusters = planarClusterGrowing(mesh, normals, minSinAngle);
 

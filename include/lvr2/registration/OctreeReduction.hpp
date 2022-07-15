@@ -29,11 +29,12 @@
  */
 
 /**
- * Metascan.hpp
+ * OctreeReduction.hpp
  *
- *  @date Sep 23, 2019
- *  @author Thomas Wiemann
- *  @author Malte Hillmann
+ * @date Sep 23, 2019
+ * @author Malte Hillmann
+ * @author Thomas Wiemann
+ * @author Justus Braun
  */
 
 #include "lvr2/types/MatrixTypes.hpp"
@@ -49,85 +50,82 @@ namespace lvr2
 class OctreeReduction
 {
 public:
-    OctreeReduction(PointBufferPtr& pointBuffer, const double& voxelSize, const size_t& minPointsPerVoxel);
-    OctreeReduction(Vector3f* points, const size_t& n, const double& voxelSize, const size_t& minPointsPerVoxel);
+    /**
+     * @brief Construct a new OctreeReduction object
+     * 
+     * @param pointBuffer The points to be reduced
+     * @param voxelSize The minimum size of a Leaf Node.
+     *                  Anything smaller will be condensed using the sampling policy
+     * @param maxPointsPerVoxel Target number of points per voxel
+     */
+    OctreeReduction(PointBufferPtr& pointBuffer, float voxelSize, size_t maxPointsPerVoxel);
+    /**
+     * @brief Construct a new OctreeReduction object
+     * 
+     * @param points The points to be reduced. THIS DATA WILL BE MODIFIED IN PLACE.
+     * @param n The length of points. Will be updated to the number of points after reduction.
+     * @param voxelSize The minimum size of a Leaf Node.
+     *                  Anything smaller will be condensed using the sampling policy
+     * @param maxPointsPerVoxel Target number of points per voxel
+     */
+    OctreeReduction(Vector3f* points, size_t& n, float voxelSize, size_t maxPointsPerVoxel);
 
+    /**
+     * @brief Get the Reduced Points object. ONLY WORKS IF PointBufferPtr CONSTRUCTOR WAS USED
+     * 
+     * @return PointBufferPtr The reduced points
+     */
     PointBufferPtr getReducedPoints();
-    void getReducedPoints(Vector3f& points, size_t& n);
-
-    ~OctreeReduction() { delete[] m_flags;}
 
 private:
-    template<typename T>
-    void createOctree(T* points, const int& n, bool* flagged, const T& min, const T& max, const int& level);
+    /// initialize and run the reduction
+    void init();
 
-    template<typename T>
-    size_t splitPoints(T* points, const size_t& n, const int axis, const double& splitValue);
+    /// recursive core function for reduction
+    void createOctree(size_t start, size_t n, const Vector3f& min, const Vector3f& max, unsigned int level = 0);
 
-    template<typename T>
-    void createOctree(lvr2::PointBufferPtr& points, size_t s, size_t n, bool* flagged, const lvr2::Vector3<T>& min, const lvr2::Vector3<T>& max, const int& level);
+    size_t splitPoints(size_t start, size_t n, unsigned int axis, float splitValue);
 
-    template<typename T>
-    size_t splitPoints(lvr2::PointBufferPtr& points, size_t s, size_t n, const int axis, const double& splitValue);
-
-    template<typename T>
-    void swapAllChannelsOfType(lvr2::PointBufferPtr& points, const size_t& l, const size_t& r);
-
-    template<typename T>
-    void swapInChannel(lvr2::Channel<T>& ch, const size_t& l, const size_t& r);
-
-    double              m_voxelSize;
-    size_t              m_minPointsPerVoxel;
+    float               m_voxelSize;
+    size_t              m_maxPointsPerVoxel;
     size_t              m_numPoints; 
-    bool*               m_flags;
+    bool*               m_flags; // m_flags[i] == true iff m_points[i] should be deleted
+    Vector3f*           m_points; // not owned
+    std::vector<size_t> m_pointIndices;
     PointBufferPtr      m_pointBuffer;
-    Vector3f            m_points;
 };
 
 /**
- * @brief Reference implemention of an octree-based reduction algorithm
+ * @brief Reference implementation of an octree-based reduction algorithm
  * 
  */
 class OctreeReductionAlgorithm : public ReductionAlgorithm
 {
 public:
-    OctreeReductionAlgorithm(double voxelSize, size_t minPoints) : 
-        m_octree(nullptr), m_voxelSize(voxelSize), m_minPoints(minPoints) {};
+    OctreeReductionAlgorithm(double voxelSize, size_t maxPoints) : 
+        m_octree(nullptr), m_voxelSize(voxelSize), m_maxPoints(maxPoints) {};
 
     void setPointBuffer(PointBufferPtr ptr) override
     {
         // Create octree
-        m_octree = new OctreeReduction(ptr, m_voxelSize, m_minPoints);
+        m_octree.reset(new OctreeReduction(ptr, m_voxelSize, m_maxPoints));
     }
 
-    PointBufferPtr getReducedPoints()
+    PointBufferPtr getReducedPoints() override
     {
         if(m_octree)
         {
             return m_octree->getReducedPoints();
         }
-        else
-        {
-            return PointBufferPtr(new PointBuffer());
-        }
-    }
-
-    ~OctreeReductionAlgorithm()
-    {
-        if(m_octree)
-        {
-            delete m_octree;
-        }
+        return PointBufferPtr(new PointBuffer());
     }
 
 private:
-    OctreeReduction*    m_octree;
-    double              m_voxelSize;
-    size_t              m_minPoints;
+    std::shared_ptr<OctreeReduction> m_octree;
+    double m_voxelSize;
+    size_t m_maxPoints;
 };
 
 } // namespace lvr2
-
-#include "lvr2/registration/OctreeReduction.tcc"
 
 #endif

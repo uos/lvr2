@@ -173,13 +173,27 @@ Vector3<T> multiply(const Transform<T>& transform, const Vector3<T>& p)
 
 // additional operators
 
-
-
-
 template<typename T>
 lvr2::Vector3<T> operator*(const lvr2::Transform<T>& transform, const lvr2::Vector3<T>& p)
 {
     return lvr2::multiply(transform, p);
 }
+
+namespace std
+{
+template<typename T>
+struct hash<lvr2::Vector3<T>>
+{
+    size_t operator()(lvr2::Vector3<T> const& p) const noexcept
+    {
+        /// slightly simplified FNV-1a hash function
+        uint64_t hash = 14695981039346656037UL;
+        hash = (hash ^ std::hash<T>()(p.x())) * 1099511628211UL;
+        hash = (hash ^ std::hash<T>()(p.y())) * 1099511628211UL;
+        hash = (hash ^ std::hash<T>()(p.z())) * 1099511628211UL;
+        return hash;
+    }
+};
+} // namespace std
 
 #endif // LVR2_TYPES_MATRIXTYPES_HPP
