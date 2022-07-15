@@ -116,18 +116,29 @@ KDTreePtr create_recursive(KDTree::Point* points, int n, int maxLeafSize)
     AABB<float> boundingBox(points, n);
 
     int splitAxis = boundingBox.longestAxis();
-    double splitValue = boundingBox.avg()(splitAxis);
 
-    if (boundingBox.difference(splitAxis) == 0.0) // all points are exactly the same
+    // old version: works, but is slower
+    // double splitValue = boundingBox.avg()(splitAxis);
+    // 
+    // if (boundingBox.difference(splitAxis) == 0.0) // all points are exactly the same
+    // {
+    //     // this case is rare, but would lead to an infinite recursion loop if not handled,
+    //     // since all Points would end up in the "lesser" branch every time
+    //
+    //     // there is no need to check all of them later on, so just pretend like there is only one
+    //     return KDTreePtr(new KDLeaf(points, 1));
+    // }
+    //
+    // int l = splitPoints(points, n, splitAxis, splitValue);
+
+    // new version: makes searching a lot faster, but I couldn't test this yet. TODO: If KDTree stops working, revert to the old version. Otherwise remove the old version.
+    int l = n / 2;
+    std::nth_element(points, points + l, points + n, [splitAxis](const auto& a, const auto& b)
     {
-        // this case is rare, but would lead to an infinite recursion loop if not handled,
-        // since all Points would end up in the "lesser" branch every time
-
-        // there is no need to check all of them later on, so just pretend like there is only one
-        return KDTreePtr(new KDLeaf(points, 1));
-    }
-
-    int l = splitPoints(points, n, splitAxis, splitValue);
+        return a[splitAxis] < b[splitAxis];
+    });
+    double splitValue = points[l][splitAxis];
+    // end of new version
 
     KDTreePtr lesser, greater;
 
@@ -139,11 +150,11 @@ KDTreePtr create_recursive(KDTree::Point* points, int n, int maxLeafSize)
         #pragma omp task shared(greater)
         greater = create_recursive(points + l, n - l, maxLeafSize);
 
-        #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#pragma omp barrier
-        #else
-                #pragma omp taskwait
-        #endif
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+        #pragma omp barrier
+#else
+        #pragma omp taskwait
+#endif
     }
     else
     {

@@ -32,7 +32,7 @@
 #include "lvr2/algorithm/ClusterAlgorithms.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/Model.hpp"
 
 namespace lvr2
 {

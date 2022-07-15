@@ -550,19 +550,6 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x,
                                         (index_y + dy) * this->m_voxelsize + v_min.y,
                                         (index_z + dz) * this->m_voxelsize + v_min.z);
 
-                    // WHY? this makes the results more worse than lvr1
-                    // if((
-                    //         box_center[0] <= m_boundingBox.getMin().x ||
-                    //         box_center[1] <= m_boundingBox.getMin().y ||
-                    //         box_center[2] <= m_boundingBox.getMin().z ||
-                    //         box_center[0] >= m_boundingBox.getMax().x + m_voxelsize ||
-                    //         box_center[1] >= m_boundingBox.getMax().y + m_voxelsize ||
-                    //         box_center[2] >= m_boundingBox.getMax().z + m_voxelsize
-                    // ))
-                    // {
-                    //     continue;
-                    // }
-
                     // Create new box
                     BoxT* box = new BoxT(box_center);
 
@@ -579,6 +566,7 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x,
                         box->m_duplicate = true;
                     }
 
+          
                     // Setup the box itself
                     for (int k = 0; k < 8; k++)
                     {
@@ -604,6 +592,7 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x,
                             this->m_globalIndex++;
                         }
                     }
+                    
 
                     // Set pointers to the neighbors of the current box
                     int neighbor_index = 0;
@@ -627,14 +616,13 @@ void HashGrid<BaseVecT, BoxT>::addLatticePoint(int index_x,
                                 if (neighbor_it != this->m_cells.end())
                                 {
                                     box->setNeighbor(neighbor_index, (*neighbor_it).second);
-                                    (*neighbor_it).second->setNeighbor(26 - neighbor_index, box);
+                                    (*neighbor_it).second->setNeighbor(26 - neighbor_index, box);   
                                 }
 
                                 neighbor_index++;
                             }
                         }
                     }
-
                     this->m_cells[hash_value] = box;
                 }
             }

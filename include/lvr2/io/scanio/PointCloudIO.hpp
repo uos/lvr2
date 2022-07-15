@@ -1,18 +1,22 @@
 #pragma once
 
-#ifndef LVR2_IO_DESCRIPTIONS_POINTBUFFERIO_HPP
-#define LVR2_IO_DESCRIPTIONS_POINTBUFFERIO_HPP
+#ifndef POINTCLOUDIO
+#define POINTCLOUDIO
 
 #include <boost/optional.hpp>
 
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
+#include "lvr2/io/baseio/VariantChannelIO.hpp"
+#include "lvr2/io/baseio/ChannelIO.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 
-// Dependencies
-#include "ChannelIO.hpp"
-#include "VariantChannelIO.hpp"
+using lvr2::baseio::VariantChannelIO;
 
-namespace lvr2 {
+namespace lvr2 
+{
+
+namespace scanio
+{
 
 /**
  * @class PointCloudIO 
@@ -42,7 +46,7 @@ namespace lvr2 {
  * - VariantChannelIO
  * 
  */
-template<typename FeatureBase>
+template<typename BaseIO>
 class PointCloudIO 
 {
 public:
@@ -118,10 +122,10 @@ public:
 protected:
 
     /// Add access to feature base
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
 
     /// Dependencies
-    VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_featureBase);
+    VariantChannelIO<BaseIO>* m_vchannel_io = static_cast<VariantChannelIO<BaseIO>*>(m_baseIO);
 
     /// Class ID
     static constexpr const char* ID = "PointCloudIO";
@@ -130,18 +134,20 @@ protected:
     static constexpr const char* OBJID = "PointBuffer";
 };
 
-template <typename FeatureBase>
-struct FeatureConstruct<PointCloudIO, FeatureBase >
+} // namespace scanio
+
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::PointCloudIO, T>
 {
     // DEPS
-    using deps = typename FeatureConstruct<VariantChannelIO, FeatureBase >::type;
+    using deps = typename FeatureConstruct<lvr2::baseio::VariantChannelIO, T>::type;
 
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<PointCloudIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::PointCloudIO>::type;
 };
 
 } // namespace lvr2 
 
 #include "PointCloudIO.tcc"
 
-#endif // LVR2_IO_DESCRIPTIONS_POINTBUFFERIO_HPP
+#endif // POINTCLOUDIO

@@ -39,6 +39,7 @@
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/geometry/Handles.hpp"
 
+#include <Eigen/Core>
 
 namespace lvr2 {
 
@@ -96,6 +97,11 @@ OutMapT<
  */
 template<typename HandleT, typename ValueT>
 pair<ValueT, ValueT> minMaxOfMap(const AttributeMap<HandleT, ValueT>& map);
+
+/**
+ * @brief Rasterizes the line from p0 to p1 using calling cb with the pixel coordinates for each pixel intersecting the line
+ */
+void rasterize_line(Eigen::Vector2f p0, Eigen::Vector2f p1, std::function<void(Eigen::Vector2i)> cb);
 
 } // namespace lvr2
 

@@ -25,26 +25,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
+/**
  * PMPMesh.hpp
  *
- *  @date 06.12.2021
- *  @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
+ * @date   06.12.2021
+ * @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
  */
 
-#ifndef LVR2_GEOMETRY_PMPMesh_H_
-#define LVR2_GEOMETRY_PMPMesh_H_
+#ifndef LVR2_GEOMETRY_PMPMESH_HPP_
+#define LVR2_GEOMETRY_PMPMESH_HPP_
 
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/geometry/pmp/SurfaceMesh.h"
 
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 
 namespace lvr2
 {
 
 /**
- * @brief Wrapper around the SurfaceMesh class to provide a BaseMesh interface
+ * @brief Wrapper around the pmp::SurfaceMesh class to provide a lvr2::BaseMesh interface
  * 
  */
 template<typename BaseVecT>
@@ -163,11 +163,30 @@ public:
 
     VertexSplitResult splitVertex(VertexHandle vertexToBeSplitH);
     EdgeSplitResult splitEdge(EdgeHandle edgeH);
-    void fillHoles(size_t maxSize);
-    void laplacianSmoothing(float smoothFactor, int numSmooths = 1, bool useUniformLaplace = true);
+    /**
+     * @brief Fill holes smaller than maxSize
+     * 
+     * @param maxSize the maximum number of vertices around a hole. Bigger holes are ignored
+     * @param simple true: simple but fast algorithm, false: more complex but slower algorithm
+     */
+    void fillHoles(size_t maxSize, bool simple = true);
+    /**
+     * @brief Performs Laplacian Smoothing
+     * 
+     * @param smoothFactor value between [0..1]. Used to determine the strength of each smoothing step. (usually 0.5)
+     * @param numSmooths number of smoothing steps to perform.
+     * @param useUniformLaplace true: use uniform weights (faster), false: use cotan weights (better quality)
+     */
+    void laplacianSmoothing(float smoothFactor = 0.5, int numSmooths = 1, bool useUniformLaplace = true);
     vector<VertexHandle> findCommonNeigbours(VertexHandle vH1, VertexHandle vH2);
     void splitVertex(EdgeHandle eH, VertexHandle vH, pmp::Point pos1, pmp::Point pos2);
     std::pair<BaseVecT, float> triCircumCenter(FaceHandle faceH);
+    /**
+     * @brief Decimates the Mesh with repeated Edge Collapses until the target number of vertices is reached
+     * 
+     * @param targetNumVertices the target number of vertices
+     */
+    void simplify(size_t targetNumVertices);
 
     pmp::SurfaceMesh& getSurfaceMesh()
     { return m_mesh; }
@@ -182,4 +201,4 @@ private:
 
 #include "lvr2/geometry/PMPMesh.tcc"
 
-#endif /* LVR2_GEOMETRY_PMPMesh_H_ */
+#endif /* LVR2_GEOMETRY_PMPMESH_HPP_ */

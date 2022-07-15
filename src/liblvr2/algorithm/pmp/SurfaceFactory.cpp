@@ -1,5 +1,5 @@
 // Copyright 2011-2021 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceFactory.h"
 #include "lvr2/algorithm/pmp/SurfaceSubdivision.h"
@@ -15,7 +15,7 @@ void project_to_unit_sphere(SurfaceMesh& mesh)
     for (auto v : mesh.vertices())
     {
         auto p = mesh.position(v);
-        auto n = norm(p);
+        auto n = p.norm();
         mesh.position(v) = (1.0 / n) * p;
     }
 }

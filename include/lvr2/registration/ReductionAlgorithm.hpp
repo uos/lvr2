@@ -28,7 +28,7 @@
 #ifndef LVR2_REDUCTION_ALGORITHM_HPP
 #define LVR2_REDUCTION_ALGORITHM_HPP
 
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/algorithm/BaseBufferManipulators.hpp"
 
 #include <memory>

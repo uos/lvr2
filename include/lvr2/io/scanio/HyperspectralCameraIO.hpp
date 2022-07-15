@@ -5,14 +5,15 @@
 
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/scanio/yaml/HyperspectralCamera.hpp"
-#include "MetaIO.hpp"
-#include "HyperspectralPanoramaIO.hpp"
-
+#include "lvr2/io/scanio/HyperspectralPanoramaIO.hpp"
+#include "lvr2/io/baseio/MetaIO.hpp"
 
 namespace lvr2
 {
+namespace scanio
+{
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class HyperspectralCameraIO
 {
 public:
@@ -30,16 +31,18 @@ public:
         const size_t& hCamNo) const;
 
 protected:
-    FeatureBase *m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO *m_baseIO = static_cast<BaseIO*>(this);
 
     // dependencies
-    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
-    HyperspectralPanoramaIO<FeatureBase>* m_hyperspectralPanoramaIO = static_cast<HyperspectralPanoramaIO<FeatureBase>*>(m_featureBase);
+    MetaIO<BaseIO>* m_metaIO = static_cast<MetaIO<BaseIO>*>(m_baseIO);
+    HyperspectralPanoramaIO<BaseIO>* m_hyperspectralPanoramaIO = static_cast<HyperspectralPanoramaIO<BaseIO>*>(m_baseIO);
 
     // dependencies
     static constexpr const char *ID = "HyperspectralCameraIO";
     static constexpr const char *OBJID = "HyperspectralCamera";
 };
+
+} // namespace scanio
 
 /**
  *
@@ -48,16 +51,16 @@ protected:
  * - Sets type variable
  *
  */
-template <typename FeatureBase>
-struct FeatureConstruct<HyperspectralCameraIO, FeatureBase>
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::HyperspectralCameraIO, T>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<HyperspectralPanoramaIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<MetaIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::HyperspectralPanoramaIO, T>::type;
     using deps = typename dep1::template Merge<dep2>;
     
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<HyperspectralCameraIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::HyperspectralCameraIO>::type;
 };
 
 } // namespace lvr2

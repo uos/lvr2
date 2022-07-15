@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GROUPEDCHANNELIO_HPP
-#define GROUPEDCHANNELIO_HPP
+#ifndef GROUPEDCHANNELIO
+#define GROUPEDCHANNELIO
 
 #include <string>
 #include "lvr2/types/BaseBuffer.hpp"
@@ -100,4 +100,4 @@ public:
 
 } // namespace lvr2
 
-#endif
+#endif // GROUPEDCHANNELIO

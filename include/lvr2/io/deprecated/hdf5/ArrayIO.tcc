@@ -174,7 +174,7 @@ void ArrayIO<Derived>::save(HighFive::Group& g,
         );
 
         const T* ptr = data.get();
-        dataset->write(ptr);
+        dataset->write_raw(ptr);
         m_file_access->m_hdf5_file->flush();
     } else {
         throw std::runtime_error("[Hdf5 - ArrayIO]: Hdf5 file not open.");

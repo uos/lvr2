@@ -34,7 +34,21 @@ namespace lvr2
 
 int Util::getSpectralChannel(int wavelength, PointBufferPtr p, int fallback)
 {
+    // if the channel spectral_wavelength_max does not exist, create it with 1000 as its default value
+    if(! p->hasChannel<int>("spectral_wavelength_max")) {
+        p->addIntAtomic(1000,"spectral_wavelength_max");
+    }
+
+    // if the channel spectral_wavelength_min does not exist, create it with 400 as its default value
+    if(! p->hasChannel<int>("spectral_wavelength_min")) {
+        p->addIntAtomic(400,"spectral_wavelength_min");
+    }
+
     UCharChannelOptional spectral_channels = p->getUCharChannel("spectral_channels");
+    if(!spectral_channels) {
+        spectral_channels = p->getUCharChannel("spectral");
+    }
+
     if (!spectral_channels)
     {
         return fallback;
@@ -57,6 +71,11 @@ int Util::getSpectralWavelength(int channel, PointBufferPtr p, int fallback)
     UCharChannelOptional spectral_channels = p->getUCharChannel("spectral_channels");
     if (!spectral_channels)
     {
+        spectral_channels = p->getUCharChannel("spectral");
+    }
+
+    if (!spectral_channels)
+    {
         return fallback;
     }
     
@@ -73,6 +92,11 @@ int Util::getSpectralWavelength(int channel, PointBufferPtr p, int fallback)
 float Util::wavelengthPerChannel(PointBufferPtr p)
 {
     UCharChannelOptional spectral_channels = p->getUCharChannel("spectral_channels");
+    if (!spectral_channels)
+    {
+        spectral_channels = p->getUCharChannel("spectral");
+    }
+
     if (!spectral_channels)
     {
         return -1.0f;

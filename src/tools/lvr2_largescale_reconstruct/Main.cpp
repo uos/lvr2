@@ -34,19 +34,16 @@
 
 #include "lvr2/reconstruction/SearchTreeFlann.hpp"
 #include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
-#include "lvr2/algorithm/GeometryAlgorithms.hpp"
-#include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/config/lvropenmp.hpp"
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
+#include "lvr2/io/kernels/DirectoryKernel.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
 #include "lvr2/io/scanio/DirectoryIO.hpp"
-#include "lvr2/io/scanio/DirectoryKernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
-#include "lvr2/io/scanio/HDF5Kernel.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 #include "lvr2/util/IOUtils.hpp"
 
-#include "LargeScaleOptions.hpp"
+#include "Options.hpp"
 
 
 using std::cout;
@@ -78,8 +75,6 @@ int main(int argc, char** argv)
     // Parse command line arguments
     LargeScaleOptions::Options options(argc, argv);
 
-    options.printLogo();
-
     // Exit if options had to generate a usage message
     // (this means required parameters are missing)
     if (options.printUsage())
@@ -87,36 +82,27 @@ int main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
 
-    std::cout << options << std::endl;
+    options.printLogo();
 
-    string in = options.getInputFileName()[0];
+    fs::path selectedFile = options.m_inputFile;
+    std::string input = selectedFile.string();
 
-    boost::filesystem::path selectedFile(in);
-    string extension = selectedFile.extension().string();
+    std::string extension = selectedFile.extension().string();
 
-    OpenMPConfig::setNumThreads(options.getNumThreads());
-
-    LargeScaleReconstruction<Vec> lsr(options.getVoxelSizes(), options.getBGVoxelsize(), options.getScaling(),
-                                      options.getNodeSize(), options.getPartMethod(), options.getKi(), options.getKd(), options.getKn(),
-                                      options.useRansac(), options.getFlippoint(), options.extrude(), options.getDanglingArtifacts(),
-                                      options.getCleanContourIterations(), options.getFillHoles(), options.optimizePlanes(),
-                                      options.getNormalThreshold(), options.getPlaneIterations(), options.getMinPlaneSize(), options.getSmallRegionThreshold(),
-                                      options.retesselate(), options.getLineFusionThreshold(), options.getBigMesh(), options.getDebugChunks(), options.useGPU());
-
-    
+    LargeScaleReconstruction<Vec> lsr(options.m_options);
 
 
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
-    std::shared_ptr<ChunkHashGrid> cm;
-    BoundingBox<Vec> boundingBox;
-
 
     //reconstruction from hdf5
     if (extension == ".h5")
     {
-        HDF5KernelPtr hdf5kernel(new HDF5Kernel(in));
+        std::cout << timestamp << "Reading project from HDF5 file" << std::endl;
+        HDF5KernelPtr hdf5kernel(new HDF5Kernel(input));
         HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
         lvr2::scanio::HDF5IO hdf5io(hdf5kernel, schema);
+        project->kernel = hdf5kernel;
+        project->schema = schema;
 
         auto scanProjectPtr = hdf5io.ScanProjectIO::load();
 
@@ -126,20 +112,22 @@ int main(int argc, char** argv)
         {
             project->changed.push_back(true);
         }
-        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getChunkSize()));
     }
     else
     {
 
         ScanProjectPtr dirScanProject;
         
-        DirectoryKernelPtr dirKernel(new DirectoryKernel(in));
-        DirectorySchemaPtr dirSchema(new ScanProjectSchemaRaw(in));
+        DirectoryKernelPtr dirKernel(new DirectoryKernel(input));
+        DirectorySchemaPtr dirSchema(new ScanProjectSchemaRaw(input));
         lvr2::scanio::DirectoryIO dirio(dirKernel, dirSchema);
         dirScanProject = dirio.ScanProjectIO::load();
+        project->kernel = dirKernel;
+        project->schema = dirSchema;
 
         //reconstruction from ScanProject Folder
-        if(dirScanProject) {
+        if(dirScanProject) 
+        {
             project->project = dirScanProject;
             std::vector<bool> init(dirScanProject->positions.size(), true);
             project->changed = init;
@@ -147,19 +135,20 @@ int main(int argc, char** argv)
         //reconstruction from a .ply file
         else if(!boost::filesystem::is_directory(selectedFile))
         {
+            std::cout << timestamp << "Reading single file: " << selectedFile << std::endl;
             project->project = ScanProjectPtr(new ScanProject);
-            ModelPtr model = ModelFactory::readModel(in);
+            ModelPtr model = ModelFactory::readModel(input);
 
-            // Create new scan object
+            // Create new scan object and mark scan data as
+            // loaded
             ScanPtr scan(new Scan);
             scan->points = model->m_pointCloud;
-
+            
             // Create new lidar object
             LIDARPtr lidar(new LIDAR);
 
             // Create new scan position
             ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
-            scanPosPtr->lidars.push_back(lidar);
 
             // Buildup scan project structure
             project->project->positions.push_back(scanPosPtr);
@@ -173,10 +162,10 @@ int main(int argc, char** argv)
 
             // Setup basic scan project structure
             ScanProjectPtr scanProject(new ScanProject);            
-            boost::filesystem::directory_iterator it{in};
+            boost::filesystem::directory_iterator it(selectedFile);
             while (it != boost::filesystem::directory_iterator{})
             {
-                cout << it->path().string() << endl;
+                std::cout << it->path().string() << std::endl;
                 string ext = it->path().extension().string();
                 if(ext == ".ply")
                 {
@@ -201,31 +190,21 @@ int main(int argc, char** argv)
                 it++;
             }
         }
+    }
 
-        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.getChunkSize()));
+    BoundingBox<Vec> boundingBox;
+    std::shared_ptr<ChunkHashGrid> cm = nullptr;
+    if (options.m_partMethod == 1)
+    {
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.m_options.bgVoxelSize));
     }
 
     BoundingBox<Vec> bb;
-    // reconstruction with diffrent methods
-    if(options.getPartMethod() == 1)
-    {
-        int x = lsr.mpiChunkAndReconstruct(project, bb, cm);
-    }
-    else
-    {
-        int x = lsr.mpiAndReconstruct(project);
-    }
+    lsr.chunkAndReconstruct(project, bb, cm);
 
-    // reconstruction of .ply for diffrent voxelSizes
-    if(options.getDebugChunks())
-    {
+    fs::remove("chunked_mesh.h5"); // TODO: check if anyone needs/can use this
 
-        for (int i; i < options.getVoxelSizes().size(); i++) {
-            lsr.getPartialReconstruct(bb, cm, options.getVoxelSizes()[i]);
-        }
-    }
-
-    cout << "Program end." << endl;
+    std::cout << timestamp << "Program end." << std::endl;
 
     return 0;
 }

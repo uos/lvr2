@@ -44,7 +44,7 @@
 #include <list>
 #include <boost/any.hpp>
 #include <lvr/reconstruction/PointsetSurface.hpp>
-#include <lvr/io/PointBuffer.hpp>
+#include <lvr/types/PointBuffer.hpp>
 #include <lvr/io/DataStruct.hpp>
 #include <lvr/io/Timestamp.hpp>
 #include <lvr/geometry/HalfEdgeVertex.hpp>

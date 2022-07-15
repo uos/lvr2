@@ -4,9 +4,8 @@
 
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
-#include "Matrix.hpp"
-#include "AABB.hpp"
-#include "lvr2/io/scanio/yaml/Util.hpp"
+#include "lvr2/util/YAMLUtil.hpp"
+#include "lvr2/io/YAML.hpp"
 
 namespace YAML {  
 
@@ -56,28 +55,52 @@ struct convert<lvr2::ScanPosition>
         
         if(node["pose_estimation"])
         {
-            scanPos.poseEstimation = node["pose_estimation"].as<lvr2::Transformd>();
+            try {
+                scanPos.poseEstimation = node["pose_estimation"].as<lvr2::Transformd>();
+            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
+                std::cerr << "[YAML - ScanPosition - decode] ERROR: Could not decode 'pose_estimation': " 
+                    << node["pose_estimation"] << " as Transformd" << std::endl; 
+                return false;
+            }
         } else {
             scanPos.poseEstimation = lvr2::Transformd::Identity();
         }
         
         if(node["transformation"])
         {
-            scanPos.transformation = node["transformation"].as<lvr2::Transformd>();
+            try {
+                scanPos.transformation = node["transformation"].as<lvr2::Transformd>();
+            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
+                std::cerr << "[YAML - ScanPosition - decode] ERROR: Could not decode 'transformation': " 
+                    << node["transformation"] << " as Transformd" << std::endl; 
+                return false;
+            }
         } else {
             scanPos.transformation = lvr2::Transformd::Identity();
         }
         
         if(node["timestamp"])
         {
-            scanPos.timestamp = node["timestamp"].as<double>();
+            try {
+                scanPos.timestamp = node["timestamp"].as<double>();
+            } catch(const YAML::TypedBadConversion<double>& ex) {
+                std::cerr << "[YAML - ScanPosition - decode] ERROR: Could not decode 'timestamp': " 
+                    << node["timestamp"] << " as double" << std::endl; 
+                return false;
+            }
         } else {
             scanPos.timestamp = -1.0;
         }
 
         if(node["aabb"])
         {
-            scanPos.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
+            try {
+                scanPos.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
+            } catch(const YAML::TypedBadConversion<lvr2::BoundingBox<lvr2::BaseVector<float> > >& ex) {
+                std::cerr << "[YAML - ScanPosition - decode] ERROR: Could not decode 'aabb': " 
+                    << node["aabb"] << " as BoundingBox" << std::endl; 
+                return false;
+            }
         }
 
         return true;

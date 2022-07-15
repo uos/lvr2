@@ -38,6 +38,7 @@
 #include <ostream>
 
 #include "lvr2/io/LineReader.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 namespace lvr2
 {
@@ -168,9 +169,10 @@ private:
 template<typename BaseVecT>
 inline std::ostream& operator<<(std::ostream& os, const BoundingBox<BaseVecT>& bb)
 {
-    os << "Bounding Box[min: " << bb.getMin() << "             max: " <<  bb.getMax();
-    os << "             dimension: " << bb.getXSize() << ", " << bb.getYSize() << ", "
-       << bb.getZSize() << "]" << std::endl;
+    os << timestamp << "Bounding Box" << std::endl;
+    os << timestamp << "\t\tMin: " << bb.getMin();
+    os << timestamp << "\t\tMax: " << bb.getMax();
+    os << timestamp << "\t\tDimensions: " << bb.getXSize() << ", " << bb.getYSize() << ", "<< bb.getZSize() << "]" << std::endl;
     return os;
 }
 

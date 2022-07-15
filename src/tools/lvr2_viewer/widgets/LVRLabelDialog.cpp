@@ -54,7 +54,8 @@
 
 #include <vtkLookupTable.h>
 #include <vtkExtractGeometry.h>
-#include "lvr2/io/scanio/HDF5Kernel.hpp"
+
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
 
 #include <fstream>
 using std::ifstream;

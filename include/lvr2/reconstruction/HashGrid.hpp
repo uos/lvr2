@@ -44,7 +44,7 @@
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/reconstruction/QueryPoint.hpp"
 
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 
 using std::string;
 using std::vector;

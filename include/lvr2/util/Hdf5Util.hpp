@@ -21,7 +21,7 @@
 #include <vector>
 
 // LVR internal includes
-#include "lvr2/io/scanio/yaml/Matrix.hpp"
+#include "lvr2/io/baseio/yaml/Matrix.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/util/Tuple.hpp"

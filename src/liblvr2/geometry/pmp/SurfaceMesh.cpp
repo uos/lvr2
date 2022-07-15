@@ -1,6 +1,6 @@
 // Copyright 2011-2021 the Polygon Mesh Processing Library developers.
 // Copyright 2001-2005 by Computer Graphics Group, RWTH Aachen
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/geometry/pmp/SurfaceMesh.h"
 
@@ -123,6 +123,15 @@ void SurfaceMesh::write(const std::string& filename, const IOFlags& flags) const
 {
     SurfaceMeshIO writer(filename, flags);
     writer.write(*this);
+}
+
+void SurfaceMesh::read(const HighFive::Group& group)
+{
+    SurfaceMeshIO::read_hdf5(group, *this);
+}
+void SurfaceMesh::write(HighFive::Group& group) const
+{
+    SurfaceMeshIO::write_hdf5(group, *this);
 }
 
 void SurfaceMesh::clear()

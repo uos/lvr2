@@ -42,16 +42,18 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-DenseClusterMap<Rgb8Color> ClusterPainter::simpsons(const BaseMesh<BaseVecT>& mesh) const
+DenseClusterMap<RGB8Color> ClusterPainter::colorize(
+    const BaseMesh<BaseVecT>& mesh, 
+    ColorGradient::GradientType gradient) const
 {
-    DenseClusterMap<Rgb8Color> colorMap;
+    DenseClusterMap<RGB8Color> colorMap;
     colorMap.reserve(m_clusterBiMap.numHandles() * 3);
     size_t clusterIdx = 0;
     for (auto clusterH: m_clusterBiMap)
-    {
-        auto color = getSimpsonColorForIdx(clusterIdx);
-        colorMap.insert(clusterH, color);
-
+    {   
+        RGB8Color c;
+        m_colorGradient.getColor(c, clusterIdx, gradient);
+        colorMap.insert(clusterH, c);
         clusterIdx++;
     }
 

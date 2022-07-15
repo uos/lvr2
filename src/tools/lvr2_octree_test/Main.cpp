@@ -1,6 +1,6 @@
 #include "lvr2/display/PointOctree.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/IOUtils.hpp"
 #include "lvr2/util/Timestamp.hpp"

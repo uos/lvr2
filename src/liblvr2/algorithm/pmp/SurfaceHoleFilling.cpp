@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceHoleFilling.h"
 
@@ -29,19 +29,18 @@ bool SurfaceHoleFilling::is_interior_edge(Vertex _a, Vertex _b) const
 
 Scalar SurfaceHoleFilling::compute_area(Vertex _a, Vertex _b, Vertex _c) const
 {
-    return sqrnorm(cross(points_[_b] - points_[_a], points_[_c] - points_[_a]));
+    return (points_[_b] - points_[_a]).cross(points_[_c] - points_[_a]).squaredNorm();
 }
 
 Point SurfaceHoleFilling::compute_normal(Vertex _a, Vertex _b, Vertex _c) const
 {
-    return normalize(
-        cross(points_[_b] - points_[_a], points_[_c] - points_[_a]));
+    return (points_[_b] - points_[_a]).cross(points_[_c] - points_[_a]).normalized();
 }
 
 Scalar SurfaceHoleFilling::compute_angle(const Point& _n1,
                                          const Point& _n2) const
 {
-    return (1.0 - dot(_n1, _n2));
+    return (1.0 - _n1.dot(_n2));
 }
 
 void SurfaceHoleFilling::fill_hole(Halfedge h)
@@ -226,8 +225,7 @@ void SurfaceHoleFilling::refine()
     l = 0.0;
     for (int i = 0; i < n; ++i)
     {
-        l += distance(points_[hole_vertex(i)],
-                      points_[hole_vertex((i + 1) % n)]);
+        l += (points_[hole_vertex(i)] - points_[hole_vertex((i + 1) % n)]).norm();
     }
     l /= (Scalar)n;
     lmin = 0.7 * l;
@@ -262,7 +260,7 @@ void SurfaceHoleFilling::split_long_edges(const Scalar _lmax)
                 const Point& p0 = points_[mesh_.to_vertex(h10)];
                 const Point& p1 = points_[mesh_.to_vertex(h01)];
 
-                if (distance(p0, p1) > _lmax)
+                if ((p0 - p1).norm() > _lmax)
                 {
                     mesh_.split(e, 0.5 * (p0 + p1));
                     ok = false;
@@ -293,7 +291,7 @@ void SurfaceHoleFilling::collapse_short_edges(const Scalar _lmin)
                 const Point& p1 = points_[v1];
 
                 // edge too short?
-                if (distance(p0, p1) < _lmin)
+                if ((p0 - p1).norm() < _lmin)
                 {
                     Halfedge h;
                     if (!vlocked_[v0])
@@ -420,7 +418,7 @@ void SurfaceHoleFilling::relaxation()
         else
             triplets.emplace_back(i, idx[v], c);
 
-        B.row(i) = (Eigen::Vector3d)b;
+        B.row(i) = b.cast<double>();
     }
 
     // solve least squares system
@@ -440,7 +438,7 @@ void SurfaceHoleFilling::relaxation()
     // copy solution to mesh vertices
     for (int i = 0; i < n; ++i)
     {
-        points_[vertices[i]] = X.row(i);
+        points_[vertices[i]] = X.row(i).cast<Scalar>();
     }
 
     // clean up

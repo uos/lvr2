@@ -3,13 +3,13 @@
 
 #include <string>
 
-#include "lvr2/io/scanio/FileKernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaHyperlib.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaSlam6D.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaHDF5V2.hpp"
-#include "lvr2/io/scanio/DirectoryKernel.hpp"
-#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/kernels/FileKernel.hpp"
+#include "lvr2/io/kernels/DirectoryKernel.hpp"
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaHyperlib.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaSlam6D.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaHDF5V2.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 

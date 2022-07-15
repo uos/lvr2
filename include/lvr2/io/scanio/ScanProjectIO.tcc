@@ -1,11 +1,13 @@
 namespace lvr2
 {
+namespace scanio
+{
 
-template<typename FeatureBase>
-void ScanProjectIO<FeatureBase>::save(
+template<typename BaseIO>
+void ScanProjectIO<BaseIO>::save(
     ScanProjectPtr scanProject) const
 {
-    Description d = m_featureBase->m_description->scanProject();
+    Description d = m_baseIO->m_description->scanProject();
 
 
     // std::cout << "[ScanProjectIO - save]: Description" << std::endl;
@@ -32,24 +34,24 @@ void ScanProjectIO<FeatureBase>::save(
         node = *scanProject;
         // std::cout << "[ScanProjectIO] saveMetaYAML, Group: "
         //             << *d.groupName << ", metaName: " << *d.metaName << std::endl;
-        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
+        m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 }
 
-template <typename FeatureBase>
-boost::optional<YAML::Node> ScanProjectIO<FeatureBase>::loadMeta() const
+template <typename BaseIO>
+boost::optional<YAML::Node> ScanProjectIO<BaseIO>::loadMeta() const
 {
-    Description d = m_featureBase->m_description->scanProject();
+    Description d = m_baseIO->m_description->scanProject();
     return m_metaIO->load(d);
 }
 
-template <typename FeatureBase>
-ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
+template <typename BaseIO>
+ScanProjectPtr ScanProjectIO<BaseIO>::load() const
 {
     ScanProjectPtr ret;
 
     // Load description and meta data for scan project
-    Description d = m_featureBase->m_description->scanProject();
+    Description d = m_baseIO->m_description->scanProject();
 
     // std::cout << "[HDF5IO - ScanProjectIO - load]: Description" << std::endl;
     // std::cout << d << std::endl;
@@ -59,7 +61,7 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
         d.dataRoot = "";
     }
 
-    if(*d.dataRoot != "" && !m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(*d.dataRoot != "" && !m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         std::cout << "[ScanProjectIO] Warning: '" << *d.dataRoot << "' does not exist." << std::endl; 
         return ret;
@@ -68,8 +70,16 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
     if(d.meta)
     {
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
-        ret = std::make_shared<ScanProject>(meta.as<ScanProject>());
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        {
+            return ret;
+        }
+        try {
+            ret = std::make_shared<ScanProject>(meta.as<ScanProject>());
+        } catch(const YAML::TypedBadConversion<ScanProject>& ex) {
+            std::cerr << "[ScanProjectIO - load] ERROR at ScanProject: Could not decode YAML as ScanProject." << std::endl;
+            throw ex;
+        }
     } 
     else 
     {
@@ -78,7 +88,7 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
         // create without meta information: generate meta afterwards
 
         // std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
-        ret.reset(new ScanProject);
+        ret = std::make_shared<ScanProject>();
     }
 
 
@@ -86,6 +96,7 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
     size_t scanPosNo = 0;
     while(true)
     {  
+        // std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
         // Get description for next scan
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
         if(!scanPos)
@@ -101,33 +112,33 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::load() const
     return ret;
 }
 
-template <typename FeatureBase>
-void ScanProjectIO<FeatureBase>::saveScanProject(
+template <typename BaseIO>
+void ScanProjectIO<BaseIO>::saveScanProject(
     ScanProjectPtr scanProject) const
 {
     save(scanProject);
 }
 
-template <typename FeatureBase>
-ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject() const
+template <typename BaseIO>
+ScanProjectPtr ScanProjectIO<BaseIO>::loadScanProject() const
 {
     return load();
 }
 
-template <typename FeatureBase>
-ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject(ReductionAlgorithmPtr reduction) const
+template <typename BaseIO>
+ScanProjectPtr ScanProjectIO<BaseIO>::loadScanProject(ReductionAlgorithmPtr reduction) const
 {
     ScanProjectPtr ret;
 
     // Load description and meta data for scan project
-    Description d = m_featureBase->m_description->scanProject();
+    Description d = m_baseIO->m_description->scanProject();
 
     if(!d.dataRoot)
     {
         d.dataRoot = "";
     }
 
-    if(*d.dataRoot != "" && !m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(*d.dataRoot != "" && !m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         std::cout << "[ScanProjectIO] Warning: '" << *d.dataRoot << "' does not exist." << std::endl; 
         return ret;
@@ -136,7 +147,7 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject(ReductionAlgorithmPtr
     if(d.meta)
     {
         YAML::Node meta;
-        m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
+        m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
         ret = std::make_shared<ScanProject>(meta.as<ScanProject>());
     } 
     else 
@@ -146,7 +157,7 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject(ReductionAlgorithmPtr
         // create without meta information: generate meta afterwards
 
         // std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
-        ret.reset(new ScanProject);
+        ret = std::make_shared<ScanProject>();
     }
 
 
@@ -167,4 +178,5 @@ ScanProjectPtr ScanProjectIO<FeatureBase>::loadScanProject(ReductionAlgorithmPtr
     return ret;
 }
 
+} // namespace scanio
 } // namespace lvr2

@@ -100,7 +100,7 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
         this->m_queryPoints[i].m_distance = projectedDistance;
         ++progress;
     }
-    cout << timestamp << "Elapsed time: " << ts.getElapsedTimeInS() << endl;
+    cout << endl << timestamp << "Elapsed time: " << ts.getElapsedTimeInS() << endl;
     return;
 }
 

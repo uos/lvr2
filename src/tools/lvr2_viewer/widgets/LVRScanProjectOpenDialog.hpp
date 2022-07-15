@@ -1,13 +1,13 @@
-#ifndef LVRSCANPROJECTOPENDIALOG_HPP
-#define LVRSCANPROJECTOPENDIALOG_HPP
+#ifndef LVRSCANPROJECTOPENDIALOG
+#define LVRSCANPROJECTOPENDIALOG
 
-#include "lvr2/io/scanio/FileKernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaSlam6D.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
-#include "lvr2/io/scanio/DirectoryKernel.hpp"
-#include "lvr2/io/scanio/HDF5Kernel.hpp"
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
+#include "lvr2/io/kernels/FileKernel.hpp"
+#include "lvr2/io/kernels/DirectoryKernel.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaSlam6D.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 #include "LVRReductionAlgorithmDialog.hpp"
@@ -159,4 +159,4 @@ private:
 
 } // namespace std
 
-#endif
+#endif // LVRSCANPROJECTOPENDIALOG

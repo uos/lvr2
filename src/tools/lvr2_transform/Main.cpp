@@ -36,7 +36,7 @@
 #include "Options.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/Model.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include <iostream>
@@ -183,8 +183,8 @@ int main(int argc, char **argv)
         Vec v((*points)[i][0], (*points)[i][1], (*points)[i][2]);
         v = mat * v;
         v.x = options.anyScaleX() ? v[0] * options.getScaleX() : v[0];
-        v.y = options.anyScaleX() ? v[1] * options.getScaleX() : v[1];
-        v.z = options.anyScaleX() ? v[2] * options.getScaleX() : v[2];
+        v.y = options.anyScaleX() ? v[1] * options.getScaleY() : v[1];
+        v.z = options.anyScaleX() ? v[2] * options.getScaleZ() : v[2];
         (*points)[i] = v;
       }
     }

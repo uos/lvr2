@@ -60,7 +60,7 @@ Options::Options(int argc, char** argv)
     // Create option descriptions
     m_descr.add_options()
         ("help", "Produce help message")
-        ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz) and .ply")
+        ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz), .ply and .h5")
         ("outputFile", value< vector<string> >()->multitoken()->default_value(vector<string>{"triangle_mesh.ply", "triangle_mesh.obj"}), "Output file name. Supported formats are ASCII (.pts, .xyz) and .ply")
         ("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
         ("noExtrusion", "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
@@ -73,7 +73,7 @@ Options::Options(int argc, char** argv)
         ("cleanContours", value<int>(&m_cleanContourIterations)->default_value(0), "Remove noise artifacts from contours. Same values are between 2 and 4")
         ("planeIterations", value<int>(&m_planeIterations)->default_value(3), "Number of iterations for plane optimization")
         ("fillHoles,f", value<int>(&m_fillHoles)->default_value(0), "Maximum size for hole filling")
-        ("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the n smallest not connected surfaces")
+        ("rda", value<int>(&m_rda)->default_value(0), "Remove dangling artifacts, i.e. remove the clusters with less than n triangles")
         ("pnt", value<float>(&m_planeNormalThreshold)->default_value(0.85), "(Plane Normal Threshold) Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
         ("smallRegionThreshold", value<int>(&m_smallRegionThreshold)->default_value(10), "Threshold for small region removal. If 0 nothing will be deleted.")
         ("writeClassificationResult,w", "Write classification results to file 'clusters.clu'")
@@ -92,7 +92,7 @@ Options::Options(int argc, char** argv)
         ("texMaxClusterSize", value<int>(&m_texMaxClusterSize)->default_value(0), "Maximum number of faces of a cluster to create a texture from (0 = no limit)")
         ("textureAnalysis", "Enable texture analysis features for texture matchung.")
         ("texelSize", value<float>(&m_texelSize)->default_value(1), "Texel size that determines texture resolution.")
-        ("classifier", value<string>(&m_classifier)->default_value("PlaneSimpsons"),"Classfier object used to color the mesh.")
+        ("classifier", value<string>(&m_classifier)->default_value("GREY"),"Classfier object used to color the mesh. Possible values: GREY, SIMPSONS, JET, HOT, HSV, SHSV, WHITE, BLACK")
         ("recalcNormals,r", "Always estimate normals, even if given in .ply file.")
         ("threads", value<int>(&m_numThreads)->default_value( lvr2::OpenMPConfig::getNumThreads() ), "Number of threads")
         ("sft", value<float>(&m_sft)->default_value(0.9), "Sharp feature threshold when using sharp feature decomposition")
@@ -113,8 +113,20 @@ Options::Options(int argc, char** argv)
         ("useGPU", "GPU normal estimation")
         ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint --flipPoint x y z" )
         ("texFromImages,q", "Foo Bar ............")
+        ("scanPositionIndex", value<int>(&m_scanPositionIndex),"Index of the h5 Scan Position used for the reconstructor")
+        ("minSpectralChannel", value<int>(&m_minSpectralChannel)->default_value(0), "Minimum Spectral Channel Index for Ranged Texture Generation")
+        ("maxSpectralChannel", value<int>(&m_maxSpectralChannel)->default_value(0), "Maximum Spectral Channel Index for Ranged Texture Generation")
         ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
-    ;
+        ("transformScanPosition", "Transform the scan with the scanpositions pose when using --scanPositionIndex")
+        ("outputMeshName", value<string>(&m_meshName)->default_value("default"), "The name of the saved mesh")
+        ("inputMeshName", value<string>(&m_inputMeshName), "The name of the mesh to load from the file")
+        ("inputMeshFile", value<string>(&m_inputMeshFile), "The file to load the mesh from")
+        ("reduceScan", value<float>(&m_octreeVoxelSize)->default_value(0.0f), "Use Octree reduction algorithm with the given gridsize when after loading the scans")
+        ("reduceScanMinPoints", value<size_t>(&m_octreeMinPoints)->default_value(1), "The number of points an octree voxel has to contain to be considered occupied")
+#ifdef LVR2_USE_EMBREE
+        ("useRaycastingTexturizer", "If this flag is set the RaycastingTexturizer is used. This uses raycasting for occlusion testing when generating the textures.")
+#endif
+   ;
 
     setup();
 }
@@ -469,9 +481,69 @@ bool Options::texturesFromImages() const
     return m_variables.count("texFromImages");
 }
 
+bool Options::hasScanPositionIndex() const
+{
+    return m_variables.count("scanPositionIndex");
+}
+
+int Options::getScanPositionIndex() const
+{
+    return m_scanPositionIndex;
+}
+
+int Options::getMinSpectralChannel() const
+{
+    return m_minSpectralChannel;
+}
+
+int Options::getMaxSpectralChannel() const
+{
+    return m_maxSpectralChannel;
+}
+
 string Options::getProjectDir() const
 {
     return m_variables["projectDir"].as<string>();
+}
+
+std::string Options::getMeshName() const
+{
+    return m_meshName;
+}
+
+bool Options::transformScanPosition() const
+{
+    return m_variables.count("transformScanPosition");
+}
+
+bool Options::useExistingMesh() const
+{
+    return m_variables.count("inputMeshName");
+}
+
+string Options::getInputMeshName() const
+{
+    return m_inputMeshName;
+}
+
+string Options::getInputMeshFile() const
+{
+    return m_inputMeshFile;
+}
+
+float Options::getOctreeVoxelSize() const
+{
+    return m_octreeVoxelSize;
+}
+
+size_t Options::getOctreeMinPoints() const
+{
+    return m_octreeMinPoints;
+}
+
+bool Options::useRaycastingTexturizer() const
+{
+    return m_variables.count("useRaycastingTexturizer");
 }
 
 Options::~Options() {

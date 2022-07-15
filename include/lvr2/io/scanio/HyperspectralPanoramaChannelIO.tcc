@@ -1,6 +1,9 @@
 
 namespace lvr2 {
 
+namespace scanio
+{
+
 template <typename Derived>
 void HyperspectralPanoramaChannelIO<Derived>::save(
     const size_t& scanPosNo, 
@@ -9,7 +12,7 @@ void HyperspectralPanoramaChannelIO<Derived>::save(
     const size_t& channelId,
     HyperspectralPanoramaChannelPtr hchannel) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->hyperspectralPanoramaChannel(scanPosNo, hCamNo, hPanoNo, channelId);
 
     // std::cout << "[HyperspectralPanoramaChannelIO - save]" << std::endl;
@@ -28,7 +31,7 @@ void HyperspectralPanoramaChannelIO<Derived>::save(
     {
         YAML::Node node;
         node = *hchannel;
-        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
+        m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 }
 
@@ -41,7 +44,7 @@ HyperspectralPanoramaChannelPtr HyperspectralPanoramaChannelIO<Derived>::load(
 {
     HyperspectralPanoramaChannelPtr ret;
 
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
 
     Description d = Dgen->hyperspectralPanoramaChannel(scanPosNo, hCamNo, hPanoNo, channelId);
 
@@ -54,7 +57,7 @@ HyperspectralPanoramaChannelPtr HyperspectralPanoramaChannelIO<Derived>::load(
     }
 
     // check if group exists
-    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
@@ -63,7 +66,7 @@ HyperspectralPanoramaChannelPtr HyperspectralPanoramaChannelIO<Derived>::load(
     if(d.meta)
     {
         YAML::Node meta;
-        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
@@ -71,23 +74,11 @@ HyperspectralPanoramaChannelPtr HyperspectralPanoramaChannelIO<Derived>::load(
     } else {
         
         // no meta name specified but scan position is there: 
-        ret.reset(new HyperspectralPanoramaChannel);
+        ret = std::make_shared<HyperspectralPanoramaChannel>();
     }
     
-    /// DATA
-    if(m_featureBase->m_kernel->exists(*d.dataRoot, *d.data))
-    {
-        auto img = m_imageIO->load(*d.dataRoot, *d.data);
-        if(img)
-        {
-            ret->channel = *img;
-        } else {
-            ret.reset();
-        }
-    } else {
-        ret.reset();
-    }
-    
+    ret->channel = *m_imageIO->load(*d.dataRoot, *d.data);
+
     return ret;
 }
 
@@ -98,9 +89,11 @@ boost::optional<YAML::Node> HyperspectralPanoramaChannelIO<Derived>::loadMeta(
     const size_t& hPanoNo,
     const size_t& channelId) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->hyperspectralPanoramaChannel(scanPosNo, hCamNo, hPanoNo, channelId);
     return m_metaIO->load(d);
 }
+
+} // namespace scanio
 
 } // namespace lvr2

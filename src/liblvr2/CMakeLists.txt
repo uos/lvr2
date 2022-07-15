@@ -31,7 +31,6 @@ set(LVR2_SOURCES
     display/PointCloud.cpp
     display/InteractivePointCloud.cpp
     display/CoordinateAxes.cpp
-    display/ColorMap.cpp
     display/GlTexture.cpp
     display/PointCorrespondences.cpp
     # display/Arrow.cpp
@@ -39,43 +38,41 @@ set(LVR2_SOURCES
     display/MeshCluster.cpp
     geometry/pmp/SurfaceMesh.cpp
     geometry/pmp/SurfaceMeshIO.cpp
-    io/baseio/AsciiIO.cpp
-    io/baseio/BaseIO.cpp
-    io/baseio/ObjIO.cpp
-    io/baseio/DatIO.cpp
-    io/baseio/LasIO.cpp
-    io/baseio/GeoTIFFIO.cpp
+    geometry/SoilAssistField.cpp
+    geometry/SoilAssistSubField.cpp
+    io/baseio/yaml/Matrix.cpp
+    io/modelio/AsciiIO.cpp
+    io/modelio/ModelIOBase.cpp
+    io/modelio/ObjIO.cpp
+    io/modelio/DatIO.cpp
+    io/modelio/LasIO.cpp
+    io/modelio/GeoTIFFIO.cpp
 #    io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp
-    io/baseio/PPMIO.cpp
-    io/baseio/PLYIO.cpp
-    io/baseio/STLIO.cpp
-    io/baseio/UosIO.cpp
-    io/baseio/PCDIO.cpp
-    io/MeshBuffer.cpp
+    io/modelio/PPMIO.cpp
+    io/modelio/PLYIO.cpp
+    io/modelio/STLIO.cpp
+    io/modelio/UosIO.cpp
+    io/modelio/PCDIO.cpp
+    io/kernels/DirectoryKernel.cpp
+    io/kernels/HDF5Kernel.cpp
     io/LineReader.cpp
     # io/HDF5IO.cpp
     io/GridIO.cpp
-    io/Polygon.cpp
-    io/SoilAssistField.cpp
-    io/SoilAssistSubField.cpp
-    io/PointBuffer.cpp
-    io/Polygon.cpp
     io/ModelFactory.cpp
     # io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
-    io/scanio/yaml/Matrix.cpp
-    io/scanio/ScanProjectSchemaRaw.cpp
-    io/scanio/ScanProjectSchemaSlam6D.cpp
-    # io/scanio/ScanProjectSchemaSLAM.cpp
-    # io/scanio/ScanProjectSchemaHyperlib.cpp
-    io/scanio/ScanProjectSchemaHDF5.cpp
+    io/schema/ScanProjectSchemaRaw.cpp
+    io/schema/ScanProjectSchemaSlam6D.cpp
+    io/schema/ScanProjectSchema.cpp
+    io/schema/MeshSchemaDirectory.cpp
+    io/schema/MeshSchemaHDF5.cpp
+    # io/schema/ScanProjectSchemaSLAM.cpp
+    # io/schema/ScanProjectSchemaHyperlib.cpp
+    io/schema/ScanProjectSchemaHDF5.cpp
     # io/scanio/LabelScanProjectSchemaHDF5V2.cpp
-    io/scanio/DirectoryKernel.cpp
     io/scanio/DirectoryDataIO.cpp
     io/scanio/MetaFormatFactory.cpp
-    io/scanio/ScanProjectSchema.cpp
-    io/scanio/HDF5Kernel.cpp
     # io/scanio/HDF5MetaDescriptionV2.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
@@ -90,8 +87,12 @@ set(LVR2_SOURCES
     registration/OctreeReduction.cpp
     registration/RegistrationPipeline.cpp
     types/CustomChannelTypes.cpp
+    types/MeshBuffer.cpp
+    types/PolygonBuffer.cpp
+    types/PointBuffer.cpp
     texture/Texture.cpp
     texture/TextureFactory.cpp
+    util/ColorGradient.cpp
     util/CoordinateTransform.cpp
     util/Hdf5Util.cpp
     util/IOUtils.cpp
@@ -197,10 +198,9 @@ target_link_libraries(
 # Build shared library
 #####################################################################################
 
-if( NOT MSVC )
-  message(STATUS "Building shared library")
-  add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
-  target_link_libraries(
+message(STATUS "Building shared library")
+ add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
+ target_link_libraries(
     lvr2 
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
     ${LVR2_LIB_DEPENDENCIES})
@@ -210,7 +210,7 @@ install(TARGETS lvr2_static lvr2
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-endif( NOT MSVC)
+
 
 #####################################################################################
 # CUDA

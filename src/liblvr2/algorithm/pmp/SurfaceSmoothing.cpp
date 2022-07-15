@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceSmoothing.h"
 
@@ -183,7 +183,7 @@ void SurfaceSmoothing::implicit_smoothing(Scalar timestep,
         v = free_vertices[i];
 
         // rhs row
-        b = static_cast<dvec3>(points[v]) / vweight[v];
+        b = points[v].cast<double>() / vweight[v];
 
         // lhs row
         ww = 0.0;
@@ -196,7 +196,7 @@ void SurfaceSmoothing::implicit_smoothing(Scalar timestep,
             // fixed boundary vertex -> right hand side
             if (mesh_.is_boundary(vv))
             {
-                b -= -timestep * eweight[e] * static_cast<dvec3>(points[vv]);
+                b -= -timestep * eweight[e] * points[vv].cast<double>();
             }
             // free interior vertex -> matrix
             else
@@ -229,7 +229,7 @@ void SurfaceSmoothing::implicit_smoothing(Scalar timestep,
         // copy solution
         for (unsigned int i = 0; i < n; ++i)
         {
-            points[free_vertices[i]] = X.row(i);
+            points[free_vertices[i]] = X.row(i).cast<Scalar>();
         }
     }
 

@@ -1,10 +1,12 @@
 namespace lvr2
 {
-
-template <typename FeatureBase>
-void LabelScanProjectIO<FeatureBase>::saveLabelScanProject(const LabeledScanProjectEditMarkPtr& labelScanProjectPtr)
+namespace scanio
 {
-    Description d = m_featureBase->m_description->scanProject();
+
+template <typename BaseIO>
+void LabelScanProjectIO<BaseIO>::saveLabelScanProject(const LabeledScanProjectEditMarkPtr& labelScanProjectPtr)
+{
+    Description d = m_baseIO->m_description->scanProject();
 
     // Default names
     std::string group = "";
@@ -25,8 +27,8 @@ void LabelScanProjectIO<FeatureBase>::saveLabelScanProject(const LabeledScanProj
     }
 }
 
-template <typename FeatureBase>
-LabeledScanProjectEditMarkPtr LabelScanProjectIO<FeatureBase>::loadLabelScanProject()
+template <typename BaseIO>
+LabeledScanProjectEditMarkPtr LabelScanProjectIO<BaseIO>::loadLabelScanProject()
 {
     LabeledScanProjectEditMarkPtr ret(new LabeledScanProjectEditMark);
 
@@ -35,17 +37,19 @@ LabeledScanProjectEditMarkPtr LabelScanProjectIO<FeatureBase>::loadLabelScanProj
     
     editMarkPtr->project = m_scanProjectIO->loadScanProject();
     std::string pointCloud("/pointCloud");
-    if (m_featureBase->m_kernel->exists(pointCloud))
+    if (m_baseIO->m_kernel->exists(pointCloud))
     {
         std::cout << "[LabelScanProjectIO] Load Labeles" << std::endl;
         ret->labelRoot = m_labelIO->loadLabels(pointCloud);;
     }
     return ret;
 }
-template <typename FeatureBase>
-ScanProjectPtr LabelScanProjectIO<FeatureBase>::loadScanProject()
+template <typename BaseIO>
+ScanProjectPtr LabelScanProjectIO<BaseIO>::loadScanProject()
 {
     return m_scanProjectIO->loadScanProject();
 }
+
+} // scanio
 
 } // namespace lvr2

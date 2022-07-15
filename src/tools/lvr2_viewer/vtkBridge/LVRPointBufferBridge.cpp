@@ -66,7 +66,7 @@ LVRPointBufferBridge::LVRPointBufferBridge(PointBufferPtr pointCloud)
     m_useNDVI = false;
     m_useNormalizedGradient = false;
     m_spectralGradientChannel = 0;
-    m_spectralGradient = HOT; // default gradientype: HOT
+    m_spectralGradient = ColorGradient::HOT; // default gradientype: HOT
 
     m_numPoints = 0;
     m_hasNormals = false;
@@ -123,6 +123,10 @@ void LVRPointBufferBridge::refreshSpectralChannel()
     size_t n_channels;
     ucharArr spec = m_pointBuffer->getUCharArray("spectral_channels", n, n_channels);
 
+    if(!spec) {
+        spec = m_pointBuffer->getUCharArray("spectral", n, n_channels);
+    }
+
     // check if we have spectral data
     if (!spec)
     {
@@ -162,7 +166,7 @@ void LVRPointBufferBridge::getSpectralChannels(color<size_t> &channels, color<bo
     use_channel = m_useSpectralChannel;
 }
 
-void LVRPointBufferBridge::setSpectralColorGradient(GradientType gradient, size_t channel, bool normalized, bool useNDVI)
+void LVRPointBufferBridge::setSpectralColorGradient(ColorGradient::GradientType gradient, size_t channel, bool normalized, bool useNDVI)
 {
     // do not update if nothing has changed
     if (m_spectralGradient == gradient && m_spectralGradientChannel == channel
@@ -186,6 +190,10 @@ void LVRPointBufferBridge::refreshSpectralGradient()
     size_t n;
     size_t n_channels;
     ucharArr spec = m_pointBuffer->getUCharArray("spectral_channels", n, n_channels);
+
+    if (!spec) {
+        spec = m_pointBuffer->getUCharArray("spectral", n, n_channels);
+    }
 
     // check if we have spectral data
     if (!spec)
@@ -279,14 +287,14 @@ void LVRPointBufferBridge::refreshSpectralGradient()
     }
 
     // Colormap is used to calculate gradients
-    ColorMap colorMap(max - min);
+    ColorGradient colorMap(max - min);
 
     // update all colors
 	#pragma omp parallel for
     for (int i = 0; i < n; i++)
     {
         int specIndex = n_channels * i;
-        float color[3];
+        RGBFColor color;
 
         // get gradient colors
         if (m_useNDVI)
@@ -314,7 +322,7 @@ void LVRPointBufferBridge::refreshSpectralGradient()
     m_pointCloudActor->GetMapper()->GetInput()->GetPointData()->SetScalars(scalars);
 }
 
-void LVRPointBufferBridge::getSpectralColorGradient(GradientType &gradient, size_t &channel, bool &normalized, bool &useNDVI) const
+void LVRPointBufferBridge::getSpectralColorGradient(ColorGradient::GradientType &gradient, size_t &channel, bool &normalized, bool &useNDVI) const
 {
     gradient = m_spectralGradient;
     channel = m_spectralGradientChannel;

@@ -35,7 +35,7 @@
 #ifndef COORDINATETRANSFORM_HPP_
 #define COORDINATETRANSFORM_HPP_
 
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 
 namespace lvr2
 {

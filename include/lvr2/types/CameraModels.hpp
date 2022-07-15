@@ -5,10 +5,12 @@
 #include <string>
 #include <memory>
 #include "MatrixTypes.hpp"
+#include "lvr2/util/Panic.hpp"
 
-namespace lvr2 {
+namespace lvr2
+{
 
-/**
+    /**
  * @brief Interface for all CameraModels e.g. projection Models
  * 
  * Could be used to interface functions like 
@@ -17,85 +19,105 @@ namespace lvr2 {
  * - etc
  * 
  */
-struct CameraModel 
-{
-    static constexpr char           entity[] = "model";
-    // /**
-    //  * @brief Project point from camera coordinate system (3D) onto image coordinate system (2D)
-    //  * 
-    //  * @param p 
-    //  * @return Eigen::Vector2d 
-    //  */
-    // virtual Eigen::Vector2d projectPoint(const Eigen::Vector3d& P) const 
-    // {
-    //     Eigen::Vector2d pixel;
-    //     return pixel;
-    // }
-};
+    struct CameraModel
+    {
+        static constexpr char entity[] = "model";
+        /**
+         * @brief Project point from camera coordinate system (3D) onto image coordinate system (2D)
+         *
+         * @param p
+         * @return Eigen::Vector2d
+         */
+        virtual Eigen::Vector2f projectPoint(const Eigen::Vector3f& P) const
+        {
+            panic_unimplemented("[CameraModel] projectPoint() needs to be overriden by subclass");
+            Eigen::Vector2f pixel;
+            return pixel;
+        }
+    };
 
-struct PinholeModel : CameraModel
-{
-    static constexpr char           type[] = "pinhole";
+    struct PinholeModel : CameraModel
+    {
+        static constexpr char type[] = "pinhole";
 
-    double fx = 0;
-    double fy = 0;
-    double cx = 0;
-    double cy = 0;
-    unsigned width = 0;
-    unsigned height = 0;
-    
-    /// Distortion
-    std::vector<double> distortionCoefficients;
-    std::string distortionModel = "opencv";
-};
+        double fx = 0;
+        double fy = 0;
+        double cx = 0;
+        double cy = 0;
+        unsigned width = 0;
+        unsigned height = 0;
 
-using PinholeModelPtr = std::shared_ptr<PinholeModel>;
-using PinholeModelOptional = boost::optional<PinholeModel>;
+        /// Distortion
+        std::vector<double> distortionCoefficients;
+        std::string distortionModel = "opencv";
 
-struct CylindricalModel : CameraModel 
-{
-    static constexpr char           type[] = "cylindrical";
+        Eigen::Vector2f projectPoint(const Eigen::Vector3f& p) const override
+        {
+            Eigen::Matrix3f camMat = Eigen::Matrix3f::Zero();
+            camMat(0, 0) = fx;
+            camMat(0, 2) = cx;
+            camMat(1, 1) = fy;
+            camMat(1, 2) = cy;
+            camMat(2, 2) = 1;
 
-    /// Principal x, y
-    Vector2d                        principal;
+            // double u = fx * p.x() + cx * p.z();
+            // double v = fy * p.y() + cy * p.z();
+            // u /= p.z();
+            // v /= p.z();
+            Eigen::Vector3f proj = camMat * p;
+            // TODO: distort or not?
+            return Eigen::Vector2f(proj.x() / proj.z(), proj.y() / proj.z());
+        };
+    };
 
-    /// Focal Length fx, fy
-    Vector2d                        focalLength;
+    using PinholeModelPtr = std::shared_ptr<PinholeModel>;
+    using PinholeModelOptional = boost::optional<PinholeModel>;
 
-    /// FoV
-    Vector2d                        fov;
+    struct CylindricalModel : CameraModel
+    {
+        static constexpr char type[] = "cylindrical";
 
-    /// Distortion
-    std::vector<double>             distortionCoefficients;
-    std::string                     distortionModel = "schneider_maass";
-};
+        /// Principal x, y
+        std::vector<double> principal;
 
-using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;
-using CylindricalModelOptional = boost::optional<CylindricalModel>;
+        /// Focal Length fx, fy
+        std::vector<double> focalLength;
 
-struct SphericalModel : CameraModel {
-    static constexpr char           type[] = "spherical";
+        /// FoV
+        std::vector<double> fov;
 
-    /// Phi: min, max, inc
-    double                          phi[3] = {0.0, 0.0, 0.0};
+        /// Distortion
+        std::vector<double> distortionCoefficients;
+        std::string distortionModel = "schneider_maass";
+        std::vector<double> distortion;
+    };
 
-    /// Theta: min, max, inc
-    double                          theta[3] = {0.0, 0.0, 0.0};
+    using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;
+    using CylindricalModelOptional = boost::optional<CylindricalModel>;
 
-    /// Range: min, max, inc
-    double                          range[3] = {0.0, 0.0, 0.0};
+    struct SphericalModel : CameraModel
+    {
+        static constexpr char type[] = "spherical";
 
-    /// Principal x, y, z
-    Vector3d                        principal = Vector3d(0.0, 0.0, 0.0);
+        /// Phi: min, max, inc
+        double phi[3] = {0.0, 0.0, 0.0};
 
-    /// Distortion
-    std::vector<double>             distortionCoefficients;
-    std::string                     distortionModel = "unknown";
-};
+        /// Theta: min, max, inc
+        double theta[3] = {0.0, 0.0, 0.0};
 
-using SphericalModelPtr = std::shared_ptr<SphericalModel>;
-using SphericalModelOptional = boost::optional<SphericalModel>;
+        /// Range: min, max, inc
+        double range[3] = {0.0, 0.0, 0.0};
 
+        /// Principal x, y, z
+        Vector3d principal = Vector3d(0.0, 0.0, 0.0);
+
+        /// Distortion
+        std::vector<double> distortionCoefficients;
+        std::string distortionModel = "unknown";
+    };
+
+    using SphericalModelPtr = std::shared_ptr<SphericalModel>;
+    using SphericalModelOptional = boost::optional<SphericalModel>;
 
 } // namespace lvr2
 

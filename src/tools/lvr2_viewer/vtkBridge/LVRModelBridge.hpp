@@ -34,7 +34,7 @@
 #ifndef LVRMODEL_HPP_
 #define LVRMODEL_HPP_
 
-#include "lvr2/io/Model.hpp"
+#include "lvr2/types/Model.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
@@ -90,6 +90,11 @@ public:
      * @brief       Removes the generated actors from the given renderer
      */
     void        removeActors(vtkSmartPointer<vtkRenderer> renderer);
+    
+    /**
+     * @brief       Removes the TexturedActors from the given renderer
+     */
+    void        removeTexturedActors(vtkSmartPointer<vtkRenderer> renderer);
 
     void        setPose(const Pose& pose);
     void        setTransform(const Transformd& transform);

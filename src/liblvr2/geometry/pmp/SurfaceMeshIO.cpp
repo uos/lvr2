@@ -1,6 +1,6 @@
 // Copyright 2011-2021 the Polygon Mesh Processing Library developers.
 // Copyright 2001-2005 by Computer Graphics Group, RWTH Aachen
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/geometry/pmp/SurfaceMeshIO.h"
 
@@ -12,6 +12,8 @@
 #include <limits>
 
 #include <rply.h>
+
+#include "lvr2/util/Hdf5Util.hpp"
 
 // helper function
 template <typename T>
@@ -43,7 +45,7 @@ void SurfaceMeshIO::read(SurfaceMesh& mesh)
     if (dot == std::string::npos)
         throw IOException("Could not determine file extension!");
     std::string ext = filename_.substr(dot + 1, filename_.length() - dot - 1);
-    std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+    std::transform(ext.begin(), ext.end(), ext.begin(), [](char c) { return std::tolower(c); });
 
     // extension determines reader
     if (ext == "off")
@@ -73,7 +75,7 @@ void SurfaceMeshIO::write(const SurfaceMesh& mesh)
     if (dot == std::string::npos)
         throw IOException("Could not determine file extension!");
     std::string ext = filename_.substr(dot + 1, filename_.length() - dot - 1);
-    std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+    std::transform(ext.begin(), ext.end(), ext.begin(), [](char c) { return std::tolower(c); });
 
     // extension determines reader
     if (ext == "off")
@@ -749,6 +751,53 @@ void SurfaceMeshIO::read_pmp(SurfaceMesh& mesh)
     fclose(in);
 }
 
+template<typename T>
+void read_vprop(const HighFive::Group& group, SurfaceMesh& mesh, const std::string& name)
+{
+    if (group.exist(name)) group.getDataSet(name).read((char*)mesh.vertex_property<T>(name).data());
+}
+template<typename T>
+void read_eprop(const HighFive::Group& group, SurfaceMesh& mesh, const std::string& name)
+{
+    if (group.exist(name)) group.getDataSet(name).read((char*)mesh.edge_property<T>(name).data());
+}
+template<typename T>
+void read_hprop(const HighFive::Group& group, SurfaceMesh& mesh, const std::string& name)
+{
+    if (group.exist(name)) group.getDataSet(name).read((char*)mesh.halfedge_property<T>(name).data());
+}
+template<typename T>
+void read_fprop(const HighFive::Group& group, SurfaceMesh& mesh, const std::string& name)
+{
+    if (group.exist(name)) group.getDataSet(name).read((char*)mesh.face_property<T>(name).data());
+}
+
+void SurfaceMeshIO::read_hdf5(const HighFive::Group& group, SurfaceMesh& mesh)
+{
+    auto vn = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_vertices").get();
+    auto en = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_edges").get();
+    auto fn = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_faces").get();
+    mesh.vprops_.resize(vn);
+    mesh.eprops_.resize(en);
+    mesh.hprops_.resize(en * 2);
+    mesh.fprops_.resize(fn);
+
+    read_vprop<SurfaceMesh::VertexConnectivity>(group, mesh, "v:connectivity");
+    read_hprop<SurfaceMesh::HalfedgeConnectivity>(group, mesh, "h:connectivity");
+    read_fprop<SurfaceMesh::FaceConnectivity>(group, mesh, "f:connectivity");
+
+    read_vprop<Point>(group, mesh, "v:point");
+
+    read_vprop<Normal>(group, mesh, "v:normal");
+    read_fprop<Normal>(group, mesh, "f:normal");
+
+    read_vprop<Color>(group, mesh, "v:color");
+    read_fprop<Color>(group, mesh, "f:color");
+
+    read_vprop<TexCoord>(group, mesh, "v:tex");
+    read_hprop<TexCoord>(group, mesh, "h:tex");
+}
+
 void SurfaceMeshIO::read_xyz(SurfaceMesh& mesh)
 {
     // open file (in ASCII mode)
@@ -862,6 +911,59 @@ void SurfaceMeshIO::write_pmp(const SurfaceMesh& mesh)
 
     fclose(out);
 }
+
+template<typename T>
+void write_prop(HighFive::Group& group, const Property<T>& prop, size_t n, const std::string& name)
+{
+    if (prop)
+    {
+        std::vector<size_t> dims = { n * sizeof(T) };
+        HighFive::DataSpace dataSpace(dims);
+        HighFive::DataSetCreateProps properties;
+        group.createDataSet<char>(name, dataSpace, properties).write_raw((char*)prop.data());
+    }
+}
+template<typename T>
+void write_vprop(HighFive::Group& group, const SurfaceMesh& mesh, const std::string& name)
+{ write_prop(group, mesh.get_vertex_property<T>(name), mesh.n_vertices(), name); }
+template<typename T>
+void write_eprop(HighFive::Group& group, const SurfaceMesh& mesh, const std::string& name)
+{ write_prop(group, mesh.get_edge_property<T>(name), mesh.n_edges(), name); }
+template<typename T>
+void write_hprop(HighFive::Group& group, const SurfaceMesh& mesh, const std::string& name)
+{ write_prop(group, mesh.get_halfedge_property<T>(name), mesh.n_halfedges(), name); }
+template<typename T>
+void write_fprop(HighFive::Group& group, const SurfaceMesh& mesh, const std::string& name)
+{ write_prop(group, mesh.get_face_property<T>(name), mesh.n_faces(), name); }
+
+void SurfaceMeshIO::write_hdf5(HighFive::Group& group, const SurfaceMesh& mesh)
+{
+    if (mesh.has_garbage())
+        throw IOException("Cannot write mesh with garbage");
+
+    lvr2::hdf5util::setAttribute(group, "n_vertices", (uint64_t)mesh.n_vertices());
+    lvr2::hdf5util::setAttribute(group, "n_edges", (uint64_t)mesh.n_edges());
+    lvr2::hdf5util::setAttribute(group, "n_faces", (uint64_t)mesh.n_faces());
+
+    uint8_t version = 2;
+    lvr2::hdf5util::setAttribute(group, "version", version);
+
+    write_vprop<SurfaceMesh::VertexConnectivity>(group, mesh, "v:connectivity");
+    write_hprop<SurfaceMesh::HalfedgeConnectivity>(group, mesh, "h:connectivity");
+    write_fprop<SurfaceMesh::FaceConnectivity>(group, mesh, "f:connectivity");
+
+    write_vprop<Point>(group, mesh, "v:point");
+
+    write_vprop<Normal>(group, mesh, "v:normal");
+    write_fprop<Normal>(group, mesh, "f:normal");
+
+    write_vprop<Color>(group, mesh, "v:color");
+    write_fprop<Color>(group, mesh, "f:color");
+
+    write_vprop<TexCoord>(group, mesh, "v:tex");
+    write_hprop<TexCoord>(group, mesh, "h:tex");
+}
+
 
 // helper to assemble vertex data
 static int vertexCallback(p_ply_argument argument)

@@ -15,9 +15,10 @@ set(LVR2_CHUNKING_SERVER_SOURCES
 #####################################################################################
 
 set(LVR2_CHUNKING_SERVER_DEPENDENCIES
-    lvr2_static
+    lvr2
     lvr2las_static
     lvr2rply_static
+    TBB::tbb
     ${Boost_LIBRARIES}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )

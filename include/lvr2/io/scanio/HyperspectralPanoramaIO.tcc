@@ -1,5 +1,8 @@
 namespace lvr2 {
 
+namespace scanio
+{
+
 template <typename Derived>
 void HyperspectralPanoramaIO<Derived>::save(
     const size_t& scanPosNo, 
@@ -7,7 +10,7 @@ void HyperspectralPanoramaIO<Derived>::save(
     const size_t& hPanoNo,
     HyperspectralPanoramaPtr pano) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->hyperspectralPanorama(scanPosNo, hCamNo, hPanoNo);
 
     // std::cout << "[HyperspectralPanoramaIO - save]" << std::endl;
@@ -34,7 +37,7 @@ void HyperspectralPanoramaIO<Derived>::save(
     {
         YAML::Node node;
         node = *pano;
-        m_featureBase->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
+        m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
     // store hyperspectral channels
 }
@@ -47,7 +50,7 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
 {
     HyperspectralPanoramaPtr ret;
 
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->hyperspectralPanorama(scanPosNo, hCamNo, hPanoNo);
 
     // std::cout << "[HyperspectralPanoramaIO - load]" << std::endl;
@@ -59,7 +62,7 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
     }
 
     // check if group exists
-    if(!m_featureBase->m_kernel->exists(*d.dataRoot))
+    if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
@@ -68,15 +71,17 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
     if(d.meta)
     {
         YAML::Node meta;
-        if(!m_featureBase->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
+
         ret = std::make_shared<HyperspectralPanorama>(meta.as<HyperspectralPanorama>());
+        ret->model = meta["camera_model"].as<CylindricalModel>();
     } else {
         
         // no meta name specified but scan position is there: 
-        ret.reset(new HyperspectralPanorama);
+        ret = std::make_shared<HyperspectralPanorama>();
     }
 
     /// Preview
@@ -89,21 +94,22 @@ HyperspectralPanoramaPtr HyperspectralPanoramaIO<Derived>::load(
 
     /// DATA
 
-    // Load Hyperspectral Channels
-    size_t channelNo = 0;
-    while(true)
+    // Load Hyperspectral Frame
+    HyperspectralPanoramaChannelPtr hchannel = m_hyperspectralPanoramaChannelIO->load(scanPosNo, hCamNo, hPanoNo, 0);
+
+    // hchannel contains matrix of whole spectral area 
+    cv::Mat channels[hchannel->channel.channels()];
+
+    // split hchannel into channels
+    cv::split(hchannel->channel, channels);
+
+    for(int i = 0; i < hchannel->channel.channels(); i++)
     {
-        HyperspectralPanoramaChannelPtr hchannel = m_hyperspectralPanoramaChannelIO->load(scanPosNo, hCamNo, hPanoNo, channelNo);
-        if(hchannel)
-        {
-            ret->channels.push_back(hchannel);
-        } else {
-            break;
-        }
-        channelNo++;
+        auto newChannel = std::make_shared<HyperspectralPanoramaChannel>();
+        newChannel->channel = channels[i];
+        ret->channels.push_back(newChannel);
     }
-
-
+    ret->num_channels = hchannel->channel.channels();
     return ret;
 }
 
@@ -113,9 +119,11 @@ boost::optional<YAML::Node> HyperspectralPanoramaIO<Derived>::loadMeta(
     const size_t& hCamNo,
     const size_t& hPanoNo) const
 {
-    auto Dgen = m_featureBase->m_description;
+    auto Dgen = m_baseIO->m_description;
     Description d = Dgen->hyperspectralPanorama(scanPosNo, hCamNo, hPanoNo);
     return m_metaIO->load(d);
 }
+
+} // namespace scanio
 
 } // namespace lvr2

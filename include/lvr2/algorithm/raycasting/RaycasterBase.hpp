@@ -37,7 +37,7 @@
 #define LVR_RAYCASTER_BASE_HPP
 
 #include <memory>
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 
 #include "Intersection.hpp"

@@ -33,7 +33,7 @@
  */
 
 #include "lvr2/display/PointCloud.hpp"
-#include "lvr2/display/ColorMap.hpp"
+#include "lvr2/util/ColorGradient.hpp"
 
 #include <string.h>
 
@@ -88,7 +88,7 @@ void PointCloud::init(PointBufferPtr buffer)
 		ucharArr colors      = buffer->getColorArray(w_color);
 		floatArr intensities = buffer->getFloatArray("intensities", n_points, dummy);
 
-		ColorMap c_map(maxColors);
+		ColorGradient c_map(maxColors);
 
 		for(size_t i = 0; i < n_points; i++)
 		{
@@ -109,8 +109,8 @@ void PointCloud::init(PointBufferPtr buffer)
 			else if (intensities)
 			{
 				// Get intensity
-				float color[3];
-				c_map.getColor(color, (size_t)intensities[i], SHSV);
+				RGBFColor color;
+				c_map.getColor(color, (size_t)intensities[i], ColorGradient::SHSV);
 
 				r = (unsigned char)(color[0] * 255);
 				g = (unsigned char)(color[1] * 255);

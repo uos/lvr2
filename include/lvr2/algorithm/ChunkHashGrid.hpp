@@ -35,8 +35,8 @@
 #ifndef CHUNK_HASH_GRID_HPP
 #define CHUNK_HASH_GRID_HPP
 
-#include "lvr2/io/MeshBuffer.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/io/deprecated/hdf5/HDF5FeatureBase.hpp"
 #include "lvr2/io/deprecated/hdf5/ChunkIO.hpp"
 

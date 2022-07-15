@@ -1,34 +1,39 @@
 
 namespace lvr2 {
 
-template<typename FeatureBase>
-void ImageIO<FeatureBase>::save(std::string groupName,
+namespace scanio
+{
+
+template<typename BaseIO>
+void ImageIO<BaseIO>::save(std::string groupName,
     std::string datasetName,
     const cv::Mat& img) const
 {
-    m_featureBase->m_kernel->saveImage(groupName, datasetName, img);
+    m_baseIO->m_kernel->saveImage(groupName, datasetName, img);
 }
 
-template<typename FeatureBase>
-boost::optional<cv::Mat> ImageIO<FeatureBase>::load(std::string groupName,
+template<typename BaseIO>
+boost::optional<cv::Mat> ImageIO<BaseIO>::load(std::string groupName,
     std::string datasetName) const
 {
-    return m_featureBase->m_kernel->loadImage(groupName, datasetName);
+    return m_baseIO->m_kernel->loadImage(groupName, datasetName);
 }
 
-template<typename FeatureBase>
-void ImageIO<FeatureBase>::saveImage(std::string groupName,
+template<typename BaseIO>
+void ImageIO<BaseIO>::saveImage(std::string groupName,
     std::string datasetName,
     const cv::Mat& img) const
 {
     save(groupName, datasetName, img);
 }
 
-template<typename FeatureBase>
-boost::optional<cv::Mat> ImageIO<FeatureBase>::loadImage(std::string groupName,
+template<typename BaseIO>
+boost::optional<cv::Mat> ImageIO<BaseIO>::loadImage(std::string groupName,
     std::string datasetName) const
 {
     return load(groupName, datasetName);
 }
+
+} // namespace scanio
 
 } // namespace lvr2

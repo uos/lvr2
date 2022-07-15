@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #pragma once
 
@@ -13,7 +13,7 @@ const Vector<Scalar, 3> barycentric_coordinates(const Vector<Scalar, 3>& p,
                                                 const Vector<Scalar, 3>& v,
                                                 const Vector<Scalar, 3>& w)
 {
-    Vector<Scalar, 3> result(1.0 / 3.0); // default: barycenter
+    Vector<Scalar, 3> result(Vector<Scalar, 3>::Constant(1.0 / 3.0)); // default: barycenter
 
     Vector<Scalar, 3> vu = v - u, wu = w - u, pu = p - u;
 

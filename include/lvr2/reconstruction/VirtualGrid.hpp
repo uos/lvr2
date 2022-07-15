@@ -56,14 +56,14 @@ class VirtualGrid
      * @param voxelsize
      */
     VirtualGrid(BoundingBox<BaseVecT>& bb,
-                  size_t gridCellSize,
+                  float gridCellSize,
                   float voxelsize);
 
 
     /**
      * Destructor
      */
-    virtual ~VirtualGrid();
+    virtual ~VirtualGrid() = default;
 
     /**
      * Method to calculate the boxes/chunks covering the PointCloud-BB
@@ -108,7 +108,7 @@ class VirtualGrid
     std::vector<BoundingBox<BaseVecT>> m_boxes;
 
     // size of the "virtual" GridCell aka ChunkSize
-    size_t m_gridCellSize;
+    float m_gridCellSize;
 
     // voxelsize to verify the cellsize/chunksize
     float m_voxelsize;

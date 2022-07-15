@@ -58,13 +58,11 @@
 namespace lvr2
 {
 
-static void HandleError( cudaError_t err,
-                         const char *file,
-                         int line ) {
-    if (err != cudaSuccess) {
-        printf( "%s in %s at line %d\n", cudaGetErrorString( err ),
-                file, line );
-        exit( EXIT_FAILURE );
+static void HandleError(cudaError_t err, const char *file, int line)
+{
+    if (err != cudaSuccess)
+    {
+        throw std::runtime_error(std::string(cudaGetErrorString(err)) + " in " + file + " at line " + std::to_string(line));
     }
 }
 #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))

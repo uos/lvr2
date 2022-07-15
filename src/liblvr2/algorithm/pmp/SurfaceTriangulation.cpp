@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceTriangulation.h"
 
@@ -153,16 +153,16 @@ Scalar SurfaceTriangulation::compute_weight(int i, int j, int k) const
     {
         // compute squared triangle area
         case Objective::MIN_AREA:
-            w = sqrnorm(cross(pb - pa, pc - pa));
+            w = (pb - pa).cross(pc - pa).squaredNorm();
             break;
 
         // compute one over minimum angle
         // or cosine of minimum angle
         // maximum cosine (which should then be minimized)
         case Objective::MAX_ANGLE:
-            Scalar cosa = dot(normalize(pb - pa), normalize(pc - pa));
-            Scalar cosb = dot(normalize(pa - pb), normalize(pc - pb));
-            Scalar cosc = dot(normalize(pa - pc), normalize(pb - pc));
+            Scalar cosa = (pb - pa).normalized().dot((pc - pa).normalized());
+            Scalar cosb = (pa - pb).normalized().dot((pc - pb).normalized());
+            Scalar cosc = (pa - pc).normalized().dot((pb - pc).normalized());
             w = std::max(cosa, std::max(cosb, cosc));
             break;
     }

@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #pragma once
 
@@ -28,25 +28,25 @@ inline double clamp_cos(const double v)
 //! compute angle between two (un-normalized) vectors
 inline Scalar angle(const Point& v0, const Point& v1)
 {
-    return atan2(norm(cross(v0, v1)), dot(v0, v1));
+    return atan2(v0.cross(v1).norm(), v0.dot(v1));
 }
 
 //! compute sine of angle between two (un-normalized) vectors
 inline Scalar sin(const Point& v0, const Point& v1)
 {
-    return norm(cross(v0, v1)) / (norm(v0) * norm(v1));
+    return v0.cross(v1).norm() / (v0.norm() * v1.norm());
 }
 
 //! compute cosine of angle between two (un-normalized) vectors
 inline Scalar cos(const Point& v0, const Point& v1)
 {
-    return dot(v0, v1) / (norm(v0) * norm(v1));
+    return v0.dot(v1) / (v0.norm() * v1.norm());
 }
 
 //! compute cotangent of angle between two (un-normalized) vectors
 inline Scalar cotan(const Point& v0, const Point& v1)
 {
-    return clamp_cot(dot(v0, v1) / norm(cross(v0, v1)));
+    return clamp_cot(v0.dot(v1) / v0.cross(v1).norm());
 }
 
 //! compute area of a triangle given by three points

@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceGeodesic.h"
 
@@ -50,29 +50,29 @@ void SurfaceGeodesic::find_virtual_edges()
 
                 p0 = mesh_.position(vh0);
                 p1 = mesh_.position(vh1);
-                d0 = normalize(p0 - pp);
-                d1 = normalize(p1 - pp);
+                d0 = (p0 - pp).normalized();
+                d1 = (p1 - pp).normalized();
 
                 // obtuse angle ?
-                if (dot(d0, d1) < max_angle_cos)
+                if (d0.dot(d1) < max_angle_cos)
                 {
                     // compute angles
                     alpha = 0.5 * acos(std::min(
-                                      one, std::max(minus_one, dot(d0, d1))));
+                                      one, std::max(minus_one, d0.dot(d1))));
                     beta = max_angle - alpha;
                     tan_beta = tan(beta);
 
                     // coord system
-                    X = normalize(d0 + d1);
-                    Y = normalize(cross(cross(d0, d1), X));
+                    X = (d0 + d1).normalized();
+                    Y = d0.cross(d1).cross(X).normalized();
 
                     // 2D coords
                     d0 = p0 - pp;
                     d1 = p1 - pp;
-                    v0[0] = dot(d0, X);
-                    v0[1] = dot(d0, Y);
-                    v1[0] = dot(d1, X);
-                    v1[1] = dot(d1, Y);
+                    v0[0] = d0.dot(X);
+                    v0[1] = d0.dot(Y);
+                    v1[0] = d1.dot(X);
+                    v1[1] = d1.dot(Y);
 
                     start_vh0 = vh0;
                     start_vh1 = vh1;
@@ -88,18 +88,18 @@ void SurfaceGeodesic::find_virtual_edges()
                         d0 = (p1 - p0);
                         d1 = (pn - p0);
                         d = (v1 - v0);
-                        f = dot(d0, d1) / sqrnorm(d0);
+                        f = d0.dot(d1) / d0.squaredNorm();
                         p = p0 + f * d0;
                         v = v0 + f * d;
-                        d = normalize(vec2(d[1], -d[0]));
-                        vn = v + d * norm(p - pn);
+                        d = vec2(d[1], -d[0]).normalized();
+                        vn = v + d * (p - pn).norm();
 
                         // point in tolerance?
                         if ((fabs(vn[1]) / fabs(vn[0])) < tan_beta)
                         {
                             virtual_edges_.insert(
                                 std::pair<Halfedge, VirtualEdge>(
-                                    h, VirtualEdge(vhn, norm(vn))));
+                                    h, VirtualEdge(vhn, vn.norm())));
                             break;
                         }
 
@@ -196,8 +196,7 @@ unsigned int SurfaceGeodesic::init_front(const std::vector<Vertex>& seed,
     {
         for (auto vv : mesh_.vertices(v))
         {
-            const Scalar dist =
-                pmp::distance(mesh_.position(v), mesh_.position(vv));
+            const Scalar dist = (mesh_.position(v) - mesh_.position(vv)).norm();
             if (dist < distance_[vv])
             {
                 distance_[vv] = dist;
@@ -374,8 +373,8 @@ Scalar SurfaceGeodesic::distance(Vertex v0, Vertex v1, Vertex v2, Scalar r0,
         C = mesh_.position(v2);
         TA = distance_[v0];
         TB = distance_[v1];
-        a = r1 == std::numeric_limits<Scalar>::max() ? pmp::distance(B, C) : r1;
-        b = r0 == std::numeric_limits<Scalar>::max() ? pmp::distance(A, C) : r0;
+        a = r1 == std::numeric_limits<Scalar>::max() ? (B - C).norm() : r1;
+        b = r0 == std::numeric_limits<Scalar>::max() ? (A - C).norm() : r0;
     }
     else
     {
@@ -384,15 +383,15 @@ Scalar SurfaceGeodesic::distance(Vertex v0, Vertex v1, Vertex v2, Scalar r0,
         C = mesh_.position(v2);
         TA = distance_[v1];
         TB = distance_[v0];
-        a = r0 == std::numeric_limits<Scalar>::max() ? pmp::distance(B, C) : r0;
-        b = r1 == std::numeric_limits<Scalar>::max() ? pmp::distance(A, C) : r1;
+        a = r0 == std::numeric_limits<Scalar>::max() ? (B - C).norm() : r0;
+        b = r1 == std::numeric_limits<Scalar>::max() ? (A - C).norm() : r1;
     }
 
     // Dykstra: propagate along edges
     const double dykstra = std::min(TA + b, TB + a);
 
     // obtuse angle -> fall back to Dykstra
-    const double c = dot(normalize(A - C), normalize(B - C)); // cosine
+    const double c = (A - C).normalized().dot((B - C).normalized()); // cosine
     if (c < 0.0)
         return dykstra;
 

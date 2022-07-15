@@ -6,9 +6,8 @@
 
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
-#include "Matrix.hpp"
-#include "CameraModels.hpp"
-#include "lvr2/io/scanio/yaml/Util.hpp"
+#include "lvr2/io/YAML.hpp"
+#include "lvr2/util/YAMLUtil.hpp"
 
 namespace YAML {
 
@@ -48,7 +47,13 @@ struct convert<lvr2::Camera>
 
         if(node["name"])
         {
-            camera.name = node["name"].as<std::string>();
+            try {
+                camera.name = node["name"].as<std::string>();
+            } catch(const YAML::TypedBadConversion<std::string>& ex) {
+                std::cerr << "[YAML - Camera - decode] ERROR: Could not decode 'name': " 
+                    << node["name"] << " as string" << std::endl; 
+                return false;
+            }
         }
         else
         {
@@ -57,12 +62,24 @@ struct convert<lvr2::Camera>
 
         if(node["transformation"])
         {
-            camera.transformation = node["transformation"].as<lvr2::Transformd>();
+            try {
+                camera.transformation = node["transformation"].as<lvr2::Transformd>();
+            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
+                std::cerr << "[YAML - Camera - decode] ERROR: Could not decode 'transformation': " 
+                    << node["transformation"] << " as Transformd" << std::endl; 
+                return false;
+            }
         }
 
         if(node["model"])
         {
-            camera.model = node["model"].as<decltype(camera.model)>();
+            try {
+                camera.model = node["model"].as<decltype(camera.model)>();
+            } catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex) {
+                std::cerr << "[YAML - Camera - decode] ERROR: Could not decode 'model': " 
+                    << node["model"] << " as CameraModel" << std::endl; 
+                return false;
+            }
         }
 
         return true;

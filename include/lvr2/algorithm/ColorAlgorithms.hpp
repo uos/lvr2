@@ -43,15 +43,13 @@
 #include <boost/optional.hpp>
 
 
-
+#include "lvr2/types/ColorTypes.hpp"
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/attrmaps/AttrMaps.hpp"
 
 namespace lvr2
 {
-
-using Rgb8Color = std::array<uint8_t, 3>;
 
 /**
  * @brief   Calculates the color of each vertex from the point cloud
@@ -62,10 +60,10 @@ using Rgb8Color = std::array<uint8_t, 3>;
  * @param   mesh    The mesh
  * @param   surface The surface of the mesh
  *
- * @return  Optional of a DenseVertexMap with a Rgb8Color for each vertex
+ * @return  Optional of a DenseVertexMap with a RGB8Color for each vertex
  */
 template<typename BaseVecT>
-boost::optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
+boost::optional<DenseVertexMap<RGB8Color>> calcColorFromPointCloud(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurfacePtr<BaseVecT> surface
 );
@@ -81,7 +79,7 @@ boost::optional<DenseVertexMap<Rgb8Color>> calcColorFromPointCloud(
  *
  * @return  The 8-bit RGB-Color, interpreted as rainbowcolor.
  */
-static Rgb8Color floatToRainbowColor(float value);
+static RGB8Color floatToRainbowColor(float value);
 
 /**
  * @brief   Convert a given float to an 8-bit Grayscale-Color.
@@ -94,7 +92,7 @@ static Rgb8Color floatToRainbowColor(float value);
  *
  * @return  The 8-bit Grayscale-Color.
  */
-static Rgb8Color floatToGrayScaleColor(float value);
+static RGB8Color floatToGrayScaleColor(float value);
 
 /**
  * @brief    Calculate the color for the centroid of a given face
@@ -106,10 +104,10 @@ static Rgb8Color floatToGrayScaleColor(float value);
  * @param    surface  The surface of the mesh
  * @param    faceH    Face handle of the face
  *
- * @return   The Rgb8Color of the centroid
+ * @return   The RGB8Color of the centroid
  */
 template<typename BaseVecT>
-Rgb8Color calcColorForFaceCentroid(
+RGB8Color calcColorForFaceCentroid(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurface<BaseVecT>& surface,
     FaceHandle faceH

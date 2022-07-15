@@ -124,7 +124,7 @@ void ChannelIO<Derived>::save(HighFive::Group& g,
             );
 
             const T* ptr = channel.dataPtr().get();
-            dataset->write(ptr);
+            dataset->write_raw(ptr);
             m_file_access->m_hdf5_file->flush();
         } else {
             throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
@@ -193,7 +193,7 @@ bool ChannelIO<Derived>::addChannel(const std::string group, const std::string n
                 g, name, dataSpace, properties);
 
         const T* ptr = channel.dataPtr().get();
-        dataset->write(ptr);
+        dataset->write_raw(ptr);
         m_file_access->m_hdf5_file->flush();
         std::cout << timestamp << " Added attribute \"" << name << "\" to group \"" << group
                   << "\" to the given HDF5 file!" << std::endl;

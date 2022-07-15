@@ -37,7 +37,7 @@
 using std::unordered_map;
 
 #include "lvr2/algorithm/Materializer.hpp"
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 
@@ -49,12 +49,12 @@ template<typename BaseVecT>
 void writeDebugMesh(
     const BaseMesh<BaseVecT>& mesh,
     string filename,
-    Rgb8Color color
+    RGB8Color color
 )
 {
     // Generate color map
     // TODO: replace with better impl of attr map
-    DenseVertexMap<Rgb8Color> colorMap;
+    DenseVertexMap<RGB8Color> colorMap;
     colorMap.reserve(mesh.numVertices());
 
     for (auto vH: mesh.vertices())
@@ -104,12 +104,12 @@ void
 writeDebugContourMesh(
     const BaseMesh<BaseVecT>& mesh,
     string filename,
-    Rgb8Color connectedColor,
-    Rgb8Color contourColor,
-    Rgb8Color bugColor
+    RGB8Color connectedColor,
+    RGB8Color contourColor,
+    RGB8Color bugColor
 )
 {
-    DenseVertexMap<Rgb8Color> color_vertices(mesh.numVertices(), connectedColor);
+    DenseVertexMap<RGB8Color> color_vertices(mesh.numVertices(), connectedColor);
     for (auto eH: mesh.edges())
     {
         auto vertices = mesh.getVerticesOfEdge(eH);

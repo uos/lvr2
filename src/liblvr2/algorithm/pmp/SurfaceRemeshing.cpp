@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceRemeshing.h"
 
@@ -634,8 +634,8 @@ void SurfaceRemeshing::tangential_smoothing(unsigned int iterations)
             {
                 if (vfeature_[v])
                 {
-                    u = Point(0.0);
-                    t = Point(0.0);
+                    u.fill(0.0);
+                    t.fill(0.0);
                     ww = 0;
                     int c = 0;
 
@@ -649,20 +649,20 @@ void SurfaceRemeshing::tangential_smoothing(unsigned int iterations)
                             b += points_[vv];
                             b *= 0.5;
 
-                            w = distance(points_[v], points_[vv]) /
+                            w = (points_[v] - points_[vv]).norm() /
                                 (0.5 * (vsizing_[v] + vsizing_[vv]));
                             ww += w;
                             u += w * b;
 
                             if (c == 0)
                             {
-                                t += normalize(points_[vv] - points_[v]);
+                                t += (points_[vv] - points_[v]).normalized();
                                 ++c;
                             }
                             else
                             {
                                 ++c;
-                                t -= normalize(points_[vv] - points_[v]);
+                                t -= (points_[vv] - points_[v]).normalized();
                             }
                         }
                     }
@@ -671,8 +671,8 @@ void SurfaceRemeshing::tangential_smoothing(unsigned int iterations)
 
                     u *= (1.0 / ww);
                     u -= points_[v];
-                    t = normalize(t);
-                    u = t * dot(u, t);
+                    t.normalize();
+                    u = t * u.dot(t);
 
                     update[v] = u;
                 }
@@ -690,7 +690,7 @@ void SurfaceRemeshing::tangential_smoothing(unsigned int iterations)
                     u = p - mesh_.position(v);
 
                     n = vnormal_[v];
-                    u -= n * dot(u, n);
+                    u -= n * u.dot(n);
 
                     update[v] = u;
                 }
@@ -750,8 +750,8 @@ void SurfaceRemeshing::remove_caps()
             h = mesh_.next_halfedge(h);
             d = points_[vd = mesh_.to_vertex(h)];
 
-            a0 = dot(normalize(a - b), normalize(c - b));
-            a1 = dot(normalize(a - d), normalize(c - d));
+            a0 = (a - b).normalized().dot((c - b).normalized());
+            a1 = (a - d).normalized().dot((c - d).normalized());
 
             if (a0 < a1)
             {
@@ -784,8 +784,8 @@ void SurfaceRemeshing::remove_caps()
 
 Point SurfaceRemeshing::minimize_squared_areas(Vertex v)
 {
-    dmat3 A(0), D;
-    dvec3 b(0), d, p, q, x;
+    dmat3 A(dmat3::Constant(0)), D;
+    dvec3 b(dvec3::Constant(0)), d, p, q, x;
     double w;
 
     for (auto h : mesh_.halfedges(v))
@@ -795,10 +795,10 @@ Point SurfaceRemeshing::minimize_squared_areas(Vertex v)
         // get edge opposite to vertex v
         Vertex v0 = mesh_.to_vertex(h);
         Vertex v1 = mesh_.to_vertex(mesh_.next_halfedge(h));
-        p = (dvec3)points_[v0];
-        q = (dvec3)points_[v1];
+        p = points_[v0].cast<double>();
+        q = points_[v1].cast<double>();
         d = q - p;
-        w = 1.0 / norm(d);
+        w = 1.0 / d.norm();
 
         // build squared cross-product-with-d matrix
         D(0, 0) = d[1] * d[1] + d[2] * d[2];
@@ -824,7 +824,7 @@ Point SurfaceRemeshing::minimize_squared_areas(Vertex v)
         throw SolverException(what);
     }
 
-    return Point(x);
+    return x.cast<Scalar>();
 }
 
 Point SurfaceRemeshing::weighted_centroid(Vertex v)
@@ -843,8 +843,7 @@ Point SurfaceRemeshing::weighted_centroid(Vertex v)
         b += points_[v3];
         b *= (1.0 / 3.0);
 
-        double area =
-            norm(cross(points_[v2] - points_[v1], points_[v3] - points_[v1]));
+        double area = (points_[v2] - points_[v1]).cross(points_[v3] - points_[v1]).norm();
 
         // take care of degenerate faces to avoid all zero weights and division
         // by zero later on

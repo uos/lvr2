@@ -1,5 +1,5 @@
 // Copyright 2011-2021 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #pragma once
 
@@ -35,7 +35,7 @@ public:
     //! merge *this with nc. *this will then enclose both cones.
     NormalCone& merge(const NormalCone& nc)
     {
-        const Scalar dp = dot(center_normal_, nc.center_normal_);
+        const Scalar dp = center_normal_.dot(nc.center_normal_);
 
         // axes point in same direction
         if (dp > 0.99999)

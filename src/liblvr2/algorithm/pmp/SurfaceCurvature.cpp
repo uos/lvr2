@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceCurvature.h"
 #include "lvr2/algorithm/pmp/SurfaceNormals.h"
@@ -41,7 +41,7 @@ void SurfaceCurvature::analyze(unsigned int post_smoothing_steps)
 
         if (!mesh_.is_isolated(v) && !mesh_.is_boundary(v))
         {
-            laplace = Point(0.0);
+            laplace.fill(0.0);
             sum_weights = 0.0;
             sum_angles = 0.0;
             p0 = mesh_.position(v);
@@ -64,12 +64,12 @@ void SurfaceCurvature::analyze(unsigned int post_smoothing_steps)
                 p1.normalize();
                 p2 -= p0;
                 p2.normalize();
-                sum_angles += acos(clamp_cos(dot(p1, p2)));
+                sum_angles += acos(clamp_cos(p1.dot(p2)));
             }
             laplace -= sum_weights * mesh_.position(v);
             laplace /= Scalar(2.0) * area;
 
-            mean = Scalar(0.5) * norm(laplace);
+            mean = Scalar(0.5) * laplace.norm();
             gauss = (2.0 * M_PI - sum_angles) / area;
 
             const Scalar s = sqrt(std::max(Scalar(0.0), mean * mean - gauss));
@@ -145,7 +145,7 @@ void SurfaceCurvature::analyze_tensor(unsigned int post_smoothing_steps,
     // precompute face normals
     for (auto f : mesh_.faces())
     {
-        normal[f] = (dvec3)SurfaceNormals::compute_face_normal(mesh_, f);
+        normal[f] = SurfaceNormals::compute_face_normal(mesh_, f).cast<double>();
     }
 
     // precompute dihedralAngle*edge_length*edge per edge
@@ -159,12 +159,12 @@ void SurfaceCurvature::analyze_tensor(unsigned int post_smoothing_steps,
         {
             n0 = normal[f0];
             n1 = normal[f1];
-            ev = (dvec3)mesh_.position(mesh_.to_vertex(h0));
-            ev -= (dvec3)mesh_.position(mesh_.to_vertex(h1));
-            l = norm(ev);
+            ev = mesh_.position(mesh_.to_vertex(h0)).cast<double>();
+            ev -= mesh_.position(mesh_.to_vertex(h1)).cast<double>();
+            l = ev.norm();
             ev /= l;
             l *= 0.5; // only consider half of the edge (matching Voronoi area)
-            angle[e] = atan2(dot(cross(n0, n1), ev), dot(n0, n1));
+            angle[e] = atan2(n0.cross(n1).dot(ev), n0.dot(n1));
             evec[e] = sqrt(l) * ev;
         }
     }
@@ -187,7 +187,7 @@ void SurfaceCurvature::analyze_tensor(unsigned int post_smoothing_steps,
             }
 
             A = 0.0;
-            tensor = dmat3(0.0);
+            tensor.fill(0.0);
 
             // compute tensor over vertex neighborhood stored in vertices
             for (auto nit : neighborhood)

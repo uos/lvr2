@@ -1,6 +1,6 @@
 // Copyright 2011-2021 the Polygon Mesh Processing Library developers.
 // Copyright 2001-2005 by Computer Graphics Group, RWTH Aachen
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #pragma once
 
@@ -13,6 +13,8 @@
 #include "Types.h"
 #include "Properties.h"
 #include "BoundingBox.h"
+
+#include <highfive/H5Group.hpp>
 
 namespace pmp
 {
@@ -290,7 +292,7 @@ public:
         }
 
         //! get the vertex the iterator refers to
-        Vertex operator*() const { return handle_; }
+        Vertex operator*() const override { return handle_; }
 
         //! are two iterators equal?
         bool operator==(const VertexIterator& rhs) const
@@ -315,7 +317,7 @@ public:
         }
 
         //! pre-increment iterator
-        VertexIterator& operator++()
+        VertexIterator& operator++() override
         {
             ++handle_.idx_;
             assert(mesh_);
@@ -366,7 +368,7 @@ public:
         }
 
         //! get the halfedge the iterator refers to
-        Halfedge operator*() const { return handle_; }
+        Halfedge operator*() const override { return handle_; }
 
         //! are two iterators equal?
         bool operator==(const HalfedgeIterator& rhs) const
@@ -391,7 +393,7 @@ public:
         }
 
         //! pre-increment iterator
-        HalfedgeIterator& operator++()
+        HalfedgeIterator& operator++() override
         {
             ++handle_.idx_;
             assert(mesh_);
@@ -441,7 +443,7 @@ public:
         }
 
         //! get the edge the iterator refers to
-        Edge operator*() const { return handle_; }
+        Edge operator*() const override { return handle_; }
 
         //! are two iterators equal?
         bool operator==(const EdgeIterator& rhs) const
@@ -466,7 +468,7 @@ public:
         }
 
         //! pre-increment iterator
-        EdgeIterator& operator++()
+        EdgeIterator& operator++() override
         {
             ++handle_.idx_;
             assert(mesh_);
@@ -516,7 +518,7 @@ public:
         }
 
         //! get the face the iterator refers to
-        Face operator*() const { return handle_; }
+        Face operator*() const override{ return handle_; }
 
         //! are two iterators equal?
         bool operator==(const FaceIterator& rhs) const
@@ -541,7 +543,7 @@ public:
         }
 
         //! pre-increment iterator
-        FaceIterator& operator++()
+        FaceIterator& operator++() override
         {
             ++handle_.idx_;
             assert(mesh_);
@@ -1079,6 +1081,9 @@ public:
     //! texture coordinates.
     void write(const std::string& filename,
                const IOFlags& flags = IOFlags()) const;
+
+    void read(const HighFive::Group& group);
+    void write(HighFive::Group& group) const;
 
     //!@}
     //! \name Add new elements by hand
@@ -1871,7 +1876,7 @@ public:
     //! compute the length of edge \p e.
     Scalar edge_length(Edge e) const
     {
-        return norm(vpoint_[vertex(e, 0)] - vpoint_[vertex(e, 1)]);
+        return (vpoint_[vertex(e, 0)] - vpoint_[vertex(e, 1)]).norm();
     }
 
     //!@}

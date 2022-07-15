@@ -1,24 +1,25 @@
 #pragma once
 
-#ifndef LVR2_IO_DESCRIPTIONS_SCANIO_HPP
-#define LVR2_IO_DESCRIPTIONS_SCANIO_HPP
+#ifndef SCANIO
+#define SCANIO
 
 #include <sstream>
 #include <yaml-cpp/yaml.h>
 
+#include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/io/baseio/MetaIO.hpp"
+#include "lvr2/io/scanio/PointCloudIO.hpp"
 #include "lvr2/io/scanio/yaml/Scan.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 #include "lvr2/registration/ReductionAlgorithm.hpp"
 #include "lvr2/util/Hdf5Util.hpp"
-#include "lvr2/types/ScanTypes.hpp"
-
-#include "MetaIO.hpp"
-#include "PointCloudIO.hpp"
 
 namespace lvr2
 {
+namespace scanio
+{
 
-template <typename FeatureBase>
+template <typename BaseIO>
 class ScanIO
 {
   public:
@@ -70,16 +71,18 @@ class ScanIO
 
   protected:
 
-    FeatureBase* m_featureBase = static_cast<FeatureBase*>(this);
+    BaseIO* m_baseIO = static_cast<BaseIO*>(this);
 
     // dependencies
-    MetaIO<FeatureBase>* m_metaIO = static_cast<MetaIO<FeatureBase>*>(m_featureBase);
-    PointCloudIO<FeatureBase>* m_pclIO = static_cast<PointCloudIO<FeatureBase>*>(m_featureBase);
-    VariantChannelIO<FeatureBase>* m_vchannel_io = static_cast<VariantChannelIO<FeatureBase>*>(m_featureBase);
+    MetaIO<BaseIO>* m_metaIO = static_cast<MetaIO<BaseIO>*>(m_baseIO);
+    PointCloudIO<BaseIO>* m_pclIO = static_cast<PointCloudIO<BaseIO>*>(m_baseIO);
+    VariantChannelIO<BaseIO>* m_vchannel_io = static_cast<VariantChannelIO<BaseIO>*>(m_baseIO);
 
     static constexpr const char* ID = "ScanIO";
     static constexpr const char* OBJID = "Scan";
 };
+
+} // namespace scanio
 
 /**
  *
@@ -88,20 +91,20 @@ class ScanIO
  * - Sets type variable
  *
  */
-template <typename FeatureBase>
-struct FeatureConstruct<ScanIO, FeatureBase >
+template <typename T>
+struct FeatureConstruct<lvr2::scanio::ScanIO, T>
 {
     // DEPS
-    using dep1 = typename FeatureConstruct<MetaIO, FeatureBase>::type;
-    using dep2 = typename FeatureConstruct<PointCloudIO, FeatureBase>::type;
+    using dep1 = typename FeatureConstruct<lvr2::baseio::MetaIO, T>::type;
+    using dep2 = typename FeatureConstruct<lvr2::scanio::PointCloudIO, T>::type;
     using deps = typename dep1::template Merge<dep2>;
 
     // ADD THE FEATURE ITSELF
-    using type = typename deps::template add_features<ScanIO>::type;
+    using type = typename deps::template add_features<lvr2::scanio::ScanIO>::type;
 };
 
 } // namespace lvr2
 
 #include "ScanIO.tcc"
 
-#endif // LVR2_IO_DESCRIPTIONS_SCANIO_HPP
+#endif // SCANIO

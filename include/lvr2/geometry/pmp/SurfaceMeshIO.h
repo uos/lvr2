@@ -1,6 +1,6 @@
 // Copyright 2011-2021 the Polygon Mesh Processing Library developers.
 // Copyright 2001-2005 by Computer Graphics Group, RWTH Aachen
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #pragma once
 
@@ -8,6 +8,8 @@
 
 #include "Types.h"
 #include "SurfaceMesh.h"
+
+#include <highfive/H5Group.hpp>
 
 namespace pmp {
 
@@ -22,6 +24,9 @@ public:
     void read(SurfaceMesh& mesh);
 
     void write(const SurfaceMesh& mesh);
+
+    static void read_hdf5(const HighFive::Group& group, SurfaceMesh& mesh);
+    static void write_hdf5(HighFive::Group& group, const SurfaceMesh& mesh);
 
 private:
     void read_off(SurfaceMesh& mesh);

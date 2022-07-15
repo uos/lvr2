@@ -37,7 +37,7 @@
 #ifndef LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER
 #define LVR2_ALGORITHM_RAYCASTING_BVHRAYCASTER
 
-#include "lvr2/io/MeshBuffer.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/geometry/BVH.hpp"
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"

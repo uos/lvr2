@@ -32,7 +32,7 @@
 #include "lvr2/reconstruction/PointsetGrid.hpp"
 #include "lvr2/reconstruction/TetraederBox.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/io/Progress.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/algorithm/CleanupAlgorithms.hpp"

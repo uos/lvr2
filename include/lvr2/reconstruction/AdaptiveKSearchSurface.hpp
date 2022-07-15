@@ -45,7 +45,7 @@
 #include <chrono>
 #include <cmath>
 
-#include "lvr2/io/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/geometry/Normal.hpp"
 #include "lvr2/geometry/Plane.hpp"
 #include "lvr2/geometry/BaseVector.hpp"

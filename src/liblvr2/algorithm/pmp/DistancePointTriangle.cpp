@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/DistancePointTriangle.h"
 
@@ -15,11 +15,11 @@ Scalar dist_point_line_segment(const Point& p, const Point& v0, const Point& v1,
     Point d1(p - v0);
     Point d2(v1 - v0);
     Point min_v(v0);
-    Scalar t = dot(d2, d2);
+    Scalar t = d2.dot(d2);
 
     if (t > std::numeric_limits<Scalar>::min())
     {
-        t = dot(d1, d2) / t;
+        t = d1.dot(d2) / t;
         if (t > 1.0)
             d1 = p - (min_v = v1);
         else if (t > 0.0)
@@ -27,7 +27,7 @@ Scalar dist_point_line_segment(const Point& p, const Point& v0, const Point& v1,
     }
 
     nearest_point = min_v;
-    return norm(d1);
+    return d1.norm();
 }
 
 Scalar dist_point_triangle(const Point& p, const Point& v0, const Point& v1,
@@ -35,8 +35,8 @@ Scalar dist_point_triangle(const Point& p, const Point& v0, const Point& v1,
 {
     Point v0v1 = v1 - v0;
     Point v0v2 = v2 - v0;
-    Point n = cross(v0v1, v0v2); // not normalized !
-    Scalar d = sqrnorm(n);
+    Point n = v0v1.cross(v0v2); // not normalized !
+    Scalar d = n.squaredNorm();
 
     // Check if the triangle is degenerated -> measure dist to line segments
     if (fabs(d) < std::numeric_limits<Scalar>::min())
@@ -69,18 +69,18 @@ Scalar dist_point_triangle(const Point& p, const Point& v0, const Point& v1,
     v1v2 -= v1;
     Point v0p = p;
     v0p -= v0;
-    Point t = cross(v0p, n);
-    Scalar a = dot(t, v0v2) * -inv_d;
-    Scalar b = dot(t, v0v1) * inv_d;
+    Point t = v0p.cross(n);
+    Scalar a = t.dot(v0v2) * -inv_d;
+    Scalar b = t.dot(v0v1) * inv_d;
     Scalar s01, s02, s12;
 
     // Calculate the distance to an edge or a corner vertex
     if (a < 0)
     {
-        s02 = dot(v0v2, v0p) / sqrnorm(v0v2);
+        s02 = v0v2.dot(v0p) / v0v2.squaredNorm();
         if (s02 < 0.0)
         {
-            s01 = dot(v0v1, v0p) / sqrnorm(v0v1);
+            s01 = v0v1.dot(v0p) / v0v1.squaredNorm();
             if (s01 <= 0.0)
             {
                 v0p = v0;
@@ -96,7 +96,7 @@ Scalar dist_point_triangle(const Point& p, const Point& v0, const Point& v1,
         }
         else if (s02 > 1.0)
         {
-            s12 = dot(v1v2, (p - v1)) / sqrnorm(v1v2);
+            s12 = v1v2.dot(p - v1) / v1v2.squaredNorm();
             if (s12 >= 1.0)
             {
                 v0p = v2;
@@ -119,10 +119,10 @@ Scalar dist_point_triangle(const Point& p, const Point& v0, const Point& v1,
     // Calculate the distance to an edge or a corner vertex
     else if (b < 0.0)
     {
-        s01 = dot(v0v1, v0p) / sqrnorm(v0v1);
+        s01 = v0v1.dot(v0p) / v0v1.squaredNorm();
         if (s01 < 0.0)
         {
-            s02 = dot(v0v2, v0p) / sqrnorm(v0v2);
+            s02 = v0v2.dot(v0p) / v0v2.squaredNorm();
             if (s02 <= 0.0)
             {
                 v0p = v0;
@@ -138,7 +138,7 @@ Scalar dist_point_triangle(const Point& p, const Point& v0, const Point& v1,
         }
         else if (s01 > 1.0)
         {
-            s12 = dot(v1v2, (p - v1)) / sqrnorm(v1v2);
+            s12 = v1v2.dot(p - v1) / v1v2.squaredNorm();
             if (s12 >= 1.0)
             {
                 v0p = v2;
@@ -161,10 +161,10 @@ Scalar dist_point_triangle(const Point& p, const Point& v0, const Point& v1,
     // Calculate the distance to an edge or a corner vertex
     else if (a + b > 1.0)
     {
-        s12 = dot(v1v2, (p - v1)) / sqrnorm(v1v2);
+        s12 = v1v2.dot(p - v1) / v1v2.squaredNorm();
         if (s12 >= 1.0)
         {
-            s02 = dot(v0v2, v0p) / sqrnorm(v0v2);
+            s02 = v0v2.dot(v0p) / v0v2.squaredNorm();
             if (s02 <= 0.0)
             {
                 v0p = v0;
@@ -180,7 +180,7 @@ Scalar dist_point_triangle(const Point& p, const Point& v0, const Point& v1,
         }
         else if (s12 <= 0.0)
         {
-            s01 = dot(v0v1, v0p) / sqrnorm(v0v1);
+            s01 = v0v1.dot(v0p) / v0v1.squaredNorm();
             if (s01 <= 0.0)
             {
                 v0p = v0;
@@ -203,13 +203,13 @@ Scalar dist_point_triangle(const Point& p, const Point& v0, const Point& v1,
     // Calculate the distance to an interior point of the triangle
     else
     {
-        n *= (dot(n, v0p) * inv_d);
+        n *= (n.dot(v0p) * inv_d);
         (v0p = p) -= n;
     }
 
     nearest_point = v0p;
     v0p -= p;
-    return norm(v0p);
+    return v0p.norm();
 }
 
 } // namespace pmp

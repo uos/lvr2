@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/DifferentialGeometry.h"
 
@@ -11,7 +11,7 @@ namespace pmp {
 
 Scalar triangle_area(const Point& p0, const Point& p1, const Point& p2)
 {
-    return Scalar(0.5) * norm(cross(p1 - p0, p2 - p0));
+    return Scalar(0.5) * (p1 - p0).cross(p2 - p0).norm();
 }
 
 Scalar triangle_area(const SurfaceMesh& mesh, Face f)
@@ -51,7 +51,7 @@ Scalar volume(const SurfaceMesh& mesh)
         const auto& p1 = mesh.position(*(++fv));
         const auto& p2 = mesh.position(*(++fv));
 
-        volume += Scalar(1.0) / Scalar(6.0) * dot(cross(p0, p1), p2);
+        volume += Scalar(1.0) / Scalar(6.0) * p0.cross(p1).dot(p2);
     }
 
     return std::abs(volume);
@@ -118,19 +118,19 @@ double cotan_weight(const SurfaceMesh& mesh, Edge e)
     const Halfedge h0 = mesh.halfedge(e, 0);
     const Halfedge h1 = mesh.halfedge(e, 1);
 
-    const dvec3 p0 = (dvec3)mesh.position(mesh.to_vertex(h0));
-    const dvec3 p1 = (dvec3)mesh.position(mesh.to_vertex(h1));
+    const dvec3 p0 = mesh.position(mesh.to_vertex(h0)).cast<double>();
+    const dvec3 p1 = mesh.position(mesh.to_vertex(h1)).cast<double>();
 
     if (!mesh.is_boundary(h0))
     {
         const dvec3 p2 =
-            (dvec3)mesh.position(mesh.to_vertex(mesh.next_halfedge(h0)));
+            mesh.position(mesh.to_vertex(mesh.next_halfedge(h0))).cast<double>();
         const dvec3 d0 = p0 - p2;
         const dvec3 d1 = p1 - p2;
-        const double area = norm(cross(d0, d1));
+        const double area = d0.cross(d1).norm();
         if (area > std::numeric_limits<double>::min())
         {
-            const double cot = dot(d0, d1) / area;
+            const double cot = d0.dot(d1) / area;
             weight += clamp_cot(cot);
         }
     }
@@ -138,13 +138,13 @@ double cotan_weight(const SurfaceMesh& mesh, Edge e)
     if (!mesh.is_boundary(h1))
     {
         const dvec3 p2 =
-            (dvec3)mesh.position(mesh.to_vertex(mesh.next_halfedge(h1)));
+            mesh.position(mesh.to_vertex(mesh.next_halfedge(h1))).cast<double>();
         const dvec3 d0 = p0 - p2;
         const dvec3 d1 = p1 - p2;
-        const double area = norm(cross(d0, d1));
+        const double area = d0.cross(d1).norm();
         if (area > std::numeric_limits<double>::min())
         {
-            const double cot = dot(d0, d1) / area;
+            const double cot = d0.dot(d1) / area;
             weight += clamp_cot(cot);
         }
     }
@@ -176,9 +176,9 @@ double voronoi_area(const SurfaceMesh& mesh, Vertex v)
                 continue;
 
             // three vertex positions
-            p = (dvec3)mesh.position(mesh.to_vertex(h2));
-            q = (dvec3)mesh.position(mesh.to_vertex(h0));
-            r = (dvec3)mesh.position(mesh.to_vertex(h1));
+            p = mesh.position(mesh.to_vertex(h2)).cast<double>();
+            q = mesh.position(mesh.to_vertex(h0)).cast<double>();
+            r = mesh.position(mesh.to_vertex(h1)).cast<double>();
 
             // edge vectors
             (pq = q) -= p;
@@ -186,14 +186,14 @@ double voronoi_area(const SurfaceMesh& mesh, Vertex v)
             (pr = r) -= p;
 
             // compute and check triangle area
-            triArea = norm(cross(pq, pr));
+            triArea = pq.cross(pr).norm();
             if (triArea <= std::numeric_limits<double>::min())
                 continue;
 
             // dot products for each corner (of its two emanating edge vectors)
-            dotp = dot(pq, pr);
-            dotq = -dot(qr, pq);
-            dotr = dot(qr, pr);
+            dotp = pq.dot(pr);
+            dotq = -qr.dot(pq);
+            dotr = qr.dot(pr);
 
             // angle at p is obtuse
             if (dotp < 0.0)
@@ -215,8 +215,8 @@ double voronoi_area(const SurfaceMesh& mesh, Vertex v)
                 cotr = dotr / triArea;
 
                 // clamp cot(angle) by clamping angle to [3, 177]
-                area += 0.125 * (sqrnorm(pr) * clamp_cot(cotq) +
-                                 sqrnorm(pq) * clamp_cot(cotr));
+                area += 0.125 * (pr.squaredNorm() * clamp_cot(cotq) +
+                                 pq.squaredNorm() * clamp_cot(cotr));
             }
         }
     }
@@ -251,7 +251,7 @@ double voronoi_area_barycentric(const SurfaceMesh& mesh, Vertex v)
             pr = mesh.position(mesh.to_vertex(h1));
             pr -= p;
 
-            area += norm(cross(pq, pr)) / 6.0;
+            area += pq.cross(pr).norm() / 6.0;
         }
     }
 
@@ -294,10 +294,10 @@ Scalar angle_sum(const SurfaceMesh& mesh, Vertex v)
             const Point& p2 =
                 mesh.position(mesh.to_vertex(mesh.ccw_rotated_halfedge(h)));
 
-            const Point p01 = normalize(p1 - p0);
-            const Point p02 = normalize(p2 - p0);
+            const Point p01 = (p1 - p0).normalized();
+            const Point p02 = (p2 - p0).normalized();
 
-            Scalar cos_angle = clamp_cos(dot(p01, p02));
+            Scalar cos_angle = clamp_cos(p01.dot(p02));
 
             angles += acos(cos_angle);
         }
@@ -313,7 +313,7 @@ VertexCurvature vertex_curvature(const SurfaceMesh& mesh, Vertex v)
     const Scalar area = voronoi_area(mesh, v);
     if (area > std::numeric_limits<Scalar>::min())
     {
-        c.mean = Scalar(0.5) * norm(laplace(mesh, v));
+        c.mean = Scalar(0.5) * laplace(mesh, v).norm();
         c.gauss = (2.0 * M_PI - angle_sum(mesh, v)) / area;
 
         const Scalar s = sqrt(std::max(Scalar(0.0), c.mean * c.mean - c.gauss));

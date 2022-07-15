@@ -1,5 +1,5 @@
 // Copyright 2011-2020 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
+// Distributed under a MIT-style license, see PMP_LICENSE.txt for details.
 
 #include "lvr2/algorithm/pmp/SurfaceFairing.h"
 
@@ -131,7 +131,7 @@ void SurfaceFairing::fair(unsigned int k)
 
     for (unsigned int i = 0; i < n; ++i)
     {
-        b = dvec3(0.0);
+        b.fill(0.0);
 
         setup_matrix_row(vertices[i], vweight_, eweight_, k, row);
 
@@ -146,7 +146,7 @@ void SurfaceFairing::fair(unsigned int k)
             }
             else
             {
-                b -= w * static_cast<dvec3>(points_[v]);
+                b -= w * points_[v].cast<double>();
             }
         }
 
@@ -166,7 +166,7 @@ void SurfaceFairing::fair(unsigned int k)
     else
     {
         for (unsigned int i = 0; i < n; ++i)
-            points_[vertices[i]] = X.row(i);
+            points_[vertices[i]] = X.row(i).cast<Scalar>();
     }
 }
 

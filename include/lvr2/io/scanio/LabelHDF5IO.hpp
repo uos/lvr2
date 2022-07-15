@@ -1,9 +1,9 @@
 #ifndef LABELHDF5_DESCRIPTION_IO_HPP
 #define LABELHDF5_DESCRIPTION_IO_HPP
 
-#include "lvr2/io/scanio/HDF5Kernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchema.hpp"
-#include "lvr2/io/scanio/FeatureBase.hpp"
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
+#include "lvr2/io/baseio/BaseIO.hpp"
 #include "lvr2/io/scanio/LabelScanProjectIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 

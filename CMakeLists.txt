@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.10)
 project(LAS_VEGAS VERSION 2)
 
 if(MSVC)
@@ -52,7 +52,6 @@ include_directories(include)
 if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
-    add_compile_options(-O0 -g)
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)
@@ -62,6 +61,8 @@ if(MSVC)
     set(HAVE_CXX_ATOMICS_WITHOUT_LIB True)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
   add_compile_definitions(_HAS_STD_BYTE=0)
+  add_compile_definitions(__TBB_NO_IMPLICIT_LINKAGE)
+  #add_compile_definitions(__TBBMALLOC_NO_IMPLICIT_LINKAGE=1)
   add_compile_definitions(_USE_MATH_DEFINES)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
@@ -74,6 +75,13 @@ endif(MSVC)
 # EXTERNAL LIBRARIES
 ###############################################################################
 
+#------------------------------------------------------------------------------
+# Searching for Thread Building Blocks library
+#------------------------------------------------------------------------------
+find_package(TBB REQUIRED)
+if(TBB_FOUND)
+    message(STATUS "Found TBB library")
+endif(TBB_FOUND)
 #------------------------------------------------------------------------------
 # Searching for TIFF
 #------------------------------------------------------------------------------
@@ -135,13 +143,20 @@ endif(WITH_CV_NONFREE)
 #------------------------------------------------------------------------------
 find_package(FLANN REQUIRED)
 if(FLANN_FOUND)
-  message(STATUS "Found FLANN")
-  include_directories(${FLANN_DIR})
+	message(STATUS "Found FLANN library: ${FLANN_INCLUDE_DIR}")
+	include_directories(${FLANN_INCLUDRE_DIR})
 endif(FLANN_FOUND)
 
-find_package(Lz4 REQUIRED)
-include_directories(  ${LZ4_INCLUDE_DIR} )
-message(STATUS "Found LZ4 library: ${LZ4_LIBRARY}")
+find_package(Lz4)
+if(LZ4_FOUND)
+  include_directories(  ${LZ4_INCLUDE_DIR} )
+  message(STATUS "Found LZ4 library: ${LZ4_INCLUDE_DIR}")
+else(LZ4_FOUND)
+  find_package(PkgConfig)
+  pkg_search_module(LZ4 lz4 liblz4)
+  include_directories(${LZ4_INCLUDEDIR})
+  message(STATUS "Found LZ4 library: ${LZ4_INCLUDE_DIR}")
+endif(LZ4_FOUND)
 
 
 #------------------------------------------------------------------------------
@@ -169,7 +184,7 @@ if(OPENCL_FOUND)
     if(OpenCL_NEW_API)
       list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL_NEW_API)
     endif(OpenCL_NEW_API)
-endif()
+endif(OPENCL_FOUND)
 
 
 #------------------------------------------------------------------------------
@@ -225,7 +240,7 @@ if(VTK_VERSION VERSION_GREATER "7")
     endif()
   endforeach()
 
-  message(STATUS "VTK > 7 found")
+  message(STATUS "Found VTK (Version > 7)")
   if(VTK_HAS_QT)
     message(STATUS "Found VTK compoment QVTK")
   endif()
@@ -304,9 +319,11 @@ set(Boost_COMPONENTS
 
 if(MPI_FOUND)
   set($Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
+  message(STATUS "Found MPI. Adding Boost MPI library to required components.")
 endif()
 
 find_package(Boost COMPONENTS ${Boost_COMPONENTS} REQUIRED QUIET)
+message(STATUS "Found Boost libraries")
 
 link_directories(${Boost_LIBRARY_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
@@ -335,9 +352,9 @@ endif(OPENMP_FOUND)
 # Searching for OpenGL
 #------------------------------------------------------------------------------
 
-find_package(OpenGL REQUIRED)
+find_package(OpenGL COMPONENTS OpenGL)
 include_directories(${OPENGL_INCLUDE_DIR})
-message(STATUS "Found OpenGL")
+message(STATUS "Found OpenGL: ${OPENGL_INCLUDE_DIR}")
 
 if(APPLE)
   include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
@@ -351,9 +368,20 @@ endif(APPLE)
 ## Searching for glut
 #------------------------------------------------------------------------------
 
-find_package(GLUT REQUIRED)
-message(STATUS "Found OpenGL Utility Toolkit" )
-include_directories(${GLUT_INCLUDE_DIR})
+find_package(GLUT)
+if(GLUT_FOUND)
+  message(STATUS "Found OpenGL Utility Toolkit via cmake: ${GLUT_INCLUDE_DIRS}" )
+  include_directories(${GLUT_INCLUDE_DIRS})
+  
+else(GLUT_FOUND)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(GLUT glut freeglut FREEGLUT REQUIRED)
+  message(STATUS "Found OpenGL Utility Toolkit via pkg_config: ${GLUT_LIBDIR} ${FREEGLUT_LIBDIR}" )
+  include_directories(${GLUT_INCLUDEDIR})
+  link_directories(${GLUT_LIBDIR})
+  set(GLUT_LIBRARIES ${pkgcfg_lib_GLUT_glut})
+  message(STATUD "Using ugly cmake cache hack to provide GLUT libraries: ": ${GLUT_LIBRARIES})
+endif(GLUT_FOUND)
 
 #------------------------------------------------------------------------------
 ## Searching for libfreenect
@@ -361,10 +389,12 @@ include_directories(${GLUT_INCLUDE_DIR})
 option(WITH_FREENECT "Compile with libfreenect grabber" OFF)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBFREENECT libfreenect)
-if(WITH_FREENECT AND LIBFREENECT_FOUND)
-  message(STATUS "Found Freenect")
-  include_directories(${LIBFREENECT_INCLUDE_DIRS})
+if(WITH_FREENECT )
+  pkg_check_modules(LIBFREENECT libfreenect)
+  if(LIBFREENECT_FOUND)
+    message(STATUS "Found Freenect")
+    include_directories(${LIBFREENECT_INCLUDE_DIRS})
+  endif()
 endif()
 
 #------------------------------------------------------------------------------
@@ -375,9 +405,8 @@ find_package(STANN)
 if(STANN_FOUND)
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_STANN)
   include_directories(${STANN_INCLUDE_DIR})
+  message(STATUS "Found STANN")
 endif(STANN_FOUND)
-
-
 
 ###############################################################################
 # USED THIRD PARTY STUFF
@@ -454,11 +483,11 @@ if(CUDA_FOUND)
 
 include(max_cuda_gcc_version)
 max_cuda_gcc_version(CUDA_VERSION MAX_CUDA_GCC_VERSION)
-message(STATUS "MAX_CUDA_GCC_VERSION: ${MAX_CUDA_GCC_VERSION}")
+message(STATUS "Highest supported GCC version for CUDA: ${MAX_CUDA_GCC_VERSION}")
   if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER ${MAX_CUDA_GCC_VERSION} )
     message(STATUS "******************************************************************")
-    message(STATUS "* Your gcc version needs to be lower than or equal ${MAX_CUDA_GCC_VERSION} to compile the LVR   *")
-    message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
+    message(STATUS "* Your gcc version needs to be lower than or equal ${MAX_CUDA_GCC_VERSION} to compile  *")
+    message(STATUS "* the CUDA library and apps. Setting CUDA_HOST_COMPILER to       *")
     message(STATUS "* g++-${MAX_CUDA_GCC_VERSION}. Please ensure that g++-${MAX_CUDA_GCC_VERSION} is installed on your system.   *")
     message(STATUS "******************************************************************")
     set(CUDA_HOST_COMPILER "g++-${MAX_CUDA_GCC_VERSION}" CACHE STRING "" FORCE)
@@ -555,7 +584,12 @@ set(LVR2_LIB_DEPENDENCIES
     ${TIFF_LIBRARY}
     ${YAML_CPP_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
-    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+    ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
+    lvr2rply
+    lvr2rply_static
+    lvr2las
+    lvr2las_static 
+    )
 else()
 set(LVR2_LIB_DEPENDENCIES
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -575,7 +609,8 @@ set(LVR2_LIB_DEPENDENCIES
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     m
     )
-    endif()
+endif()
+
 #####################################################################################
 # ADD ALL EXTERNAL DEPENDENCIES
 #####################################################################################
@@ -625,15 +660,17 @@ endif()
 
 add_subdirectory(src/liblvr2)
 
-
 ###############################################################################
 # BINARIES
 ###############################################################################
 
+if(NOT MSVC)
+add_subdirectory(src/tools/lvr2_largescale_reconstruct)
+endif(NOT MSVC)
+
 add_subdirectory(src/tools/lvr2_reconstruct)
 add_subdirectory(src/tools/lvr2_dmc_reconstruction)
 add_subdirectory(src/tools/lvr2_gs_reconstruction)
-add_subdirectory(src/tools/lvr2_largescale_reconstruct)
 add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)
 add_subdirectory(src/tools/lvr2_kaboom)

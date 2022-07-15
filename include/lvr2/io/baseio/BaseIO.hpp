@@ -1,111 +1,177 @@
-/**
- * Copyright (c) 2018, University Osnabrück
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the University Osnabrück nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL University Osnabrück BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+#pragma once
+#ifndef LVR2_IO_DESC_BaseIO_HPP
+#define LVR2_IO_DESC_BaseIO_HPP
 
- /**
- * @file       BaseIO.hpp
- * @brief      Base interface for all I/O related classes.
- * @details    This file introduces a pure virtual class specifying some basic
- *             methods which must be implemented by all I/O classes in the lvr
- *             toolkit.
- * @author     Thomas Wiemann (twiemann), twiemann@uos.de
- * @author     Lars Kiesow (lkiesow), lkiesow@uos.de
- * @version    110929
- * @date       Created:       2011-08-03
- * @date       Last modified: 2011-09-29 20:40:14
- */
+#include <memory>
+#include <tuple>
+#include <type_traits>
 
-#ifndef BASEIO_HPP_
-#define BASEIO_HPP_
+#include "lvr2/io/kernels/FileKernel.hpp"
+#include "lvr2/io/schema/ScanProjectSchema.hpp"
 
-#include <string>
-#include <map>
-
-#include "lvr2/io/Model.hpp"
-
-namespace lvr2
+namespace lvr2 
 {
+
+namespace baseio
+{
+
+/**
+ * @class FeatureConstruct
+ * @brief Helper class how to construct a IO feature with its dependencies
+ * 
+ */
+template<template<typename> typename Feature, typename Derived>
+struct FeatureConstruct;
 
 
 /**
- * @brief Interface specification for low-level io. All read
- *        elements are stored in linear arrays.
+ * @class BaseIO
+ * @brief Manager Class for all BaseIO components located in hdf5 directory
+ * 
+ * 
  */
-class BaseIO
+
+template<typename SchemaPtrT, template<typename> typename ...Features>
+class BaseIO : public Features<BaseIO<SchemaPtrT, Features...> >...
 {
-    public:
-        BaseIO() {}
-        virtual ~BaseIO() {};
+protected:
+    template <typename T, typename Tuple>
+    struct has_type;
 
-        /**
-         * \brief Parse the given file and load supported elements.
-         *
-         * @param filename  The file to read.
-         */
-        virtual ModelPtr read(std::string filename ) = 0;
+    template <typename T>
+    struct has_type<T, std::tuple<>> : std::false_type {};
+
+    template <typename T, typename U, typename... Ts>
+    struct has_type<T, std::tuple<U, Ts...>> : has_type<T, std::tuple<Ts...>> {};
+
+    template <typename T, typename... Ts>
+    struct has_type<T, std::tuple<T, Ts...>> : std::true_type {};
+
+public:
+    static constexpr std::size_t N = sizeof...(Features);
+    using features = std::tuple<Features<BaseIO<SchemaPtrT, Features...> >...>;
+
+    template<template<typename> typename F> 
+    struct has_feature {
+        static constexpr bool value = has_type<F<BaseIO>, features>::type::value;
+    };
+
+    template<
+        template<typename> typename F,
+        template<typename> typename ...Fs
+    >
+    struct add_features;
+
+    template<
+        template<typename> typename F,
+        template<typename> typename ...Fs
+    >
+    struct add_features {
+        using type = typename add_features<F>::type::template add_features<Fs...>::type;
+    };
+
+    template<
+        template<typename> typename F
+    >
+    struct add_features<F> {
+        using type = typename std::conditional<
+            BaseIO<SchemaPtrT, Features...>::has_feature<F>::value,
+            BaseIO<SchemaPtrT, Features...>,
+            BaseIO<SchemaPtrT, Features...,F>
+            >::type;
+    };
+
+    template<template<typename> typename F>
+    struct add_feature {
+        using type = typename add_features<F>::type;
+    };
+
+    template<
+        template<typename> typename F,
+        template<typename> typename ...Fs
+    >
+    struct add_features_with_deps;
+
+    template<
+        template<typename> typename F,
+        template<typename> typename ...Fs
+    >
+    struct add_features_with_deps {
+        using type = typename add_features_with_deps<F>::type::template add_features_with_deps<Fs...>::type;
+    };
+
+    template<template<typename> typename F>
+    struct add_features_with_deps<F> {
+        using type = typename FeatureConstruct<F, BaseIO<SchemaPtrT, Features...> >::type;
+    };
+
+    /////////////////////////////////////////////
+    /// USE ONLY THESE METHODS IN APPLICATION ///
+    /////////////////////////////////////////////
 
 
-        /**
-         * \brief Save the loaded elements to the given file.
-         *
-         * @param filename Filename of the file to write.
-         */
-        virtual void save(std::string filename) = 0;
+    template<template<typename> typename F>
+    static constexpr bool HasFeature = has_feature<F>::value;
+    
+    template<template<typename> typename ...F>
+    using AddFeatures = typename add_features_with_deps<F...>::type;
+
+    template<typename OTHER>
+    using Merge = typename OTHER::template add_features<Features...>::type;
 
 
-        /**
-         * \brief Set the model and save the loaded elements to the given
-         *        file.
-         *
-         * @param filename Filename of the file to write.
-         */
-        virtual void save(ModelPtr model, std::string filename);
+    // #if __cplusplus <= 201500L
+    //     // feature of c++17
+    //     #pragma message("using Tp::save... needs c++17 at least or a newer compiler")
+    // #endif
 
+    //using Features<BaseIO<SchemaPtrT, Features...> >::save...;
 
+    BaseIO(
+        const FileKernelPtr inKernel, 
+        const SchemaPtrT inDesc,
+        const bool load_data = false) 
+    : m_kernel(inKernel)
+    , m_description(inDesc)
+    , m_load_data(load_data)
+    {
 
-        /**
-         * \brief  Set the model for io operations to use.
-         * \param m  Shared pointer to model.
-         **/
-        virtual void setModel(ModelPtr m);
+    }
 
+    virtual ~BaseIO() {}
 
-        /**
-         * \brief  Get the model for io operations.
-         * \return  Shared pointer to model.
-         **/
-        virtual ModelPtr getModel();
+    template<template<typename> typename F>
+    bool has();
 
+    template<template<typename> typename F>
+    F<BaseIO>* scast();
 
-    protected:
-        ModelPtr m_model;
+    template<template<typename> typename F>
+    F<BaseIO>* dcast();
+
+    const FileKernelPtr             m_kernel;
+    const SchemaPtrT                m_description;
+
+    const bool                      m_load_data;
 
 };
 
+template<template<typename> typename Feature, typename Derived>
+struct FeatureConstruct {
+    using type = typename Derived::template add_features<Feature>::type;
+};
+
+// SchemaPtrT defaults to ScanProjectSchemaPtr for compatibility
+// If your schema is not a subclass of ScanProjectSchema you will need to specify the schema ptr type
+// MeshIO example: FeatureBuild<MeshIO, MeshSchemaPtr>
+// ScanProjectIO example: FeatureBuild<ScanProjectIO>
+template<template<typename> typename Feature, typename SchemaPtrT = ScanProjectSchemaPtr>
+using FeatureBuild = typename FeatureConstruct<Feature, BaseIO<SchemaPtrT>>::type;
+
+} // namespace baseio
+
 } // namespace lvr2
 
+#include "BaseIO.tcc"
 
-#endif /* BASEIO_HPP_ */
+#endif // LVR2_IO_GBaseIO_HPP
