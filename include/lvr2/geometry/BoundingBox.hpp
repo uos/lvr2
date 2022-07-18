@@ -112,12 +112,19 @@ public:
     BaseVecT getCentroid() const;
 
     /**
+     * @brief Checks if the given Vector is inside the bounding box.
+     * 
+     * @param v The Vector
+     */
+    bool contains(const BaseVecT& v) const;
+
+    /**
      * @brief check if current volume overlap with a given bounding box
      *
      * @param bb Another bounding box
      * @return true if both boxes overlap
      */
-    bool overlap(const BoundingBox<BaseVecT>& bb);
+    bool overlap(const BoundingBox<BaseVecT>& bb) const;
 
     /**
      * @brief Returns the longest side of the bounding box

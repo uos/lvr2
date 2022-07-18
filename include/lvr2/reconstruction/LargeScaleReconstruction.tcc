@@ -182,8 +182,7 @@ namespace lvr2
         for(size_t h = 0; h < m_options.voxelSizes.size(); h++)
         {
             float voxelSize = m_options.voxelSizes[h];
-            float overlap = chunkSize / 2.0f;
-            overlap = std::ceil(overlap / voxelSize) * voxelSize; // make sure overlap is divisible by voxelSize
+            float overlap = 3 * voxelSize;
             BaseVecT overlapVector(overlap, overlap, overlap);
 
             bool createBigMesh = false, createChunksPly = false, createChunksHdf5 = false, create3dTiles = false;
@@ -248,14 +247,8 @@ namespace lvr2
 
                 BoundingBox<BaseVecT> gridbb(partitionBox.getMin() - overlapVector, partitionBox.getMax() + overlapVector);
 
-                if (bg.estimateSizeofBox(gridbb) < minPointsPerChunk)
-                {
-                    partitionBoxesSkipped++;
-                    continue;
-                }
-
                 size_t numPoints;
-                floatArr points = bg.points(gridbb, numPoints, minPointsPerChunk);
+                floatArr points = bg.allPoints(gridbb, numPoints, minPointsPerChunk);
 
                 if (!points)
                 {
@@ -284,7 +277,7 @@ namespace lvr2
                 if (!hasNormals && bg.hasNormals())
                 {
                     size_t numNormals;
-                    lvr2::floatArr normals = bg.normals(gridbb, numNormals);
+                    lvr2::floatArr normals = bg.allNormals(gridbb, numNormals);
                     if (numNormals != numPoints)
                     {
                         throw std::runtime_error("Number of normals does not match number of points");
@@ -430,56 +423,37 @@ namespace lvr2
                 {
                     mesh.fillHoles(m_options.fillHoles);
                 }
+                mesh.collectGarbage();
 
-                std::unique_ptr<PMPMesh<BaseVecT>> mesh3dTiles = nullptr;
-                if (createChunksHdf5 && create3dTiles)
+                auto& surfaceMesh = mesh.getSurfaceMesh();
+                if (createChunksHdf5 || create3dTiles)
                 {
-                    // if both are needed, create a copy of the mesh
-                    mesh3dTiles = make_unique<PMPMesh<BaseVecT>>(mesh);
+                    auto group = chunkFileHdf5->createGroup("/chunks/" + name_id);
+                    surfaceMesh.write(group);
+                    chunkFileHdf5->flush();
                 }
-                else if (create3dTiles)
+                if (createChunksPly)
                 {
-                    mesh3dTiles = make_unique<PMPMesh<BaseVecT>>(std::move(mesh));
+                    surfaceMesh.write("chunks/" + name_id + ".ply");
                 }
-
-                pmp::Point epsilon = pmp::Point::Constant(0.0001);
-                auto min = partitionBox.getMin(), max = partitionBox.getMax();
-                pmp::BoundingBox expectedBB(pmp::Point(min.x, min.y, min.z) - epsilon,
-                                            pmp::Point(max.x, max.y, max.z) + epsilon);
 
                 if (create3dTiles)
                 {
-                    HLODTree<BaseVecT>::trimChunkOverlap(*mesh3dTiles, expectedBB);
-                    if (mesh3dTiles->numFaces() == 0)
-                    {
-                        // don't save other types of chunks either if they would be empty post-trimming
-                        continue;
-                    }
-                    auto bb = mesh3dTiles->getSurfaceMesh().bounds();
-                    auto& coords = partitionChunkCoords[i];
-                    Vector3i chunkPos(coords.x, coords.y, coords.z);
-                    chunkMap.emplace(chunkPos, HLODTree<BaseVecT>::leaf(LazyMesh(std::move(*mesh3dTiles), chunkFile3dTiles), bb));
-                }
+                    pmp::SurfaceNormals::compute_vertex_normals(surfaceMesh, flipPoint);
 
-                // trim the overlap to only a single voxel to save space
-                expectedBB.min() -= pmp::Point::Constant(voxelSize);
-                expectedBB.max() += pmp::Point::Constant(voxelSize);
-                HLODTree<BaseVecT>::trimChunkOverlap(mesh, expectedBB);
+                    pmp::Point epsilon = pmp::Point::Constant(0.0001);
+                    auto min = partitionBox.getMin(), max = partitionBox.getMax();
+                    pmp::BoundingBox expectedBB(pmp::Point(min.x, min.y, min.z) - epsilon,
+                                                pmp::Point(max.x, max.y, max.z) + epsilon);
 
-                pmp::SurfaceMesh& surfaceMesh = mesh.getSurfaceMesh();
-                if (surfaceMesh.n_faces() > 0)
-                {
-                    surfaceMesh.remove_vertex_property<bool>("v:feature");
-                    surfaceMesh.remove_edge_property<bool>("e:feature");
-                    if (createChunksHdf5 || create3dTiles)
+                    HLODTree<BaseVecT>::trimChunkOverlap(mesh, expectedBB);
+
+                    if (mesh.numFaces() > 0)
                     {
-                        auto group = chunkFileHdf5->createGroup("/chunks/" + name_id);
-                        surfaceMesh.write(group);
-                        chunkFileHdf5->flush();
-                    }
-                    if (createChunksPly)
-                    {
-                        surfaceMesh.write("chunks/" + name_id + ".ply");
+                        auto bb = surfaceMesh.bounds();
+                        auto& coords = partitionChunkCoords[i];
+                        Vector3i chunkPos(coords.x, coords.y, coords.z);
+                        chunkMap.emplace(chunkPos, HLODTree<BaseVecT>::leaf(LazyMesh(std::move(mesh), chunkFile3dTiles), bb));
                     }
                 }
             }
@@ -793,7 +767,7 @@ namespace lvr2
         for(int h = 0; h < m_options.voxelSizes.size(); h++)
         {
             float voxelSize = m_options.voxelSizes[h];
-            float overlap = 20 * voxelSize;
+            float overlap = 3 * voxelSize;
             BaseVecT overlapVector(overlap, overlap, overlap);
 
             // send chunks
@@ -807,7 +781,7 @@ namespace lvr2
 
                 BoundingBox<BaseVecT> gridbb(partitionBoxes->at(i).getMin() - overlapVector, partitionBoxes->at(i).getMax() + overlapVector);
 
-                floatArr points = bg.points(gridbb, numPoints, minPointsPerChunk);
+                floatArr points = bg.allPoints(gridbb, numPoints, minPointsPerChunk);
 
                 if (!points)
                 {
@@ -853,7 +827,7 @@ namespace lvr2
                 if (!calcNorm)
                 {
                     size_t numNormals;
-                    lvr2::floatArr normals = bg.normals(gridbb, numNormals);
+                    lvr2::floatArr normals = bg.allNormals(gridbb, numNormals);
                     std::cout << lvr2::timestamp << "NumNormals: " << numNormals << std::endl;
                     MPI_Send(&numNormals, 1, MPI_SIZE_T, dest, 13, MPI_COMM_WORLD);
                     MPI_Send(normals.get(), numNormals*3, MPI_FLOAT, dest, 14, MPI_COMM_WORLD);
@@ -948,7 +922,7 @@ namespace lvr2
             {
                 //combine chunks
                 float voxelSize = m_options.voxelSizes[h];
-                float overlap = 20 * voxelSize;
+                float overlap = 3 * voxelSize;
                 BaseVecT overlapVector(overlap, overlap, overlap);
                 auto vmax = cbb.getMax() - overlapVector;
                 auto vmin = cbb.getMin() + overlapVector;
@@ -1111,8 +1085,6 @@ namespace lvr2
             auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(
                     m_options.voxelSizes[h], surface, gridbb, true, m_options.extrude);
 
-            ps_grid->setBB(gridbb);
-            ps_grid->calcIndices();
             ps_grid->calcDistanceValues();
 
             stringstream largeScale;

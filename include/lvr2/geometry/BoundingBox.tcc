@@ -163,7 +163,15 @@ bool BoundingBox<BaseVecT>::isValid() const
 }
 
 template<typename BaseVecT>
-bool BoundingBox<BaseVecT>::overlap(const lvr2::BoundingBox<BaseVecT> &bb)
+bool BoundingBox<BaseVecT>::contains(const BaseVecT& v) const
+{
+    return (m_min.x <= v.x && m_max.x >= v.x)
+        && (m_min.y <= v.y && m_max.y >= v.y)
+        && (m_min.z <= v.z && m_max.z >= v.z);
+}
+
+template<typename BaseVecT>
+bool BoundingBox<BaseVecT>::overlap(const lvr2::BoundingBox<BaseVecT> &bb) const
 {
     return (m_min.x <= bb.m_max.x && m_max.x >= bb.m_min.x)
         && (m_min.y <= bb.m_max.y && m_max.y >= bb.m_min.y)

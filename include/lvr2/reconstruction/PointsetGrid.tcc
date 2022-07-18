@@ -59,11 +59,15 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
     {
         std::unordered_set<Vector3i> localCells;
         Vector3i index;
-        #pragma omp for schedule(static) nowait
+        #pragma omp for schedule(dynamic,64) nowait
         for(size_t i = 0; i < numPoint; i++)
         {
-            this->calcIndex(pts[i], index);
-            localCells.insert(index);
+            BaseVecT point = pts[i];
+            if (bb.contains(point))
+            {
+                this->calcIndex(point, index);
+                localCells.insert(index);
+            }
         }
 
         if (extrude)
