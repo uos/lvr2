@@ -33,19 +33,14 @@
  * @author Malte Hillmann
  */
 
+#pragma once
+
 #include "lvr2/io/LineReader.hpp"
-#include "lvr2/io/baseio/ArrayIO.hpp"
-#include "lvr2/io/baseio/MatrixIO.hpp"
-#include "lvr2/io/baseio/VariantChannelIO.hpp"
-#include "lvr2/io/baseio/ChannelIO.hpp"
-#include "lvr2/io/scanio/PointCloudIO.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
-#include "lvr2/reconstruction/FastReconstructionTables.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
 #include <boost/filesystem/path.hpp>
-#include <boost/optional/optional_io.hpp>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -96,6 +91,11 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
     {
         throw std::runtime_error("Unsupported LineReader type");
     }
+
+    if (m_extrude)
+    {
+        calcExtrusion();
+    }
 }
 
 template<typename BaseVecT>
@@ -122,18 +122,6 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader& lineReader)
             calcIndex(BaseVecT(point.x, point.y, point.z) * m_scale, index);
 
             getCellInfo(index).size++;
-
-            if (this->m_extrude)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                    getCellInfo(index + Vector3i(
-                        HGCreateTable[j][0],
-                        HGCreateTable[j][1],
-                        HGCreateTable[j][2]
-                    ));
-                }
-            }
         }
     }
 
@@ -258,7 +246,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
         if(lidar->scans.empty() || !lidar->scans[0])
         {
             std::cout << timestamp << "Loading points with scanio" << std::endl;
-            auto hdf5io = FeatureBuild<scanio::ScanProjectIO>(project->kernel, project->schema); 
+            auto hdf5io = scanio::HDF5IOBase(project->kernel, project->schema); 
             ScanPtr scan = hdf5io.ScanIO::load(i, 0, 0);
             if(!scan)
             {
@@ -305,18 +293,6 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
                 Vector3i index = calcIndex(point);
                 local_cells[index].size++;
-
-                if (this->m_extrude)
-                {
-                    for (int j = 0; j < 8; j++)
-                    {
-                        local_cells[index + Vector3i(
-                            HGCreateTable[j][0],
-                            HGCreateTable[j][1],
-                            HGCreateTable[j][2]
-                        )];
-                    }
-                }
             }
             #pragma omp critical
             {
@@ -375,11 +351,32 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
     size_t offset = 0;
 
-    for (auto& [ index, cell ] : m_cells)
+    auto it = m_cells.begin();
+    size_t erased = 0, oldSize = m_cells.size();
+    while (it != m_cells.end())
     {
-        cell.offset = offset;
-        offset += cell.size;
-        m_numPoints += cell.size;
+        auto& cell = it->second;
+        if (cell.size < 20)
+        {
+            // ~1/3 of all cells tend to have abysmally few points in them, which make everything
+            // slower while providing very little benefit. Therefore, we remove them.
+            erased += cell.size;
+            it = m_cells.erase(it);
+        }
+        else
+        {
+            cell.offset = offset;
+            offset += cell.size;
+            m_numPoints += cell.size;
+
+            ++it;
+        }
+    }
+    if (erased > 0)
+    {
+        std::cout << timestamp << "Removed " << erased << " points from "
+                  << (oldSize - m_cells.size()) << " tiny cells." << std::endl;
+        std::cout << timestamp << m_numPoints << " in " << m_cells.size() << " cells remaining" << std::endl;
     }
 
     boost::iostreams::mapped_file_params mmfparam;
@@ -393,6 +390,10 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
     ss.str("");
     ss << timestamp << "Building grid: filling cells";
     lvr2::ProgressBar progressFilling(numScans, ss.str());
+
+    Eigen::Vector4d original, transPoint;
+    BaseVecT point;
+    Vector3i index;
 
     for (size_t i = 0; i < numScans; i++)
     {
@@ -411,11 +412,17 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
 
         for (size_t k = 0; k < numPoints; k++)
         {
-            Eigen::Vector4d original(points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1);
-            Eigen::Vector4d transPoint = finalPose * original;
+            original << points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1;
+            transPoint = finalPose * original;
 
-            auto point = BaseVecT(transPoint[0], transPoint[1], transPoint[2]) * m_scale;
-            auto& cell = getCellInfo(point);
+            point = BaseVecT(transPoint[0], transPoint[1], transPoint[2]) * m_scale;
+            calcIndex(point, index);
+            auto it = m_cells.find(index);
+            if (it == m_cells.end())
+            {
+                continue;
+            }
+            auto& cell = it->second;
             size_t pos = (cell.offset + cell.inserted) * 3;
             cell.inserted++;
             mmfdata[pos] = point.x;
@@ -428,6 +435,12 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
     }
     std::cout << std::endl;
 
+    if (m_extrude)
+    {
+        calcExtrusion();
+    }
+
+    // consistency check
     bool failed = false;
     for (auto& [ index, cell ] : m_cells)
     {
@@ -547,6 +560,33 @@ void BigGrid<BaseVecT>::serialize(std::string path)
 }
 
 template <typename BaseVecT>
+void BigGrid<BaseVecT>::calcExtrusion()
+{
+    std::unordered_set<Vector3i> newCells;
+    for (auto& [ index, _ ] : m_cells)
+    {
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                for (int dz = -1; dz <= 1; dz++)
+                {
+                    Vector3i di = index + Vector3i(dx, dy, dz);
+                    if (m_cells.find(di) == m_cells.end())
+                    {
+                        newCells.insert(di);
+                    }
+                }
+            }
+        }
+    }
+    for (auto& index : newCells)
+    {
+        m_cells[index];
+    }
+}
+
+template <typename BaseVecT>
 size_t BigGrid<BaseVecT>::size()
 {
     return m_cells.size();
@@ -570,7 +610,7 @@ lvr2::floatArr BigGrid<BaseVecT>::points(const Vector3i& index, size_t& numPoint
 {
     lvr2::floatArr points;
     auto it = m_cells.find(index);
-    if (it != m_cells.end())
+    if (it != m_cells.end() && it->second.size > 0)
     {
         auto& cell = it->second;
 
@@ -787,6 +827,10 @@ size_t BigGrid<BaseVecT>::getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vec
         for (auto it = start; it != end; ++it)
         {
             auto& [ index, cell ] = *it;
+            if (cell.size == 0)
+            {
+                continue; // skip extruded cells
+            }
             if (index.x() >= indexMin.x() && index.y() >= indexMin.y() && index.z() >= indexMin.z() &&
                 index.x() <= indexMax.x() && index.y() <= indexMax.y() && index.z() <= indexMax.z())
             {

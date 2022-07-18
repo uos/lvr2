@@ -28,9 +28,6 @@ void ChunkHashGrid::setChunk(std::string layer, int x, int y, int z, T data)
         boundingBox.expand(BaseVector<float>(x * m_chunkSize, y * m_chunkSize, z * m_chunkSize));
         setBoundingBox(boundingBox);
     }
-
-    // add chunk to cache
-    loadChunk(layer, x, y, z, data);
 }
 
 template <typename T>

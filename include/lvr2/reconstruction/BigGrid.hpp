@@ -33,8 +33,7 @@
  * @author Malte Hillmann
  */
 
-#ifndef LAS_VEGAS_BIGGRID_HPP
-#define LAS_VEGAS_BIGGRID_HPP
+#pragma once
 
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/io/DataStruct.hpp"
@@ -48,8 +47,6 @@
 
 namespace lvr2
 {
-
-using Vec = BaseVector<float>;
 
 struct CellInfo
 {
@@ -206,6 +203,8 @@ private:
     template<typename LineType>
     void initFromLineReader(LineReader& lineReader);
 
+    void calcExtrusion();
+
     size_t m_numPoints;
 
     size_t m_pointBufferSize;
@@ -238,6 +237,4 @@ private:
 
 } // namespace lvr2
 
-#include "lvr2/reconstruction/BigGrid.tcc"
-
-#endif // LAS_VEGAS_BIGGRID_HPP
+#include "BigGrid.tcc"

@@ -128,10 +128,10 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("useRansac", bool_switch(&m_options.useRansac),
      "Set this flag for RANSAC based normal estimation.")
 
-    ("cleanContours", value<int>(&m_options.cleanContours)->default_value(m_options.cleanContours),
+    ("cleanContours", value<uint>(&m_options.cleanContours)->default_value(m_options.cleanContours),
      "Remove noise artifacts from contours. Same values are between 2 and 4.")
 
-    ("fillHoles,f", value<int>(&m_options.fillHoles)->default_value(m_options.fillHoles),
+    ("fillHoles,f", value<uint>(&m_options.fillHoles)->default_value(m_options.fillHoles),
      "Maximum size for hole filling.")
 
     ("optimizePlanes,o", bool_switch(&m_options.optimizePlanes),
@@ -140,25 +140,25 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("planeNormalThreshold,pnt", value<float>(&m_options.planeNormalThreshold)->default_value(m_options.planeNormalThreshold),
      "Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
 
-    ("planeIterations", value<int>(&m_options.planeIterations)->default_value(m_options.planeIterations),
+    ("planeIterations", value<uint>(&m_options.planeIterations)->default_value(m_options.planeIterations),
      "Number of iterations for plane optimization.")
 
-    ("removeDanglingArtifacts,r", value<int>(&m_options.removeDanglingArtifacts)->default_value(m_options.removeDanglingArtifacts),
+    ("removeDanglingArtifacts,r", value<uint>(&m_options.removeDanglingArtifacts)->default_value(m_options.removeDanglingArtifacts),
      "Remove dangling artifacts, i.e. remove not connected surfaces smaller than n.")
 
-    ("smallRegionThreshold", value<int>(&m_options.smallRegionThreshold)->default_value(m_options.smallRegionThreshold),
+    ("smallRegionThreshold", value<uint>(&m_options.smallRegionThreshold)->default_value(m_options.smallRegionThreshold),
      "Threshold for small region removal. If 0 nothing will be deleted.")
 
-    ("kd", value<int>(&m_options.kd)->default_value(m_options.kd),
+    ("kd", value<uint>(&m_options.kd)->default_value(m_options.kd),
      "Number of normals used for distance function evaluation")
 
-    ("ki", value<int>(&m_options.ki)->default_value(m_options.ki),
+    ("ki", value<uint>(&m_options.ki)->default_value(m_options.ki),
      "Number of normals used in the normal interpolation process")
 
-    ("kn", value<int>(&m_options.kn)->default_value(m_options.kn),
+    ("kn", value<uint>(&m_options.kn)->default_value(m_options.kn),
      "Size of k-neighborhood used for normal estimation.")
 
-    ("minPlaneSize,mp", value<int>(&m_options.minPlaneSize)->default_value(m_options.minPlaneSize),
+    ("minPlaneSize,mp", value<uint>(&m_options.minPlaneSize)->default_value(m_options.minPlaneSize),
      "Minimum value for plane optimzation.")
 
     ("retesselate,t", bool_switch(&m_options.retesselate),
@@ -201,14 +201,6 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
 
         m_options.extrude = !noExtrude;
 
-        if (m_options.retesselate)
-        {
-            m_options.optimizePlanes = true;
-        }
-        if (m_options.useGPUDistances)
-        {
-            m_options.useGPU = true;
-        }
         if (m_numThreads > 0)
         {
             lvr2::OpenMPConfig::setNumThreads(m_numThreads);
@@ -228,21 +220,6 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         {
             throw error("Input file does not exist.");
         }
-        if (m_options.flipPoint.size() != 3)
-        {
-            throw error("flipPoint has to be a 3D point.");
-        }
-#ifdef LVR2_USE_3DTILES
-        if (m_options.tiles3dCompress && !m_options.hasOutput(lvr2::LSROutput::Tiles3d))
-        {
-            throw error("You can only compress 3D tiles if you also generate them.");
-        }
-#else
-        if (m_options.tiles3dCompress)
-        {
-            throw error("You can only compress 3D tiles if you also compile LVR2 with 3DTiles support.");
-        }
-#endif
     }
     catch(const error& e)
     {
@@ -253,6 +230,8 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         m_printed = true;
         return;
     }
+
+    m_options.ensureCorrectness();
 }
 
 bool Options::printUsage()

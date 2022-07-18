@@ -54,19 +54,6 @@
 #include <yaml-cpp/yaml.h>
 
 
-#if defined CUDA_FOUND
-    #define GPU_FOUND
-
-    #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
-
-    typedef lvr2::CudaSurface GpuSurface;
-#elif defined OPENCL_FOUND
-    #define GPU_FOUND
-
-    #include "lvr2/reconstruction/opencl/ClSurface.hpp"
-    typedef lvr2::ClSurface GpuSurface;
-#endif
-
 #if SIZE_MAX == UCHAR_MAX
 #define MPI_SIZE_T MPI_UNSIGNED_CHAR
 #elif SIZE_MAX == USHRT_MAX
@@ -88,20 +75,11 @@ namespace lvr2
 
     using Vec = lvr2::BaseVector<float>;
 
-    //TODO: write set Methods for certain variables
-
     template<typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
         : m_options(options)
     {
-#ifndef GPU_FOUND
-        if (m_options.useGPU)
-        {
-            std::cout << timestamp << "Warning: useGPU specified but no GPU found. Reverting to CPU" << std::endl;
-            m_options.useGPU = false;
-        }
-#endif
-
+        m_options.ensureCorrectness();
         std::cout << timestamp << "Reconstruction Instance generated..." << std::endl;
     }
 
@@ -111,13 +89,7 @@ namespace lvr2
         BoundingBox<BaseVecT>& newChunksBB,
         std::shared_ptr<ChunkHashGrid> chunkManager)
     {
-#ifndef GPU_FOUND
-        if (m_options.useGPU)
-        {
-            std::cout << timestamp << "Warning: useGPU specified but no GPU found. Reverting to CPU" << std::endl;
-            m_options.useGPU = false;
-        }
-#endif
+        m_options.ensureCorrectness();
 
         auto startTimeMs = timestamp.getCurrentTimeInMs();
 
@@ -143,7 +115,7 @@ namespace lvr2
         float chunkSize = m_options.bgVoxelSize;
 
         std::cout << timestamp << "Starting BigGrid" << std::endl;
-        BigGrid<BaseVecT> bg(chunkSize, project, m_options.scale, m_options.extrude);
+        BigGrid<BaseVecT> bg(chunkSize, project, m_options.scale);
         std::cout << timestamp << "BigGrid finished " << std::endl;
 
         BoundingBox<BaseVecT> bgBB = bg.getBB();
@@ -227,19 +199,17 @@ namespace lvr2
 #endif
             }
 
-            // chunk map for LSROutput::Tiles3d
-            std::unordered_map<Vector3i, typename HLODTree<BaseVecT>::Ptr> chunkMap;
-
-            // file to store chunks in for LSROutput::ChunksHdf5; temp file for LSROutput::Tiles3d
-            std::shared_ptr<HighFive::File> chunkFile = nullptr;
-            if (createChunksHdf5 || create3dTiles)
+            // file to store chunks in for LSROutput::ChunksHdf5
+            std::shared_ptr<HighFive::File> chunkFileHdf5 = nullptr;
+            if (createChunksHdf5)
             {
-                chunkFile = hdf5util::open("chunks.h5", HighFive::File::Truncate);
-                auto root = chunkFile->getGroup("/");
+                chunkFileHdf5 = hdf5util::open("chunks.h5", HighFive::File::Truncate);
+                auto root = chunkFileHdf5->getGroup("/");
 
                 hdf5util::setAttribute(root, "chunk_size", chunkSize);
                 hdf5util::setAttribute(root, "voxel_size", voxelSize);
             }
+
             if (createChunksPly)
             {
                 boost::filesystem::remove_all("chunks");
@@ -251,6 +221,15 @@ namespace lvr2
 
                 std::ofstream out("chunks/chunk_metadata.yaml");
                 out << metadata;
+            }
+
+            // collection of all chunks for LSROutput::Tiles3d
+            std::unordered_map<Vector3i, typename HLODTree<BaseVecT>::Ptr> chunkMap;
+            // file to store chunks in for LSROutput::Tiles3d
+            std::shared_ptr<HighFive::File> chunkFile3dTiles = nullptr;
+            if (create3dTiles)
+            {
+                chunkFile3dTiles = hdf5util::open("temp_meshes.h5", HighFive::File::Truncate);
             }
 
             // V-Grid: vector to save the new chunk names - which chunks have to be reconstructed
@@ -297,28 +276,24 @@ namespace lvr2
                     name_id = std::to_string(i);
                 }
 
-                lvr2::PointBufferPtr p_loader(new lvr2::PointBuffer);
-                p_loader->setPointArray(points, numPoints);
+                auto p_loader = std::make_shared<PointBuffer>(points, numPoints);
 
                 bool hasNormals = false;
                 bool hasDistances = false;
 
-                if (bg.hasNormals())
+                if (!hasNormals && bg.hasNormals())
                 {
                     size_t numNormals;
                     lvr2::floatArr normals = bg.normals(gridbb, numNormals);
                     if (numNormals != numPoints)
                     {
-                        std::cerr << "ERROR: Number of normals does not match number of points" << std::endl;
+                        throw std::runtime_error("Number of normals does not match number of points");
                     }
-                    else
-                    {
-                        p_loader->setNormalArray(normals, numNormals);
-                        hasNormals = true;
-                    }
+                    p_loader->setNormalArray(normals, numNormals);
+                    hasNormals = true;
                 }
 
-                if (m_options.useGPU)
+                if (!hasNormals && m_options.useGPU)
                 {
                     float targetSize = voxelSize / 4;
                     while (numPoints > maxPointsPerChunk)
@@ -337,11 +312,11 @@ namespace lvr2
 
                 auto ps_grid = std::make_shared<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>>(voxelSize, surface, gridbb, true, m_options.extrude);
 
-                if (!hasNormals && m_options.useGPU)
+
+#ifdef GPU_FOUND
+                if ((!hasNormals && m_options.useGPU) || (!hasDistances && m_options.useGPUDistances))
                 {
-                    // std::vector<float> flipPoint = std::vector<float>{100, 100, 100};
                     floatArr points = p_loader->getPointArray();
-                    floatArr normals = floatArr(new float[numPoints * 3]);
                     std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
 
                     GpuSurface gpu_surface(points, numPoints);
@@ -349,45 +324,50 @@ namespace lvr2
                     gpu_surface.setKn(m_options.kn);
                     gpu_surface.setKi(m_options.ki);
                     gpu_surface.setKd(m_options.kd);
-                    gpu_surface.setFlippoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
+                    gpu_surface.setFlippoint(flipPoint.x(), flipPoint.y(), flipPoint.z());
 
-                    try
+                    if (!hasNormals && m_options.useGPU)
                     {
-                        gpu_surface.calculateNormals();
-                    }
-                    catch(std::runtime_error& e)
-                    {
-                        std::string msg = e.what();
-                        if (msg.find("out of memory") == std::string::npos)
+                        floatArr normals = floatArr(new float[numPoints * 3]);
+                        try
                         {
-                            throw; // forward any other exceptions
+                            gpu_surface.calculateNormals();
                         }
-                        std::cerr << "ERROR: Not enough GPU memory. Reducing Points further." << std::endl;
-                        maxPointsPerChunk = maxPointsPerChunk * 0.8;
-                        if (maxPointsPerChunk < minPointsPerChunk)
+                        catch(std::runtime_error& e)
                         {
-                            std::cerr << "Your GPU is garbage. Switching back to CPU" << std::endl;
-                            m_options.useGPU = false;
+                            std::string msg = e.what();
+                            if (msg.find("out of memory") == std::string::npos)
+                            {
+                                throw; // forward any other exceptions
+                            }
+                            std::cerr << "ERROR: Not enough GPU memory. Reducing Points further." << std::endl;
+                            maxPointsPerChunk = maxPointsPerChunk * 0.8;
+                            if (maxPointsPerChunk < minPointsPerChunk)
+                            {
+                                std::cerr << "Your GPU is garbage. Switching back to CPU" << std::endl;
+                                m_options.useGPU = false;
+                            }
+                            i--; // retry this partition
+                            continue;
                         }
-                        i--; // retry this partition
-                        continue;
+                        gpu_surface.getNormals(normals);
+
+                        p_loader->setNormalArray(normals, numPoints);
+                        hasNormals = true;
                     }
-                    gpu_surface.getNormals(normals);
 
-                    p_loader->setNormalArray(normals, numPoints);
-                    hasNormals = true;
-
-                    if(m_options.useGPUDistances)
+                    if(!hasDistances && m_options.useGPUDistances)
                     {
                         auto& query_points = ps_grid->getQueryPoints();
 
-                        std::cout << timestamp << "Computing signed distances in GPU with brute force kernel (kd = 5)." << std::endl;
+                        std::cout << timestamp << "Computing signed distances in GPU with brute force kernel." << std::endl;
                         std::cout << timestamp << "This might take a while...." << std::endl;
                         gpu_surface.distances(query_points, voxelSize);
                         hasDistances = true;
                         std::cout << timestamp << "Done." << std::endl;
                     }
                 }
+#endif // GPU_FOUND
 
                 if (!hasNormals)
                 {
@@ -451,67 +431,55 @@ namespace lvr2
                     mesh.fillHoles(m_options.fillHoles);
                 }
 
-                bool createOtherChunks = createChunksHdf5 || createChunksPly;
-                std::unique_ptr<PMPMesh<BaseVecT>> tiles3dMesh = nullptr;
-                std::unique_ptr<PMPMesh<BaseVecT>> otherChunksMesh = nullptr;
-                if (create3dTiles && createOtherChunks)
+                std::unique_ptr<PMPMesh<BaseVecT>> mesh3dTiles = nullptr;
+                if (createChunksHdf5 && create3dTiles)
                 {
-                    // tiles3d needs a different mesh than other chunks => create copy
-                    tiles3dMesh.reset(new PMPMesh<BaseVecT>(mesh));
-                    otherChunksMesh.reset(new PMPMesh<BaseVecT>(std::move(mesh)));
+                    // if both are needed, create a copy of the mesh
+                    mesh3dTiles = make_unique<PMPMesh<BaseVecT>>(mesh);
                 }
                 else if (create3dTiles)
                 {
-                    tiles3dMesh.reset(new PMPMesh<BaseVecT>(std::move(mesh)));
-                }
-                else
-                {
-                    otherChunksMesh.reset(new PMPMesh<BaseVecT>(std::move(mesh)));
+                    mesh3dTiles = make_unique<PMPMesh<BaseVecT>>(std::move(mesh));
                 }
 
-                pmp::Point oneVoxel = pmp::Point::Constant(voxelSize);
                 pmp::Point epsilon = pmp::Point::Constant(0.0001);
                 auto min = partitionBox.getMin(), max = partitionBox.getMax();
-                pmp::BoundingBox expectedBB(pmp::Point(min.x, min.y, min.z), pmp::Point(max.x, max.y, max.z));
-                expectedBB.min() += oneVoxel / 2 - epsilon;
-                expectedBB.max() += oneVoxel / 2 + epsilon;
+                pmp::BoundingBox expectedBB(pmp::Point(min.x, min.y, min.z) - epsilon,
+                                            pmp::Point(max.x, max.y, max.z) + epsilon);
+
                 if (create3dTiles)
                 {
-                    // completely trim overlap
-                    HLODTree<BaseVecT>::trimChunkOverlap(*tiles3dMesh, expectedBB);
-                    if (tiles3dMesh->numFaces() > 0)
+                    HLODTree<BaseVecT>::trimChunkOverlap(*mesh3dTiles, expectedBB);
+                    if (mesh3dTiles->numFaces() == 0)
                     {
-                        pmp::SurfaceNormals::compute_vertex_normals(tiles3dMesh->getSurfaceMesh(), flipPoint);
-
-                        auto& chunkCoords = partitionChunkCoords[i];
-                        Vector3i chunkPos(chunkCoords.x, chunkCoords.y, chunkCoords.z);
-                        auto bb = tiles3dMesh->getSurfaceMesh().bounds();
-                        chunkMap.emplace(chunkPos, HLODTree<BaseVecT>::leaf(LazyMesh(std::move(*tiles3dMesh), chunkFile), bb));
+                        // don't save other types of chunks either if they would be empty post-trimming
+                        continue;
                     }
+                    auto bb = mesh3dTiles->getSurfaceMesh().bounds();
+                    auto& coords = partitionChunkCoords[i];
+                    Vector3i chunkPos(coords.x, coords.y, coords.z);
+                    chunkMap.emplace(chunkPos, HLODTree<BaseVecT>::leaf(LazyMesh(std::move(*mesh3dTiles), chunkFile3dTiles), bb));
                 }
 
-                if (createOtherChunks)
-                {
-                    // trim the overlap to only a single voxel to save space
-                    expectedBB.min() -= oneVoxel;
-                    expectedBB.max() += oneVoxel;
-                    HLODTree<BaseVecT>::trimChunkOverlap(*otherChunksMesh, expectedBB);
+                // trim the overlap to only a single voxel to save space
+                expectedBB.min() -= pmp::Point::Constant(voxelSize);
+                expectedBB.max() += pmp::Point::Constant(voxelSize);
+                HLODTree<BaseVecT>::trimChunkOverlap(mesh, expectedBB);
 
-                    pmp::SurfaceMesh& surfaceMesh = otherChunksMesh->getSurfaceMesh();
-                    if (surfaceMesh.n_faces() > 0)
+                pmp::SurfaceMesh& surfaceMesh = mesh.getSurfaceMesh();
+                if (surfaceMesh.n_faces() > 0)
+                {
+                    surfaceMesh.remove_vertex_property<bool>("v:feature");
+                    surfaceMesh.remove_edge_property<bool>("e:feature");
+                    if (createChunksHdf5 || create3dTiles)
                     {
-                        surfaceMesh.remove_vertex_property<bool>("v:feature");
-                        surfaceMesh.remove_edge_property<bool>("e:feature");
-                        if (createChunksHdf5)
-                        {
-                            auto group = chunkFile->createGroup("/chunks/" + name_id);
-                            surfaceMesh.write(group);
-                            chunkFile->flush();
-                        }
-                        if (createChunksPly)
-                        {
-                            surfaceMesh.write("chunks/" + name_id + ".ply");
-                        }
+                        auto group = chunkFileHdf5->createGroup("/chunks/" + name_id);
+                        surfaceMesh.write(group);
+                        chunkFileHdf5->flush();
+                    }
+                    if (createChunksPly)
+                    {
+                        surfaceMesh.write("chunks/" + name_id + ".ply");
                     }
                 }
             }
@@ -597,39 +565,36 @@ namespace lvr2
                     stringstream largeScale;
                     largeScale << 1900 + time->tm_year << "_" << 1+ time->tm_mon << "_" << time->tm_mday << "_" <<  time->tm_hour << "h_" << 1 + time->tm_min << "m_" << 1 + time->tm_sec << "s.ply";
 
+                    std::cout << timestamp << "Writing mesh to " << largeScale.str() << std::endl;
                     auto m = ModelPtr(new Model(meshBuffer));
                     ModelFactory::saveModel(m, largeScale.str());
                 }
                 else
                 {
-                    std::cout << "Warning: Mesh is empty!" << std::endl;
+                    std::cout << timestamp << "Warning: Mesh is empty!" << std::endl;
                 }
             }
 
 #ifdef LVR2_USE_3DTILES
             if (create3dTiles && !chunkMap.empty())
             {
+                using Tree = HLODTree<BaseVecT>;
                 std::cout << timestamp << "Creating 3D Tiles: Generating HLOD Tree" << std::endl;
-                auto tree = HLODTree<BaseVecT>::partition(std::move(chunkMap), 2);
+                auto tree = Tree::partition(std::move(chunkMap), 2);
                 tree->finalize(true);
 
-                std::cout << timestamp << "Creating 3D Tiles: Writing to file" << std::endl;
+                std::cout << timestamp << "Creating 3D Tiles: Writing to mesh.3dtiles" << std::endl;
                 Tiles3dIO<BaseVecT> io("mesh.3dtiles");
                 io.write(tree, m_options.tiles3dCompress);
                 tree.reset();
 
-                if (!createChunksHdf5)
-                {
-                    // file was only created for 3d tiles => delete it
-                    std::string filename = chunkFile->getName();
-                    chunkFile.reset();
-                    boost::filesystem::remove(filename);
-                }
-                else
-                {
-                    LazyMesh<BaseVecT>::removeTempDir(chunkFile);
-                }
                 std::cout << timestamp << "Creating 3D Tiles: Finished" << std::endl;
+            }
+            if (chunkFile3dTiles)
+            {
+                std::string filename = chunkFile3dTiles->getName();
+                chunkFile3dTiles.reset();
+                boost::filesystem::remove(filename);
             }
 #endif // LVR2_USE_3DTILES
 

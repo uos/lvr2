@@ -29,120 +29,200 @@
 #define LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP
 
 #include "lvr2/types/ScanTypes.hpp"
-#include "lvr2/reconstruction/PointsetGrid.hpp"
-#include "lvr2/reconstruction/FastBox.hpp"
-#include "lvr2/algorithm/ChunkManager.hpp"
-#include "lvr2/geometry/HalfEdgeMesh.hpp"
+#include "lvr2/algorithm/ChunkHashGrid.hpp"
 #include "lvr2/reconstruction/BigGrid.hpp"
+
+
+#if defined CUDA_FOUND
+    #define GPU_FOUND
+
+    #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
+
+    typedef lvr2::CudaSurface GpuSurface;
+#elif defined OPENCL_FOUND
+    #define GPU_FOUND
+
+    #include "lvr2/reconstruction/opencl/ClSurface.hpp"
+    typedef lvr2::ClSurface GpuSurface;
+#endif
 
 
 namespace lvr2
 {
     enum class LSROutput
     {
-        // Output one big Mesh. Uses A LOT of memory.
+        /// Output one big Mesh. Uses A LOT of memory.
         BigMesh,
-        // Output one mesh per chunk as ply.
+        /// Output one mesh per chunk as ply.
         ChunksPly,
-        // Output one h5 file containing one mesh per chunk.
+        /// Output one h5 file containing one mesh per chunk.
         ChunksHdf5,
 
 #ifdef LVR2_USE_3DTILES
-        // Output a 3D Tiles tileset
+        /// Output a 3D Tiles tileset
         Tiles3d,
 #endif
     };
 
     struct LSROptions
     {
-        // what to produce as output
+        /// what to produce as output
         std::unordered_set<LSROutput> output{LSROutput::BigMesh};
         bool hasOutput(LSROutput o) const
         {
             return output.find(o) != output.end();
         }
 
-        // flag to trigger GPU usage
+        /// Use GPU for normal computation.
         bool useGPU = false;
 
-        // Use GPU for signed distance computation
+        /// Use GPU for signed distance computation.
         bool useGPUDistances = false;
 
-        // voxelsizes for reconstruction.
+        /// voxelsizes for reconstruction. Only the first one produces most types of output.
         std::vector<float> voxelSizes{0.1};
 
-        // chunk size for the BigGrid and VGrid.
+        /// chunk size for the BigGrid and VGrid. Has to be a multiple of every voxel size.
         float bgVoxelSize = 10;
 
-        // scale factor.
+        /// scale factor.
         float scale = 1;
 
-        // Max. Number of Points in a leaf when using kd-tree.
+        /// Max. Number of Points in a leaf when using kd-tree.
         uint nodeSize = 1000000;
 
-        // int flag to trigger partition-method (0 = kd-Tree; 1 = VGrid)
-        int partMethod = 1;
+        /// int flag to trigger partition-method (0 = kd-Tree; 1 = VGrid)
+        uint partMethod = 1;
 
-        //Number of normals used in the normal interpolation process.
-        int ki = 20;
+        /// Number of normals used in the normal interpolation process.
+        uint ki = 20;
 
-        //Number of normals used for distance function evaluation.
-        int kd = 20;
+        /// Number of normals used for distance function evaluation. Has to be > 0.
+        uint kd = 20;
 
-        // Size of k-neighborhood used for normal estimation.
-        int kn = 20;
+        /// Size of k-neighborhood used for normal estimation. Has to be > 0.
+        uint kn = 20;
 
-        //Set this flag for RANSAC based normal estimation.
+        ///Set this flag for RANSAC based normal estimation.
         bool useRansac = false;
 
-        // FlipPoint for GPU normal computation
+        /// FlipPoint for GPU normal computation
         std::vector<float> flipPoint{10000000, 10000000, 10000000};
-        vector<float> getFlipPoint() const
-        {
-            std::vector<float> dest = flipPoint;
-            if(dest.size() != 3)
-            {
-                dest = {10000000, 10000000, 10000000};
-            }
-            return dest;
-        }
 
-        // Extend the grid. Might avoid additional holes in sparse data sets, but can cause
-        // artifacts in dense data sets.
+        /// Extend the grid. Might avoid additional holes in sparse data sets, but can cause
+        /// artifacts in dense data sets.
         bool extrude = true;
 
-        // number for the removal of dangling artifacts.
-        int removeDanglingArtifacts = 0;
+        /// number for the removal of dangling artifacts.
+        uint removeDanglingArtifacts = 0;
 
-        //Remove noise artifacts from contours. Same values are between 2 and 4.
-        int cleanContours = 0;
+        /// Remove noise artifacts from contours. Same values are between 2 and 4.
+        uint cleanContours = 0;
 
-        //Maximum size for hole filling.
-        int fillHoles = 0;
+        /// Maximum size for hole filling.
+        uint fillHoles = 0;
 
-        // Shift all triangle vertices of a cluster onto their shared plane.
+        /// Shift all triangle vertices of a cluster onto their shared plane.
         bool optimizePlanes = false;
 
-        // (Plane Normal Threshold) Normal threshold for plane optimization.
+        /// (Plane Normal Threshold) Normal threshold for plane optimization.
         float planeNormalThreshold = 0.85;
 
-        // Number of iterations for plane optimization.
-        int planeIterations = 3;
+        /// Number of iterations for plane optimization.
+        uint planeIterations = 3;
 
-        // Minimum value for plane optimization.
-        int minPlaneSize = 7;
+        /// Minimum value for plane optimization.
+        uint minPlaneSize = 7;
 
-        // Threshold for small region removal. If 0 nothing will be deleted.
-        int smallRegionThreshold = 0;
+        /// Threshold for small region removal. If 0 nothing will be deleted.
+        uint smallRegionThreshold = 0;
 
-        // Retesselate regions that are in a regression plane. Implies --optimizePlanes.
+        /// Retesselate regions that are in a regression plane. Implies optimizePlanes.
         bool retesselate = false;
 
-        // Threshold for fusing line segments while tesselating.
+        /// Threshold for fusing line segments while tesselating.
         float lineFusionThreshold = 0.01;
 
-        // when generating LSROutput::Tiles3d, compress the meshes using Draco
+        /// when generating LSROutput::Tiles3d, compress the meshes using Draco
         bool tiles3dCompress = false;
+
+        /// Make sure all options are correctly set and consistent with each other.
+        void ensureCorrectness()
+        {
+            LSROptions defaultOptions;
+
+            #define CHECK_OPTION(option, condition, message) \
+                if (condition) \
+                { \
+                    std::cout << timestamp << "Warning: " << message << " Reverting to default value." << std::endl; \
+                    option = defaultOptions.option; \
+                }
+
+            CHECK_OPTION(output, output.empty(), "No output specified.");
+
+#ifndef GPU_FOUND
+            if (useGPU || useGPUDistances)
+            {
+                std::cout << timestamp << "Warning: No GPU found. Falling back to CPU." << std::endl;
+                useGPU = useGPUDistances = false;
+            }
+#endif
+
+            CHECK_OPTION(voxelSizes, voxelSizes.empty(), "No voxel sizes specified.");
+
+            CHECK_OPTION(bgVoxelSize, bgVoxelSize <= 0, "bgVoxelSize has to be greater than 0.");
+
+            auto correctedVoxelSize = std::ceil(bgVoxelSize / voxelSizes[0]) * voxelSizes[0];
+            if (correctedVoxelSize != bgVoxelSize)
+            {
+                std::cout << timestamp << "Warning: bgVoxelSize is not a multiple of voxelSizes[0]. Correcting to " << correctedVoxelSize << std::endl;
+                bgVoxelSize = correctedVoxelSize;
+            }
+            auto it = voxelSizes.begin();
+            while (it != voxelSizes.end())
+            {
+                if (*it <= 0)
+                {
+                    std::cout << timestamp << "Warning: voxelSizes cannot be negative. Ignoring " << *it << std::endl;
+                    voxelSizes.erase(it);
+                }
+                else if (bgVoxelSize != std::ceil(bgVoxelSize / *it) * *it)
+                {
+                    std::cout << timestamp << "Warning: all voxelSizes have to divide bgVoxelSize. Ignoring " << *it << std::endl;
+                    voxelSizes.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+
+            CHECK_OPTION(partMethod, partMethod > 1, "partMethod has to be 0 or 1.");
+
+            CHECK_OPTION(kd, kd <= 0, "kd has to be greater than 0.");
+            CHECK_OPTION(kn, kn <= 0, "kn has to be greater than 0.");
+
+            CHECK_OPTION(flipPoint, flipPoint.size() != 3, "flipPoint has to be of size 3.");
+
+            if (retesselate)
+            {
+                optimizePlanes = true;
+            }
+
+#ifdef LVR2_USE_3DTILES
+            if (tiles3dCompress && !hasOutput(LSROutput::Tiles3d))
+            {
+                std::cout << timestamp << "Warning: tiles3dCompress is only supported for LSROutput::Tiles3d." << std::endl;
+                tiles3dCompress = false;
+            }
+#else
+            if (tiles3dCompress)
+            {
+                std::cout << timestamp << "Warning: tiles3dCompress is only supported when compiling with 3D Tiles support." << std::endl;
+                tiles3dCompress = false;
+            }
+#endif
+        }
     };
 
     template <typename BaseVecT>
