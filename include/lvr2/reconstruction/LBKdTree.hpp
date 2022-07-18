@@ -25,16 +25,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __LBKDTREE_HPP
-#define __LBKDTREE_HPP
+/**
+ * LBKdTree.hpp
+ *
+ * @author Malte Hillmann <mhillmann@uni-osnabrueck.de>
+ */
 
-#include <ctpl.h>
-#include <stdlib.h>
-#include <math.h>
-#include <list>
-#include <unordered_set>
+#pragma once
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "lvr2/geometry/LBPointArray.hpp"
 
@@ -49,61 +48,54 @@ namespace lvr2
 class LBKdTree {
 public:
 
-    LBKdTree( LBPointArray<float>& vertices , int num_threads=8);
+    /**
+     * @brief Construct a new LBKdTree object. Note that the tree only stores indices into `vertices`, which means
+     *        that `vertices` has to be kept in memory and in the sam order.
+     * 
+     * @param vertices Array of vertices to build the tree from.
+     * @param numThreads Number of threads to use for the tree construction. -1 for all cores.
+     */
+    LBKdTree(const LBPointArray<float>& vertices, int numThreads = -1);
 
-    ~LBKdTree();
+    ~LBKdTree() = default;
 
-    void generateKdTree( LBPointArray<float>& vertices );
+    /**
+     * @brief Get the kd-tree Values.
+     *
+     * Values indicate the split value of the kd-tree for all nodes.
+     * For leaves, the value is the index of the point in the vertices array.
+     */
+    std::shared_ptr<LBPointArray<float>> getKdTreeValues()
+    {
+        return m_values;
+    }
 
-    boost::shared_ptr<LBPointArray<float> > getKdTreeValues();
-
-    boost::shared_ptr<LBPointArray<unsigned char> > getKdTreeSplits();
+    /**
+     * @brief Get the kd-tree Splits.
+     *
+     * Splits indicate the axis that each node splits on.
+     *
+     * This array is shorter than the values array, because there are no splits for leaves.
+     */
+    std::shared_ptr<LBPointArray<unsigned char>> getKdTreeSplits()
+    {
+        return m_splits;
+    }
 
 private:
 
-    void generateKdTreeArray(LBPointArray<float>& V,
-            LBPointArray<unsigned int>* sorted_indices,
-            int max_dim);
+    /**
+     * @brief Build the kd-tree.
+     * 
+     * @param position the index in the values/splits array of the current node.
+     * @param indicesStart start of the range of indices to build this node from.
+     * @param indicesEnd end of the range of indices to build this node from.
+     * @param vertices the vertices to build the tree from.
+     */
+    void generateKdTreeRecursive(uint position, uint* indicesStart, uint* indicesEnd, const LBPointArray<float>& vertices);
 
-    boost::shared_ptr<LBPointArray<float> > m_values;
-
-    // split dim 4 dims per split_dim
-    boost::shared_ptr<LBPointArray<unsigned char> > m_splits;
-
-    // Static member
-
-    static int st_num_threads;
-    static int st_depth_threads;
-
-    static ctpl::thread_pool *pool;
-
-    static void resetPool();
-
-    static void fillCriticalIndices(const LBPointArray<float>& V,
-            LBPointArray<unsigned int>& sorted_indices,
-            unsigned int current_dim,
-            float split_value, unsigned int split_index,
-            std::list<unsigned int>& critical_indices_left,
-            std::list<unsigned int>& critical_indices_right);
-
-    static void fillCriticalIndicesSet(const LBPointArray<float>& V,
-            LBPointArray<unsigned int>& sorted_indices,
-            unsigned int current_dim,
-            float split_value, unsigned int split_index,
-            std::unordered_set<unsigned int>& critical_indices_left,
-            std::unordered_set<unsigned int>& critical_indices_right);
-
-
-    static void generateKdTreeRecursive(int id, LBPointArray<float>& V,
-            LBPointArray<unsigned int>* sorted_indices, int current_dim, int max_dim,
-            LBPointArray<float> *values, LBPointArray<unsigned char> *splits,
-            int size, int max_tree_depth, int position, int current_depth);
-
-    static void test(int id, LBPointArray<float>* sorted_indices);
-
-
+    std::shared_ptr<LBPointArray<unsigned char>> m_splits;
+    std::shared_ptr<LBPointArray<float>> m_values;
 };
 
 }  /* namespace lvr2 */
-
-#endif // !__LBKDTREE_HPP
