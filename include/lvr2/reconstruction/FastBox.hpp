@@ -108,7 +108,8 @@ public:
 
     FastBox<BaseVecT>*     getNeighbor(int index);
 
-    inline BaseVecT getCenter() { return m_center; }
+    BaseVecT& getCenter() { return m_center; }
+    const BaseVecT& getCenter() const { return m_center; }
 
 
     /**

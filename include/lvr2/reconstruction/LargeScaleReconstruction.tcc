@@ -398,19 +398,22 @@ namespace lvr2
                     ps_grid->calcDistanceValues();
                 }
 
-                if (chunkManager)
+                if (createBigMesh)
                 {
-                    auto& chunkCoords = partitionChunkCoords[i];
-                    addTSDFChunkManager(chunkCoords.x, chunkCoords.y, chunkCoords.z, ps_grid, chunkManager, layerName);
-                    // also save the grid coordinates of the chunk added to the ChunkManager
-                    newChunks.push_back(chunkCoords);
-                }
-                else
-                {
-                    std::stringstream ss2;
-                    ss2 << name_id << ".ser";
-                    ps_grid->saveCells(ss2.str());
-                    grid_files.push_back(ss2.str());
+                    if (chunkManager)
+                    {
+                        auto& coords = partitionChunkCoords[i];
+                        chunkManager->setChunk(layerName, coords.x, coords.y, coords.z, ps_grid->toPointBuffer());
+                        // also save the grid coordinates of the chunk added to the ChunkManager
+                        newChunks.push_back(coords);
+                    }
+                    else
+                    {
+                        std::stringstream ss2;
+                        ss2 << name_id << ".ser";
+                        ps_grid->saveCells(ss2.str());
+                        grid_files.push_back(ss2.str());
+                    }
                 }
 
                 // also save the "real" bounding box without overlap
@@ -637,45 +640,6 @@ namespace lvr2
 
         cout << "Finished complete reconstruction in " << (timeDiffMs / 1000.0) << "s" << endl;
     }
-
-
-    template <typename BaseVecT>
-    void LargeScaleReconstruction<BaseVecT>::addTSDFChunkManager(int x, int y, int z,
-            std::shared_ptr<lvr2::PointsetGrid<Vec, lvr2::FastBox<Vec>>> ps_grid, std::shared_ptr<ChunkHashGrid> cm,
-            std::string layerName)
-    {
-        size_t counter = 0;
-        size_t csize = ps_grid->getNumberOfCells();
-        vector<QueryPoint<BaseVecT>>& qp = ps_grid->getQueryPoints();
-        boost::shared_array<float> centers(new float[3 * csize]);
-        //cant save bool?
-        boost::shared_array<int> extruded(new int[csize]);
-        boost::shared_array<float> queryPoints(new float[8 * csize]);
-
-        for(auto it = ps_grid->firstCell() ; it!= ps_grid->lastCell(); it++)
-        {
-            for (int j = 0; j < 3; ++j)
-            {
-                centers[3 * counter + j] = it->second->getCenter()[j];
-            }
-
-            extruded[counter] = it->second->m_extruded;
-
-            for (int k = 0; k < 8; ++k)
-            {
-                queryPoints[8 * counter + k] = qp[it->second->getVertex(k)].m_distance;
-            }
-            ++counter;
-        }
-
-        PointBufferPtr chunk = PointBufferPtr(new PointBuffer(centers, csize));
-        chunk->addFloatChannel(queryPoints, "tsdf_values", csize, 8);
-        chunk->addChannel(extruded, "extruded", csize, 1);
-        chunk->addAtomic<unsigned int>(csize, "num_voxel");
-
-        cm->setChunk<PointBufferPtr>(layerName, x, y, z, chunk);
-    }
-
 
     template<typename BaseVecT>
     HalfEdgeMesh<BaseVecT> LargeScaleReconstruction<BaseVecT>::getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB,
@@ -1000,7 +964,7 @@ namespace lvr2
                 int z = (int) floor(partitionBoxes->at(chunk).getCentroid().z / chunkSize);
 
 
-                addTSDFChunkManager(x, y, z, ps_grid, chunkManager, layerName);
+                chunkManager->setChunk(layerName, x, y, z, ps_grid->toPointBuffer());
                 BaseVector<int> chunkCoordinates(x, y, z);
                 // also save the grid coordinates of the chunk added to the ChunkManager
                 newChunks.push_back(chunkCoordinates);

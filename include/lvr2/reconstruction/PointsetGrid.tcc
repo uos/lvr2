@@ -46,9 +46,6 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
     HashGrid<BaseVecT, BoxT>(cellSize, bb, isVoxelsize, extrude),
     m_surface(surface)
 {
-    auto v_min = this->m_boundingBox.getMin();
-    auto v_max = this->m_boundingBox.getMax();
-
     // Get indexed point buffer pointer
     auto numPoint = m_surface->pointBuffer()->numPoints();
 
@@ -56,13 +53,44 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
 
     FloatChannel pts = *(m_surface->pointBuffer()->getFloatChannel("points"));
 
-    // Iterator over all points, calc lattice indices and add lattice points to the grid
-    for(size_t i = 0; i < numPoint; i++)
+    std::unordered_set<Vector3i> requiredCells;
+
+    #pragma omp parallel
     {
-        BaseVecT pt = pts[i];
-        auto index = (pt - v_min) / this->m_voxelsize;
-        this->addLatticePoint(calcIndex(index.x), calcIndex(index.y), calcIndex(index.z));
+        std::unordered_set<Vector3i> localCells;
+        Vector3i index;
+        #pragma omp for schedule(static) nowait
+        for(size_t i = 0; i < numPoint; i++)
+        {
+            this->calcIndex(pts[i], index);
+            localCells.insert(index);
+        }
+
+        if (extrude)
+        {
+            std::unordered_set<Vector3i> innerOnly = localCells;
+            for (auto& index : innerOnly)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    for (int dy = -1; dy <= 1; dy++)
+                    {
+                        for (int dz = -1; dz <= 1; dz++)
+                        {
+                            localCells.insert(index + Vector3i(dx, dy, dz));
+                        }
+                    }
+                }
+            }
+        }
+
+        #pragma omp critical
+        {
+            requiredCells.insert(localCells.begin(), localCells.end());
+        }
     }
+
+    this->addLatticePoints(requiredCells);
 }
 
 template<typename BaseVecT, typename BoxT>

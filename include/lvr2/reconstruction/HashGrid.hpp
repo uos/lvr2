@@ -45,10 +45,8 @@
 #include "lvr2/reconstruction/QueryPoint.hpp"
 
 #include "lvr2/types/PointBuffer.hpp"
+#include "lvr2/types/MatrixTypes.hpp"
 
-using std::string;
-using std::vector;
-using std::unordered_map;
 
 namespace lvr2
 {
@@ -76,7 +74,7 @@ public:
      *
      * @param file      Output file name.
      */
-    virtual void saveGrid(string file) = 0;
+    virtual void saveGrid(std::string file) = 0;
 
     /***
      * @brief   Is extrude is set to true, additional cells within the
@@ -96,19 +94,17 @@ template<typename BaseVecT, typename BoxT>
 class HashGrid : public GridBase
 {
 public:
+    /// type alias for box map
+    typedef std::unordered_map<Vector3i, BoxT*> box_map;
 
-    BoundingBox<BaseVecT> qp_bb;
-
-    /// Typedef to alias box map
-    typedef unordered_map<size_t, BoxT*> box_map;
-
-    typedef unordered_map<size_t, size_t> qp_map;
+    /// type alias for list of query points
+    typedef std::vector<QueryPoint<BaseVecT>*> qp_list;
 
     /// Typedef to alias iterators for box maps
-    typedef typename unordered_map<size_t, BoxT*>::iterator  box_map_it;
+    typedef typename box_map::iterator box_map_it;
 
     /// Typedef to alias iterators to query points
-    typedef typename vector<QueryPoint<BaseVecT>>::iterator query_point_it;
+    typedef typename qp_list::iterator query_point_it;
 
     /***
      * @brief   Constructor
@@ -132,7 +128,7 @@ public:
      *
      * @param   file        File representing the HashGrid (See HashGrid::serialize(string file) )
      */
-    HashGrid(string file);
+    HashGrid(std::string file);
 
     /***
      * @brief Construct a new Hash Grid object
@@ -141,7 +137,7 @@ public:
      * @param boundingBox
      * @param voxelsize
      */
-    HashGrid(std::vector<string>& files, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
+    HashGrid(std::vector<std::string>& files, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
 
 
     /***
@@ -153,7 +149,7 @@ public:
      * @param boundingBox bounding box of the complete grid
      * @param voxelsize the voxelsize of the grid
      */
-    HashGrid(std::vector<string>& files, std::vector<BoundingBox<BaseVecT>> innerBoxes, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
+    HashGrid(std::vector<std::string>& files, std::vector<BoundingBox<BaseVecT>> innerBoxes, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
 
     /***
      * Constructs a new Hash Grid object from multiple PointBufferPtr,
@@ -171,6 +167,13 @@ public:
             float voxelSize);
 
     /**
+     * @brief Create a PointBuffer containing the cells and distances in the "tsdf_values" channel.
+     *
+     * Performs the inverse of the HashGrid constructor taking a std::vector<PointBufferPtr>
+     */
+    PointBufferPtr toPointBuffer() const;
+
+    /**
      *
      * @param i         Discrete x position within the grid.
      * @param j         Discrete y position within the grid.
@@ -178,28 +181,35 @@ public:
      * @param distance  Signed distance to the represented surface
      *                  at the position within the grid.
      */
-    virtual void addLatticePoint(int i, int j, int k, float distance = 0.0);
+    void addLatticePoint(int i, int j, int k, float distance = 0.0) override;
+
+    /**
+     * @brief Add many lattice points at once
+     * 
+     * @param indices the {i,j,k} indices of the lattice points
+     */
+    void addLatticePoints(const std::unordered_set<Vector3i>& indices);
 
     /**
      * @brief   Saves a representation of the grid to the given file
      *
      * @param file      Output file name.
      */
-    virtual void saveGrid(string file);
+    void saveGrid(std::string file) override;
 
     /**
      * @brief Saves a representation of the cells to the given file
      *
      * @param file Output file name.
      */
-    void saveCells(string file);
+    void saveCells(std::string file);
 
-    virtual void serialize(string file);
+    virtual void serialize(std::string file);
 
     /***
      * @brief   Returns the number of generated cells.
      */
-    size_t getNumberOfCells() { return m_cells.size(); }
+    size_t getNumberOfCells() const { return m_cells.size(); }
 
     /**
      * @return  Returns an iterator to the first box in the cell map.
@@ -221,107 +231,82 @@ public:
      */
     query_point_it lastQueryPoint() { return m_queryPoints.end(); }
 
-    vector<QueryPoint<BaseVecT>>& getQueryPoints() { return m_queryPoints; }
+    std::vector<QueryPoint<BaseVecT>>& getQueryPoints() { return m_queryPoints; }
+    const std::vector<QueryPoint<BaseVecT>>& getQueryPoints() const { return m_queryPoints; }
 
-    box_map getCells() { return m_cells; }
+    box_map& getCells() { return m_cells; }
+    const box_map& getCells() const { return m_cells; }
 
     /***
      * @brief   Destructor
      */
     virtual ~HashGrid();
 
-    /**
-     * @brief   Set x, y, z values to scale the scene or use combinations
-     *          of +/-1 to mapp different coordinate systems
-     */
-    void setCoordinateScaling(float x, float y, float z);
+    void setBB(BoundingBox<BaseVecT>& bb) { m_boundingBox = bb; }
 
-    size_t getMaxIndex() { return m_maxIndex; }
-
-    size_t getMaxIndexX() { return m_maxIndexX; }
-
-    size_t getMaxIndexY() { return m_maxIndexY; }
-
-    size_t getMaxIndexZ() { return m_maxIndexZ; }
-
-    void setBB(BoundingBox<BaseVecT>& bb);
-
-    BoundingBox<BaseVecT> & getBoundingBox() { return m_boundingBox; }
-
-    /**
-     * @brief Calculates the hash value for the given index triple
-     */
-    inline size_t hashValue(int i, int j, int k) const
-    {
-        return i * m_maxIndexSquare + j * m_maxIndex + k;
-    }
+    BoundingBox<BaseVecT>& getBoundingBox() { return m_boundingBox; }
+    const BoundingBox<BaseVecT>& getBoundingBox() const { return m_boundingBox; }
 
     /**
      * @brief   Searches for a existing shared lattice point in the grid.
      *
      * @param position  Number of a possible neighbor
-     * @param x         x index within the grid
-     * @param y         y index within the grid
-     * @param z         z index within the grid
+     * @param index     index within the grid
      * @return          Query point index of the found point, INVALID_INDEX otherwise
      */
-    unsigned int findQueryPoint(
-        int position,
-        int x,
-        int y,
-        int z
-    );
+    uint findQueryPoint(int position, const Vector3i& index) const;
 
-    /**
-     * @brief   Calculates needed lattice parameters.
-     */
-    void calcIndices();
+    void calcIndex(const BaseVecT& vec, Vector3i& index) const
+    {
+        index.x() = std::floor(vec.x / m_voxelsize);
+        index.y() = std::floor(vec.y / m_voxelsize);
+        index.z() = std::floor(vec.z / m_voxelsize);
+    }
+    Vector3i calcIndex(const BaseVecT& vec) const
+    {
+        Vector3i ret;
+        calcIndex(vec, ret);
+        return ret;
+    }
 
+    void indexToCenter(const Vector3i& index, BaseVecT& center) const
+    {
+        center.x = (index.x() + 0.5f) * m_voxelsize;
+        center.y = (index.y() + 0.5f) * m_voxelsize;
+        center.z = (index.z() + 0.5f) * m_voxelsize;
+    }
+    BaseVecT indexToCenter(const Vector3i& index) const
+    {
+        BaseVecT ret;
+        indexToCenter(index, ret);
+        return ret;
+    }
 
 protected:
+    /// Fill in the neighbors of all cells
+    void fillNeighbors();
 
-    inline int calcIndex(float f)
+    BoxT* addBox(const Vector3i& index, const BaseVecT& center, float* distances);
+    BoxT* addBox(const BaseVecT& center, float* distances)
     {
-        return f < 0 ? f - .5 : f + .5;
+        return addBox(calcIndex(center), center, distances);
+    }
+    BoxT* addBox(const Vector3i& index, float* distances)
+    {
+        return addBox(index, indexToCenter(index), distances);
     }
 
     /// Map to handle the boxes in the grid
-    box_map         m_cells;
-
-    qp_map          m_qpIndices;
+    box_map m_cells;
 
     /// The voxelsize used for reconstruction
-    float                       m_voxelsize;
-
-    /// The absolute maximal index of the reconstruction grid
-    size_t                      m_maxIndex;
-
-    /// The squared maximal index of the reconstruction grid
-    size_t                      m_maxIndexSquare;
-
-    /// The maximal index in x direction
-    size_t                      m_maxIndexX;
-
-    /// The maximal index in y direction
-    size_t                      m_maxIndexY;
-
-    /// The maximal index in z direction
-    size_t                      m_maxIndexZ;
+    float m_voxelsize;
 
     /// A vector containing the query points for the reconstruction
-    vector<QueryPoint<BaseVecT>> m_queryPoints;
-
-    /// True if a local tetraeder decomposition is used for reconstruction
-    string                      m_boxType;
+    std::vector<QueryPoint<BaseVecT>> m_queryPoints;
 
     /// Bounding box of the covered volume
-    BoundingBox<BaseVecT>       m_boundingBox;
-
-    /// The maximum used cell index within the grid
-    unsigned int                m_globalIndex;
-
-    /// Save scaling factors (i.e., -1 or +1) to mapp different coordinate systems
-    BaseVecT                  m_coordinateScales;
+    BoundingBox<BaseVecT> m_boundingBox;
 };
 
 } /* namespace lvr */

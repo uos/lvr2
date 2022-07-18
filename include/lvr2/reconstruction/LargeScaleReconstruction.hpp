@@ -202,19 +202,6 @@ namespace lvr2
     private:
 
         /**
-         * This method adds the tsdf-values of one chunk to the ChunkManager-Layer
-         *
-         * @params x, y, z grid-coordinates for the chunk
-         * @param ps_grid HashGrid which contains the tsdf-values for the voxel
-         * @param cm ChunkManager instance which manages the chunks
-         * @param layerName the name of the chunkManager-layer
-         */
-        void addTSDFChunkManager(int x, int y, int z,
-                shared_ptr<lvr2::PointsetGrid<BaseVector<float>, lvr2::FastBox<BaseVector<float>>>> ps_grid,
-                shared_ptr<ChunkHashGrid> cm,
-                std::string layerName);
-
-        /**
          * This Method Schedules the work for the MPI Clients
          */
         uint* mpiScheduler(std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes, BigGrid<BaseVecT>& bg, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager);

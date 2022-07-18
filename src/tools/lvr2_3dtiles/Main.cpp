@@ -478,12 +478,8 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
 
         pmp::Point min = chunk_pos.cast<float>() * chunk_size;
         pmp::Point max = min + pmp::Point::Constant(chunk_size);
-        pmp::BoundingBox expected_bb(min, max);
-
-        pmp::Point one_voxel = pmp::Point::Constant(voxel_size);
         pmp::Point epsilon = pmp::Point::Constant(0.0001);
-        expected_bb.min() += one_voxel / 2 - epsilon;
-        expected_bb.max() += one_voxel / 2 + epsilon;
+        pmp::BoundingBox expected_bb(min - epsilon, max + epsilon);
         Tree::trimChunkOverlap(pmp_mesh, expected_bb);
 
         if (mesh.n_faces() == 0)

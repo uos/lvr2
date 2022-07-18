@@ -63,14 +63,6 @@ public:
 
 private:
 
-    /**
-     * @brief Rounds the given value to the neares integer value
-     */
-    inline int calcIndex(float f)
-    {
-        return f < 0 ? f - .5 : f + .5;
-    }
-
     PointsetSurfacePtr<BaseVecT> m_surface;
 };
 

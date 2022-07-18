@@ -56,11 +56,9 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     unsigned int global_index = mesh.numVertices();
 
     // Iterate through cells and calculate local approximations
-    typename HashGrid<BaseVecT, BoxT>::box_map_it it;
-    for(it = m_grid->firstCell(); it != m_grid->lastCell(); it++)
+    for(auto& [ _, cell ] : m_grid->getCells())
     {
-        b = it->second;
-        b->getSurface(mesh, m_grid->getQueryPoints(), global_index);
+        cell->getSurface(mesh, m_grid->getQueryPoints(), global_index);
         if(!timestamp.isQuiet())
             ++progress;
     }
@@ -74,11 +72,11 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     {
         string SFComment = timestamp.getElapsedTime() + "Flipping edges  ";
         ProgressBar SFProgress(this->m_grid->getNumberOfCells(), SFComment);
-        for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
+        for(auto& [ _, cell ] : m_grid->getCells())
         {
 
             SharpBox<BaseVecT>* sb;
-            sb = reinterpret_cast<SharpBox<BaseVecT>* >(it->second);
+            sb = reinterpret_cast<SharpBox<BaseVecT>* >(cell);
             if(sb->m_containsSharpFeature)
             {
                 OptionalVertexHandle v1;
@@ -165,10 +163,10 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
      {
          string comment = timestamp.getElapsedTime() + "Optimizing plane contours  ";
          ProgressBar progress(this->m_grid->getNumberOfCells(), comment);
-         for(it = this->m_grid->firstCell(); it != this->m_grid->lastCell(); it++)
+         for(auto& [ _, cell ] : m_grid->getCells())
          {
           // F... type safety. According to traits object this is OK!
-             BilinearFastBox<BaseVecT>* box = reinterpret_cast<BilinearFastBox<BaseVecT>*>(it->second);
+             BilinearFastBox<BaseVecT>* box = reinterpret_cast<BilinearFastBox<BaseVecT>*>(cell);
              box->optimizePlanarFaces(mesh, 5);
              ++progress;
          }
@@ -194,11 +192,9 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(
 //    unsigned int global_index = mesh.numVertices();
 
 //    // Iterate through cells and calculate local approximations
-//    typename HashGrid<BaseVecT, BoxT>::box_map_it it;
-//    for(it = m_grid->firstCell(); it != m_grid->lastCell(); it++)
+//    for(auto& [ _, cell ] : m_grid->getCells())
 //    {
-//        b = it->second;
-//        b->getSurface(mesh, m_grid->getQueryPoints(), global_index, bb, duplicates, comparePrecision);
+//        cell->getSurface(mesh, m_grid->getQueryPoints(), global_index, bb, duplicates, comparePrecision);
 //        if(!timestamp.isQuiet())
 //            ++progress;
 //    }
