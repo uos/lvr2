@@ -193,9 +193,9 @@ private:
     void initKdTree();
 
     // V->points and normals
-    LBPointArray<float> V;
-    LBPointArray<float>* kd_tree_values;
-    LBPointArray<unsigned char>* kd_tree_splits;
+    LBPointArray<float> V; // owned by caller
+    LBPointArray<float>* kd_tree_values; // owned by kd_tree_gen
+    LBPointArray<unsigned char>* kd_tree_splits; // owned by kd_tree_gen
 
     LBPointArray<float> Result_Normals;
     boost::shared_ptr<LBKdTree> kd_tree_gen;

@@ -33,30 +33,33 @@ namespace lvr2
 // static helper methods
 
 template<typename T>
-static void mallocPointArray(LBPointArray<T>& m) {
-
+static void mallocPointArray(LBPointArray<T>& m)
+{
     m.elements = (T*)malloc(m.width * m.dim * sizeof(T));
+}
 
+template<typename T>
+static void freePointArray(LBPointArray<T>& m)
+{
+    if (m.elements)
+    {
+        free(m.elements);
+        m.elements = NULL;
+    }
 }
 
 template<typename T>
 static void generatePointArray(LBPointArray<T>& m, int width, int dim)
 {
-
     m.dim = dim;
     m.width = width;
-    m.elements = (T*)malloc(m.width * m.dim * sizeof(T) );
-
+    mallocPointArray(m);
 }
 
 template<typename T>
 static void generatePointArray(int id, LBPointArray<T>& m, int width, int dim)
 {
-
-    m.dim = dim;
-    m.width = width;
-    m.elements = (T*)malloc(m.width * m.dim * sizeof(T) );
-
+    generatePointArray(m, width, dim);
 }
 
 template<typename T>

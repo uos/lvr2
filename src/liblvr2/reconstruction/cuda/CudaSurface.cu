@@ -1029,17 +1029,8 @@ CudaSurface::CudaSurface(LBPointArray<float>& points, int device)
     this->getCudaInformation(device);
 
     this->V.dim = points.dim;
-
     this->V.width = points.width;
-
-    mallocPointArray(V);
-
-    for(int i = 0; i<points.width*points.dim; i++)
-    {
-
-        this->V.elements[i] = points.elements[i];
-
-    }
+    this->V.elements = points.elements;
 
     this->initKdTree();
 
@@ -1053,11 +1044,7 @@ CudaSurface::CudaSurface(floatArr& points, size_t num_points, int device)
     this->getCudaInformation(device);
 
     this->V.dim = 3;
-
-    this->V.width = static_cast<int>(num_points);
-
-    mallocPointArray(V);
-
+    this->V.width = num_points;
     this->V.elements = points.get();
 
     this->initKdTree();
@@ -1184,8 +1171,6 @@ void CudaSurface::initKdTree() {
     generateDevicePointArray( D_kd_tree_splits, this->kd_tree_splits->width, this->kd_tree_splits->dim);
     copyToDevicePointArray( this->kd_tree_splits, D_kd_tree_splits);
 
-
-    //free(this->kd_tree.elements);
 }
 
 void CudaSurface::setKn(int kn) {
@@ -1337,16 +1322,9 @@ CudaSurface::~CudaSurface() {
     // clearn up resulting normals and kd_tree
     // Pointcloud has to be cleaned up by user
 
-    if(this->Result_Normals.width > 0){
-        free(Result_Normals.elements);
-    }
+    freePointArray(this->Result_Normals);
 
     this->freeGPU();
-
-
-    // if(this->kd_tree_values->width > 0){
-    //     free(this->kd_tree_values.elements);
-    // }
 }
 
 

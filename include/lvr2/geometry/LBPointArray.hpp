@@ -40,15 +40,29 @@ namespace lvr2
 
 template<typename T>
 struct LBPointArray {
-    unsigned int width;
-    unsigned int dim;
-    T* elements;
+    unsigned int width = 0;
+    unsigned int dim = 1;
+    T* elements = NULL;
 };
 
 // static helper methods
 
 template<typename T>
 static void mallocPointArray(LBPointArray<T>& m);
+
+template<typename T>
+static void freePointArray(LBPointArray<T>& m);
+
+/// deleter for shared_ptr<LBPointArray<T>>
+template<typename T>
+struct LBPointArrayDeleter
+{
+    void operator()(LBPointArray<T>* m)
+    {
+        freePointArray(*m);
+        delete m;
+    }
+};
 
 template<typename T>
 static void generatePointArray(LBPointArray<T>& m, int width, int dim);

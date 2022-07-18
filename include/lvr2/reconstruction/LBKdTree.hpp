@@ -77,6 +77,8 @@ private:
 
     static ctpl::thread_pool *pool;
 
+    static void resetPool();
+
     static void fillCriticalIndices(const LBPointArray<float>& V,
             LBPointArray<unsigned int>& sorted_indices,
             unsigned int current_dim,
