@@ -187,6 +187,11 @@ public:
      */
     string  getInputFileName() const;
 
+  /**
+     * @brief   Returns the input file name
+     */
+    string  getOutputDirectory() const;
+
     /**
      * @brief Get the Input Mesh Name
      * 

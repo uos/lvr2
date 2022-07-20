@@ -279,7 +279,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 std::cout << timestamp 
                           << "Transforming scan: " << std::endl 
                           <<  (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>() << std::endl;
-                          
+
                 // Transform the new pointcloud
                 transformPointCloud<float>(
                     std::make_shared<Model>(scan->points),
@@ -1042,14 +1042,17 @@ int main(int argc, char** argv)
 
     for(const std::string& output_filename : options.getOutputFileNames())
     {
+        boost::filesystem::path outputDir(options.getOutputDirectory());
         boost::filesystem::path selectedFile( output_filename );
+        boost::filesystem::path outputFile = outputDir/selectedFile;
         std::string extension = selectedFile.extension().string();
+
         cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
 
         if (extension == ".h5")
         {
 
-            HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(output_filename));
+            HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(outputFile.string()));
             MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
             auto mesh_io = meshio::HDF5IO(kernel, schema);
 
@@ -1063,8 +1066,7 @@ int main(int argc, char** argv)
 
         if (extension == "")
         {
-
-            DirectoryKernelPtr kernel = DirectoryKernelPtr(new DirectoryKernel(output_filename));
+            DirectoryKernelPtr kernel = DirectoryKernelPtr(new DirectoryKernel(outputFile.string()));
             MeshSchemaDirectoryPtr schema = MeshSchemaDirectoryPtr(new MeshSchemaDirectory());
             auto mesh_io = meshio::DirectoryIO(kernel, schema);
 
@@ -1076,7 +1078,7 @@ int main(int argc, char** argv)
             continue;
         }
 
-        ModelFactory::saveModel(m, output_filename);
+        ModelFactory::saveModel(m, outputFile.string());
     }
 
     if (matResult.m_keypoints)
