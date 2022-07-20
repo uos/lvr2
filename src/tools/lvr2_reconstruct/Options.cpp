@@ -113,7 +113,7 @@ Options::Options(int argc, char** argv)
         ("useGPU", "GPU normal estimation")
         ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint --flipPoint x y z" )
         ("texFromImages,q", "Foo Bar ............")
-        ("scanPositionIndex", value<int>(&m_scanPositionIndex),"Index of the h5 Scan Position used for the reconstructor")
+        ("scanPositionIndex",  value<std::vector<int>>(&m_scanPositionIndex)->multitoken(), "List of scan positions to load from a scan project")
         ("minSpectralChannel", value<int>(&m_minSpectralChannel)->default_value(0), "Minimum Spectral Channel Index for Ranged Texture Generation")
         ("maxSpectralChannel", value<int>(&m_maxSpectralChannel)->default_value(0), "Maximum Spectral Channel Index for Ranged Texture Generation")
         ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
@@ -486,7 +486,7 @@ bool Options::hasScanPositionIndex() const
     return m_variables.count("scanPositionIndex");
 }
 
-int Options::getScanPositionIndex() const
+vector<int> Options::getScanPositionIndex() const
 {
     return m_scanPositionIndex;
 }
