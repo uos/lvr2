@@ -813,8 +813,9 @@ lvr2::floatArr BigGrid<BaseVecT>::getPointCloud(size_t& numPoints)
 template <typename BaseVecT>
 size_t BigGrid<BaseVecT>::getSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<std::pair<const CellInfo*, size_t>>& cellCounts) const
 {
-    Vector3i indexMin = calcIndex(bb.getMin());
-    Vector3i indexMax = calcIndex(bb.getMax());
+    auto min = bb.getMin(), max = bb.getMax();
+    Vector3i indexMin = calcIndex(min);
+    Vector3i indexMax = calcIndex(max);
 
     cellCounts.clear();
 

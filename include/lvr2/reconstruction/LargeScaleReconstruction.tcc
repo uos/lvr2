@@ -459,7 +459,35 @@ namespace lvr2
             }
             std::cout << timestamp << "Skipped PartitionBoxes: " << partitionBoxesSkipped << std::endl;
 
+            // make sure Chunks are properly saved, in case the following code crashes
+            chunkFileHdf5->flush();
+            H5Fclose(chunkFileHdf5->getId());
+            chunkFileHdf5.reset();
+
             std::cout << timestamp << "finished" << std::endl;
+
+#ifdef LVR2_USE_3DTILES
+            if (create3dTiles && !chunkMap.empty())
+            {
+                using Tree = HLODTree<BaseVecT>;
+                std::cout << timestamp << "Creating 3D Tiles: Generating HLOD Tree" << std::endl;
+                auto tree = Tree::partition(std::move(chunkMap), 2);
+                tree->finalize(true);
+
+                std::cout << timestamp << "Creating 3D Tiles: Writing to mesh.3dtiles" << std::endl;
+                Tiles3dIO<BaseVecT> io("mesh.3dtiles");
+                io.write(tree, m_options.tiles3dCompress);
+                tree.reset();
+
+                std::cout << timestamp << "Creating 3D Tiles: Finished" << std::endl;
+            }
+            if (chunkFile3dTiles)
+            {
+                std::string filename = chunkFile3dTiles->getName();
+                chunkFile3dTiles.reset();
+                boost::filesystem::remove(filename);
+            }
+#endif // LVR2_USE_3DTILES
 
             if(createBigMesh)
             {
@@ -496,6 +524,8 @@ namespace lvr2
                 lvr2::PMPMesh<Vec> mesh;
 
                 reconstruction->getMesh(mesh);
+                reconstruction.reset();
+                hg.reset();
 
                 if (m_options.removeDanglingArtifacts)
                 {
@@ -548,29 +578,6 @@ namespace lvr2
                     std::cout << timestamp << "Warning: Mesh is empty!" << std::endl;
                 }
             }
-
-#ifdef LVR2_USE_3DTILES
-            if (create3dTiles && !chunkMap.empty())
-            {
-                using Tree = HLODTree<BaseVecT>;
-                std::cout << timestamp << "Creating 3D Tiles: Generating HLOD Tree" << std::endl;
-                auto tree = Tree::partition(std::move(chunkMap), 2);
-                tree->finalize(true);
-
-                std::cout << timestamp << "Creating 3D Tiles: Writing to mesh.3dtiles" << std::endl;
-                Tiles3dIO<BaseVecT> io("mesh.3dtiles");
-                io.write(tree, m_options.tiles3dCompress);
-                tree.reset();
-
-                std::cout << timestamp << "Creating 3D Tiles: Finished" << std::endl;
-            }
-            if (chunkFile3dTiles)
-            {
-                std::string filename = chunkFile3dTiles->getName();
-                chunkFile3dTiles.reset();
-                boost::filesystem::remove(filename);
-            }
-#endif // LVR2_USE_3DTILES
 
             std::cout << lvr2::timestamp << "added/changed " << newChunks.size() << " chunks in layer " << layerName << std::endl;
         }
