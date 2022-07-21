@@ -40,12 +40,9 @@
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
-#include <boost/filesystem/path.hpp>
 #include <cstring>
 #include <fstream>
 #include <iostream>
-
-using namespace std;
 
 namespace lvr2
 {
@@ -60,8 +57,8 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
       m_pointBufferSize(1024)
 {
 
-    boost::filesystem::path selectedFile(cloudPath[0]);
-    string extension = selectedFile.extension().string();
+    fs::path selectedFile(cloudPath[0]);
+    std::string extension = selectedFile.extension().string();
     m_voxelSize = voxelsize;
 
     // First, parse whole file to get BoundingBox and amount of points
@@ -146,7 +143,7 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader& lineReader)
     mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
     mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
 
-    mmfparam.path = "points.mmf";
+    mmfparam.path = (m_pathPrefix / "points.mmf").string();
     m_PointFile.open(mmfparam);
     float* mmfdata = (float*)m_PointFile.data();
 
@@ -154,14 +151,14 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader& lineReader)
     unsigned char* mmfdata_color;
     if constexpr(LineTypeTraits<LineType>::hasNormal)
     {
-        mmfparam.path = "normals.mmf";
+        mmfparam.path = (m_pathPrefix / "normals.mmf").string();
         m_NormalFile.open(mmfparam);
         mmfdata_normal = (float*)m_NormalFile.data();
         m_hasNormal = true;
     }
     if constexpr(LineTypeTraits<LineType>::hasColor)
     {
-        mmfparam.path = "colors.mmf";
+        mmfparam.path = (m_pathPrefix / "colors.mmf").string();
         m_ColorFile.open(mmfparam);
         mmfdata_color = (unsigned char*)m_ColorFile.data();
         m_hasColor = true;
@@ -204,15 +201,15 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader& lineReader)
 
 
 template <typename BaseVecT>
-BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale, bool extrude)
+BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, const fs::path& pathPrefix, float scale, bool extrude)
         : m_numPoints(0),
+          m_voxelSize(voxelsize),
           m_extrude(extrude),
           m_scale(scale),
+          m_pathPrefix(pathPrefix),
           m_hasNormal(false),
           m_hasColor(false)
 {
-    m_voxelSize = voxelsize;
-
     if (project->changed.size() <= 0)
     {
         std::cout << timestamp << "Warning: No new scans to be added!" << std::endl;
@@ -383,7 +380,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, floa
     mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
     mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
 
-    mmfparam.path = "points.mmf";
+    mmfparam.path = (m_pathPrefix / "points.mmf").string();
     m_PointFile.open(mmfparam);
     float* mmfdata = (float*)m_PointFile.data();
 
@@ -507,17 +504,17 @@ BigGrid<BaseVecT>::BigGrid(std::string path)
     mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
     mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
 
-    mmfparam.path = "points.mmf";
+    mmfparam.path = (m_pathPrefix / "points.mmf").string();
     m_PointFile.open(mmfparam);
 
     if (m_hasNormal)
     {
-        mmfparam.path = "normals.mmf";
+        mmfparam.path = (m_pathPrefix / "normals.mmf").string();
         m_NormalFile.open(mmfparam);
     }
     if (m_hasColor)
     {
-        mmfparam.path = "colors.mmf";
+        mmfparam.path = (m_pathPrefix / "colors.mmf").string();
         m_ColorFile.open(mmfparam);
     }
 }
@@ -557,6 +554,24 @@ void BigGrid<BaseVecT>::serialize(std::string path)
         fwrite(ofs, cell.inserted);
     }
     ofs.close();
+}
+
+template <typename BaseVecT>
+BigGrid<BaseVecT>::~BigGrid()
+{
+    m_PointFile.close();
+    fs::remove(m_pathPrefix / "points.mmf");
+
+    if (m_hasNormal)
+    {
+        m_NormalFile.close();
+        fs::remove(m_pathPrefix / "normals.mmf");
+    }
+    if (m_hasColor)
+    {
+        m_ColorFile.close();
+        fs::remove(m_pathPrefix / "colors.mmf");
+    }
 }
 
 template <typename BaseVecT>

@@ -81,7 +81,7 @@ class VirtualGrid
      *
      * @return the chunks of the virtual Grid
      */
-    std::shared_ptr<std::vector<BoundingBox<BaseVecT>>> getBoxes() { return std::make_shared<std::vector<BoundingBox<BaseVecT>>>(m_boxes); }
+    const std::vector<BoundingBox<BaseVecT>>& getBoxes() { return m_boxes; }
 
   private:
     /**

@@ -194,15 +194,16 @@ int main(int argc, char** argv)
 
     BoundingBox<Vec> boundingBox;
     std::shared_ptr<ChunkHashGrid> cm = nullptr;
+    fs::path chunkFile = options.m_options.tempDir / "chunk_manager.h5";
     if (options.m_partMethod == 1)
     {
-        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid("chunked_mesh.h5", 50, boundingBox, options.m_options.bgVoxelSize));
+        cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(chunkFile.string(), 50, boundingBox, options.m_options.bgVoxelSize));
     }
 
     BoundingBox<Vec> bb;
     lsr.chunkAndReconstruct(project, bb, cm);
 
-    fs::remove("chunked_mesh.h5"); // TODO: check if anyone needs/can use this
+    fs::remove_all(options.m_options.tempDir);
 
     std::cout << timestamp << "Program end." << std::endl;
 

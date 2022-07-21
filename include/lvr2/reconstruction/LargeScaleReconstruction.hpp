@@ -31,271 +31,336 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/algorithm/ChunkHashGrid.hpp"
 #include "lvr2/reconstruction/BigGrid.hpp"
+#include "lvr2/reconstruction/FastBox.hpp"
 
 
 #if defined CUDA_FOUND
-    #define GPU_FOUND
 
-    #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
+#define GPU_FOUND
+#include "lvr2/reconstruction/cuda/CudaSurface.hpp"
+typedef lvr2::CudaSurface GpuSurface;
 
-    typedef lvr2::CudaSurface GpuSurface;
 #elif defined OPENCL_FOUND
-    #define GPU_FOUND
 
-    #include "lvr2/reconstruction/opencl/ClSurface.hpp"
-    typedef lvr2::ClSurface GpuSurface;
+#define GPU_FOUND
+#include "lvr2/reconstruction/opencl/ClSurface.hpp"
+typedef lvr2::ClSurface GpuSurface;
+
 #endif
 
 
 namespace lvr2
 {
-    enum class LSROutput
-    {
-        /// Output one big Mesh. Uses A LOT of memory.
-        BigMesh,
-        /// Output one mesh per chunk as ply.
-        ChunksPly,
-        /// Output one h5 file containing one mesh per chunk.
-        ChunksHdf5,
+
+enum class LSROutput
+{
+    /**
+     * @brief Output one big Mesh. Uses A LOT of memory.
+     *
+     * Mesh is saved to "<outputDir>/mesh.ply".
+     */
+    BigMesh,
+    /**
+     * @brief Output one mesh per chunk as ply.
+     *
+     * Meshes are saved to "<outputDir>/chunks/<x>_<y>_<z>.ply".
+     * Requires partMethod == 1 (VGrid).
+     */
+    ChunksPly,
+    /**
+     * @brief Output one h5 file containing one mesh per chunk.
+     *
+     * Meshes are saved to "<outputDir>/chunks.h5" -> "/chunks/<x>_<y>_<z>".
+     * Requires partMethod == 1 (VGrid).
+     */
+    ChunksHdf5,
 
 #ifdef LVR2_USE_3DTILES
-        /// Output a 3D Tiles tileset
-        Tiles3d,
+    /**
+     * @brief Output a 3D Tiles tileset.
+     *
+     * tileset is saved to "<outputDir>/mesh.3dtiles/".
+     * Requires partMethod == 1 (VGrid).
+     */
+    Tiles3d,
 #endif
-    };
+};
 
-    struct LSROptions
+struct LSROptions
+{
+    /// what to produce as output
+    std::unordered_set<LSROutput> output{LSROutput::BigMesh};
+    bool hasOutput(LSROutput o) const
     {
-        /// what to produce as output
-        std::unordered_set<LSROutput> output{LSROutput::BigMesh};
-        bool hasOutput(LSROutput o) const
-        {
-            return output.find(o) != output.end();
-        }
+        return output.find(o) != output.end();
+    }
 
-        /// Use GPU for normal computation.
-        bool useGPU = false;
+    /// Directory to place output in. Defaults to "./<current date>/"
+    fs::path outputDir;
 
-        /// Use GPU for signed distance computation.
-        bool useGPUDistances = false;
+    /// Directory for temporary output. Defaults to <outputDir>/temp/
+    fs::path tempDir;
 
-        /// voxelsizes for reconstruction. Only the first one produces most types of output.
-        std::vector<float> voxelSizes{0.1};
+    /// Use GPU for normal computation.
+    bool useGPU = false;
 
-        /// chunk size for the BigGrid and VGrid. Has to be a multiple of every voxel size.
-        float bgVoxelSize = 10;
+    /// Use GPU for signed distance computation.
+    bool useGPUDistances = false;
 
-        /// scale factor.
-        float scale = 1;
+    /// voxelsizes for reconstruction. Only the first one produces most types of output.
+    std::vector<float> voxelSizes{0.1};
 
-        /// Max. Number of Points in a leaf when using kd-tree.
-        uint nodeSize = 1000000;
+    /// chunk size for the BigGrid and VGrid. Has to be a multiple of every voxel size.
+    float bgVoxelSize = 10;
 
-        /// int flag to trigger partition-method (0 = kd-Tree; 1 = VGrid)
-        uint partMethod = 1;
+    /// scale factor.
+    float scale = 1;
 
-        /// Number of normals used in the normal interpolation process.
-        uint ki = 20;
+    /// Max. Number of Points in a leaf when using kd-tree.
+    uint nodeSize = 1000000;
 
-        /// Number of normals used for distance function evaluation. Has to be > 0.
-        uint kd = 20;
+    /// int flag to trigger partition-method (0 = kd-Tree; 1 = VGrid)
+    uint partMethod = 1;
 
-        /// Size of k-neighborhood used for normal estimation. Has to be > 0.
-        uint kn = 20;
+    /// Number of normals used in the normal interpolation process.
+    uint ki = 20;
 
-        ///Set this flag for RANSAC based normal estimation.
-        bool useRansac = false;
+    /// Number of normals used for distance function evaluation. Has to be > 0.
+    uint kd = 20;
 
-        /// FlipPoint for GPU normal computation
-        std::vector<float> flipPoint{10000000, 10000000, 10000000};
+    /// Size of k-neighborhood used for normal estimation. Has to be > 0.
+    uint kn = 20;
 
-        /// Extend the grid. Might avoid additional holes in sparse data sets, but can cause
-        /// artifacts in dense data sets.
-        bool extrude = true;
+    ///Set this flag for RANSAC based normal estimation.
+    bool useRansac = false;
 
-        /// number for the removal of dangling artifacts.
-        uint removeDanglingArtifacts = 0;
+    /// FlipPoint for GPU normal computation
+    std::vector<float> flipPoint{10000000, 10000000, 10000000};
 
-        /// Remove noise artifacts from contours. Same values are between 2 and 4.
-        uint cleanContours = 0;
+    /// Extend the grid. Might avoid additional holes in sparse data sets, but can cause
+    /// artifacts in dense data sets.
+    bool extrude = true;
 
-        /// Maximum size for hole filling.
-        uint fillHoles = 0;
+    /// number for the removal of dangling artifacts.
+    uint removeDanglingArtifacts = 0;
 
-        /// Shift all triangle vertices of a cluster onto their shared plane.
-        bool optimizePlanes = false;
+    /// Remove noise artifacts from contours. Same values are between 2 and 4.
+    uint cleanContours = 0;
 
-        /// (Plane Normal Threshold) Normal threshold for plane optimization.
-        float planeNormalThreshold = 0.85;
+    /// Maximum size for hole filling.
+    uint fillHoles = 0;
 
-        /// Number of iterations for plane optimization.
-        uint planeIterations = 3;
+    /// Shift all triangle vertices of a cluster onto their shared plane.
+    bool optimizePlanes = false;
 
-        /// Minimum value for plane optimization.
-        uint minPlaneSize = 7;
+    /// (Plane Normal Threshold) Normal threshold for plane optimization.
+    float planeNormalThreshold = 0.85;
 
-        /// Threshold for small region removal. If 0 nothing will be deleted.
-        uint smallRegionThreshold = 0;
+    /// Number of iterations for plane optimization.
+    uint planeIterations = 3;
 
-        /// Retesselate regions that are in a regression plane. Implies optimizePlanes.
-        bool retesselate = false;
+    /// Minimum value for plane optimization.
+    uint minPlaneSize = 7;
 
-        /// Threshold for fusing line segments while tesselating.
-        float lineFusionThreshold = 0.01;
+    /// Threshold for small region removal. If 0 nothing will be deleted.
+    uint smallRegionThreshold = 0;
 
-        /// when generating LSROutput::Tiles3d, compress the meshes using Draco
-        bool tiles3dCompress = false;
+    /// Retesselate regions that are in a regression plane. Implies optimizePlanes.
+    bool retesselate = false;
 
-        /// Make sure all options are correctly set and consistent with each other.
-        void ensureCorrectness()
-        {
-            LSROptions defaultOptions;
+    /// Threshold for fusing line segments while tesselating.
+    float lineFusionThreshold = 0.01;
 
-            #define CHECK_OPTION(option, condition, message) \
+    /// when generating LSROutput::Tiles3d, compress the meshes using Draco
+    bool tiles3dCompress = false;
+
+    /// Make sure all options are correctly set and consistent with each other.
+    void ensureCorrectness()
+    {
+        LSROptions defaultOptions;
+
+#define CHECK_OPTION(option, condition, message) \
                 if (condition) \
                 { \
                     std::cout << timestamp << "Warning: " << message << " Reverting to default value." << std::endl; \
                     option = defaultOptions.option; \
                 }
 
-            CHECK_OPTION(output, output.empty(), "No output specified.");
-
-#ifndef GPU_FOUND
-            if (useGPU || useGPUDistances)
+        if (partMethod != 1)
+        {
+            if (hasOutput(LSROutput::ChunksPly))
             {
-                std::cout << timestamp << "Warning: No GPU found. Falling back to CPU." << std::endl;
-                useGPU = useGPUDistances = false;
+                std::cout << timestamp << "Warning: Output ChunksPly requires partMethod == 1." << std::endl;
+                output.erase(LSROutput::ChunksPly);
             }
-#endif
-
-            CHECK_OPTION(voxelSizes, voxelSizes.empty(), "No voxel sizes specified.");
-
-            CHECK_OPTION(bgVoxelSize, bgVoxelSize <= 0, "bgVoxelSize has to be greater than 0.");
-
-            auto correctedVoxelSize = std::ceil(bgVoxelSize / voxelSizes[0]) * voxelSizes[0];
-            if (correctedVoxelSize != bgVoxelSize)
+            if (hasOutput(LSROutput::ChunksHdf5))
             {
-                std::cout << timestamp << "Warning: bgVoxelSize is not a multiple of voxelSizes[0]. Correcting to " << correctedVoxelSize << std::endl;
-                bgVoxelSize = correctedVoxelSize;
+                std::cout << timestamp << "Warning: Output ChunksHdf5 requires partMethod == 1." << std::endl;
+                output.erase(LSROutput::ChunksHdf5);
             }
-            auto it = voxelSizes.begin();
-            while (it != voxelSizes.end())
-            {
-                if (*it <= 0)
-                {
-                    std::cout << timestamp << "Warning: voxelSizes cannot be negative. Ignoring " << *it << std::endl;
-                    voxelSizes.erase(it);
-                }
-                else if (bgVoxelSize != std::ceil(bgVoxelSize / *it) * *it)
-                {
-                    std::cout << timestamp << "Warning: all voxelSizes have to divide bgVoxelSize. Ignoring " << *it << std::endl;
-                    voxelSizes.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-
-            CHECK_OPTION(partMethod, partMethod > 1, "partMethod has to be 0 or 1.");
-
-            CHECK_OPTION(kd, kd <= 0, "kd has to be greater than 0.");
-            CHECK_OPTION(kn, kn <= 0, "kn has to be greater than 0.");
-
-            CHECK_OPTION(flipPoint, flipPoint.size() != 3, "flipPoint has to be of size 3.");
-
-            if (retesselate)
-            {
-                optimizePlanes = true;
-            }
-
 #ifdef LVR2_USE_3DTILES
-            if (tiles3dCompress && !hasOutput(LSROutput::Tiles3d))
+            if (hasOutput(LSROutput::Tiles3d))
             {
-                std::cout << timestamp << "Warning: tiles3dCompress is only supported for LSROutput::Tiles3d." << std::endl;
-                tiles3dCompress = false;
-            }
-#else
-            if (tiles3dCompress)
-            {
-                std::cout << timestamp << "Warning: tiles3dCompress is only supported when compiling with 3D Tiles support." << std::endl;
-                tiles3dCompress = false;
+                std::cout << timestamp << "Warning: Output Tiles3d requires partMethod == 1." << std::endl;
+                output.erase(LSROutput::Tiles3d);
             }
 #endif
         }
-    };
 
-    template <typename BaseVecT>
-    class LargeScaleReconstruction
-    {
+        CHECK_OPTION(output, output.empty(), "No output specified.");
+
+        if (outputDir.empty())
+        {
+            std::stringstream ss;
+            time_t now = time(0);
+            ss << "./" << std::put_time(std::localtime(&now), "%Y-%m-%d_%H-%M-%S") << "/";
+            outputDir = ss.str();
+            std::cout << timestamp << "LargeScaleReconstruction: Output directory set to " << outputDir << std::endl;
+        }
+        fs::create_directories(outputDir);
+        if (tempDir.empty())
+        {
+            tempDir = outputDir / "temp/";
+        }
+        fs::create_directories(tempDir);
+
+#ifndef GPU_FOUND
+        if (useGPU || useGPUDistances)
+        {
+            std::cout << timestamp << "Warning: No GPU found. Falling back to CPU." << std::endl;
+            useGPU = useGPUDistances = false;
+        }
+#endif
+
+        CHECK_OPTION(voxelSizes, voxelSizes.empty(), "No voxel sizes specified.");
+
+        CHECK_OPTION(bgVoxelSize, bgVoxelSize <= 0, "bgVoxelSize has to be greater than 0.");
+
+        auto correctedVoxelSize = std::ceil(bgVoxelSize / voxelSizes[0]) * voxelSizes[0];
+        if (correctedVoxelSize != bgVoxelSize)
+        {
+            std::cout << timestamp << "Warning: bgVoxelSize is not a multiple of voxelSizes[0]. Correcting to " << correctedVoxelSize << std::endl;
+            bgVoxelSize = correctedVoxelSize;
+        }
+        auto it = voxelSizes.begin();
+        while (it != voxelSizes.end())
+        {
+            if (*it <= 0)
+            {
+                std::cout << timestamp << "Warning: voxelSizes cannot be negative. Ignoring " << *it << std::endl;
+                voxelSizes.erase(it);
+            }
+            else if (bgVoxelSize != std::ceil(bgVoxelSize / *it) * *it)
+            {
+                std::cout << timestamp << "Warning: all voxelSizes have to divide bgVoxelSize. Ignoring " << *it << std::endl;
+                voxelSizes.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+
+        CHECK_OPTION(partMethod, partMethod > 1, "partMethod has to be 0 or 1.");
+
+        CHECK_OPTION(kd, kd <= 0, "kd has to be greater than 0.");
+        CHECK_OPTION(kn, kn <= 0, "kn has to be greater than 0.");
+
+        CHECK_OPTION(flipPoint, flipPoint.size() != 3, "flipPoint has to be of size 3.");
+
+        if (retesselate)
+        {
+            optimizePlanes = true;
+        }
+
+#ifdef LVR2_USE_3DTILES
+        if (tiles3dCompress && !hasOutput(LSROutput::Tiles3d))
+        {
+            std::cout << timestamp << "Warning: tiles3dCompress is only supported for LSROutput::Tiles3d." << std::endl;
+            tiles3dCompress = false;
+        }
+#else
+        if (tiles3dCompress)
+        {
+            std::cout << timestamp << "Warning: tiles3dCompress is only supported when compiling with 3D Tiles support." << std::endl;
+            tiles3dCompress = false;
+        }
+#endif
+    }
+};
+
+template <typename BaseVecT>
+class LargeScaleReconstruction
+{
+public:
+    using BoxT = FastBox<BaseVecT>;
+
+    /**
+     * Constructor with parameters in a struct
+     */
+    LargeScaleReconstruction(LSROptions options = LSROptions());
+
+    /**
+     * splits the given PointClouds and calculates the reconstruction
+     *
+     * @param project ScanProject containing Scans
+     * @param newChunksBB sets the Bounding Box of the reconstructed area
+     * @param chunkManager an optional chunkManager to handle chunks. Only needed when using the VGrid partition method.
+     * @return
+     */
+    void chunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager = nullptr);
+
+    /**
+     *
+     * this method splits the given PointClouds in to Chunks and calculates all required values for a later
+     * reconstruction within a MPI network
+     * @param project ScanProject containing Scans
+     * @return
+     */
+    int trueMpiAndReconstructMaster(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager, int size);
+
+    /**
+     *
+     * this methods splits the given PointClouds via kd-Tree and calculates all required values for a later
+     * reconstruction within a MPI network
+     * @param project ScanProject containing Scans
+     * @return
+     */
+    int trueMpiAndReconstructSlave();
+
+    /**
+     *
+     * reconstruct a given area (+ neighboring chunks from a chunkmanager) with a given voxelsize
+     *
+     * @param newChunksBB area to be reconstructed
+     * @param chunkHashGrid chunkmanager to manage chunks
+     * @param voxelSize reconstruction parameter
+     * @return reconstructed HalfEdgeMesh<BaseVecT>
+     */
+    HalfEdgeMesh<BaseVecT> getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid,  float voxelSize);
 
 
-    public:
-        /**
-         * Constructor with parameters in a struct
-         */
-         LargeScaleReconstruction(LSROptions options = LSROptions());
-
-        /**
-         * splits the given PointClouds and calculates the reconstruction
-         *
-         * @param project ScanProject containing Scans
-         * @param newChunksBB sets the Bounding Box of the reconstructed area
-         * @param chunkManager an optional chunkManager to handle chunks. Only needed when using the VGrid partition method.
-         * @return
-         */
-        void chunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager = nullptr);
-
-        /**
-         *
-         * this method splits the given PointClouds in to Chunks and calculates all required values for a later
-         * reconstruction within a MPI network
-         * @param project ScanProject containing Scans
-         * @return
-         */
-        int trueMpiAndReconstructMaster(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager, int size);
-
-        /**
-         *
-         * this methods splits the given PointClouds via kd-Tree and calculates all required values for a later
-         * reconstruction within a MPI network
-         * @param project ScanProject containing Scans
-         * @return
-         */
-        int trueMpiAndReconstructSlave();
-
-        /**
-         *
-         * reconstruct a given area (+ neighboring chunks from a chunkmanager) with a given voxelsize
-         *
-         * @param newChunksBB area to be reconstructed
-         * @param chunkHashGrid chunkmanager to manage chunks
-         * @param voxelSize reconstruction parameter
-         * @return reconstructed HalfEdgeMesh<BaseVecT>
-         */
-        HalfEdgeMesh<BaseVecT> getPartialReconstruct(BoundingBox<BaseVecT> newChunksBB, std::shared_ptr<ChunkHashGrid> chunkHashGrid,  float voxelSize);
 
 
 
+private:
+
+    /**
+     * This Method Schedules the work for the MPI Clients
+     */
+    uint* mpiScheduler(const std::vector<BoundingBox<BaseVecT>>& partitionBoxes, BigGrid<BaseVecT>& bg, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager);
+
+    /**
+     * This Method Collects results of MPI Clients and saves the completed reconstruction
+     */
+    void mpiCollector(const std::vector<BoundingBox<BaseVecT>>& partitionBoxes, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager, uint* partitionBoxesSkipped);
 
 
-    private:
+    LSROptions m_options;
+};
 
-        /**
-         * This Method Schedules the work for the MPI Clients
-         */
-        uint* mpiScheduler(std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes, BigGrid<BaseVecT>& bg, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager);
-
-        /**
-         * This Method Collects results of MPI Clients and saves the completed reconstruction
-         */
-        void mpiCollector(std::shared_ptr<vector<BoundingBox<BaseVecT>>> partitionBoxes, BoundingBox<BaseVecT>& cbb, std::shared_ptr<ChunkHashGrid> chunkManager, uint* partitionBoxesSkipped);
-
-
-        LSROptions m_options;
-    };
 } // namespace lvr2
 
-#include "lvr2/reconstruction/LargeScaleReconstruction.tcc"
+#include "LargeScaleReconstruction.tcc"
 
 #endif // LAS_VEGAS_LARGESCALERECONSTRUCTION_HPP

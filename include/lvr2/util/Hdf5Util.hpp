@@ -245,7 +245,7 @@ bool exist(const HighFive::Group& group, const std::string& groupName);
  * @param filename   Path to Hdf5 file
  * @return std::shared_ptr<HighFive::File> shared_ptr of HighFive::File object 
  */
-std::shared_ptr<HighFive::File> open(const std::string& filename, 
+std::shared_ptr<HighFive::File> open(const boost::filesystem::path& filename,
     unsigned int flag = HighFive::File::ReadWrite);
 
 /**

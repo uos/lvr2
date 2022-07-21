@@ -421,7 +421,7 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
     // this would ideally be done with a kd-tree, but there is currently no index-preserving kd-tree
     // implementation and making one just for this is not worth the effort
 
-    constexpr float MAX_DISTANCE = 1e-6f;
+    constexpr float MAX_DISTANCE = 0.001f;
     #pragma omp parallel for
     for (size_t i = 1; i < candidates.size(); i++)
     {
@@ -538,7 +538,6 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
         }
     }
 
-    size_t added = 0;
     for (auto& [ fH, vertices ] : deleted_faces)
     {
         for (auto& vH : vertices)
@@ -554,7 +553,6 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
         {
             auto new_fH = mesh.add_face(vertices);
             fprop_map.copy(fH, new_fH);
-            added++;
         }
         catch (const pmp::TopologyException&)
         {}

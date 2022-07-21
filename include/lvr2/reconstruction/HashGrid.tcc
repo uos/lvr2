@@ -373,7 +373,11 @@ BoxT* HashGrid<BaseVecT, BoxT>::addBox(const Vector3i& index, const BaseVecT& ce
         }
         box->setVertex(i, current_index);
     }
-    m_cells[index] = box;
+    if (!m_cells.emplace(index, box).second)
+    {
+        delete box;
+        throw std::runtime_error("HashGrid::addBox: Cell already exists!");
+    }
     return box;
 }
 

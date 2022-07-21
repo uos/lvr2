@@ -30,6 +30,11 @@ public:
     static void write_hdf5(HighFive::Group& group, const SurfaceMesh& mesh);
 
     static std::unordered_set<std::string>& supported_extensions();
+    static bool supports_extension(const std::string& extension)
+    {
+        auto& extensions = supported_extensions();
+        return extensions.find(extension) != extensions.end();
+    }
 
 private:
     void read_off(SurfaceMesh& mesh);

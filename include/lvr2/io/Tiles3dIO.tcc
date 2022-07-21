@@ -77,6 +77,7 @@ void Tiles3dIO<BaseVecT>::write(TreeConstPtr& tree, bool compress, float scale)
 
     Cesium3DTiles::Tileset tileset;
 
+    tree->finalize();
     writeTiles(tileset.root, tree, compress, m_rootDir, "tiles/s");
 
     Tiles3dIO_internal::writeTileset(tileset, m_rootDir, scale);

@@ -235,20 +235,19 @@ bool exist(const HighFive::Group& group, const std::string& groupName)
     return false;
 }
 
-std::shared_ptr<HighFive::File> open(const std::string& filename, unsigned int flag)
+std::shared_ptr<HighFive::File> open(const boost::filesystem::path& filename, unsigned int flag)
 {
     std::shared_ptr<HighFive::File> hdf5_file;
-    boost::filesystem::path path(filename);
 
-    if (!boost::filesystem::exists(path))
+    if (!boost::filesystem::exists(filename))
     {
         hdf5_file.reset(
-            new HighFive::File(filename, flag | HighFive::File::Create));
+            new HighFive::File(filename.string(), flag | HighFive::File::Create));
         hdf5util::writeBaseStructure(hdf5_file);
     }
     else
     {
-        hdf5_file.reset(new HighFive::File(filename, flag));
+        hdf5_file.reset(new HighFive::File(filename.string(), flag));
     }
 
     return hdf5_file;

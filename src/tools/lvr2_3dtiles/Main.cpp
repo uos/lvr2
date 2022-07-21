@@ -58,14 +58,13 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
                  std::shared_ptr<HighFive::File> mesh_file,
                  std::function<void(pmp::SurfaceMesh&, const std::string&)> read_mesh);
 
-void compute_normals(pmp::SurfaceMesh& mesh);
+const pmp::Point flip_point(0, 0, 100000);
 
 int main(int argc, char** argv)
 {
     fs::path input_file;
     std::string input_file_extension;
     fs::path output_dir = "chunk.3dtiles";
-    bool calc_normals;
     float chunk_size = -1;
     int combine_depth = 2;
     float scale = 100.0f;
@@ -93,9 +92,6 @@ int main(int argc, char** argv)
          "This will make the entire process considerably slower (~4x runtime), " // TODO: double check numbers
          "but a lot less memory intensive (usually < 1 GB instead of 2x input filesize).\n"
          "Requires the input to be already chunked.")
-
-        ("calcNormals,N", bool_switch(&calc_normals),
-         "Calculate normals")
 
         ("chunkSize,c", value<float>(&chunk_size)->default_value(chunk_size),
          "When loading a Mesh: Split the Mesh into parts with this size.")
@@ -215,7 +211,8 @@ int main(int argc, char** argv)
             chunk_files.push_back(entry.path().string());
         }
 
-        read_chunks(chunks, chunk_files, chunk_size, voxel_size, mesh_file, [&path](auto & mesh, auto & filename)
+        read_chunks(chunks, chunk_files, chunk_size, voxel_size, mesh_file,
+                    [&path](auto & mesh, auto & filename)
         {
             mesh.read(path + filename);
         });
@@ -234,7 +231,8 @@ int main(int argc, char** argv)
             auto chunk_group = std::make_shared<HighFive::Group>(root.getGroup("/chunks"));
             std::vector<std::string> chunk_files = chunk_group->listObjectNames();
 
-            read_chunks(chunks, chunk_files, chunk_size, voxel_size, mesh_file, [&chunk_group](auto & mesh, auto & group_name)
+            read_chunks(chunks, chunk_files, chunk_size, voxel_size, mesh_file,
+                        [&chunk_group](auto & mesh, auto & group_name)
             {
                 mesh.read(chunk_group->getGroup(group_name));
             });
@@ -296,7 +294,7 @@ int main(int argc, char** argv)
 
         }
     }
-    else if (pmp::SurfaceMeshIO::supported_extensions().count(input_file_extension))
+    else if (pmp::SurfaceMeshIO::supports_extension(input_file_extension))
     {
         std::cout << " using pmp::SurfaceMeshIO" << std::endl;
         mesh.getSurfaceMesh().read(input_file.string());
@@ -321,11 +319,8 @@ int main(int argc, char** argv)
         }
         surface_mesh.garbage_collection();
 
-        if (calc_normals)
-        {
-            std::cout << timestamp << "Calculating normals" << std::endl;
-            compute_normals(surface_mesh);
-        }
+        std::cout << timestamp << "Calculating normals" << std::endl;
+        pmp::SurfaceNormals::compute_vertex_normals(surface_mesh, flip_point);
 
         for (auto file : mesh_out_files)
         {
@@ -333,22 +328,6 @@ int main(int argc, char** argv)
             pmp::IOFlags flags;
             flags.use_binary = true;
             surface_mesh.write(file.string(), flags);
-        }
-    }
-
-    if (!chunks.empty())
-    {
-        if (calc_normals)
-        {
-            std::cout << timestamp << "Calculating normals" << std::endl;
-            ProgressBar progress(chunks.size(), "Calculating normals");
-            for (auto& [ _, chunk ] : chunks)
-            {
-                auto pmp_mesh = chunk->mesh()->modify();
-                compute_normals(pmp_mesh->getSurfaceMesh());
-                ++progress;
-            }
-            std::cout << "\r";
         }
     }
 
@@ -416,9 +395,8 @@ int main(int argc, char** argv)
                 auto bb = lazy_mesh.get()->getSurfaceMesh().bounds();
                 lazy_mesh.allowUnload();
                 // Add the mesh as a child to a node to have one LOD
-                std::vector<Tree::Ptr> leaves;
-                leaves.push_back(Tree::leaf(std::move(lazy_mesh), bb));
-                segments.push_back(Tree::node(std::move(leaves)));
+                auto leaf = Tree::leaf(std::move(lazy_mesh), bb);
+                segments.emplace_back(Tree::node())->children().push_back(std::move(leaf));
             }
         }
         tree = Tree::partition(std::move(segments), 0);
@@ -476,6 +454,9 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
         auto& mesh = pmp_mesh.getSurfaceMesh();
         read_mesh(mesh, name);
 
+        // calculate normals before trimming for better normals along borders
+        pmp::SurfaceNormals::compute_vertex_normals(mesh, flip_point);
+
         pmp::Point min = chunk_pos.cast<float>() * chunk_size;
         pmp::Point max = min + pmp::Point::Constant(chunk_size);
         pmp::Point epsilon = pmp::Point::Constant(0.0001);
@@ -502,26 +483,4 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
     }
 
     std::cout << timestamp << "Found " << chunks.size() << " Chunks" << std::endl;
-}
-
-void compute_normals(pmp::SurfaceMesh& mesh)
-{
-    if (mesh.has_vertex_property("v:normal"))
-    {
-        return;
-    }
-    auto v_normal = mesh.vertex_property<pmp::Normal>("v:normal");
-    #pragma omp parallel for schedule(dynamic,64)
-    for (size_t i = 0; i < mesh.vertices_size(); i++)
-    {
-        pmp::Vertex vH(i);
-        if (!mesh.is_deleted(vH))
-        {
-            v_normal[vH] = pmp::SurfaceNormals::compute_vertex_normal(mesh, vH);
-            if (v_normal[vH].z() < 0)
-            {
-                v_normal[vH] = -v_normal[vH];
-            }
-        }
-    }
 }

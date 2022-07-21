@@ -185,6 +185,9 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("output,O", value<std::vector<lvr2::LSROutput>>(&output)->multitoken()->default_value(output),
      "What to generate with the reconstruction. Supports multiple options. See below for details.")
 
+    ("outputDir", value<fs::path>(&m_options.outputDir),
+     "Output directory for generated files. Defaults to \"./<current date>/\".")
+
     ("scale", value<float>(&m_options.scale)->default_value(m_options.scale),
      "Scaling factor, applied to all input points")
 

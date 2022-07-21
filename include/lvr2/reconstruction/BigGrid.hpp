@@ -43,6 +43,8 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 
 
 namespace lvr2
@@ -73,9 +75,11 @@ class BigGrid
      * @param project ScanProject, which contain one or more Scans
      * @param scale scale value of for current scans
      */
-    BigGrid(float voxelsize, ScanProjectEditMarkPtr project, float scale = 0, bool extrude = false);
+    BigGrid(float voxelsize, ScanProjectEditMarkPtr project, const fs::path& pathPrefix = "./", float scale = 0, bool extrude = false);
 
     BigGrid(std::string path);
+
+    virtual ~BigGrid();
 
     /**
      * @return Number of voxels
@@ -193,9 +197,6 @@ class BigGrid
      */
     BoundingBox<BaseVecT>& getpartialBB() { return m_partialbb; }
 
-
-    virtual ~BigGrid() = default;
-
     void calcIndex(const BaseVecT& vec, Vector3i& index) const
     {
         index.x() = std::floor(vec.x / m_voxelSize);
@@ -236,6 +237,8 @@ private:
     bool m_extrude;
     bool m_hasNormal;
     bool m_hasColor;
+
+    fs::path m_pathPrefix = "./";
 
     boost::iostreams::mapped_file m_PointFile;
     boost::iostreams::mapped_file m_NormalFile;
