@@ -65,6 +65,7 @@ set(LVR2_SOURCES
     io/ScanDirectoryParser.cpp
     io/schema/ScanProjectSchemaRaw.cpp
     io/schema/ScanProjectSchemaSlam6D.cpp
+    io/schema/ScanProjectSchemaEuRoC.cpp
     io/schema/ScanProjectSchema.cpp
     io/schema/MeshSchemaDirectory.cpp
     io/schema/MeshSchemaHDF5.cpp

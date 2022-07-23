@@ -111,7 +111,7 @@ public:
         m_octree.reset(new OctreeReduction(ptr, m_voxelSize, m_maxPoints));
     }
 
-    PointBufferPtr getReducedPoints()
+    PointBufferPtr getReducedPoints() override
     {
         if(m_octree)
         {

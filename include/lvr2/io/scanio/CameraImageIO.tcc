@@ -84,6 +84,16 @@ CameraImagePtr CameraImageIO<BaseIO>::load(
     {
         return ret;
     }
+
+    if(!d.data)
+    {
+        return ret;
+    }
+
+    if(!m_baseIO->m_kernel->exists(*d.dataRoot, *d.data))
+    {
+        return ret;
+    }
     
     if(d.meta)
     {   
@@ -93,7 +103,7 @@ CameraImagePtr CameraImageIO<BaseIO>::load(
             return ret;
         }
 
-        CameraImagePtr loaded(new CameraImage);
+        CameraImagePtr loaded = std::make_shared<CameraImage>();
         if(YAML::convert<CameraImage>::decode(meta, *loaded) )
         {
             // success

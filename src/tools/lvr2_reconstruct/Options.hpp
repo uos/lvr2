@@ -187,6 +187,11 @@ public:
      */
     string  getInputFileName() const;
 
+  /**
+     * @brief   Returns the input file name
+     */
+    string  getOutputDirectory() const;
+
     /**
      * @brief Get the Input Mesh Name
      * 
@@ -353,7 +358,7 @@ public:
 
     bool hasScanPositionIndex() const;
 
-    int getScanPositionIndex() const;
+    std::vector<int> getScanPositionIndex() const;
 
     int getMinSpectralChannel() const;
     
@@ -447,7 +452,7 @@ private:
     float                           m_edgeCollapseReductionRatio;
 
     // h5 scan position used for reconstruction
-    int m_scanPositionIndex;
+    vector<int> m_scanPositionIndex;
     // defines which spectralChannels should be used for hyperspectral texture generation
     int m_minSpectralChannel;
     int m_maxSpectralChannel;

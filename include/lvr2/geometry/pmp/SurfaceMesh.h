@@ -262,7 +262,7 @@ public:
         }
 
         //! get the handle the iterator refers to
-        HandleT operator*() const { return handle_; }
+        HandleT operator*() const override { return handle_; }
 
         //! are two iterators equal?
         bool operator==(const HandleIterator<HandleT>& rhs) const
@@ -288,7 +288,7 @@ public:
         }
 
         //! pre-increment iterator
-        HandleIterator& operator++()
+        HandleIterator& operator++() override
         {
             ++handle_.idx_;
             while (mesh_->is_valid(handle_) && mesh_->is_deleted(handle_))

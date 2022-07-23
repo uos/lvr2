@@ -42,7 +42,7 @@ struct convert<lvr2::Camera>
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, "camera", lvr2::Camera::entity, lvr2::Camera::type))
         {
-            return false;
+            // return false;
         }
 
         if(node["name"])

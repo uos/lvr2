@@ -57,7 +57,6 @@ Description ScanProjectSchemaSlam6D::camera(
     const size_t& camNo) const
 {
     Description d;
-    
     return d;
 }
 

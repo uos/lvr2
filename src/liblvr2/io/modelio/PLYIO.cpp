@@ -807,7 +807,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
             std::vector<cv::Mat> imgs;
             std::vector<unsigned char*> pixels;
 
-            cv::VideoCapture images(dir.string() + "/channel%d.png");
+           /* cv::VideoCapture images(dir.string() + "/channel%d.png");
             cv::Mat img, imgFlipped;
             while (images.read(img))
             {
@@ -843,7 +843,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                 {
                     pixel[channel] = pixels[channel][panoramaPosition];
                 }
-            }
+            }*/
             std::cout << timestamp << "Finished extracting channel information" << std::endl;
         }
     }

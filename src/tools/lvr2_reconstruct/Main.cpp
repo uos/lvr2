@@ -260,44 +260,61 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         if (options.hasScanPositionIndex())
         {
             auto project = scanProjectIO->loadScanProject();
-            auto pos = scanProjectIO->loadScanPosition(options.getScanPositionIndex());
-            auto lidar = pos->lidars.at(0);
-            auto scan = lidar->scans.at(0); 
-
-            // Load scan
-            scan->load(reduction_algorithm);
             ModelPtr model = std::make_shared<Model>();
-            model->m_pointCloud = scan->points;
-            scan->release();
 
-            // Transform the single pointcloud to world if the user wants to
-            if (options.transformScanPosition())
+            // Load all given scan positions
+            vector<int> scanPositionIndices = options.getScanPositionIndex();
+            for(int positionIndex : scanPositionIndices)
             {
+                auto pos = scanProjectIO->loadScanPosition(positionIndex);
+                auto lidar = pos->lidars.at(0);
+                auto scan = lidar->scans.at(0);
+
+                std::cout << timestamp << "Loading scan position " << positionIndex << std::endl;
+
+                // Load scan
+                scan->load(reduction_algorithm);
+
+                std::cout << timestamp << "Scan loaded scan has " << scan->numPoints << " points" << std::endl;
+                std::cout << timestamp 
+                          << "Transforming scan: " << std::endl 
+                          <<  (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>() << std::endl;
+
+                // Transform the new pointcloud
                 transformPointCloud<float>(
-                    model,
-                    (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>()
-                    );
-            }
-            // Only transform to position (This is necessary to use texturizers because the camera is mounted relative to the scanposition)
-            else
-            {
-                transformPointCloud<float>(
-                    model,
-                    (lidar->transformation * scan->transformation).cast<float>()
-                );
+                    std::make_shared<Model>(scan->points),
+                    (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>());
+
+                // Merge pointcloud and new scan
+                // TODO: Maybe merge by allocation all needed memory first instead of constant allocations
+                if (model->m_pointCloud)
+                {
+                    *model->m_pointCloud = mergePointBuffers(*model->m_pointCloud, *scan->points);
+                }
+                else
+                {
+                    model->m_pointCloud = std::make_shared<PointBuffer>();
+                    *model->m_pointCloud = *scan->points; // Copy the first scan
+                }
+                scan->release();
             }
             buffer = model->m_pointCloud;
+            std::cout << timestamp << "Loaded " << buffer->numPoints() << " points" << std::endl;
         }
         else
         {    
             // === Build the PointCloud ===
+            std::cout << timestamp << "Loading scan project" << std::endl;
             ScanProjectPtr project = scanProjectIO->loadScanProject();
+            
+            std::cout << project->positions.size() << std::endl;
             // The aggregated scans
             ModelPtr model = std::make_shared<Model>();
             model->m_pointCloud = nullptr;
-
+            unsigned ctr = 0;
             for (ScanPositionPtr pos: project->positions)
             {
+                std::cout << "Loading scan position " << ctr << " / " << project->positions.size() << std::endl;
                 for (LIDARPtr lidar: pos->lidars)
                 {
                     for (ScanPtr scan: lidar->scans)
@@ -342,7 +359,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         }
 
     }
-    else {
+    else 
+    {
         buffer = model->m_pointCloud;
     }
 
@@ -540,8 +558,19 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
     
     // create io object for hdf5 files
     auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
+
+    if(options.getScanPositionIndex().size() > 1)
+    {
+        std::cout 
+            << timestamp 
+            << "Warning: Spectral texturizing only supports one scan position. Ignoring all but the first." 
+            << std::endl;
+    }
+
     // load panorama from hdf5 file
-    auto panorama = hdf5IO.HyperspectralPanoramaIO::load(options.getScanPositionIndex(), 0, 0);
+    auto panorama = hdf5IO.HyperspectralPanoramaIO::load(options.getScanPositionIndex()[0], 0, 0);
+
+    
 
     // If there is no spectral data
     if (!panorama)
@@ -1013,14 +1042,17 @@ int main(int argc, char** argv)
 
     for(const std::string& output_filename : options.getOutputFileNames())
     {
+        boost::filesystem::path outputDir(options.getOutputDirectory());
         boost::filesystem::path selectedFile( output_filename );
+        boost::filesystem::path outputFile = outputDir/selectedFile;
         std::string extension = selectedFile.extension().string();
+
         cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
 
         if (extension == ".h5")
         {
 
-            HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(output_filename));
+            HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(outputFile.string()));
             MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
             auto mesh_io = meshio::HDF5IO(kernel, schema);
 
@@ -1034,8 +1066,7 @@ int main(int argc, char** argv)
 
         if (extension == "")
         {
-
-            DirectoryKernelPtr kernel = DirectoryKernelPtr(new DirectoryKernel(output_filename));
+            DirectoryKernelPtr kernel = DirectoryKernelPtr(new DirectoryKernel(outputFile.string()));
             MeshSchemaDirectoryPtr schema = MeshSchemaDirectoryPtr(new MeshSchemaDirectory());
             auto mesh_io = meshio::DirectoryIO(kernel, schema);
 
@@ -1047,7 +1078,7 @@ int main(int argc, char** argv)
             continue;
         }
 
-        ModelFactory::saveModel(m, output_filename);
+        ModelFactory::saveModel(m, outputFile.string());
     }
 
     if (matResult.m_keypoints)
