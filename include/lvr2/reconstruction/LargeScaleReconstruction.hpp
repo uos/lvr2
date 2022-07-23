@@ -70,7 +70,7 @@ enum class LSROutput
     /**
      * @brief Output one h5 file containing one mesh per chunk.
      *
-     * Meshes are saved to "<outputDir>/chunks.h5" -> "/chunks/<x>_<y>_<z>".
+     * Meshes are saved to "<outputDir>/chunks.h5" in Group "/chunks/<x>_<y>_<z>".
      * Requires partMethod == 1 (VGrid).
      */
     ChunksHdf5,

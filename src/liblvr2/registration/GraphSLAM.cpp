@@ -81,25 +81,23 @@ bool findCloseScans(const vector<SLAMScanPtr>& scans, size_t scan, const SLAMOpt
     else
     {
         // convert current Scan to KDTree for Pair search
-        auto tree = KDTree::create(cur, options.maxLeafSize);
+        auto tree = cur->createKDTree(options.maxLeafSize);
 
         size_t maxLen = 0;
         for (size_t other = 0; other < scan - options.loopSize; other++)
         {
-            maxLen = max(maxLen, scans[other]->numPoints());
+            maxLen = std::max(maxLen, scans[other]->numPoints());
         }
-        KDTree::Neighbor* neighbors = new KDTree::Neighbor[maxLen];
+        std::vector<Vector3f*> neighbors(maxLen);
 
         for (size_t other = 0; other < scan - options.loopSize; other++)
         {
-            size_t count = KDTree::nearestNeighbors(tree, scans[other], neighbors, options.slamMaxDistance);
+            size_t count = SLAMScanWrapper::nearestNeighbors(tree, scans[other], neighbors, options.slamMaxDistance);
             if (count >= options.closeLoopPairs)
             {
                 output.push_back(other);
             }
         }
-
-        delete[] neighbors;
     }
 
     return !output.empty();
@@ -279,13 +277,13 @@ void GraphSLAM::createGraph(const vector<SLAMScanPtr>& scans, size_t last, Graph
 void GraphSLAM::fillEquation(const vector<SLAMScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const
 {
     // Cache all KDTrees
-    map<size_t, KDTreePtr> trees;
+    map<size_t, KDTreePtr<Vector3f>> trees;
     for (size_t i = 0; i < graph.size(); i++)
     {
         size_t a = graph[i].first;
         if (trees.find(a) == trees.end())
         {
-            auto tree = KDTree::create(scans[a], m_options->maxLeafSize);
+            auto tree = scans[a]->createKDTree(m_options->maxLeafSize);
             trees.insert(make_pair(a, tree));
         }
     }
@@ -298,8 +296,8 @@ void GraphSLAM::fillEquation(const vector<SLAMScanPtr>& scans, const Graph& grap
         int a, b;
         std::tie(a, b) = graph[i];
 
-        KDTreePtr tree  = trees[a];
-        SLAMScanPtr scan = scans[b];
+        auto& tree = trees[a];
+        auto& scan = scans[b];
 
         Matrix6d coeffMat;
         Vector6d coeffVec;
@@ -402,13 +400,13 @@ void GraphSLAM::fillEquation(const vector<SLAMScanPtr>& scans, const Graph& grap
     mat.setFromTriplets(triplets.begin(), triplets.end());
 }
 
-void GraphSLAM::eulerCovariance(KDTreePtr tree, SLAMScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const
+void GraphSLAM::eulerCovariance(KDTreePtr<Vector3f> tree, SLAMScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const
 {
     size_t n = scan->numPoints();
 
-    KDTree::Neighbor* results = new KDTree::Neighbor[n];
+    std::vector<Vector3f*> results(n);
 
-    size_t pairs = KDTree::nearestNeighbors(tree, scan, results, m_options->slamMaxDistance);
+    size_t pairs = SLAMScanWrapper::nearestNeighbors(tree, scan, results, m_options->slamMaxDistance);
 
     Vector6d mz = Vector6d::Zero();
     Vector3d sum = Vector3d::Zero();
@@ -485,8 +483,6 @@ void GraphSLAM::eulerCovariance(KDTreePtr tree, SLAMScanPtr scan, Matrix6d& outM
               + pow(delta.y() + (d(1) - mid.z() * d(3) + mid.x() * d(4)), 2.0)
               + pow(delta.z() + (d(2) + mid.y() * d(3) - mid.x() * d(5)), 2.0);
     }
-
-    delete[] results;
 
     ss = ss / (2.0 * pairs - 3.0);
 

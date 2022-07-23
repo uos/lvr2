@@ -36,7 +36,7 @@
 
 #include "SLAMScanWrapper.hpp"
 #include "SLAMOptions.hpp"
-#include "KDTree.hpp"
+#include "lvr2/algorithm/KDTree.hpp"
 
 #include <Eigen/SparseCore>
 
@@ -97,7 +97,7 @@ protected:
      * */
     void fillEquation(const std::vector<SLAMScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const;
     
-    void eulerCovariance(KDTreePtr tree, SLAMScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const;
+    void eulerCovariance(KDTreePtr<Vector3f> tree, SLAMScanPtr scan, Matrix6d& outMat, Vector6d& outVec) const;
 
     const SLAMOptions*     m_options;
 };

@@ -62,6 +62,7 @@
 
 // #include "SearchTreeNanoflann.hpp"
 #include "SearchTreeFlann.hpp"
+#include "lvr2/algorithm/KDTree.hpp"
 
 // // SearchTreePCL
 // #ifdef LVR2_USE_PCL

@@ -33,7 +33,7 @@
  */
 
 #include "lvr2/registration/SLAMScanWrapper.hpp"
-#include "lvr2/util/TreeUtils.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
 
 #include <fstream>
 
@@ -88,7 +88,7 @@ void SLAMScanWrapper::transform(const Transformd& transform, bool writeFrame, Fr
 
 void SLAMScanWrapper::reduce(double voxelSize, int maxLeafSize)
 {
-    m_numPoints = octreeReduce(m_points.data(), m_numPoints, voxelSize, maxLeafSize);
+    OctreeReduction reduction(m_points.data(), m_numPoints, voxelSize, maxLeafSize);
     m_points.resize(m_numPoints);
 }
 
@@ -202,6 +202,65 @@ void SLAMScanWrapper::writeFrames(std::string path) const
 
         out << (int)frame.second << endl;
     }
+}
+
+KDTreePtr<Vector3f> SLAMScanWrapper::createKDTree(size_t maxLeafSize) const
+{
+    std::unique_ptr<Vector3f[]> points(new Vector3f[m_numPoints]);
+
+    #pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < m_numPoints; i++)
+    {
+        points[i] = point(i).cast<float>();
+    }
+
+    return std::move(KDTree<Vector3f>::create(std::move(points), m_numPoints, maxLeafSize));
+}
+
+size_t SLAMScanWrapper::nearestNeighbors(
+    KDTreePtr<Vector3f> tree, SLAMScanPtr scan,
+    std::vector<Vector3f*>& neighbors, double maxDistance,
+    Vector3d& centroid_m, Vector3d& centroid_d)
+{
+    size_t found = nearestNeighbors(tree, scan, neighbors, maxDistance);
+
+    centroid_m = Vector3d::Zero();
+    centroid_d = Vector3d::Zero();
+
+    for (size_t i = 0; i < scan->numPoints(); i++)
+    {
+        if (neighbors[i] != nullptr)
+        {
+            centroid_m += neighbors[i]->cast<double>();
+            centroid_d += scan->point(i);
+        }
+    }
+
+    centroid_m /= found;
+    centroid_d /= found;
+
+    return found;
+}
+
+size_t SLAMScanWrapper::nearestNeighbors(KDTreePtr<Vector3f> tree, SLAMScanPtr scan, std::vector<Vector3f*>& neighbors, double maxDistance)
+{
+    if (neighbors.size() < scan->numPoints())
+    {
+        neighbors.resize(scan->numPoints());
+    }
+    size_t found = 0;
+    double distance = 0.0;
+
+    #pragma omp parallel for firstprivate(distance) reduction(+:found) schedule(dynamic,8)
+    for (size_t i = 0; i < scan->numPoints(); i++)
+    {
+        if (tree->nnSearch(scan->point(i), neighbors[i], distance, maxDistance))
+        {
+            found++;
+        }
+    }
+
+    return found;
 }
 
 } /* namespace lvr2 */

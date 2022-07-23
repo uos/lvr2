@@ -52,7 +52,7 @@ ICPPointAlign::ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data) :
     m_epsilon           = 0.00001;
     m_verbose           = false;
 
-    m_searchTree = KDTree::create(model, m_maxLeafSize);
+    m_searchTree = model->createKDTree(m_maxLeafSize);
 }
 
 Transformd ICPPointAlign::match()
@@ -75,7 +75,7 @@ Transformd ICPPointAlign::match()
 
     size_t numPoints = m_dataCloud->numPoints();
 
-    KDTree::Neighbor* neighbors = new KDTree::Neighbor[numPoints];
+    std::vector<Vector3f*> neighbors(numPoints);
 
     for (iteration = 0; iteration < m_maxIterations; iteration++)
     {
@@ -84,11 +84,11 @@ Transformd ICPPointAlign::match()
         prev_ret = ret;
 
         // Get point pairs
-        size_t pairs = KDTree::nearestNeighbors(m_searchTree, m_dataCloud, neighbors, m_maxDistanceMatch, centroid_m, centroid_d);
+        size_t pairs = SLAMScanWrapper::nearestNeighbors(m_searchTree, m_dataCloud, neighbors, m_maxDistanceMatch, centroid_m, centroid_d);
 
         // Get transformation
         transform = Transformd::Identity();
-        ret = align.alignPoints(m_dataCloud, neighbors, centroid_m, centroid_d, transform);
+        ret = align.alignPoints(m_dataCloud, neighbors.data(), centroid_m, centroid_d, transform);
 
         // Apply transformation
         m_dataCloud->transform(transform, false);
@@ -105,8 +105,6 @@ Transformd ICPPointAlign::match()
             break;
         }
     }
-
-    delete[] neighbors;
 
     auto duration = chrono::steady_clock::now() - start_time;
     cout << setw(6) << (int)(duration.count() / 1e6) << " ms, ";

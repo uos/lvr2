@@ -35,6 +35,7 @@
 #define SLAMSCANWRAPPER_HPP_
 
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/algorithm/KDTree.hpp"
 
 #include <Eigen/Dense>
 #include <vector>
@@ -67,7 +68,7 @@ class SLAMScanWrapper
 public:
     /**
      * @brief Construct a new SLAMScanWrapper object as a Wrapper around the Scan
-     * 
+     *
      * @param scan The Scan to wrap around
      */
     SLAMScanWrapper(ScanPtr scan);
@@ -76,7 +77,7 @@ public:
 
     /**
      * @brief Access to the Scan that this instance is wrapped around
-     * 
+     *
      * @return ScanPtr The Scan
      */
     ScanPtr innerScan();
@@ -84,7 +85,7 @@ public:
 
     /**
      * @brief Applies a relative Transformation to the Scan
-     * 
+     *
      * @param transform The Transformation
      * @param writeFrame weather or not to add a new animation Frame
      * @param use The FrameUse if writeFrame is set to true
@@ -93,7 +94,7 @@ public:
 
     /**
      * @brief Adds a new animation Frame with the current Pose
-     * 
+     *
      * @param use The use of the Frame for coloring purposes
      */
     void addFrame(FrameUse use = FrameUse::UNUSED);
@@ -101,28 +102,28 @@ public:
 
     /**
      * @brief Reduces the Scan using Octree Reduction
-     * 
+     *
      * Does not change the amount of allocated Memory unless trim() is called
-     * 
-     * @param voxelSize 
-     * @param maxLeafSize 
+     *
+     * @param voxelSize
+     * @param maxLeafSize
      */
     void reduce(double voxelSize, int maxLeafSize);
 
     /**
      * @brief Reduces the Scan by removing all Points closer than minDistance to the origin
-     * 
+     *
      * Does not change the amount of allocated Memory unless trim() is called
-     * 
+     *
      * @param minDistance The minimum Distance for a Point to have
      */
     void setMinDistance(double minDistance);
 
     /**
      * @brief Reduces the Scan by removing all Points farther away than maxDistance to the origin
-     * 
+     *
      * Does not change the amount of allocated Memory unless trim() is called
-     * 
+     *
      * @param maxDistance The maximum Distance for a Point to have
      */
     void setMaxDistance(double maxDistance);
@@ -135,7 +136,7 @@ public:
 
     /**
      * @brief Returns the Point at the specified index in global Coordinates
-     * 
+     *
      * @param index the Index
      * @return Vector3d the Point in global Coordinates
      */
@@ -143,7 +144,7 @@ public:
 
     /**
      * @brief Returns the Point at the specified index in local Coordinates
-     * 
+     *
      * @param index the Index
      * @return Vector3d the Point in local Coordinates
      */
@@ -151,7 +152,7 @@ public:
 
     /**
      * @brief Returns the number of Points in the Scan
-     * 
+     *
      * @return size_t the number of Points
      */
     size_t numPoints() const;
@@ -159,42 +160,42 @@ public:
 
     /**
      * @brief Returns the current Pose of the Scan
-     * 
+     *
      * @return const Transformd& the Pose
      */
     const Transformd& pose() const;
 
     /**
      * @brief Returns the difference between pose() and initialPose()
-     * 
+     *
      * @return const Transformd& the delta Pose
      */
     const Transformd& deltaPose() const;
 
     /**
      * @brief Returns the initial Pose of the Scan
-     * 
+     *
      * @return const Transformd& the initial Pose
      */
     const Transformd& initialPose() const;
 
     /**
      * @brief Get the Position of the Scan. Can also be obtained from pose()
-     * 
+     *
      * @return Vector3d the Position
      */
     Vector3d getPosition() const;
 
     /**
      * @brief Returns the number of Frames generated
-     * 
+     *
      * @return size_t the number of Frames
      */
     size_t frameCount() const;
 
     /**
      * @brief Returns a Frame consisting of a Pose and a FrameUse
-     * 
+     *
      * @param index the index of the Frame
      * @return const std::pair<Transformd, FrameUse>& the Pose and FrameUse
      */
@@ -202,10 +203,43 @@ public:
 
     /**
      * @brief Writes the Frames to the specified location
-     * 
+     *
      * @param path The path of the file to write to
      */
     void writeFrames(std::string path) const;
+
+    KDTreePtr<Vector3f> createKDTree(size_t maxLeafSize = 20) const;
+
+    /**
+     * @brief Finds the nearest neighbors of all points in a Scan using a pre-generated KDTree
+     *
+     * @param tree          The KDTree to search in
+     * @param scan          The Scan to search for
+     * @param neighbors     An array to store the results in. neighbors[i] is set to a Pointer to the
+     *                      neighbor of points[i] or nullptr if none was found
+     * @param maxDistance   The maximum Distance for a Neighbor
+     * @param centroid_m    Will be set to the average of all Points in 'neighbors'
+     * @param centroid_d    Will be set to the average of all Points in 'points' that have neighbors
+     *
+     * @return size_t The number of neighbors that were found
+     */
+    static size_t nearestNeighbors(KDTreePtr<Vector3f> tree, std::shared_ptr<SLAMScanWrapper> scan,
+                                   std::vector<Vector3f*>& neighbors, double maxDistance,
+                                   Vector3d& centroid_m, Vector3d& centroid_d);
+
+    /**
+     * @brief Finds the nearest neighbors of all points in a Scan using a pre-generated KDTree
+     *
+     * @param tree          The KDTree to search in
+     * @param scan          The Scan to search for
+     * @param neighbors     An array to store the results in. neighbors[i] is set to a Pointer to the
+     *                      neighbor of points[i] or nullptr if none was found
+     * @param maxDistance   The maximum Distance for a Neighbor
+     *
+     * @return size_t The number of neighbors that were found
+     */
+    static size_t nearestNeighbors(KDTreePtr<Vector3f> tree, std::shared_ptr<SLAMScanWrapper> scan,
+                                   std::vector<Vector3f*>& neighbors, double maxDistance);
 
 protected:
     ScanPtr               m_scan;

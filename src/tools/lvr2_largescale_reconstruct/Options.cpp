@@ -254,16 +254,15 @@ bool Options::printUsage()
 OUTPUT OPTIONS
     Options --output, -O accept one or more of the following tokens:
         bigMesh | mesh
-            Output one big Mesh. Uses A LOT of memory.
-            Filename will be current date.
+            Output one big Mesh into "<outputDir>/mesh.ply". Uses A LOT of memory.
         chunksPly | chunks
-            Output one mesh per chunk into "chunks/x_y_z.ply".
+            Output one mesh per chunk into "<outputDir>/chunks/<x>_<y>_<z>.ply".
         chunksHdf5
-            Output one mesh per chunk into "chunks.h5". Meshes in the
-            hdf5 file are stored using a PMPMesh.
+            Output one mesh per chunk into "<outputDir>/chunks.h5" in Group "/chunks/<x>_<y>_<z>".
+            Meshes in the hdf5 file are stored using a PMPMesh.
             Use PMPMesh(HighFive::Group) to read them.
         3dTiles | tiles3d
-            Output a 3D Tiles tileset for rendering to "mesh.3dtiles".)======";
+            Output a 3D Tiles tileset for rendering to "<outputDir>/mesh.3dtiles".)======";
 
 #ifndef LVR2_USE_3DTILES
     std::cout << R"======(

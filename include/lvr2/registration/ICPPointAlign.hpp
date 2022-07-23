@@ -34,10 +34,10 @@
 #ifndef ICPPOINTALIGN_HPP_
 #define ICPPOINTALIGN_HPP_
 
-#include "KDTree.hpp"
 #include "SLAMScanWrapper.hpp"
 
 #include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/algorithm/KDTree.hpp"
 
 namespace lvr2
 {
@@ -90,7 +90,7 @@ protected:
     SLAMScanPtr m_modelCloud;
     SLAMScanPtr m_dataCloud;
 
-    KDTreePtr   m_searchTree;
+    KDTreePtr<Vector3f> m_searchTree;
 };
 
 } /* namespace lvr2 */

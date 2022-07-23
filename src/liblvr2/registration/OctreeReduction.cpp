@@ -34,8 +34,8 @@
  * @author Justus Braun
  */
 
-#include "lvr2/registration/AABB.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
+#include "lvr2/geometry/pmp/BoundingBox.h"
 #include "lvr2/util/IOUtils.hpp"
 
 #include <random>
@@ -49,6 +49,10 @@ OctreeReduction::OctreeReduction(PointBufferPtr& pointBuffer, float voxelSize, s
       m_numPoints(pointBuffer->numPoints()),
       m_pointBuffer(pointBuffer)
 {
+    if (m_numPoints == 0)
+    {
+        return;
+    }
     auto pts_opt = pointBuffer->getChannel<float>("points");
     if (pts_opt)
     {
@@ -79,6 +83,10 @@ OctreeReduction::OctreeReduction(Vector3f* points, size_t& n, float voxelSize, s
       m_points(points),
       m_pointBuffer(nullptr)
 {
+    if (m_numPoints == 0)
+    {
+        return;
+    }
     init();
     n = m_numPoints;
 }
@@ -88,7 +96,12 @@ void OctreeReduction::init()
     m_flags = new bool[m_numPoints];
     std::fill_n(m_flags, m_numPoints, false);
 
-    AABB<float> bb(m_points, m_numPoints);
+    pmp::BoundingBox bb;
+    #pragma omp parallel for schedule(static) reduction(+:bb)
+    for (size_t i = 0; i < m_numPoints; i++)
+    {
+        bb += m_points[i];
+    }
 
     #pragma omp parallel // allows "pragma omp task"
     #pragma omp single   // only execute every task once

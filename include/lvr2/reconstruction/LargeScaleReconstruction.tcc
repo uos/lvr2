@@ -297,7 +297,7 @@ namespace lvr2
                 }
 
                 lvr2::PointsetSurfacePtr<BaseVecT> surface =
-                    make_shared<lvr2::AdaptiveKSearchSurface<BaseVecT>>(p_loader, "FLANN", m_options.kn, m_options.ki, m_options.kd, m_options.useRansac);
+                    make_shared<lvr2::AdaptiveKSearchSurface<BaseVecT>>(p_loader, "lvr2", m_options.kn, m_options.ki, m_options.kd, m_options.useRansac);
 
                 auto ps_grid = std::make_shared<lvr2::PointsetGrid<BaseVecT, BoxT>>(voxelSize, surface, gridbb, true, m_options.extrude);
 

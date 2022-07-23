@@ -81,6 +81,11 @@ SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr buffer)
         return std::make_shared<SearchTreeFlann<BaseVecT>>(buffer);
     }
 
+    if (name == "lvr2")
+    {
+        return std::make_shared<SearchKDTree<BaseVecT>>(buffer);
+    }
+
     return nullptr;
 }
 

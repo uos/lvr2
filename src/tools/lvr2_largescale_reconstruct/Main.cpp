@@ -203,6 +203,8 @@ int main(int argc, char** argv)
     BoundingBox<Vec> bb;
     lsr.chunkAndReconstruct(project, bb, cm);
 
+    project.reset();
+    cm.reset();
     fs::remove_all(options.m_options.tempDir);
 
     std::cout << timestamp << "Program end." << std::endl;

@@ -80,7 +80,6 @@ set(LVR2_SOURCES
     reconstruction/ModelToImage.cpp
     reconstruction/LBKdTree.cpp
     registration/ICPPointAlign.cpp
-    registration/KDTree.cpp
     registration/SLAMScanWrapper.cpp
     registration/Metascan.cpp
     registration/SLAMAlign.cpp
@@ -98,7 +97,6 @@ set(LVR2_SOURCES
     util/Hdf5Util.cpp
     util/IOUtils.cpp
     util/Synthetic.cpp
-    util/TreeUtils.cpp
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
