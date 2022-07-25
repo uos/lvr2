@@ -734,7 +734,7 @@ lvr2::floatArr BigGrid<BaseVecT>::normals(const BoundingBox<BaseVecT>& bb, size_
         const float* cellIn = normalFile + 3 * cell->offset;
         const float* points = pointFile + 3 * cell->offset;
         const float* pointsEnd = points + 3 * cell->size;
-        for (float* p = points; p < pointsEnd; p += 3, cellIn += 3)
+        for (const float* p = points; p < pointsEnd; p += 3, cellIn += 3)
         {
             if (p[0] >= min.x && p[0] <= max.x && p[1] >= min.y && p[1] <= max.y && p[2] >= min.z && p[2] <= max.z)
             {
@@ -918,127 +918,6 @@ size_t BigGrid<BaseVecT>::estimateSizeofBox(const BoundingBox<BaseVecT>& bb) con
     }
 
     return numPoints;
-}
-
-template <typename BaseVecT>
-size_t BigGrid<BaseVecT>::estimateSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<const CellInfo*>& touchedCells) const
-{
-    Vector3i indexMin = calcIndex(bb.getMin());
-    Vector3i indexMax = calcIndex(bb.getMax());
-
-    touchedCells.clear();
-
-    #pragma omp parallel for
-    for (size_t i = 0; i < m_cells.bucket_count(); i++)
-    {
-        auto start = m_cells.begin(i), end = m_cells.end(i);
-        for (auto it = start; it != end; ++it)
-        {
-            auto& [ index, cell ] = *it;
-            if (cell.size == 0)
-            {
-                continue; // skip extruded cells
-            }
-            if (index.x() >= indexMin.x() && index.y() >= indexMin.y() && index.z() >= indexMin.z() &&
-                index.x() <= indexMax.x() && index.y() <= indexMax.y() && index.z() <= indexMax.z())
-            {
-                #pragma omp critical
-                touchedCells.push_back(&cell);
-            }
-        }
-    }
-
-    size_t numPoints = 0;
-    for (auto cell : touchedCells)
-    {
-        numPoints += cell->size;
-    }
-
-    return numPoints;
-}
-
-template <typename BaseVecT>
-lvr2::floatArr BigGrid<BaseVecT>::allPoints(const BoundingBox<BaseVecT>& bb, size_t& numPoints, size_t minNumPoints) const
-{
-    std::vector<const CellInfo*> relevantCells;
-    numPoints = estimateSizeofBox(bb, relevantCells);
-
-    if (numPoints < minNumPoints)
-    {
-        return lvr2::floatArr();
-    }
-
-    lvr2::floatArr points(new float[numPoints * 3]);
-    float* out = points.get();
-
-    const float* in = (const float*)m_PointFile.data();
-
-    for (auto& cell : relevantCells)
-    {
-        out = std::copy_n(in + 3 * cell->offset, 3 * cell->size, out);
-    }
-
-    return points;
-}
-
-template <typename BaseVecT>
-lvr2::floatArr BigGrid<BaseVecT>::allNormals(const BoundingBox<BaseVecT>& bb, size_t& numNormals, size_t minNumNormals) const
-{
-    if (!m_hasNormal)
-    {
-        numNormals = 0;
-        return lvr2::floatArr();
-    }
-
-    std::vector<const CellInfo*> relevantCells;
-    numNormals = estimateSizeofBox(bb, relevantCells);
-
-    if (numNormals < minNumNormals)
-    {
-        return lvr2::floatArr();
-    }
-
-    lvr2::floatArr normals(new float[numNormals * 3]);
-    float* out = normals.get();
-
-    const float* in = (const float*)m_NormalFile.data();
-
-    for (auto& cell : relevantCells)
-    {
-        out = std::copy_n(in + 3 * cell->offset, 3 * cell->size, out);
-    }
-
-    return normals;
-}
-
-template <typename BaseVecT>
-lvr2::ucharArr BigGrid<BaseVecT>::allColors(const BoundingBox<BaseVecT>& bb, size_t& numColors, size_t minNumColors) const
-{
-    if (!m_hasColor)
-    {
-        numColors = 0;
-        return lvr2::ucharArr();
-    }
-
-    std::vector<const CellInfo*> relevantCells;
-    numColors = estimateSizeofBox(bb, relevantCells);
-
-    if (numColors < minNumColors)
-    {
-        return lvr2::ucharArr();
-    }
-
-    lvr2::ucharArr colors(new uchar[numColors * 3]);
-    uchar* out = colors.get();
-
-    const uchar* in = (const uchar*)m_ColorFile.data();
-
-    for (auto& cell : relevantCells)
-    {
-        out = std::copy_n(in + 3 * cell->offset, 3 * cell->size, out);
-    }
-
-    return colors;
 }
 
 } // namespace lvr2

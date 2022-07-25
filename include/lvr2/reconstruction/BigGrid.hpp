@@ -116,9 +116,6 @@ class BigGrid
      */
     lvr2::floatArr points(const BoundingBox<BaseVecT>& bb, size_t& numPoints, size_t minNumPoints = 0) const;
 
-    /// Same as points, but takes all points from cells touched by bb
-    lvr2::floatArr allPoints(const BoundingBox<BaseVecT>& bb, size_t& numPoints, size_t minNumPoints = 0) const;
-
     /**
      * @brief Returns the normals of points within a bounding box
      * 
@@ -129,9 +126,6 @@ class BigGrid
      */
     lvr2::floatArr normals(const BoundingBox<BaseVecT>& bb, size_t& numNormals, size_t minNumNormals = 0) const;
 
-    /// Same as normals, but takes all normals from cells touched by bb
-    lvr2::floatArr allNormals(const BoundingBox<BaseVecT>& bb, size_t& numNormals, size_t minNumNormals = 0) const;
-
     /**
      * @brief Returns the colors of points within a bounding box
      * 
@@ -141,9 +135,6 @@ class BigGrid
      * @return lvr2::ucharArr the colors
      */
     lvr2::ucharArr colors(const BoundingBox<BaseVecT>& bb, size_t& numColors, size_t minNumColors = 0) const;
-
-    /// Same as colors, but takes all colors from cells touched by bb
-    lvr2::ucharArr allColors(const BoundingBox<BaseVecT>& bb, size_t& numColors, size_t minNumColors = 0) const;
 
     /**
      * return numbers of points in a bounding box of the grid
@@ -173,15 +164,6 @@ class BigGrid
      * @return a number >= the actual number of points in the area
      */
     size_t estimateSizeofBox(const BoundingBox<BaseVecT>& bb) const;
-    /**
-     * @brief calculate number of points in all cells touched by bb. Much faster than getSizeofBox,
-     *        but overestimates the number of points.
-     *
-     * @param bb the bounding box
-     * @param touchedCells will be filled with the cells touched by bb
-     * @return a number >= the actual number of points in the area
-     */
-    size_t estimateSizeofBox(const BoundingBox<BaseVecT>& bb, std::vector<const CellInfo*>& touchedCells) const;
 
     void serialize(std::string path = "serinfo.ls");
 

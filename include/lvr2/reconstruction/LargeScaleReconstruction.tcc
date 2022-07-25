@@ -179,7 +179,7 @@ namespace lvr2
         for(size_t h = 0; h < m_options.voxelSizes.size(); h++)
         {
             float voxelSize = m_options.voxelSizes[h];
-            float overlap = 3 * voxelSize;
+            float overlap = 5 * voxelSize;
             BaseVecT overlapVector(overlap, overlap, overlap);
 
             bool createBigMesh = false, createChunksPly = false, createChunksHdf5 = false, create3dTiles = false;
@@ -244,8 +244,13 @@ namespace lvr2
 
                 BoundingBox<BaseVecT> gridbb(partitionBox.getMin() - overlapVector, partitionBox.getMax() + overlapVector);
 
+                if (bg.estimateSizeofBox(gridbb) < minPointsPerChunk)
+                {
+                    continue;
+                }
+
                 size_t numPoints;
-                floatArr points = bg.allPoints(gridbb, numPoints, minPointsPerChunk);
+                floatArr points = bg.points(gridbb, numPoints, minPointsPerChunk);
 
                 if (!points)
                 {
@@ -273,7 +278,7 @@ namespace lvr2
                 if (!hasNormals && bg.hasNormals())
                 {
                     size_t numNormals;
-                    lvr2::floatArr normals = bg.allNormals(gridbb, numNormals);
+                    lvr2::floatArr normals = bg.normals(gridbb, numNormals);
                     if (numNormals != numPoints)
                     {
                         throw std::runtime_error("Number of normals does not match number of points");
@@ -763,7 +768,7 @@ namespace lvr2
         for(int h = 0; h < m_options.voxelSizes.size(); h++)
         {
             float voxelSize = m_options.voxelSizes[h];
-            float overlap = 3 * voxelSize;
+            float overlap = 5 * voxelSize;
             BaseVecT overlapVector(overlap, overlap, overlap);
 
             // send chunks
@@ -777,7 +782,7 @@ namespace lvr2
 
                 BoundingBox<BaseVecT> gridbb(partitionBoxes[i].getMin() - overlapVector, partitionBoxes[i].getMax() + overlapVector);
 
-                floatArr points = bg.allPoints(gridbb, numPoints, minPointsPerChunk);
+                floatArr points = bg.points(gridbb, numPoints, minPointsPerChunk);
 
                 if (!points)
                 {
@@ -823,7 +828,7 @@ namespace lvr2
                 if (!calcNorm)
                 {
                     size_t numNormals;
-                    lvr2::floatArr normals = bg.allNormals(gridbb, numNormals);
+                    lvr2::floatArr normals = bg.normals(gridbb, numNormals);
                     std::cout << lvr2::timestamp << "NumNormals: " << numNormals << std::endl;
                     MPI_Send(&numNormals, 1, MPI_SIZE_T, dest, 13, MPI_COMM_WORLD);
                     MPI_Send(normals.get(), numNormals*3, MPI_FLOAT, dest, 14, MPI_COMM_WORLD);
@@ -918,7 +923,7 @@ namespace lvr2
             {
                 //combine chunks
                 float voxelSize = m_options.voxelSizes[h];
-                float overlap = 3 * voxelSize;
+                float overlap = 5 * voxelSize;
                 BaseVecT overlapVector(overlap, overlap, overlap);
                 auto vmax = cbb.getMax() - overlapVector;
                 auto vmin = cbb.getMin() + overlapVector;

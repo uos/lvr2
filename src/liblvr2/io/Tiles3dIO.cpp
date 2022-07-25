@@ -56,7 +56,7 @@ void convertBoundingBox(const pmp::BoundingBox& in, Cesium3DTiles::BoundingVolum
 
 void indexToName(int i, std::string& name, size_t max)
 {
-    constexpr size_t RADIX = 10 + 26 + 26;
+    constexpr size_t RADIX = 10 + 26;
     if (i < 0)
     {
         // meta segment
@@ -74,7 +74,7 @@ void indexToName(int i, std::string& name, size_t max)
         indexToName(i / RADIX, name, max / RADIX);
         i %= RADIX;
     }
-    name += (i < 10 ? '0' + i : (i < 36 ? 'a' + i - 10 : 'A' + i - 36));
+    name += (i < 10 ? '0' + i : 'a' + i - 10);
 }
 
 void writeTileset(Cesium3DTiles::Tileset& tileset, const std::string& outputDir, float scale)

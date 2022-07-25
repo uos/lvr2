@@ -58,7 +58,7 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
                  std::shared_ptr<HighFive::File> mesh_file,
                  std::function<void(pmp::SurfaceMesh&, const std::string&)> read_mesh);
 
-const pmp::Point flip_point(0, 0, 100000);
+const pmp::Point flip_point(100000, 100000, 100000);
 
 int main(int argc, char** argv)
 {
