@@ -629,20 +629,27 @@ void addRaycastingTexturizer(const reconstruct::Options& options, lvr2::Material
     if (options.hasScanPositionIndex())
     {
         project->positions.clear();
-        ScanPositionPtr pos = hdf5IO.loadScanPosition(options.getScanPositionIndex());
-        // Check if position exists
-        if (!pos) 
+        auto scanPositions = options.getScanPositionIndex();
+        for (int positionIndex : scanPositions)
         {
-            std::cout << timestamp << "[Main] Cannot initialize RaycastingTexturizer: Position " << options.getScanPositionIndex() << " could not be loaded" << std::endl;
-            return;
+            ScanPositionPtr pos = hdf5IO.loadScanPosition(positionIndex);
+            // Check if position exists
+            if (!pos)
+            {
+                std::cout << timestamp << "Cannot add ScanPosition " << positionIndex << " to scan project." << std::endl;
+                return;
+            }
+
+            // If the single scan position was not transformed from position to world space
+            // remove the transformation from the project and position
+            if (!options.transformScanPosition())
+            {
+                project->transformation = Transformd::Identity(); // Project -> GPS
+                pos->transformation = Transformd::Identity();     // Position -> Project
+            }
+
+            project->positions.push_back(pos);
         }
-        // If the single scan position was not transformed from position to world space remove the transformation from the project and position
-        if (!options.transformScanPosition())
-        {
-            project->transformation = Transformd::Identity(); // Project -> GPS 
-            pos->transformation = Transformd::Identity(); // Position -> Project
-        }
-        project->positions.push_back(pos);
     }
 
     auto texturizer = std::make_shared<RaycastingTexturizer<Vec>>(
