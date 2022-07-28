@@ -340,7 +340,6 @@ int SearchKDTree<BaseVecT>::kSearch(
 ) const
 {
     std::vector<PointT*> neighbors;
-    neighbors.reserve(k);
     size_t n = this->knnSearch(qp, k, neighbors, distances);
 
     indices.resize(n);
@@ -359,7 +358,6 @@ int SearchKDTree<BaseVecT>::kSearch(
 ) const
 {
     std::vector<PointT*> neighbors;
-    neighbors.reserve(k);
     size_t n = this->knnSearch(qp, k, neighbors);
 
     indices.resize(n);

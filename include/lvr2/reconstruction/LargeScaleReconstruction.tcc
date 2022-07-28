@@ -301,8 +301,12 @@ namespace lvr2
                     }
                 }
 
-                lvr2::PointsetSurfacePtr<BaseVecT> surface =
-                    make_shared<lvr2::AdaptiveKSearchSurface<BaseVecT>>(p_loader, "lvr2", m_options.kn, m_options.ki, m_options.kd, m_options.useRansac);
+                lvr2::PointsetSurfacePtr<BaseVecT> surface;
+                {
+                    auto ptr = new AdaptiveKSearchSurface<BaseVecT>(p_loader, "lvr2", m_options.kn, m_options.ki, m_options.kd, m_options.useRansac);
+                    ptr->setFlipPoint(BaseVecT(flipPoint.x(), flipPoint.y(), flipPoint.z()));
+                    surface.reset(ptr);
+                }
 
                 auto ps_grid = std::make_shared<lvr2::PointsetGrid<BaseVecT, BoxT>>(voxelSize, surface, gridbb, true, m_options.extrude);
 
@@ -426,7 +430,7 @@ namespace lvr2
                 mesh.collectGarbage();
 
                 auto& surfaceMesh = mesh.getSurfaceMesh();
-                if (createChunksHdf5 || create3dTiles)
+                if (createChunksHdf5)
                 {
                     auto group = chunkFileHdf5->createGroup("/chunks/" + name_id);
                     surfaceMesh.write(group);
@@ -459,19 +463,23 @@ namespace lvr2
             size_t skipped = partitionBoxes.size() - filteredPartitionBoxes.size();
             std::cout << timestamp << "Skipped PartitionBoxes: " << skipped << std::endl;
 
-            // make sure Chunks are properly saved, in case the following code crashes
-            chunkFileHdf5->flush();
-            H5Fclose(chunkFileHdf5->getId());
-            chunkFileHdf5.reset();
-
             std::cout << timestamp << "finished" << std::endl;
+
+            if (createChunksHdf5)
+            {
+                // make sure Chunks are properly saved, in case the following code crashes
+                chunkFileHdf5->flush();
+                H5Fclose(chunkFileHdf5->getId());
+                chunkFileHdf5.reset();
+            }
 
 #ifdef LVR2_USE_3DTILES
             if (create3dTiles && !chunkMap.empty())
             {
                 std::cout << timestamp << "Creating 3D Tiles: Generating HLOD Tree" << std::endl;
                 auto tree = HLODTree<BaseVecT>::partition(std::move(chunkMap), 2);
-                tree->finalize(true);
+                bool saveMemory = true; // TODO: make this configurable
+                tree->finalize(saveMemory);
 
                 std::cout << timestamp << "Creating 3D Tiles: Writing to mesh.3dtiles" << std::endl;
                 Tiles3dIO<BaseVecT> io((m_options.outputDir / "mesh.3dtiles").string());

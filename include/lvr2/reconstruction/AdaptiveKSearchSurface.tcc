@@ -155,7 +155,7 @@ void AdaptiveKSearchSurface<BaseVecT>::init()
     const auto& min = this->m_boundingBox.getMin(), max = this->m_boundingBox.getMax();
     cout << timestamp << "\t\tBB of points: [" << min.x << ", " << min.y << ", " << min.z << "] - ["
          << max.x << ", " << max.y << ", " << max.z << "]" << endl;
-    this->m_centroid = BaseVecT(0.0, 0.0, 0.0);
+    this->m_flipPoint = this->m_boundingBox.getCentroid();
 }
 
 
@@ -183,7 +183,6 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         // search on the stann kd tree. So we don't use
         // the template parameter T for di
         vector<size_t> id;
-        vector<float> di;
 
         int n = 0;
         size_t k = k_0;
@@ -200,40 +199,17 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             //T* point = this->m_points[i];
 
             id.clear();
-            di.clear();
 
-            this->m_searchTree->kSearch(pts[i], k, id, di);
-
-            float min_x = 1e15f;
-            float min_y = 1e15f;
-            float min_z = 1e15f;
-            float max_x = - min_x;
-            float max_y = - min_y;
-            float max_z = - min_z;
-
-            float dx, dy, dz;
-            dx = dy = dz = 0;
+            this->m_searchTree->kSearch(pts[i], k, id);
 
             // Calculate the bounding box of found point set
-            /**
-             * @todo Use the bounding box object from the old model3d
-             *       library for bounding box calculation...
-             */
-            for(size_t j = 0; j < k; j++) {
-                min_x = std::min(min_x, pts[id[j]][0]);
-                min_y = std::min(min_y, pts[id[j]][1]);
-                min_z = std::min(min_z, pts[id[j]][2]);
-
-                max_x = std::max(max_x, pts[id[j]][0]);
-                max_y = std::max(max_y, pts[id[j]][1]);
-                max_z = std::max(max_z, pts[id[j]][2]);
-
-                dx = max_x - min_x;
-                dy = max_y - min_y;
-                dz = max_z - min_z;
+            BoundingBox<BaseVecT> bb;
+            for (auto& index : id)
+            {
+                bb.expand(BaseVecT(pts[index]));
             }
 
-            if(boundingBoxOK(dx, dy, dz))
+            if(boundingBoxOK(bb))
             {
                 break;
             }
@@ -248,26 +224,26 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
         if(m_calcMethod == 1)
         {
-            p = calcPlaneRANSAC(queryPoint, k, id, ransac_ok);
+            p = calcPlaneRANSAC(queryPoint, id, ransac_ok);
             // Fallback if RANSAC failed
             if(!ransac_ok)
             {
                 // compare speed
-                p = calcPlane(queryPoint, k, id);
+                p = calcPlane(queryPoint, id);
             }
         }
         else if(m_calcMethod == 2)
         {
-            p = calcPlaneIterative(queryPoint, k, id);
+            p = calcPlaneIterative(queryPoint, id);
         }
         else
         {
-            p = calcPlane(queryPoint, k, id);
+            p = calcPlane(queryPoint, id);
         }
         // Get the mean distance to the tangent plane
         //mean_distance = meanDistance(p, id, k);
-        Normal<typename BaseVecT::CoordType> normal(0, 0, 1);
-        normal = p.normal;
+        auto normal = p.normal;
+        bool normalCorrected = false;
 
         // Flip normals towards the center of the scene or nearest scan pose
         if(m_poseTree)
@@ -277,26 +253,17 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             if(nearestPoseIds.size() == 1)
             {
                 BaseVecT nearest = pts[nearestPoseIds[0]];
-                Normal<typename BaseVecT::CoordType> dir(queryPoint - nearest);
-                if(normal.dot(dir) < 0)
+                if(normal.dot(nearest - queryPoint) < 0)
                 {
                     normal = -normal;
                 }
-            }
-            else
-            {
-                cout << timestamp.getElapsedTime() << "Could not get nearest scan pose. Defaulting to centroid." << endl;
-                Normal<typename BaseVecT::CoordType> dir(queryPoint - m_centroid);
-                if(normal.dot(dir) < 0)
-                {
-                    normal = -normal;
-                }
+                normalCorrected = true;
             }
         }
-        else
+
+        if (!normalCorrected)
         {
-            Normal<typename BaseVecT::CoordType> dir(queryPoint - m_centroid);
-            if(normal.dot(dir) < 0)
+            if(normal.dot(this->m_flipPoint - queryPoint) < 0)
             {
                 normal = -normal;
             }
@@ -336,35 +303,19 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 
     // Interpolate normals
     #pragma omp parallel for schedule(dynamic, 12)
-    for( int i = 0; i < (int)numPoints; i++)
+    for( size_t i = 0; i < numPoints; i++)
     {
         vector<size_t> id;
-        vector<float> di;
 
-        this->m_searchTree->kSearch(pts[i], this->m_ki, id, di);
+        this->m_searchTree->kSearch(pts[i], this->m_ki, id);
 
         BaseVecT mean = normals[i];
-        for(int j = 0; j < this->m_ki; j++)
+        for(auto& index : id)
         {
-            mean += normals[id[j]];
+            mean += normals[index];
         }
-        auto mean_normal = mean.normalized();
-        tmp[i] = mean_normal;
+        tmp[i] = mean.normalized();
 
-        ///todo Try to remove this code. Should improve the results at all.
-        for(int j = 0; j < this->m_ki; j++)
-        {
-            Normal<typename BaseVecT::CoordType> n = normals[id[j]];
-
-            // Only override existing normals if the interpolated
-            // normals is significantly different from the initial
-            // estimation. This helps to avoid a too smooth normal
-            // field
-            if(fabs(n.dot(mean_normal)) > 0.2 )
-            {
-                normals[id[j]] = mean_normal;
-            }
-        }
         ++progress;
     }
     cout << endl;
@@ -376,19 +327,18 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 }
 
 template<typename BaseVecT>
-bool AdaptiveKSearchSurface<BaseVecT>::boundingBoxOK(float dx, float dy, float dz)
+bool AdaptiveKSearchSurface<BaseVecT>::boundingBoxOK(const BoundingBox<BaseVecT>& bb)
 {
+    float dx = bb.getXSize();
+    float dy = bb.getYSize();
+    float dz = bb.getZSize();
     /**
      * @todo Replace magic number here.
      */
     float e = 0.05f;
-    if(dx < e * dy) return false;
-    else if(dx < e * dz) return false;
-    else if(dy < e * dx) return false;
-    else if(dy < e * dz) return false;
-    else if(dz < e * dx) return false;
-    else if(dz < e * dy) return false;
-    return true;
+    return dx >= e * dy && dx >= e * dz
+        && dy >= e * dx && dy >= e * dz
+        && dz >= e * dx && dz >= e * dy;
 }
 
 // template<typename BaseVecT>
@@ -461,34 +411,29 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
     FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
     size_t numPoints     = pts.numElements();
-    int k = this->m_kd;
 
     vector<size_t> id;
-    vector<float> di;
 
-    //Allocate ANN point
-    {
-        // Find nearest tangent plane
-        this->m_searchTree->kSearch( p, k, id, di );
-    }
+    // Find nearest tangent plane
+    this->m_searchTree->kSearch( p, this->m_kd, id );
 
     BaseVecT nearest;
     BaseVecT avg_normal;
 
-    for ( int i = 0; i < k; i++ )
+    for ( auto& index : id )
     {
         //Get nearest tangent plane
-        auto vq = pts[id[i]];
+        auto vq = pts[index];
 
         //Get normal
-        auto n = normals[id[i]];
+        auto n = normals[index];
 
         nearest += vq;
         avg_normal += n;
     }
 
-    avg_normal /= k;
-    nearest /= k;
+    avg_normal /= id.size();
+    nearest /= id.size();
     auto normal = avg_normal.normalized();
 
     //Calculate distance
@@ -510,7 +455,6 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 template<typename BaseVecT>
 Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
     const BaseVecT &queryPoint,
-    int k,
     const vector<size_t> &id
 )
 {
@@ -524,10 +468,10 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
 
     // Calculate a least sqaures fit to the given points
     Eigen::Vector3f C;
-    Eigen::VectorXf F(k);
-    Eigen::MatrixXf B(k, 3);
+    Eigen::VectorXf F(id.size());
+    Eigen::MatrixXf B(id.size(), 3);
 
-    for(int j = 0; j < k; j++) {
+    for(size_t j = 0; j < id.size(); j++) {
         BaseVecT p = pts[id[j]];
         F(j)    = p.y;
         B(j, 0) = 1.0f;
@@ -566,7 +510,6 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
 template<typename BaseVecT>
 Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
     const BaseVecT &queryPoint,
-    int k,
     const vector<size_t> &id
 )
 {
@@ -591,8 +534,8 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
     //z
     float zz = 0.0;
 
-    for(int j = 0; j < k; j++) {
-        auto p = pts[id[j]];
+    for(auto& index : id) {
+        auto p = pts[index];
 
         auto r = p - queryPoint;
 
@@ -674,7 +617,6 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
 template<typename BaseVecT>
 Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
     const BaseVecT &queryPoint,
-    int k,
     const vector<size_t> &id,
     bool &ok
 )
@@ -698,15 +640,17 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
    //  int max_nonimproving = max(5, k / 2);
    int max_interations  = 10;
 
+   std::unordered_set<size_t> ids;
+   std::default_random_engine generator;
+   std::uniform_int_distribution<size_t> distribution(0, id.size() - 1);
+   auto number = std::bind(distribution, generator);
+
    while((nonimproving_iterations < 5) && (iterations < max_interations))
    {
        // randomly choose 3 disjoint points
        int c = 0;
 
-       std::set<unsigned long> ids;
-       std::default_random_engine generator;
-       std::uniform_int_distribution<unsigned long> distribution(0, id.size() - 1);
-       auto number = std::bind(distribution, generator);
+       ids.clear();
        do
        {
            ids.insert(number());
@@ -715,21 +659,20 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
        }
        while (ids.size() < 3 && c <= 20);
 
-       vector<unsigned long> sample_ids(ids.size());
-       std::copy(ids.begin(), ids.end(), sample_ids.begin());
+       auto it = ids.begin();
 
-       BaseVecT point1 = pts[sample_ids[0]];
-       BaseVecT point2 = pts[sample_ids[1]];
-       BaseVecT point3 = pts[sample_ids[2]];
+       BaseVecT point1 = pts[*it];
+       BaseVecT point2 = pts[*(++it)];
+       BaseVecT point3 = pts[*(++it)];
 
        auto n0 = (point1 - point2).cross(point1 - point3).normalized();
 
        //compute error to at most 50 other randomly chosen points
        dist = 0;
-       int n = std::min(50, k);
+       int n = std::min(50, (int)id.size());
        for(int i = 0; i < n; i++)
        {
-           int index = id[rand() % k];
+           int index = id[number()];
            BaseVecT refpoint = pts[index];
            dist += fabs(refpoint.dot(n0) - point1.dot(n0));
        }

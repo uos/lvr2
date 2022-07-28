@@ -145,7 +145,10 @@ public:
      */
     virtual void calculateSurfaceNormals();
 
-
+    void setFlipPoint(const BaseVecT& flipPoint)
+    {
+        m_flipPoint = flipPoint;
+    }
 
 
     // /**
@@ -230,11 +233,11 @@ private:
      * This method is needed to achieve a better quality of the initial normal
      * estimation in sparse scans. Details are described in the SRR2010 paper.
      *
-     * @param dx, dy, dz The side lengths of the bounding box
+     * @param bb the bounding box
      *
      * @return true if the given box has valid dimensions.
      */
-    bool boundingBoxOK(float dx, float dy, float dz);
+    bool boundingBoxOK(const BoundingBox<BaseVecT>& bb);
 
     // /**
     //  * @brief Returns the mean distance of the given point set from
@@ -268,34 +271,30 @@ private:
      *        k-neighborhood
      *
      * @param queryPoint    The point for which the tangent plane is created
-     * @param k             The size of the used k-neighborhood
      * @param id            The positions of the neighborhood points in \ref m_points
      * @param ok            True, if RANSAC interpolation was succesfull
      */
     Plane<BaseVecT> calcPlane(
         const BaseVecT &queryPoint,
-        int k,
         const vector<size_t> &id
     );
 
     Plane<BaseVecT> calcPlaneRANSAC(
         const BaseVecT &queryPoint,
-        int k,
         const vector<size_t> &id,
         bool &ok
     );
 
     Plane<BaseVecT> calcPlaneIterative(
         const BaseVecT &queryPoint,
-        int k,
         const vector<size_t> &id
     );
 
 
 
 
-    /// The centroid of the point set
-    BaseVecT m_centroid;
+    /// The point to flip normals towards if there are no poses available
+    BaseVecT m_flipPoint;
 
     // 0: PCA
     // 1: RANSAC

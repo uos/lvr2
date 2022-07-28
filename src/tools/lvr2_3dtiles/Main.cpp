@@ -393,7 +393,10 @@ int main(int argc, char** argv)
             else
             {
                 auto bb = lazy_mesh.get()->getSurfaceMesh().bounds();
-                lazy_mesh.allowUnload();
+                if (big)
+                {
+                    lazy_mesh.allowUnload();
+                }
                 // Add the mesh as a child to a node to have one LOD
                 auto leaf = Tree::leaf(std::move(lazy_mesh), bb);
                 segments.emplace_back(Tree::node())->children().push_back(std::move(leaf));
