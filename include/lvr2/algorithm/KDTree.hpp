@@ -38,6 +38,7 @@
 
 #include <memory>
 #include <limits>
+#include <queue>
 
 namespace lvr2
 {
@@ -124,8 +125,31 @@ public:
                      std::vector<PointT*>& neighbors,
                      double maxDistance = std::numeric_limits<double>::infinity()) const;
 
+    /**
+     * @brief Returns the number of points in the tree.
+     */
+    size_t numPoint() const
+    {
+        return m_numPoints;
+    }
+
+    /**
+     * @brief Returns the points stored in the tree.
+     *
+     * Note that the order is different than the one passed to the constructor.
+     */
+    const PointT* points() const
+    {
+        return m_points.get();
+    }
+
 protected:
-    KDTree() = default;
+    KDTree(std::unique_ptr<PointT[]>&& points, size_t numPoints)
+        : m_points(std::move(points)), m_numPoints(numPoints)
+    {}
+    KDTree(PointT* points, size_t numPoints)
+        : m_points(points), m_numPoints(numPoints)
+    {}
 
     /// A Point with its squared distance to the query Point for easy comparison
     struct DistPoint
@@ -182,9 +206,10 @@ protected:
 
     class KDNode;
     class KDLeaf;
-    void init(size_t numPoints, size_t maxLeafSize = 20);
+    void init(size_t maxLeafSize = 20);
     KDPtr createRecursive(PointT* start, PointT* end, const QueryPoint& min, const QueryPoint& max, size_t maxLeafSize);
 
+    size_t m_numPoints;
     std::unique_ptr<PointT[]> m_points;
     std::unique_ptr<KDTreeInternal> m_tree;
 };

@@ -38,16 +38,14 @@ namespace lvr2
 template<typename PointT, unsigned int N>
 typename KDTree<PointT, N>::Ptr KDTree<PointT, N>::create(std::unique_ptr<PointT[]>&& points, size_t numPoints, size_t maxLeafSize)
 {
-    Ptr ret(new KDTree<PointT, N>());
-    ret->m_points = std::move(points);
-
-    ret->init(numPoints, maxLeafSize);
+    Ptr ret(new KDTree<PointT, N>(std::move(points), numPoints));
+    ret->init(maxLeafSize);
 
     return ret;
 }
 
 template<typename PointT, unsigned int N>
-void KDTree<PointT, N>::init(size_t numPoints, size_t maxLeafSize)
+void KDTree<PointT, N>::init(size_t maxLeafSize)
 {
     QueryPoint bbMin = QueryPoint::Constant(std::numeric_limits<double>::max());
     QueryPoint bbMax = QueryPoint::Constant(-std::numeric_limits<double>::max());
@@ -57,7 +55,7 @@ void KDTree<PointT, N>::init(size_t numPoints, size_t maxLeafSize)
         QueryPoint min = bbMin;
         QueryPoint max = bbMax;
         #pragma omp for schedule(static) nowait
-        for (size_t i = 0; i < numPoints; i++)
+        for (size_t i = 0; i < m_numPoints; i++)
         {
             for (unsigned int j = 0; j < N; j++)
             {
@@ -74,7 +72,7 @@ void KDTree<PointT, N>::init(size_t numPoints, size_t maxLeafSize)
 
     #pragma omp parallel // allows "pragma omp task"
     #pragma omp single // only execute every task once
-    m_tree = createRecursive(m_points.get(), m_points.get() + numPoints, bbMin, bbMax, maxLeafSize);
+    m_tree = createRecursive(m_points.get(), m_points.get() + m_numPoints, bbMin, bbMax, maxLeafSize);
 }
 
 
@@ -317,18 +315,17 @@ typename KDTree<PointT, N>::KDPtr KDTree<PointT, N>::createRecursive(
 
 template<typename BaseVecT>
 SearchKDTree<BaseVecT>::SearchKDTree(PointBufferPtr buffer)
+    : KDTree<IndexedPoint<BaseVecT>>(new PointT[buffer->numPoints()], buffer->numPoints())
 {
-    size_t n = buffer->numPoints();
-    this->m_points.reset(new PointT[n]);
     auto points = *buffer->getFloatChannel("points");
     #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < this->m_numPoints; i++)
     {
         this->m_points[i].index = i;
         this->m_points[i].point = points[i];
     }
 
-    this->init(n);
+    this->init();
 }
 
 template<typename BaseVecT>

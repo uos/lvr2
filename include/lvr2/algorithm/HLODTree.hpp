@@ -110,7 +110,7 @@ public:
      * Alternatively, if your chunks contain overlap, you may use trimChunkOverlap() to both
      * remove the overlap and mark the vertices as features.
      *
-     * @param chunks A map from and (x, y, z) chunk position to the chunk.
+     * @param chunks A map from chunk position to the chunk.
      *               Note that only adjacent chunks according to the integer position are combined.
      * @param combineDepth The combination depth of the hierarchy. See partition(Mesh) for details.
      */
@@ -175,6 +175,10 @@ public:
     /**
      * @brief Generates the LOD meshes.
      *
+     * This can only happen once, so the entire tree and all children should be created and
+     * arranged before calling this method. This will finalize this tree and all its children,
+     * marking them as finalized.
+     *
      * @param saveMemory If true, tries to save as much memory as possible,
      *                   but makes this process a lot slower.
      */
@@ -183,9 +187,12 @@ public:
     /**
      * @brief Returns a reference to the mesh on this level.
      *
-     * Returns none if
-     * a) This node should be skipped according to combineDepth.
-     * b) It shouldn't be skipped, but finalize() has not been called yet.
+     * Returns none if this node is not a leaf and either
+     * a) finalize() has not been called yet. Or
+     * b) it should be skipped according to combineDepth.
+     *
+     * Note that modifications to this won't be reflected to higher levels if
+     * finalize() was called prior to the change.
      */
     boost::optional<Mesh&> mesh()
     {
@@ -194,9 +201,9 @@ public:
     /**
      * @brief Returns a reference to the mesh on this level.
      *
-     * Returns none if
-     * a) This node should be skipped according to combineDepth.
-     * b) It shouldn't be skipped, but finalize() has not been called yet.
+     * Returns none if this node is not a leaf and either
+     * a) finalize() has not been called yet. Or
+     * b) it should be skipped according to combineDepth.
      */
     boost::optional<const Mesh&> mesh() const
     {
@@ -205,6 +212,7 @@ public:
 
     /**
      * @brief Returns a BoundingBox containing this node and all its children.
+     *        Only accurate after refresh() has been called.
      */
     const pmp::BoundingBox& bb() const
     {
@@ -232,8 +240,8 @@ private:
     // make constructors private/deleted. This class should be used through Ptr.
     HLODTree() = default;
     HLODTree(const HLODTree&) = delete;
-    HLODTree(HLODTree&&) = delete;
     HLODTree& operator=(const HLODTree&) = delete;
+    HLODTree(HLODTree&&) = delete;
     HLODTree& operator=(HLODTree&&) = delete;
 
     /**
@@ -248,9 +256,13 @@ private:
         return m_combineDepth == -1 || m_depth <= m_combineDepth;
     }
     size_t finalizeRecursive(ProgressBar& progress);
+    /// Combine the child meshes into this node's mesh.
     void combine();
+    /// Simplify the mesh. Returns true if it can be further simplified.
     bool simplify();
+    /// Collect all subtrees that can be simplified right now.
     bool collectSimplify(std::vector<HLODTree*>& canBeSimplified);
+    /// Counts all subtrees for which shouldCombine() returns true.
     size_t countAllSimplify() const;
 
     static Ptr partitionRecursive(Ptr* start, Ptr* end, int combineDepth);

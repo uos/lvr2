@@ -75,8 +75,6 @@ public:
         return compute_corner_normal(mesh, mesh.get_vertex_property<Point>("v:point"), h, crease_angle);
     }
     static Normal compute_corner_normal(const SurfaceMesh& mesh, const VertexConstProperty<Point>& vpoint, Halfedge h, Scalar crease_angle);
-
-private:
 };
 
 } // namespace pmp

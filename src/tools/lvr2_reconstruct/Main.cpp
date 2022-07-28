@@ -79,6 +79,7 @@
 #include "lvr2/util/Factories.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
+#include "lvr2/algorithm/KDTree.hpp"
 #include "lvr2/io/kernels/HDF5Kernel.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
