@@ -30,8 +30,10 @@
 
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/algorithm/ChunkHashGrid.hpp"
+#include "lvr2/algorithm/HLODTree.hpp"
 #include "lvr2/reconstruction/BigGrid.hpp"
 #include "lvr2/reconstruction/FastBox.hpp"
+#include "lvr2/reconstruction/PointsetGrid.hpp"
 
 
 #if defined CUDA_FOUND
@@ -171,6 +173,9 @@ struct LSROptions
     /// Threshold for fusing line segments while tesselating.
     float lineFusionThreshold = 0.01;
 
+    /// Ensure that chunks have consistent borders. Takes longer.
+    bool mergeChunkBorders = true;
+
     /// when generating LSROutput::Tiles3d, compress the meshes using Draco
     bool tiles3dCompress = false;
 
@@ -308,7 +313,22 @@ public:
      * @param chunkManager an optional chunkManager to handle chunks. Only needed when using the VGrid partition method.
      * @return
      */
-    void chunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager = nullptr);
+    void chunkAndReconstruct(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager = nullptr)
+    {
+        m_options.ensureCorrectness();
+        if (m_options.partMethod == 0)
+        {
+            chunkAndReconstructKDTree(project, newChunksBB);
+        }
+        else
+        {
+            if (!chunkManager)
+            {
+                throw std::invalid_argument("chunkManager is required for VGrid partition method.");
+            }
+            chunkAndReconstructVGrid(project, newChunksBB, chunkManager);
+        }
+    }
 
     /**
      *
@@ -344,6 +364,26 @@ public:
 
 
 private:
+
+    void chunkAndReconstructKDTree(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB);
+    void chunkAndReconstructVGrid(ScanProjectEditMarkPtr project, BoundingBox<BaseVecT>& newChunksBB, std::shared_ptr<ChunkHashGrid> chunkManager);
+
+    using GridPtr = std::shared_ptr<HashGrid<BaseVecT, BoxT>>;
+
+    GridPtr createChunk(const BigGrid<BaseVecT>& bg,
+                        const BoundingBox<BaseVecT>& bb,
+                        float voxelSize,
+                        size_t minPointsPerChunk, size_t& maxPointsPerChunk,
+                        bool& retry);
+
+    void processChunk(GridPtr ps_grid,
+                      const Vector3i& coord,
+                      const fs::path& chunkDirPly,
+                      std::shared_ptr<HighFive::File> chunkFileHdf5,
+                      std::shared_ptr<HighFive::File> chunkFile3dTiles,
+                      typename HLODTree<BaseVecT>::ChunkMap& chunkMap);
+
+    void createAndSaveBigMesh(GridPtr hg, size_t voxelSizeIndex);
 
     /**
      * This Method Schedules the work for the MPI Clients

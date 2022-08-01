@@ -105,6 +105,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     std::vector<lvr2::LSROutput> output(m_options.output.begin(), m_options.output.end());
 
     bool noExtrude = false;
+    bool noMergeChunkBorders = false;
 
     m_descr.add_options()
     ("help", bool_switch(&m_help),
@@ -116,7 +117,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("voxelSizes,v", value<std::vector<float>>(&m_options.voxelSizes)->multitoken()->default_value(m_options.voxelSizes),
      "Voxelsize of grid used for reconstruction. multitoken option: it is possible to enter more then one voxelsize")
 
-    ("partMethod", value<int>(&m_partMethod)->default_value(m_partMethod),
+    ("partMethod", value<uint>(&m_options.partMethod)->default_value(m_options.partMethod),
      "Option to change the partition-process to a gridbase partition (0 = kd-Tree; 1 = VGrid)")
 
     ("chunkSize", value<float>(&m_options.bgVoxelSize)->default_value(m_options.bgVoxelSize),
@@ -188,6 +189,10 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("outputDir", value<fs::path>(&m_options.outputDir),
      "Output directory for generated files. Defaults to \"./<current date>/\".")
 
+    ("noOverlapMerge", bool_switch(&noMergeChunkBorders),
+     "Do not merge chunk borders. Merging chunk borders prevents gaps in chunked outputs, but takes a lot longer. "
+     "Use this option if you only care about the bigGrid and/or want to save time.")
+
     ("scale", value<float>(&m_options.scale)->default_value(m_options.scale),
      "Scaling factor, applied to all input points")
 
@@ -203,6 +208,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         setup();
 
         m_options.extrude = !noExtrude;
+        m_options.mergeChunkBorders = !noMergeChunkBorders;
 
         if (m_numThreads > 0)
         {

@@ -106,74 +106,87 @@ public:
     /// Typedef to alias iterators to query points
     typedef typename qp_list::iterator query_point_it;
 
-    /***
-     * @brief   Constructor
+    /**
+     * @brief Construct an empty HashGrid object.
      *
-     * If set to true, cell size is interpreted as
-     * absolute voxel size (default). Otherwise \ref cellSize
-     * is interpreted as number of intersections along the
-     * longest size of the given bounding box to estimate a suitable
-     * resolution.
-     *
-     * @param   cellSize        Voxel size of the grid cells
-     * @param   isVoxelSize     Whether to interpret \ref cellSize as voxelsize or intersections
+     * @param resolution if isVoxelsize: voxel size. if not: number of voxels on the longest size of bb.
+     * @param bb the bounding box of the grid
+     * @param isVoxelsize see resolution description
+     * @param extrude add cells around the existing ones
      */
-    HashGrid(float cellSize, BoundingBox<BaseVecT> boundingBox, bool isVoxelSize = true, bool extrude = true);
-
-
-    /***
-     * @brief   Constructor
-     *
-     * Construcs a HashGrid from a file
-     *
-     * @param   file        File representing the HashGrid (See HashGrid::serialize(string file) )
-     */
-    HashGrid(std::string file);
-
-    /***
-     * @brief Construct a new Hash Grid object
-     *
-     * @param files
-     * @param boundingBox
-     * @param voxelsize
-     */
-    HashGrid(std::vector<std::string>& files, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
-
-
-    /***
-     * @brief Construct a new Hash Grid object
-     *
-     * @param files vector of strings to the files which contain the voxel-grid data for the chunks
-     * @param innerBoxes vector of BoundingBoxes. Each chunk is only used for the BoundingBox.
-     *                          This is important because the data in the chunks may overlap.
-     * @param boundingBox bounding box of the complete grid
-     * @param voxelsize the voxelsize of the grid
-     */
-    HashGrid(std::vector<std::string>& files, std::vector<BoundingBox<BaseVecT>> innerBoxes, BoundingBox<BaseVecT>& boundingBox, float voxelsize);
-
-    /***
-     * Constructs a new Hash Grid object from multiple PointBufferPtr,
-     * where the HashGrid attributes are saved in the PointBuffer-Channels.
-     *
-     * @param chunks vector with the voxel-grid data for the chunks
-     * @param innerBoxes vector of BoundingBoxes. Each chunk is only used for the BoundingBox.
-     *                          This is important because the data in the chunks may overlap.
-     * @param boundingBox bounding box of the complete grid
-     * @param voxelSize the voxelsize of the grid
-     */
-    HashGrid(std::vector<PointBufferPtr> chunks,
-            std::vector<BoundingBox<BaseVecT>> innerBoxes,
-            BoundingBox<BaseVecT>& boundingBox,
-            float voxelSize);
+    HashGrid(float resolution, BoundingBox<BaseVecT> bb, bool isVoxelsize = true, bool extrude = true);
 
     /**
-     * @brief Create a PointBuffer containing the cells and distances in the "tsdf_values" channel.
+     * @brief Construct a new Hash Grid object from a file.
+     * 
+     * @param file A file written by saveGrid(file).
+     * @param boundingBox Bounding box of the grid.
+     * @param voxelsize The voxel size of the grid.
+     */
+    HashGrid(std::string file, const BoundingBox<BaseVecT>& boundingBox, float voxelsize)
+        : HashGrid({ file }, boundingBox, voxelsize)
+    { }
+
+    /**
+     * @brief Construct a new Hash Grid object from multiple files.
+     * 
+     * @param files A list of files each written by saveGrid(file).
+     * @param boundingBox Bounding box of the grid.
+     * @param voxelsize The voxel size of the grid.
+     */
+    HashGrid(const std::vector<std::string>& files, const BoundingBox<BaseVecT>& boundingBox, float voxelsize)
+        : HashGrid(files, {}, boundingBox, voxelsize)
+    { }
+
+    /**
+     * @brief Construct a new Hash Grid object from multiple files.
+     * 
+     * @param files A list of files each written by saveGrid(file).
+     * @param innerBoxes A list of bounding boxes for each file. Useful for removing overlap.
+     * @param boundingBox Bounding box of the grid.
+     * @param voxelsize The voxel size of the grid.
+     */
+    HashGrid(const std::vector<string>& files,
+             const std::vector<BoundingBox<BaseVecT>>& innerBoxes,
+             const BoundingBox<BaseVecT>& boundingBox,
+             float voxelsize);
+
+    /**
+     * @brief Construct a new Hash Grid object from a PointBuffer.
+     * 
+     * @param src A PointBuffer created with toPointBuffer().
+     * @param boundingBox Bounding box of the grid.
+     * @param voxelsize The voxel size of the grid.
+     */
+    HashGrid(PointBufferPtr src, const BoundingBox<BaseVecT>& boundingBox, float voxelsize)
+        : HashGrid({ src }, {}, boundingBox, voxelsize)
+    { }
+
+    /**
+     * @brief Construct a new Hash Grid object from multiple PointBuffers.
+     * 
+     * @param chunks A list of PointBuffers each created with toPointBuffer().
+     * @param innerBoxes A list of bounding boxes for each buffer. Useful for removing overlap.
+     * @param boundingBox Bounding box of the grid.
+     * @param voxelsize The voxel size of the grid.
+     */
+    HashGrid(const std::vector<PointBufferPtr>& chunks,
+             const std::vector<BoundingBox<BaseVecT>>& innerBoxes,
+             const BoundingBox<BaseVecT>& boundingBox,
+             float voxelsize);
+
+    /**
+     * @brief Create a PointBuffer containing the cells and distances.
      *
-     * Performs the inverse of the HashGrid constructor taking a std::vector<PointBufferPtr>
+     * Can be converted back to a HashGrid with HashGrid(PointBufferPtr, ...).
      */
     PointBufferPtr toPointBuffer() const;
 
     /**
+     * @brief Add one cell to the grid. When adding multiple cells, use addLatticePoints()
+     *
+     * Note that distances are measured at the *Corners* of a cell, and the distance parameter
+     * is only used to fill remaining corners that aren't shared with existing cells.
      *
      * @param i         Discrete x position within the grid.
      * @param j         Discrete y position within the grid.
@@ -191,20 +204,11 @@ public:
     void addLatticePoints(const std::unordered_set<Vector3i>& indices);
 
     /**
-     * @brief   Saves a representation of the grid to the given file
-     *
-     * @param file      Output file name.
-     */
-    void saveGrid(std::string file) override;
-
-    /**
-     * @brief Saves a representation of the cells to the given file
+     * @brief Saves a representation of the grid to the given file
      *
      * @param file Output file name.
      */
-    void saveCells(std::string file);
-
-    virtual void serialize(std::string file);
+    void saveGrid(std::string file) override;
 
     /***
      * @brief   Returns the number of generated cells.

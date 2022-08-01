@@ -47,15 +47,22 @@ template<typename BaseVecT, typename BoxT>
 class PointsetGrid: public HashGrid<BaseVecT, BoxT>
 {
 public:
+    /**
+     * @brief Construct a new Pointset Grid object
+     * 
+     * @param resolution if isVoxelsize: voxel size. if not: number of voxels on the longest size of bb.
+     * @param surface the surface to be used for the grid
+     * @param bb the bounding box of the grid
+     * @param isVoxelsize see resolution description
+     * @param extrude add cells around the existing ones
+     */
     PointsetGrid(
-        float cellSize,
+        float resolution,
         PointsetSurfacePtr<BaseVecT> surface,
         BoundingBox<BaseVecT> bb,
         bool isVoxelsize = true,
         bool extrude = true
     );
-
-    PointsetGrid(string file);
 
     virtual ~PointsetGrid() {}
 

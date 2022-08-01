@@ -37,13 +37,13 @@ namespace lvr2
 
 template<typename BaseVecT, typename BoxT>
 PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
-    float cellSize,
+    float resolution,
     PointsetSurfacePtr<BaseVecT> surface,
     BoundingBox<BaseVecT> bb,
     bool isVoxelsize,
     bool extrude
 ) :
-    HashGrid<BaseVecT, BoxT>(cellSize, bb, isVoxelsize, extrude),
+    HashGrid<BaseVecT, BoxT>(resolution, bb, isVoxelsize, extrude),
     m_surface(surface)
 {
     // Get indexed point buffer pointer
@@ -96,13 +96,6 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
 
     this->addLatticePoints(requiredCells);
 }
-
-template<typename BaseVecT, typename BoxT>
-PointsetGrid<BaseVecT, BoxT>::PointsetGrid(string file) : HashGrid<BaseVecT, BoxT>(file)
-{
-
-}
-
 
 template<typename BaseVecT, typename BoxT>
 void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()

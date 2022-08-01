@@ -71,6 +71,7 @@ class HLODTree
 public:
     using Ptr = std::unique_ptr<HLODTree>;
     using Mesh = LazyMesh<BaseVecT>;
+    using ChunkMap = std::unordered_map<Vector3i, Ptr>;
 
     /**
      * @brief Partitions the mesh into chunks and arranges them in a hierarchy.

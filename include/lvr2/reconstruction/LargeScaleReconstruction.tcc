@@ -28,7 +28,6 @@
 #include <iostream>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
-#include "lvr2/algorithm/HLODTree.hpp"
 #include "lvr2/algorithm/pmp/SurfaceNormals.h"
 #include "lvr2/io/baseio/ChannelIO.hpp"
 #include "lvr2/io/baseio/ArrayIO.hpp"
@@ -37,7 +36,6 @@
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
-#include "lvr2/reconstruction/PointsetGrid.hpp"
 #include "lvr2/reconstruction/FastReconstruction.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 
@@ -81,27 +79,17 @@ namespace lvr2
     }
 
     template <typename BaseVecT>
-    void LargeScaleReconstruction<BaseVecT>::chunkAndReconstruct(
+    void LargeScaleReconstruction<BaseVecT>::chunkAndReconstructVGrid(
         ScanProjectEditMarkPtr project,
         BoundingBox<BaseVecT>& newChunksBB,
         std::shared_ptr<ChunkHashGrid> chunkManager)
     {
-        m_options.ensureCorrectness();
-
         auto startTimeMs = timestamp.getCurrentTimeInMs();
 
         if(project->project->positions.size() != project->changed.size())
         {
             throw std::runtime_error("Inconsistency between number of given scans and diff-vector (scans to consider)!");
         }
-
-        bool useVGrid = m_options.partMethod == 1;
-        if (useVGrid && !chunkManager)
-        {
-            throw std::runtime_error("partMethod set to VGrid but no chunk manager given!");
-        }
-
-        pmp::Point flipPoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
 
         /// Minimum number of points needed to consider a chunk. Chunks smaller than this are skipped.
         size_t minPointsPerChunk = std::max(m_options.ki, std::max(m_options.kd, m_options.kn)) * 2;
@@ -121,51 +109,27 @@ namespace lvr2
         std::vector<BoundingBox<BaseVecT>> filteredPartitionBoxes;
         std::vector<Vector3i> chunkCoords;
 
-        if (useVGrid)
+        // BigGrid is essentially a V-Grid that already knows where all the points are,
+        // so just recycle the cells as partitions.
+        auto& cells = bg.getCells();
+        partitionBoxes.reserve(cells.size());
+
+        // ChunkManager BoundingBox: must contain all old chunks and newly added chunks
+        BoundingBox<BaseVecT> cmBB = bgBB;
+        // newChunks BoundingBox: contains only newly added chunks
+        newChunksBB = BoundingBox<BaseVecT>();
+
+        BaseVecT cellSize(chunkSize, chunkSize, chunkSize);
+        for (auto& [ index, cell ] : cells)
         {
-            // BigGrid is essentially a V-Grid that already knows where all the points are,
-            // so just recycle the cells as partitions.
-
-            auto& cells = bg.getCells();
-            partitionBoxes.reserve(cells.size());
-
-            // ChunkManager BoundingBox: must contain all old chunks and newly added chunks
-            BoundingBox<BaseVecT> cmBB = bgBB;
-            // newChunks BoundingBox: contains only newly added chunks
-            newChunksBB = BoundingBox<BaseVecT>();
-
-            BaseVecT cellSize(chunkSize, chunkSize, chunkSize);
-            for (auto& [ index, cell ] : cells)
-            {
-                BaseVecT pos = BaseVecT(index.x(), index.y(), index.z()) * chunkSize;
-                BoundingBox<BaseVecT> bb(pos, pos + cellSize);
-                newChunksBB.expand(bb);
-                partitionBoxes.push_back(bb);
-                chunkCoords.push_back(index);
-            }
-            cmBB.expand(newChunksBB);
-            chunkManager->setBoundingBox(cmBB);
+            BaseVecT pos = BaseVecT(index.x(), index.y(), index.z()) * chunkSize;
+            BoundingBox<BaseVecT> bb(pos, pos + cellSize);
+            newChunksBB.expand(bb);
+            partitionBoxes.push_back(bb);
+            chunkCoords.push_back(index);
         }
-        else
-        {
-            // use KD-Tree
-            std::cout << timestamp << "generating tree" << std::endl;
-            BigGridKdTree<BaseVecT> gridKd(bg.getBB(), m_options.nodeSize, &bg, m_options.bgVoxelSize);
-            gridKd.insert(bg.pointSize(), bg.getBB().getCentroid());
-            std::ofstream partBoxOfs(m_options.tempDir / "KdTree.ser");
-            auto leafs = gridKd.getLeafs();
-            partitionBoxes.reserve(leafs.size());
-            for (auto& leaf : leafs)
-            {
-                BoundingBox<BaseVecT> partBB = leaf->getBB();
-                partitionBoxes.push_back(partBB);
-                partBoxOfs << partBB.getMin()[0] << " " << partBB.getMin()[1] << " "
-                        << partBB.getMin()[2] << " " << partBB.getMax()[0] << " "
-                        << partBB.getMax()[1] << " " << partBB.getMax()[2] << std::endl;
-            }
-
-            std::cout << timestamp << "Finished tree" << std::endl;
-        }
+        cmBB.expand(newChunksBB);
+        chunkManager->setBoundingBox(cmBB);
 
         std::cout << timestamp << "got: " << bg.getCells().size() << " chunks." << std::endl;
 
@@ -207,9 +171,10 @@ namespace lvr2
             }
 
             // directory to store chunks in for LSROutput::ChunksPly
-            fs::path chunkDirPly = m_options.outputDir / "chunks/";
+            fs::path chunkDirPly = "";
             if (createChunksPly)
             {
+                chunkDirPly = m_options.outputDir / "chunks/";
                 fs::remove_all(chunkDirPly);
                 fs::create_directories(chunkDirPly);
 
@@ -222,7 +187,7 @@ namespace lvr2
             }
 
             // collection of all chunks for LSROutput::Tiles3d
-            std::unordered_map<Vector3i, typename HLODTree<BaseVecT>::Ptr> chunkMap;
+            typename HLODTree<BaseVecT>::ChunkMap chunkMap;
             // file to store chunks in for LSROutput::Tiles3d
             std::shared_ptr<HighFive::File> chunkFile3dTiles = nullptr;
             if (create3dTiles)
@@ -230,233 +195,178 @@ namespace lvr2
                 chunkFile3dTiles = hdf5util::open(m_options.tempDir / "lazy_meshes.h5", HighFive::File::Truncate);
             }
 
-            // V-Grid: vector to save the new chunk names - which chunks have to be reconstructed
+            // List of chunks that should actually be reconstructed
             std::vector<Vector3i> filteredChunkCoords;
 
-            // KD-Tree: vector to store relevant chunks as .ser
-            std::vector<string> grid_files;
-
             string layerName = "tsdf_values_" + std::to_string(voxelSize);
+            string layerNameTemp = layerName + "_temp";
 
             for (size_t i = 0; i < partitionBoxes.size(); i++)
             {
                 auto& partitionBox = partitionBoxes[i];
-
-                BoundingBox<BaseVecT> gridbb(partitionBox.getMin() - overlapVector, partitionBox.getMax() + overlapVector);
-
-                if (bg.estimateSizeofBox(gridbb) < minPointsPerChunk)
-                {
-                    continue;
-                }
-
-                size_t numPoints;
-                floatArr points = bg.points(gridbb, numPoints, minPointsPerChunk);
-
-                if (!points)
-                {
-                    continue;
-                }
+                auto& coord = chunkCoords[i];
 
                 std::cout << timestamp << "Processing Partition " << i << "/" << (partitionBoxes.size() - 1) << std::endl;
 
-                string name_id;
-                if (useVGrid)
+                BoundingBox<BaseVecT> gridbb(partitionBox.getMin() - overlapVector, partitionBox.getMax() + overlapVector);
+
+                bool retry = false;
+                GridPtr ps_grid;
+                do
                 {
-                    auto& coords = chunkCoords[i];
-                    name_id = std::to_string(coords.x()) + "_" + std::to_string(coords.y()) + "_" + std::to_string(coords.z());
-                }
-                else
+                    ps_grid = createChunk(bg, gridbb, voxelSize, minPointsPerChunk, maxPointsPerChunk, retry);
+                } while (retry);
+
+                if (!ps_grid)
                 {
-                    name_id = std::to_string(i);
-                }
-
-                auto p_loader = std::make_shared<PointBuffer>(points, numPoints);
-
-                bool hasNormals = false;
-                bool hasDistances = false;
-
-                if (!hasNormals && bg.hasNormals())
-                {
-                    size_t numNormals;
-                    lvr2::floatArr normals = bg.normals(gridbb, numNormals);
-                    if (numNormals != numPoints)
-                    {
-                        throw std::runtime_error("Number of normals does not match number of points");
-                    }
-                    p_loader->setNormalArray(normals, numNormals);
-                    hasNormals = true;
-                }
-
-                if (!hasNormals && m_options.useGPU)
-                {
-                    float targetSize = voxelSize / 4;
-                    while (numPoints > maxPointsPerChunk)
-                    {
-                        // reduction is necessary to avoid GPU memory overflow
-                        std::cout << timestamp << "Chunk has too many points: " << numPoints << ". Reducing." << std::endl;
-                        OctreeReduction oct(p_loader, targetSize, 10);
-                        p_loader = oct.getReducedPoints();
-                        numPoints = p_loader->numPoints();
-                        targetSize *= 2; // bigger voxel size means more points removed during reduction in the next iteration
-                    }
-                }
-
-                lvr2::PointsetSurfacePtr<BaseVecT> surface;
-                {
-                    auto ptr = new AdaptiveKSearchSurface<BaseVecT>(p_loader, "lvr2", m_options.kn, m_options.ki, m_options.kd, m_options.useRansac);
-                    ptr->setFlipPoint(BaseVecT(flipPoint.x(), flipPoint.y(), flipPoint.z()));
-                    surface.reset(ptr);
-                }
-
-                auto ps_grid = std::make_shared<lvr2::PointsetGrid<BaseVecT, BoxT>>(voxelSize, surface, gridbb, true, m_options.extrude);
-
-
-#ifdef GPU_FOUND
-                if ((!hasNormals && m_options.useGPU) || (!hasDistances && m_options.useGPUDistances))
-                {
-                    floatArr points = p_loader->getPointArray();
-                    std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
-
-                    GpuSurface gpu_surface(points, numPoints);
-
-                    gpu_surface.setKn(m_options.kn);
-                    gpu_surface.setKi(m_options.ki);
-                    gpu_surface.setKd(m_options.kd);
-                    gpu_surface.setFlippoint(flipPoint.x(), flipPoint.y(), flipPoint.z());
-
-                    if (!hasNormals && m_options.useGPU)
-                    {
-                        floatArr normals = floatArr(new float[numPoints * 3]);
-                        try
-                        {
-                            gpu_surface.calculateNormals();
-                        }
-                        catch(std::runtime_error& e)
-                        {
-                            std::string msg = e.what();
-                            if (msg.find("out of memory") == std::string::npos)
-                            {
-                                throw; // forward any other exceptions
-                            }
-                            std::cerr << "ERROR: Not enough GPU memory. Reducing Points further." << std::endl;
-                            maxPointsPerChunk = maxPointsPerChunk * 0.8;
-                            if (maxPointsPerChunk < minPointsPerChunk)
-                            {
-                                std::cerr << "Your GPU is garbage. Switching back to CPU" << std::endl;
-                                m_options.useGPU = false;
-                            }
-                            i--; // retry this partition
-                            continue;
-                        }
-                        gpu_surface.getNormals(normals);
-
-                        p_loader->setNormalArray(normals, numPoints);
-                        hasNormals = true;
-                    }
-
-                    if(!hasDistances && m_options.useGPUDistances)
-                    {
-                        auto& query_points = ps_grid->getQueryPoints();
-
-                        std::cout << timestamp << "Computing signed distances in GPU with brute force kernel." << std::endl;
-                        std::cout << timestamp << "This might take a while...." << std::endl;
-                        gpu_surface.distances(query_points, voxelSize);
-                        hasDistances = true;
-                        std::cout << timestamp << "Done." << std::endl;
-                    }
-                }
-#endif // GPU_FOUND
-
-                if (!hasNormals)
-                {
-                    surface->calculateSurfaceNormals();
-                }
-                if (!hasDistances)
-                {
-                    ps_grid->calcDistanceValues();
+                    continue;
                 }
 
                 // all checks are done, this partition is ok
                 filteredPartitionBoxes.push_back(partitionBox);
+                filteredChunkCoords.push_back(coord);
 
-                if (createBigMesh)
+                if (m_options.mergeChunkBorders)
                 {
-                    if (chunkManager)
+                    chunkManager->setChunk(layerNameTemp, coord.x(), coord.y(), coord.z(), ps_grid->toPointBuffer());
+                }
+                else
+                {
+                    if (createBigMesh)
                     {
-                        auto& coords = chunkCoords[i];
-                        chunkManager->setChunk(layerName, coords.x(), coords.y(), coords.z(), ps_grid->toPointBuffer());
-                        // also save the grid coordinates of the chunk added to the ChunkManager
-                        filteredChunkCoords.push_back(coords);
+                        chunkManager->setChunk(layerName, coord.x(), coord.y(), coord.z(), ps_grid->toPointBuffer());
                     }
-                    else
+                    if (createChunksHdf5 || createChunksPly || create3dTiles)
                     {
-                        std::string filename = (m_options.tempDir / (name_id + ".ser")).string();
-                        ps_grid->saveCells(filename);
-                        grid_files.push_back(filename);
-                    }
-                }
-
-                // save the mesh of the chunk
-                if (!createChunksHdf5 && !createChunksPly && !create3dTiles)
-                {
-                    continue;
-                }
-
-                auto reconstruction = make_unique<lvr2::FastReconstruction<BaseVecT, BoxT>>(ps_grid);
-                lvr2::PMPMesh<BaseVecT> mesh;
-                reconstruction->getMesh(mesh);
-
-                if (mesh.numFaces() == 0)
-                {
-                    continue;
-                }
-
-                // run cleanup on the mesh.
-                // cleanContours and optimizePlanes might mess with the chunk borders
-
-                if (m_options.removeDanglingArtifacts)
-                {
-                    cout << timestamp << "Removing dangling artifacts" << endl;
-                    removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
-                    if (mesh.numFaces() == 0)
-                    {
-                        continue;
+                        processChunk(ps_grid, coord, chunkDirPly, chunkFileHdf5, chunkFile3dTiles, chunkMap);
                     }
                 }
-                if (m_options.fillHoles)
+            }
+
+            if (m_options.mergeChunkBorders)
+            {
+                std::cout << timestamp << "Finished calculating TSDFs. Merging chunk overlaps" << std::endl;
+
+                for (size_t i = 0; i < filteredPartitionBoxes.size(); i++)
                 {
-                    mesh.fillHoles(m_options.fillHoles);
-                }
-                mesh.collectGarbage();
+                    auto& partitionBox = filteredPartitionBoxes[i];
+                    auto& coord = filteredChunkCoords[i];
 
-                auto& surfaceMesh = mesh.getSurfaceMesh();
-                if (createChunksHdf5)
-                {
-                    auto group = chunkFileHdf5->createGroup("/chunks/" + name_id);
-                    surfaceMesh.write(group);
-                    chunkFileHdf5->flush();
-                }
-                if (createChunksPly)
-                {
-                    surfaceMesh.write((chunkDirPly / (name_id + ".ply")).string());
-                }
+                    std::cout << timestamp << "Processing Partition " << i << "/" << (filteredPartitionBoxes.size() - 1) << std::endl;
 
-                if (create3dTiles)
-                {
-                    pmp::SurfaceNormals::compute_vertex_normals(surfaceMesh, flipPoint);
+                    // In order to get consistent chunks, it is necessary to have the exact same
+                    // distance values on both sides of a border.
+                    // To make sure this is the case, we merge the values of the overlaps for all
+                    // neighboring chunks.
+                    GridPtr ps_grid;
+                    std::vector<GridPtr> neighbors;
 
-                    pmp::Point epsilon = pmp::Point::Constant(0.0001);
-                    auto min = partitionBox.getMin(), max = partitionBox.getMax();
-                    pmp::BoundingBox expectedBB(pmp::Point(min.x, min.y, min.z) - epsilon,
-                                                pmp::Point(max.x, max.y, max.z) + epsilon);
-
-                    HLODTree<BaseVecT>::trimChunkOverlap(mesh, expectedBB);
-
-                    if (mesh.numFaces() > 0)
+                    #pragma omp parallel for collapse(3)
+                    for (int dx = -1; dx <= 1; dx++)
                     {
-                        auto bb = surfaceMesh.bounds();
-                        auto& coords = chunkCoords[i];
-                        chunkMap.emplace(coords, HLODTree<BaseVecT>::leaf(LazyMesh(std::move(mesh), chunkFile3dTiles), bb));
+                        for (int dy = -1; dy <= 1; dy++)
+                        {
+                            for (int dz = -1; dz <= 1; dz++)
+                            {
+                                boost::optional<PointBufferPtr> pointBuffer;
+                                #pragma omp critical
+                                pointBuffer = chunkManager->getChunk<PointBufferPtr>(layerNameTemp, coord.x() + dx, coord.y() + dy, coord.z() + dz);
+                                if (!pointBuffer)
+                                {
+                                    continue;
+                                }
+                                BaseVecT pos = BaseVecT(coord.x() + dx, coord.y() + dy, coord.z() + dz) * chunkSize;
+                                BoundingBox<BaseVecT> bb(pos - overlapVector, pos + cellSize + overlapVector);
+                                auto chunk = std::make_shared<HashGrid<BaseVecT, BoxT>>(*pointBuffer, bb, voxelSize);
+                                if (dx == 0 && dy == 0 && dz == 0)
+                                {
+                                    ps_grid = chunk;
+                                }
+                                else
+                                {
+                                    #pragma omp critical
+                                    neighbors.push_back(chunk);
+                                }
+                            }
+                        }
+                    }
+
+                    if (!neighbors.empty())
+                    {
+                        std::cout << timestamp << "Merging " << neighbors.size() << " neighbors" << std::endl;
+
+                        // QueryPoints are on the corners of the cells, and rounding errors can cause
+                        // them to land in either cell when using calcIndex. So we shift them by half a voxel.
+                        BaseVecT halfVoxel(voxelSize / 2, voxelSize / 2, voxelSize / 2);
+                        Vector3i index;
+                        std::unordered_map<Vector3i, size_t> qpIndices;
+                        auto& queryPoints = ps_grid->getQueryPoints();
+                        for (size_t i = 0; i < queryPoints.size(); i++)
+                        {
+                            ps_grid->calcIndex(queryPoints[i].m_position + halfVoxel, index);
+                            qpIndices[index] = i;
+                        }
+                        if (queryPoints.size() != qpIndices.size())
+                        {
+                            throw std::runtime_error("Query points are not unique");
+                        }
+
+                        // a map from the ps_grid queryPoint index to (distance, weight) for all identical queryPoints
+                        std::unordered_map<size_t, std::vector<std::pair<double, double>>> identical;
+                        for (auto& neighbor : neighbors)
+                        {
+                            auto center = neighbor->getBoundingBox().getCentroid();
+                            for (auto& qp : neighbor->getQueryPoints())
+                            {
+                                neighbor->calcIndex(qp.m_position + halfVoxel, index);
+                                auto it = qpIndices.find(index);
+                                if (it != qpIndices.end())
+                                {
+                                    // weighting function:
+                                    // left neighbor    |    current cell     |    right neighbor
+                                    //             | overlap |           | overlap |
+                                    // weight:      0   ->   1 ... 1 ... 1   <-   0
+                                    double weight = 1.0;
+                                    for (int axis = 0; axis < 3; axis++)
+                                    {
+                                        double distFromEdge = chunkSize / 2.0 + overlap - std::abs(center[axis] - qp.m_position[axis]);
+                                        double axisWeight = distFromEdge / (2 * overlap);
+                                        weight = std::min(weight, axisWeight);
+                                    }
+                                    identical[it->second].emplace_back(qp.m_distance, weight);
+                                }
+                            }
+                        }
+                        auto center = ps_grid->getBoundingBox().getCentroid();
+                        for (auto& [ i, others ] : identical)
+                        {
+                            auto& qp = queryPoints[i];
+                            double weight = 1.0;
+                            for (int axis = 0; axis < 3; axis++)
+                            {
+                                double distFromEdge = chunkSize / 2.0 + overlap - std::abs(center[axis] - qp.m_position[axis]);
+                                double axisWeight = distFromEdge / (2 * overlap);
+                                weight = std::min(weight, axisWeight);
+                            }
+
+                            double totalDistance = qp.m_distance * weight;
+                            double totalWeight = weight;
+                            for (auto& [ distance, weight ] : others)
+                            {
+                                totalDistance += distance * weight;
+                                totalWeight += weight;
+                            }
+                            qp.m_distance = totalDistance / totalWeight;
+                        }
+                    }
+
+                    if (createBigMesh)
+                    {
+                        chunkManager->setChunk(layerName, coord.x(), coord.y(), coord.z(), ps_grid->toPointBuffer());
+                    }
+                    if (createChunksHdf5 || createChunksPly || create3dTiles)
+                    {
+                        processChunk(ps_grid, coord, chunkDirPly, chunkFileHdf5, chunkFile3dTiles, chunkMap);
                     }
                 }
             }
@@ -501,84 +411,24 @@ namespace lvr2
                 //combine chunks
                 BoundingBox<BaseVecT> cbb(bgBB.getMin() - overlapVector, bgBB.getMax() + overlapVector);
 
-                std::shared_ptr<HashGrid<BaseVecT, BoxT>> hg;
-
-                if (chunkManager)
+                std::vector<PointBufferPtr> tsdfChunks;
+                for (auto& coord : filteredChunkCoords)
                 {
-                    std::vector<PointBufferPtr> tsdfChunks;
-                    for (auto& coord : filteredChunkCoords)
+                    auto chunk = chunkManager->getChunk<PointBufferPtr>(layerName, coord.x(), coord.y(), coord.z());
+                    if (chunk)
                     {
-                        auto chunk = chunkManager->getChunk<PointBufferPtr>(layerName, coord.x(), coord.y(), coord.z());
-                        if (chunk)
-                        {
-                            tsdfChunks.push_back(chunk.get());
-                        }
-                        else
-                        {
-                            std::cout << "WARNING - Could not find chunk (" << coord.x() << ", " << coord.y() << ", " << coord.z()
-                                    << ") in layer: " << "tsdf_values_" + std::to_string(voxelSize) << std::endl;
-                        }
+                        tsdfChunks.push_back(chunk.get());
                     }
-                    hg = std::make_shared<HashGrid<BaseVecT, BoxT>>(tsdfChunks, filteredPartitionBoxes, cbb, voxelSize);
-                }
-                else
-                {
-                    hg = std::make_shared<HashGrid<BaseVecT, BoxT>>(grid_files, filteredPartitionBoxes, cbb, voxelSize);
-                }
-
-                auto reconstruction = make_unique<lvr2::FastReconstruction<BaseVecT, BoxT>>(hg);
-
-                lvr2::PMPMesh<BaseVecT> mesh;
-
-                reconstruction->getMesh(mesh);
-                reconstruction.reset();
-                hg.reset();
-
-                if (m_options.removeDanglingArtifacts)
-                {
-                    cout << timestamp << "Removing dangling artifacts" << endl;
-                    removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
-                }
-
-                // Magic number from lvr1 `cleanContours`...
-                cleanContours(mesh, m_options.cleanContours, 0.0001);
-
-                // Fill small holes if requested
-                if (m_options.fillHoles)
-                {
-                    mesh.fillHoles(m_options.fillHoles);
-                }
-
-                if (m_options.optimizePlanes)
-                {
-                    auto faceNormals = calcFaceNormals(mesh);
-                    auto clusterBiMap = iterativePlanarClusterGrowing(mesh, faceNormals, m_options.planeNormalThreshold, m_options.planeIterations, m_options.minPlaneSize);
-
-                    if (m_options.smallRegionThreshold > 0)
+                    else
                     {
-                        deleteSmallPlanarCluster(mesh, clusterBiMap, static_cast<size_t>(m_options.smallRegionThreshold));
-                    }
-
-                    if (m_options.retesselate)
-                    {
-                        Tesselator<BaseVecT>::apply(mesh, clusterBiMap, faceNormals, m_options.lineFusionThreshold);
+                        std::cout << "WARNING - Could not find chunk (" << coord.x() << ", " << coord.y() << ", " << coord.z()
+                                << ") in layer: " << "tsdf_values_" + std::to_string(voxelSize) << std::endl;
                     }
                 }
+                auto hg = std::make_shared<HashGrid<BaseVecT, BoxT>>(tsdfChunks, filteredPartitionBoxes, cbb, voxelSize);
+                tsdfChunks.clear();
 
-                if (mesh.numFaces() > 0)
-                {
-                    // Finalize mesh
-                    auto meshBuffer = mesh.toMeshBuffer();
-
-                    fs::path filename = m_options.outputDir / "mesh.ply";
-                    std::cout << timestamp << "Writing mesh to " << filename << std::endl;
-                    auto m = ModelPtr(new Model(meshBuffer));
-                    ModelFactory::saveModel(m, filename.string());
-                }
-                else
-                {
-                    std::cout << timestamp << "Warning: Mesh is empty!" << std::endl;
-                }
+                createAndSaveBigMesh(hg, h);
             }
 
             std::cout << lvr2::timestamp << "added/changed " << filteredChunkCoords.size() << " chunks in layer " << layerName << std::endl;
@@ -587,6 +437,369 @@ namespace lvr2
         auto timeDiffMs = lvr2::timestamp.getCurrentTimeInMs() - startTimeMs;
 
         cout << "Finished complete reconstruction in " << (timeDiffMs / 1000.0) << "s" << endl;
+    }
+
+    template <typename BaseVecT>
+    void LargeScaleReconstruction<BaseVecT>::chunkAndReconstructKDTree(
+        ScanProjectEditMarkPtr project,
+        BoundingBox<BaseVecT>& newChunksBB)
+    {
+        auto startTimeMs = timestamp.getCurrentTimeInMs();
+
+        if(project->project->positions.size() != project->changed.size())
+        {
+            throw std::runtime_error("Inconsistency between number of given scans and diff-vector (scans to consider)!");
+        }
+
+        pmp::Point flipPoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
+
+        /// Minimum number of points needed to consider a chunk. Chunks smaller than this are skipped.
+        size_t minPointsPerChunk = std::max(m_options.ki, std::max(m_options.kd, m_options.kn)) * 2;
+
+        /// Maximum number of points in a chunk to avoid GPU memory overflow. Chunks bigger than this are reduced.
+        size_t maxPointsPerChunk = 130'000'000;
+
+        std::cout << timestamp << "Starting BigGrid" << std::endl;
+        BigGrid<BaseVecT> bg(m_options.bgVoxelSize, project, m_options.tempDir, m_options.scale);
+        std::cout << timestamp << "BigGrid finished " << std::endl;
+
+        BoundingBox<BaseVecT> bgBB = bg.getBB();
+
+        std::vector<BoundingBox<BaseVecT>> partitionBoxes;
+        std::vector<BoundingBox<BaseVecT>> filteredPartitionBoxes;
+
+        // use KD-Tree
+        std::cout << timestamp << "generating tree" << std::endl;
+        BigGridKdTree<BaseVecT> gridKd(bg.getBB(), m_options.nodeSize, &bg, m_options.bgVoxelSize);
+        gridKd.insert(bg.pointSize(), bg.getBB().getCentroid());
+        auto leafs = gridKd.getLeafs();
+        partitionBoxes.reserve(leafs.size());
+        for (auto& leaf : leafs)
+        {
+            partitionBoxes.push_back(leaf->getBB());
+        }
+
+        std::cout << timestamp << "Finished tree" << std::endl;
+
+        std::cout << timestamp << "got: " << bg.getCells().size() << " chunks." << std::endl;
+
+        std::cout << lvr2::timestamp << "VoxelSizes: ";
+        for (auto v : m_options.voxelSizes)
+        {
+            std::cout << v << " ";
+        }
+        std::cout << std::endl;
+
+        for(size_t h = 0; h < m_options.voxelSizes.size(); h++)
+        {
+            float voxelSize = m_options.voxelSizes[h];
+            float overlap = 5 * voxelSize;
+            BaseVecT overlapVector(overlap, overlap, overlap);
+
+            // Vector to store relevant chunks as .ser
+            std::vector<string> grid_files;
+
+            for (size_t i = 0; i < partitionBoxes.size(); i++)
+            {
+                auto& partitionBox = partitionBoxes[i];
+                string name_id = std::to_string(i);
+
+                BoundingBox<BaseVecT> gridbb(partitionBox.getMin() - overlapVector, partitionBox.getMax() + overlapVector);
+
+                bool retry = false;
+                GridPtr ps_grid;
+                do
+                {
+                    ps_grid = createChunk(bg, gridbb, voxelSize, minPointsPerChunk, maxPointsPerChunk, retry);
+                } while (retry);
+
+                if (!ps_grid)
+                {
+                    continue;
+                }
+
+                // all checks are done, this partition is ok
+                filteredPartitionBoxes.push_back(partitionBox);
+
+                std::string filename = (m_options.tempDir / (name_id + ".ser")).string();
+                ps_grid->saveGrid(filename);
+                grid_files.push_back(filename);
+            }
+            size_t skipped = partitionBoxes.size() - filteredPartitionBoxes.size();
+            std::cout << timestamp << "Skipped PartitionBoxes: " << skipped << std::endl;
+
+            std::cout << timestamp << "finished" << std::endl;
+
+            //combine chunks
+            BoundingBox<BaseVecT> cbb(bgBB.getMin() - overlapVector, bgBB.getMax() + overlapVector);
+
+            auto hg = std::make_shared<HashGrid<BaseVecT, BoxT>>(grid_files, filteredPartitionBoxes, cbb, voxelSize);
+            createAndSaveBigMesh(hg, h);
+        }
+
+        auto timeDiffMs = lvr2::timestamp.getCurrentTimeInMs() - startTimeMs;
+
+        cout << "Finished complete reconstruction in " << (timeDiffMs / 1000.0) << "s" << endl;
+    }
+
+    template<typename BaseVecT>
+    typename LargeScaleReconstruction<BaseVecT>::GridPtr LargeScaleReconstruction<BaseVecT>::createChunk(
+        const BigGrid<BaseVecT>& bg,
+        const BoundingBox<BaseVecT>& bb,
+        float voxelSize,
+        size_t minPointsPerChunk,
+        size_t& maxPointsPerChunk,
+        bool& retry)
+    {
+        retry = false;
+        if (bg.estimateSizeofBox(bb) < minPointsPerChunk)
+        {
+            return nullptr;
+        }
+
+        size_t numPoints;
+        floatArr points = bg.points(bb, numPoints, minPointsPerChunk);
+
+        if (!points)
+        {
+            return nullptr;
+        }
+
+        auto p_loader = std::make_shared<PointBuffer>(points, numPoints);
+
+        bool hasNormals = false;
+        bool hasDistances = false;
+
+        if (!hasNormals && bg.hasNormals())
+        {
+            size_t numNormals;
+            lvr2::floatArr normals = bg.normals(bb, numNormals);
+            if (numNormals != numPoints)
+            {
+                throw std::runtime_error("Number of normals does not match number of points");
+            }
+            p_loader->setNormalArray(normals, numNormals);
+            hasNormals = true;
+        }
+
+        if (!hasNormals && m_options.useGPU)
+        {
+            float targetSize = voxelSize / 4;
+            while (numPoints > maxPointsPerChunk)
+            {
+                // reduction is necessary to avoid GPU memory overflow
+                std::cout << timestamp << "Chunk has too many points: " << numPoints << ". Reducing." << std::endl;
+                OctreeReduction oct(p_loader, targetSize, 10);
+                p_loader = oct.getReducedPoints();
+                numPoints = p_loader->numPoints();
+                targetSize *= 2; // bigger voxel size means more points removed during reduction in the next iteration
+            }
+        }
+
+        BaseVecT flipPoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
+
+        lvr2::PointsetSurfacePtr<BaseVecT> surface;
+        {
+            auto ptr = new AdaptiveKSearchSurface<BaseVecT>(p_loader, "lvr2", m_options.kn, m_options.ki, m_options.kd, m_options.useRansac);
+            ptr->setFlipPoint(flipPoint);
+            surface.reset(ptr);
+        }
+
+        auto ps_grid = std::make_shared<lvr2::PointsetGrid<BaseVecT, BoxT>>(voxelSize, surface, bb, true, m_options.extrude);
+
+
+#ifdef GPU_FOUND
+        if ((!hasNormals && m_options.useGPU) || (!hasDistances && m_options.useGPUDistances))
+        {
+            floatArr points = p_loader->getPointArray();
+            std::cout << timestamp << "Generate GPU kd-tree..." << std::endl;
+
+            GpuSurface gpu_surface(points, numPoints);
+
+            gpu_surface.setKn(m_options.kn);
+            gpu_surface.setKi(m_options.ki);
+            gpu_surface.setKd(m_options.kd);
+            gpu_surface.setFlippoint(flipPoint.x, flipPoint.y, flipPoint.z);
+
+            if (!hasNormals && m_options.useGPU)
+            {
+                floatArr normals = floatArr(new float[numPoints * 3]);
+                try
+                {
+                    gpu_surface.calculateNormals();
+                }
+                catch(std::runtime_error& e)
+                {
+                    std::string msg = e.what();
+                    if (msg.find("out of memory") == std::string::npos)
+                    {
+                        throw; // forward any other exceptions
+                    }
+                    std::cerr << "ERROR: Not enough GPU memory. Reducing Points further." << std::endl;
+                    maxPointsPerChunk = maxPointsPerChunk * 0.8;
+                    if (maxPointsPerChunk < minPointsPerChunk)
+                    {
+                        std::cerr << "Your GPU is garbage. Switching back to CPU" << std::endl;
+                        m_options.useGPU = false;
+                    }
+                    retry = true;
+                    return nullptr;
+                }
+                gpu_surface.getNormals(normals);
+
+                p_loader->setNormalArray(normals, numPoints);
+                hasNormals = true;
+            }
+
+            if(!hasDistances && m_options.useGPUDistances)
+            {
+                auto& query_points = ps_grid->getQueryPoints();
+
+                std::cout << timestamp << "Computing signed distances in GPU with brute force kernel." << std::endl;
+                std::cout << timestamp << "This might take a while...." << std::endl;
+                gpu_surface.distances(query_points, voxelSize);
+                hasDistances = true;
+                std::cout << timestamp << "Done." << std::endl;
+            }
+        }
+#endif // GPU_FOUND
+
+        if (!hasNormals)
+        {
+            surface->calculateSurfaceNormals();
+        }
+        if (!hasDistances)
+        {
+            ps_grid->calcDistanceValues();
+        }
+
+        return ps_grid;
+    }
+
+    template<typename BaseVecT>
+    void LargeScaleReconstruction<BaseVecT>::processChunk(
+        GridPtr ps_grid,
+        const Vector3i& coord,
+        const fs::path& chunkDirPly,
+        std::shared_ptr<HighFive::File> chunkFileHdf5,
+        std::shared_ptr<HighFive::File> chunkFile3dTiles,
+        typename HLODTree<BaseVecT>::ChunkMap& chunkMap)
+    {
+        lvr2::FastReconstruction<BaseVecT, BoxT> reconstruction(ps_grid);
+        lvr2::PMPMesh<BaseVecT> mesh;
+        reconstruction.getMesh(mesh);
+
+        if (mesh.numFaces() == 0)
+        {
+            return;
+        }
+
+        // run cleanup on the mesh.
+        // cleanContours and optimizePlanes might mess with the chunk borders
+
+        if (m_options.removeDanglingArtifacts)
+        {
+            std::cout << timestamp << "Removing dangling artifacts" << std::endl;
+            removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
+            if (mesh.numFaces() == 0)
+            {
+                return;
+            }
+        }
+        if (m_options.fillHoles)
+        {
+            mesh.fillHoles(m_options.fillHoles);
+        }
+        mesh.collectGarbage();
+
+        std::string name_id = std::to_string(coord.x()) + "_" + std::to_string(coord.y()) + "_" + std::to_string(coord.z());
+
+        auto& surfaceMesh = mesh.getSurfaceMesh();
+        if (chunkFileHdf5)
+        {
+            auto group = chunkFileHdf5->createGroup("/chunks/" + name_id);
+            surfaceMesh.write(group);
+            chunkFileHdf5->flush();
+        }
+
+        if (!chunkDirPly.empty())
+        {
+            surfaceMesh.write((chunkDirPly / (name_id + ".ply")).string());
+        }
+
+        if (chunkFile3dTiles)
+        {
+            pmp::Point flipPoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
+            pmp::SurfaceNormals::compute_vertex_normals(surfaceMesh, flipPoint);
+
+            pmp::Point epsilon = pmp::Point::Constant(0.0001);
+            pmp::Point min = coord.cast<float>() * m_options.bgVoxelSize;
+            pmp::Point max = min + pmp::Point::Constant(m_options.bgVoxelSize);
+            pmp::BoundingBox expectedBB(min - epsilon, max + epsilon);
+
+            HLODTree<BaseVecT>::trimChunkOverlap(mesh, expectedBB);
+
+            if (mesh.numFaces() > 0)
+            {
+                auto bb = surfaceMesh.bounds();
+                chunkMap.emplace(coord, HLODTree<BaseVecT>::leaf(LazyMesh(std::move(mesh), chunkFile3dTiles), bb));
+            }
+        }
+    }
+
+    template<typename BaseVecT>
+    void LargeScaleReconstruction<BaseVecT>::createAndSaveBigMesh(GridPtr hg, size_t voxelSizeIndex)
+    {
+        auto reconstruction = make_unique<lvr2::FastReconstruction<BaseVecT, BoxT>>(hg);
+
+        lvr2::PMPMesh<BaseVecT> mesh;
+
+        reconstruction->getMesh(mesh);
+        reconstruction.reset();
+        hg.reset();
+
+        if (m_options.removeDanglingArtifacts)
+        {
+            cout << timestamp << "Removing dangling artifacts" << endl;
+            removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
+        }
+
+        // Magic number from lvr1 `cleanContours`...
+        cleanContours(mesh, m_options.cleanContours, 0.0001);
+
+        // Fill small holes if requested
+        if (m_options.fillHoles)
+        {
+            mesh.fillHoles(m_options.fillHoles);
+        }
+
+        if (m_options.optimizePlanes)
+        {
+            auto faceNormals = calcFaceNormals(mesh);
+            auto clusterBiMap = iterativePlanarClusterGrowing(mesh, faceNormals, m_options.planeNormalThreshold, m_options.planeIterations, m_options.minPlaneSize);
+
+            if (m_options.smallRegionThreshold > 0)
+            {
+                deleteSmallPlanarCluster(mesh, clusterBiMap, static_cast<size_t>(m_options.smallRegionThreshold));
+            }
+
+            if (m_options.retesselate)
+            {
+                Tesselator<BaseVecT>::apply(mesh, clusterBiMap, faceNormals, m_options.lineFusionThreshold);
+            }
+        }
+
+        if (mesh.numFaces() > 0)
+        {
+            std::string suffix = voxelSizeIndex > 0 ? std::to_string(m_options.voxelSizes[voxelSizeIndex]) : "";
+            fs::path filename = m_options.outputDir / ("mesh" + suffix + ".ply");
+            std::cout << timestamp << "Writing mesh to " << filename << std::endl;
+            mesh.getSurfaceMesh().write(filename.string());
+        }
+        else
+        {
+            std::cout << timestamp << "Warning: Mesh is empty!" << std::endl;
+        }
     }
 
     template<typename BaseVecT>
@@ -872,6 +1085,10 @@ namespace lvr2
 
         for(int h = 0; h < m_options.voxelSizes.size(); h++)
         {
+            float voxelSize = m_options.voxelSizes[h];
+            float overlap = 5 * voxelSize;
+            BaseVecT overlapVector(overlap, overlap, overlap);
+
             // vector to save the new chunk names - which chunks have to be reconstructed
             std::vector<BaseVector<int>> newChunks;
 
@@ -879,6 +1096,9 @@ namespace lvr2
 
             for (int i = 0; i < partitionBoxes.size() - partitionBoxesSkipped[h]; i++)
             {
+                auto& partitionBox = partitionBoxes[i];
+                BoundingBox<BaseVecT> gridbb(partitionBox.getMin() - overlapVector, partitionBox.getMax() + overlapVector);
+
                 // Receive chunk from client
                 int len, dest, chunk;
                 MPI_Status status;
@@ -899,7 +1119,7 @@ namespace lvr2
                 file.write(ret, len);
                 file.close();
 
-                auto ps_grid = std::make_shared<lvr2::PointsetGrid<BaseVecT, BoxT>>(largeScale.str().c_str());
+                auto ps_grid = std::make_shared<HashGrid<BaseVecT, BoxT>>(largeScale.str(), gridbb, voxelSize);
 
                 std::remove(largeScale.str().c_str());
 
@@ -930,9 +1150,6 @@ namespace lvr2
             if(h == 0 && m_options.hasOutput(LSROutput::BigMesh))
             {
                 //combine chunks
-                float voxelSize = m_options.voxelSizes[h];
-                float overlap = 5 * voxelSize;
-                BaseVecT overlapVector(overlap, overlap, overlap);
                 auto vmax = cbb.getMax() - overlapVector;
                 auto vmin = cbb.getMin() + overlapVector;
                 cbb.expand(vmin);
@@ -957,63 +1174,8 @@ namespace lvr2
                 }
                 auto hg = std::make_shared<HashGrid<BaseVecT, BoxT>>(tsdfChunks, filteredPartitionBoxes, cbb, voxelSize);
                 tsdfChunks.clear();
-                auto reconstruction = make_unique<lvr2::FastReconstruction<BaseVecT, BoxT>>(hg);
 
-                lvr2::HalfEdgeMesh<BaseVecT> mesh;
-
-                reconstruction->getMesh(mesh);
-
-                if (m_options.removeDanglingArtifacts) {
-                    cout << timestamp << "Removing dangling artifacts" << endl;
-                    removeDanglingCluster(mesh, static_cast<size_t>(m_options.removeDanglingArtifacts));
-                }
-
-                // Magic number from lvr1 `cleanContours`...
-                cleanContours(mesh, m_options.cleanContours, 0.0001);
-
-                // Fill small holes if requested
-                if (m_options.fillHoles) {
-                    naiveFillSmallHoles(mesh, m_options.fillHoles, false);
-                }
-
-                // Calculate normals for vertices
-                auto faceNormals = calcFaceNormals(mesh);
-
-                ClusterBiMap<FaceHandle> clusterBiMap;
-                if (m_options.optimizePlanes) {
-                    clusterBiMap = iterativePlanarClusterGrowing(mesh,
-                                                                 faceNormals,
-                                                                 m_options.planeNormalThreshold,
-                                                                 m_options.planeIterations,
-                                                                 m_options.minPlaneSize);
-
-                    if (m_options.smallRegionThreshold > 0) {
-                        deleteSmallPlanarCluster(
-                                mesh, clusterBiMap, static_cast<size_t>(m_options.smallRegionThreshold));
-                    }
-
-                    if (m_options.retesselate) {
-                        Tesselator<BaseVecT>::apply(
-                                mesh, clusterBiMap, faceNormals, m_options.lineFusionThreshold);
-                    }
-                } else {
-                    clusterBiMap = planarClusterGrowing(mesh, faceNormals, m_options.planeNormalThreshold);
-                }
-
-
-
-                // Finalize mesh
-                lvr2::SimpleFinalizer<BaseVecT> finalize;
-                auto meshBuffer = finalize.apply(mesh);
-
-                time_t now = time(0);
-
-                tm *time = localtime(&now);
-                stringstream largeScale;
-                largeScale << 1900 + time->tm_year << "_" << 1+ time->tm_mon << "_" << time->tm_mday << "_" <<  time->tm_hour << "h_" << 1 + time->tm_min << "m_" << 1 + time->tm_sec << "s.ply";
-
-                auto m = ModelPtr(new Model(meshBuffer));
-                ModelFactory::saveModel(m, largeScale.str());
+                createAndSaveBigMesh(hg, h);
             }
             std::cout << lvr2::timestamp << "added/changed " << newChunks.size() << " chunks in layer " << layerName << std::endl;
         }
@@ -1099,7 +1261,7 @@ namespace lvr2
             stringstream largeScale;
             largeScale << "/tmp/lvr2_lsr_mpi_" << rank << "_" << chunk;
 
-            ps_grid->serialize(largeScale.str());
+            ps_grid->saveGrid(largeScale.str());
 
 
 //            MPI_Send(&len, 1, MPI_INT, 0, 15 /*+ chunk * 2*/, MPI_COMM_WORLD);

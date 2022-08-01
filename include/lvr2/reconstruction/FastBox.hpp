@@ -146,8 +146,6 @@ public:
 
     /// The twelve intersection between box and surface
     OptionalVertexHandle        m_intersections[12];
-    bool                        m_extruded;
-    bool                        m_duplicate;
 
      /// The box center
     BaseVecT m_center;

@@ -46,18 +46,11 @@ template<typename BaseVecT>
 uint FastBox<BaseVecT>::INVALID_INDEX = numeric_limits<uint>::max();
 
 template<typename BaseVecT>
-FastBox<BaseVecT>::FastBox(BaseVecT center) : m_extruded(false), m_duplicate(false)
+FastBox<BaseVecT>::FastBox(BaseVecT center)
+    : m_center(center)
 {
-    for(int i = 0; i < 8; i++)
-    {
-        m_vertices[i] = INVALID_INDEX;
-    }
-
-    for(int i = 0; i < 27; i++)
-    {
-        m_neighbors[i] = 0;
-    }
-    m_center = center;
+    std::fill_n(m_vertices, 8, INVALID_INDEX);
+    std::fill_n(m_neighbors, 27, nullptr);
 }
 
 template<typename BaseVecT>
@@ -206,11 +199,6 @@ void FastBox<BaseVecT>::getSurface(
     uint &globalIndex
 )
 {
-    if (this->m_extruded)
-    {
-        return;
-    }
-
     BaseVecT corners[8];
     BaseVecT vertex_positions[12];
 
@@ -251,7 +239,7 @@ void FastBox<BaseVecT>::getSurface(
                 for(int i = 0; i < 3; i++)
                 {
                     auto current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
-                    if(current_neighbor != 0)
+                    if(current_neighbor != nullptr)
                     {
                         current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
                     }
@@ -285,11 +273,6 @@ void FastBox<BaseVecT>::getSurface(
     float comparePrecision
 )
 {
-    if (this->m_extruded)
-    {
-        return;
-    }
-
     BaseVecT corners[8];
     BaseVecT vertex_positions[12];
 
@@ -337,7 +320,7 @@ void FastBox<BaseVecT>::getSurface(
                 for(int i = 0; i < 3; i++)
                 {
                     auto current_neighbor = m_neighbors[neighbor_table[edge_index][i]];
-                    if(current_neighbor != 0)
+                    if(current_neighbor != nullptr)
                     {
                         current_neighbor->m_intersections[neighbor_vertex_table[edge_index][i]] = m_intersections[edge_index];
                     }

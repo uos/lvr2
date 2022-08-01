@@ -202,8 +202,8 @@ class BigGrid
         return m_cells;
     }
 
-    inline bool hasColors() { return m_hasColor; }
-    inline bool hasNormals() { return m_hasNormal; }
+    inline bool hasColors() const { return m_hasColor; }
+    inline bool hasNormals() const { return m_hasNormal; }
 
 private:
     template<typename LineType>

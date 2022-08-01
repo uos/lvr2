@@ -75,9 +75,6 @@ public:
     /// the input file
     fs::path m_inputFile;
 
-    /// sets partition method to kd-tree or virtual grid
-    int m_partMethod = 1;
-
     int m_numThreads = -1;
 };
 
