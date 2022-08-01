@@ -35,6 +35,7 @@
 #pragma once
 
 #include "HLODTree.hpp"
+#include "lvr2/config/lvropenmp.hpp"
 
 namespace lvr2
 {
@@ -312,13 +313,17 @@ void HLODTree<BaseVecT>::refresh()
 }
 
 template<typename BaseVecT>
-void HLODTree<BaseVecT>::finalize(bool saveMemory)
+void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage)
 {
     if (isLeaf() || m_simplified)
     {
         return;
     }
-    if (saveMemory)
+    refresh();
+
+    size_t numThreads = OpenMPConfig::getNumThreads();
+
+    if (allowedMemUsage == AllowedMemoryUsage::Minimal || numThreads == 1)
     {
         size_t total = countAllSimplify();
         ProgressBar progress(total, "Generating LOD");
@@ -328,14 +333,18 @@ void HLODTree<BaseVecT>::finalize(bool saveMemory)
         return;
     }
 
-    refresh();
+    if (allowedMemUsage == AllowedMemoryUsage::Moderate)
+    {
+        numThreads = std::max(numThreads / 8, (size_t)1);
+    }
+
     std::vector<HLODTree*> canBeSimplified;
     while (!collectSimplify(canBeSimplified))
     {
         ProgressBar progress(canBeSimplified.size(), "Generating LOD of one Layer");
         size_t fullySimplified = 0;
 
-        #pragma omp parallel for reduction(+:fullySimplified)
+        #pragma omp parallel for reduction(+:fullySimplified) num_threads(numThreads)
         for (size_t i = 0; i < canBeSimplified.size(); i++)
         {
             if (!canBeSimplified[i]->simplify())

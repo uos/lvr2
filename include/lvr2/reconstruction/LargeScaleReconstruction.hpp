@@ -179,6 +179,8 @@ struct LSROptions
     /// when generating LSROutput::Tiles3d, compress the meshes using Draco
     bool tiles3dCompress = false;
 
+    AllowedMemoryUsage tiles3dMemUsage = AllowedMemoryUsage::Moderate;
+
     /// Make sure all options are correctly set and consistent with each other.
     void ensureCorrectness()
     {

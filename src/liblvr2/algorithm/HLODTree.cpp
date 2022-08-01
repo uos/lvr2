@@ -34,7 +34,48 @@
 
 #include "lvr2/algorithm/HLODTree.hpp"
 
-namespace lvr2::HLODTree_internal
+namespace lvr2
+{
+
+std::istream& operator>>(std::istream& in, AllowedMemoryUsage& output)
+{
+    std::string token;
+    in >> token;
+    std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+    if (token == "minimal")
+        output = AllowedMemoryUsage::Minimal;
+    else if (token == "moderate")
+        output = AllowedMemoryUsage::Moderate;
+    else if (token == "unbounded")
+        output = AllowedMemoryUsage::Unbounded;
+    else
+    {
+        try
+        {
+            uint8_t num = std::stoi(token);
+            if (num > (uint8_t)AllowedMemoryUsage::Unbounded)
+                throw std::invalid_argument("");
+            output = (AllowedMemoryUsage)num;
+        }
+        catch(std::invalid_argument& e)
+        {
+            in.setstate(std::ios_base::failbit);
+        }
+    }
+    return in;
+}
+std::ostream& operator<<(std::ostream& out, AllowedMemoryUsage output)
+{
+    switch (output)
+    {
+    case AllowedMemoryUsage::Minimal:   out << "minimal";   break;
+    case AllowedMemoryUsage::Moderate:  out << "moderate";  break;
+    case AllowedMemoryUsage::Unbounded: out << "unbounded"; break;
+    }
+    return out;
+}
+
+namespace HLODTree_internal
 {
 
 struct SegmentMetaData
@@ -564,4 +605,6 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
     mesh.garbage_collection();
 }
 
-} // namespace lvr2::HLODTree_internal
+} // namespace HLODTree_internal
+
+} // namespace lvr2

@@ -69,8 +69,8 @@ int main(int argc, char** argv)
     int combine_depth = 2;
     float scale = 100.0f;
     std::vector<fs::path> mesh_out_files;
+    AllowedMemoryUsage allowedMemUsage = AllowedMemoryUsage::Moderate;
     bool fix_mesh;
-    bool big;
     bool compress;
 
     try
@@ -87,11 +87,10 @@ int main(int argc, char** argv)
         ("outputDir", value<fs::path>(&output_dir)->default_value(output_dir),
          "A Directory for the output.")
 
-        ("big,b", bool_switch(&big),
-         "Indicates that the input is big and might not fit into memory.\n"
-         "This will make the entire process considerably slower (~4x runtime), " // TODO: double check numbers
-         "but a lot less memory intensive (usually < 1 GB instead of 2x input filesize).\n"
-         "Requires the input to be already chunked.")
+        ("memUsage", value<AllowedMemoryUsage>(&allowedMemUsage)->default_value(allowedMemUsage),
+         "How strictly should the algorithm try to save memory.\n"
+         "Available Options: 'minimal', 'moderate', 'unbounded' or a number in [0, 2].\n"
+         "Less Memory used always means more time required to generate tiles.")
 
         ("chunkSize,c", value<float>(&chunk_size)->default_value(chunk_size),
          "When loading a Mesh: Split the Mesh into parts with this size.")
@@ -186,7 +185,7 @@ int main(int argc, char** argv)
     std::cout << timestamp << "Reading mesh " << input_file;
 
     std::shared_ptr<HighFive::File> mesh_file = nullptr;
-    if (big)
+    if (allowedMemUsage < AllowedMemoryUsage::Unbounded)
     {
         mesh_file = hdf5util::open("temp_meshes.h5", HighFive::File::Truncate);
     }
@@ -393,7 +392,7 @@ int main(int argc, char** argv)
             else
             {
                 auto bb = lazy_mesh.get()->getSurfaceMesh().bounds();
-                if (big)
+                if (allowedMemUsage < AllowedMemoryUsage::Unbounded)
                 {
                     lazy_mesh.allowUnload();
                 }
@@ -407,7 +406,7 @@ int main(int argc, char** argv)
 
     tree->refresh();
     std::cout << timestamp << "Constructed tree with depth " << tree->depth() << ". Creating LOD" << std::endl;
-    tree->finalize(big);
+    tree->finalize(allowedMemUsage);
 
     // ==================== Write to file ====================
 

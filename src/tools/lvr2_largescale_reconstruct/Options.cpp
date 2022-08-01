@@ -36,9 +36,12 @@
 #include "Options.hpp"
 
 #include "lvr2/config/lvropenmp.hpp"
+#include "lvr2/algorithm/HLODTree.hpp"
 
 namespace lvr2
 {
+// definitions necessary to use custom types with boost::program_options
+
 std::istream& operator>>(std::istream& in, LSROutput& output)
 {
     std::string token;
@@ -68,7 +71,7 @@ std::ostream& operator<<(std::ostream& out, LSROutput output)
     case LSROutput::ChunksPly:  out << "chunksPly";  break;
     case LSROutput::ChunksHdf5: out << "chunksHdf5"; break;
 #ifdef LVR2_USE_3DTILES
-    case LSROutput::Tiles3d:    out << "3dtiles";    break;
+    case LSROutput::Tiles3d:    out << "3dTiles";    break;
 #endif
     }
     return out;
@@ -196,16 +199,26 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("scale", value<float>(&m_options.scale)->default_value(m_options.scale),
      "Scaling factor, applied to all input points")
 
-    ("compress3DTiles", bool_switch(&m_options.tiles3dCompress),
+    ("3dTilesCompress", bool_switch(&m_options.tiles3dCompress),
      "When generating 3D tiles: Compress Meshes with Draco compression.\n"
      "This will significantly reduce filesize and improve loading times when remotely viewing the tiles "
      "over a slow connection, but greatly increase loading times for local viewing.")
+
+    ("3dTilesMemUsage", value<lvr2::AllowedMemoryUsage>(&m_options.tiles3dMemUsage)->default_value(m_options.tiles3dMemUsage),
+     "When generating 3D tiles: How strictly should the algorithm try to save memory.\n"
+     "Available Options: 'minimal', 'moderate', 'unbounded' or a number in [0, 2].\n"
+     "Less Memory used always means more time required to generate tiles.")
 
     ;
 
     try
     {
         setup();
+
+        if (m_help)
+        {
+            return;
+        }
 
         m_options.extrude = !noExtrude;
         m_options.mergeChunkBorders = !noMergeChunkBorders;

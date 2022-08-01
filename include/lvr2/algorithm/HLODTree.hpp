@@ -43,6 +43,18 @@
 namespace lvr2
 {
 
+enum class AllowedMemoryUsage : uint8_t
+{
+    Minimal = 0,
+    Moderate = 1,
+    Unbounded = 2,
+};
+
+// Operators needed for boost::program_options
+std::istream& operator>>(std::istream& in, lvr2::AllowedMemoryUsage& output);
+std::ostream& operator<<(std::ostream& out, lvr2::AllowedMemoryUsage input);
+
+
 /**
  * @brief A class for Hierarchical Level of Detail (HLOD) trees.
  *
@@ -180,10 +192,9 @@ public:
      * arranged before calling this method. This will finalize this tree and all its children,
      * marking them as finalized.
      *
-     * @param saveMemory If true, tries to save as much memory as possible,
-     *                   but makes this process a lot slower.
+     * @param allowedMemUsage The allowed memory usage.
      */
-    void finalize(bool saveMemory = false);
+    void finalize(AllowedMemoryUsage allowedMemUsage = AllowedMemoryUsage::Moderate);
 
     /**
      * @brief Returns a reference to the mesh on this level.

@@ -190,7 +190,7 @@ namespace lvr2
             typename HLODTree<BaseVecT>::ChunkMap chunkMap;
             // file to store chunks in for LSROutput::Tiles3d
             std::shared_ptr<HighFive::File> chunkFile3dTiles = nullptr;
-            if (create3dTiles)
+            if (create3dTiles && m_options.tiles3dMemUsage < AllowedMemoryUsage::Unbounded)
             {
                 chunkFile3dTiles = hdf5util::open(m_options.tempDir / "lazy_meshes.h5", HighFive::File::Truncate);
             }
@@ -387,9 +387,12 @@ namespace lvr2
             if (create3dTiles && !chunkMap.empty())
             {
                 std::cout << timestamp << "Creating 3D Tiles: Generating HLOD Tree" << std::endl;
+                if (m_options.tiles3dMemUsage > AllowedMemoryUsage::Minimal)
+                {
+                    std::cout << timestamp << "Note: If the following overflows your RAM, try setting 3dTilesMemUsage to Minimal" << std::endl;
+                }
                 auto tree = HLODTree<BaseVecT>::partition(std::move(chunkMap), 2);
-                bool saveMemory = true; // TODO: make this configurable
-                tree->finalize(saveMemory);
+                tree->finalize(m_options.tiles3dMemUsage);
 
                 std::cout << timestamp << "Creating 3D Tiles: Writing to mesh.3dtiles" << std::endl;
                 Tiles3dIO<BaseVecT> io((m_options.outputDir / "mesh.3dtiles").string());
