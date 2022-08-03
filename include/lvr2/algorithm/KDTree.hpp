@@ -51,11 +51,13 @@ namespace lvr2
  * struct PointWithNormal {
  *     Vector3f point;
  *     Vector3f normal;
+ *     float operator[](uint i) const { return point[i]; }
  * };
  * Or
  * struct PointWithHandle {
  *     Vector3f point;
  *     VertexHandle handle;
+ *     float operator[](uint i) const { return point[i]; }
  * };
  * To have associated metadata with the points, that can then be obtained from the neighbors.
  *

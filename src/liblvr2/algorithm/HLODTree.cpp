@@ -33,6 +33,7 @@
  */
 
 #include "lvr2/algorithm/HLODTree.hpp"
+#include "lvr2/algorithm/KDTree.hpp"
 
 namespace lvr2
 {
@@ -433,7 +434,14 @@ void trimChunkOverlap(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& expectedBB
     mesh.add_edge_property<bool>("e:feature", false);
 }
 
-void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
+struct MergeCandidate
+{
+    pmp::Point position;
+    size_t index;
+    float operator[](uint i) const { return position[i]; }
+};
+
+void mergeChunkOverlap(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb)
 {
     auto v_feature = mesh.get_vertex_property<bool>("v:feature");
     if (!v_feature)
@@ -454,32 +462,37 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
     }
 
     std::vector<size_t> merged_into(candidates.size());
+    auto points = std::make_unique<MergeCandidate[]>(candidates.size());
     for (size_t i = 0; i < candidates.size(); i++)
     {
         merged_into[i] = i;
+        points[i].position = mesh.position(candidates[i]);
+        points[i].index = i;
     }
 
-    // this would ideally be done with a kd-tree, but there is currently no index-preserving kd-tree
-    // implementation and making one just for this is not worth the effort
+    auto tree = KDTree<MergeCandidate>::create(std::move(points), candidates.size());
 
     constexpr float MAX_DISTANCE = 0.001f;
-    #pragma omp parallel for
-    for (size_t i = 1; i < candidates.size(); i++)
+    #pragma omp parallel
     {
-        auto& pos = mesh.position(candidates[i]);
-        for (size_t j = 0; j < i; j++)
+        std::vector<MergeCandidate*> neighbors;
+        #pragma omp for schedule(dynamic,16)
+        for (size_t i = 1; i < candidates.size(); i++)
         {
-            float dist_sq = (pos - mesh.position(candidates[j])).squaredNorm();
-            if (dist_sq < MAX_DISTANCE)
+            auto& pos = mesh.position(candidates[i]);
+            tree->knnSearch(pos, 8, neighbors, MAX_DISTANCE);
+            if (neighbors.size() > 1) // excluding current point
             {
-                merged_into[i] = j;
-                break;
+                for (auto& neighbor : neighbors)
+                {
+                    merged_into[i] = std::min(merged_into[i], merged_into[neighbor->index]);
+                }
             }
         }
     }
 
     std::unordered_map<pmp::Vertex, pmp::Vertex> merge_map;
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic,16)
     for (size_t i = 0; i < candidates.size(); i++)
     {
         if (merged_into[i] != i)
@@ -549,7 +562,22 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh)
 
     for (auto& [ src, target ] : merge_map)
     {
-        v_feature[target] = false;
+        auto& pos = mesh.position(target);
+        bool inner_vertex = true;
+        for (size_t axis = 0; axis < 3; axis++)
+        {
+            if (std::abs(bb.min()[axis] - pos[axis]) < MAX_DISTANCE ||
+                std::abs(bb.max()[axis] - pos[axis]) < MAX_DISTANCE)
+            {
+                inner_vertex = false;
+                break;
+            }
+        }
+        if (inner_vertex)
+        {
+            v_feature[target] = false;
+        }
+
         if (!mesh.is_deleted(src))
         {
             if (mesh.valence(src) == 0)

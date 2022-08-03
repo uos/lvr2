@@ -53,7 +53,7 @@ struct MeshSegment
 void segmentMesh(pmp::SurfaceMesh& mesh, float chunkSize, std::unordered_map<Vector3i, MeshSegment>& outChunks, std::vector<MeshSegment>& outSegments);
 void splitMesh(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb, float chunkSize, std::unordered_map<Vector3i, pmp::SurfaceMesh>& outChunks);
 void trimChunkOverlap(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& expectedBB);
-void mergeChunkOverlap(pmp::SurfaceMesh& mesh);
+void mergeChunkOverlap(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb);
 
 } // namespace HLODTree_internal
 
@@ -408,7 +408,7 @@ void HLODTree<BaseVecT>::combine()
     meshes.clear();
     pmpMeshes.clear();
 
-    HLODTree_internal::mergeChunkOverlap(mesh);
+    HLODTree_internal::mergeChunkOverlap(mesh, m_bb);
 
     if (!mesh.has_vertex_property("v:quadric"))
     {
