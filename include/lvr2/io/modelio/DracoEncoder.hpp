@@ -42,7 +42,7 @@ namespace lvr2
  * @param modelPtr 
  * @return std::unique_ptr<draco::Mesh> 
  */
-std::unique_ptr<draco::Mesh> createDracoMesh(ModelPtr modelPtr);
+std::unique_ptr<draco::Mesh> toDracoMesh(ModelPtr modelPtr);
 
 
 /**

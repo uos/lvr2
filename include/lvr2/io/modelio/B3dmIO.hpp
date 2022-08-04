@@ -48,7 +48,7 @@ class B3dmIO : public ModelIOBase
 {
 public:
     /**
-     * \brief Constructor.
+     * @brief Constructor.
      **/
     B3dmIO()
     {}
@@ -57,29 +57,51 @@ public:
 
 
     /**
-     * \brief Save B3dm with previously specified data.
+     * @brief Save B3dm with previously specified data.
      *
-     * \param filename Filename of the output file.
+     * @param filename Filename of the output file.
      **/
     void save(std::string filename) override;
 
     /**
-     * \brief Save B3dm with previously specified data.
+     * @brief Save B3dm with the given data.
+     * 
+     * @param model    The model to save.
+     * @param filename Filename of the output file.
+     */
+    void save(ModelPtr model, std::string filename) override
+    {
+        setModel(model);
+        save(filename);
+    }
+
+    /**
+     * @brief Save B3dm with previously specified data, compressed.
      *
-     * \param filename Filename of the output file.
-     * @param lossy allow lossy compression of the data.
+     * @param filename Filename of the output file.
+     * @param lossy    Allow lossy compression of the data.
      */
     void saveCompressed(const std::string& filename, bool lossy = false);
 
     /**
-     * \brief Read specified B3dm file.
-     *
-     * \param filename           Filename of file to read.
-     **/
-    ModelPtr read(std::string filename) override
+     * @brief Save B3dm with the given data, compressed.
+     * 
+     * @param model    The model to save.
+     * @param filename Filename of the output file.
+     * @param lossy    Allow lossy compression of the data.
+     */
+    void saveCompressed(ModelPtr model, std::string filename, bool lossy = false)
     {
-        throw std::runtime_error("Not implemented yet");
+        setModel(model);
+        saveCompressed(filename, lossy);
     }
+
+    /**
+     * @brief Read specified B3dm file.
+     *
+     * @param filename           Filename of file to read.
+     **/
+    ModelPtr read(std::string filename) override;
 };
 
 } // namespace lvr2

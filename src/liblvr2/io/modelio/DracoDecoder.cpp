@@ -29,6 +29,7 @@
 
 #include "lvr2/io/modelio/DracoDecoder.hpp"
 #include <draco/metadata/geometry_metadata.h>
+#include "lvr2/types/MatrixTypes.hpp"
 
 namespace lvr2
 {
@@ -55,18 +56,9 @@ LvrArrType loadAttributeFromDraco(const draco::PointAttribute* attribute)
 
     LvrArrType data(new DataType[attribute->size() * numComponents]);
 
-    std::array<DataType, numComponents> tmp;
     for (draco::AttributeValueIndex i(0); i < attribute->size(); ++i)
     {
-        if (!attribute->ConvertValue<DataType, numComponents>(i, &tmp[0]))
-        {
-            throw std::invalid_argument("attribute seems to have an incorrect structur");
-        }
-
-        for (int j = 0; j < numComponents; j++)
-        {
-            data[i.value() * numComponents + j] = tmp[j];
-        }
+        attribute->GetValue(i, data.get() + i.value() * numComponents);
     }
 
     return data;
@@ -258,29 +250,11 @@ ModelPtr readPointCloud(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
     return modelPtr;
 }
 
-/**
- * @brief loads a mesh from the decoderBuffer and converts it into the lvr structure
- *
- * @param buffer DecoderBuffer that contains the encoded data from the draco file
- * @param decoder Decoder that is used to decode the buffer
- * @return ModelPtr to the lvr model that got loaded from the draco file
- **/
-ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
+ModelPtr fromDracoMesh(const draco::Mesh& dracoMesh)
 {
-    auto status = decoder.DecodeMeshFromBuffer(&buffer);
-
-    if (!status.ok())
-    {
-        std::cerr << "An error occurred while decoding file:"
-                  << " " << status.status() << std::endl;
-        return ModelPtr(new Model());
-    }
-
     ModelPtr modelPtr(new Model(MeshBufferPtr(new MeshBuffer)));
 
-    std::unique_ptr<draco::Mesh> dracoMesh = std::move(status).value();
-
-    auto metadata = dracoMesh->GetMetadata();
+    auto metadata = dracoMesh.GetMetadata();
 
     // get textures
     if (metadata)
@@ -329,7 +303,7 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
     try
     {
         const draco::PointAttribute* attribute =
-            dracoMesh->GetNamedAttribute(draco::GeometryAttribute::POSITION);
+            dracoMesh.GetNamedAttribute(draco::GeometryAttribute::POSITION);
         floatArr data = loadAttributeFromDraco<floatArr, float, 3>(attribute);
         modelPtr->m_mesh->setVertices(data, attribute->size());
     }
@@ -344,19 +318,29 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
     try
     {
         const draco::PointAttribute* attribute =
-            dracoMesh->GetNamedAttribute(draco::GeometryAttribute::NORMAL);
+            dracoMesh.GetNamedAttribute(draco::GeometryAttribute::NORMAL);
         floatArr data = loadAttributeFromDraco<floatArr, float, 3>(attribute);
+        size_t numPoints = attribute->size() / 3;
+        #pragma omp parallel for schedule(static)
+        for (size_t i = 0; i < numPoints; i++)
+        {
+            float* src = data.get() + 3 * i;
+            Vector3f normal(src[0], src[1], src[2]);
+            normal.normalize();
+            std::copy_n(normal.data(), 3, src);
+        }
         modelPtr->m_mesh->setVertexNormals(data);
     }
     catch (const std::invalid_argument& ia)
     {
+        std::cout << "Error loading normals: " << ia.what() << std::endl;
     }
 
     // get colors
     try
     {
         const draco::PointAttribute* attribute =
-            dracoMesh->GetNamedAttribute(draco::GeometryAttribute::COLOR);
+            dracoMesh.GetNamedAttribute(draco::GeometryAttribute::COLOR);
         ucharArr data = loadAttributeFromDraco<ucharArr, unsigned char, 3>(attribute);
         modelPtr->m_mesh->setVertexColors(data);
     }
@@ -392,7 +376,7 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
     try
     {
         const draco::PointAttribute* attribute =
-            dracoMesh->GetNamedAttribute(draco::GeometryAttribute::TEX_COORD);
+            dracoMesh.GetNamedAttribute(draco::GeometryAttribute::TEX_COORD);
         floatArr data = loadAttributeFromDraco<floatArr, float, 3>(attribute);
         modelPtr->m_mesh->setTextureCoordinates(data);
     }
@@ -401,39 +385,39 @@ ModelPtr readMesh(draco::DecoderBuffer& buffer, draco::Decoder& decoder)
     }
 
     // get materialindices
-    const draco::PointAttribute* matIndexAttribute =
-        getDracoAttributeByAttributeMetadata(dracoMesh.get(), "name", "materialindex");
-    if (matIndexAttribute)
-    {
-        indexArray data(new uint32_t[dracoMesh->num_faces()]);
+    // const draco::PointAttribute* matIndexAttribute =
+    //     getDracoAttributeByAttributeMetadata(&dracoMesh, "name", "materialindex");
+    // if (matIndexAttribute)
+    // {
+    //     indexArray data(new uint32_t[dracoMesh.num_faces()]);
 
-        uint32_t tmp;
-        for (draco::FaceIndex i(0); i < dracoMesh->num_faces(); i++)
-        {
-            if (!matIndexAttribute->ConvertValue<uint32_t, 1>(
-                    matIndexAttribute->mapped_index(dracoMesh->face(i)[0]), &tmp))
-            {
-                data = uintArr(new uint32_t[dracoMesh->num_faces()]);
-                break;
-            }
+    //     uint32_t tmp;
+    //     for (draco::FaceIndex i(0); i < dracoMesh.num_faces(); i++)
+    //     {
+    //         if (!matIndexAttribute->ConvertValue<uint32_t, 1>(
+    //                 matIndexAttribute->mapped_index(dracoMesh.face(i)[0]), &tmp))
+    //         {
+    //             data = uintArr(new uint32_t[dracoMesh.num_faces()]);
+    //             break;
+    //         }
 
-            data[i.value()] = tmp;
-        }
+    //         data[i.value()] = tmp;
+    //     }
 
-        modelPtr->m_mesh->setFaceMaterialIndices(data);
-    }
+    //     modelPtr->m_mesh->setFaceMaterialIndices(data);
+    // }
 
     // get faces
     const draco::PointAttribute* faceAttribute =
-        dracoMesh->GetNamedAttribute(draco::GeometryAttribute::Type::POSITION);
-    uintArr faceArr(new unsigned int[dracoMesh->num_faces() * 3]);
-    for (draco::FaceIndex i(0); i < dracoMesh->num_faces(); ++i)
+        dracoMesh.GetNamedAttribute(draco::GeometryAttribute::Type::POSITION);
+    uintArr faceArr(new unsigned int[dracoMesh.num_faces() * 3]);
+    for (draco::FaceIndex i(0); i < dracoMesh.num_faces(); ++i)
     {
-        faceArr[i.value() * 3 + 0] = faceAttribute->mapped_index(dracoMesh->face(i)[0]).value();
-        faceArr[i.value() * 3 + 1] = faceAttribute->mapped_index(dracoMesh->face(i)[1]).value();
-        faceArr[i.value() * 3 + 2] = faceAttribute->mapped_index(dracoMesh->face(i)[2]).value();
+        faceArr[i.value() * 3 + 0] = faceAttribute->mapped_index(dracoMesh.face(i)[0]).value();
+        faceArr[i.value() * 3 + 1] = faceAttribute->mapped_index(dracoMesh.face(i)[1]).value();
+        faceArr[i.value() * 3 + 2] = faceAttribute->mapped_index(dracoMesh.face(i)[2]).value();
     }
-    modelPtr->m_mesh->setFaceIndices(faceArr, dracoMesh->num_faces());
+    modelPtr->m_mesh->setFaceIndices(faceArr, dracoMesh.num_faces());
 
     return modelPtr;
 }
@@ -444,7 +428,15 @@ ModelPtr decodeDraco(draco::DecoderBuffer& buffer, draco::EncodedGeometryType ty
 
     if (type == draco::TRIANGULAR_MESH)
     {
-        return readMesh(buffer, decoder);
+        auto status = decoder.DecodeMeshFromBuffer(&buffer);
+
+        if (!status.ok())
+        {
+            std::cerr << "An error occurred while decoding file:"
+                    << " " << status.status() << std::endl;
+            return ModelPtr(new Model());
+        }
+        return fromDracoMesh(*status.value());
     }
     else if (type == draco::POINT_CLOUD)
     {

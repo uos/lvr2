@@ -461,20 +461,26 @@ if(WITH_3DTILES)
     PREFIX cesium-native
     GIT_REPOSITORY "https://github.com/CesiumGS/cesium-native"
     GIT_TAG "v0.16.0"
+    LOG_CONFIGURE ON
+    LOG_INSTALL ON # Hide cmake output (creates a lot of spam on every build)
+    LOG_BUILD ON
+    LOG_OUTPUT_ON_FAILURE ON
     CMAKE_ARGS
         "-DCMAKE_INSTALL_PREFIX=install"  # install into the build directory rather than /usr/local/... (which would require sudo)
                                           # this is in quotes because otherwise cmake adds a random "x86_64-linux-gnu" to lib paths. No idea why.
         -DCESIUM_TESTS_ENABLED=OFF        # don't build the tests
         -DDRACO_TRANSCODER_SUPPORTED=ON   # enable Gltf support for draco
-        -DCMAKE_CXX_FLAGS="-fPIC"         # tell cmake to compile as shared libraries
-    LOG_INSTALL ON  # don't print install step to terminal (spam)
+        -DCMAKE_CXX_FLAGS=-fPIC           # tell cmake to compile as shared libraries
   )
   ExternalProject_Get_Property(cesium-native BINARY_DIR)
   include_directories(${BINARY_DIR}/install/include)
   link_directories(${BINARY_DIR}/install/lib)
 
   ExternalProject_Get_Property(cesium-native SOURCE_DIR)
-  include_directories(${SOURCE_DIR}/extern/draco/src ${BINARY_DIR}) # draco generates include files in BINARY_DIR
+  include_directories(${SOURCE_DIR}/extern/draco/src
+                      ${SOURCE_DIR}/extern/draco/third_party/tinygltf
+                      ${BINARY_DIR}    # draco generates include files in BINARY_DIR
+  )
   set(draco_FOUND ON)
   set(draco_LIBRARIES draco)
 

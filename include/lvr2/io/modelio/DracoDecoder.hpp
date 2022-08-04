@@ -37,6 +37,14 @@ namespace lvr2
 {
 
 /**
+ * @brief Converts a draco Mesh to a lvr Model
+ * 
+ * @param mesh 
+ * @return ModelPtr 
+ */
+ModelPtr fromDracoMesh(const draco::Mesh& mesh);
+
+/**
  * @brief delivers ModelPtr from draco DecoderBuffer
  *
  * @param buffer Decoder Buffer thats contents get parsed to a Model

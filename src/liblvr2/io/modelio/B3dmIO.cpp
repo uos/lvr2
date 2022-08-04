@@ -37,7 +37,9 @@
 #include "lvr2/io/modelio/B3dmIO.hpp"
 
 #include "lvr2/io/modelio/DracoEncoder.hpp"
+#include "lvr2/io/modelio/DracoDecoder.hpp"
 #include <draco/io/gltf_encoder.h>
+#include <draco/io/gltf_decoder.h>
 #include <draco/scene/scene.h>
 
 #include <CesiumGltf/Model.h>
@@ -75,6 +77,10 @@ inline std::pair<size_t, T&> push_id(std::vector<T>& vec)
 inline void write_uint32(std::ofstream& file, uint32_t value)
 {
     file.write(reinterpret_cast<char*>(&value), sizeof(uint32_t));
+}
+inline void read_uint32(std::ifstream& file, uint32_t& value)
+{
+    file.read(reinterpret_cast<char*>(&value), sizeof(uint32_t));
 }
 
 using DynVector = Eigen::Matrix<float, Eigen::Dynamic, 1>;
@@ -328,7 +334,7 @@ void B3dmIO::save(std::string filename)
 
 void B3dmIO::saveCompressed(const std::string& filename, bool lossy)
 {
-    auto mesh = createDracoMesh(m_model);
+    auto mesh = toDracoMesh(m_model);
 
     mesh->SetCompressionEnabled(true);
     draco::DracoCompressionOptions options;
@@ -433,6 +439,97 @@ void write_header(std::ofstream& file, size_t body_length)
     write_uint32(file, batch_table_byte_length);
 
     file << feature_table;
+}
+
+ModelPtr B3dmIO::read(std::string filename)
+{
+    std::ifstream file(filename, std::ios::binary);
+
+    char magic[5];
+    file.read(magic, 4);
+    magic[4] = '\0';
+    if (strcmp(magic, "b3dm") != 0)
+    {
+        std::cout << timestamp << "B3dmIO: Not a b3dm file" << std::endl;
+        return nullptr;
+    }
+    uint32_t version, byte_length, feature_table_json_length, feature_table_byte_length, batch_table_json_length, batch_table_byte_length;
+    read_uint32(file, version);
+    read_uint32(file, byte_length);
+    read_uint32(file, feature_table_json_length);
+    read_uint32(file, feature_table_byte_length);
+    read_uint32(file, batch_table_json_length);
+    read_uint32(file, batch_table_byte_length);
+
+    std::string feature_table(feature_table_json_length, ' ');
+    file.read(feature_table.data(), feature_table_json_length);
+
+    size_t header_length = 4 + 6 * sizeof(uint32_t)
+                        + feature_table_json_length
+                        + feature_table_byte_length
+                        + batch_table_json_length
+                        + batch_table_byte_length;
+
+    size_t body_length = byte_length - header_length;
+
+    draco::DecoderBuffer buffer;
+    auto buffer_data = std::make_unique<char[]>(body_length);
+    file.read(buffer_data.get(), body_length);
+    buffer.Init(buffer_data.get(), body_length);
+
+    draco::GltfDecoder decoder;
+    auto res = decoder.DecodeFromBufferToScene(&buffer);
+    if (!res.ok())
+    {
+        std::cout << "B3dmIO: draco decoding failed: " << res.status().error_msg_string() << std::endl;
+        return nullptr;
+    }
+    auto scene = std::move(res).value();
+
+    auto node_id = scene->GetRootNodeIndex(0);
+    auto node = scene->GetNode(node_id);
+
+    auto mesh_group_id = node->GetMeshGroupIndex();
+    auto mesh_group = scene->GetMeshGroup(mesh_group_id);
+    if (mesh_group->NumMeshIndices() > 1)
+    {
+        std::cout << "B3dmIO Warning: multiple meshes are not supported. Ignoring all but the first." << std::endl;
+    }
+
+    auto mesh_id = mesh_group->GetMeshIndex(0);
+    auto& mesh = scene->GetMesh(mesh_id);
+
+    auto model = fromDracoMesh(mesh);
+    if (!model)
+    {
+        std::cout << "B3dmIO Warning: failed to convert mesh to model" << std::endl;
+        return nullptr;
+    }
+
+    auto& materials = scene->GetMaterialLibrary();
+    auto material_id = mesh_group->GetMaterialIndex(0);
+    auto material = materials.GetMaterial(material_id);
+    auto texture_map = material->GetTextureMapByType(draco::TextureMap::Type::COLOR);
+
+    if (texture_map)
+    {
+        auto data = texture_map->texture()->source_image().encoded_data();
+        auto img = cv::imdecode(data, cv::IMREAD_COLOR);
+        if (!img.data)
+        {
+            std::cout << "B3dmIO Warning: failed to decode texture. Ignoring." << std::endl;
+        }
+        else
+        {
+            cv::Mat rgb;
+            cv::cvtColor(img, rgb, cv::COLOR_BGR2RGB);
+
+            Texture tex(0, rgb.cols, rgb.rows, 3, 1, 1.0, rgb.data);
+            model->m_mesh->getTextures().emplace_back(std::move(tex));
+        }
+    }
+
+    return model;
 }
 
 } // namespace lvr2

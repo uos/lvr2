@@ -268,7 +268,7 @@ std::unique_ptr<draco::EncoderBuffer> encodePointCloud(ModelPtr modelPtr, draco:
     return buffer;
 }
 
-std::unique_ptr<draco::Mesh> createDracoMesh(ModelPtr modelPtr)
+std::unique_ptr<draco::Mesh> toDracoMesh(ModelPtr modelPtr)
 {
     if (!modelPtr || !modelPtr->m_mesh)
     {
@@ -654,7 +654,7 @@ std::unique_ptr<draco::Mesh> createDracoMesh(ModelPtr modelPtr)
  **/
 std::unique_ptr<draco::EncoderBuffer> encodeMesh(ModelPtr modelPtr, draco::Encoder& encoder)
 {
-    auto mesh = createDracoMesh(modelPtr);
+    auto mesh = toDracoMesh(modelPtr);
 
     // Encode Data
     std::unique_ptr<draco::EncoderBuffer> buffer(new draco::EncoderBuffer());
