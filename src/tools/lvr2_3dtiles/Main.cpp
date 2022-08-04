@@ -60,12 +60,19 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
 
 const pmp::Point flip_point(100000, 100000, 100000);
 
+void print_chunk_size_error()
+{
+    std::cout << "Error: If your input does not contain Chunks, you need to specify a chunk size." << std::endl;
+    std::cout << "       Even if you don't want any splitting, you still need to explicitly set it to -1." << std::endl;
+}
+
 int main(int argc, char** argv)
 {
     fs::path input_file;
     std::string input_file_extension;
     fs::path output_dir = "chunk.3dtiles";
-    float chunk_size = -1;
+    float chunk_size = 0;
+    bool has_chunk_size = false;
     int combine_depth = 2;
     float scale = 100.0f;
     std::vector<fs::path> mesh_out_files;
@@ -92,8 +99,11 @@ int main(int argc, char** argv)
          "Available Options: 'minimal', 'moderate', 'unbounded' or a number in [0, 2].\n"
          "Less Memory used always means more time required to generate tiles.")
 
-        ("chunkSize,c", value<float>(&chunk_size)->default_value(chunk_size),
-         "When loading a Mesh: Split the Mesh into parts with this size.")
+        ("chunkSize,c", value<float>(&chunk_size),
+         "When loading a single Mesh: Split the Mesh into parts with this size.\n"
+         "(Chunked inputs use their own chunk size)\n"
+         "NOTE: This option is required on single Mesh inputs, so that users don't forget to set it.\n"
+         "      If you don't want any splitting, explicitly set it to -1.")
 
         ("combineDepth,d", value<int>(&combine_depth)->default_value(combine_depth),
          "How many layers to combine and simplify. -1 means all.")
@@ -125,7 +135,6 @@ int main(int argc, char** argv)
 
         variables_map variables;
         store(command_line_parser(argc, argv).options(options).positional(pos).run(), variables);
-        notify(variables);
 
         if (help)
         {
@@ -146,6 +155,12 @@ int main(int argc, char** argv)
             std::cout << std::endl;
             std::cout << "<outputDir> is the directory to create the output in." << std::endl;
             std::cout << "    THE CONTENT OF THIS DIRECTORY WILL BE DELETED!" << std::endl;
+        }
+
+        notify(variables);
+
+        if (help)
+        {
             return EXIT_SUCCESS;
         }
 
@@ -166,6 +181,8 @@ int main(int argc, char** argv)
             }
             input_file_extension = input_file_extension.substr(1);
         }
+
+        has_chunk_size = variables.count("chunkSize") > 0;
     }
     catch (const boost::program_options::error& ex)
     {
@@ -240,6 +257,12 @@ int main(int argc, char** argv)
         {
             std::cout << " using meshio::HDF5IO" << std::endl;
 
+            if (!has_chunk_size)
+            {
+                print_chunk_size_error();
+                return EXIT_FAILURE;
+            }
+
             std::vector<std::string> mesh_names;
             kernel->subGroupNames("/meshes/", mesh_names);
             auto mesh_name = mesh_names.front();
@@ -296,11 +319,25 @@ int main(int argc, char** argv)
     else if (pmp::SurfaceMeshIO::supports_extension(input_file_extension))
     {
         std::cout << " using pmp::SurfaceMeshIO" << std::endl;
+
+        if (!has_chunk_size)
+        {
+            print_chunk_size_error();
+            return EXIT_FAILURE;
+        }
+
         mesh.getSurfaceMesh().read(input_file.string());
     }
     else
     {
         std::cout << " using ModelFactory" << std::endl;
+
+        if (!has_chunk_size)
+        {
+            print_chunk_size_error();
+            return EXIT_FAILURE;
+        }
+
         ModelPtr model = ModelFactory::readModel(input_file.string());
         std::cout << timestamp << "Converting to PMPMesh" << std::endl;
         mesh = Mesh(model->m_mesh);

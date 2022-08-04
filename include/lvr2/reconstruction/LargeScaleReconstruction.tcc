@@ -247,6 +247,9 @@ namespace lvr2
             {
                 std::cout << timestamp << "Finished calculating TSDFs. Merging chunk overlaps" << std::endl;
 
+                // an empty grid to call calcIndex on
+                HashGrid<BaseVecT, BoxT> dummyGrid(voxelSize, {}, true, m_options.extrude);
+
                 for (size_t i = 0; i < filteredPartitionBoxes.size(); i++)
                 {
                     auto& partitionBox = filteredPartitionBoxes[i];
@@ -259,7 +262,11 @@ namespace lvr2
                     // To make sure this is the case, we merge the values of the overlaps for all
                     // neighboring chunks.
                     GridPtr ps_grid;
-                    std::vector<GridPtr> neighbors;
+                    std::vector<std::unordered_map<Vector3i, float>> neighborQPs;
+                    std::vector<BoundingBox<BaseVecT>> neighborBBs;
+                    // QueryPoints are on the corners of the cells, and rounding errors can cause
+                    // them to land in either cell when using calcIndex. So we shift them by half a voxel.
+                    BaseVecT halfVoxel(voxelSize / 2, voxelSize / 2, voxelSize / 2);
 
                     #pragma omp parallel for collapse(3)
                     for (int dx = -1; dx <= 1; dx++)
@@ -268,59 +275,89 @@ namespace lvr2
                         {
                             for (int dz = -1; dz <= 1; dz++)
                             {
-                                boost::optional<PointBufferPtr> pointBuffer;
+                                boost::optional<PointBufferPtr> optPointBuffer;
                                 #pragma omp critical
-                                pointBuffer = chunkManager->getChunk<PointBufferPtr>(layerNameTemp, coord.x() + dx, coord.y() + dy, coord.z() + dz);
-                                if (!pointBuffer)
+                                optPointBuffer = chunkManager->getChunk<PointBufferPtr>(layerNameTemp, coord.x() + dx, coord.y() + dy, coord.z() + dz);
+                                if (!optPointBuffer)
                                 {
                                     continue;
                                 }
+                                auto pointBuffer = *optPointBuffer;
                                 BaseVecT pos = BaseVecT(coord.x() + dx, coord.y() + dy, coord.z() + dz) * chunkSize;
                                 BoundingBox<BaseVecT> bb(pos - overlapVector, pos + cellSize + overlapVector);
-                                auto chunk = std::make_shared<HashGrid<BaseVecT, BoxT>>(*pointBuffer, bb, voxelSize);
                                 if (dx == 0 && dy == 0 && dz == 0)
                                 {
-                                    ps_grid = chunk;
+                                    ps_grid = std::make_shared<HashGrid<BaseVecT, BoxT>>(pointBuffer, bb, voxelSize);
+                                    continue;
                                 }
-                                else
+
+                                size_t numCells = pointBuffer->numPoints();
+                                auto centers = *pointBuffer->getFloatChannel("points");
+                                float* distances = pointBuffer->getFloatChannel("tsdf_values")->dataPtr().get();
+
+                                std::unordered_map<Vector3i, float> qps;
+                                Vector3i index;
+                                for (size_t i = 0; i < numCells; i++)
                                 {
-                                    #pragma omp critical
-                                    neighbors.push_back(chunk);
+                                    float* dist = distances + 8 * i;
+                                    BaseVecT center = centers[i];
+                                    for (int j = 0; j < 8; j++)
+                                    {
+                                        const int* table = box_creation_table[j];
+                                        BaseVecT corner = center + BaseVecT(table[0], table[1], table[2]) * (voxelSize / 2);
+                                        dummyGrid.calcIndex(corner + halfVoxel, index);
+                                        qps[index] = dist[j];
+                                    }
+                                }
+
+                                #pragma omp critical
+                                {
+                                    neighborQPs.emplace_back(std::move(qps));
+                                    neighborBBs.emplace_back(bb);
                                 }
                             }
                         }
                     }
 
-                    if (!neighbors.empty())
+                    if (!neighborQPs.empty())
                     {
-                        std::cout << timestamp << "Merging " << neighbors.size() << " neighbors" << std::endl;
+                        std::cout << timestamp << "Merging " << neighborQPs.size() << " neighbors" << std::endl;
 
                         // QueryPoints are on the corners of the cells, and rounding errors can cause
                         // them to land in either cell when using calcIndex. So we shift them by half a voxel.
                         BaseVecT halfVoxel(voxelSize / 2, voxelSize / 2, voxelSize / 2);
-                        Vector3i index;
-                        std::unordered_map<Vector3i, size_t> qpIndices;
                         auto& queryPoints = ps_grid->getQueryPoints();
-                        for (size_t i = 0; i < queryPoints.size(); i++)
+                        #pragma omp parallel
                         {
-                            ps_grid->calcIndex(queryPoints[i].m_position + halfVoxel, index);
-                            qpIndices[index] = i;
-                        }
-                        if (queryPoints.size() != qpIndices.size())
-                        {
-                            throw std::runtime_error("Query points are not unique");
-                        }
-
-                        // a map from the ps_grid queryPoint index to (distance, weight) for all identical queryPoints
-                        std::unordered_map<size_t, std::vector<std::pair<double, double>>> identical;
-                        for (auto& neighbor : neighbors)
-                        {
-                            auto center = neighbor->getBoundingBox().getCentroid();
-                            for (auto& qp : neighbor->getQueryPoints())
+                            // list of <center, distance> pairs for each neighbor
+                            std::vector<std::pair<BaseVecT, float>> identical;
+                            Vector3i index;
+                            #pragma omp for schedule(dynamic,64)
+                            for (size_t i = 0; i < queryPoints.size(); i++)
                             {
-                                neighbor->calcIndex(qp.m_position + halfVoxel, index);
-                                auto it = qpIndices.find(index);
-                                if (it != qpIndices.end())
+                                auto& pos = queryPoints[i].m_position;
+                                ps_grid->calcIndex(pos + halfVoxel, index);
+                                identical.clear();
+                                for (size_t j = 0; j < neighborQPs.size(); j++)
+                                {
+                                    auto it = neighborQPs[j].find(index);
+                                    if (it != neighborQPs[j].end())
+                                    {
+                                        auto center = neighborBBs[j].getCentroid();
+                                        identical.emplace_back(center, it->second);
+                                    }
+                                }
+                                if (identical.empty())
+                                {
+                                    continue;
+                                }
+                                // also add the query point itself
+                                auto center = ps_grid->getBoundingBox().getCentroid();
+                                identical.emplace_back(center, queryPoints[i].m_distance);
+
+                                double totalDistance = 0;
+                                double totalWeight = 0;
+                                for (auto& [ center, distance ] : identical)
                                 {
                                     // weighting function:
                                     // left neighbor    |    current cell     |    right neighbor
@@ -329,34 +366,15 @@ namespace lvr2
                                     double weight = 1.0;
                                     for (int axis = 0; axis < 3; axis++)
                                     {
-                                        double distFromEdge = chunkSize / 2.0 + overlap - std::abs(center[axis] - qp.m_position[axis]);
+                                        double distFromEdge = chunkSize / 2.0 + overlap - std::abs(center[axis] - pos[axis]);
                                         double axisWeight = distFromEdge / (2 * overlap);
                                         weight = std::min(weight, axisWeight);
                                     }
-                                    identical[it->second].emplace_back(qp.m_distance, weight);
+                                    totalDistance += distance * weight;
+                                    totalWeight += weight;
                                 }
+                                queryPoints[i].m_distance = totalDistance / totalWeight;
                             }
-                        }
-                        auto center = ps_grid->getBoundingBox().getCentroid();
-                        for (auto& [ i, others ] : identical)
-                        {
-                            auto& qp = queryPoints[i];
-                            double weight = 1.0;
-                            for (int axis = 0; axis < 3; axis++)
-                            {
-                                double distFromEdge = chunkSize / 2.0 + overlap - std::abs(center[axis] - qp.m_position[axis]);
-                                double axisWeight = distFromEdge / (2 * overlap);
-                                weight = std::min(weight, axisWeight);
-                            }
-
-                            double totalDistance = qp.m_distance * weight;
-                            double totalWeight = weight;
-                            for (auto& [ distance, weight ] : others)
-                            {
-                                totalDistance += distance * weight;
-                                totalWeight += weight;
-                            }
-                            qp.m_distance = totalDistance / totalWeight;
                         }
                     }
 
