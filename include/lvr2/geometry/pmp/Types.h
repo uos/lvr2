@@ -60,7 +60,7 @@ constexpr IndexType PMP_MAX_INDEX = std::numeric_limits<IndexType>::max();
 struct IOFlags
 {
     IOFlags() {}
-    bool use_binary = false;             //!< read / write binary format
+    bool use_binary = true;              //!< read / write binary format
     bool use_vertex_normals = false;     //!< read / write vertex normals
     bool use_vertex_colors = false;      //!< read / write vertex colors
     bool use_vertex_texcoords = false;   //!< read / write vertex texcoords

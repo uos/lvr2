@@ -174,10 +174,10 @@ const char* VIEWER_HTML = R"=======(
     <script>
         class TilingScheme extends Cesium.GeographicTilingScheme {
             getNumberOfXTilesAtLevel(level) {
-                return super.getNumberOfXTilesAtLevel(Math.min(level, 10));
+                return Infinity;
             }
             getNumberOfYTilesAtLevel(level) {
-                return super.getNumberOfYTilesAtLevel(Math.min(level, 10));
+                return Infinity;
             }
         }
 
