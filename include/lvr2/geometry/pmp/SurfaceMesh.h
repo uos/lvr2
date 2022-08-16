@@ -860,11 +860,24 @@ public:
     //!
     //! In addition, the OBJ and PMP formats support writing per-halfedge
     //! texture coordinates.
-    void write(const std::string& filename,
-               const IOFlags& flags = IOFlags()) const;
+    void write(const std::string& filename, const IOFlags& flags = IOFlags())
+    {
+        garbage_collection();
+        write_const(filename, flags);
+    }
+    //! \brief const version of write. Requires that the mesh has no garbage.
+    void write_const(const std::string& filename, const IOFlags& flags = IOFlags()) const;
 
+    //! \brief Read the mesh from a HDF5 Group.
     void read(const HighFive::Group& group);
-    void write(HighFive::Group& group) const;
+    //! \brief Write the mesh to a HDF5 Group.
+    void write(HighFive::Group& group)
+    {
+        garbage_collection();
+        write_const(group);
+    }
+    //! \brief const version of write. Requires that the mesh has no garbage.
+    void write_const(HighFive::Group& group) const;
 
     //! \brief write content of the mesh into \p group and shallow_clear() the mesh.
     void unload(HighFive::Group& group);

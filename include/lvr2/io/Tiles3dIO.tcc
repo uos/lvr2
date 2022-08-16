@@ -119,7 +119,11 @@ void Tiles3dIO<BaseVecT>::writeTiles(Cesium3DTiles::Tile& tile,
 
         auto model = std::make_shared<Model>();
         auto pmp_mesh = mesh->get();
-        model->m_mesh = pmp_mesh->toMeshBuffer();
+        if (pmp_mesh->hasGarbage())
+        {
+            mesh->modify()->collectGarbage();
+        }
+        model->m_mesh = pmp_mesh->toMeshBuffer_const();
         pmp_mesh.reset();
 
         B3dmIO io;

@@ -190,13 +190,13 @@ void PMPMesh<BaseVecT>::read(const HighFive::Group& group)
     m_mesh.read(group);
 }
 template<typename BaseVecT>
-void PMPMesh<BaseVecT>::write(HighFive::Group& group) const
+void PMPMesh<BaseVecT>::write_const(HighFive::Group& group) const
 {
-    m_mesh.write(group);
+    m_mesh.write_const(group);
 }
 
 template<typename BaseVecT>
-MeshBufferPtr PMPMesh<BaseVecT>::toMeshBuffer() const
+MeshBufferPtr PMPMesh<BaseVecT>::toMeshBuffer_const() const
 {
     if (m_mesh.has_garbage())
     {

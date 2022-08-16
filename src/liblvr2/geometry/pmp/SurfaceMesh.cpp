@@ -100,19 +100,19 @@ void SurfaceMesh::read(const std::string& filename, const IOFlags& flags)
     reader.read(*this);
 }
 
-void SurfaceMesh::write(const std::string& filename, const IOFlags& flags) const
+void SurfaceMesh::write_const(const std::string& filename, const IOFlags& flags) const
 {
     SurfaceMeshIO writer(filename, flags);
-    writer.write(*this);
+    writer.write_const(*this);
 }
 
 void SurfaceMesh::read(const HighFive::Group& group)
 {
     SurfaceMeshIO::read_hdf5(group, *this);
 }
-void SurfaceMesh::write(HighFive::Group& group) const
+void SurfaceMesh::write_const(HighFive::Group& group) const
 {
-    SurfaceMeshIO::write_hdf5(group, *this);
+    SurfaceMeshIO::write_hdf5_const(group, *this);
 }
 
 void SurfaceMesh::unload(HighFive::Group& group)

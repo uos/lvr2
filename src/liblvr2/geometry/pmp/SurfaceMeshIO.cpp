@@ -77,8 +77,11 @@ void SurfaceMeshIO::read(SurfaceMesh& mesh)
     add_failed_faces(mesh);
 }
 
-void SurfaceMeshIO::write(const SurfaceMesh& mesh)
+void SurfaceMeshIO::write_const(const SurfaceMesh& mesh)
 {
+    if (mesh.has_garbage())
+        throw IOException("Cannot write mesh with garbage!");
+
     // extract file extension
     std::string::size_type dot(filename_.rfind("."));
     if (dot == std::string::npos)
@@ -955,9 +958,6 @@ void SurfaceMeshIO::read_agi(SurfaceMesh& mesh)
 
 void SurfaceMeshIO::write_pmp(const SurfaceMesh& mesh)
 {
-    if (mesh.has_garbage())
-        throw IOException("Cannot write mesh with garbage");
-
     // open file (in binary mode)
     FILE* out = fopen(filename_.c_str(), "wb");
     if (!out)
@@ -1062,7 +1062,7 @@ template<typename T>
 void write_fprop(HighFive::Group& group, const SurfaceMesh& mesh, const std::string& name)
 { write_prop(group, mesh.get_face_property<T>(name), mesh.n_faces(), name); }
 
-void SurfaceMeshIO::write_hdf5(HighFive::Group& group, const SurfaceMesh& mesh)
+void SurfaceMeshIO::write_hdf5_const(HighFive::Group& group, const SurfaceMesh& mesh)
 {
     if (mesh.has_garbage())
         throw IOException("Cannot write mesh with garbage");

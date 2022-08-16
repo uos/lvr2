@@ -24,10 +24,22 @@ public:
 
     void read(SurfaceMesh& mesh);
 
-    void write(const SurfaceMesh& mesh);
+    void write(SurfaceMesh& mesh)
+    {
+        mesh.garbage_collection();
+        write_const(mesh);
+    }
+
+    //! IMPORTANT: You HAVE to call mesh.garbage_collection() or make sure there is no garbage before calling this function!
+    void write_const(const SurfaceMesh& mesh);
 
     static void read_hdf5(const HighFive::Group& group, SurfaceMesh& mesh);
-    static void write_hdf5(HighFive::Group& group, const SurfaceMesh& mesh);
+    static void write_hdf5(HighFive::Group& group, SurfaceMesh& mesh)
+    {
+        mesh.garbage_collection();
+        write_hdf5_const(group, mesh);
+    }
+    static void write_hdf5_const(HighFive::Group& group, const SurfaceMesh& mesh);
 
     static std::unordered_set<std::string>& supported_extensions();
     static bool supports_extension(const std::string& extension)

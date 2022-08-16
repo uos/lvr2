@@ -72,16 +72,22 @@ public:
     /// Reads the mesh from a group. group must be written to with write(group)
     void read(const HighFive::Group& group);
     /// Writes the mesh into the given group
-    void write(HighFive::Group& group) const;
+    void write(HighFive::Group& group)
+    {
+        collectGarbage();
+        write_const(group);
+    }
+    /// const version of write(group). Requires that the mesh has no garbage (see collectGarbage())
+    void write_const(HighFive::Group& group) const;
 
     /// Creates a MeshBuffer from the Mesh
     MeshBufferPtr toMeshBuffer()
     {
         collectGarbage();
-        return ((const PMPMesh<BaseVecT>*)this)->toMeshBuffer(); // force-call to const version
+        return toMeshBuffer_const();
     }
     /// const version of toMeshBuffer(). Requires that the mesh has no garbage (see collectGarbage())
-    MeshBufferPtr toMeshBuffer() const;
+    MeshBufferPtr toMeshBuffer_const() const;
 
     // ========================================================================
     // = Implementing the `BaseMesh` interface (see BaseMesh for docs)
@@ -215,6 +221,10 @@ public:
     void collectGarbage()
     {
         m_mesh.garbage_collection();
+    }
+    bool hasGarbage() const
+    {
+        return m_mesh.has_garbage();
     }
 
     void setTexture(const Texture& texture)
