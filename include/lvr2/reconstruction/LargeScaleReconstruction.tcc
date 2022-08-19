@@ -238,7 +238,7 @@ namespace lvr2
                     }
                     if (createChunksHdf5 || createChunksPly || create3dTiles)
                     {
-                        processChunk(ps_grid, coord, chunkDirPly, chunkFileHdf5, chunkFile3dTiles, chunkMap);
+                        processChunk(ps_grid, coord, chunkDirPly, chunkFileHdf5, chunkFile3dTiles, chunkMap, create3dTiles);
                     }
                 }
             }
@@ -384,7 +384,7 @@ namespace lvr2
                     }
                     if (createChunksHdf5 || createChunksPly || create3dTiles)
                     {
-                        processChunk(ps_grid, coord, chunkDirPly, chunkFileHdf5, chunkFile3dTiles, chunkMap);
+                        processChunk(ps_grid, coord, chunkDirPly, chunkFileHdf5, chunkFile3dTiles, chunkMap, create3dTiles);
                     }
                 }
             }
@@ -704,7 +704,8 @@ namespace lvr2
         const fs::path& chunkDirPly,
         std::shared_ptr<HighFive::File> chunkFileHdf5,
         std::shared_ptr<HighFive::File> chunkFile3dTiles,
-        typename HLODTree<BaseVecT>::ChunkMap& chunkMap)
+        typename HLODTree<BaseVecT>::ChunkMap& chunkMap,
+        bool create3dTiles)
     {
         lvr2::FastReconstruction<BaseVecT, BoxT> reconstruction(ps_grid);
         lvr2::PMPMesh<BaseVecT> mesh;
@@ -748,7 +749,7 @@ namespace lvr2
             surfaceMesh.write((chunkDirPly / (name_id + ".ply")).string());
         }
 
-        if (chunkFile3dTiles)
+        if (create3dTiles)
         {
             pmp::Point flipPoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
             pmp::SurfaceNormals::compute_vertex_normals(surfaceMesh, flipPoint);

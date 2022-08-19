@@ -332,14 +332,14 @@ void B3dmIO::save(std::string filename)
     file.write((char*)gltf.gltfBytes.data(), gltf.gltfBytes.size());
 }
 
-void B3dmIO::saveCompressed(const std::string& filename, bool lossy)
+void B3dmIO::saveCompressed(const std::string& filename)
 {
     auto mesh = toDracoMesh(m_model);
 
     mesh->SetCompressionEnabled(true);
     draco::DracoCompressionOptions options;
     options.compression_level = 10;
-    options.quantization_bits_position = lossy ? 14 : 0;
+    options.quantization_bits_position = 0; // would crash for some meshes
     mesh->SetCompressionOptions(options);
 
     draco::Scene scene;

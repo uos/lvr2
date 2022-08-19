@@ -79,21 +79,19 @@ public:
      * @brief Save B3dm with previously specified data, compressed.
      *
      * @param filename Filename of the output file.
-     * @param lossy    Allow lossy compression of the data.
      */
-    void saveCompressed(const std::string& filename, bool lossy = false);
+    void saveCompressed(const std::string& filename);
 
     /**
      * @brief Save B3dm with the given data, compressed.
      * 
      * @param model    The model to save.
      * @param filename Filename of the output file.
-     * @param lossy    Allow lossy compression of the data.
      */
-    void saveCompressed(ModelPtr model, std::string filename, bool lossy = false)
+    void saveCompressed(ModelPtr model, std::string filename)
     {
         setModel(model);
-        saveCompressed(filename, lossy);
+        saveCompressed(filename);
     }
 
     /**

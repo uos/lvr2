@@ -130,8 +130,7 @@ void Tiles3dIO<BaseVecT>::writeTiles(Cesium3DTiles::Tile& tile,
         io.setModel(model);
         if (compress)
         {
-            bool lossy = !tree->isLeaf();
-            io.saveCompressed(outputDir + filename, lossy);
+            io.saveCompressed(outputDir + filename);
         }
         else
         {
