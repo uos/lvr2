@@ -126,7 +126,7 @@ void SurfaceSimplification::initialize(Scalar aspect_ratio, Scalar edge_length,
     initialized_ = true;
 }
 
-void SurfaceSimplification::simplify(unsigned int n_vertices)
+bool SurfaceSimplification::simplify(unsigned int n_vertices)
 {
     // make sure the decimater is initialized
     if (!initialized_)
@@ -188,10 +188,12 @@ void SurfaceSimplification::simplify(unsigned int n_vertices)
 
     // clean up
     delete queue_;
-    // mesh_.garbage_collection();
     mesh_.remove_vertex_property(vpriority_);
     mesh_.remove_vertex_property(heap_pos_);
     mesh_.remove_vertex_property(vtarget_);
+    mesh_.garbage_collection();
+
+    return nv <= n_vertices;
 }
 
 void SurfaceSimplification::calculate_quadrics(SurfaceMesh& mesh)

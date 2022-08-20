@@ -313,8 +313,13 @@ void HLODTree<BaseVecT>::refresh()
 }
 
 template<typename BaseVecT>
-void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage)
+void HLODTree<BaseVecT>::finalize(float reductionFactor, AllowedMemoryUsage allowedMemUsage)
 {
+    if (reductionFactor < 0.0f || reductionFactor > 1.0f)
+    {
+        throw std::invalid_argument("reductionFactor must be in [0, 1]");
+    }
+
     if (isLeaf() || m_simplified)
     {
         return;
@@ -327,7 +332,7 @@ void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage)
     {
         size_t total = countAllSimplify();
         ProgressBar progress(total, "Generating LOD");
-        size_t fullySimplified = finalizeRecursive(progress);
+        size_t fullySimplified = finalizeRecursive(reductionFactor, progress);
         std::cout << "\r" << timestamp << "LOD: " << fullySimplified << " / " << total
                   << " meshes reached simplification limit" << std::endl;
         return;
@@ -347,7 +352,7 @@ void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage)
         #pragma omp parallel for reduction(+:fullySimplified) num_threads(numThreads)
         for (size_t i = 0; i < canBeSimplified.size(); i++)
         {
-            if (!canBeSimplified[i]->simplify())
+            if (!canBeSimplified[i]->simplify(reductionFactor))
             {
                 fullySimplified++;
             }
@@ -363,7 +368,7 @@ void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage)
 }
 
 template<typename BaseVecT>
-size_t HLODTree<BaseVecT>::finalizeRecursive(ProgressBar& progress)
+size_t HLODTree<BaseVecT>::finalizeRecursive(float reductionFactor, ProgressBar& progress)
 {
     if (isLeaf() || m_simplified)
     {
@@ -372,12 +377,12 @@ size_t HLODTree<BaseVecT>::finalizeRecursive(ProgressBar& progress)
     size_t fullySimplified = 0;
     for (auto& child : m_children)
     {
-        fullySimplified += child->finalizeRecursive(progress);
+        fullySimplified += child->finalizeRecursive(reductionFactor, progress);
     }
     if (shouldCombine())
     {
         combine();
-        if (!simplify())
+        if (!simplify(reductionFactor))
         {
             fullySimplified++;
         }
@@ -420,21 +425,15 @@ void HLODTree<BaseVecT>::combine()
 }
 
 template<typename BaseVecT>
-bool HLODTree<BaseVecT>::simplify()
+bool HLODTree<BaseVecT>::simplify(float reductionFactor)
 {
-    auto pmpMesh = m_mesh->modify();
-    auto& mesh = pmpMesh->getSurfaceMesh();
-    size_t old_num_vertices = mesh.n_vertices();
-    pmp::SurfaceSimplification simplify(mesh, true);
-    constexpr float TARGET_RATIO = 0.2;
-    simplify.simplify(old_num_vertices * TARGET_RATIO);
-
-    mesh.garbage_collection();
-
     m_simplified = true;
 
-    float ratio = (float)mesh.n_vertices() / old_num_vertices;
-    return ratio <= TARGET_RATIO * 1.1;
+    auto pmpMesh = m_mesh->modify();
+    size_t target = pmpMesh->numVertices() * reductionFactor;
+
+    pmp::SurfaceSimplification simplify(pmpMesh->getSurfaceMesh(), true);
+    return simplify.simplify(target);
 }
 
 template<typename BaseVecT>

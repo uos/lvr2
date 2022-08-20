@@ -35,8 +35,8 @@ public:
                     unsigned int max_valence = 0, Scalar normal_deviation = 0.0,
                     Scalar hausdorff_error = 0.0);
 
-    //! Simplify mesh to \p n_vertices.
-    void simplify(unsigned int n_vertices);
+    //! Simplify mesh to \p n_vertices. Returns true if \p n_vertices is reached.
+    bool simplify(unsigned int n_vertices);
 
     //! Calculates quadrics for a mesh.
     static void calculate_quadrics(SurfaceMesh& mesh);

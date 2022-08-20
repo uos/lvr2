@@ -410,7 +410,7 @@ namespace lvr2
                     std::cout << timestamp << "Note: If the following overflows your RAM, try setting 3dTilesMemUsage to Minimal" << std::endl;
                 }
                 auto tree = HLODTree<BaseVecT>::partition(std::move(chunkMap), 2);
-                tree->finalize(m_options.tiles3dMemUsage);
+                tree->finalize(0.2, m_options.tiles3dMemUsage); // TODO: make the 2 and 0.2 configurable
 
                 std::cout << timestamp << "Creating 3D Tiles: Writing to mesh.3dtiles" << std::endl;
                 Tiles3dIO<BaseVecT> io((m_options.outputDir / "mesh.3dtiles").string());

@@ -401,6 +401,10 @@ public:
                 // any loops that don't contain start_ are an error in the mesh
                 throw TopologyException("Loop detected in mesh!");
             }
+            else if (iter_count_ > 100'000'000)
+            {
+                throw TopologyException("This seems like a Loop in the mesh?");
+            }
         }
         void cancel()
         {

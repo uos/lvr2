@@ -74,6 +74,7 @@ int main(int argc, char** argv)
     float chunk_size = 0;
     bool has_chunk_size = false;
     int combine_depth = 2;
+    float reduction_factor = 0.2f;
     float scale = 100.0f;
     std::vector<fs::path> mesh_out_files;
     AllowedMemoryUsage allowedMemUsage = AllowedMemoryUsage::Moderate;
@@ -107,6 +108,10 @@ int main(int argc, char** argv)
 
         ("combineDepth,d", value<int>(&combine_depth)->default_value(combine_depth),
          "How many layers to combine and simplify. -1 means all.")
+
+        ("reductionFactor,r", value<float>(&reduction_factor)->default_value(reduction_factor),
+         "Factor between 0 and 1 indicating how far the meshes should be simplified.\\"
+         "0 means as much as possible, 1 means no simplification.")
 
         ("fix,f", bool_switch(&fix_mesh),
          "Fixes some common errors in meshes that might break this algorithm.\n"
@@ -180,6 +185,11 @@ int main(int argc, char** argv)
                 throw error("Input file has no extension");
             }
             input_file_extension = input_file_extension.substr(1);
+        }
+
+        if (reduction_factor < 0.0f || reduction_factor > 1.0f)
+        {
+            throw error("reductionFactor must be between 0 and 1");
         }
 
         has_chunk_size = variables.count("chunkSize") > 0;
@@ -441,7 +451,7 @@ int main(int argc, char** argv)
 
     tree->refresh();
     std::cout << timestamp << "Constructed tree with depth " << tree->depth() << ". Creating LOD" << std::endl;
-    tree->finalize(allowedMemUsage);
+    tree->finalize(reduction_factor, allowedMemUsage);
 
     // ==================== Write to file ====================
 

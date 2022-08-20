@@ -192,9 +192,10 @@ public:
      * arranged before calling this method. This will finalize this tree and all its children,
      * marking them as finalized.
      *
+     * @param reductionFactor How much the meshes should be reduced at each level.
      * @param allowedMemUsage The allowed memory usage.
      */
-    void finalize(AllowedMemoryUsage allowedMemUsage = AllowedMemoryUsage::Moderate);
+    void finalize(float reductionFactor = 0.2f, AllowedMemoryUsage allowedMemUsage = AllowedMemoryUsage::Moderate);
 
     /**
      * @brief Returns a reference to the mesh on this level.
@@ -267,11 +268,11 @@ private:
     {
         return m_combineDepth == -1 || m_depth <= m_combineDepth;
     }
-    size_t finalizeRecursive(ProgressBar& progress);
+    size_t finalizeRecursive(float reductionFactor, ProgressBar& progress);
     /// Combine the child meshes into this node's mesh.
     void combine();
     /// Simplify the mesh. Returns true if it can be further simplified.
-    bool simplify();
+    bool simplify(float reductionFactor);
     /// Collect all subtrees that can be simplified right now.
     bool collectSimplify(std::vector<HLODTree*>& canBeSimplified);
     /// Counts all subtrees for which shouldCombine() returns true.
