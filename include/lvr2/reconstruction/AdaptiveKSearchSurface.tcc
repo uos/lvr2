@@ -419,8 +419,8 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 
     if (id.empty())
     {
-        return make_pair(std::numeric_limits<typename BaseVecT::CoordType>::max(),
-                         std::numeric_limits<typename BaseVecT::CoordType>::max());
+        auto dist = std::numeric_limits<typename BaseVecT::CoordType>::max();
+        return std::make_pair(dist, dist);
     }
 
     BaseVecT nearest;

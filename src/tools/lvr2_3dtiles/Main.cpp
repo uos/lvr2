@@ -73,7 +73,7 @@ int main(int argc, char** argv)
     fs::path output_dir = "chunk.3dtiles";
     float chunk_size = 0;
     bool has_chunk_size = false;
-    int combine_depth = 2;
+    int combine_depth = 3;
     float reduction_factor = 0.2f;
     float scale = 100.0f;
     std::vector<fs::path> mesh_out_files;
