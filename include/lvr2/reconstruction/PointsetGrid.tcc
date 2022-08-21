@@ -118,15 +118,39 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
 
         std::tie(projectedDistance, euklideanDistance) =
             this->m_surface->distance(this->m_queryPoints[i].m_position);
-        if (euklideanDistance > 1.7320 * this->m_voxelsize)
+        // if (euklideanDistance > 1.7320 * this->m_voxelsize)
+        if (euklideanDistance > 10 * this->m_voxelsize)
         {
             this->m_queryPoints[i].m_invalid = true;
         }
         this->m_queryPoints[i].m_distance = projectedDistance;
         ++progress;
     }
-    cout << endl << timestamp << "Elapsed time: " << ts.getElapsedTimeInS() << endl;
-    return;
+    std::cout << std::endl;
+
+    // remove cells with invalid corners
+    auto it = this->m_cells.begin();
+    while (it != this->m_cells.end())
+    {
+        bool hasInvalid = false;
+        for (int k = 0; k < 8; ++k)
+        {
+            if (this->m_queryPoints[it->second->getVertex(k)].m_invalid)
+            {
+                hasInvalid = true;
+                break;
+            }
+        }
+        if (hasInvalid)
+        {
+            delete it->second;
+            it = this->m_cells.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }
 
 } // namespace lvr2

@@ -85,7 +85,6 @@ void writeTileset(Cesium3DTiles::Tileset& tileset, const std::string& outputDir,
 
 
     auto& root = tileset.root;
-    root.refine = Cesium3DTiles::Tile::Refine::ADD;
 
     double minZ = root.boundingVolume.box[2] - root.boundingVolume.box.back(); // see convertBoundingBox: center.z() - halfVector.z()
     root.transform =

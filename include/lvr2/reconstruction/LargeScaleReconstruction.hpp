@@ -240,6 +240,10 @@ struct LSROptions
 #endif
 
         CHECK_OPTION(voxelSizes, voxelSizes.empty(), "No voxel sizes specified.");
+        if (voxelSizes[0] <= 0)
+        {
+            throw std::invalid_argument("voxelSizes must be positive.");
+        }
 
         CHECK_OPTION(bgVoxelSize, bgVoxelSize <= 0, "bgVoxelSize has to be greater than 0.");
 
@@ -249,24 +253,25 @@ struct LSROptions
             std::cout << timestamp << "Warning: bgVoxelSize is not a multiple of voxelSizes[0]. Correcting to " << correctedVoxelSize << std::endl;
             bgVoxelSize = correctedVoxelSize;
         }
-        auto it = voxelSizes.begin();
+        auto it = voxelSizes.begin() + 1;
         while (it != voxelSizes.end())
         {
             if (*it <= 0)
             {
                 std::cout << timestamp << "Warning: voxelSizes cannot be negative. Ignoring " << *it << std::endl;
-                voxelSizes.erase(it);
+                it = voxelSizes.erase(it);
             }
-            else if (bgVoxelSize != std::ceil(bgVoxelSize / *it) * *it)
+            else if (std::abs(bgVoxelSize - std::ceil(bgVoxelSize / *it) * *it) > std::numeric_limits<float>::epsilon())
             {
                 std::cout << timestamp << "Warning: all voxelSizes have to divide bgVoxelSize. Ignoring " << *it << std::endl;
-                voxelSizes.erase(it);
+                it = voxelSizes.erase(it);
             }
             else
             {
                 ++it;
             }
         }
+        CHECK_OPTION(voxelSizes, voxelSizes.empty(), "No voxel sizes specified.");
 
         CHECK_OPTION(partMethod, partMethod > 1, "partMethod has to be 0 or 1.");
 

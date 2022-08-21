@@ -76,6 +76,7 @@ void Tiles3dIO<BaseVecT>::write(TreeConstPtr& tree, bool compress, float scale)
     boost::filesystem::create_directory(m_rootDir + "tiles/");
 
     Cesium3DTiles::Tileset tileset;
+    tileset.root.refine = Cesium3DTiles::Tile::Refine::ADD;
 
     tree->finalize();
     writeTiles(tileset.root, tree, compress, m_rootDir, "tiles/s");

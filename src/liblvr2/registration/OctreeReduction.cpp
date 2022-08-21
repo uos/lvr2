@@ -103,6 +103,14 @@ void OctreeReduction::init()
         bb += m_points[i];
     }
 
+    // make the bounding box a perfect cube
+    {
+        float longestAxis = bb.longest_axis_size();
+        pmp::Point halfSize = pmp::Point::Constant(longestAxis / 2.0f);
+        pmp::Point center = bb.center();
+        bb = pmp::BoundingBox(center - halfSize, center + halfSize);
+    }
+
     #pragma omp parallel // allows "pragma omp task"
     #pragma omp single   // only execute every task once
     createOctree(0, m_numPoints, bb.min(), bb.max());

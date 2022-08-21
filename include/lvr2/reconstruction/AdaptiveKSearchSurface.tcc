@@ -417,6 +417,12 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     // Find nearest tangent plane
     this->m_searchTree->kSearch( p, this->m_kd, id );
 
+    if (id.empty())
+    {
+        return make_pair(std::numeric_limits<typename BaseVecT::CoordType>::max(),
+                         std::numeric_limits<typename BaseVecT::CoordType>::max());
+    }
+
     BaseVecT nearest;
     BaseVecT avg_normal;
 

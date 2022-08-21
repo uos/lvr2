@@ -370,6 +370,7 @@ namespace lvr2
                                         double axisWeight = distFromEdge / (2 * overlap);
                                         weight = std::min(weight, axisWeight);
                                     }
+                                    weight = std::max(weight, 0.001); // avoid division by zero
                                     totalDistance += distance * weight;
                                     totalWeight += weight;
                                 }
@@ -692,6 +693,11 @@ namespace lvr2
         if (!hasDistances)
         {
             ps_grid->calcDistanceValues();
+        }
+
+        if (ps_grid->getCells().empty())
+        {
+            return nullptr;
         }
 
         return ps_grid;
