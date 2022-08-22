@@ -151,11 +151,11 @@ namespace lvr2
             if (h == 0)
             {
                 createBigMesh = m_options.hasOutput(LSROutput::BigMesh);
-                createChunksPly = chunkManager && m_options.hasOutput(LSROutput::ChunksPly);
-                createChunksHdf5 = chunkManager && m_options.hasOutput(LSROutput::ChunksHdf5);
+                createChunksPly = m_options.hasOutput(LSROutput::ChunksPly);
+                createChunksHdf5 = m_options.hasOutput(LSROutput::ChunksHdf5);
 
 #ifdef LVR2_USE_3DTILES
-                create3dTiles = chunkManager && m_options.hasOutput(LSROutput::Tiles3d);
+                create3dTiles = m_options.hasOutput(LSROutput::Tiles3d);
 #endif
             }
 
@@ -238,7 +238,7 @@ namespace lvr2
                     }
                     if (createChunksHdf5 || createChunksPly || create3dTiles)
                     {
-                        processChunk(ps_grid, coord, chunkDirPly, chunkFileHdf5, chunkFile3dTiles, chunkMap, create3dTiles);
+                        processChunk(ps_grid, coord, chunkDirPly, chunkFileHdf5, chunkFile3dTiles, chunkMap);
                     }
                 }
             }
@@ -385,7 +385,7 @@ namespace lvr2
                     }
                     if (createChunksHdf5 || createChunksPly || create3dTiles)
                     {
-                        processChunk(ps_grid, coord, chunkDirPly, chunkFileHdf5, chunkFile3dTiles, chunkMap, create3dTiles);
+                        processChunk(ps_grid, coord, chunkDirPly, chunkFileHdf5, chunkFile3dTiles, chunkMap);
                     }
                 }
             }
@@ -710,8 +710,7 @@ namespace lvr2
         const fs::path& chunkDirPly,
         std::shared_ptr<HighFive::File> chunkFileHdf5,
         std::shared_ptr<HighFive::File> chunkFile3dTiles,
-        typename HLODTree<BaseVecT>::ChunkMap& chunkMap,
-        bool create3dTiles)
+        typename HLODTree<BaseVecT>::ChunkMap& chunkMap)
     {
         lvr2::FastReconstruction<BaseVecT, BoxT> reconstruction(ps_grid);
         lvr2::PMPMesh<BaseVecT> mesh;
@@ -743,19 +742,19 @@ namespace lvr2
         std::string name_id = std::to_string(coord.x()) + "_" + std::to_string(coord.y()) + "_" + std::to_string(coord.z());
 
         auto& surfaceMesh = mesh.getSurfaceMesh();
-        if (chunkFileHdf5)
+        if (m_options.hasOutput(LSROutput::ChunksHdf5))
         {
             auto group = chunkFileHdf5->createGroup("/chunks/" + name_id);
             surfaceMesh.write(group);
             chunkFileHdf5->flush();
         }
 
-        if (!chunkDirPly.empty())
+        if (m_options.hasOutput(LSROutput::ChunksPly))
         {
             surfaceMesh.write((chunkDirPly / (name_id + ".ply")).string());
         }
 
-        if (create3dTiles)
+        if (m_options.hasOutput(LSROutput::Tiles3d))
         {
             pmp::Point flipPoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
             pmp::SurfaceNormals::compute_vertex_normals(surfaceMesh, flipPoint);

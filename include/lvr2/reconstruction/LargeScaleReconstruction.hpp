@@ -388,8 +388,7 @@ private:
                       const fs::path& chunkDirPly,
                       std::shared_ptr<HighFive::File> chunkFileHdf5,
                       std::shared_ptr<HighFive::File> chunkFile3dTiles,
-                      typename HLODTree<BaseVecT>::ChunkMap& chunkMap,
-                      bool create3dTiles);
+                      typename HLODTree<BaseVecT>::ChunkMap& chunkMap);
 
     void createAndSaveBigMesh(GridPtr hg, size_t voxelSizeIndex);
 

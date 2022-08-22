@@ -143,6 +143,15 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
         }
         if (hasInvalid)
         {
+            for (int k = 0; k < 27; k++)
+            {
+                auto neighbor = it->second->getNeighbor(k);
+                if (neighbor != nullptr)
+                {
+                    neighbor->setNeighbor(26 - k, nullptr);
+                }
+            }
+
             delete it->second;
             it = this->m_cells.erase(it);
         }
