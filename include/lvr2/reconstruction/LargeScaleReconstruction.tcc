@@ -754,6 +754,7 @@ namespace lvr2
             surfaceMesh.write((chunkDirPly / (name_id + ".ply")).string());
         }
 
+#ifdef LVR2_USE_3DTILES
         if (m_options.hasOutput(LSROutput::Tiles3d))
         {
             pmp::Point flipPoint(m_options.flipPoint[0], m_options.flipPoint[1], m_options.flipPoint[2]);
@@ -772,6 +773,7 @@ namespace lvr2
                 chunkMap.emplace(coord, HLODTree<BaseVecT>::leaf(LazyMesh(std::move(mesh), chunkFile3dTiles), bb));
             }
         }
+#endif // LVR2_USE_3DTILES
     }
 
     template<typename BaseVecT>
