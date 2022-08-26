@@ -70,12 +70,13 @@ int main(int argc, char** argv)
 {
     fs::path input_file;
     std::string input_file_extension;
-    fs::path output_dir = "chunk.3dtiles";
+    fs::path output_dir = "mesh.3dtiles";
     float chunk_size = 0;
     bool has_chunk_size = false;
     int combine_depth = 3;
     float reduction_factor = 0.2f;
-    float scale = 100.0f;
+    float normal_deviation = -1;
+    float scale = 1.0f;
     std::vector<fs::path> mesh_out_files;
     AllowedMemoryUsage allowedMemUsage = AllowedMemoryUsage::Moderate;
     bool fix_mesh;
@@ -112,6 +113,9 @@ int main(int argc, char** argv)
         ("reductionFactor,r", value<float>(&reduction_factor)->default_value(reduction_factor),
          "Factor between 0 and 1 indicating how far the meshes should be simplified.\\"
          "0 means as much as possible, 1 means no simplification.")
+
+        ("normalDeviation,n", value<float>(&normal_deviation),
+         "Set a maximum angle in degrees that normals are allowed to change by.")
 
         ("fix,f", bool_switch(&fix_mesh),
          "Fixes some common errors in meshes that might break this algorithm.\n"
@@ -451,7 +455,7 @@ int main(int argc, char** argv)
 
     tree->refresh();
     std::cout << timestamp << "Constructed tree with depth " << tree->depth() << ". Creating LOD" << std::endl;
-    tree->finalize(reduction_factor, allowedMemUsage);
+    tree->finalize(allowedMemUsage, reduction_factor, normal_deviation);
 
     // ==================== Write to file ====================
 

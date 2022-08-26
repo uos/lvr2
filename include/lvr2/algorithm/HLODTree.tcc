@@ -313,11 +313,20 @@ void HLODTree<BaseVecT>::refresh()
 }
 
 template<typename BaseVecT>
-void HLODTree<BaseVecT>::finalize(float reductionFactor, AllowedMemoryUsage allowedMemUsage)
+void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage, float reductionFactor, float normalDeviation)
 {
     if (reductionFactor < 0.0f || reductionFactor > 1.0f)
     {
         throw std::invalid_argument("reductionFactor must be in [0, 1]");
+    }
+    if (normalDeviation < 0.0f)
+    {
+        // The normal_deviation parameter on SurfaceSimplification is designed, such that values in
+        // (0, 360] give an angle check, with smaller values giving a stricter check.
+        // A value of exactly 0 would result in no angle check though, creating an inconsistent
+        // transition from values that are close to 0.
+        // We therefore use a negative value to indicate no angle check.
+        normalDeviation = 0.0f;
     }
 
     if (isLeaf() || m_simplified)
@@ -332,7 +341,7 @@ void HLODTree<BaseVecT>::finalize(float reductionFactor, AllowedMemoryUsage allo
     {
         size_t total = countAllSimplify();
         ProgressBar progress(total, "Generating LOD");
-        size_t fullySimplified = finalizeRecursive(reductionFactor, progress);
+        size_t fullySimplified = finalizeRecursive(reductionFactor, normalDeviation, progress);
         std::cout << "\r" << timestamp << "LOD: " << fullySimplified << " / " << total
                   << " meshes reached simplification limit" << std::endl;
         return;
@@ -352,7 +361,7 @@ void HLODTree<BaseVecT>::finalize(float reductionFactor, AllowedMemoryUsage allo
         #pragma omp parallel for reduction(+:fullySimplified) num_threads(numThreads)
         for (size_t i = 0; i < canBeSimplified.size(); i++)
         {
-            if (!canBeSimplified[i]->simplify(reductionFactor))
+            if (!canBeSimplified[i]->simplify(reductionFactor, normalDeviation))
             {
                 fullySimplified++;
             }
@@ -368,7 +377,7 @@ void HLODTree<BaseVecT>::finalize(float reductionFactor, AllowedMemoryUsage allo
 }
 
 template<typename BaseVecT>
-size_t HLODTree<BaseVecT>::finalizeRecursive(float reductionFactor, ProgressBar& progress)
+size_t HLODTree<BaseVecT>::finalizeRecursive(float reductionFactor, float normalDeviation, ProgressBar& progress)
 {
     if (isLeaf() || m_simplified)
     {
@@ -377,12 +386,12 @@ size_t HLODTree<BaseVecT>::finalizeRecursive(float reductionFactor, ProgressBar&
     size_t fullySimplified = 0;
     for (auto& child : m_children)
     {
-        fullySimplified += child->finalizeRecursive(reductionFactor, progress);
+        fullySimplified += child->finalizeRecursive(reductionFactor, normalDeviation, progress);
     }
     if (shouldCombine())
     {
         combine();
-        if (!simplify(reductionFactor))
+        if (!simplify(reductionFactor, normalDeviation))
         {
             fullySimplified++;
         }
@@ -425,7 +434,7 @@ void HLODTree<BaseVecT>::combine()
 }
 
 template<typename BaseVecT>
-bool HLODTree<BaseVecT>::simplify(float reductionFactor)
+bool HLODTree<BaseVecT>::simplify(float reductionFactor, float normalDeviation)
 {
     m_simplified = true;
 
@@ -433,6 +442,7 @@ bool HLODTree<BaseVecT>::simplify(float reductionFactor)
     size_t target = pmpMesh->numVertices() * reductionFactor;
 
     pmp::SurfaceSimplification simplify(pmpMesh->getSurfaceMesh(), true);
+    simplify.initialize(0.0 /*aspect_ratio*/, 0.0 /*edge_length*/, 0 /*max_valence*/, normalDeviation, 0.0 /*hausdorff_error*/);
     return simplify.simplify(target);
 }
 
