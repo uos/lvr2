@@ -33,7 +33,6 @@ int main(int argc, char** argv)
     float* normals_raw = (float*) malloc(sizeof(float) * 3 * num_points);
     normals_raw[0] = 10;
 
-    //setNormals(argc, argv);
     initNormals2(normals_raw, num_points);
 
     std::cout << normals_raw[0] << ", " << normals_raw[1] << ", " << normals_raw[2] << std::endl;

@@ -38,14 +38,13 @@ void initNormals(float* h_normals, size_t num_points)
     float* d_normals;
     cudaMalloc(&d_normals, num_bytes);
 
-    // Initialize the normals
+    // Get block and grid size
     int threadsPerBlock = 256;
     int blocksPerGrid = (num_points + threadsPerBlock - 1) / threadsPerBlock;
-    // int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 
     printf("%d %d \n", threadsPerBlock, blocksPerGrid);
 
-    // initNormals_kernel<<<1, 1>>>(d_normals, 1);
+    // Call the kernel
     initNormals_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_normals, num_points);
 
     cudaDeviceSynchronize();
