@@ -9,6 +9,15 @@
 // #include "Options.hpp"
 #include "CudaNormals.cuh"
 
+struct MyNormal
+{
+    float x;
+    float y;
+    float z;
+};
+
+
+
 __global__
 void initNormals_kernel(float* normals, size_t num_points)
 {
@@ -16,18 +25,18 @@ void initNormals_kernel(float* normals, size_t num_points)
 
     if (i < num_points)
     {
-        normals[i * 3 + 0] = 1.0;
-        normals[i * 3 + 1] = 0.0;
-        normals[i * 3 + 2] = 0.0;
+        normals[i * 3 + 0] = i + 0.0;
+        normals[i * 3 + 1] = i + 1.0;
+        normals[i * 3 + 2] = i + 2.0;
     }    
 }
 
 void initNormals(float* h_normals, size_t num_points)
 {
-    int size = num_points * 3;
+    int num_bytes = num_points * 3 * sizeof(float);
 
     float* d_normals;
-    cudaMalloc(&d_normals, size);
+    cudaMalloc(&d_normals, num_bytes);
 
     // Initialize the normals
     int threadsPerBlock = 256;
@@ -36,66 +45,54 @@ void initNormals(float* h_normals, size_t num_points)
 
     printf("%d %d \n", threadsPerBlock, blocksPerGrid);
 
+    // initNormals_kernel<<<1, 1>>>(d_normals, 1);
     initNormals_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_normals, num_points);
-    // initNormals_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_normals, size);
 
     cudaDeviceSynchronize();
 
     // Copy the normals back to host
-    cudaMemcpy(h_normals, d_normals, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_normals, d_normals, num_bytes, cudaMemcpyDeviceToHost);
 
     cudaFree(d_normals);
 }
 
+__global__
+void initNormals2_kernel(MyNormal* normals, size_t num_points)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-// void setNormals(int argc, char** argv)
-// {
-//     cuda_normals_2::Options opt(argc, argv);
-//     cout << opt << endl;
+    if (i < num_points)
+    {
+        normals[i].x = i + 0.0;
+        normals[i].y = i + 1.0;
+        normals[i].z = i + 2.0;
+    }    
+}
 
-//     // Get the model
-//     ModelPtr model = ModelFactory::readModel(opt.inputFile());
 
-//     // Get the points
-//     PointBufferPtr pbuffer = model->m_pointCloud;
-//     size_t num_points = model->m_pointCloud->numPoints();
+void initNormals2(float* h_normals, size_t num_points)
+{
+    int num_bytes = num_points * sizeof(MyNormal);
 
-//     floatArr points = pbuffer->getPointArray();
-    
-//     float* points_raw = &points[0];
-    
-//     // floatArr normals(new float[num_points * 3]);
-//     // Create normals arrays and copy to device
-//     int size = num_points * 3;
-//     float* h_normals = (float*)malloc(size);
+    MyNormal* d_normals;
+    cudaMalloc(&d_normals, num_bytes);
 
-//     float* d_normals;
-//     cudaMalloc(&d_normals, size);
+    // Initialize the normals
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (num_points + threadsPerBlock - 1) / threadsPerBlock;
+    // int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 
-//     cudaMemcpy(d_normals, h_normals, size, cudaMemcpyHostToDevice);
+    printf("%d %d \n", threadsPerBlock, blocksPerGrid);
 
-//     // Initialize the normals
-//     int threadsPerBlock = 256;
-//     int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
+    // initNormals_kernel<<<1, 1>>>(d_normals, 1);
+    initNormals2_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_normals, num_points);
 
-//     initNormals<<<blocksPerGrid, threadsPerBlock>>>(d_normals, num_points);
+    cudaDeviceSynchronize();
 
-//     // Copy the normals back to host
-//     cudaMemcpy(h_normals, d_normals, size, cudaMemcpyDeviceToHost);
+    //MyNormal* h_normals_ref = reinterpret_cast<MyNormal*>(h_normals);
 
-//     // Write the normals into the model
-//     floatArr normals(new float[size]);
+    // Copy the normals back to host
+    cudaMemcpy(h_normals, d_normals, num_bytes, cudaMemcpyDeviceToHost);
 
-//     for(int i = 0; i < size; i++)
-//     {
-//         normals[i] = h_normals[i];
-//     }
-
-//     pbuffer->setNormalArray(normals, num_points);
-
-//     ModelFactory::saveModel(model, "test.ply");
-
-//     // Free memory
-//     cudaFree(d_normals);
-//     free(h_normals);
-// }
+    cudaFree(d_normals);
+}
