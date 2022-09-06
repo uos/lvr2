@@ -79,16 +79,12 @@ void initNormals2(float* h_normals, size_t num_points)
     // Initialize the normals
     int threadsPerBlock = 256;
     int blocksPerGrid = (num_points + threadsPerBlock - 1) / threadsPerBlock;
-    // int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 
     printf("%d %d \n", threadsPerBlock, blocksPerGrid);
 
-    // initNormals_kernel<<<1, 1>>>(d_normals, 1);
     initNormals2_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_normals, num_points);
 
     cudaDeviceSynchronize();
-
-    //MyNormal* h_normals_ref = reinterpret_cast<MyNormal*>(h_normals);
 
     // Copy the normals back to host
     cudaMemcpy(h_normals, d_normals, num_bytes, cudaMemcpyDeviceToHost);
