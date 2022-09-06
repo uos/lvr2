@@ -11,8 +11,7 @@ using namespace lvr2;
 int main(int argc, char** argv)
 {
     cuda_normals_2::Options opt(argc, argv);
-    cout << opt << endl;
-
+    
     ModelPtr model = ModelFactory::readModel(opt.inputFile());
 
     PointBufferPtr pbuffer = model->m_pointCloud;
