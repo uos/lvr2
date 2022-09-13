@@ -42,7 +42,7 @@ Description ScanProjectSchemaRaw::lidar(
 {
     std::stringstream sstr;
     sstr << std::setfill('0') << std::setw(8) << lidarNo;
-    
+
 
     Description dp = position(scanPosNo);
 
