@@ -75,9 +75,9 @@ int main(int argc, char** argv)
 
     int num = 1;
 
-    float x = 0.67;
-    float y = 0.34;
-    float z = 0.12;
+    float x = 0.5;
+    float y = 0.25;
+    float z = 0.125;
 
     unsigned int morton = morton3D(x, y, z);
 
