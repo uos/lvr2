@@ -101,7 +101,7 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
-)
+        io/schema/ScanProjectSchemaRdbx.cpp ../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp)
 
 #####################################################################################
 # Add PCD io if PCL is installed
