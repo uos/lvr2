@@ -1,5 +1,6 @@
 #include <boost/filesystem.hpp>
 #include <iostream>
+#include <bitset>
 
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Timestamp.hpp"
@@ -8,6 +9,33 @@
 #include "CudaNormals.cuh"
 
 using namespace lvr2;
+
+// **********************************************************************************
+
+// Expands a 10-bit integer into 30 bits
+// by inserting 2 zeros after each bit.
+unsigned int expandBits(unsigned int v)
+{
+    v = (v * 0x00010001u) & 0xFF0000FFu;
+    v = (v * 0x00000101u) & 0x0F00F00Fu;
+    v = (v * 0x00000011u) & 0xC30C30C3u;
+    v = (v * 0x00000005u) & 0x49249249u;
+    return v;
+}
+
+// Calculates a 30-bit Morton code for the
+// given 3D point located within the unit cube [0,1].
+unsigned int morton3D(float x, float y, float z)
+{
+    x = fmin(fmax(x * 1024.0f, 0.0f), 1023.0f);
+    y = fmin(fmax(y * 1024.0f, 0.0f), 1023.0f);
+    z = fmin(fmax(z * 1024.0f, 0.0f), 1023.0f);
+    unsigned int xx = expandBits((unsigned int)x);
+    unsigned int yy = expandBits((unsigned int)y);
+    unsigned int zz = expandBits((unsigned int)z);
+    return xx * 4 + yy * 2 + zz;
+}
+// ***********************************************************************************
 
 int main(int argc, char** argv)
 {
@@ -44,6 +72,16 @@ int main(int argc, char** argv)
     ModelFactory::saveModel(model, "test.ply");
 
     free(normals_raw);
+
+    int num = 1;
+
+    float x = 0.67;
+    float y = 0.34;
+    float z = 0.12;
+
+    unsigned int morton = morton3D(x, y, z);
+
+    std::cout << std::bitset<64>(morton) << std::endl;
 
     return 0;
 }

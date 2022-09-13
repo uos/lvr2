@@ -18,7 +18,7 @@ struct MyNormal
 
 
 
-__global__
+/*__global__
 void initNormals_kernel(float* normals, size_t num_points)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -53,7 +53,7 @@ void initNormals(float* h_normals, size_t num_points)
     cudaMemcpy(h_normals, d_normals, num_bytes, cudaMemcpyDeviceToHost);
 
     cudaFree(d_normals);
-}
+} */
 
 __global__
 void initNormals2_kernel(MyNormal* normals, size_t num_points)
@@ -91,3 +91,5 @@ void initNormals2(float* h_normals, size_t num_points)
 
     cudaFree(d_normals);
 }
+
+//void getMortonCodes(float* h_normals, size_t num_points, )
