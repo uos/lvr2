@@ -9,6 +9,15 @@
 #include <riegl/rdb.hpp>
 #include <riegl/rdb/default.hpp>
 
+#include <array>
+#include <vector>
+#include <cstdint>
+#include <iostream>
+#include <exception>
+
+#include <riegl/rdb.hpp>
+#include <riegl/rdb/default.hpp>
+
 namespace lvr2
 {
     RdbxIO::RdbxIO()
@@ -156,48 +165,86 @@ namespace lvr2
         save(filename);
     }
 
+
     // ID -> x,y,z -> amplitude -> reflectance -> r,g,b -> pointclass?
     ModelPtr RdbxIO::read(string filename)
     {
         ModelPtr model (new Model);
         PointBufferPtr pointBuffer(new PointBuffer);
 
-        // Allocate point buffer and read data from file
-        int c = 0;
-        std::ifstream in(filename.c_str(), std::ios::binary);
-        if (!in)
-        {
-            std::cerr << "File:"
-                      << " " << filename << " "
-                      << "could not be read!" << std::endl;
-            return ModelPtr(new Model());
+        try {
+            // New RDB library context
+            riegl::rdb::Context context;
+
+            // Access existing database
+            riegl::rdb::Pointcloud rdb(context);
+            riegl::rdb::pointcloud::OpenSettings settings;
+            rdb.open(filename, settings);
+
+            // Prepare point attribute buffers
+            static const uint32_t BUFFER_SIZE = 10000;
+            std::vector<std::array<double, 3> > bufferCoordinates(BUFFER_SIZE);
+            std::vector<float> bufferReflectance(BUFFER_SIZE);
+
+            // Select query with empty filter to get all Points
+            riegl::rdb::pointcloud::QuerySelect select = rdb.select("");
+
+            // variable to count points
+            uint32_t numPoints = 0;
+
+            // Counts the number of points
+            // could or should be improved
+            while (const uint32_t count = select.next(BUFFER_SIZE)) {
+                // iterating over all points to count them
+                for (uint32_t i = 0; i < count; i++) {
+                    ++numPoints;
+                }
+            }
+
+            // arrays to store point coordinates and their reflectance
+            float *pointArray = new float[3 * numPoints];
+            float *reflectanceArray = new float[numPoints];
+
+            // variable to keep track of current point,
+            // since i in following for loop is reset after BUFFER_SIZE=10000 steps
+            uint32_t currPoint = 0;
+
+            while (const uint32_t count = select.next(BUFFER_SIZE)) {
+                // Print points to output stream
+                for (uint32_t i = 0; i < count; i++) {
+                    // filling arrays with data from rdbx file
+                    pointArray[3 * currPoint] = bufferCoordinates[i][0];
+                    pointArray[3 * currPoint + 1] = bufferCoordinates[i][1];
+                    pointArray[3 * currPoint + 2] = bufferCoordinates[i][2];
+                    reflectanceArray[currPoint] = bufferReflectance[i];
+                    ++currPoint;
+                }
+            }
+
+            // parsing float Arrays to floatArr
+            floatArr parr(pointArray);
+            floatArr rarr(reflectanceArray);
+
+            // filling PointBuffer with data
+            pointBuffer->setPointArray(parr, numPoints);
+            pointBuffer->addFloatChannel(rarr, "reflectance");
+
+            // adding pointBuffer to model
+            model->m_pointCloud = pointBuffer;
+            return model;
         }
 
-        int numPoints = 0;
-        in.read((char*)&numPoints, sizeof(int));
-
-        //TODO: reduktion? brauchen wir das auch?
-
-        while(in.good())
+        catch(const riegl::rdb::Error &error)
         {
-
+            std::cerr << error.what() << " (" << error.details() << ")" << std::endl;
+            return 1; // error
+        }
+        catch(const std::exception &error)
+        {
+            std::cerr << error.what() << std::endl;
+            return 1; // error
         }
 
-        //ID
-        //pointBuffer->setPointArray();
-        //Amplitude
-        //Reflectance
-        //pointBuffer->setColorArray();
-        //pointclass?
-
-        return model;
     }
-
-    /*
-    ModelPtr RdbxIO::read(string filename, int n, int reduction)
-    {
-        return read(filename, 4);
-    }
-    */
 
 } // lvr2
