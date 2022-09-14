@@ -369,7 +369,7 @@ else(GLUT_FOUND)
   include_directories(${GLUT_INCLUDEDIR})
   link_directories(${GLUT_LIBDIR})
   set(GLUT_LIBRARIES ${pkgcfg_lib_GLUT_glut})
-  message(STATUD "Using ugly cmake cache hack to provide GLUT libraries: ": ${GLUT_LIBRARIES})
+  message(STATUS "Using ugly cmake cache hack to provide GLUT libraries: ": ${GLUT_LIBRARIES})
 endif(GLUT_FOUND)
 
 #------------------------------------------------------------------------------

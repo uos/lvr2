@@ -235,6 +235,9 @@ install(TARGETS lvr2_static lvr2
 set(rdb_DIR "/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp/"
         CACHE PATH "path to directory containing rdb-config.cmake")
 find_package(rdb 2.4.0 REQUIRED)
+include_directories("${RDB_INCLUDE_C_DIR}")
+include_directories("${RDB_INCLUDE_CPP_DIR}")
+
 
 #####################################################################################
 # CUDA

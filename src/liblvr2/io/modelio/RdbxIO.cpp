@@ -230,7 +230,7 @@ namespace lvr2
 
             // filling PointBuffer with data
             pointBuffer->setPointArray(parr, numPoints);
-            pointBuffer->addFloatChannel(rarr, "reflectance");
+            pointBuffer->addFloatChannel(rarr, "reflectance", numPoints, 1);
 
             // adding pointBuffer to model
             model->m_pointCloud = pointBuffer;
@@ -240,12 +240,12 @@ namespace lvr2
         catch(const riegl::rdb::Error &error)
         {
             std::cerr << error.what() << " (" << error.details() << ")" << std::endl;
-            return 1; // error
+            std::exit(-1); // error
         }
         catch(const std::exception &error)
         {
             std::cerr << error.what() << std::endl;
-            return 1; // error
+            std::exit(-1); // error
         }
 
     }
