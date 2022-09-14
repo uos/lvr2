@@ -101,7 +101,7 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
-       io/modelio/RdbxIO.cpp ../../include/lvr2/io/modelio/RdbxIO.hpp
+      # io/modelio/RdbxIO.cpp ../../include/lvr2/io/modelio/RdbxIO.hpp
         #io/schema/ScanProjectSchemaRdbx.cpp ../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp
 )
 
@@ -226,15 +226,6 @@ install(TARGETS lvr2_static lvr2
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-
-#####################################################################################
-# RDB
-#####################################################################################
-
-# use *local* RDB library
-set(rdb_DIR "../../../rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp/"
-        CACHE PATH "path to directory containing rdb-config.cmake")
-find_package(rdb 2.4.0 REQUIRED)
 
 
 #####################################################################################

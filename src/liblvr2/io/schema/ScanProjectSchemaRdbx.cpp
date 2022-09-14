@@ -28,7 +28,9 @@ namespace lvr2 {
 
         Description dp = scanProject();
         Description d;
-        d.dataRoot = *dp.dataRoot + "ScanPos" + scanPosNo + "SCNPOS";
+        stringstream tmp_stream;
+        tmp_stream << *dp.dataRoot << "ScanPos" << scanPosNo << "SCNPOS";
+        d.dataRoot = tmp_stream.str();
         d.metaRoot = d.dataRoot;
         d.meta = "final.pose";
 
@@ -43,8 +45,8 @@ namespace lvr2 {
 
         DIR *dir;
         Description dp = position(scanPosNo);
-        char *path;
-        *path = dp.dataRoot;
+        const char* path;
+        path = dp.dataRoot->c_str();
         Description d;
         d.dataRoot= *dp.dataRoot + "scans";
         d.metaRoot= *dp.dataRoot + "scans";
@@ -65,9 +67,7 @@ namespace lvr2 {
             }
             closedir (dir);
         } else {
-            /* could not open directory */
-            perror ("");
-            return EXIT_FAILURE;
+            return d;
         }
         return d;
     }
@@ -79,14 +79,18 @@ namespace lvr2 {
     {
         DIR *dir;
         Description dp = position(scanPosNo);
-        char *path;
-        *path = dp.dataRoot;
+        const char *path;
+        path = dp.dataRoot->c_str();
         Description d;
         d.dataRoot= *dp.dataRoot + "images";
         d.metaRoot= dp.dataRoot;
         d.meta=dp.meta;
         struct dirent *ent;
-        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\" + camNo + ".jpg" );
+
+        stringstream tmp_stream;
+        tmp_stream << camNo;
+        std::string camNoString= tmp_stream.str();
+        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\" + camNoString + ".jpg" );
 
 
         if ((dir = opendir (path)) != NULL) {
@@ -101,7 +105,7 @@ namespace lvr2 {
         } else {
             /* could not open directory */
             perror ("");
-            return EXIT_FAILURE;
+            return d;
         }
         return d;
 
