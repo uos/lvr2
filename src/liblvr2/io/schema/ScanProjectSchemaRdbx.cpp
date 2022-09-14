@@ -3,9 +3,11 @@
 //
 #include <sstream>
 #include <iomanip>
+#include <boost/filesystem/operations.hpp>
 
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
+
 
 namespace lvr2 {
 
@@ -14,7 +16,6 @@ namespace lvr2 {
         Description d;
 
         d.dataRoot = "scans";
-
         d.metaRoot = d.dataRoot;
         d.meta = "final.pose";
 
@@ -23,48 +24,88 @@ namespace lvr2 {
     Description ScanProjectSchemaRdbx::position(
             const size_t &scanPosNo) const
     {
-        std::stringstream sstr;
 
 
         Description dp = scanProject();
         Description d;
-        d.dataRoot = *dp.dataRoot + "/final.pose";
-
+        d.dataRoot = *dp.dataRoot + "ScanPos" + scanPosNo + "SCNPOS";
         d.metaRoot = d.dataRoot;
         d.meta = "final.pose";
 
         return d;
     }
+
+
     Description ScanProjectSchemaRdbx::lidar(
             const size_t& scanPosNo,
             const size_t& lidarNo) const
     {
-        std::stringstream sstr;
-        sstr << lidarNo;
 
+        DIR *dir;
         Description dp = position(scanPosNo);
-
+        char *path;
+        *path = dp.dataRoot;
         Description d;
-        d.dataRoot = *dp.dataRoot + "/scan" + sstr.str();
+        d.dataRoot= *dp.dataRoot + "scans";
+        d.metaRoot= *dp.dataRoot + "scans";
+        struct dirent *ent;
+        std::regex rxRDBX("([0-9]+)\\_([0-9]+)\\.rdbx" );
+        std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.SCN" );
+
+        if ((dir = opendir (path)) != NULL) {
+            /* print all the files and directories within directory */
+            while ((ent = readdir (dir)) != NULL) {
+                if (regex_match((ent->d_name), rxRDBX)) {
+                    d.data = ent->d_name;
+                }
+                if (regex_match((ent->d_name), rxSCN)) {
+                    d.meta = ent->d_name;
+
+                }
+            }
+            closedir (dir);
+        } else {
+            /* could not open directory */
+            perror ("");
+            return EXIT_FAILURE;
+        }
         return d;
     }
+
+
     Description ScanProjectSchemaRdbx::camera(
             const size_t& scanPosNo,
             const size_t& camNo) const
     {
-        std::stringstream sstr;
-        sstr << camNo;
-
+        DIR *dir;
         Description dp = position(scanPosNo);
-
+        char *path;
+        *path = dp.dataRoot;
         Description d;
-        d.dataRoot = *dp.dataRoot + "/images/" + sstr.str();
+        d.dataRoot= *dp.dataRoot + "images";
+        d.metaRoot= dp.dataRoot;
+        d.meta=dp.meta;
+        struct dirent *ent;
+        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\" + camNo + ".jpg" );
 
-        d.metaRoot = d.dataRoot;
-        d.meta = "final.pose";
 
+        if ((dir = opendir (path)) != NULL) {
+            /* print all the files and directories within directory */
+            while ((ent = readdir (dir)) != NULL) {
+                if (regex_match((ent->d_name), rxJPG)) {
+                    d.data = ent->d_name;
+                }
 
+            }
+            closedir (dir);
+        } else {
+            /* could not open directory */
+            perror ("");
+            return EXIT_FAILURE;
+        }
         return d;
+
+
     }
 
     Description ScanProjectSchemaRdbx::scan(
@@ -72,16 +113,10 @@ namespace lvr2 {
             const size_t& lidarNo,
             const size_t& scanNo) const
     {
-        std::stringstream sstr;
-        sstr <<"scans/"<< scanNo;
 
-        Description dp = lidar(scanPosNo, lidarNo);
 
         Description d;
-        d.dataRoot = *dp.dataRoot + "/" + sstr.str();
 
-        d.metaRoot = d.dataRoot;
-        d.meta = "final.pose";
 
         return d;
     }
@@ -98,6 +133,7 @@ namespace lvr2 {
         return d;
     }
 
+    //Unterschied zu Camera ????
     Description ScanProjectSchemaRdbx::cameraImage(
             const size_t& scanPosNo,
             const size_t& camNo,

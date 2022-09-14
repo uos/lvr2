@@ -8,9 +8,9 @@
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
-
+#include <dirent.h>
 #include "lvr2/io/schema/ScanProjectSchema.hpp"
-
+#include <regex>
 namespace lvr2
 {
 

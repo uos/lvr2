@@ -101,7 +101,7 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
-        io/modelio/RdbxIO.cpp ../../include/lvr2/io/modelio/RdbxIO.hpp
+      # io/modelio/RdbxIO.cpp ../../include/lvr2/io/modelio/RdbxIO.hpp
         io/schema/ScanProjectSchemaRdbx.cpp ../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp
 )
 

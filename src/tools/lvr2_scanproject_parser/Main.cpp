@@ -21,6 +21,7 @@ int main(int argc, char** argv)
     auto scanProject = dirio_in.ScanProjectIO::load();
 
     std::string dir_out("/home/praktikum/abc");
+
     DirectoryKernelPtr kernel_out(new DirectoryKernel(dir_out));
     DirectorySchemaPtr schema_out(new ScanProjectSchemaRaw(dir_out));
     DirectoryIO dirio_out(kernel_out, schema_out);
