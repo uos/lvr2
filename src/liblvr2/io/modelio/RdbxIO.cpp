@@ -6,6 +6,9 @@
 
 #include <iostream>
 
+#include <riegl/rdb.hpp>
+#include <riegl/rdb/default.hpp>
+
 namespace lvr2
 {
     RdbxIO::RdbxIO()
