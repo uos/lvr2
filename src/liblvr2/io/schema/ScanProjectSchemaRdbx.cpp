@@ -28,7 +28,7 @@ namespace lvr2 {
 
         Description dp = scanProject();
         Description d;
-        d.dataRoot = *dp.dataRoot +"/final.pose";
+        d.dataRoot = *dp.dataRoot + "/final.pose";
 
         d.metaRoot = d.dataRoot;
         d.meta = "final.pose";
@@ -118,6 +118,16 @@ namespace lvr2 {
     {
 
 
+        Description d;
+
+
+        return d;
+    }
+
+    Description ScanProjectSchemaRdbx::hyperspectralCamera(
+            const size_t& scanPosNo,
+            const size_t& camNo) const
+    {
         Description d;
 
 
