@@ -18,15 +18,15 @@ set(LVR2_CUDA_NORMAL2_DEPS
 )
 
 cuda_add_library(my_cuda_normals CudaNormals.cu)
+cuda_add_library(my_MortonCodes MortonCodes.cu)
 
 #####################################################################################
 # Add executable
 #####################################################################################
 
-###### ADD YOUR CODE HERE #######
-
 add_executable(lvr2_cuda_normals2 ${LVR2_CUDA_NORMAL_SRC2})
 target_link_libraries(lvr2_cuda_normals2 
     ${LVR2_CUDA_NORMAL2_DEPS}
     my_cuda_normals
+    my_MortonCodes
 )
