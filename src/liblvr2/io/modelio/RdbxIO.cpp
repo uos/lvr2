@@ -4,7 +4,6 @@
 
 #include "lvr2/io/modelio/RdbxIO.hpp"
 
-#include <iostream>
 
 #include <riegl/rdb.hpp>
 #include <riegl/rdb/default.hpp>
@@ -15,8 +14,6 @@
 #include <iostream>
 #include <exception>
 
-#include <riegl/rdb.hpp>
-#include <riegl/rdb/default.hpp>
 
 namespace lvr2
 {
@@ -29,7 +26,13 @@ namespace lvr2
 
     }
 
-
+    /**
+     * @brief Creates a new rdb database and
+     * write its content into @filename, currently only
+     * x,y,z and reflectance
+     *
+     * @param filename
+     */
     void RdbxIO::save(string filename)
     {
         // checks for validity

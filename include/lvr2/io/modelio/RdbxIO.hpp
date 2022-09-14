@@ -6,6 +6,10 @@
 #define LAS_VEGAS_RDBXIO_HPP
 
 #include "lvr2/io/modelio/ModelIOBase.hpp"
+#include <iostream>
+
+#include "/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp/riegl/rdb.hpp"
+#include "/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp/riegl/rdb/default.hpp"
 
 namespace lvr2
 {
