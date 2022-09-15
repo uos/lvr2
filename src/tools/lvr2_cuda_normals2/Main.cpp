@@ -39,8 +39,13 @@ int main(int argc, char** argv)
     // Set the normal array
     pbuffer->setNormalArray(normals, num_points);
 
+    unsigned long long int* mortonCodes = (unsigned long long int*)
+                    malloc(sizeof(unsigned long long int) * num_points);
+
     // Get the morton codes of the 3D points
-    getMortonCodes(points_raw, num_points);
+    getMortonCodes(mortonCodes, points_raw, num_points);
+
+    std::cout << mortonCodes[0] << std::endl;
 
     // Save the new model as test.ply
     ModelFactory::saveModel(model, "test.ply");

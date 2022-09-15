@@ -10,15 +10,9 @@ struct Extent
     float3 max;
 };
 
-// Expands a 10-bit integer into 30 bits
-// by inserting 2 zeros after each bit.
-unsigned int expandBits(unsigned int v);
+void getMortonCodes(unsigned long long int* mortonCodes, float* h_points, size_t num_points);
 
-// Calculates a 30-bit Morton code for the
-// given 3D point located within the unit cube [0,1].
-unsigned int morton3D(float x, float y, float z);
-
-
-void getMortonCodes(float* h_points, size_t num_points);
+// Calculates the extent (minimun and maximum values in each dimension)
+Extent getExtent(float* h_points, size_t num_points);
 
 #endif // MORTONCODES_CUH
