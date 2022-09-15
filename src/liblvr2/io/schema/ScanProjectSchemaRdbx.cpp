@@ -15,9 +15,9 @@ namespace lvr2 {
     {
         Description d;
 
-        d.dataRoot = "scans";
+        d.dataRoot = "";
         d.metaRoot = d.dataRoot;
-        d.meta = "final.pose";
+        d.meta = "project.json";
 
         return d;
     }

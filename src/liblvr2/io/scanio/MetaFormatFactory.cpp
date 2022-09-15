@@ -78,6 +78,24 @@ YAML::Node loadMetaInformation(const std::string &in)
         }
         return n;
     }
+    else if (inPath.extension() == ".json")
+    {
+        YAML::Node n;
+        std::cout<<(inPath.string())<<std::endl;
+        if (boost::filesystem::exists(inPath))
+        {
+            // std::cout << timestamp
+            //           << "LoadMetaInformation(YAML): Loading " << inPath << std::endl;
+            n = YAML::LoadFile(inPath.string());
+        }
+        else
+        {
+            std::cout << timestamp
+                      << "LoadMetaInformation(JSON): Unable to find json file: " << inPath << std::endl;
+        }
+        return n;
+    }
+
     else if (inPath.extension() == ".slam6d")
     {
         YAML::Node node;        

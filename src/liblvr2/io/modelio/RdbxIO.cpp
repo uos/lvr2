@@ -244,6 +244,7 @@ namespace lvr2
         }
         catch(const std::exception &error)
         {
+
             std::cerr << error.what() << std::endl;
             std::exit(-1); // error
         }

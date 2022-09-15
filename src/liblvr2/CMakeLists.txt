@@ -102,7 +102,7 @@ set(LVR2_SOURCES
     util/Progress.cpp
     util/Timestamp.cpp
         io/modelio/RdbxIO.cpp ../../include/lvr2/io/modelio/RdbxIO.hpp
-        #io/schema/ScanProjectSchemaRdbx.cpp ../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp
+        io/schema/ScanProjectSchemaRdbx.cpp ../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp
 )
 
 #####################################################################################
@@ -231,12 +231,14 @@ install(TARGETS lvr2_static lvr2
 # RDB
 #####################################################################################
 
+
 # use *local* RDB library
-set(rdb_DIR "/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp/"
+set(rdb_DIR "/home/praktikum/RDB-lib/rdblib-2.4.0-x86_64-linux/interface/cpp/"
         CACHE PATH "path to directory containing rdb-config.cmake")
 find_package(rdb 2.4.0 REQUIRED)
 include_directories("${RDB_INCLUDE_C_DIR}")
 include_directories("${RDB_INCLUDE_CPP_DIR}")
+
 
 
 #####################################################################################
