@@ -45,9 +45,12 @@ using namespace lvr2;
 const kaboom::Options* options;
 
 int main(int argc, char** argv) {
-
-    // Parse command line arguments
     kaboom::Options options(argc, argv);
+    ModelPtr model = ModelFactory::readModel("/mnt/rab/exchange/chemnitz_indoor/chemnitz_2022-07-19.PROJ/ScanPos001.SCNPOS/scans/220719_142633.rdbx");
+    //ModelPtr model = ModelFactory::readModel("/mnt/rab/exchange/praktikum_sose_2022/tree.ply");
+    ModelFactory::saveModel(model, "/home/praktikum/Documents/out2.ply");
+    return 0;
+    // Parse command line arguments
 
     if (options.getTargetSize() && options.getVoxelSize())
     {

@@ -12,7 +12,7 @@ namespace lvr2
 bool isMetaFile(const std::string& filename)
 {
     boost::filesystem::path p(filename);
-    std::unordered_set<std::string> metaExtensions = {".yaml", ".slam6d", ".frames" };
+    std::unordered_set<std::string> metaExtensions = {".yaml", ".slam6d", ".frames" , "json" };
     return metaExtensions.find(p.extension().string()) != metaExtensions.end();
 }
 
@@ -81,18 +81,15 @@ YAML::Node loadMetaInformation(const std::string &in)
     else if (inPath.extension() == ".json")
     {
         YAML::Node n;
-        std::cout<<(inPath.string())<<std::endl;
-        if (boost::filesystem::exists(inPath))
-        {
-            // std::cout << timestamp
-            //           << "LoadMetaInformation(YAML): Loading " << inPath << std::endl;
-            n = YAML::LoadFile(inPath.string());
-        }
-        else
-        {
-            std::cout << timestamp
-                      << "LoadMetaInformation(JSON): Unable to find json file: " << inPath << std::endl;
-        }
+        boost::filesystem::path dir = inPath.parent_path();
+        std::string filename = inPath.stem().string();
+
+        boost::filesystem::path posePath = dir / (filename + ".pose");
+
+
+        ScanPosition sp;
+
+
         return n;
     }
 
