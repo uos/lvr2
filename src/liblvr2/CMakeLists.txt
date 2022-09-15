@@ -1,3 +1,7 @@
+#####################################################################################
+# RDB
+#####################################################################################
+
 set(LVR2_SOURCES
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
@@ -19,6 +23,10 @@ set(LVR2_SOURCES
     algorithm/pmp/SurfaceCurvature.cpp
     algorithm/pmp/SurfaceFeatures.cpp
     algorithm/pmp/SurfaceNormals.cpp
+
+
+    /home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp/riegl/rdb.cpp
+
     algorithm/pmp/SurfaceSimplification.cpp
     algorithm/pmp/SurfaceTriangulation.cpp
     config/lvropenmp.cpp
@@ -101,8 +109,8 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
-        io/modelio/RdbxIO.cpp ../../include/lvr2/io/modelio/RdbxIO.hpp
-        io/schema/ScanProjectSchemaRdbx.cpp ../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp
+    io/modelio/RdbxIO.cpp #../../include/lvr2/io/modelio/RdbxIO.hpp
+        io/schema/ScanProjectSchemaRdbx.cpp #../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp
 )
 
 #####################################################################################
@@ -173,7 +181,8 @@ endif()
 
 set(LVR2_INTERNAL_DEPENDENCIES_STATIC
     lvr2rply_static
-    lvr2las_static)
+    lvr2las_static
+    )
 
 set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2rply
@@ -207,7 +216,10 @@ add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
 target_link_libraries(
   lvr2_static 
   ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
-  ${LVR2_LIB_DEPENDENCIES})
+  ${LVR2_LIB_DEPENDENCIES}
+)
+
+
 
 
 #####################################################################################
@@ -219,7 +231,12 @@ message(STATUS "Building shared library")
  target_link_libraries(
     lvr2 
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
-    ${LVR2_LIB_DEPENDENCIES})
+    ${LVR2_LIB_DEPENDENCIES}
+          )
+
+# target_link_libraries(
+#     lvr2 rdbcpp
+# )
 
 install(TARGETS lvr2_static lvr2
   EXPORT lvr2Targets
@@ -227,17 +244,7 @@ install(TARGETS lvr2_static lvr2
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-#####################################################################################
-# RDB
-#####################################################################################
 
-
-# use *local* RDB library
-set(rdb_DIR "/home/praktikum/RDB-lib/rdblib-2.4.0-x86_64-linux/interface/cpp/"
-        CACHE PATH "path to directory containing rdb-config.cmake")
-find_package(rdb 2.4.0 REQUIRED)
-include_directories("${RDB_INCLUDE_C_DIR}")
-include_directories("${RDB_INCLUDE_CPP_DIR}")
 
 
 

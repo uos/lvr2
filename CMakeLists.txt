@@ -75,6 +75,20 @@ endif(MSVC)
 # EXTERNAL LIBRARIES
 ###############################################################################
 
+#####################################################################################
+# RDB
+#####################################################################################
+
+
+# use *local* RDB library
+set(rdb_DIR "/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp/"
+        CACHE PATH "path to directory containing rdb-config.cmake")
+find_package(rdb 2.4.0 REQUIRED)
+include_directories("${RDB_INCLUDE_C_DIR}")
+include_directories("${RDB_INCLUDE_CPP_DIR}")
+include_directories("/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp")
+
+
 #------------------------------------------------------------------------------
 # Searching for Thread Building Blocks library
 #------------------------------------------------------------------------------
@@ -91,9 +105,12 @@ if(TIFF_FOUND)
     include_directories(${TIFF_INCLUDE_DIRS})
 endif(TIFF_FOUND)
 
-#------------------------------------------------------------------------------
-# Searching for GDAL
-#------------------------------------------------------------------------------
+#------------------#####################################################################################
+# RDB
+#####################################################################################
+
+
+
 find_package(GDAL REQUIRED)
 if(GDAL_FOUND)
 message(STATUS "Found GDAL")
@@ -644,6 +661,10 @@ set(LVR2_LIB_DEPENDENCIES
     ${OpenMP_CXX_LIBRARIES}
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     m
+    ${RDB_LIB_DIR}/librdb.so
+    #/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/library/librdb.so
+    #/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/examples/build/librdbcpp.a 
+    
     )
 endif()
 

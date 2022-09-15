@@ -40,7 +40,7 @@
 #include "lvr2/io/modelio/DatIO.hpp"
 #include "lvr2/io/modelio/STLIO.hpp"
 #include "lvr2/io/modelio/B3dmIO.hpp"
-//#include "lvr2/io/modelio/RdbxIO.hpp"
+#include "lvr2/io/modelio/RdbxIO.hpp"
 
 // #include "lvr2/io/HDF5IO.hpp"
 // #include "lvr2/io/WaveformIO.hpp"
@@ -82,6 +82,10 @@ ModelPtr ModelFactory::readModel( std::string filename )
     else if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
         io = new AsciiIO;
+    }
+    else if(extension == ".rdbx")
+    {
+        io = new RdbxIO;
     }
 
 #ifdef LVR2_USE_RIVLIB
