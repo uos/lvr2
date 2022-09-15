@@ -168,8 +168,6 @@ namespace lvr2
         save(filename);
     }
 
-
-    // ID -> x,y,z -> amplitude -> reflectance -> r,g,b -> pointclass?
     ModelPtr RdbxIO::read(string filename)
     {
         ModelPtr model (new Model);

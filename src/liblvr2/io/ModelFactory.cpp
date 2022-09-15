@@ -40,6 +40,7 @@
 #include "lvr2/io/modelio/DatIO.hpp"
 #include "lvr2/io/modelio/STLIO.hpp"
 #include "lvr2/io/modelio/B3dmIO.hpp"
+//#include "lvr2/io/modelio/RdbxIO.hpp"
 
 // #include "lvr2/io/HDF5IO.hpp"
 // #include "lvr2/io/WaveformIO.hpp"
@@ -82,6 +83,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new AsciiIO;
     }
+
 #ifdef LVR2_USE_RIVLIB
     else if(extension == ".rxp")
     {

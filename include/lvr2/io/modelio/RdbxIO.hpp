@@ -10,6 +10,7 @@
 
 #include <riegl/rdb.hpp>
 #include <riegl/rdb/default.hpp>
+//#include <riegl/rdb/default/attributes.hpp>
 
 namespace lvr2
 {

@@ -13,7 +13,7 @@ using namespace lvr2::scanio;
 
 int main(int argc, char** argv)
 {
-    std::string dir_in("/mnt/rab/exchange/chemnitz_indoor/chemnitz_2022-07-19.PROJ/ScanPos001.SCNPOS");
+    std::string dir_in("/mnt/exchange/chemnitz_indoor/chemnitz_2022-07-19.PROJ/ScanPos001.SCNPOS");
 
     DirectoryKernelPtr kernel_in(new DirectoryKernel(dir_in));
     DirectorySchemaPtr schema_in(new ScanProjectSchemaRdbx(dir_in));
