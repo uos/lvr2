@@ -42,8 +42,21 @@ int main(int argc, char** argv)
     unsigned long long int* mortonCodes = (unsigned long long int*)
                     malloc(sizeof(unsigned long long int) * num_points);
 
+
+    float* test_points = (float*) malloc(sizeof(float) * 6);
+    test_points[0] = 0.5;
+    test_points[1] = 0.25;
+    test_points[2] = 0.125;
+    test_points[3] = 0.0625;
+    test_points[4] = 0.03125;
+    test_points[5] = 0.015625;
+
     // Get the morton codes of the 3D points
     getMortonCodes(mortonCodes, points_raw, num_points);
+
+    std::cout << "x: " << points_raw[0] << std::endl;
+    std::cout << "y: " << points_raw[1] << std::endl;
+    std::cout << "z: " << points_raw[2] << std::endl;
 
     std::cout << mortonCodes[0] << std::endl;
 

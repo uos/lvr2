@@ -10,7 +10,7 @@ unsigned long long int expandBits(unsigned long long int v)
     v = (v * 0x000000000101u) & 0xF00F00F00F00F00Fu;
     v = (v * 0x000000000011u) & 0x30C30C30C30C30C3u;
     v = (v * 0x000000000005u) & 0x9249249249249249u;
-        
+    
     return v;
 }
 
@@ -42,7 +42,7 @@ Extent getExtent(float* h_points, size_t num_points)
     float max_y = INT_MIN; 
     float max_z = INT_MIN;
 
-    for(int i = 0; i < num_points; i += 3)
+    for(int i = 0; i < 3 * num_points; i += 3)
     {
         if(h_points[i + 0] < min_x)
         {
@@ -75,6 +75,7 @@ Extent getExtent(float* h_points, size_t num_points)
         }
 
     }
+    
     Extent extent;
     extent.min.x = min_x;
     extent.min.y = min_y;
@@ -88,9 +89,11 @@ Extent getExtent(float* h_points, size_t num_points)
 }
 
 __global__ 
-void mortonCode(unsigned long long int* mortonCodes, float* points, size_t num_points, Extent extent)
+void mortonCode(unsigned long long int* mortonCodes, float* d_points, size_t num_points, Extent extent)
 {
     unsigned int idx = blockDim.x * blockIdx.x + threadIdx.x;
+
+    float3* points = reinterpret_cast<float3*>(d_points);
 
     if(idx >= num_points)
     {
@@ -98,10 +101,10 @@ void mortonCode(unsigned long long int* mortonCodes, float* points, size_t num_p
     }
     
     // Get xyz coordinates of the point
-    float p_x = points[idx + 0];
-    float p_y = points[idx + 1];
-    float p_z = points[idx + 2];
-
+    float p_x = points[idx].x;
+    float p_y = points[idx].y;
+    float p_z = points[idx].z;
+    
     // Scale to [0, 1] (unit cube)
     p_x -= extent.min.x;
     p_y -= extent.min.y;
@@ -111,16 +114,14 @@ void mortonCode(unsigned long long int* mortonCodes, float* points, size_t num_p
     p_y /= (extent.max.y - extent.min.y);
     p_z /= (extent.max.z - extent.min.z);
 
-    if(idx == 0) 
+    mortonCodes[idx] = morton3D(p_x, p_y, p_z);
+
+    if(idx == 0)
     {
         printf("x: %f \n", p_x);
-
         printf("y: %f \n", p_y);
-
         printf("z: %f \n", p_z);
     }
-
-    mortonCodes[idx] = morton3D(p_x, p_y, p_z);
 
     return;
 }
@@ -130,6 +131,7 @@ void getMortonCodes(unsigned long long int* h_mortonCodes, float* h_points, size
 {
     int size_points = num_points * 3 * sizeof(float);
     int size_morton = num_points * sizeof(unsigned long long int);
+
     // Get the extent of the point cloud
     Extent extent = getExtent(h_points, num_points); 
 
@@ -145,6 +147,8 @@ void getMortonCodes(unsigned long long int* h_mortonCodes, float* h_points, size
     cudaMemcpy(d_mortonCodes, h_mortonCodes, size_morton, cudaMemcpyHostToDevice);
 
     mortonCode<<<blocksPerGrid, threadsPerBlock>>>(d_mortonCodes, d_points, num_points, extent);
+
+    cudaDeviceSynchronize();
 
     cudaMemcpy(h_mortonCodes, d_mortonCodes, size_morton, cudaMemcpyDeviceToHost);
 
