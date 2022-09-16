@@ -190,6 +190,11 @@ namespace lvr2
             // Select query with empty filter to get all Points
             riegl::rdb::pointcloud::QuerySelect select = rdb.select("");
 
+            using namespace riegl::rdb::pointcloud;
+
+            select.bindBuffer(RDB_RIEGL_XYZ,         bufferCoordinates);
+            select.bindBuffer(RDB_RIEGL_REFLECTANCE, bufferReflectance);
+
             // variable to count points
             uint32_t numPoints = 0;
 
@@ -214,6 +219,10 @@ namespace lvr2
                 // Print points to output stream
                 for (uint32_t i = 0; i < count; i++) {
                     // filling arrays with data from rdbx file
+                    float x = bufferCoordinates[i][0];
+                    float y = bufferCoordinates[i][1];
+                    float z = bufferCoordinates[i][2];
+
                     pointArray[3 * currPoint] = bufferCoordinates[i][0];
                     pointArray[3 * currPoint + 1] = bufferCoordinates[i][1];
                     pointArray[3 * currPoint + 2] = bufferCoordinates[i][2];

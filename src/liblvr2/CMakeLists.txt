@@ -25,7 +25,7 @@ set(LVR2_SOURCES
     algorithm/pmp/SurfaceNormals.cpp
 
 
-    /home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp/riegl/rdb.cpp
+    /home/kyrill/Uni/Robotik_Prog_Praktikum/rdblib-2.4.0-x86_64-linux/interface/cpp/riegl/rdb.cpp
 
     algorithm/pmp/SurfaceSimplification.cpp
     algorithm/pmp/SurfaceTriangulation.cpp
@@ -110,7 +110,7 @@ set(LVR2_SOURCES
     util/Progress.cpp
     util/Timestamp.cpp
     io/modelio/RdbxIO.cpp #../../include/lvr2/io/modelio/RdbxIO.hpp
-        io/schema/ScanProjectSchemaRdbx.cpp #../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp
+    io/schema/ScanProjectSchemaRdbx.cpp #../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp
 )
 
 #####################################################################################
