@@ -17,18 +17,19 @@ namespace lvr2 {
 
         d.dataRoot = "";
 
+        d.metaRoot = d.dataRoot;
+        d.meta = "project.json";
 
         return d;
     }
+
     Description ScanProjectSchemaRdbx::position(
             const size_t &scanPosNo) const
     {
-
-
         Description dp = scanProject();
         Description d;
-        stringstream tmp_stream;
-        tmp_stream << *dp.dataRoot << "ScanPos" << scanPosNo << "SCNPOS";
+        std::stringstream tmp_stream;
+        tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
         d.dataRoot = tmp_stream.str();
         d.metaRoot = d.dataRoot;
         d.meta = "final.pose";
@@ -116,8 +117,6 @@ namespace lvr2 {
             const size_t& lidarNo,
             const size_t& scanNo) const
     {
-
-
         Description d;
 
 
@@ -142,8 +141,6 @@ namespace lvr2 {
             const size_t& camNo,
             const std::vector<size_t>& cameraImageNos) const
     {
-
-
         Description d;
 
 
@@ -155,8 +152,6 @@ namespace lvr2 {
             const size_t& camNo,
             const std::vector<size_t>& cameraImageGroupNos) const
     {
-
-
         Description d;
 
 
@@ -178,8 +173,6 @@ namespace lvr2 {
             const size_t& camNo,
             const size_t& panoNo) const
     {
-
-
         Description d;
 
 
@@ -191,7 +184,6 @@ namespace lvr2 {
             const size_t& camNo,
             const size_t& panoNo) const
     {
-
         Description d;
 
 
@@ -205,20 +197,9 @@ namespace lvr2 {
             const size_t& channelNo
     ) const
     {
-
-
         Description d;
 
 
         return d;
     }
-
-
-
-
-
-
-
-
-
 } // lvr2
