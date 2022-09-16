@@ -187,10 +187,13 @@ namespace lvr2
             std::vector<std::array<double, 3> > bufferCoordinates(BUFFER_SIZE);
             std::vector<float> bufferReflectance(BUFFER_SIZE);
 
-            // Select query with empty filter to get all Points
-            riegl::rdb::pointcloud::QuerySelect select = rdb.select("");
+            // Select query with empty filter to get all Points, only used to count all Points
             riegl::rdb::pointcloud::QuerySelect countselect = rdb.select("");
 
+            // Second select query with empty filter to get all Points, used to fill Buffers
+            riegl::rdb::pointcloud::QuerySelect select = rdb.select("");
+
+            // Binding Buffers to the select query, so they get filled on select.next()
             using namespace riegl::rdb::pointcloud;
             select.bindBuffer(RDB_RIEGL_XYZ,         bufferCoordinates);
             select.bindBuffer(RDB_RIEGL_REFLECTANCE, bufferReflectance);
@@ -207,36 +210,41 @@ namespace lvr2
                 }
             }
 
+            // closing countselect query, because it is no longer needed
             countselect.close();
 
             // arrays to store point coordinates and their reflectance
             float *pointArray = new float[3 * numPoints];
-            float *reflectanceArray = new float[numPoints];
+            float *intensitiesArray = new float[numPoints];
 
             // variable to keep track of current point,
             // since i in following for loop is reset after BUFFER_SIZE=10000 steps
             uint32_t currPoint = 0;
-            std::cout << "vor der While Schleife" << std::endl;
 
+            // calling select.next() to fill Buffers, and then store all loaded points in our arrays
+            // 10.000 Points are loaded at the same time, we decided on this number because more will often cause problems while execution
             while (const uint32_t count = select.next(BUFFER_SIZE)) {
-                // Print points to output stream
                 for (uint32_t i = 0; i < count; i++) {
                     // filling arrays with data from rdbx file
                     pointArray[3 * currPoint] = bufferCoordinates[i][0];
                     pointArray[3 * currPoint + 1] = bufferCoordinates[i][1];
                     pointArray[3 * currPoint + 2] = bufferCoordinates[i][2];
-                    reflectanceArray[currPoint] = bufferReflectance[i];
+                    intensitiesArray[currPoint] = bufferReflectance[i];
                     ++currPoint;
                 }
             }
 
+            select.close();
+
             // parsing float Arrays to floatArr
             floatArr parr(pointArray);
-            floatArr rarr(reflectanceArray);
+            floatArr iarr(intensitiesArray);
 
             // filling PointBuffer with data
             pointBuffer->setPointArray(parr, numPoints);
-            pointBuffer->addFloatChannel(rarr, "reflectance", numPoints, 1);
+
+            // passing reflectance as intensities
+            pointBuffer->addFloatChannel(iarr, "intensities", numPoints, 1);
 
             // adding pointBuffer to model
             model->m_pointCloud = pointBuffer;
