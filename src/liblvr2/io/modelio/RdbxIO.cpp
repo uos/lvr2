@@ -189,9 +189,9 @@ namespace lvr2
 
             // Select query with empty filter to get all Points
             riegl::rdb::pointcloud::QuerySelect select = rdb.select("");
+            riegl::rdb::pointcloud::QuerySelect countselect = rdb.select("");
 
             using namespace riegl::rdb::pointcloud;
-
             select.bindBuffer(RDB_RIEGL_XYZ,         bufferCoordinates);
             select.bindBuffer(RDB_RIEGL_REFLECTANCE, bufferReflectance);
 
@@ -200,12 +200,14 @@ namespace lvr2
 
             // Counts the number of points
             // could or should be improved
-            while (const uint32_t count = select.next(BUFFER_SIZE)) {
+            while (const uint32_t count = countselect.next(BUFFER_SIZE)) {
                 // iterating over all points to count them
                 for (uint32_t i = 0; i < count; i++) {
                     ++numPoints;
                 }
             }
+
+            countselect.close();
 
             // arrays to store point coordinates and their reflectance
             float *pointArray = new float[3 * numPoints];
@@ -214,15 +216,12 @@ namespace lvr2
             // variable to keep track of current point,
             // since i in following for loop is reset after BUFFER_SIZE=10000 steps
             uint32_t currPoint = 0;
+            std::cout << "vor der While Schleife" << std::endl;
 
             while (const uint32_t count = select.next(BUFFER_SIZE)) {
                 // Print points to output stream
                 for (uint32_t i = 0; i < count; i++) {
                     // filling arrays with data from rdbx file
-                    float x = bufferCoordinates[i][0];
-                    float y = bufferCoordinates[i][1];
-                    float z = bufferCoordinates[i][2];
-
                     pointArray[3 * currPoint] = bufferCoordinates[i][0];
                     pointArray[3 * currPoint + 1] = bufferCoordinates[i][1];
                     pointArray[3 * currPoint + 2] = bufferCoordinates[i][2];
