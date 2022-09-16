@@ -214,7 +214,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
 
 void ModelFactory::saveModel( ModelPtr m, std::string filename)
 {
-    // Get file exptension
+    // Get file extension
     boost::filesystem::path selectedFile(filename);
     std::string extension = selectedFile.extension().string();
 
@@ -237,6 +237,11 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new STLIO;
     }
+    /**else if (extension == ".rdbx")
+    {
+        io = new RdbxIO;
+    }**/
+
 #ifdef LVR2_USE_3DTILES
     else if (extension == ".b3dm")
     {
