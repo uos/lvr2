@@ -35,7 +35,7 @@ namespace lvr2
      */
     void RdbxIO::save(string filename)
     {
-        // checks for validity
+        /** // checks for validity
         if (!m_model)
         {
             std::cerr << "No model set for export!" << std::endl;
@@ -49,6 +49,7 @@ namespace lvr2
 
         floatArr m_points;
         floatArr m_pointReflectance;
+        size_t m_numPoints = 0;
 
         // Get buffers
         if ( m_model->m_pointCloud )
@@ -90,7 +91,7 @@ namespace lvr2
                 settings.compressionLevel = 10; // 10% compression rate
 
                 // Finally create new database
-                rdb.create(filename + ".rdbx", settings);
+                rdb.create(filename , settings);
             }
 
             // Step 2: Define some additional point attributes
@@ -147,7 +148,7 @@ namespace lvr2
                     rdb.pointAttribute().add(riegl::rdb::pointcloud::RDB_RIEGL_AMPLITUDE);
                 }**/
 
-                // Finally commit transaction
+                /** // Finally commit transaction
                 transaction.commit();
             }
         }
@@ -159,10 +160,113 @@ namespace lvr2
         {
             std::cerr << error.what() << std::endl;
         }
+
+        try
+        {
+            // New RDB library context
+            riegl::rdb::Context context;
+            riegl::rdb::Pointcloud rdb(context);
+            riegl::rdb::pointcloud::OpenSettings settings;
+            rdb.open(filename, settings);
+
+            // Query some attribute details
+            using riegl::rdb::pointcloud::PointAttribute;
+            const PointAttribute detailsCoordinates = rdb.pointAttribute().get("riegl.xyz");
+            const PointAttribute detailsReflectance = rdb.pointAttribute().get("riegl.reflectance");
+
+            // Before we can modify the database, we must start a transaction
+            riegl::rdb::pointcloud::TransactionScope transaction(
+                    rdb,                  // point cloud object
+                    "Import",             // transaction title
+                    "Point Importer v1.0" // software name
+            );
+
+            // Get buffers
+            if ( m_model->m_pointCloud )
+            {
+                PointBufferPtr pc( m_model->m_pointCloud );
+
+                m_numPoints = pc->numPoints();
+
+                m_points    = pc->getPointArray();
+            }
+
+            const uint32_t BUFFER_SIZE =  10000; // point block/chunk size
+            const uint32_t POINT_COUNT = m_numPoints; // total number of points
+
+            std::vector< std::array<double, 3> > bufferCoordinates(BUFFER_SIZE);
+            std::vector< float >                 bufferReflectance(BUFFER_SIZE);
+
+            // Start new insert query
+            riegl::rdb::pointcloud::QueryInsert query = rdb.insert();
+
+            // Tell insert query where to read the "reflectance" values from
+            /**if (0) // you can either specify the name of the point attribute...
+            {
+                query.bindBuffer(
+                        "riegl.reflectance",
+                        bufferReflectance
+                );
+            }
+            else // ...or use one of the constants from "riegl/rdb/default.hpp":
+            {
+                query.bindBuffer(
+                        riegl::rdb::pointcloud::RDB_RIEGL_REFLECTANCE,
+                        bufferReflectance
+                );
+            }**/
+
+            /** // Tell insert query where to read the point coordinates from
+            if (0) // buffers for vectors can be bound for all vector elements at once...
+            {
+                query.bindBuffer("riegl.xyz", bufferCoordinates);
+            }
+            else // ...or for each vector element separately:
+            {
+                // The 'stride' defines the number of bytes between the buffer
+                // locations of the attribute values of two consecutive points.
+                const int32_t stride = sizeof(bufferCoordinates[0]);
+                query.bindBuffer("riegl.xyz[0]", bufferCoordinates[0][0], stride);
+                query.bindBuffer("riegl.xyz[1]", bufferCoordinates[0][1], stride);
+                query.bindBuffer("riegl.xyz[2]", bufferCoordinates[0][2], stride);
+            }
+            // Insert points block-wise
+            for (uint32_t total = 0; total < POINT_COUNT;)
+            {
+                // Fill buffers with some random data
+                //TODO: reflectance
+                for (uint32_t i = 0; i < BUFFER_SIZE; i++)
+                {
+                    size_t pos = i * 3;
+                    bufferCoordinates[i][0] = m_points[pos];
+                    bufferCoordinates[i][1] = m_points[pos + 1];
+                    bufferCoordinates[i][2] = m_points[pos + 2];
+                    //bufferReflectance[i]    = randomReflectance(rng);
+                }
+
+                // Actually insert points
+                total += query.next(BUFFER_SIZE);
+                static uint32_t block = 1;
+                //std::cout << "block: " << block++ << ", "
+                //          << "total: " << total << std::endl;
+            }
+
+            // Finally commit transaction
+            transaction.commit();
+            // Success
+        }
+        catch(const riegl::rdb::Error &error)
+        {
+            std::cerr << error.what() << " (" << error.details() << ")" << std::endl;
+        }
+        catch(const std::exception &error)
+        {
+            std::cerr << error.what() << std::endl;
+        }**/
     }
 
 
-    void RdbxIO::save(ModelPtr model, string filename)
+    void RdbxIO::save(ModelPtr model, std::string filename)
     {
         m_model = model;
         save(filename);
