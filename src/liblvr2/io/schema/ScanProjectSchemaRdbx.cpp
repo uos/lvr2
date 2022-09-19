@@ -18,7 +18,7 @@ namespace lvr2 {
         d.dataRoot = "";
 
         d.metaRoot = d.dataRoot;
-        d.meta = "project.json";
+        d.meta = "";//"project.json";
 
         return d;
     }
@@ -32,7 +32,7 @@ namespace lvr2 {
         tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
         d.dataRoot = tmp_stream.str();
         d.metaRoot = d.dataRoot;
-        d.meta = "final.pose";
+        d.meta = "";//"final.pose";
 
         return d;
     }
@@ -42,34 +42,12 @@ namespace lvr2 {
             const size_t& scanPosNo,
             const size_t& lidarNo) const
     {
-
-        DIR *dir;
-        Description dp = position(scanPosNo);
-        const char* path;
-        path = dp.dataRoot->c_str();
         Description d;
-        d.dataRoot= *dp.dataRoot + "scans";
-        d.metaRoot= *dp.dataRoot + "scans";
-        struct dirent *ent;
-        std::regex rxRDBX("([0-9]+)\\_([0-9]+)\\.rdbx" );
-        std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.SCN" );
 
-        if ((dir = opendir (path)) != NULL) {
-            /* print all the files and directories within directory */
-            while ((ent = readdir (dir)) != NULL) {
-                if (regex_match((ent->d_name), rxRDBX)) {
-                    d.data = ent->d_name;
-                }
-                if (regex_match((ent->d_name), rxSCN)) {
-                    d.meta = ent->d_name;
 
-                }
-            }
-            closedir (dir);
-        } else {
-            return d;
-        }
+
         return d;
+
     }
 
 
@@ -77,38 +55,10 @@ namespace lvr2 {
             const size_t& scanPosNo,
             const size_t& camNo) const
     {
-        DIR *dir;
-        Description dp = position(scanPosNo);
-        const char *path;
-        path = dp.dataRoot->c_str();
         Description d;
-        d.dataRoot= *dp.dataRoot + "images";
-        d.metaRoot= dp.dataRoot;
-        d.meta=dp.meta;
-        struct dirent *ent;
-
-        stringstream tmp_stream;
-        tmp_stream << camNo;
-        std::string camNoString= tmp_stream.str();
-        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\" + camNoString + ".jpg" );
 
 
-        if ((dir = opendir (path)) != NULL) {
-            /* print all the files and directories within directory */
-            while ((ent = readdir (dir)) != NULL) {
-                if (regex_match((ent->d_name), rxJPG)) {
-                    d.data = ent->d_name;
-                }
-
-            }
-            closedir (dir);
-        } else {
-            /* could not open directory */
-            perror ("");
-            return d;
-        }
         return d;
-
 
     }
 
@@ -117,9 +67,33 @@ namespace lvr2 {
             const size_t& lidarNo,
             const size_t& scanNo) const
     {
+        DIR *dir;
+        Description dp = position(scanPosNo);
+        auto path = m_rootPath / dp.dataRoot.get() / "scans";
+
         Description d;
+        d.dataRoot= dp.dataRoot.get() + "/scans";
+        //d.metaRoot= "";//*dp.dataRoot + "scans";
+        struct dirent *ent;
+        std::regex rxRDBX("([0-9]+)\\_([0-9]+)\\.rdbx" );
+        std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.SCN" );
 
-
+        if ((dir = opendir (path.c_str())) != NULL) {
+            /* print all the files and directories within directory */
+            while ((ent = readdir (dir)) != NULL) {
+                if (regex_match((ent->d_name), rxRDBX)) {
+                    d.data = ent->d_name;
+                    break;
+                }
+//                if (regex_match((ent->d_name), rxSCN)) {
+//                    d.meta = ent->d_name;
+//
+//                }
+            }
+            closedir (dir);
+        } else {
+            return d;
+        }
         return d;
     }
     Description ScanProjectSchemaRdbx::scanChannel(
@@ -152,9 +126,36 @@ namespace lvr2 {
             const size_t& camNo,
             const std::vector<size_t>& cameraImageGroupNos) const
     {
+        DIR *dir;
+        Description dp = position(scanPosNo);
+        const char *path;
+        path = dp.dataRoot->c_str();
         Description d;
+        d.dataRoot= *dp.dataRoot + "images";
+        d.metaRoot= dp.dataRoot;
+        d.meta=dp.meta;
+        struct dirent *ent;
+
+        stringstream tmp_stream;
+        tmp_stream << camNo;
+        std::string camNoString= tmp_stream.str();
+        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\" + camNoString + ".jpg" );
 
 
+        if ((dir = opendir (path)) != NULL) {
+            /* print all the files and directories within directory */
+            while ((ent = readdir (dir)) != NULL) {
+                if (regex_match((ent->d_name), rxJPG)) {
+                    d.data = ent->d_name;
+                }
+
+            }
+            closedir (dir);
+        } else {
+            /* could not open directory */
+            perror ("");
+            return d;
+        }
         return d;
     }
 

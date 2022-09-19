@@ -345,7 +345,7 @@ namespace lvr2
             floatArr iarr(intensitiesArray);
 
             // filling PointBuffer with data
-            pointBuffer->setPointArray(parr, numPoints);
+            pointBuffer->setPointArray(parr, numPoints);    //versuchen die Anzahl punkte aus dem Pointbuffer zu lesen
 
             // passing reflectance as intensities
             pointBuffer->addFloatChannel(iarr, "intensities", numPoints, 1);

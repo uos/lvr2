@@ -20,14 +20,19 @@ int main(int argc, char** argv)
     DirectoryIO dirio_in(kernel_in, schema_in);
 
     auto scanProject = dirio_in.ScanProjectIO::load();
+    auto scanPosition = dirio_in.loadScanPosition(1);
+    auto scan = dirio_in.loadScan(1, 0, 0);
 
-    std::string dir_out("/home/praktikum/test3");
+    scan->points_loader();
 
-    DirectoryKernelPtr kernel_out(new DirectoryKernel(dir_out));
-    DirectorySchemaPtr schema_out(new ScanProjectSchemaRawPly(dir_out));
-    DirectoryIO dirio_out(kernel_out, schema_out);
+    std::cout << scan->points->numPoints() << std::endl;
 
-    dirio_out.ScanProjectIO::save(scanProject);
-
+//    std::string dir_out("/home/kyrill/Uni/Robotik_Prog_Praktikum/Test/ScanProject");
+//
+//    DirectoryKernelPtr kernel_out(new DirectoryKernel(dir_out));
+//    DirectorySchemaPtr schema_out(new ScanProjectSchemaRawPly(dir_out));
+//    DirectoryIO dirio_out(kernel_out, schema_out);
+//
+//    dirio_out.ScanProjectIO::save(scanProject);
     return 0;
 }

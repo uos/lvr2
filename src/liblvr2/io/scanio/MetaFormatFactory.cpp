@@ -12,7 +12,7 @@ namespace lvr2
 bool isMetaFile(const std::string& filename)
 {
     boost::filesystem::path p(filename);
-    std::unordered_set<std::string> metaExtensions = {".yaml", ".slam6d", ".frames" , "json" };
+    std::unordered_set<std::string> metaExtensions = {".yaml", ".slam6d", ".frames" , ".json" , ".pose" };
     return metaExtensions.find(p.extension().string()) != metaExtensions.end();
 }
 
@@ -62,7 +62,7 @@ YAML::Node loadMetaInformation(const std::string &in)
         inPath += ".yaml";
     }
 
-    if (inPath.extension() == ".yaml" || inPath.extension() == ".json")
+    if (inPath.extension() == ".yaml" || inPath.extension() == ".json" || inPath.extension() == ".pose")
     {
         YAML::Node n;
         if (boost::filesystem::exists(inPath))

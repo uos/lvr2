@@ -134,6 +134,7 @@ bool DirectoryKernel::loadMetaYAML(
 
 bool DirectoryKernel::exists(const std::string &group) const
 {
+    std::cout << "PATH " << getAbsolutePath(group, "") << std::endl;
     return boost::filesystem::exists(getAbsolutePath(group, ""));
 }
 
