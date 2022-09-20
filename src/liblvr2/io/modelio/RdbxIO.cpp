@@ -8,6 +8,8 @@
 #include <riegl/rdb.hpp>
 #include <riegl/rdb/default.hpp>
 
+
+#include <iomanip>
 #include <array>
 #include <vector>
 #include <cstdint>
@@ -297,25 +299,19 @@ namespace lvr2
             // Second select query with empty filter to get all Points, used to fill Buffers
             riegl::rdb::pointcloud::QuerySelect select = rdb.select("");
 
+            // Get index graph root node
+            riegl::rdb::pointcloud::QueryStat stat = rdb.stat();
+            riegl::rdb::pointcloud::GraphNode root = stat.index();
+
+            // Get total number of Points
+            uint32_t numPoints = root.pointCountTotal ;
+            std::cout << numPoints << std::endl;
+
+
             // Binding Buffers to the select query, so they get filled on select.next()
             using namespace riegl::rdb::pointcloud;
             select.bindBuffer(RDB_RIEGL_XYZ,         bufferCoordinates);
             select.bindBuffer(RDB_RIEGL_REFLECTANCE, bufferReflectance);
-
-            // variable to count points
-            uint32_t numPoints = 0;
-
-            // Counts the number of points
-            // could or should be improved
-            while (const uint32_t count = countselect.next(BUFFER_SIZE)) {
-                // iterating over all points to count them
-                for (uint32_t i = 0; i < count; i++) {
-                    ++numPoints;
-                }
-            }
-
-            // closing countselect query, because it is no longer needed
-            countselect.close();
 
             // arrays to store point coordinates and their reflectance
             float *pointArray = new float[3 * numPoints];
