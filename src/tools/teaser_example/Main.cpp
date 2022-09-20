@@ -17,16 +17,17 @@
 #define NOISE_BOUND 0.05
 int main() {
     // file paths
-    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_095525.ply";
-    std::string target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/220720_100202.ply";
+//    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_095525.ply";
+//    std::string target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/220720_100202.ply";
     std::string source_path_vertex = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_095525_vertex.ply";
-    std::string target_path_vertex = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_100202_vertex.ply";
-//    std::string reduced_source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/reduced.ply";
-//    std::string reduced_target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/reduced.ply";
-//    std::string reduced_source_path_vertex = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_095525_vertex.ply";
-//    std::string reduced_target_path_vertex = "/home/praktikum/robopraktikum/scans_test/001/scans/2207_vertex.ply";
+//    std::string target_path_vertex = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_100202_vertex.ply";
+//    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/reduced.ply";
+//    std::string target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/reduced.ply";
+    std::string target_path = "/home/praktikum/robopraktikum/scans_test/003/scans/220720_100819.ply";
+    std::string target_path_vertex = "/home/praktikum/robopraktikum/scans_test/003/scans/220720_100819_vertex.ply";
+
     std::cout << "Convert ply header for Open3D (point to vertex)" << std::endl;
-    int stat1 = pointtovertex(source_path, source_path_vertex);
+//    int stat1 = pointtovertex(source_path, source_path_vertex);
     int stat2 = pointtovertex(target_path, target_path_vertex);
 
     open3d::geometry::PointCloud src_cloud;
@@ -48,9 +49,17 @@ int main() {
     std::cout << "Source cloud Size: " << src_cloud.points_.size() << std::endl;
 
     // ISS
-    std::cout << "Computing ISS keypoints... ";
-    open3d::geometry::PointCloud src_iss_cloud = *open3d::geometry::keypoint::ComputeISSKeypoints(src_cloud);
-    open3d::geometry::PointCloud target_iss_cloud = *open3d::geometry::keypoint::ComputeISSKeypoints(target_cloud);
+    std::cout << "Computing ISS keypoints... " << std::endl;
+    double SALIENT_RADIUS = 0.005;
+    double NON_MAX_RADIUS = 0.005;
+    double GAMMA_21 = 0.5;
+    double GAMMA_32 = 0.5;
+    int MIN_NEIGHBORS = 5;
+    open3d::geometry::PointCloud src_iss_cloud = *open3d::geometry::keypoint::ComputeISSKeypoints(src_cloud,
+
+                                            SALIENT_RADIUS, NON_MAX_RADIUS, GAMMA_21, GAMMA_32, MIN_NEIGHBORS);
+    open3d::geometry::PointCloud target_iss_cloud = *open3d::geometry::keypoint::ComputeISSKeypoints(target_cloud,
+                                                        SALIENT_RADIUS, NON_MAX_RADIUS, GAMMA_21, GAMMA_32, MIN_NEIGHBORS);
     std::cout << "- done." << std::endl;
 
 //    std::cout << "Source cloud ISS Points [0,0]: " << src_iss_cloud.points_[0,0] << std::endl;
