@@ -80,14 +80,21 @@ endif(MSVC)
 #####################################################################################
 
 
-# use *local* RDB library
-set(rdb_DIR "/home/praktikum/RDB-librdb/
-lib-2.4.0-x86_64-linux/interface/cpp/"
-        CACHE PATH "path to directory containing rdb-config.cmake")
+# das hier muss verändert werden damit es läuft WICHTIG !!!!!
+set (rdb_ROOT_DIR "/home/praktikum/RDB-lib/rdblib-2.4.0-x86_64-linux"
+        CACHE PATH "path to RDB ROOT directory ")
+set(rdb_DIR "${rdb_ROOT_DIR}/interface/cpp")
+
 find_package(rdb 2.4.0 REQUIRED)
-include_directories("${RDB_INCLUDE_C_DIR}")
-include_directories("${RDB_INCLUDE_CPP_DIR}")
-include_directories("/home/praktikum/RDB-lib/rdblib-2.4.0-x86_64-linux/interface/cpp")
+
+
+#set(RDB_LIB_DIR "${rdb_ROOT_DIR}/library")
+#set(RDB_INCLUDE_C_DIR "${rdb_ROOT_DIR}/interface/c")
+#set(RDB_INCLUDE_CPP_DIR "${rdb_ROOT_DIR}/interface/cpp")
+
+include_directories(${RDB_INCLUDE_C_DIR})
+include_directories(${RDB_INCLUDE_CPP_DIR})
+
 
 
 #------------------------------------------------------------------------------
@@ -663,9 +670,8 @@ set(LVR2_LIB_DEPENDENCIES
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     m
     ${RDB_LIB_DIR}/librdb.so
-    #/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/library/librdb.so
-    #/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/examples/build/librdbcpp.a 
-    
+    #${rdb_ROOT_DIR}/library/librdb.so
+
     )
 endif()
 
