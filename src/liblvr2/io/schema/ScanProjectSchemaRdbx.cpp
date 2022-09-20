@@ -18,7 +18,7 @@ namespace lvr2 {
         d.dataRoot = "";
 
         d.metaRoot = d.dataRoot;
-        d.meta = "";//"project.json";
+        d.meta = "project.json";
 
         return d;
     }
@@ -32,12 +32,12 @@ namespace lvr2 {
         tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
         d.dataRoot = tmp_stream.str();
         d.metaRoot = d.dataRoot;
-        d.meta = "";//"final.pose";
+        d.meta = "final.pose";
 
         return d;
     }
 
-
+    //Lidar nur daten, den rest in scan machen
     Description ScanProjectSchemaRdbx::lidar(
             const size_t& scanPosNo,
             const size_t& lidarNo) const
@@ -50,7 +50,7 @@ namespace lvr2 {
 
     }
 
-
+    //Camera nur daten, den rest in CamereImage
     Description ScanProjectSchemaRdbx::camera(
             const size_t& scanPosNo,
             const size_t& camNo) const
@@ -96,6 +96,7 @@ namespace lvr2 {
         }
         return d;
     }
+
     Description ScanProjectSchemaRdbx::scanChannel(
             const size_t& scanPosNo,
             const size_t& lidarNo,
@@ -143,7 +144,6 @@ namespace lvr2 {
 
 
         if ((dir = opendir (path)) != NULL) {
-            /* print all the files and directories within directory */
             while ((ent = readdir (dir)) != NULL) {
                 if (regex_match((ent->d_name), rxJPG)) {
                     d.data = ent->d_name;
@@ -152,7 +152,6 @@ namespace lvr2 {
             }
             closedir (dir);
         } else {
-            /* could not open directory */
             perror ("");
             return d;
         }
