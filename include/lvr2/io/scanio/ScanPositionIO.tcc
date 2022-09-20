@@ -22,6 +22,12 @@ void ScanPositionIO< BaseIO>::save(
 
     if(!scanPositionPtr)
     {
+
+        //DOOO!!!!
+        //erstell elern ordner ScanPosition
+        PointBufferPtr tmp;
+        m_baseIO->m_kernel->savePointBuffer(*d.dataRoot,"tmp.ply",tmp);
+        //Directry kernel create empty Folder/group/
         return;
     }
 
@@ -96,17 +102,22 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     if(d.meta)
     {
         YAML::Node meta;
+        cout<<"Meta laden" << scanPosNo<< endl;
         if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
+            cout << "empty" <<endl;
             return ret;
         }
 
         try {
+
             ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
+
         } catch(const YAML::TypedBadConversion<ScanPosition>& ex) {
             std::cerr << "[ScanPositionIO - load] ERROR at Scan (" << scanPosNo << ") : Could not decode YAML as ScanPosition." << std::endl;
             throw ex;
         }
+        cout<<"Meta laden--" << scanPosNo<< endl;
        
     } else {
         // no meta name specified but scan position is there: 

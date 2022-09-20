@@ -4,15 +4,18 @@
 #include <sstream>
 #include <iomanip>
 #include <boost/filesystem/operations.hpp>
-
+#include <filesystem>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
+#include <boost/filesystem.hpp>
 
 
 namespace lvr2 {
 
     Description ScanProjectSchemaRdbx::scanProject() const
     {
+
+        //müssen hier nicht der Path stehen sonst unten probleme oder idee geht nicht
         Description d;
 
         d.dataRoot = "";
@@ -27,12 +30,21 @@ namespace lvr2 {
             const size_t &scanPosNo) const
     {
         Description dp = scanProject();
+        cout << *dp.dataRoot<<"hallo" << endl;
         Description d;
         std::stringstream tmp_stream;
+        std::stringstream tmp_stream2;
+
+
+        //hier mussten doofen datein gestoppt werden
         tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
-        d.dataRoot = tmp_stream.str();
-        d.metaRoot = d.dataRoot;
-        d.meta = "final.pose";
+
+        //if (boost::filesystem::exists(tmp_stream2.str())) {
+            d.dataRoot = tmp_stream.str();
+            d.metaRoot = d.dataRoot;
+            d.meta = "final.pose";
+        //}
+
 
         return d;
     }
@@ -79,7 +91,6 @@ namespace lvr2 {
         std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.SCN" );
 
         if ((dir = opendir (path.c_str())) != NULL) {
-            /* print all the files and directories within directory */
             while ((ent = readdir (dir)) != NULL) {
                 if (regex_match((ent->d_name), rxRDBX)) {
                     d.data = ent->d_name;

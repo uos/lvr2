@@ -72,6 +72,7 @@ YAML::Node loadMetaInformation(const std::string &in)
             n = YAML::LoadFile(inPath.string());
         }
         else
+        //hier mussen wir es ändern das ordner erstellt werden aber erstellenung sreinfolge kommsich
         {
             std::cout << timestamp
                       << "LoadMetaInformation(YAML): Unable to find yaml file: " << inPath << std::endl;

@@ -93,15 +93,25 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
 
 
     // Get all sub scans
-    size_t scanPosNo = 0;
+    size_t scanPosNo = 1;
     while(true)
     {  
         // std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
         // Get description for next scan
+
+        //hier werden die Directerys erstellen aber für alle Dateitypen identisch
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
         if(!scanPos)
         {
-            break;
+            Description d = m_baseIO->m_description->position(scanPosNo);
+            // Check if specified scan position exists
+            if(!m_baseIO->m_kernel->exists(*d.dataRoot))
+            {
+
+                break;
+            }
+
+
         }
 
         // std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
@@ -169,6 +179,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::loadScanProject(ReductionAlgorithmPtr redu
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo, reduction);
         if(!scanPos)
         {
+            //if
             break;
         }
         ret->positions.push_back(scanPos);
