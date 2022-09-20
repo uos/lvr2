@@ -81,12 +81,12 @@ endif(MSVC)
 
 
 # use *local* RDB library
-set(rdb_DIR "/home/kyrill/Uni/Robotik_Prog_Praktikum/rdblib-2.4.0-x86_64-linux/interface/cpp/"
+set(rdb_DIR "/home/praktikum/RDB-librdblib-2.4.0-x86_64-linux/interface/cpp/"
         CACHE PATH "path to directory containing rdb-config.cmake")
 find_package(rdb 2.4.0 REQUIRED)
 include_directories("${RDB_INCLUDE_C_DIR}")
 include_directories("${RDB_INCLUDE_CPP_DIR}")
-include_directories("/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp")
+include_directories("/home/praktikum/RDB-lib/rdblib-2.4.0-x86_64-linux/interface/cpp")
 
 
 #------------------------------------------------------------------------------
