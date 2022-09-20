@@ -8,7 +8,7 @@
 #include "open3d/Open3D.h"
 #include "open3d/pipelines/registration/Feature.h"
 
-void MyMatching(
+std::vector<std::pair<int, int>> MyMatching(
         open3d::pipelines::registration::Feature& src_features, const open3d::pipelines::registration::Feature& dst_features);
 
 #endif //LAS_VEGAS_MYMATCHING_H

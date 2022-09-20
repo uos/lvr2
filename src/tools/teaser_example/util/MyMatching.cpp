@@ -11,8 +11,7 @@
 
 using namespace open3d;
 
-//std::vector<std::pair<int, int>> MyMatching(
-void MyMatching(
+std::vector<std::pair<int, int>> MyMatching(
         pipelines::registration::Feature& src_features, const pipelines::registration::Feature& dst_features) {
     geometry::KDTreeFlann src_tree(src_features);
     std::cout << "col length: " << dst_features.data_.col(0).size() << std::endl;
@@ -42,7 +41,7 @@ void MyMatching(
 //    std::cout << "Index: " << index[0] << std::endl;
 //    std::cout << "distance2: " << distance2[0] << std::endl;
 
-    return;
+    return correspondo;
 // 1536768432
 
 }
