@@ -28,9 +28,9 @@ void MyMatching(
     for (int i = 0; i < dst_features.data_.rows(); i++) {
         src_tree.SearchKNN(Eigen::VectorXd(dst_features.data_.col(i)), 1, tmp_index, tmp_distance2);
         if(i < 10) {
-           std::cout << "i: " << i << ", tmp_index: " << tmp_index[i] << std::endl;
+           std::cout << "i: " << i << ", tmp_index: " << tmp_index[0] << std::endl;
         }
-        const std::pair<int, int> p(i, tmp_index[i]);
+        const std::pair<int, int> p(i, tmp_index[0]);
         correspondo.push_back(p);
     }
 
