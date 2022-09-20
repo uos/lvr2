@@ -12,7 +12,7 @@
 //#include <teaser/registration.h>
 //#include <teaser/matcher.h>
 #include "open3d/Open3D.h"
-#include "util/Matching.h"
+#include "util/MyMatching.h"
 
 #define NOISE_BOUND 0.05
 int main() {
@@ -48,12 +48,16 @@ int main() {
     // output size
 //    src_cloud.Get
 
+
+    std::cout << "Source cloud Size: " << src_cloud.points_.size() << std::endl;
+
     // ISS
     std::cout << "Computing ISS keypoints... ";
     open3d::geometry::PointCloud src_iss_cloud = *open3d::geometry::keypoint::ComputeISSKeypoints(src_cloud);
     open3d::geometry::PointCloud target_iss_cloud = *open3d::geometry::keypoint::ComputeISSKeypoints(target_cloud);
     std::cout << "- done." << std::endl;
 
+    std::cout << "Source cloud ISS Dimension: " << src_iss_cloud.points_.size() << std::endl;
 //    open3d::pipelines::registration::FastGlobalRegistration::AdvancedMatching(src_cloud, target_cloud,)
 
     // Compute Features
@@ -71,6 +75,8 @@ int main() {
         std::cout << src_feature.data_(0, i) << "; ";
     }
     std::cout << std::endl;
+
+    MyMatching(target_feature, src_feature);
 
 //    std::cout << "Computing FPFHs... ";
 //    // test own matching
