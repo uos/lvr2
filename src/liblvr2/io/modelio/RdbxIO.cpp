@@ -305,7 +305,6 @@ namespace lvr2
 
             // Get total number of Points
             uint32_t numPoints = root.pointCountTotal ;
-            std::cout << numPoints << std::endl;
 
 
             // Binding Buffers to the select query, so they get filled on select.next()

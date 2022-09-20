@@ -10,16 +10,16 @@ void ScanProjectIO<BaseIO>::save(
     Description d = m_baseIO->m_description->scanProject();
 
 
-    // std::cout << "[ScanProjectIO - save]: Description" << std::endl;
-    // std::cout << d << std::endl;
-
-    // if(!d.dataRoot)
-    // {
-    //     std::cout << timestamp << "[ScanProjectIO] Description does not contain a data root for the ScanProject" << std::endl;
-    //     d.dataRoot = "";
-    // }
-
-    // std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
+//     std::cout << "[ScanProjectIO - save]: Description" << std::endl;
+//     std::cout << d << std::endl;
+//
+//     if(!d.dataRoot)
+//     {
+//         std::cout << timestamp << "[ScanProjectIO] Description does not contain a data root for the ScanProject" << std::endl;
+//         d.dataRoot = "";
+//     }
+//
+//     std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
     // Iterate over all positions and save
     for (size_t i = 0; i < scanProject->positions.size(); i++)
     {
