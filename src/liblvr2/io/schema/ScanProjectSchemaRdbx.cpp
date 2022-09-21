@@ -29,21 +29,14 @@ namespace lvr2 {
             const size_t &scanPosNo) const
     {
         Description dp = scanProject();
-        cout << *dp.dataRoot<<"hallo" << endl;
         Description d;
         std::stringstream tmp_stream;
-        std::stringstream tmp_stream2;
 
-
-        //hier mussten doofen datein gestoppt werden
         tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
 
-        //if (boost::filesystem::exists(tmp_stream2.str())) {
-            d.dataRoot = tmp_stream.str();
-            d.metaRoot = d.dataRoot;
-            d.meta = "final.pose";
-        //}
-
+        d.dataRoot = tmp_stream.str();
+        d.metaRoot = d.dataRoot;
+        d.meta = "final.pose";
 
         return d;
     }
@@ -53,8 +46,13 @@ namespace lvr2 {
             const size_t& scanPosNo,
             const size_t& lidarNo) const
     {
-        Description dp = scanProject();
         Description d;
+
+//        std::stringstream  sstr;
+//        sstr << std::setfill('0') << std::setw(3) << lidarNo;
+
+
+        Description dp = position(scanPosNo);
 
         std::stringstream tmp_stream;
         tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
@@ -85,7 +83,7 @@ namespace lvr2 {
     {
         DIR *dir;
         Description dp = position(scanPosNo);
-        auto path = m_rootPath / dp.dataRoot.get() / "scans";
+        auto path = m_rootPath / dp.dataRoot.get() / "/scans";
 
         Description d;
         d.dataRoot= dp.dataRoot.get() + "/scans";
@@ -147,15 +145,15 @@ namespace lvr2 {
         const char *path;
         path = dp.dataRoot->c_str();
         Description d;
-        d.dataRoot= *dp.dataRoot + "images";
+        d.dataRoot= *dp.dataRoot;
         d.metaRoot= dp.dataRoot;
         d.meta=dp.meta;
         struct dirent *ent;
 
         stringstream tmp_stream;
-        tmp_stream << camNo;
+        tmp_stream << std::setfill('0') << std::setw(2) << camNo+1;
         std::string camNoString= tmp_stream.str();
-        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\" + camNoString + ".jpg" );
+        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_([0-9]+)_\\" + camNoString + ".jpg" );
 
 
         if ((dir = opendir (path)) != NULL) {
@@ -178,6 +176,14 @@ namespace lvr2 {
             const size_t& camNo) const
     {
         Description d;
+//
+//        Description dp = scanProject();
+//
+//        std::stringstream tmp_stream;
+//        tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
+//        d.dataRoot = tmp_stream.str();
+//        d.metaRoot = d.dataRoot;
+//        d.meta = "final.pose";
 
 
         return d;

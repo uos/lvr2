@@ -22,8 +22,6 @@ bool ScanPositionIO< BaseIO>::save(
 
     if(!scanPositionPtr)
     {
-
-
         return false;
     }
 
