@@ -275,8 +275,9 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
     geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
     geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
 
-    geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(0.5);
-    geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(0.5);
+    double voxel_size = 1.0;
+    geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(voxel_size);
+    geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(voxel_size);
     std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
     std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
 
@@ -284,7 +285,7 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
     sampled_target_cloud.EstimateNormals();
 
     auto src_feature = computeFPFHs(sampled_src_cloud);
-    auto target_feature = computeFPFHs(sampled_src_cloud);
+    auto target_feature = computeFPFHs(sampled_target_cloud);
 
     std::cout << "Computing correspondo... ";
     std::vector<std::pair<int, int>> correspondences = MyMatching(target_feature, src_feature);
@@ -319,6 +320,6 @@ int main() {
 
 //    workflowCorrespondences(source_path, target_path);
 //    workflowDirectlyWithISSAndDownSampling(source_path, target_path);
-    workflowCorrespondencesAndDownSampling(source_path, target_path);
-//    workflowCorrespondencesAndDownSamplingWithoutISS(source_path, target_path);
+//    workflowCorrespondencesAndDownSampling(source_path, target_path);
+    workflowCorrespondencesAndDownSamplingWithoutISS(source_path, target_path);
 }
