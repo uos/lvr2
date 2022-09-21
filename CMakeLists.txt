@@ -81,7 +81,7 @@ endif(MSVC)
 
 
 # das hier muss verändert werden damit es läuft WICHTIG !!!!!
-set (rdb_ROOT_DIR "/home/praktikum/RDB-lib/rdblib-2.4.0-x86_64-linux"
+set (rdb_ROOT_DIR "/home/praktikum//Desktop/rdb_test/rdblib-2.4.0-x86_64-linux"
         CACHE PATH "path to RDB ROOT directory ")
 set(rdb_DIR "${rdb_ROOT_DIR}/interface/cpp")
 

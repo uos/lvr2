@@ -61,7 +61,6 @@ void DirectoryKernel::saveMetaYAML(
     boost::filesystem::path p = getAbsolutePath(group, container);
     if(!boost::filesystem::exists(p.parent_path()))
     {
-        cout << p.parent_path();
         boost::filesystem::create_directories(p.parent_path());
     }
     // std::cout << timestamp << "Directory Kernel::saveMetaYAML(): " << p.string() << std::endl;

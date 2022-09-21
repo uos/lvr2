@@ -25,7 +25,7 @@ set(LVR2_SOURCES
     algorithm/pmp/SurfaceNormals.cpp
 
 
-    /home/praktikum/RDB-lib/rdblib-2.4.0-x86_64-linux/interface/cpp/riegl/rdb.cpp
+    /home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp/riegl/rdb.cpp
 
     algorithm/pmp/SurfaceSimplification.cpp
     algorithm/pmp/SurfaceTriangulation.cpp

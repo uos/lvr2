@@ -178,7 +178,6 @@ ScanPtr ScanIO<BaseIO>::load(
     {
         return ret;
     }
-    std::cout << "DATAROOT " << *d.dataRoot << std::endl;
     if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;

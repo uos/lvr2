@@ -59,7 +59,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
     Description d = m_baseIO->m_description->scanProject();
 
     // std::cout << "[HDF5IO - ScanProjectIO - load]: Description" << std::endl;
-     std::cout << d << std::endl;
+    std::cout << d << std::endl;
 
     if(!d.dataRoot)
     {
