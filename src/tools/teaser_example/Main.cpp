@@ -28,15 +28,20 @@ open3d::geometry::PointCloud readAndPreprocessPointCloud(std::string path) {
     open3d::io::ReadPointCloud(path, cloud);
     std::cout << "- done." << std::endl;
 
-    // Estimating Normals
-    std::cout << "Estimating Normals... ";
-    cloud.EstimateNormals(search_param);
-    std::cout << "- done." << std::endl;
-
     std::cout << "Cloud Size: " << cloud.points_.size() << std::endl;
 
     return cloud;
 }
+
+//void estimatingNormals(geometry::PointCloud cloud&) {
+//    // Estimating Normals
+//    std::cout << "Estimating Normals... ";
+//    cloud.EstimateNormals(search_param);
+//    std::cout << "- done." << std::endl;
+//
+//    return;
+//}
+
 open3d::geometry::PointCloud computeISSPointClouds(open3d::geometry::PointCloud cloud)
 {
     // ISS
@@ -50,13 +55,13 @@ open3d::geometry::PointCloud computeISSPointClouds(open3d::geometry::PointCloud 
 
                                                                                               SALIENT_RADIUS, NON_MAX_RADIUS, GAMMA_21, GAMMA_32, MIN_NEIGHBORS);
     std::cout << "- done." << std::endl;
-
+    std::cout << "ISS Keypoints size: " << iss_cloud.points_.size() << std::endl;
     return iss_cloud;
 }
 
 pipelines::registration::Feature computeFPFHs(open3d::geometry::PointCloud iss_cloud) {
     // Compute Features
-        std::cout << "Computing FPFHs... ";
+        std::cout << "Computing FPFHs... " << std::endl;
         auto feature =  *pipelines::registration::ComputeFPFHFeature(iss_cloud, search_param);
         std::cout << "- done." << std::endl;
 
@@ -168,6 +173,10 @@ void workflowCorrespondences(std::string src_path, std::string target_path) {
     geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
     geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
 
+
+    src_cloud.EstimateNormals();
+    target_cloud.EstimateNormals();
+
     geometry::PointCloud src_iss_cloud = computeISSPointClouds(src_cloud);
     geometry::PointCloud target_iss_cloud = computeISSPointClouds(target_cloud);
 
@@ -201,6 +210,9 @@ void workflowDirectlyWithISSAndDownSampling(std::string src_path, std::string ta
     std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
     std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
 
+    sampled_src_cloud.EstimateNormals();
+    sampled_target_cloud.EstimateNormals();
+
     geometry::PointCloud src_iss_cloud = computeISSPointClouds(sampled_src_cloud);
     geometry::PointCloud target_iss_cloud = computeISSPointClouds(sampled_target_cloud);
 
@@ -233,6 +245,9 @@ void workflowCorrespondencesAndDownSampling(std::string src_path, std::string ta
     std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
     std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
 
+    sampled_src_cloud.EstimateNormals();
+    sampled_target_cloud.EstimateNormals();
+
     geometry::PointCloud src_iss_cloud = computeISSPointClouds(sampled_src_cloud);
     geometry::PointCloud target_iss_cloud = computeISSPointClouds(sampled_target_cloud);
 
@@ -255,6 +270,33 @@ void workflowCorrespondencesAndDownSampling(std::string src_path, std::string ta
     solveTeaserWithCorrespondences(src_teaser_cloud, target_teaser_cloud, correspondences);
 }
 
+void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std::string target_path) {
+
+    geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
+    geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
+
+    geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(0.5);
+    geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(0.5);
+    std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
+    std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
+
+    sampled_src_cloud.EstimateNormals();
+    sampled_target_cloud.EstimateNormals();
+
+    auto src_feature = computeFPFHs(sampled_src_cloud);
+    auto target_feature = computeFPFHs(sampled_src_cloud);
+
+    std::cout << "Computing correspondo... ";
+    std::vector<std::pair<int, int>> correspondences = MyMatching(target_feature, src_feature);
+    std::cout << "- done." << std::endl;
+
+    // convert Open3D cloud i
+    teaser::PointCloud src_teaser_cloud = convertToTeaserCloud(sampled_src_cloud);
+    teaser::PointCloud target_teaser_cloud = convertToTeaserCloud(sampled_target_cloud);
+
+    solveTeaserWithCorrespondences(src_teaser_cloud, target_teaser_cloud, correspondences);
+}
+
 int main() {
     // file paths
    /* std::string source_path = "/home/praktikum/robopraktikum/Datapraktikum/data/001/scans/220720_095525.ply";
@@ -273,4 +315,5 @@ int main() {
 //    workflowCorrespondences(source_path, target_path);
 //    workflowDirectlyWithISSAndDownSampling(source_path, target_path);
     workflowCorrespondencesAndDownSampling(source_path, target_path);
+//    workflowCorrespondencesAndDownSamplingWithoutISS(source_path, target_path);
 }
