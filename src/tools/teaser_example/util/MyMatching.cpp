@@ -60,12 +60,12 @@ std::vector<std::pair<int, int>> MyMatching(
     }
 
     for (int i = 0; i < 10; i++) {
-        std::cout << "Pair " << i << ": " << final_correspondo[i].first << ", " << correspondo[i].second << std::endl;
+        std::cout << "Pair " << i << ": " << final_correspondo[i].first << ", " << final_correspondo[i].second << std::endl;
     }
 //    std::cout << "Index: " << index[0] << std::endl;
 //    std::cout << "distance2: " << distance2[0] << std::endl;
 
-    return correspondo;
+    return final_correspondo;
 // 1536768432
 
 }
