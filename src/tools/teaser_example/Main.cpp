@@ -127,6 +127,42 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
               << std::endl;
 }
 
+void solveTeaserWithoutCorrespondences(Eigen::Matrix<double, 3, Eigen::Dynamic> src_cloud, Eigen::Matrix<double, 3, Eigen::Dynamic> target_cloud) {
+    // Prepare solver parameters
+    std::cout << "Teaser solving... ";
+    teaser::RobustRegistrationSolver::Params params;
+    params.noise_bound = NOISE_BOUND;
+    params.cbar2 = 1;
+    params.estimate_scaling = false;
+    params.rotation_max_iterations = 100;
+    params.rotation_gnc_factor = 1.4;
+    params.rotation_estimation_algorithm =
+            teaser::RobustRegistrationSolver::ROTATION_ESTIMATION_ALGORITHM::GNC_TLS;
+    params.rotation_cost_threshold = 0.005;
+
+    // Solve with TEASER++
+    teaser::RobustRegistrationSolver solver(params);
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    solver.solve(src_cloud, target_cloud);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+    auto solution = solver.getSolution();
+
+
+    // Compare results
+    std::cout << "=====================================" << std::endl;
+    std::cout << "          TEASER++ Results           " << std::endl;
+    std::cout << "=====================================" << std::endl;
+    std::cout << "Estimated rotation: " << std::endl;
+    std::cout << solution.rotation << std::endl;
+    std::cout << "Estimated translation: " << std::endl;
+    std::cout << solution.translation << std::endl;
+    std::cout << "Time taken (s): "
+              << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
+                 1000000.0
+              << std::endl;
+}
+
 void workflowCorrespondences(std::string src_path, std::string target_path) {
 
     geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
@@ -155,6 +191,37 @@ void workflowCorrespondences(std::string src_path, std::string target_path) {
     solveTeaserWithCorrespondences(src_teaser_cloud, target_teaser_cloud, correspondences);
 }
 
+void workflowDirectlyWithISSAndDownSampling(std::string src_path, std::string target_path) {
+
+    geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
+    geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
+
+    geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(0.5);
+    geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(0.5);
+    std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
+    std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
+
+    geometry::PointCloud src_iss_cloud = computeISSPointClouds(sampled_src_cloud);
+    geometry::PointCloud target_iss_cloud = computeISSPointClouds(sampled_target_cloud);
+
+//    auto src_feature = computeFPFHs(src_iss_cloud);
+//    auto target_feature = computeFPFHs(target_iss_cloud);
+
+//    std::cout << "Computing correspondo... ";
+//    std::vector<std::pair<int, int>> correspondences = MyMatching(target_feature, src_feature);
+//    std::cout << "- done." << std::endl;
+
+
+    // convert Open3D cloud i
+    teaser::PointCloud src_teaser_cloud = convertToTeaserCloud(src_iss_cloud);
+    teaser::PointCloud target_teaser_cloud = convertToTeaserCloud(target_iss_cloud);
+
+    // convert pointcloud to Eigen3 Matrix to use teaser::solver without correspondences
+    Eigen::Matrix<double, 3, Eigen::Dynamic> src_eigen = convertToEigen(src_teaser_cloud);
+    Eigen::Matrix<double, 3, Eigen::Dynamic> target_eigen = convertToEigen(target_teaser_cloud);
+
+    solveTeaserWithoutCorrespondences(src_eigen, target_eigen);
+}
 
 int main() {
     // file paths
@@ -176,5 +243,6 @@ int main() {
 //    int stat1 = pointtovertex(source_path, source_path_vertex);
 //    int stat2 = pointtovertex(target_path, target_path_vertex);
 
-    workflowCorrespondences(source_path, target_path);
+//    workflowCorrespondences(source_path, target_path);
+    workflowDirectlyWithISSAndDownSampling(source_path, target_path);
 }
