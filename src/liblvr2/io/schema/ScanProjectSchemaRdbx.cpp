@@ -29,8 +29,12 @@ namespace lvr2 {
             const size_t &scanPosNo) const
     {
         Description dp = scanProject();
+        cout << *dp.dataRoot<<"hallo" << endl;
         Description d;
         std::stringstream tmp_stream;
+
+
+
 
         tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
 
@@ -48,19 +52,35 @@ namespace lvr2 {
     {
         Description d;
 
-//        std::stringstream  sstr;
-//        sstr << std::setfill('0') << std::setw(3) << lidarNo;
+
 
 
         Description dp = position(scanPosNo);
 
         std::stringstream tmp_stream;
-        tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
+        tmp_stream << *dp.dataRoot << "/scans";
         d.dataRoot = tmp_stream.str();
         d.metaRoot = d.dataRoot;
-        d.meta = "final.pose";
 
+        DIR *dir;
+        auto path = m_rootPath / dp.dataRoot.get() / "scans";
+
+        struct dirent *ent;
+        std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.scn" );
+        if ((dir = opendir (path.c_str())) != NULL) {
+            while ((ent = readdir (dir)) != NULL) {
+                if (regex_match((ent->d_name), rxSCN)) {
+                    d.meta = ent->d_name;
+
+                    break;
+                }
+            }
+            closedir (dir);
+        } else {
+            return d;
+        }
         return d;
+
 
     }
 
@@ -82,31 +102,28 @@ namespace lvr2 {
             const size_t& scanNo) const
     {
         DIR *dir;
-        Description dp = position(scanPosNo);
-        auto path = m_rootPath / dp.dataRoot.get() / "/scans";
-
+        Description dp = lidar(scanPosNo,lidarNo);
+        auto path = m_rootPath / dp.dataRoot.get();
         Description d;
-        d.dataRoot= dp.dataRoot.get() + "/scans";
+        d.dataRoot= dp.dataRoot ;
+        d.meta=dp.meta;
         //d.metaRoot= "";//*dp.dataRoot + "scans";
         struct dirent *ent;
         std::regex rxRDBX("([0-9]+)\\_([0-9]+)\\.rdbx" );
-        std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.SCN" );
+        std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.scn" );
 
         if ((dir = opendir (path.c_str())) != NULL) {
-            while ((ent = readdir (dir)) != NULL) {
+            while ((ent = readdir(dir)) != NULL) {
                 if (regex_match((ent->d_name), rxRDBX)) {
                     d.data = ent->d_name;
-                    break;
+                    cout << *d.data << "meins" << endl;
                 }
-//                if (regex_match((ent->d_name), rxSCN)) {
-//                    d.meta = ent->d_name;
-//
-//                }
+
             }
-            closedir (dir);
-        } else {
-            return d;
+            closedir(dir);
+
         }
+
         return d;
     }
 
@@ -145,15 +162,15 @@ namespace lvr2 {
         const char *path;
         path = dp.dataRoot->c_str();
         Description d;
-        d.dataRoot= *dp.dataRoot;
+        d.dataRoot= *dp.dataRoot + "images";
         d.metaRoot= dp.dataRoot;
         d.meta=dp.meta;
         struct dirent *ent;
 
         stringstream tmp_stream;
-        tmp_stream << std::setfill('0') << std::setw(2) << camNo+1;
+        tmp_stream << camNo;
         std::string camNoString= tmp_stream.str();
-        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_([0-9]+)_\\" + camNoString + ".jpg" );
+        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\" + camNoString + ".jpg" );
 
 
         if ((dir = opendir (path)) != NULL) {
@@ -176,14 +193,6 @@ namespace lvr2 {
             const size_t& camNo) const
     {
         Description d;
-//
-//        Description dp = scanProject();
-//
-//        std::stringstream tmp_stream;
-//        tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
-//        d.dataRoot = tmp_stream.str();
-//        d.metaRoot = d.dataRoot;
-//        d.meta = "final.pose";
 
 
         return d;

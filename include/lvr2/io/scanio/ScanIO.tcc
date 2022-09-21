@@ -489,6 +489,7 @@ ScanPtr ScanIO<BaseIO>::loadScan(
     const size_t& sensorNo,
     const size_t& scanNo) const
 {
+    cout << "scan read"<< endl;
     return load(scanPosNo, sensorNo, scanNo);
 }
 

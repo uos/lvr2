@@ -12,7 +12,7 @@ namespace lvr2
 bool isMetaFile(const std::string& filename)
 {
     boost::filesystem::path p(filename);
-    std::unordered_set<std::string> metaExtensions = {".yaml", ".slam6d", ".frames" , ".json" , ".pose" };
+    std::unordered_set<std::string> metaExtensions = {".yaml", ".slam6d", ".frames" , ".json" , ".pose" , "scn"};
     return metaExtensions.find(p.extension().string()) != metaExtensions.end();
 }
 
@@ -62,7 +62,7 @@ YAML::Node loadMetaInformation(const std::string &in)
         inPath += ".yaml";
     }
 
-    if (inPath.extension() == ".yaml" || inPath.extension() == ".json" || inPath.extension() == ".pose")
+    if (inPath.extension() == ".yaml" || inPath.extension() == ".json" || inPath.extension() == ".pose"|| inPath.extension() == ".scn")
     {
         YAML::Node n;
         if (boost::filesystem::exists(inPath))
@@ -72,7 +72,6 @@ YAML::Node loadMetaInformation(const std::string &in)
             n = YAML::LoadFile(inPath.string());
         }
         else
-        //hier mussen wir es ändern das ordner erstellt werden aber erstellenung sreinfolge kommsich
         {
             std::cout << timestamp
                       << "LoadMetaInformation(YAML): Unable to find yaml file: " << inPath << std::endl;

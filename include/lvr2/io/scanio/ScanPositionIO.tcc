@@ -26,7 +26,7 @@ bool ScanPositionIO< BaseIO>::save(
     }
 
     // Save all lidar sensors
-
+    cout <<scanPositionPtr->lidars.size()<< endl;
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
     {
 
@@ -98,10 +98,9 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     if(d.meta)
     {
         YAML::Node meta;
-        cout<<"Meta laden" << scanPosNo<< endl;
+
         if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
-            cout << "empty" <<endl;
             return ret;
         }
 
@@ -113,8 +112,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
             std::cerr << "[ScanPositionIO - load] ERROR at Scan (" << scanPosNo << ") : Could not decode YAML as ScanPosition." << std::endl;
             throw ex;
         }
-        cout<<"Meta laden--" << scanPosNo<< endl;
-       
+
     } else {
         // no meta name specified but scan position is there: 
         ret = std::make_shared<ScanPosition>();
