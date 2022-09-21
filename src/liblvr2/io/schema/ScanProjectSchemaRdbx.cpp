@@ -54,9 +54,14 @@ namespace lvr2 {
             const size_t& scanPosNo,
             const size_t& lidarNo) const
     {
+        Description dp = scanProject();
         Description d;
 
-
+        std::stringstream tmp_stream;
+        tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
+        d.dataRoot = tmp_stream.str();
+        d.metaRoot = d.dataRoot;
+        d.meta = "final.pose";
 
         return d;
 
