@@ -5,7 +5,7 @@ namespace scanio
 {
 
 template <typename  BaseIO>
-void ScanPositionIO< BaseIO>::save(
+bool ScanPositionIO< BaseIO>::save(
     const size_t& scanPosNo, 
     ScanPositionPtr scanPositionPtr) const
 {
@@ -17,23 +17,21 @@ void ScanPositionIO< BaseIO>::save(
     if(!d.dataRoot)
     {
         // dataRoot has to be specified!
-        return;
+        return false;
     }
 
     if(!scanPositionPtr)
     {
 
-        //DOOO!!!!
-        //erstell elern ordner ScanPosition
-        PointBufferPtr tmp;
-        m_baseIO->m_kernel->savePointBuffer(*d.dataRoot,"tmp.ply",tmp);
-        //Directry kernel create empty Folder/group/
-        return;
+
+        return false;
     }
 
     // Save all lidar sensors
+
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
     {
+
         // std::cout << " [ScanPositionIO]: Writing lidar " << i << std::endl;
         m_lidarIO->save(scanPosNo, i, scanPositionPtr->lidars[i]);
     }
@@ -65,7 +63,7 @@ void ScanPositionIO< BaseIO>::save(
         node = *scanPositionPtr;
         m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
-
+    return true;
     // std::cout << "[ScanPositionIO] Meta written. " << std::endl;
 }
 
@@ -201,11 +199,11 @@ ScanPositionPtr ScanPositionIO< BaseIO>::load(
 }
 
 template <typename  BaseIO>
-void ScanPositionIO< BaseIO>::saveScanPosition(
+bool ScanPositionIO< BaseIO>::saveScanPosition(
     const size_t& scanPosNo, 
     ScanPositionPtr scanPositionPtr) const
 {
-    save(scanPosNo, scanPositionPtr);
+   return save(scanPosNo, scanPositionPtr);
 }
 
 template <typename  BaseIO>

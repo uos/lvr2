@@ -15,7 +15,6 @@ namespace lvr2 {
     Description ScanProjectSchemaRdbx::scanProject() const
     {
 
-        //müssen hier nicht der Path stehen sonst unten probleme oder idee geht nicht
         Description d;
 
         d.dataRoot = "";

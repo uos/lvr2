@@ -20,7 +20,7 @@ int main(int argc, char** argv)
     DirectoryIO dirio_in(kernel_in, schema_in);
 
     auto scanProject = dirio_in.ScanProjectIO::load();
-//auto scanPosition = dirio_in.loadScanPosition(1);
+    //auto scanPosition = dirio_in.loadScanPosition(1);
   //  auto scan = dirio_in.loadScan(1, 0, 0);
 
    // scan->points_loader();

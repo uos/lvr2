@@ -51,7 +51,7 @@ class ScanPositionIO
 {
   public:
 
-    void save(
+    bool save(
         const size_t& scanPosNo,
         ScanPositionPtr scanPositionPtr
         ) const;
@@ -66,7 +66,7 @@ class ScanPositionIO
         const size_t& scanPosNo, 
         ReductionAlgorithmPtr reduction) const;
 
-    void saveScanPosition(
+    bool saveScanPosition(
         const size_t& scanPosNo,
         ScanPositionPtr scanPositionPtr
         ) const;

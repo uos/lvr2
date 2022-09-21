@@ -21,10 +21,15 @@ void ScanProjectIO<BaseIO>::save(
 //
 //     std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
     // Iterate over all positions and save
-    for (size_t i = 0; i < scanProject->positions.size(); i++)
+    size_t successfulScans =1;
+    for (size_t i = 1; i <= scanProject->positions.size(); i++)
     {
         // std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
-        m_scanPositionIO->saveScanPosition(i, scanProject->positions[i]);
+        if (!(m_scanPositionIO->saveScanPosition(successfulScans, scanProject->positions[i]))){
+            successfulScans--;
+
+        }
+        successfulScans++;
     }
 
     // Default scan project yaml
