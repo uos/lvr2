@@ -257,24 +257,19 @@ void workflowCorrespondencesAndDownSampling(std::string src_path, std::string ta
 
 int main() {
     // file paths
-//    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_095525.ply";
-//    std::string target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/220720_100202.ply";
-    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_095525_vertex.ply";
-    std::string target_path = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_100202_vertex.ply";
-//    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/reduced.ply";
-//    std::string target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/reduced.ply";
-//    std::string target_path = "/home/praktikum/robopraktikum/scans_test/003/scans/220720_100819.ply";
-//    std::string target_path_vertex = "/home/praktikum/robopraktikum/scans_test/003/scans/220720_100819_vertex.ply";
-//    std::string source_path = "/home/praktikum/robopraktikum/TEASER-plusplus/examples/example_data/bun_zipper_res3.ply";
-//    std::string target_path = "/home/praktikum/robopraktikum/TEASER-plusplus/examples/example_data/bunny_moosh.ply";
-
-//    std::string source_path = "/home/praktikum/robopraktikum/scans_test/test_pcl.ply";
-//    std::string target_path = "/home/praktikum/robopraktikum/scans_test/test_pcl_transformed.ply";
-
-//    std::cout << "Convert ply header for Open3D (point to vertex)" << std::endl;
-//    int stat1 = pointtovertex(source_path, source_path_vertex);
-//    int stat2 = pointtovertex(target_path, target_path_vertex);
-
+   /* std::string source_path = "/home/praktikum/robopraktikum/Datapraktikum/data/001/scans/220720_095525.ply";
+    std::string target_path = "/home/praktikum/robopraktikum/Datapraktikum/data/002/scans/220720_100202.ply";*/
+    /*std::string source_path_vertex = "/home/praktikum/robopraktikum/Datapraktikum/data/001/scans/220720_095525_vertex.ply";
+    std::string target_path_vertex = "/home/praktikum/robopraktikum/Datapraktikum/data/002/scans/220720_100202_vertex.ply";
+//    std::string reduced_source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/reduced.ply";
+//    std::string reduced_target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/reduced.ply";
+//    std::string reduced_source_path_vertex = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_095525_vertex.ply";
+//    std::string reduced_target_path_vertex = "/home/praktikum/robopraktikum/scans_test/001/scans/2207_vertex.ply";
+    std::string source_path_vertex = "/home/praktikum/robopraktikum/Datapraktikum/data/sample_data/bunny.ply";
+    std::string target_path_vertex ="/home/praktikum/robopraktikum/Datapraktikum/data/sample_data/bunny_transformed.ply";
+*/
+    std::string source_path = "/home/praktikum/robopraktikum/teaser/scan_0.2.ply";
+    std::string target_path = "/home/praktikum/robopraktikum/teaser/scan_0.3.ply";
 //    workflowCorrespondences(source_path, target_path);
 //    workflowDirectlyWithISSAndDownSampling(source_path, target_path);
     workflowCorrespondencesAndDownSampling(source_path, target_path);
