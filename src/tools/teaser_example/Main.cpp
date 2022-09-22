@@ -46,10 +46,10 @@ open3d::geometry::PointCloud computeISSPointClouds(open3d::geometry::PointCloud 
 {
     // ISS
     std::cout << "Computing ISS keypoints... " << std::endl;
-    double SALIENT_RADIUS = 0.005;
+    double SALIENT_RADIUS = 0.000;
     double NON_MAX_RADIUS = 0.005;
-    double GAMMA_21 = 0.5;
-    double GAMMA_32 = 0.5;
+    double GAMMA_21 = 0.975;
+    double GAMMA_32 = 0.975;
     int MIN_NEIGHBORS = 5;
     open3d::geometry::PointCloud iss_cloud = *open3d::geometry::keypoint::ComputeISSKeypoints(cloud,
 
@@ -280,35 +280,40 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
     geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
     geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
 
-    double voxel_size = 1.0;
-//    geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(voxel_size);
-//    geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(voxel_size);
-//    std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
-//    std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
+    double voxel_size = 1.5;
+    geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(voxel_size);
+    geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(voxel_size);
+    std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
+    std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
 
-    src_cloud.EstimateNormals();
-    target_cloud.EstimateNormals();
 
-    auto src_feature = computeFPFHs(src_cloud);
-    auto target_feature = computeFPFHs(target_cloud);
+    sampled_src_cloud.EstimateNormals();
+    sampled_target_cloud.EstimateNormals();
+
+
+    auto src_feature = computeFPFHs(sampled_src_cloud);
+    auto target_feature = computeFPFHs(sampled_target_cloud);
 
     std::cout << "Computing correspondo... ";
     std::vector<std::pair<int, int>> correspondences = MyMatching(target_feature, src_feature);
     std::cout << "- done." << std::endl;
 
     // convert Open3D cloud i
-    teaser::PointCloud src_teaser_cloud = convertToTeaserCloud(src_cloud);
-    teaser::PointCloud target_teaser_cloud = convertToTeaserCloud(target_cloud);
+    teaser::PointCloud src_teaser_cloud = convertToTeaserCloud(sampled_src_cloud);
+    teaser::PointCloud target_teaser_cloud = convertToTeaserCloud(sampled_target_cloud);
 
-    solveTeaserWithCorrespondences(src_teaser_cloud, target_teaser_cloud, correspondences);
+    solveTeaserWithCorrespondences(target_teaser_cloud, src_teaser_cloud, correspondences);
 }
 
 int main() {
     // file paths
 //    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_095525.ply";
 //    std::string target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/220720_100202.ply";
-    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_095525_vertex.ply";
-    std::string target_path = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_100202_vertex.ply";
+ /*   std::string source_path = "/home/praktikum/data_robo/001/scans/220720_095525_vertex.ply";
+    std::string target_path = "/home/praktikum/data_robo/002/scans/220720_100202_vertex.ply";*/
+
+       std::string source_path = "/home/praktikum/data_robo/sample_data/scan_0.2.ply";
+       std::string target_path = "/home/praktikum/data_robo/sample_data/scan_0.3.ply";
 //    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/reduced.ply";
 //    std::string target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/reduced.ply";
 //    std::string target_path = "/home/praktikum/robopraktikum/scans_test/003/scans/220720_100819.ply";
@@ -323,8 +328,8 @@ int main() {
 //    int stat1 = pointtovertex(source_path, source_path_vertex);
 //    int stat2 = pointtovertex(target_path, target_path_vertex);
 
-    workflowCorrespondences(source_path, target_path);
+//    workflowCorrespondences(source_path, target_path);
 //    workflowDirectlyWithISSAndDownSampling(source_path, target_path);
 //    workflowCorrespondencesAndDownSampling(source_path, target_path);
-//    workflowCorrespondencesAndDownSamplingWithoutISS(source_path, target_path);
+    workflowCorrespondencesAndDownSamplingWithoutISS(source_path, target_path);
 }

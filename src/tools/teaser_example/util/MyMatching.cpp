@@ -53,7 +53,13 @@ std::vector<std::pair<int, int>> MyMatching(
         }*/
         //write the indices to the final correspondences only if the correspondences are the same from src to dst
         //and vica versa
-        const std::pair<int, int> p(tmp_index[0], j);
+
+
+
+        //Funktioniert
+        const std::pair<int, int> p(j, tmp_index[0]);
+
+
         if (j < 10) {
             std::cout << j << "-th Correspondo second " << (int) correspondo_map.find(j)->second << std::endl;
             std::cout << j << "-th tmp_index " << (int) tmp_index[0] << std::endl;
@@ -76,7 +82,7 @@ std::vector<std::pair<int, int>> MyMatching(
     }
 
     for (int i = 0; i < 10; i++) {
-        std::cout << "Pair " << i << ": " << final_correspondo[i].first << ", " << final_correspondo[i].second << std::endl;
+                std::cout << "Pair " << i << ": " << final_correspondo[i].first << ", " << final_correspondo[i].second << std::endl;
     }
 //    std::cout << "Index: " << index[0] << std::endl;
 //    std::cout << "distance2: " << distance2[0] << std::endl;
