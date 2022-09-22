@@ -102,18 +102,16 @@ namespace lvr2 {
             const size_t& camNo) const
     {
         Description d;
-//
-//        Description dp = position(scanPosNo);
-//
-//        std::stringstream tmp_stream;
-//        tmp_stream << *dp.dataRoot << "/images";
-//        d.dataRoot = tmp_stream.str();
-//        d.metaRoot = d.dataRoot;
-//        //d.metaRoot = dp.dataRoot;
-//        d.meta = "final.pose";
+
+        if(camNo == 0)
+        {
+            Description dp = position(scanPosNo);
+            d.dataRoot = dp.dataRoot;
+        }
 
         return d;
     }
+
 
     Description ScanProjectSchemaRdbx::scan(
             const size_t& scanPosNo,
@@ -185,9 +183,50 @@ namespace lvr2 {
             const size_t& camNo,
             const std::vector<size_t>& cameraImageNos) const
     {
+        DIR *dir;
+        Description dp = lidar(scanPosNo,camNo);
+        auto path = m_rootPath / dp.dataRoot.get() / "images";
         Description d;
 
+        //d.metaRoot= "";//*dp.dataRoot + "scans";
+        struct dirent *ent;
 
+        std::vector<std::string> matching_files;
+        boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
+
+        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_([0-9])+\\_([0-9])+\\.jpg" );
+        //std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.scn" );
+
+        for( boost::filesystem::directory_iterator i( path ); i != end_itr; ++i ) {
+            // Skip if not a file
+            if (!boost::filesystem::is_regular_file(i->status())) continue;
+            auto path_str = i->path().filename().string();
+            if (regex_match(path_str, rxJPG)) {
+                matching_files.push_back(i->path().stem().string());
+            }
+        }
+        std::sort(matching_files.begin(), matching_files.end());
+
+
+        if(matching_files.size() > camNo) {
+            d.data = matching_files[camNo] + ".jpg";
+            d.meta = matching_files[camNo] + ".img";
+            d.dataRoot= *dp.dataRoot + "/images";
+            d.metaRoot= d.dataRoot;
+        }
+//        if ((dir = opendir (path.c_str())) != NULL) {
+//            while ((ent = readdir(dir)) != NULL) {
+//                if (regex_match((ent->d_name), rxRDBX)) {
+//                    d.data = ent->d_name;
+//                }
+//                if (regex_match((ent->d_name), rxSCN)) {
+//                    d.meta = ent->d_name;
+//                }
+//            }
+//            closedir(dir);
+//
+//        }
+        std::cout << d.meta << " " << d.data<<""<< std::endl;
         return d;
     }
 
@@ -201,7 +240,7 @@ namespace lvr2 {
         const char *path;
         path = dp.dataRoot->c_str();
         Description d;
-        d.dataRoot= *dp.dataRoot + "images";
+        d.dataRoot= *dp.dataRoot + "/images";
         d.metaRoot= dp.dataRoot;
         d.meta=dp.meta;
         struct dirent *ent;
@@ -209,7 +248,7 @@ namespace lvr2 {
         stringstream tmp_stream;
         tmp_stream << camNo;
         std::string camNoString= tmp_stream.str();
-        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\" + camNoString + ".jpg" );
+        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_([0-9])+\\_([0-9])+\\.jpg" );
 
 
         if ((dir = opendir (path)) != NULL) {
