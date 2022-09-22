@@ -48,43 +48,6 @@ namespace lvr2 {
             const size_t& scanPosNo,
             const size_t& lidarNo) const
     {
-//        Description d;
-//
-//
-//
-//
-//        Description dp = position(scanPosNo);
-//
-//        std::stringstream tmp_stream;
-//        tmp_stream << *dp.dataRoot << "/scans";
-//        d.dataRoot = tmp_stream.str();
-//        d.metaRoot = d.dataRoot;
-//
-//        DIR *dir;
-//        auto path = m_rootPath / dp.dataRoot.get() / "scans";
-//
-//        std::cout << path << std::endl;
-//
-//        std::stringstream path_stream;
-//        path_stream << m_rootPath << *dp.dataRoot << "/scans";
-//        std::string path2 = path_stream.str();
-//
-//        std::cout << path2 << std::endl;
-//
-//        struct dirent *ent;
-//        std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.scn" );
-//        if ((dir = opendir (path.c_str())) != NULL) {
-//            while ((ent = readdir (dir)) != NULL) {
-//                if (regex_match((ent->d_name), rxSCN)) {
-//                    d.meta = ent->d_name;
-//                }
-//            }
-//            closedir (dir);
-//        } else {
-//            return d;
-//        }
-//        return d;
-
         Description d;
 
         if(lidarNo == 0)
@@ -96,7 +59,6 @@ namespace lvr2 {
         return d;
     }
 
-    //Camera nur daten, den rest in CamereImage
     Description ScanProjectSchemaRdbx::camera(
             const size_t& scanPosNo,
             const size_t& camNo) const
@@ -148,18 +110,7 @@ namespace lvr2 {
             d.dataRoot= *dp.dataRoot + "/scans";
             d.metaRoot= d.dataRoot;
         }
-//        if ((dir = opendir (path.c_str())) != NULL) {
-//            while ((ent = readdir(dir)) != NULL) {
-//                if (regex_match((ent->d_name), rxRDBX)) {
-//                    d.data = ent->d_name;
-//                }
-//                if (regex_match((ent->d_name), rxSCN)) {
-//                    d.meta = ent->d_name;
-//                }
-//            }
-//            closedir(dir);
-//
-//        }
+
         std::cout << d.meta << " " << d.data<< std::endl;
         return d;
     }
@@ -214,18 +165,7 @@ namespace lvr2 {
             d.dataRoot= *dp.dataRoot + "/images";
             d.metaRoot= d.dataRoot;
         }
-//        if ((dir = opendir (path.c_str())) != NULL) {
-//            while ((ent = readdir(dir)) != NULL) {
-//                if (regex_match((ent->d_name), rxRDBX)) {
-//                    d.data = ent->d_name;
-//                }
-//                if (regex_match((ent->d_name), rxSCN)) {
-//                    d.meta = ent->d_name;
-//                }
-//            }
-//            closedir(dir);
-//
-//        }
+
         std::cout << d.meta << " " << d.data<<""<< std::endl;
         return d;
     }
@@ -235,34 +175,8 @@ namespace lvr2 {
             const size_t& camNo,
             const std::vector<size_t>& cameraImageGroupNos) const
     {
-        DIR *dir;
-        Description dp = position(scanPosNo);
-        const char *path;
-        path = dp.dataRoot->c_str();
         Description d;
-        d.dataRoot= *dp.dataRoot + "/images";
-        d.metaRoot= dp.dataRoot;
-        d.meta=dp.meta;
-        struct dirent *ent;
 
-        stringstream tmp_stream;
-        tmp_stream << camNo;
-        std::string camNoString= tmp_stream.str();
-        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_([0-9])+\\_([0-9])+\\.jpg" );
-
-
-        if ((dir = opendir (path)) != NULL) {
-            while ((ent = readdir (dir)) != NULL) {
-                if (regex_match((ent->d_name), rxJPG)) {
-                    d.data = ent->d_name;
-                }
-
-            }
-            closedir (dir);
-        } else {
-            perror ("");
-            return d;
-        }
         return d;
     }
 

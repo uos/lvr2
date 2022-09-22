@@ -98,8 +98,6 @@ LIDARPtr LIDARIO<BaseIO>::load(
     size_t scanNo = 0;
     while(true)
     {
-        cout<<"error2"<<endl;
-
         // std::cout << "[LIDARIO - load] Load Scan " << scanNo << std::endl;
         ScanPtr scan = m_scanIO->load(scanPosNo, lidarNo, scanNo);
         if(scan)
