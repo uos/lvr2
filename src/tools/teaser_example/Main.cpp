@@ -280,7 +280,7 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
     geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
     geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
 
-    double voxel_size = 1.5;
+    double voxel_size = 0.75;
     geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(voxel_size);
     geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(voxel_size);
     std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
@@ -309,11 +309,11 @@ int main() {
     // file paths
 //    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/220720_095525.ply";
 //    std::string target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/220720_100202.ply";
- /*   std::string source_path = "/home/praktikum/data_robo/001/scans/220720_095525_vertex.ply";
-    std::string target_path = "/home/praktikum/data_robo/002/scans/220720_100202_vertex.ply";*/
+    std::string source_path = "/home/praktikum/data_robo/001/scans/220720_095525_vertex.ply";
+    std::string target_path = "/home/praktikum/data_robo/002/scans/220720_100202_vertex.ply";
 
-       std::string source_path = "/home/praktikum/data_robo/sample_data/scan_0.2.ply";
-       std::string target_path = "/home/praktikum/data_robo/sample_data/scan_0.3.ply";
+//    std::string source_path = "/home/praktikum/data_robo/sample_data/scan_0.2.ply";
+//    std::string target_path = "/home/praktikum/data_robo/sample_data/scan_0.3.ply";
 //    std::string source_path = "/home/praktikum/robopraktikum/scans_test/001/scans/reduced.ply";
 //    std::string target_path = "/home/praktikum/robopraktikum/scans_test/002/scans/reduced.ply";
 //    std::string target_path = "/home/praktikum/robopraktikum/scans_test/003/scans/220720_100819.ply";
