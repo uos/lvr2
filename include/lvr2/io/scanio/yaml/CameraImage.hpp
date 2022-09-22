@@ -20,7 +20,7 @@ struct convert<lvr2::CameraImage>
      * Encode Eigen matrix to yaml. 
      */
     static Node encode(const lvr2::CameraImage& cameraImage) { 
-        Node node;
+        Node node = cameraImage.metadata;
 
         node["entity"] = lvr2::CameraImage::entity;
         node["type"] = lvr2::CameraImage::type;
@@ -38,61 +38,66 @@ struct convert<lvr2::CameraImage>
     static bool decode(const Node& node, lvr2::CameraImage& scanImage) 
     {
        // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndTypeSilent(node, 
+       /* if (!YAML_UTIL::ValidateEntityAndTypeSilent(node,
             "camera_image", 
             lvr2::CameraImage::entity, 
             lvr2::CameraImage::type))
         {
             return false;
         }
-    
+    */
+        Node parsed_node=node;
         // Get fields
-        if(node["transformation"])
+        if(parsed_node["transformation"])
         {
             try {
-                scanImage.transformation = node["transformation"].as<lvr2::Transformd>();
+                scanImage.transformation = parsed_node["transformation"].as<lvr2::Transformd>();
             } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
                 std::cerr << "[YAML - CameraImage - decode] ERROR: Could not decode 'transformation': " 
-                    << node["transformation"] << " as Transformd" << std::endl; 
+                    << parsed_node["transformation"] << " as Transformd" << std::endl;
                 return false;
             }
+            parsed_node.remove("transformation");
         }
         else
         {
             scanImage.transformation = lvr2::Transformd::Identity();
         }
 
-        if(node["pose_estimation"])
+        if(parsed_node["pose_estimation"])
         {
             // NAN check?
             try {
-                scanImage.extrinsicsEstimation = node["pose_estimation"].as<lvr2::Extrinsicsd>();
+                scanImage.extrinsicsEstimation = parsed_node["pose_estimation"].as<lvr2::Extrinsicsd>();
             } catch(const YAML::TypedBadConversion<lvr2::Extrinsicsd>& ex) {
                 std::cerr << "[YAML - CameraImage - decode] ERROR: Could not decode 'pose_estimation': " 
-                    << node["pose_estimation"] << " as Extrinsicsd" << std::endl; 
+                    << parsed_node["pose_estimation"] << " as Extrinsicsd" << std::endl;
                 return false;
             }
+            parsed_node.remove("pose_estimation");
         }
         else
         {
             scanImage.extrinsicsEstimation = lvr2::Extrinsicsd::Identity();
         }
 
-        if(node["timestamp"])
+        if(parsed_node["timestamp"])
         {
             try {
-                scanImage.timestamp = node["timestamp"].as<double>();
+                scanImage.timestamp = parsed_node["timestamp"].as<double>();
             } catch(const YAML::TypedBadConversion<double>& ex) {
                 std::cerr << "[YAML - CameraImage - decode] ERROR: Could not decode 'timestamp': " 
                     << node["timestamp"] << " as double" << std::endl; 
                 return false;
             }
+            parsed_node.remove("timestamp");
         } 
         else 
         {
             // TODO: how to handle no timestamp?
             scanImage.timestamp = -1.0;
         }
+        scanImage.metadata= parsed_node;
 
         return true;
     }
@@ -139,7 +144,6 @@ struct convert<lvr2::CameraImageGroup>
         {
             cameraImageGroup.transformation = lvr2::Transformd::Identity();
         }
-
         return true;
     }
 

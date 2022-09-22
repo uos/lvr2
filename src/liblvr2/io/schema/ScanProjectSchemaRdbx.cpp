@@ -48,6 +48,7 @@ namespace lvr2 {
             const size_t& scanPosNo,
             const size_t& lidarNo) const
     {
+
         Description d;
 
         if(lidarNo == 0)
@@ -144,8 +145,7 @@ namespace lvr2 {
 
         std::vector<std::string> matching_files;
         boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
-
-        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_([0-9])+\\_([0-9])+\\.jpg" );
+        std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0"+to_string(cameraImageNos.front()+1)+"_([0-9])+\\.jpg" );
         //std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.scn" );
 
         for( boost::filesystem::directory_iterator i( path ); i != end_itr; ++i ) {
@@ -156,7 +156,6 @@ namespace lvr2 {
                 matching_files.push_back(i->path().stem().string());
             }
         }
-        std::sort(matching_files.begin(), matching_files.end());
 
 
         if(matching_files.size() > camNo) {
@@ -166,7 +165,8 @@ namespace lvr2 {
             d.metaRoot= d.dataRoot;
         }
 
-        std::cout << d.meta << " " << d.data<<""<< std::endl;
+
+        std::cout << d.meta << " " << d.data<< std::endl;
         return d;
     }
 
