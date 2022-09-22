@@ -168,6 +168,7 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
               << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
                  1000000.0
               << std::endl;
+
 }
 
 void workflowCorrespondences(std::string src_path, std::string target_path) {
@@ -314,8 +315,9 @@ int main() {
    std::string robo_dir = "/home/praktikum/data_robo/";
 //    std::string source_path = robo_dir + "001/scans/220720_095525.ply";
 //    std::string target_path = robo_dir + "002/scans/220720_100202.ply";
-    std::string source_path = robo_dir + "001/scans/220720_095525_vertex.ply";
-    std::string target_path = robo_dir + "002/scans/220720_100202_vertex.ply";
+    std::string source_path = robo_dir + "002/scans/220720_100202_vertex.ply";
+    std::string target_path = robo_dir + "003/scans/220720_100819_vertex.ply";
+//    std::string target_path_vertex = robo_dir + "003/scans/220720_100819_vertex.ply";
 //    std::string source_path = robo_dir + "001/scans/reduced.ply";
 //    std::string target_path = robo_dir + "002/scans/reduced.ply";
 //    std::string target_path = "/home/praktikum/robopraktikum/scans_test/003/scans/220720_100819.ply";
@@ -328,7 +330,7 @@ int main() {
 
 //    std::cout << "Convert ply header for Open3D (point to vertex)" << std::endl;
 //    int stat1 = pointtovertex(source_path, source_path);
-//    int stat2 = pointtovertex(target_path, target_path);
+//  int stat2 = pointtovertex(target_path, target_path);
 
 //    workflowCorrespondences(source_path, target_path);
 //    workflowDirectlyWithISSAndDownSampling(source_path, target_path);
