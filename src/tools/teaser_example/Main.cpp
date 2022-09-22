@@ -245,11 +245,12 @@ void workflowCorrespondencesAndDownSampling(std::string src_path, std::string ta
     std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
     std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
 
-    sampled_src_cloud.EstimateNormals();
-    sampled_target_cloud.EstimateNormals();
 
     geometry::PointCloud src_iss_cloud = computeISSPointClouds(sampled_src_cloud);
     geometry::PointCloud target_iss_cloud = computeISSPointClouds(sampled_target_cloud);
+
+    src_iss_cloud.EstimateNormals();
+    target_iss_cloud.EstimateNormals();
 
     auto src_feature = computeFPFHs(src_iss_cloud);
     auto target_feature = computeFPFHs(target_iss_cloud);
@@ -284,7 +285,7 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
     sampled_target_cloud.EstimateNormals();
 
     auto src_feature = computeFPFHs(sampled_src_cloud);
-    auto target_feature = computeFPFHs(sampled_src_cloud);
+    auto target_feature = computeFPFHs(sampled_target_cloud);
 
     std::cout << "Computing correspondo... ";
     std::vector<std::pair<int, int>> correspondences = MyMatching(target_feature, src_feature);
@@ -312,8 +313,8 @@ int main() {
 */
     std::string source_path = "/home/praktikum/robopraktikum/teaser/scan_0.2.ply";
     std::string target_path = "/home/praktikum/robopraktikum/teaser/scan_0.3.ply";
-//    workflowCorrespondences(source_path, target_path);
+    workflowCorrespondences(source_path, target_path);
 //    workflowDirectlyWithISSAndDownSampling(source_path, target_path);
-    workflowCorrespondencesAndDownSampling(source_path, target_path);
+//    workflowCorrespondencesAndDownSampling(source_path, target_path);
 //    workflowCorrespondencesAndDownSamplingWithoutISS(source_path, target_path);
 }
