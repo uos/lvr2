@@ -734,7 +734,6 @@ add_subdirectory(src/tools/lvr2_3dtiles)
 
 # new by praktikum
 add_subdirectory(src/tools/teaser_example)
-#add_subdirectory(src/tools/test_bla)
 
 
 

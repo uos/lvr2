@@ -321,10 +321,10 @@ int main() {
    std::string vertex = "_vertex";
 //    std::string source_path = robo_dir + "001/scans/220720_095525.ply";
 //    std::string target_path = robo_dir + "002/scans/220720_100202.ply";
-//    std::string source_path = robo_dir + "001/scans/220720_095525_vertex.ply";
-    std::string source_path = robo_dir + "002/scans/220720_100202" + vertex + end;
-    std::string target_path = robo_dir + "003/scans/2220720_100819" + end;
-    std::string target_path_vertex = robo_dir + "003/scans/2220720_100819" + vertex + end;
+    std::string source_path_vertex = robo_dir + "001/scans/220720_095525_vertex.ply";
+    std::string target_path_vertex = robo_dir + "002/scans/220720_100202_vertex.ply";
+//    std::string target_path = robo_dir + "003/scans/2220720_100819" + end;
+//    std::string target_path_vertex = robo_dir + "003/scans/2220720_100819" + vertex + end;
 
 //    std::string source_path = robo_dir + "001/scans/reduced.ply";
 //    std::string target_path = robo_dir + "002/scans/reduced.ply";
@@ -336,12 +336,12 @@ int main() {
 //    std::string source_path = "/home/praktikum/robopraktikum/scans_test/test_pcl.ply";
 //    std::string target_path = "/home/praktikum/robopraktikum/scans_test/test_pcl_transformed.ply";
 
-    std::cout << "Convert ply header for Open3D (point to vertex)" << std::endl;
-//    int stat1 = pointtovertex(source_path, source_path);
-    int stat2 = pointtovertex(target_path, target_path_vertex);
+//    std::cout << "Convert ply header for Open3D (point to vertex)" << std::endl;
+//    int stat1 = pointtovertex(source_path, source_path_vertex);
+//    int stat2 = pointtovertex(target_path, target_path_vertex);
 
 //    workflowCorrespondences(source_path, target_path);
 //    workflowDirectlyWithISSAndDownSampling(source_path, target_path);
 //    workflowCorrespondencesAndDownSampling(source_path, target_path);
-    workflowCorrespondencesAndDownSamplingWithoutISS(source_path, target_path_vertex);
+    workflowCorrespondencesAndDownSamplingWithoutISS(source_path_vertex, target_path_vertex);
 }
