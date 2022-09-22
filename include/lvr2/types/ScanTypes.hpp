@@ -182,6 +182,8 @@ namespace lvr2
         /// Timestamp when this position was created
         double timestamp = 0.0;
 
+        double original_name = 6;
+
         //// META END
 
         //// HIERARCHY BEGIN

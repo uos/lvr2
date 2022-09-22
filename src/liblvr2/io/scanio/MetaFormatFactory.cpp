@@ -78,20 +78,6 @@ YAML::Node loadMetaInformation(const std::string &in)
         }
         return n;
     }
-//    else if (inPath.extension() == ".json")
-//    {
-//        YAML::Node n;
-//        boost::filesystem::path dir = inPath.parent_path();
-//        std::string filename = inPath.stem().string();
-//
-//        boost::filesystem::path posePath = dir / (filename + ".pose");
-//
-//
-//        ScanPosition sp;
-//
-//
-//        return n;
-//    }
 
     else if (inPath.extension() == ".slam6d")
     {

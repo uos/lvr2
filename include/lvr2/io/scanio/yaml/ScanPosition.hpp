@@ -31,6 +31,7 @@ struct convert<lvr2::ScanPosition>
         node["pose_estimation"] = scanPos.poseEstimation;
         node["transformation"] = scanPos.transformation;
         node["timestamp"] = scanPos.timestamp;
+        node["original_name"] = scanPos.original_name;
 
         if(scanPos.boundingBox)
         {
@@ -45,14 +46,28 @@ struct convert<lvr2::ScanPosition>
         // Check if 'entity' and 'type' Tags are valid
         // maybe checking for both is redundant because they are the same
         // but maybe this changes in the future, so just leave it like this
-//        if (!YAML_UTIL::ValidateEntityAndType(node,
-//            "scan_position",
-//            lvr2::ScanPosition::entity,
-//            lvr2::ScanPosition::type))
-//        {
-//            return false;
-//        }
-        
+/*        if (!YAML_UTIL::ValidateEntityAndType(node,
+            "scan_position",
+            lvr2::ScanPosition::entity,
+            lvr2::ScanPosition::type))
+        {
+            return false;
+        }*/
+        if(node["original_name"])
+        {
+            try {
+                scanPos.original_name = node["original_name"].as<double>();
+            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
+                std::cerr << "[YAML - ScanPosition - decode] ERROR: Could not decode 'original_name': "
+                          << node["original_name"] << " as Transformd" << std::endl;
+                return false;
+            }
+        } else {
+            scanPos.poseEstimation = lvr2::Transformd::Identity();
+        }
+
+
+
         if(node["pose_estimation"])
         {
             try {
