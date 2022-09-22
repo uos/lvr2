@@ -87,7 +87,7 @@ teaser::PointCloud convertToTeaserCloud(geometry::PointCloud cloud) {
 }
 
 Eigen::Matrix<double, 3, Eigen::Dynamic> convertToEigen(teaser::PointCloud cloud) {
-    std::cout << "converting to eigen3 Matrix... ";
+    std::cout << "converting to eigen3 Matrix... " << std::flush;
     int N = cloud.size();
     Eigen::Matrix<double, 3, Eigen::Dynamic> eigen(3, N);
     for (size_t i = 0; i < cloud.size(); ++i) {
@@ -95,7 +95,6 @@ Eigen::Matrix<double, 3, Eigen::Dynamic> convertToEigen(teaser::PointCloud cloud
     }
     std::cout << "- done." << std::endl;
     return eigen;
-
 }
 
 void solveTeaserWithoutCorrespondences(Eigen::Matrix<double, 3, Eigen::Dynamic> src_cloud, Eigen::Matrix<double, 3, Eigen::Dynamic> target_cloud) {
@@ -218,16 +217,17 @@ void workflowDirectlyWithISSAndDownSampling(std::string src_path, std::string ta
     geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
     geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
 
-    geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(0.1);
-    geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(0.1);
+    double voxel_size = 1.5;
+    geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(voxel_size);
+    geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(voxel_size);
     std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
     std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
 
 //    sampled_src_cloud.EstimateNormals();
 //    sampled_target_cloud.EstimateNormals();
 
-    geometry::PointCloud src_iss_cloud = computeISSPointClouds(sampled_src_cloud);
-    geometry::PointCloud target_iss_cloud = computeISSPointClouds(sampled_target_cloud);
+//    geometry::PointCloud src_iss_cloud = computeISSPointClouds(sampled_src_cloud);
+//    geometry::PointCloud target_iss_cloud = computeISSPointClouds(sampled_target_cloud);
 
 //    auto src_feature = computeFPFHs(src_iss_cloud);
 //    auto target_feature = computeFPFHs(target_iss_cloud);
@@ -238,12 +238,17 @@ void workflowDirectlyWithISSAndDownSampling(std::string src_path, std::string ta
 
 
     // convert Open3D cloud i
-    teaser::PointCloud src_teaser_cloud = convertToTeaserCloud(src_iss_cloud);
-    teaser::PointCloud target_teaser_cloud = convertToTeaserCloud(target_iss_cloud);
+    teaser::PointCloud src_teaser_cloud = convertToTeaserCloud(sampled_src_cloud);
+    teaser::PointCloud target_teaser_cloud = convertToTeaserCloud(sampled_target_cloud);
 
     // convert pointcloud to Eigen3 Matrix to use teaser::solver without correspondences
     Eigen::Matrix<double, 3, Eigen::Dynamic> src_eigen = convertToEigen(src_teaser_cloud);
     Eigen::Matrix<double, 3, Eigen::Dynamic> target_eigen = convertToEigen(target_teaser_cloud);
+
+//    for (int i = 0; i < 10; ++i) {
+//        src_eigen.[i];
+//
+//    }
 
     solveTeaserWithoutCorrespondences(src_eigen, target_eigen);
 }
@@ -312,10 +317,15 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
 int main() {
     // file paths
    std::string robo_dir = "/home/praktikum/data_robo/";
+   std::string end = ".ply";
+   std::string vertex = "_vertex";
 //    std::string source_path = robo_dir + "001/scans/220720_095525.ply";
 //    std::string target_path = robo_dir + "002/scans/220720_100202.ply";
-    std::string source_path = robo_dir + "001/scans/220720_095525_vertex.ply";
-    std::string target_path = robo_dir + "002/scans/220720_100202_vertex.ply";
+//    std::string source_path = robo_dir + "001/scans/220720_095525_vertex.ply";
+    std::string source_path = robo_dir + "002/scans/220720_100202" + vertex + end;
+    std::string target_path = robo_dir + "003/scans/2220720_100819" + end;
+    std::string target_path_vertex = robo_dir + "003/scans/2220720_100819" + vertex + end;
+
 //    std::string source_path = robo_dir + "001/scans/reduced.ply";
 //    std::string target_path = robo_dir + "002/scans/reduced.ply";
 //    std::string target_path = "/home/praktikum/robopraktikum/scans_test/003/scans/220720_100819.ply";
@@ -326,12 +336,12 @@ int main() {
 //    std::string source_path = "/home/praktikum/robopraktikum/scans_test/test_pcl.ply";
 //    std::string target_path = "/home/praktikum/robopraktikum/scans_test/test_pcl_transformed.ply";
 
-//    std::cout << "Convert ply header for Open3D (point to vertex)" << std::endl;
+    std::cout << "Convert ply header for Open3D (point to vertex)" << std::endl;
 //    int stat1 = pointtovertex(source_path, source_path);
-//    int stat2 = pointtovertex(target_path, target_path);
+    int stat2 = pointtovertex(target_path, target_path_vertex);
 
 //    workflowCorrespondences(source_path, target_path);
 //    workflowDirectlyWithISSAndDownSampling(source_path, target_path);
 //    workflowCorrespondencesAndDownSampling(source_path, target_path);
-    workflowCorrespondencesAndDownSamplingWithoutISS(source_path, target_path);
+    workflowCorrespondencesAndDownSamplingWithoutISS(source_path, target_path_vertex);
 }
