@@ -24,12 +24,20 @@ std::vector<std::pair<int, int>> MyMatching(
     std::vector<int> tmp_index(1);
     std::vector<double> tmp_distance2(1);
 
+
     std::cout << "forschleife: " << std::endl;
-    for (int i = 0; i < dst_features.data_.rows(); i++) {
+    for (int i = 0; i < dst_features.data_.cols(); i++) {
         src_tree.SearchKNN(Eigen::VectorXd(dst_features.data_.col(i)), 1, tmp_index, tmp_distance2);
-        if(i < 10) {
+        /*if(i < 10) {
            std::cout << "i: " << i << ", tmp_index: " << tmp_index[0] << std::endl;
+        }*/
+        if(i<1){
+            //std::cout << "First row: "<< dst_features.data_.row(i) << std::endl;
+            std::cout << "Size row: " << dst_features.data_.row(i).size() << std::endl;
+            std::cout << "Size col: " << dst_features.data_.col(i).size() << std::endl;
+
         }
+
 
         //insert the nearest neighbor from the i-th destination keypoint to a vector and a map
         const std::pair<int, int> p(i, tmp_index[0]);
@@ -38,21 +46,29 @@ std::vector<std::pair<int, int>> MyMatching(
     }
     std::vector<std::pair<int, int>> final_correspondo;
     //find the nearest neighbor for the i-th source keypoint
-    for (int j = 0; j < src_features.data_.rows(); j++) {
+    for (int j = 0; j < src_features.data_.cols(); j++) {
         dst_tree.SearchKNN(Eigen::VectorXd(src_features.data_.col(j)), 1, tmp_index, tmp_distance2);
-        if(j < 10) {
+        /*if(j < 10) {
             std::cout << "i: " << j << ", tmp_index: " << tmp_index[0] << std::endl;
-        }
+        }*/
         //write the indices to the final correspondences only if the correspondences are the same from src to dst
         //and vica versa
         const std::pair<int, int> p(tmp_index[0], j);
-        if(correspondo_map[j] == tmp_index[0]){
+        if (j < 10) {
+            std::cout << j << "-th Correspondo second " << (int) correspondo_map.find(j)->second << std::endl;
+            std::cout << j << "-th tmp_index " << (int) tmp_index[0] << std::endl;
+
+        }
+        auto map_iterator = correspondo_map.find(j);
+
+
+        if(map_iterator != correspondo_map.end() && (int) map_iterator->second == (int) tmp_index[0]){
             final_correspondo.push_back(p);
         }
-
-
     }
 
+
+    std::cout << "Final_correspondo size: " << final_correspondo.size() << std::endl;
     std::cout << "Pair vector: " << std::endl;
 
     for (int i = 0; i < 10; i++) {
