@@ -24,14 +24,13 @@ struct convert<lvr2::ScanPosition>
      * Encode Eigen matrix to yaml. 
      */
     static Node encode(const lvr2::ScanPosition& scanPos) {
-        Node node;
+        Node node =scanPos.metadata;
         
         node["entity"] = lvr2::ScanPosition::entity;
         node["type"] = lvr2::ScanPosition::type;
         node["pose_estimation"] = scanPos.poseEstimation;
         node["transformation"] = scanPos.transformation;
         node["timestamp"] = scanPos.timestamp;
-        node["original_name"] = scanPos.original_name;
 
         if(scanPos.boundingBox)
         {
@@ -46,25 +45,20 @@ struct convert<lvr2::ScanPosition>
         // Check if 'entity' and 'type' Tags are valid
         // maybe checking for both is redundant because they are the same
         // but maybe this changes in the future, so just leave it like this
-/*        if (!YAML_UTIL::ValidateEntityAndType(node,
+    /*    if (!YAML_UTIL::ValidateEntityAndType(node,
             "scan_position",
             lvr2::ScanPosition::entity,
             lvr2::ScanPosition::type))
         {
             return false;
-        }*/
-        if(node["original_name"])
-        {
-            try {
-                scanPos.original_name = node["original_name"].as<double>();
-            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
-                std::cerr << "[YAML - ScanPosition - decode] ERROR: Could not decode 'original_name': "
-                          << node["original_name"] << " as Transformd" << std::endl;
-                return false;
-            }
-        } else {
-            scanPos.poseEstimation = lvr2::Transformd::Identity();
         }
+*/
+
+
+
+        Node parsed_node=node;
+
+
 
 
 
@@ -117,6 +111,8 @@ struct convert<lvr2::ScanPosition>
                 return false;
             }
         }
+        scanPos.metadata= parsed_node;
+
 
         return true;
     }

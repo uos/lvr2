@@ -25,7 +25,7 @@ set(LVR2_SOURCES
     algorithm/pmp/SurfaceNormals.cpp
 
 
-    /home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux/interface/cpp/riegl/rdb.cpp
+    /home/praktikum/RDB-lib/rdblib-2.4.0-x86_64-linux/interface/cpp/riegl/rdb.cpp
 
     algorithm/pmp/SurfaceSimplification.cpp
     algorithm/pmp/SurfaceTriangulation.cpp
@@ -109,9 +109,11 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
-    io/modelio/RdbxIO.cpp #../../include/lvr2/io/modelio/RdbxIO.hpp
+        io/kernels/DirectoryKernel.cpp
+
+        io/modelio/RdbxIO.cpp #../../include/lvr2/io/modelio/RdbxIO.hpp
     io/schema/ScanProjectSchemaRdbx.cpp #../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp
-)
+        )
 
 #####################################################################################
 # Add PCD io if PCL is installed
@@ -203,8 +205,10 @@ endif(UNIX)
 
 add_library(lvr2core OBJECT ${LVR2_SOURCES})
 
+
 if(WITH_3DTILES)
     add_dependencies(lvr2core cesium-native)
+
 endif(WITH_3DTILES)
 
 #####################################################################################
@@ -217,6 +221,7 @@ target_link_libraries(
   lvr2_static 
   ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
   ${LVR2_LIB_DEPENDENCIES}
+
 )
 
 

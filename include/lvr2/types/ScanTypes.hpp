@@ -69,11 +69,13 @@ namespace lvr2
 
     struct BaseEntity {
         YAML::Node metadata;
+
     };
 
     struct ScanProjectEntity: public BaseEntity
     {
         static constexpr char entity[] = "scan_project";
+
     };
 
     struct ScanPositionEntity: public BaseEntity

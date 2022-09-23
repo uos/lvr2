@@ -15,11 +15,11 @@ namespace lvr2
 {
 
     class ScanProjectSchemaRdbx : public DirectorySchema
-            {
-            public:
-                ScanProjectSchemaRdbx(const std::string& rootDir) : DirectorySchema( rootDir){};
-                ~ScanProjectSchemaRdbx() = default;
-                virtual Description scanProject() const;
+    {
+        public:
+        ScanProjectSchemaRdbx(const std::string& rootDir) : DirectorySchema( rootDir), dir_{rootDir}{};
+        ~ScanProjectSchemaRdbx() = default;
+        virtual Description scanProject() const;
 
 
 
@@ -77,9 +77,8 @@ namespace lvr2
                 const size_t& camNo,
                 const size_t& panoNo,
                 const size_t& channelNo) const;
-
-
-
+        private:
+        const std::string& dir_;
 
     };
 
