@@ -87,6 +87,7 @@ set(LVR2_SOURCES
     registration/GraphSLAM.cpp
     registration/OctreeReduction.cpp
     registration/RegistrationPipeline.cpp
+    registration/FPFH.cpp
     types/CustomChannelTypes.cpp
     types/MeshBuffer.cpp
     types/PolygonBuffer.cpp

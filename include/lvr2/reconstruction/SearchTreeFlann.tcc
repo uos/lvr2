@@ -33,7 +33,6 @@
  */
 
 #include "lvr2/reconstruction/SearchTreeFlann.hpp"
-
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/util/Panic.hpp"
 
@@ -100,8 +99,7 @@ int SearchTreeFlann<BaseVecT>::radiusSearch(
     vector<CoordT>& distances
 ) const
 {
-    //panic_unimplemented("radiusSearch() is not implemented for FLANN yet");
-
+   
     CoordT point[3] = { qp.x, qp.y, qp.z };
     flann::Matrix<CoordT> query_point(point, 1, 3);
 

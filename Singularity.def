@@ -3,20 +3,23 @@ From: ubuntu:20.04
 
 %post
 export DEBIAN_FRONTEND=noninteractive
+export NPROC=$(nproc)
 apt-get update
 apt-get install -y software-properties-common
 add-apt-repository universe
 apt-get update
-apt-get -y install build-essential cmake git cmake-curses-gui libflann-dev libgsl-dev libeigen3-dev libopenmpi-dev openmpi-bin opencl-c-headers ocl-icd-opencl-dev libvtk7-dev libvtk7-qt-dev libboost-all-dev freeglut3-dev libhdf5-dev qtbase5-dev qt5-default libqt5opengl5-dev liblz4-dev libopencv-dev libyaml-cpp-dev libtbb-dev 
+apt-get -y install build-essential cmake git coreutils cmake-curses-gui libflann-dev libgsl-dev libeigen3-dev libopenmpi-dev openmpi-bin opencl-c-headers ocl-icd-opencl-dev libvtk7-dev libvtk7-qt-dev libboost-all-dev freeglut3-dev libhdf5-dev qtbase5-dev qt5-default libqt5opengl5-dev liblz4-dev libopencv-dev libyaml-cpp-dev libtbb-dev 
 
 git clone https://github.com/embree/embree.git embree
 cd embree
 mkdir build
 cd build
 cmake -DEMBREE_TUTORIALS=OFF -DEMBREE_ISPC_SUPPORT=OFF ..
-make -j24
+make -j $NPROC
 make install
 cd ..
+rm -r build
+cd /
 
 git clone https://gitlab.informatik.uni-osnabrueck.de/Las_Vegas_Reconstruction/Develop.git lvr
 cd lvr
@@ -25,9 +28,11 @@ git checkout develop
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j24
+make -j $NPROC
 make install
 cd ..
+rm -r build
+cd /
 
 %environment
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
