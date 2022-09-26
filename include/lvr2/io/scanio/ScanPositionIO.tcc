@@ -103,7 +103,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
         {
             return ret;
         }
-
+        meta["original_name"]=scanPosNo;
         try {
 
             ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());

@@ -12,10 +12,10 @@ get_filename_component(RDB_ROOT_DIR ${_IMPORT_PREFIX}/ DIRECTORY)
 get_filename_component(RDB_ROOT_DIR ${RDB_ROOT_DIR}/ DIRECTORY)
 
 # Set draco_INCLUDE_DIRS
-find_path(RDB_INCLUDE_DIRS NAMES "riegl/rdb.hpp" HINTS "/usr/include/ /usr/local/incude/")
+find_path(RDB_INCLUDE_DIRS NAMES "riegl/rdb.hpp" HINTS "/usr/include/ /usr/local/include/")
 
 find_library(RDB_LIBRARY_IMPORT NAMES rdb.dll librdb.dylib librdb.so)
-get_filename_component(RDB_LIBRARY_DIRS ${RDB_LIBRARIES} DIRECTORY)
+get_filename_component(RDB_LIBRARY_DIRS ${RDB_LIBRARY_IMPORT} DIRECTORY)
 
 # create imported target rdbc
 if(TARGET rdbc)

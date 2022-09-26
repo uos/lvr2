@@ -50,20 +50,6 @@ namespace lvr2 {
         d.metaRoot = d.dataRoot;
         d.meta = "final.pose";
 
-        std::string dir = dir_;
-
-//        //cool wäre zu verhindern das orginal_name zu oft geschriben wird
-//        if(std::filesystem::exists(dir + "/" + *d.metaRoot + "/" + *d.meta)) {
-//            boost::property_tree::ptree pt;
-//            boost::property_tree::read_json(dir + "/" + *d.metaRoot + "/" + *d.meta, pt);
-//            auto toIt = pt.find("orginal_name");
-//            if (toIt == pt.not_found()) {
-//
-//
-//                pt.add("orginal_name", *d.metaRoot);
-//                boost::property_tree::json_parser::write_json(dir + "/" + *d.metaRoot + "/" + *d.meta, pt);
-//            }
-//        }
 
         return d;
     }
@@ -89,7 +75,6 @@ namespace lvr2 {
             const size_t& scanPosNo,
             const size_t& camNo) const
     {
-        Description dp = scanProject();
         Description d;
 
         if(camNo == 0)
@@ -150,6 +135,8 @@ namespace lvr2 {
     {
         Description d;
 
+
+
         return d;
     }
 
@@ -170,7 +157,7 @@ namespace lvr2 {
         std::vector<std::string> matching_files;
         boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
         std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0"+to_string(cameraImageNos.front()+1)+"_([0-9])+\\.jpg" );
-        //std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.scn" );
+
 
         for( boost::filesystem::directory_iterator i( path ); i != end_itr; ++i ) {
             // Skip if not a file
