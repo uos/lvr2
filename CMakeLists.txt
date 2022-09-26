@@ -81,20 +81,26 @@ endif(MSVC)
 
 
 # das hier muss verändert werden damit es läuft WICHTIG !!!!!
-set (rdb_ROOT_DIR "/home/kyrill/Uni/Robotik_Prog_Praktikum/rdblib-2.4.0-x86_64-linux"
-        CACHE PATH "path to RDB ROOT directory ")
-set(rdb_DIR "${rdb_ROOT_DIR}/interface/cpp")
+#set (rdb_ROOT_DIR "/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux"
+#        CACHE PATH "path to RDB ROOT directory ")
+#set(rdb_DIR "${rdb_ROOT_DIR}/interface/cpp")
 
-find_package(rdb 2.4.0 REQUIRED)
-
+find_package(RDB REQUIRED)
 
 #set(RDB_LIB_DIR "${rdb_ROOT_DIR}/library")
 #set(RDB_INCLUDE_C_DIR "${rdb_ROOT_DIR}/interface/c")
 #set(RDB_INCLUDE_CPP_DIR "${rdb_ROOT_DIR}/interface/cpp")
+if(RDB_FOUND)
+    include_directories(${RDB_INCLUDE_DIRS})
+    message(STATUS "Found LibRDB at ${RDB_INCLUDE_DIRS}, ${RDB_LIBRARIES}.")
 
-include_directories(${RDB_INCLUDE_C_DIR})
-include_directories(${RDB_INCLUDE_CPP_DIR})
-
+    # TODO: Should we really do this?
+    install(TARGETS rdbcpp
+            EXPORT lvr2Targets
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            )
+endif()
 
 
 #------------------------------------------------------------------------------
@@ -669,9 +675,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${OpenMP_CXX_LIBRARIES}
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     m
-    ${RDB_LIB_DIR}/librdb.so
-    #${rdb_ROOT_DIR}/library/librdb.so
-
+    ${RDB_LIBRARIES}
     )
 endif()
 

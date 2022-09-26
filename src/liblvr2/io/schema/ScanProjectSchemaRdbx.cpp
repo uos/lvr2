@@ -52,22 +52,18 @@ namespace lvr2 {
 
         std::string dir = dir_;
 
-        //cool wäre zu verhindern das orginal_name zu oft geschriben wird
-        if(std::filesystem::exists(dir + "/" + *d.metaRoot + "/" + *d.meta)) {
-            boost::property_tree::ptree pt;
-            boost::property_tree::read_json(dir + "/" + *d.metaRoot + "/" + *d.meta, pt);
-            auto toIt = pt.find("orginal_name");
-            if (toIt == pt.not_found()) {
-
-
-                pt.add("orginal_name", *d.metaRoot);
-                boost::property_tree::json_parser::write_json(dir + "/" + *d.metaRoot + "/" + *d.meta, pt);
-            }
-            }
-
-
-
-
+//        //cool wäre zu verhindern das orginal_name zu oft geschriben wird
+//        if(std::filesystem::exists(dir + "/" + *d.metaRoot + "/" + *d.meta)) {
+//            boost::property_tree::ptree pt;
+//            boost::property_tree::read_json(dir + "/" + *d.metaRoot + "/" + *d.meta, pt);
+//            auto toIt = pt.find("orginal_name");
+//            if (toIt == pt.not_found()) {
+//
+//
+//                pt.add("orginal_name", *d.metaRoot);
+//                boost::property_tree::json_parser::write_json(dir + "/" + *d.metaRoot + "/" + *d.meta, pt);
+//            }
+//        }
 
         return d;
     }
@@ -153,11 +149,7 @@ namespace lvr2 {
             const std::string& channelName) const
     {
         Description d;
-        std::stringstream tmp_stream;
-        tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
-        d.dataRoot = tmp_stream.str();
-        d.metaRoot = d.dataRoot;
-        d.meta = "final.pose";
+
         return d;
     }
 
