@@ -293,9 +293,6 @@ namespace lvr2
             std::vector<std::array<double, 3> > bufferCoordinates(BUFFER_SIZE);
             std::vector<float> bufferReflectance(BUFFER_SIZE);
 
-            // Select query with empty filter to get all Points, only used to count all Points
-            riegl::rdb::pointcloud::QuerySelect countselect = rdb.select("");
-
             // Second select query with empty filter to get all Points, used to fill Buffers
             riegl::rdb::pointcloud::QuerySelect select = rdb.select("");
 
@@ -305,7 +302,6 @@ namespace lvr2
 
             // Get total number of Points
             uint32_t numPoints = root.pointCountTotal ;
-
 
             // Binding Buffers to the select query, so they get filled on select.next()
             using namespace riegl::rdb::pointcloud;

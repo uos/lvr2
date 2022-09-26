@@ -10,9 +10,9 @@ bool ScanPositionIO< BaseIO>::save(
     ScanPositionPtr scanPositionPtr) const
 {
     Description d = m_baseIO->m_description->position(scanPosNo);
-  
-    // std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
-    // std::cout << d << std::endl;
+
+    std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
+    std::cout << d << std::endl;
 
     if(!d.dataRoot)
     {
