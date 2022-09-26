@@ -19,6 +19,9 @@ namespace lvr2
     {
     public:
         RdbxIO();
+
+        explicit RdbxIO(const std::vector<std::string>& attributes);
+
         ~RdbxIO();
 
         /**
@@ -64,6 +67,7 @@ namespace lvr2
         std::vector<float> m_reflectance;
         std::vector<std::array<uint8_t, 4>> m_rgb;
         std::vector<uint16_t> m_class;
+        std::unordered_set<std::string> m_attributes;
     };
 
 } // lvr2

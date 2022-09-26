@@ -8,7 +8,7 @@
 #include <riegl/rdb.hpp>
 #include <riegl/rdb/default.hpp>
 
-
+#include <algorithm>
 #include <iomanip>
 #include <array>
 #include <vector>
@@ -23,6 +23,11 @@ namespace lvr2
     {
 
     }
+
+    RdbxIO::RdbxIO(const std::vector<std::string>& attributes) {
+        m_attributes.insert(attributes.begin(), attributes.end());
+    }
+
     RdbxIO::~RdbxIO()
     {
 
@@ -288,10 +293,96 @@ namespace lvr2
             riegl::rdb::pointcloud::OpenSettings settings;
             rdb.open(filename, settings);
 
+            // Boolean Variables to check for Attributes
+            bool hasColours = false;
+            bool hasReflectance = false;
+            bool hasAmplitude = false;
+            bool hasDeviation = false;
+            bool hasMta_zone= false;
+            bool hasMta_unresolved = false;
+            bool hasTarget_index = false;
+            bool hasTarget_count = false;
+
+            // If no specific input is given, we try to load all attributes
+            if(m_attributes.empty()){
+                hasColours =true;
+                hasReflectance = true;
+                hasAmplitude = true;
+                hasDeviation= true;
+                hasMta_zone = true;
+                hasMta_unresolved = true;
+                hasTarget_count = true;
+                hasTarget_index = true;
+            }
+
+            // If specific input is given, we only try to load the given attributes
+            else{
+                if(m_attributes.find("riegl.rgba")!= m_attributes.end()){
+                    hasColours = true;
+                }
+                if(m_attributes.find("riegl.reflectance")!= m_attributes.end()){
+                    hasReflectance = true;
+                }
+                if(m_attributes.find("riegl.amplitude")!= m_attributes.end()){
+                    hasAmplitude = true;
+                }
+                if(m_attributes.find("riegl.deviation")!= m_attributes.end()){
+                    hasDeviation = true;
+                }
+                if(m_attributes.find("riegl.mta_zone")!=m_attributes.end()){
+                    hasMta_zone = true;
+                }
+                if(m_attributes.find("riegl.mta_unresolved")!= m_attributes.end()){
+                    hasMta_unresolved = true;
+                }
+                if(m_attributes.find("riegl.target_index")!= m_attributes.end()){
+                    hasTarget_index = true;
+                }
+                if(m_attributes.find("riegl.target_count")!= m_attributes.end()){
+                    hasTarget_count = true;
+                }
+            }
+
+            // Get list of point attributes
+            std::vector<std::string> attributes = rdb.pointAttribute().list();
+
+            // Check all attributes for availability
+            if(!(std::find(attributes.begin(), attributes.end(), "riegl.rgba")!=attributes.end())){
+                hasColours = false;
+            }
+            if(!(std::find(attributes.begin(), attributes.end(), "riegl.reflectance")!=attributes.end())){
+                hasReflectance = false;
+            }
+            if(!(std::find(attributes.begin(), attributes.end(), "riegl.amplitude")!=attributes.end())){
+                hasAmplitude = false;
+            }
+            if(!(std::find(attributes.begin(), attributes.end(), "riegl.deviation")!=attributes.end())){
+                hasDeviation = false;
+            }
+            if(!(std::find(attributes.begin(), attributes.end(), "riegl.mta_zone")!=attributes.end())){
+                hasMta_zone = false;
+            }
+            if(!(std::find(attributes.begin(), attributes.end(), "riegl.mta_unresolved")!=attributes.end())){
+                hasMta_unresolved = false;
+            }
+            if(!(std::find(attributes.begin(), attributes.end(), "riegl.target_index")!=attributes.end())){
+                hasTarget_index= false;
+            }
+            if(!(std::find(attributes.begin(), attributes.end(), "riegl.target_count")!=attributes.end())){
+                hasTarget_counta = false;
+            }
+
             // Prepare point attribute buffers
             static const uint32_t BUFFER_SIZE = 10000;
-            std::vector<std::array<double, 3> > bufferCoordinates(BUFFER_SIZE);
-            std::vector<float> bufferReflectance(BUFFER_SIZE);
+            std::vector< std::array<float, 3> >    bufferCoordinates   (BUFFER_SIZE);         //std::vector<unsigned char> bufferCoordinates(BUFFER_SIZE * sizeof(float) * 3);
+            std::vector< std::array<uint8_t, 4> >   bufferTrueColor     (BUFFER_SIZE);
+            std::vector< float >                    bufferReflectance   (BUFFER_SIZE);         //std::vector<unsigned char> bufferReflectance(BUFFER_SIZE * sizeof(float));
+            std::vector< float >                    bufferAmplitude     (BUFFER_SIZE);
+            std::vector< float >                    bufferDeviation     (BUFFER_SIZE);
+            std::vector< uint8_t >                  bufferMta_zone      (BUFFER_SIZE);
+            std::vector< uint8_t >                  bufferMta_unresolved(BUFFER_SIZE);
+            std::vector< uint8_t >                  bufferTarget_index  (BUFFER_SIZE);
+            std::vector< uint8_t >                  bufferTarget_count  (BUFFER_SIZE);
 
             // Second select query with empty filter to get all Points, used to fill Buffers
             riegl::rdb::pointcloud::QuerySelect select = rdb.select("");
@@ -304,42 +395,118 @@ namespace lvr2
             uint32_t numPoints = root.pointCountTotal ;
 
             // Binding Buffers to the select query, so they get filled on select.next()
+            // All but Coordinates only get bound if they are selected/available
             using namespace riegl::rdb::pointcloud;
+
+            // binding coordinates buffer ad allocating memory
             select.bindBuffer(RDB_RIEGL_XYZ,         bufferCoordinates);
-            select.bindBuffer(RDB_RIEGL_REFLECTANCE, bufferReflectance);
+            pointBuffer->setPointArray(floatArr(new float[ numPoints *3]), numPoints);
+
+            // for every wanted attribute we bind the buffer and allocate memory
+            if(hasColours){
+                select.bindBuffer(RDB_RIEGL_RGBA,       bufferTrueColor);
+                pointBuffer->setColorArray(ucharArr(new unsigned char[4*numPoints]), numPoints, 4); // width = 4 since we expect rgba data
+            }
+            if(hasReflectance){
+                select.bindBuffer(RDB_RIEGL_REFLECTANCE,bufferReflectance);
+                pointBuffer->addFloatChannel( floatArr(new float[numPoints]), "intensities", numPoints, 1);
+            }
+            if(hasAmplitude){
+                select.bindBuffer(RDB_RIEGL_AMPLITUDE,  bufferAmplitude);
+                pointBuffer->addFloatChannel( floatArr(new float[numPoints]), "amplitude", numPoints, 1);
+            }
+            if(hasDeviation){
+                select.bindBuffer(RDB_RIEGL_DEVIATION, bufferDeviation);
+                pointBuffer->addFloatChannel( floatArr(new float[numPoints]), "deviation", numPoints, 1);
+            }
+            if(hasMta_zone){
+                select.bindBuffer(RDB_RIEGL_MTA_ZONE, bufferMta_zone);
+                pointBuffer->addUCharChannel( ucharArr (new unsigned char[numPoints]), "mta_zone", numPoints, 1);
+            }
+            if(hasMta_unresolved){
+                select.bindBuffer(RDB_RIEGL_MTA_UNRESOLVED, bufferMta_unresolved);
+                pointBuffer->addUCharChannel( ucharArr (new unsigned char[numPoints]), "mta_unresolved", numPoints, 1);
+            }
+            if(hasTarget_index){
+                select.bindBuffer(RDB_RIEGL_TARGET_INDEX, bufferTarget_index);
+                pointBuffer->addUCharChannel( ucharArr (new unsigned char[numPoints]), "target_index", numPoints, 1);
+            }
+            if(hasTarget_count){
+                select.bindBuffer(RDB_RIEGL_TARGET_COUNT, bufferTarget_count);
+                pointBuffer->addUCharChannel( ucharArr (new unsigned char[numPoints]), "target_count", numPoints, 1);
+            }
+
+
+            //select.bind(RDB_RIEGL_XYZ, FLOAT32, bufferCoordinates.data(), sizeof(float) * 3);
+            //select.bindBuffer(RDB_RIEGL_REFLECTANCE, bufferReflectance);
+            //select.bind(RDB_RIEGL_REFLECTANCE, FLOAT32, bufferReflectance.data(), sizeof(float));
+
 
             // arrays to store point coordinates and their reflectance
-            float *pointArray = new float[3 * numPoints];
-            float *intensitiesArray = new float[numPoints];
+            //float *pointArray = new float[3 * numPoints];
+            //float *intensitiesArray = new float[numPoints];
+
+//            std::vector<DataType> my_dtypes = {FLOAT32, FLOAT32};
+//            std::vector<int> my_sizes = {3, 1};
+//
+//            std::vector<std::string> my_attributes = {"points", "intensities"};
+
+//            pointBuffer->setPointArray()
+//
+//            lvr2::Channel<float> foo(10, 3);
+
 
             // variable to keep track of current point,
             // since i in following for loop is reset after BUFFER_SIZE=10000 steps
             uint32_t currPoint = 0;
 
-            // calling select.next() to fill Buffers, and then store all loaded points in our arrays
-            // 10.000 Points are loaded at the same time, we decided on this number because more will often cause problems while execution
+
+//                std::cout << "Auf Alexander Mocks Wunsch kommt hier ein Hinweis: \n\n"
+//                             "Es wird grade versucht Farben aus einem Rdbx File zu Lesen, diese Funktion ist ungetestet und vermutlich Fehlerhaft!\n"
+//                             "Diese Zeilenausgabe steht in /src/liblvr2/io/modelio/RdbxIO.cpp \n"
+//                             "Entschuldigt die Umstände \nLG Kyrill v. Toll" << std::endl;
+
+
+
+
+
+
+            // calling select.next() to fill Buffers, and then memcopy into the prepared Buffer Channels.
             while (const uint32_t count = select.next(BUFFER_SIZE)) {
-                for (uint32_t i = 0; i < count; i++) {
-                    // filling arrays with data from rdbx file
-                    pointArray[3 * currPoint] = bufferCoordinates[i][0];
-                    pointArray[3 * currPoint + 1] = bufferCoordinates[i][1];
-                    pointArray[3 * currPoint + 2] = bufferCoordinates[i][2];
-                    intensitiesArray[currPoint] = bufferReflectance[i];
-                    ++currPoint;
+
+                memcpy(pointBuffer->getPointArray().get() + currPoint * 3, bufferCoordinates.data(), count * sizeof(float) * 3);
+
+                if(hasColours){
+                    size_t width = 4;
+                    memcpy(pointBuffer->getColorArray(width).get()+currPoint * 4, bufferTrueColor.data(), count * sizeof(float) * 4);
                 }
+                if(hasReflectance) {
+                    memcpy(pointBuffer->get<float>("intensities").dataPtr().get() + currPoint, bufferReflectance.data(), count * sizeof(float));
+                }
+                if(hasAmplitude) {
+                    memcpy(pointBuffer->get<float>("amplitude").dataPtr().get() + currPoint, bufferAmplitude.data(), count * sizeof(float));
+                }
+                if(hasDeviation) {
+                    memcpy(pointBuffer->get<float>("deviation").dataPtr().get() + currPoint, bufferDeviation.data(), count * sizeof(float));
+                }
+                if(hasMta_zone){
+                    memcpy(pointBuffer->get<unsigned char>("mta_zone").dataPtr().get() + currPoint, bufferMta_zone.data(), count * sizeof(unsigned char));
+                }
+                if(hasMta_unresolved){
+                    memcpy(pointBuffer->get<unsigned char>("mta_unresolved").dataPtr().get() + currPoint, bufferMta_unresolved.data(), count * sizeof(unsigned char));
+                }
+                if(hasTarget_index){
+                    memcpy(pointBuffer->get<unsigned char>("target_index").dataPtr().get() + currPoint, bufferTarget_index.data(), count * sizeof(unsigned char));
+                }
+                if(hasTarget_count){
+                    memcpy(pointBuffer->get<unsigned char>("target_count").dataPtr().get() + currPoint, bufferTarget_count.data(), count * sizeof(unsigned char));
+                }
+
+                currPoint += count;
+
             }
 
             select.close();
-
-            // parsing float Arrays to floatArr
-            floatArr parr(pointArray);
-            floatArr iarr(intensitiesArray);
-
-            // filling PointBuffer with data
-            pointBuffer->setPointArray(parr, numPoints);    //versuchen die Anzahl punkte aus dem Pointbuffer zu lesen
-
-            // passing reflectance as intensities
-            pointBuffer->addFloatChannel(iarr, "intensities", numPoints, 1);
 
             // adding pointBuffer to model
             model->m_pointCloud = pointBuffer;
@@ -360,4 +527,4 @@ namespace lvr2
 
     }
 
-} // lvr2
+}
