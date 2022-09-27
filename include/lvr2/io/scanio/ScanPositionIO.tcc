@@ -26,7 +26,7 @@ bool ScanPositionIO< BaseIO>::save(
     }
 
     // Save all lidar sensors
-    cout <<scanPositionPtr->lidars.size()<< endl;
+    //cout <<scanPositionPtr->lidars.size()<< endl;
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
     {
 
