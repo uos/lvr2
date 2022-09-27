@@ -13,21 +13,15 @@ using namespace lvr2::scanio;
 
 int main(int argc, char** argv)
 {
-    std::string dir_in("/home/kyrill/Uni/Robotik_Prog_Praktikum/chemnitz_2022-07-19.PROJ");
+    std::string dir_in("/home/praktikum/Desktop/chemnitz_2022-07-19.PROJ");
 
     DirectoryKernelPtr kernel_in(new DirectoryKernel(dir_in));
     DirectorySchemaPtr schema_in(new ScanProjectSchemaRdbx(dir_in));
     DirectoryIO dirio_in(kernel_in, schema_in);
 
     auto scanProject = dirio_in.ScanProjectIO::load();
-    //auto scanPosition = dirio_in.loadScanPosition(1);
-    //auto scan = dirio_in.loadScan(1, 0, 0);
 
-    //scan->points_loader();
-
-    //std::cout << scan->points->numPoints() << std::endl;
-
-    std::string dir_out("/home/kyrill/Uni/Robotik_Prog_Praktikum/Test/ScanProject");
+    std::string dir_out("/home/praktikum/Desktop/Schematest");
 
     DirectoryKernelPtr kernel_out(new DirectoryKernel(dir_out));
     DirectorySchemaPtr schema_out(new ScanProjectSchemaRawPly(dir_out));

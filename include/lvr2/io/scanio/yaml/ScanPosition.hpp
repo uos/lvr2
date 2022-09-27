@@ -24,14 +24,15 @@ struct convert<lvr2::ScanPosition>
      * Encode Eigen matrix to yaml. 
      */
     static Node encode(const lvr2::ScanPosition& scanPos) {
-        Node node =scanPos.metadata;
+        Node node = scanPos.metadata;
         
         node["entity"] = lvr2::ScanPosition::entity;
         node["type"] = lvr2::ScanPosition::type;
         node["pose_estimation"] = scanPos.poseEstimation;
         node["transformation"] = scanPos.transformation;
         node["timestamp"] = scanPos.timestamp;
-        node["original_name"] =scanPos.original_name;
+        node["original_name"] = scanPos.original_name;
+
         if(scanPos.boundingBox)
         {
             node["aabb"] = *scanPos.boundingBox;
@@ -60,11 +61,12 @@ struct convert<lvr2::ScanPosition>
                 scanPos.original_name = node["original_name"].as<double>();
             } catch(const YAML::TypedBadConversion<double>& ex) {
                 std::cerr << "[YAML - ScanPosition - decode] ERROR: Could not decode 'orginal_name': "
-                          << node["original_name"] << " as Transformd" << std::endl;
+                          << node["original_name"] << " as double" << std::endl;
                 return false;
             }
         } else {
-            scanPos.original_name = 12;
+            // TODO: was soll hier gespeichert werden
+            scanPos.original_name = 0;
         }
 
 

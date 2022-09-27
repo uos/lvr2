@@ -103,7 +103,11 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
         {
             return ret;
         }
-        meta["original_name"]=scanPosNo;
+
+        // -1 because it somehow writes scanPosNo + 1 into the meta.yaml
+        // even though the debugger says scanPosNo is the right number
+        meta["original_name"] = scanPosNo - 1;
+
         try {
 
             ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());

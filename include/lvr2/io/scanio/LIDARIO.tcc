@@ -12,7 +12,7 @@ void LIDARIO<BaseIO>::save(
     auto Dgen = m_baseIO->m_description;
     Description d = Dgen->lidar(scanPosNo, lidarNo);
 
-    std::cout << "LIDARIO - save data " << std::endl;
+    //std::cout << "LIDARIO - save data " << std::endl;
     // Save data
     for(size_t scanNo = 0; scanNo < lidar->scans.size(); scanNo++)
     {
@@ -45,7 +45,7 @@ LIDARPtr LIDARIO<BaseIO>::load(
     const size_t& scanPosNo,
     const size_t& lidarNo) const
 {
-    std::cout << "LIDARIO - save data " << std::endl;
+    //std::cout << "LIDARIO - save data " << std::endl;
 
     LIDARPtr ret;
 

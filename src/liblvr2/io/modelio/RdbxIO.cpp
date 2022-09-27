@@ -42,6 +42,7 @@ namespace lvr2
      */
     void RdbxIO::save(string filename)
     {
+        // Actually not needed since no one wants .rbdx files
         /** // checks for validity
         if (!m_model)
         {

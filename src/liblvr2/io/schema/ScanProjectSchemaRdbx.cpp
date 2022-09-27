@@ -54,7 +54,6 @@ namespace lvr2 {
         return d;
     }
 
-    //Lidar nur daten, den rest in scan machen
     Description ScanProjectSchemaRdbx::lidar(
             const size_t& scanPosNo,
             const size_t& lidarNo) const
@@ -97,14 +96,12 @@ namespace lvr2 {
         auto path = m_rootPath / dp.dataRoot.get() / "scans";
         Description d;
 
-        //d.metaRoot= "";//*dp.dataRoot + "scans";
         struct dirent *ent;
 
         std::vector<std::string> matching_files;
-        boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
+        boost::filesystem::directory_iterator end_itr;
 
         std::regex rxRDBX("([0-9]+)\\_([0-9]+)\\.rdbx" );
-        //std::regex rxSCN("([0-9]+)\\_([0-9]+)\\.scn" );
 
         for( boost::filesystem::directory_iterator i( path ); i != end_itr; ++i ) {
             // Skip if not a file
@@ -122,8 +119,6 @@ namespace lvr2 {
             d.dataRoot= *dp.dataRoot + "/scans";
             d.metaRoot= d.dataRoot;
         }
-
-        std::cout << d.meta << " " << d.data<< std::endl;
         return d;
     }
 
@@ -140,7 +135,6 @@ namespace lvr2 {
         return d;
     }
 
-    //Unterschied zu Camera ????
     Description ScanProjectSchemaRdbx::cameraImage(
             const size_t& scanPosNo,
             const size_t& camNo,
@@ -151,11 +145,10 @@ namespace lvr2 {
         auto path = m_rootPath / dp.dataRoot.get() / "images";
         Description d;
 
-        //d.metaRoot= "";//*dp.dataRoot + "scans";
         struct dirent *ent;
 
         std::vector<std::string> matching_files;
-        boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
+        boost::filesystem::directory_iterator end_itr;
         std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0"+to_string(cameraImageNos.front()+1)+"_([0-9])+\\.jpg" );
 
 
@@ -176,8 +169,6 @@ namespace lvr2 {
             d.metaRoot= d.dataRoot;
         }
 
-
-        std::cout << d.meta << " " << d.data<< std::endl;
         return d;
     }
 
