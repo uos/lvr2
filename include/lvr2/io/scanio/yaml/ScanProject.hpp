@@ -45,6 +45,8 @@ struct convert<lvr2::ScanProject>
 
     static bool decode(const Node& node, lvr2::ScanProject& scanProj) 
     {
+
+        //Auskommentiert durch die RDBX Gruppe
         // Check if 'entity' and 'type' Tags are valid
 //        if (!YAML_UTIL::ValidateEntityAndType(node,
 //            "scan_project",
@@ -53,7 +55,6 @@ struct convert<lvr2::ScanProject>
 //        {
 //            return false;
 //        }
-
         if(node["transformation"])
         {
             try {
@@ -66,7 +67,6 @@ struct convert<lvr2::ScanProject>
         }  else {
             scanProj.transformation  = lvr2::Transformd::Identity();
         }
-      
         if(node["crs"])
         {
             try {

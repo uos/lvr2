@@ -43,6 +43,7 @@ struct convert<lvr2::ScanPosition>
 
     static bool decode(const Node& node, lvr2::ScanPosition& scanPos) 
     {
+        //Auskommentiert von der RDBX Gruppe
         // Check if 'entity' and 'type' Tags are valid
         // maybe checking for both is redundant because they are the same
         // but maybe this changes in the future, so just leave it like this
@@ -66,7 +67,7 @@ struct convert<lvr2::ScanPosition>
             }
         } else {
             // TODO: was soll hier gespeichert werden
-            scanPos.original_name = 0;
+            scanPos.original_name = -1;
         }
 
 

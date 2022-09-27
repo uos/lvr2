@@ -119,7 +119,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
 
         }
 
-        // std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
+
         ret->positions.push_back(scanPos);
         scanPosNo++;
     }

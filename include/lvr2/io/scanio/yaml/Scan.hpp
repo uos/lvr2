@@ -64,6 +64,7 @@ struct convert<lvr2::Scan>
 
     static bool decode(const Node& node, lvr2::Scan& scan)
     {
+        //Auskommentiert von der RDBX Gruppe
         // Check if 'entity' and 'type' Tags are valid
 //        if (!YAML_UTIL::ValidateEntityAndType(node,
 //            "scan",
