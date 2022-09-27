@@ -284,6 +284,13 @@ namespace lvr2
         ModelPtr model (new Model);
         PointBufferPtr pointBuffer(new PointBuffer);
 
+        // redundant check if given filename is path to an actual rdbx file
+        riegl::rdb::Context context;
+        if (!context.databaseFileTypeCheck(filename))
+        {
+            throw std::runtime_error("This is not a RDB 2 database file!");
+        }
+
         try {
             // New RDB library context
             riegl::rdb::Context context;
@@ -369,12 +376,12 @@ namespace lvr2
                 hasTarget_index= false;
             }
             if(!(std::find(attributes.begin(), attributes.end(), "riegl.target_count")!=attributes.end())){
-                hasTarget_counta = false;
+                hasTarget_count = false;
             }
 
             // Prepare point attribute buffers
             static const uint32_t BUFFER_SIZE = 10000;
-            std::vector< std::array<float, 3> >    bufferCoordinates   (BUFFER_SIZE);         //std::vector<unsigned char> bufferCoordinates(BUFFER_SIZE * sizeof(float) * 3);
+            std::vector< std::array<float, 3> >     bufferCoordinates   (BUFFER_SIZE);         //std::vector<unsigned char> bufferCoordinates(BUFFER_SIZE * sizeof(float) * 3);
             std::vector< std::array<uint8_t, 4> >   bufferTrueColor     (BUFFER_SIZE);
             std::vector< float >                    bufferReflectance   (BUFFER_SIZE);         //std::vector<unsigned char> bufferReflectance(BUFFER_SIZE * sizeof(float));
             std::vector< float >                    bufferAmplitude     (BUFFER_SIZE);
@@ -436,40 +443,8 @@ namespace lvr2
                 pointBuffer->addUCharChannel( ucharArr (new unsigned char[numPoints]), "target_count", numPoints, 1);
             }
 
-
-            //select.bind(RDB_RIEGL_XYZ, FLOAT32, bufferCoordinates.data(), sizeof(float) * 3);
-            //select.bindBuffer(RDB_RIEGL_REFLECTANCE, bufferReflectance);
-            //select.bind(RDB_RIEGL_REFLECTANCE, FLOAT32, bufferReflectance.data(), sizeof(float));
-
-
-            // arrays to store point coordinates and their reflectance
-            //float *pointArray = new float[3 * numPoints];
-            //float *intensitiesArray = new float[numPoints];
-
-//            std::vector<DataType> my_dtypes = {FLOAT32, FLOAT32};
-//            std::vector<int> my_sizes = {3, 1};
-//
-//            std::vector<std::string> my_attributes = {"points", "intensities"};
-
-//            pointBuffer->setPointArray()
-//
-//            lvr2::Channel<float> foo(10, 3);
-
-
-            // variable to keep track of current point,
-            // since i in following for loop is reset after BUFFER_SIZE=10000 steps
+            // variable to keep track of current point
             uint32_t currPoint = 0;
-
-
-//                std::cout << "Auf Alexander Mocks Wunsch kommt hier ein Hinweis: \n\n"
-//                             "Es wird grade versucht Farben aus einem Rdbx File zu Lesen, diese Funktion ist ungetestet und vermutlich Fehlerhaft!\n"
-//                             "Diese Zeilenausgabe steht in /src/liblvr2/io/modelio/RdbxIO.cpp \n"
-//                             "Entschuldigt die Umstände \nLG Kyrill v. Toll" << std::endl;
-
-
-
-
-
 
             // calling select.next() to fill Buffers, and then memcopy into the prepared Buffer Channels.
             while (const uint32_t count = select.next(BUFFER_SIZE)) {
@@ -502,10 +477,12 @@ namespace lvr2
                     memcpy(pointBuffer->get<unsigned char>("target_count").dataPtr().get() + currPoint, bufferTarget_count.data(), count * sizeof(unsigned char));
                 }
 
+                // incrementing currPoint by the Number of points actually returned by next(), which at the end might not be 10.000
                 currPoint += count;
 
             }
 
+            // closing select
             select.close();
 
             // adding pointBuffer to model
