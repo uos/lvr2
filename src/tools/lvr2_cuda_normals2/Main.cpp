@@ -11,6 +11,15 @@
 
 using namespace lvr2;
 
+void floatToBinary(float f)
+{
+    char* bits = reinterpret_cast<char*>(&f);
+    for(std::size_t n = 0; n < sizeof f; ++n)
+        std::cout << std::bitset<8>(bits[n]);
+    std::cout << std::endl;
+    
+}
+
 int main(int argc, char** argv)
 {
     cuda_normals_2::Options opt(argc, argv);
@@ -52,7 +61,7 @@ int main(int argc, char** argv)
     test_points[5] = 0.015625;
 
     // Get the morton codes of the 3D points
-    getMortonCodes(mortonCodes, points_raw, num_points);
+    getMortonCodes(mortonCodes, test_points, 2);
 
     std::cout << "x: " << points_raw[0] << std::endl;
     std::cout << "y: " << points_raw[1] << std::endl;
@@ -64,6 +73,8 @@ int main(int argc, char** argv)
     ModelFactory::saveModel(model, "test.ply");
 
     free(normals_raw);
+
+    floatToBinary(1.0);
 
     return 0;
 }

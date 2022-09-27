@@ -19,13 +19,15 @@ unsigned long long int expandBits(unsigned long long int v)
 __device__
 unsigned long long int morton3D(float x, float y, float z, float resolution=1024.0f)
 {
+    resolution *= resolution;
+    
     x = fmin(fmax(x * resolution, 0.0f), resolution - 1.0f);
     y = fmin(fmax(y * resolution, 0.0f), resolution - 1.0f);
     z = fmin(fmax(z * resolution, 0.0f), resolution - 1.0f);
 
-    unsigned long long int xx = expandBits((unsigned long long int)x);
-    unsigned long long int yy = expandBits((unsigned long long int)y);
-    unsigned long long int zz = expandBits((unsigned long long int)z);
+    unsigned long long int xx = expandBits((unsigned long long int) x);
+    unsigned long long int yy = expandBits((unsigned long long int) y);
+    unsigned long long int zz = expandBits((unsigned long long int) z);
 
     return xx * 4 + yy * 2 + zz;
 }
