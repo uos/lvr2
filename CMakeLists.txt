@@ -75,21 +75,12 @@ endif(MSVC)
 # EXTERNAL LIBRARIES
 ###############################################################################
 
-#####################################################################################
+###############################################################################
 # RDB
-#####################################################################################
-
-
-# das hier muss verändert werden damit es läuft WICHTIG !!!!!
-#set (rdb_ROOT_DIR "/home/praktikum/Desktop/rdb_test/rdblib-2.4.0-x86_64-linux"
-#        CACHE PATH "path to RDB ROOT directory ")
-#set(rdb_DIR "${rdb_ROOT_DIR}/interface/cpp")
+###############################################################################
 
 find_package(RDB REQUIRED)
 
-#set(RDB_LIB_DIR "${rdb_ROOT_DIR}/library")
-#set(RDB_INCLUDE_C_DIR "${rdb_ROOT_DIR}/interface/c")
-#set(RDB_INCLUDE_CPP_DIR "${rdb_ROOT_DIR}/interface/cpp")
 if(RDB_FOUND)
     include_directories(${RDB_INCLUDE_DIRS})
     message(STATUS "Found LibRDB at ${RDB_INCLUDE_DIRS}, ${RDB_LIBRARIES}.")
@@ -119,17 +110,16 @@ if(TIFF_FOUND)
     include_directories(${TIFF_INCLUDE_DIRS})
 endif(TIFF_FOUND)
 
-#------------------#####################################################################################
-# RDB
-#####################################################################################
 
-
-
+#------------------------------------------------------------------------------
+# Searching for GDAL
+#------------------------------------------------------------------------------
 find_package(GDAL REQUIRED)
 if(GDAL_FOUND)
 message(STATUS "Found GDAL")
     include_directories(${GDAL_INCLUDE_DIR})
 endif(GDAL_FOUND)
+
 
 #------------------------------------------------------------------------------
 # Searching for CUDA

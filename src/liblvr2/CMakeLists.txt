@@ -1,7 +1,3 @@
-#####################################################################################
-# RDB
-#####################################################################################
-
 set(LVR2_SOURCES
     algorithm/ChunkBuilder.cpp
     algorithm/ChunkManager.cpp
@@ -52,7 +48,7 @@ set(LVR2_SOURCES
     io/modelio/DatIO.cpp
     io/modelio/LasIO.cpp
     io/modelio/GeoTIFFIO.cpp
-#    io/KinectIO.cpp
+    # io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp
     io/modelio/PPMIO.cpp
     io/modelio/PLYIO.cpp
@@ -105,10 +101,10 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
-        io/kernels/DirectoryKernel.cpp
-        io/modelio/RdbxIO.cpp #../../include/lvr2/io/modelio/RdbxIO.hpp
-    io/schema/ScanProjectSchemaRdbx.cpp #../../include/lvr2/io/schema/ScanProjectSchemaRdbx.hpp
-        )
+    io/kernels/DirectoryKernel.cpp
+    io/modelio/RdbxIO.cpp
+    io/schema/ScanProjectSchemaRdbx.cpp
+    )
 
 #####################################################################################
 # Add PCD io if PCL is installed
@@ -233,10 +229,6 @@ message(STATUS "Building shared library")
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
     ${LVR2_LIB_DEPENDENCIES}
           )
-
-# target_link_libraries(
-#     lvr2 rdbcpp
-# )
 
 install(TARGETS lvr2_static lvr2
   EXPORT lvr2Targets
