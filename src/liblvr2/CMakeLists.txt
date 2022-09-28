@@ -104,7 +104,8 @@ set(LVR2_SOURCES
     io/kernels/DirectoryKernel.cpp
     io/modelio/RdbxIO.cpp
     io/schema/ScanProjectSchemaRdbx.cpp
-    )
+
+        )
 
 #####################################################################################
 # Add PCD io if PCL is installed

@@ -14,6 +14,8 @@
 #include <teaser/registration.h>
 //#include <teaser/matcher.h>
 #include "open3d/Open3D.h"
+#include "lvr2/util/TransformUtils.hpp"
+
 #include "util/MyMatching.h"
 
 #define NOISE_BOUND 0.05
@@ -22,6 +24,13 @@ using namespace open3d;
 namespace fs = std::filesystem;
 
 auto search_param = open3d::geometry::KDTreeSearchParamKNN(30);
+
+class transformRegistration;
+int count=1;
+Eigen::Matrix<float_t ,4,4> registration;
+
+
+
 
 open3d::geometry::PointCloud readAndPreprocessPointCloud(std::string path) {
     // Reading PointClouds
@@ -131,9 +140,35 @@ void solveTeaserWithoutCorrespondences(Eigen::Matrix<double, 3, Eigen::Dynamic> 
     std::cout << "Estimated translation: " << std::endl;
     std::cout << solution.translation << std::endl;
     std::cout << "Time taken (s): "
-              << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
+           << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
                  1000000.0
-              << std::endl;
+                 << std::endl;
+
+    Eigen::Matrix<float_t ,4,4> transformation;
+    for (int i=0;i<=4;i++){
+        for (int j=0;j<=4;j++){
+            if(i<3){
+                if(j<3){
+                    transformation(i,j)=solution.rotation(i,j);
+                }
+                else{
+                    transformation(i,j)=solution.translation(i);
+                }
+            }
+            else{
+                transformation(i,j)=0;
+            }
+
+
+        }
+    }
+
+    std::cout << "transformation "<< std::endl;
+
+    std::cout << transformation << std::endl;
+
+
+
 }
 
 void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointCloud target_cloud, std::vector<std::pair<int, int>> correspondences) {
@@ -170,6 +205,36 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
               << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
                  1000000.0
               << std::endl;
+    Eigen::Matrix<float_t ,4,4> transformation;
+
+    for (int i=0;i<=3;i++){
+        for (int j=0;j<=3;j++){
+            if(i<3){
+                if(j<3){
+                    transformation(i,j)=solution.rotation(i,j);
+                }
+                else{
+                    transformation(i,j)=solution.translation(i);
+                }
+            }
+            else{
+                transformation(i,j)=0;
+            }
+
+        }
+    }
+
+    std::cout << "transformation "<< std::endl;
+    std::cout << transformation << std::endl;
+    std::cout << lvr2::transformRegistration(registration,transformation)<<std::endl;
+    registration = transformation;
+    std::ofstream file;
+    stringstream s;
+    s <<"/home/praktikum/Desktop/ply/" <<count<< ".meta";
+    file.open(s.str());
+    file <<registration;
+    count++;
+
 }
 
 void workflowCorrespondences(std::string src_path, std::string target_path) {
@@ -296,7 +361,7 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
     geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
     geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
 
-    double voxel_size = 1.0;
+    double voxel_size =  0.5;
     geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(voxel_size);
     geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(voxel_size);
     std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
@@ -319,8 +384,8 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
 
 int main() {
     // file paths
-    std::string robo_dir = "/home/praktikum/Desktop/Schematest/raw";
-    std::string matrix_dir = "/home/praktikum/Desktop/teaserOpen3d/ply";
+    std::string robo_dir = "/home/praktikum/Desktop/ScanProject/raw";
+    std::string matrix_dir = "/home/praktikum/Desktop/ply";
 
     std::string end = ".ply";
     std::string vertex = "_vertex";
@@ -330,20 +395,21 @@ int main() {
 //    pointtovertex(source_path_vertex, "/home/praktikum/Desktop/teaserOpen3d/ply/001.ply");
 //    pointtovertex(target_path_vertex, "/home/praktikum/Desktop/teaserOpen3d/ply/002.ply");
 
-    int numberOfScans = 3;
+    int numberOfScans = 5;
 
-    std::cout << "\ndirectory_iterator zum konvertieren in schmutzig:\n";
     for (int i = 1; i <= numberOfScans; ++i) {
         std::string source_path_vertex = robo_dir + "/0000000" + std::to_string(i) + "/lidar_00000000/00000000/points.ply";
         std::cout << source_path_vertex << '\n';
-        pointtovertex(source_path_vertex, "/home/praktikum/Desktop/teaserOpen3d/ply/00" + std::to_string(i) + ".ply");
+        pointtovertex(source_path_vertex, "/home/praktikum/Desktop/ply/00" + std::to_string(i) + ".ply");
     }
-
-    std::cout << "\ndirectory_iterator für T und R Matrizen in schmutzig:\n";
+    registration << 1,0,0,0,
+            0,1,0,0,
+            0,0,1,0,
+            0,0,0,1;
     for (int i = 1; i <= numberOfScans; ++i) {
         if(i < numberOfScans)
         {
-            workflowCorrespondencesAndDownSamplingWithoutISS(matrix_dir + "/00" + std::to_string(i) + ".ply", "/home/praktikum/Desktop/teaserOpen3d/ply/00" + std::to_string(i + 1) + ".ply");
+            workflowCorrespondencesAndDownSamplingWithoutISS(matrix_dir + "/00" + std::to_string(i) + ".ply", "/home/praktikum/Desktop/ply/00" + std::to_string(i + 1) + ".ply");
         }
         else if(i == numberOfScans)
         {
@@ -351,4 +417,5 @@ int main() {
             break;
         }
     }
+
 }

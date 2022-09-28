@@ -18,11 +18,21 @@ set(Open3D_ROOT "/home/praktikum/open3d_install/")
 find_package(Open3D REQUIRED)
 
 # Change this line to include your own executable file
-add_executable(teaser_example Main.cpp util/pointtovertex.cpp util/MyMatching.cpp)
+
 
 #add_library(lvr2::ProgressBar)
 
 # Link to teaserpp & Eigen3
 #add_dependencies(Eigen3)
-target_link_libraries(teaser_example PUBLIC Eigen3::Eigen teaserpp::teaser_registration teaserpp::teaser_io)
-target_link_libraries(teaser_example PRIVATE Open3D::Open3D)
+
+
+set(teaser_example_DEPENDENCIES
+        lvr2_static
+        lvr2las_static
+        lvr2rply_static
+        ${teaser_example_DEPENDENCIES}
+        )
+
+#add_executable( teaser_example ${teaser_example_SOURCES} )
+add_executable(teaser_example Main.cpp util/pointtovertex.cpp util/MyMatching.cpp ${teaser_example_SOURCES} )
+target_link_libraries( teaser_example PUBLIC Eigen3::Eigen teaserpp::teaser_registration teaserpp::teaser_io PRIVATE Open3D::Open3D ${teaser_example_DEPENDENCIES} )
