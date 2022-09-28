@@ -413,7 +413,7 @@ namespace lvr2
             // for every wanted attribute we bind the buffer and allocate memory
             if(hasColours){
                 select.bindBuffer(RDB_RIEGL_RGBA,       bufferTrueColor);
-                pointBuffer->setColorArray(ucharArr(new unsigned char[4*numPoints]), numPoints, 4); // width = 4 since we expect rgba data
+                pointBuffer->setColorArray(ucharArr(new unsigned char[ numPoints * 4 ]), numPoints, 4); // width = 4 since we expect rgba data
             }
             if(hasReflectance){
                 select.bindBuffer(RDB_RIEGL_REFLECTANCE,bufferReflectance);
@@ -447,14 +447,16 @@ namespace lvr2
             // variable to keep track of current point
             uint32_t currPoint = 0;
 
+            // variable later used in getColorArray
+            size_t w_point_colour = 0;
+
             // calling select.next() to fill Buffers, and then memcopy into the prepared Buffer Channels.
             while (const uint32_t count = select.next(BUFFER_SIZE)) {
 
                 memcpy(pointBuffer->getPointArray().get() + currPoint * 3, bufferCoordinates.data(), count * sizeof(float) * 3);
 
                 if(hasColours){
-                    size_t width = 4;
-                    memcpy(pointBuffer->getColorArray(width).get()+currPoint * 4, bufferTrueColor.data(), count * sizeof(float) * 4);
+                    memcpy(pointBuffer->getColorArray(w_point_colour).get() + currPoint * 4, bufferTrueColor.data(), count * sizeof(unsigned char) * w_point_colour);
                 }
                 if(hasReflectance) {
                     memcpy(pointBuffer->get<float>("intensities").dataPtr().get() + currPoint, bufferReflectance.data(), count * sizeof(float));
