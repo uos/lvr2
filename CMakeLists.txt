@@ -193,6 +193,7 @@ message(STATUS "Found GSL")
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 message(STATUS "Found Eigen3")
+message(${EIGEN3_INCLUDE_DIR})
 
 #------------------------------------------------------------------------------
 # Searching for OpenCl
@@ -752,6 +753,9 @@ add_subdirectory(src/tools/lvr2_ground_level_extractor)
 # add_subdirectory(src/tools/lvr2_hdf5_convert_old)
 add_subdirectory(src/tools/lvr2_hdf5_inspect)
 add_subdirectory(src/tools/lvr2_3dtiles)
+
+# new by praktikum
+add_subdirectory(src/tools/teaser_example)
 
 
 
