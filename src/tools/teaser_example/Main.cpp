@@ -316,13 +316,13 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
 
 int main() {
     // file paths
-   std::string robo_dir = "/home/praktikum/data_robo/";
+   std::string robo_dir = "/home/praktikum/Desktop/ScanProject";
    std::string end = ".ply";
    std::string vertex = "_vertex";
 //    std::string source_path = robo_dir + "001/scans/220720_095525.ply";
 //    std::string target_path = robo_dir + "002/scans/220720_100202.ply";
-    std::string source_path_vertex = robo_dir + "001/scans/220720_095525_vertex.ply";
-    std::string target_path_vertex = robo_dir + "002/scans/220720_100202_vertex.ply";
+    std::string source_path_vertex = robo_dir + "raw/00000001/lidar_00000000/points.ply";
+    std::string target_path_vertex = robo_dir + "raw/00000002/lidar_00000000/points.ply";
 //    std::string target_path = robo_dir + "003/scans/2220720_100819" + end;
 //    std::string target_path_vertex = robo_dir + "003/scans/2220720_100819" + vertex + end;
 
