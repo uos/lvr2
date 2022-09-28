@@ -8,6 +8,8 @@
 #include "util/pointtovertex.h"
 #include <Eigen/Core>
 
+#include <filesystem>
+
 //#include <teaser/ply_io.h>
 #include <teaser/registration.h>
 //#include <teaser/matcher.h>
@@ -17,6 +19,7 @@
 #define NOISE_BOUND 0.05
 
 using namespace open3d;
+namespace fs = std::filesystem;
 
 auto search_param = open3d::geometry::KDTreeSearchParamKNN(30);
 
@@ -316,32 +319,36 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
 
 int main() {
     // file paths
-   std::string robo_dir = "/home/praktikum/Desktop/ScanProject";
-   std::string end = ".ply";
-   std::string vertex = "_vertex";
-//    std::string source_path = robo_dir + "001/scans/220720_095525.ply";
-//    std::string target_path = robo_dir + "002/scans/220720_100202.ply";
-    std::string source_path_vertex = robo_dir + "raw/00000001/lidar_00000000/points.ply";
-    std::string target_path_vertex = robo_dir + "raw/00000002/lidar_00000000/points.ply";
-//    std::string target_path = robo_dir + "003/scans/2220720_100819" + end;
-//    std::string target_path_vertex = robo_dir + "003/scans/2220720_100819" + vertex + end;
+    std::string robo_dir = "/home/praktikum/Desktop/Schematest/raw";
+    std::string matrix_dir = "/home/praktikum/Desktop/teaserOpen3d/ply";
 
-//    std::string source_path = robo_dir + "001/scans/reduced.ply";
-//    std::string target_path = robo_dir + "002/scans/reduced.ply";
-//    std::string target_path = "/home/praktikum/robopraktikum/scans_test/003/scans/220720_100819.ply";
-//    std::string target_path_vertex = "/home/praktikum/robopraktikum/scans_test/003/scans/220720_100819_vertex.ply";
-//    std::string source_path = "/home/praktikum/robopraktikum/TEASER-plusplus/examples/example_data/bun_zipper_res3.ply";
-//    std::string target_path = "/home/praktikum/robopraktikum/TEASER-plusplus/examples/example_data/bunny_moosh.ply";
+    std::string end = ".ply";
+    std::string vertex = "_vertex";
 
-//    std::string source_path = "/home/praktikum/robopraktikum/scans_test/test_pcl.ply";
-//    std::string target_path = "/home/praktikum/robopraktikum/scans_test/test_pcl_transformed.ply";
+//    std::string source_path_vertex = robo_dir + "/00000001/lidar_00000000/00000000/points.ply";
+//    std::string target_path_vertex = robo_dir + "/00000002/lidar_00000000/00000000/points.ply";
+//    pointtovertex(source_path_vertex, "/home/praktikum/Desktop/teaserOpen3d/ply/001.ply");
+//    pointtovertex(target_path_vertex, "/home/praktikum/Desktop/teaserOpen3d/ply/002.ply");
 
-//    std::cout << "Convert ply header for Open3D (point to vertex)" << std::endl;
-//    int stat1 = pointtovertex(source_path, source_path_vertex);
-//    int stat2 = pointtovertex(target_path, target_path_vertex);
+    int numberOfScans = 3;
 
-//    workflowCorrespondences(source_path, target_path);
-//    workflowDirectlyWithISSAndDownSampling(source_path, target_path);
-//    workflowCorrespondencesAndDownSampling(source_path, target_path);
-    workflowCorrespondencesAndDownSamplingWithoutISS(source_path_vertex, target_path_vertex);
+    std::cout << "\ndirectory_iterator zum konvertieren in schmutzig:\n";
+    for (int i = 1; i <= numberOfScans; ++i) {
+        std::string source_path_vertex = robo_dir + "/0000000" + std::to_string(i) + "/lidar_00000000/00000000/points.ply";
+        std::cout << source_path_vertex << '\n';
+        pointtovertex(source_path_vertex, "/home/praktikum/Desktop/teaserOpen3d/ply/00" + std::to_string(i) + ".ply");
+    }
+
+    std::cout << "\ndirectory_iterator für T und R Matrizen in schmutzig:\n";
+    for (int i = 1; i <= numberOfScans; ++i) {
+        if(i < numberOfScans)
+        {
+            workflowCorrespondencesAndDownSamplingWithoutISS(matrix_dir + "/00" + std::to_string(i) + ".ply", "/home/praktikum/Desktop/teaserOpen3d/ply/00" + std::to_string(i + 1) + ".ply");
+        }
+        else if(i == numberOfScans)
+        {
+            //workflowCorrespondencesAndDownSamplingWithoutISS(matrix_dir + "/00" + std::to_string(i) + ".ply", "/home/praktikum/Desktop/teaserOpen3d/ply/00" + std::to_string(1) + ".ply");
+            break;
+        }
+    }
 }

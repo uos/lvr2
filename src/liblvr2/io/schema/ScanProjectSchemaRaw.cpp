@@ -243,8 +243,6 @@ Description ScanProjectSchemaRawPly::scan(
 
     Description d;
 
-    //std::cout << *dp.dataRoot << std::endl;
-    //std::cout << sstr.str() << std::endl;
     d.dataRoot = *dp.dataRoot + "/" + sstr.str();
 
     d.data = "points.ply";
