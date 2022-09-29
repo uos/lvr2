@@ -78,8 +78,6 @@ void initNormals2(float* h_normals, size_t num_points)
     int threadsPerBlock = 256;
     int blocksPerGrid = (num_points + threadsPerBlock - 1) / threadsPerBlock;
 
-    printf("%d %d \n", threadsPerBlock, blocksPerGrid);
-
     initNormals2_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_normals, num_points);
 
     cudaDeviceSynchronize();

@@ -17,10 +17,10 @@ unsigned long long int expandBits(unsigned long long int v)
 // Calculates a 30-bit Morton code for the
 // given 3D point located within the unit cube [0,1].
 __device__
-unsigned long long int morton3D(float x, float y, float z, float resolution=1024.0f)
+unsigned long long int morton3D(float x, float y, float z, int idx, float resolution=1024.0f)
 {
     resolution *= resolution;
-    
+
     x = fmin(fmax(x * resolution, 0.0f), resolution - 1.0f);
     y = fmin(fmax(y * resolution, 0.0f), resolution - 1.0f);
     z = fmin(fmax(z * resolution, 0.0f), resolution - 1.0f);
@@ -28,6 +28,15 @@ unsigned long long int morton3D(float x, float y, float z, float resolution=1024
     unsigned long long int xx = expandBits((unsigned long long int) x);
     unsigned long long int yy = expandBits((unsigned long long int) y);
     unsigned long long int zz = expandBits((unsigned long long int) z);
+
+    if(idx == 0)
+    {
+        printf("x float: %f \n", x);
+        printf("x ulli:  %llu \n", x);
+        printf("xx: %f \n", x);
+        printf("yy: %f \n", y);
+        printf("zz: %f \n", z);
+    }
 
     return xx * 4 + yy * 2 + zz;
 }
@@ -37,7 +46,7 @@ unsigned long long int morton3D(float x, float y, float z, float resolution=1024
 Extent getExtent(float* h_points, size_t num_points)
 {
     float min_x = INT_MAX;
-    float min_y = INT_MAX; 
+    float min_y = INT_MAX;
     float min_z = INT_MAX;
 
     float max_x = INT_MIN; 
@@ -116,14 +125,7 @@ void mortonCode(unsigned long long int* mortonCodes, float* d_points, size_t num
     p_y /= (extent.max.y - extent.min.y);
     p_z /= (extent.max.z - extent.min.z);
 
-    mortonCodes[idx] = morton3D(p_x, p_y, p_z, 1024.0f);
-
-    if(idx == 0)
-    {
-        printf("x: %f \n", p_x);
-        printf("y: %f \n", p_y);
-        printf("z: %f \n", p_z);
-    }
+    mortonCodes[idx] = morton3D(p_x, p_y, p_z, idx, 1024.0f);
 
     return;
 }
