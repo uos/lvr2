@@ -27,7 +27,7 @@ auto search_param = open3d::geometry::KDTreeSearchParamKNN(30);
 
 class transformRegistration;
 int count=1;
-Eigen::Matrix<float_t ,4,4> registration;
+Eigen::Matrix<float_t ,4,4>  OldTransformation;
 
 
 
@@ -143,6 +143,10 @@ void solveTeaserWithoutCorrespondences(Eigen::Matrix<double, 3, Eigen::Dynamic> 
            << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
                  1000000.0
                  << std::endl;
+
+
+
+
 }
 
 void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointCloud target_cloud, std::vector<std::pair<int, int>> correspondences) {
@@ -197,17 +201,22 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
 
         }
     }
-    transformation(3,3) = 1;
+    transformation(3,3)=1;
 
-    std::cout << "transformation "<< std::endl;
-    std::cout << transformation << std::endl;
-    std::cout << lvr2::transformRegistration(registration,transformation)<<std::endl;
-    registration = transformation;
+
+    OldTransformation=OldTransformation*transformation;
     std::ofstream file;
     stringstream s;
-    s <<"/home/praktikum/Desktop/teaserOpen3d/ply/" <<count<< ".meta";
+    s <<"/home/praktikum/Desktop/ply/" <<count<< ".meta";
     file.open(s.str());
-    file <<registration;
+    file <<"Globalen Transformation"<<std::endl;
+    file <<OldTransformation<< std::endl;
+    file <<"Lokale Translation"<<std::endl;
+    file << solution.translation << std::endl;
+    file <<"Lokale rotation"<<std::endl;
+    file<< solution.rotation<< std::endl;
+    file.close();
+    std::cout << "Scan"<<count<< std::endl;
     count++;
 
 }
@@ -359,8 +368,8 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
 
 int main() {
     // file paths
-    std::string robo_dir = "/home/praktikum/Desktop/Schematest/raw";
-    std::string matrix_dir = "/home/praktikum/Desktop/teaserOpen3d/ply";
+    std::string robo_dir = "/home/praktikum/Desktop/ScanProject/raw";
+    std::string matrix_dir = "/home/praktikum/Desktop/ply";
 
     std::string end = ".ply";
     std::string vertex = "_vertex";
@@ -370,17 +379,20 @@ int main() {
     for (int i = 1; i <= numberOfScans; ++i) {
         std::stringstream tmp_stream;
         tmp_stream << robo_dir << "/" << std::setfill('0') << std::setw(8) << i << "/lidar_00000000/00000000/points.ply";
-        //std::string source_path_vertex = robo_dir + "/0000000" + std::to_string(i) + "/lidar_00000000/00000000/points.ply";
         std::string source_path_vertex = tmp_stream.str();
         std::stringstream tmp_stream2;
-        tmp_stream2 << "/home/praktikum/Desktop/teaserOpen3d/ply/" << std::setfill('0') << std::setw(3) << i << ".ply";
+        tmp_stream2 << "/home/praktikum/Desktop/ply/" << std::setfill('0') << std::setw(3) << i << ".ply";
         std::string dest_path = tmp_stream2.str();
         pointtovertex(source_path_vertex, dest_path);
     }
-    registration << 1,0,0,0,
-                    0,1,0,0,
-                    0,0,1,0,
-                    0,0,0,1;
+
+    OldTransformation<< 1,0,0,0,
+            0,1,0,0,
+            0,0,1,0,
+            0,0,0,1;
+
+
+
     for (int i = 1; i <= numberOfScans; ++i) {
         if(i < numberOfScans)
         {
@@ -398,4 +410,5 @@ int main() {
             break;
         }
     }
+
 }
