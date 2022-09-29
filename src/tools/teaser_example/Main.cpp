@@ -143,32 +143,6 @@ void solveTeaserWithoutCorrespondences(Eigen::Matrix<double, 3, Eigen::Dynamic> 
            << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
                  1000000.0
                  << std::endl;
-
-    Eigen::Matrix<float_t ,4,4> transformation;
-    for (int i=0;i<=4;i++){
-        for (int j=0;j<=4;j++){
-            if(i<3){
-                if(j<3){
-                    transformation(i,j)=solution.rotation(i,j);
-                }
-                else{
-                    transformation(i,j)=solution.translation(i);
-                }
-            }
-            else{
-                transformation(i,j)=0;
-            }
-
-
-        }
-    }
-
-    std::cout << "transformation "<< std::endl;
-
-    std::cout << transformation << std::endl;
-
-
-
 }
 
 void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointCloud target_cloud, std::vector<std::pair<int, int>> correspondences) {
@@ -223,6 +197,7 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
 
         }
     }
+    transformation(3,3) = 1;
 
     std::cout << "transformation "<< std::endl;
     std::cout << transformation << std::endl;
@@ -230,7 +205,7 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
     registration = transformation;
     std::ofstream file;
     stringstream s;
-    s <<"/home/praktikum/Desktop/ply/" <<count<< ".meta";
+    s <<"/home/praktikum/Desktop/teaserOpen3d/ply/" <<count<< ".meta";
     file.open(s.str());
     file <<registration;
     count++;
@@ -384,32 +359,38 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
 
 int main() {
     // file paths
-    std::string robo_dir = "/home/praktikum/Desktop/ScanProject/raw";
-    std::string matrix_dir = "/home/praktikum/Desktop/ply";
+    std::string robo_dir = "/home/praktikum/Desktop/Schematest/raw";
+    std::string matrix_dir = "/home/praktikum/Desktop/teaserOpen3d/ply";
 
     std::string end = ".ply";
     std::string vertex = "_vertex";
 
-//    std::string source_path_vertex = robo_dir + "/00000001/lidar_00000000/00000000/points.ply";
-//    std::string target_path_vertex = robo_dir + "/00000002/lidar_00000000/00000000/points.ply";
-//    pointtovertex(source_path_vertex, "/home/praktikum/Desktop/teaserOpen3d/ply/001.ply");
-//    pointtovertex(target_path_vertex, "/home/praktikum/Desktop/teaserOpen3d/ply/002.ply");
-
-    int numberOfScans = 5;
+    int numberOfScans = 11;
 
     for (int i = 1; i <= numberOfScans; ++i) {
-        std::string source_path_vertex = robo_dir + "/0000000" + std::to_string(i) + "/lidar_00000000/00000000/points.ply";
-        std::cout << source_path_vertex << '\n';
-        pointtovertex(source_path_vertex, "/home/praktikum/Desktop/ply/00" + std::to_string(i) + ".ply");
+        std::stringstream tmp_stream;
+        tmp_stream << robo_dir << "/" << std::setfill('0') << std::setw(8) << i << "/lidar_00000000/00000000/points.ply";
+        //std::string source_path_vertex = robo_dir + "/0000000" + std::to_string(i) + "/lidar_00000000/00000000/points.ply";
+        std::string source_path_vertex = tmp_stream.str();
+        std::stringstream tmp_stream2;
+        tmp_stream2 << "/home/praktikum/Desktop/teaserOpen3d/ply/" << std::setfill('0') << std::setw(3) << i << ".ply";
+        std::string dest_path = tmp_stream2.str();
+        pointtovertex(source_path_vertex, dest_path);
     }
     registration << 1,0,0,0,
-            0,1,0,0,
-            0,0,1,0,
-            0,0,0,1;
+                    0,1,0,0,
+                    0,0,1,0,
+                    0,0,0,1;
     for (int i = 1; i <= numberOfScans; ++i) {
         if(i < numberOfScans)
         {
-            workflowCorrespondencesAndDownSamplingWithoutISS(matrix_dir + "/00" + std::to_string(i) + ".ply", "/home/praktikum/Desktop/ply/00" + std::to_string(i + 1) + ".ply");
+            std::stringstream tmp_stream;
+            tmp_stream << matrix_dir << "/" << std::setfill('0') << std::setw(3) << i << ".ply";
+            std::stringstream tmp_stream2;
+            tmp_stream2 << matrix_dir << "/" << std::setfill('0') << std::setw(3) << i+1 << ".ply";
+            std::string src_path = tmp_stream.str();
+            std::string target_path = tmp_stream2.str();
+            workflowCorrespondencesAndDownSamplingWithoutISS(src_path, target_path);
         }
         else if(i == numberOfScans)
         {
@@ -417,5 +398,4 @@ int main() {
             break;
         }
     }
-
 }
