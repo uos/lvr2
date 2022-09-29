@@ -146,7 +146,11 @@ void writePose(const Vector3<T>& position, const Vector3<T>& angles, const boost
 template<typename T>
 void writePose(const Transform<T>& transform, const boost::filesystem::path& poseOut)
 {
-    Vector3<T> position = transform.template block<1,3>(0,3);
+    //std::cout << transform << std::endl;
+    //Transform<T> Tr = Transform<T>::Identity();
+
+    Vector3<T> position = transform.template block<3, 1>(0,3);
+    std::cout << "test" << std::endl;
     Vector3<T> angles = transform.template block<3,3>(0,0).eulerAngles(0, 1, 2) / 0.0174533;
 
     std::cout << "Writing: " << std::endl;
