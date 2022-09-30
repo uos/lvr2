@@ -280,6 +280,18 @@ namespace lvr2
         save(filename);
     }
 
+    /**
+     * @brief Function to read Rdbx File, tries to extract all Attributes deemed important by Felix Igelbrink.
+     * The Class Object can be given a String Vector of wanted Attributes, with the attributes Named as in the rdblib given by RIEGL.
+     * If no String Vector is given, the program will try to load all Attributes
+     *
+     * @param String Vector Containing the wanted Riegl Attributes (for example "riegl.reflectance")
+     *
+     * @returns Model containing all read Data
+     *
+     * @authors Felix Igelbrink and Kyrill v. Toll
+     */
+    // F
     ModelPtr RdbxIO::read(string filename)
     {
         ModelPtr model (new Model);
