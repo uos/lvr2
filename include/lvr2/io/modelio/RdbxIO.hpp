@@ -67,7 +67,7 @@ namespace lvr2
         std::vector<float> m_reflectance;
         std::vector<std::array<uint8_t, 4>> m_rgb;
         std::vector<uint16_t> m_class;
-        std::unordered_set<std::string> m_attributes;
+        std::unordered_set<std::string> m_attributes;           //String Vector of wanted Attributes, with the attributes Named as in the rdblib given by RIEGL.
     };
 
 } // lvr2
