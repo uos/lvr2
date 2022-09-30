@@ -143,10 +143,6 @@ void solveTeaserWithoutCorrespondences(Eigen::Matrix<double, 3, Eigen::Dynamic> 
            << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
                  1000000.0
                  << std::endl;
-
-
-
-
 }
 
 void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointCloud target_cloud, std::vector<std::pair<int, int>> correspondences) {
@@ -201,13 +197,13 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
 
         }
     }
-    transformation(3,3)=1;
+    transformation(3,3) = 1;
 
 
     OldTransformation=OldTransformation*transformation;
     std::ofstream file;
     stringstream s;
-    s <<"/home/praktikum/Desktop/ply/" <<count<< ".meta";
+    s <<"/home/praktikum/Desktop/teaserOpen3dply/" <<count<< ".meta";
     file.open(s.str());
     file <<"Globalen Transformation"<<std::endl;
     file <<OldTransformation<< std::endl;
@@ -219,125 +215,6 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
     std::cout << "Scan"<<count<< std::endl;
     count++;
 
-}
-
-void workflowCorrespondences(std::string src_path, std::string target_path) {
-
-    geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
-    geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
-
-    std::cout << "src cloud Has Normals before estimating normals: " << src_cloud.HasNormals() << std::endl;
-    std::cout << "target cl Has Normals before estimating normals: " << target_cloud.HasNormals() << std::endl;
-
-    src_cloud.EstimateNormals();
-    target_cloud.EstimateNormals();
-
-    std::cout << "src cloud Has Normals after estimating normals: " << src_cloud.HasNormals() << std::endl;
-    std::cout << "target cl Has Normals after estimating normals: " << target_cloud.HasNormals() << std::endl;
-
-
-    geometry::PointCloud src_iss_cloud = computeISSPointClouds(src_cloud);
-    geometry::PointCloud target_iss_cloud = computeISSPointClouds(target_cloud);
-
-    std::cout << "src cloud Has Normals after ISS: " << src_cloud.HasNormals() << std::endl;
-    std::cout << "target cl Has Normals after ISS: " << target_cloud.HasNormals() << std::endl;
-
-    auto src_feature = computeFPFHs(src_iss_cloud);
-    auto target_feature = computeFPFHs(target_iss_cloud);
-
-//    std::cout << "src_feature number of rows"
-
-//    std::cout << "Computing correspondo... ";
-//    std::vector<std::pair<int, int>> correspondences = MyMatching(target_feature, src_feature);
-//    std::cout << "- done." << std::endl;
-//
-//
-//    // convert Open3D cloud i
-//    teaser::PointCloud src_teaser_cloud = convertToTeaserCloud(src_iss_cloud);
-//    teaser::PointCloud target_teaser_cloud = convertToTeaserCloud(target_iss_cloud);
-//
-//    // convert pointcloud to Eigen3 Matrix to use teaser::solver without correspondences
-//
-////    Eigen::Matrix<double, 3, Eigen::Dynamic> src_eigen = convertToEigen(src_teaser_cloud);
-////    Eigen::Matrix<double, 3, Eigen::Dynamic> target_eigen = convertToEigen(target_teaser_cloud);
-//
-//    solveTeaserWithCorrespondences(src_teaser_cloud, target_teaser_cloud, correspondences);
-}
-
-void workflowDirectlyWithISSAndDownSampling(std::string src_path, std::string target_path) {
-
-    geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
-    geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
-
-    double voxel_size = 1.5;
-    geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(voxel_size);
-    geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(voxel_size);
-    std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
-    std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
-
-//    sampled_src_cloud.EstimateNormals();
-//    sampled_target_cloud.EstimateNormals();
-
-//    geometry::PointCloud src_iss_cloud = computeISSPointClouds(sampled_src_cloud);
-//    geometry::PointCloud target_iss_cloud = computeISSPointClouds(sampled_target_cloud);
-
-//    auto src_feature = computeFPFHs(src_iss_cloud);
-//    auto target_feature = computeFPFHs(target_iss_cloud);
-
-//    std::cout << "Computing correspondo... ";
-//    std::vector<std::pair<int, int>> correspondences = MyMatching(target_feature, src_feature);
-//    std::cout << "- done." << std::endl;
-
-
-    // convert Open3D cloud i
-    teaser::PointCloud src_teaser_cloud = convertToTeaserCloud(sampled_src_cloud);
-    teaser::PointCloud target_teaser_cloud = convertToTeaserCloud(sampled_target_cloud);
-
-    // convert pointcloud to Eigen3 Matrix to use teaser::solver without correspondences
-    Eigen::Matrix<double, 3, Eigen::Dynamic> src_eigen = convertToEigen(src_teaser_cloud);
-    Eigen::Matrix<double, 3, Eigen::Dynamic> target_eigen = convertToEigen(target_teaser_cloud);
-
-//    for (int i = 0; i < 10; ++i) {
-//        src_eigen.[i];
-//
-//    }
-
-    solveTeaserWithoutCorrespondences(src_eigen, target_eigen);
-}
-
-void workflowCorrespondencesAndDownSampling(std::string src_path, std::string target_path) {
-
-    geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
-    geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
-
-    geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(0.5);
-    geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(0.5);
-    std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
-    std::cout << "Voxel target size: " << sampled_target_cloud.points_.size() << std::endl;
-
-    sampled_src_cloud.EstimateNormals();
-    sampled_target_cloud.EstimateNormals();
-
-    geometry::PointCloud src_iss_cloud = computeISSPointClouds(sampled_src_cloud);
-    geometry::PointCloud target_iss_cloud = computeISSPointClouds(sampled_target_cloud);
-
-    auto src_feature = computeFPFHs(src_iss_cloud);
-    auto target_feature = computeFPFHs(target_iss_cloud);
-
-    std::cout << "Computing correspondo... ";
-    std::vector<std::pair<int, int>> correspondences = MyMatching(target_feature, src_feature);
-    std::cout << "- done." << std::endl;
-
-    // convert Open3D cloud i
-    teaser::PointCloud src_teaser_cloud = convertToTeaserCloud(src_iss_cloud);
-    teaser::PointCloud target_teaser_cloud = convertToTeaserCloud(target_iss_cloud);
-
-    // convert pointcloud to Eigen3 Matrix to use teaser::solver without correspondences
-
-//    Eigen::Matrix<double, 3, Eigen::Dynamic> src_eigen = convertToEigen(src_teaser_cloud);
-//    Eigen::Matrix<double, 3, Eigen::Dynamic> target_eigen = convertToEigen(target_teaser_cloud);
-
-    solveTeaserWithCorrespondences(src_teaser_cloud, target_teaser_cloud, correspondences);
 }
 
 void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std::string target_path) {
@@ -368,12 +245,13 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
 
 int main() {
     // file paths
-    std::string robo_dir = "/home/praktikum/Desktop/ScanProject/raw";
-    std::string matrix_dir = "/home/praktikum/Desktop/ply";
+    std::string robo_dir = "/home/praktikum/Desktop/Schematest/raw";
+    std::string matrix_dir = "/home/praktikum/Desktop/teaserOpen3d/ply";
 
     std::string end = ".ply";
     std::string vertex = "_vertex";
 
+    //Magicnumber for the amount of scans in the scanproject
     int numberOfScans = 11;
 
     for (int i = 1; i <= numberOfScans; ++i) {
@@ -381,15 +259,15 @@ int main() {
         tmp_stream << robo_dir << "/" << std::setfill('0') << std::setw(8) << i << "/lidar_00000000/00000000/points.ply";
         std::string source_path_vertex = tmp_stream.str();
         std::stringstream tmp_stream2;
-        tmp_stream2 << "/home/praktikum/Desktop/ply/" << std::setfill('0') << std::setw(3) << i << ".ply";
+        tmp_stream2 << "/home/praktikum/Desktop/teaserOpen3d/ply/" << std::setfill('0') << std::setw(3) << i << ".ply";
         std::string dest_path = tmp_stream2.str();
         pointtovertex(source_path_vertex, dest_path);
     }
 
     OldTransformation<< 1,0,0,0,
-            0,1,0,0,
-            0,0,1,0,
-            0,0,0,1;
+                        0,1,0,0,
+                        0,0,1,0,
+                        0,0,0,1;
 
 
 
@@ -406,9 +284,9 @@ int main() {
         }
         else if(i == numberOfScans)
         {
-            //workflowCorrespondencesAndDownSamplingWithoutISS(matrix_dir + "/00" + std::to_string(i) + ".ply", "/home/praktikum/Desktop/teaserOpen3d/ply/00" + std::to_string(1) + ".ply");
+            //Skips the last scan since it cant be matched any further for our purposes (may need to be changed to match
+            //the last scan with the first one
             break;
         }
     }
-
 }
