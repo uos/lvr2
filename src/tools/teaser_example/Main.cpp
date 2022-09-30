@@ -1,5 +1,5 @@
 //
-// Created by praktikum on 13.09.22.
+// Created by Gruppe teaser and IO on 13.09.22.
 //
 
 #include <chrono>
@@ -31,7 +31,6 @@ open3d::geometry::PointCloud readAndPreprocessPointCloud(std::string path) {
     // Reading PointClouds
     geometry::PointCloud cloud;
     std::cout << "Reading PointCloud... " << std::flush;
-//    auto search_param = open3d::geometry::KDTreeSearchParamKNN(30);
     open3d::io::ReadPointCloud(path, cloud);
     std::cout << "- done." << std::endl;
 
@@ -58,17 +57,13 @@ open3d::geometry::PointCloud computeISSPointClouds(open3d::geometry::PointCloud 
 }
 
 pipelines::registration::Feature computeFPFHs(open3d::geometry::PointCloud cloud) {
-    // Compute Features
+        // Compute Features
         std::cout << "Computing FPFHs... " << std::flush;
         auto feature =  *pipelines::registration::ComputeFPFHFeature(cloud, search_param);
         std::cout << "- done." << std::endl;
 
-    // print feature information
-//        std::cout <<  "Dimensions: " << feature.Dimension() << std::endl;
+        // print feature information
         std::cout <<  "Number of features: " << feature.Num() << std::endl;
-
-//        std::cout << "feature.rows(): " << feature.data_.rows() << std::endl;
-//        std::cout << "feature.cols(): " << feature.data_.cols() << std::endl;
 
         return feature;
 }
@@ -85,7 +80,7 @@ teaser::PointCloud convertToTeaserCloud(geometry::PointCloud cloud) {
 }
 
 Eigen::Matrix<double, 3, Eigen::Dynamic> convertToEigen(teaser::PointCloud cloud) {
-    std::cout << "converting to eigen3 Matrix... " << std::flush;
+    std::cout << "Converting to eigen3 Matrix... " << std::flush;
     int N = cloud.size();
     Eigen::Matrix<double, 3, Eigen::Dynamic> eigen(3, N);
     for (size_t i = 0; i < cloud.size(); ++i) {
