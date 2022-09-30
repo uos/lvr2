@@ -24,8 +24,8 @@
 
 namespace lvr2 {
     /**
-     * scanProject speicehrt metadaten des Projects
-     * @return Discription of ScanProject
+     * scanProject speichert metadaten des Projects
+     * @return Description of ScanProject
      */
     Description ScanProjectSchemaRdbx::scanProject() const
     {
@@ -36,7 +36,7 @@ namespace lvr2 {
         return d;
     }
     /**
-     * position speicehrt metadaten des position
+     * position speichert metadaten des position
      * @param scanPosNo
      * @return
      */
@@ -55,10 +55,10 @@ namespace lvr2 {
         return d;
     }
     /**
-     *  Lidar Discripion ist behinhaltet nur dataRoto um die Ordnung zu erhalten Riegl hat nur einen Scaner
+     *  Lidar Description beinhaltet nur dataRoot um die Ordnung zu erhalten Riegl hat nur einen Scaner
      * @param scanPosNo
      * @param lidarNo
-     * @return Lidar Discription
+     * @return Lidar Description
      */
     Description ScanProjectSchemaRdbx::lidar(
             const size_t& scanPosNo,
@@ -73,7 +73,7 @@ namespace lvr2 {
         return d;
     }
     /**
-     *  camera Discripion ist behinhaltet nur dataRoto um die Ordnung zu erhalten Riegl hat nur einen Camera
+    * Camera Description beinhaltet nur dataRoot um die Ordnung zu erhalten Riegl hat nur eine Camera
     * @param scanPosNo
     * @param cameraNo
     * @return camera Discription
@@ -92,7 +92,7 @@ namespace lvr2 {
     }
     /**
      *
-     *  scan Discripion  behinhaltet die Scandata und Metadata
+     *  scan Description behinhaltet die Scandata und Metadata
      *
      * @param scanPosNo
      * @param lidarNo
@@ -110,7 +110,7 @@ namespace lvr2 {
         Description d;
 
         struct dirent *ent;
-        //matching REX mit Datum des Scans
+        //matching REGEX mit Datum des Scans
         std::vector<std::string> matching_files;
         boost::filesystem::directory_iterator end_itr;
         std::regex rxRDBX("([0-9]+)\\_([0-9]+)\\.rdbx" );
@@ -124,7 +124,7 @@ namespace lvr2 {
                 matching_files.push_back(i->path().stem().string());
             }
         }
-        //Sortiern der Daten damit dei .rdbx Dateien vorne sind
+        //Sortiern der Daten damit die .rdbx Dateien vorne sind
         std::sort(matching_files.begin(), matching_files.end());
 
         if(matching_files.size() > scanNo) {
@@ -155,7 +155,7 @@ namespace lvr2 {
     }
 
     /**
-     * cameraImage Discripion  behinhaltet die Fotos und Metadata
+     * cameraImage Description beinhaltet die Fotos und Metadata
      * vergleichbar zu scan
      * @param scanPosNo
      * @param camNo
