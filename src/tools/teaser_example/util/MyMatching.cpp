@@ -24,8 +24,6 @@ std::vector<std::pair<int, int>> MyMatching(
     std::vector<int> tmp_index(1);
     std::vector<double> tmp_distance2(1);
 
-
-
     std::cout << "Matching... <" << std::flush;
 
     int lengthOfFor = dst_features.data_.cols() + src_features.data_.cols();
