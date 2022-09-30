@@ -37,6 +37,7 @@ struct convert<lvr2::CameraImage>
 
     static bool decode(const Node& node, lvr2::CameraImage& scanImage) 
     {
+        //skip this for now since we cant read the riegl scanprojects otherwise
        // Check if 'entity' and 'type' Tags are valid
 //        if (!YAML_UTIL::ValidateEntityAndTypeSilent(node,
 //            "camera_image",

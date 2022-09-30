@@ -183,6 +183,8 @@ namespace lvr2
 
         /// Timestamp when this position was created
         double timestamp = 0.0;
+
+        /// Original name for the riegl scanproject since there could be empty scans
         double original_name = 0;
 
         //// META END
