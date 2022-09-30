@@ -182,7 +182,7 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
     }
     transformation(3,3) = 1;
 
-
+    // Save the result of the global transformation matrix into a new .meta file
     OldTransformation=OldTransformation*transformation;
     std::ofstream file;
     stringstream s;
@@ -241,6 +241,7 @@ int main() {
     //Magicnumber for the amount of scans in the scanproject
     int numberOfScans = 11; //TODO: Read the Path and count the number of scans
 
+    //reads the Scans und ändert in der .ply Datei vertex zu point, da teaser++ das so haben will
     for (int i = 1; i <= numberOfScans; ++i) {
         std::stringstream tmp_stream;
         tmp_stream << robo_dir << "/" << std::setfill('0') << std::setw(8) << i << "/lidar_00000000/00000000/points.ply";
@@ -251,13 +252,14 @@ int main() {
         pointtovertex(source_path_vertex, dest_path);
     }
 
+    // the first transformation is always the identity matrix
     OldTransformation<< 1,0,0,0,
                         0,1,0,0,
                         0,0,1,0,
                         0,0,0,1;
 
 
-
+    // Goes over the scanproject and matches 1 with 2 and 2 with 3 and so on
     for (int i = 1; i <= numberOfScans; ++i) {
         if(i < numberOfScans)
         {
