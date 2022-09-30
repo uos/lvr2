@@ -10,8 +10,13 @@
 #include <string>
 
 
-
-//replaces the first instance of toReplace with replaceWith in given string
+/**
+    * @brief replaces a word in a string
+    *
+    * @param s, string to replace something in
+    * @param toReplace
+    * @param replaceWith
+    */
 void replace_first(
         std::string &s,
         std::string const &toReplace,
