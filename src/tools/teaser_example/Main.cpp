@@ -7,15 +7,10 @@
 #include <random>
 #include "util/pointtovertex.h"
 #include <Eigen/Core>
-
 #include <filesystem>
-
-//#include <teaser/ply_io.h>
 #include <teaser/registration.h>
-//#include <teaser/matcher.h>
 #include "open3d/Open3D.h"
 #include "lvr2/util/TransformUtils.hpp"
-
 #include "util/MyMatching.h"
 
 #define NOISE_BOUND 0.05
@@ -45,15 +40,6 @@ open3d::geometry::PointCloud readAndPreprocessPointCloud(std::string path) {
     return cloud;
 }
 
-//void estimatingNormals(geometry::PointCloud cloud&) {
-//    // Estimating Normals
-//    std::cout << "Estimating Normals... ";
-//    cloud.EstimateNormals(search_param);
-//    std::cout << "- done." << std::endl;
-//
-//    return;
-//}
-
 open3d::geometry::PointCloud computeISSPointClouds(open3d::geometry::PointCloud cloud)
 {
     // ISS
@@ -71,10 +57,10 @@ open3d::geometry::PointCloud computeISSPointClouds(open3d::geometry::PointCloud 
     return iss_cloud;
 }
 
-pipelines::registration::Feature computeFPFHs(open3d::geometry::PointCloud iss_cloud) {
+pipelines::registration::Feature computeFPFHs(open3d::geometry::PointCloud cloud) {
     // Compute Features
         std::cout << "Computing FPFHs... " << std::flush;
-        auto feature =  *pipelines::registration::ComputeFPFHFeature(iss_cloud, search_param);
+        auto feature =  *pipelines::registration::ComputeFPFHFeature(cloud, search_param);
         std::cout << "- done." << std::endl;
 
     // print feature information
@@ -179,6 +165,8 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
               << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() /
                  1000000.0
               << std::endl;
+
+    //Save the Results of the teaser Solver to Metadata
     Eigen::Matrix<float_t ,4,4> transformation;
 
     for (int i=0;i<=3;i++){
@@ -217,12 +205,12 @@ void solveTeaserWithCorrespondences(teaser::PointCloud src_cloud, teaser::PointC
 
 }
 
-void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std::string target_path) {
+
+void teaserRegistration(std::string src_path, std::string target_path, double voxel_size = 1.0) {
 
     geometry::PointCloud src_cloud = readAndPreprocessPointCloud(src_path);
     geometry::PointCloud target_cloud = readAndPreprocessPointCloud(target_path);
 
-    double voxel_size =  0.5;
     geometry::PointCloud sampled_src_cloud = *src_cloud.VoxelDownSample(voxel_size);
     geometry::PointCloud sampled_target_cloud = *target_cloud.VoxelDownSample(voxel_size);
     std::cout << "Voxel source size: " << sampled_src_cloud.points_.size() << std::endl;
@@ -244,7 +232,11 @@ void workflowCorrespondencesAndDownSamplingWithoutISS(std::string src_path, std:
 }
 
 int main() {
-    // file paths
+
+    //voxelsize for the voxelreduktion, higher value -> stronger reduction
+    const double voxelsize = 0.5;
+
+    //File paths for Scanproject
     std::string robo_dir = "/home/praktikum/Desktop/Schematest/raw";
     std::string matrix_dir = "/home/praktikum/Desktop/teaserOpen3d/ply";
 
@@ -252,7 +244,7 @@ int main() {
     std::string vertex = "_vertex";
 
     //Magicnumber for the amount of scans in the scanproject
-    int numberOfScans = 11;
+    int numberOfScans = 11; //TODO: Read the Path and count the number of scans
 
     for (int i = 1; i <= numberOfScans; ++i) {
         std::stringstream tmp_stream;
@@ -280,7 +272,7 @@ int main() {
             tmp_stream2 << matrix_dir << "/" << std::setfill('0') << std::setw(3) << i+1 << ".ply";
             std::string src_path = tmp_stream.str();
             std::string target_path = tmp_stream2.str();
-            workflowCorrespondencesAndDownSamplingWithoutISS(src_path, target_path);
+            teaserRegistration(src_path, target_path, voxelsize);
         }
         else if(i == numberOfScans)
         {
