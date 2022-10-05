@@ -350,7 +350,7 @@ public:
 
     bool useGPU() const;
 
-    vector<float> getFlippoint() const;
+    boost::optional<vector<float>> getFlippoint() const;
 
     bool texturesFromImages() const;
 
@@ -644,11 +644,14 @@ inline ostream& operator<<(ostream& os, const Options &o)
     if(o.useGPU())
     {
         cout << "##### GPU normal estimation \t: ON" << endl;
-        std::vector<float> flipPoint = o.getFlippoint();
-        cout << "##### Flippoint \t\t: ("
-            << flipPoint[0] << ", "
-            << flipPoint[1] << ", "
-            << flipPoint[2] << ")" << endl;
+        auto fpOpt = o.getFlippoint();
+        if(fpOpt)
+        {
+            cout << "##### Flippoint \t\t: ("
+                 << (*fpOpt)[0] << ", "
+                 << (*fpOpt)[1] << ", "
+                 << (*fpOpt)[2] << ")" << endl;
+        }
     }else{
         cout << "##### GPU normal estimation \t: OFF" << endl;
     }

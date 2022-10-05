@@ -186,6 +186,10 @@ Transform<T> getTransformationFromFile(const boost::filesystem::path& file)
     {
         return getTransformationFromFrames<T>(file);
     }
+    else if(extension == ".matrix")
+    {
+        return loadFromFile<T>(file);
+    }
     
     throw std::invalid_argument(string("Unknown Pose extension: ") + extension.string());
 }

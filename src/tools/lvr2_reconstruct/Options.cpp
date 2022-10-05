@@ -38,6 +38,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <boost/optional.hpp>
+
 namespace std
 {
   std::ostream& operator<<(std::ostream &os, const std::vector<std::string> &vec) 
@@ -461,25 +463,18 @@ bool Options::useGPU() const
     return m_variables.count("useGPU");
 }
 
-vector<float> Options::getFlippoint() const
+boost::optional<vector<float>>  Options::getFlippoint() const
 {
     vector<float> dest;
     if(m_variables.count("flipPoint"))
     {
         dest = (m_variables["flipPoint"].as< vector<float> >());
-        if(dest.size() != 3)
+        if(dest.size() == 3)
         {
-            dest.clear();
-            dest.push_back(10000000);
-            dest.push_back(10000000);
-            dest.push_back(10000000);
+            return dest;
         }
-    }else{
-        dest.push_back(10000000);
-        dest.push_back(10000000);
-        dest.push_back(10000000);
     }
-    return dest;
+    return boost::none;
 }
 
 bool Options::texturesFromImages() const

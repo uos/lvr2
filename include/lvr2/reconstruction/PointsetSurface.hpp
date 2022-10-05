@@ -127,6 +127,11 @@ public:
      */
     void setKd(int k) { m_kd = k; }
 
+    void setFlipPoint(const BaseVecT &flipPoint)
+    {
+        m_flipPoint = flipPoint;
+    }
+
 protected:
 
     /**
@@ -155,6 +160,10 @@ protected:
 
     /// The number of points used for distance function evaluation
     int m_kd;
+
+
+    /// The point to flip normals towards if there are no poses available
+    BaseVecT m_flipPoint;
 };
 
 template <typename BaseVecT>

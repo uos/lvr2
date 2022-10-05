@@ -145,11 +145,6 @@ public:
      */
     virtual void calculateSurfaceNormals();
 
-    void setFlipPoint(const BaseVecT& flipPoint)
-    {
-        m_flipPoint = flipPoint;
-    }
-
 
     // /**
     //  * @brief Returns the number of managed points
@@ -289,12 +284,6 @@ private:
         const BaseVecT &queryPoint,
         const vector<size_t> &id
     );
-
-
-
-
-    /// The point to flip normals towards if there are no poses available
-    BaseVecT m_flipPoint;
 
     // 0: PCA
     // 1: RANSAC

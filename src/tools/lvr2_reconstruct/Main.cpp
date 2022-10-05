@@ -412,13 +412,30 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     surface->setKi(options.getKi());
     surface->setKn(options.getKn());
 
+    auto flipPointOptional = options.getFlippoint();
+    BaseVector<float> flipPoint(0.0f, 0.0f, 0.0f);
+
+    if(flipPointOptional)
+    {
+        vector<float> v = *flipPointOptional;
+        flipPoint[0] = v[0];
+        flipPoint[1] = v[1];
+        flipPoint[2] = v[2];
+        std::cout << timestamp << "Flip point for normal estimation set to : " << flipPoint << std::endl;
+    }
+    else
+    {
+         std::cout << timestamp << "No flip point set, defaulting to (0,0,0) " <<  std::endl;
+    }
+    surface->setFlipPoint(flipPoint);
+    
+
     // Calculate normals if necessary
     if(!buffer->hasNormals() || options.recalcNormals())
     {
         if(options.useGPU())
         {
             #ifdef GPU_FOUND
-                std::vector<float> flipPoint = options.getFlippoint();
                 size_t num_points = buffer->numPoints();
                 floatArr points = buffer->getPointArray();
                 floatArr normals = floatArr(new float[ num_points * 3 ]);

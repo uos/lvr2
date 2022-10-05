@@ -230,13 +230,13 @@ void transformAndReducePointCloud(
 template<typename T>
 void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
 {
-    std::cout << timestamp << "Transforming model." << std::endl;
+    std::cout << timestamp << "Transforming points..." << std::endl;
 
     size_t numPoints = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
 
     #pragma omp parallel for
-    for(int i = 0; i < numPoints; i++)
+    for(size_t i = 0; i < numPoints; i++)
     {
         float x = arr[3 * i];
         float y = arr[3 * i + 1];
@@ -248,6 +248,31 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
         arr[3 * i]     = tv[0];
         arr[3 * i + 1] = tv[1];
         arr[3 * i + 2] = tv[2];
+    }
+
+    // Transform normals according to rotation part of the 
+    // matrix
+    floatArr normals = model->m_pointCloud->getNormalArray();
+
+    if(normals)
+    {
+        std::cout << timestamp << "Transforming normals..." << std::endl;
+        Eigen::Matrix<T, 3, 3> rotation = transformation.template block<3, 3>(0, 0);
+
+        #pragma omp parallel for
+        for (size_t i = 0; i < numPoints; i++)
+        {
+            float x = arr[3 * i];
+            float y = arr[3 * i + 1];
+            float z = arr[3 * i + 2];
+
+            Vector3<T> n(x, y, z);
+            Vector3<T> tv = rotation * n;
+
+            normals[3 * i] = tv[0];
+            normals[3 * i + 1] = tv[1];
+            normals[3 * i + 2] = tv[2];
+        }
     }
 }
 
