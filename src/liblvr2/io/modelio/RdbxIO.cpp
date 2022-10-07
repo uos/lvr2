@@ -394,9 +394,9 @@ namespace lvr2
 
             // Prepare point attribute buffers
             static const uint32_t BUFFER_SIZE = 10000;
-            std::vector< std::array<float, 3> >     bufferCoordinates   (BUFFER_SIZE);         //std::vector<unsigned char> bufferCoordinates(BUFFER_SIZE * sizeof(float) * 3);
+            std::vector< std::array<float, 3> >     bufferCoordinates   (BUFFER_SIZE);
             std::vector< std::array<uint8_t, 4> >   bufferTrueColor     (BUFFER_SIZE);
-            std::vector< float >                    bufferReflectance   (BUFFER_SIZE);         //std::vector<unsigned char> bufferReflectance(BUFFER_SIZE * sizeof(float));
+            std::vector< float >                    bufferReflectance   (BUFFER_SIZE);
             std::vector< float >                    bufferAmplitude     (BUFFER_SIZE);
             std::vector< float >                    bufferDeviation     (BUFFER_SIZE);
             std::vector< uint8_t >                  bufferMta_zone      (BUFFER_SIZE);
@@ -415,7 +415,7 @@ namespace lvr2
             uint32_t numPoints = root.pointCountTotal ;
 
             // Binding Buffers to the select query, so they get filled on select.next()
-            // All but Coordinates only get bound if they are selected/available
+            // All except Coordinates get bound only if they are selected/available
             using namespace riegl::rdb::pointcloud;
 
             // binding coordinates buffer ad allocating memory

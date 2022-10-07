@@ -106,7 +106,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
         // std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
         // Get description for next scan
 
-        //hier werden die Directories erstellt aber für alle Dateitypen identisch
+        // Generate Directories for all Filetypes
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
         if(!scanPos)
         {

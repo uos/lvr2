@@ -45,7 +45,7 @@ namespace lvr2 {
     {
         Description dp = scanProject();
         Description d;
-        //Ordner der Position im Projekt finden
+        //Find Path to Scan Position
         std::stringstream tmp_stream;
         tmp_stream << *dp.dataRoot << "ScanPos" << std::setfill('0') << std::setw(3) << scanPosNo << ".SCNPOS";
         d.dataRoot = tmp_stream.str();
@@ -110,7 +110,7 @@ namespace lvr2 {
         Description d;
 
         struct dirent *ent;
-        //matching REGEX mit Datum des Scans
+        //matching REGEX to Timestamp of Scan
         std::vector<std::string> matching_files;
         boost::filesystem::directory_iterator end_itr;
         std::regex rxRDBX("([0-9]+)\\_([0-9]+)\\.rdbx" );
@@ -124,7 +124,7 @@ namespace lvr2 {
                 matching_files.push_back(i->path().stem().string());
             }
         }
-        //Sortiern der Daten damit die .rdbx Dateien vorne sind
+        //Sort Files. Rdbx Files come first
         std::sort(matching_files.begin(), matching_files.end());
 
         if(matching_files.size() > scanNo) {
@@ -171,12 +171,12 @@ namespace lvr2 {
         Description dp = lidar(scanPosNo,camNo);
         auto path = m_rootPath / dp.dataRoot.get() / "images";
 
-        //finden des richtigen Files (nur den Anfang)
+        // find the right files
         std::vector<std::string> matching_files;
         boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
         std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0"+to_string(cameraImageNos.front()+1)+"_([0-9])+\\.jpg" );
 
-        //durchsuchen des Ordners
+        // search the directory
         for( boost::filesystem::directory_iterator i( path ); i != end_itr; ++i ) {
             // Skip if not a file
             if (!boost::filesystem::is_regular_file(i->status())) continue;
@@ -187,7 +187,7 @@ namespace lvr2 {
         }
 
         Description d;
-        //Laden der Bilder und der Metadaten
+        // Load images and meta data
         if(matching_files.size() > camNo) {
             d.data = matching_files[camNo] + ".jpg";
             d.meta = matching_files[camNo] + ".img";
