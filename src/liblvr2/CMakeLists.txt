@@ -48,7 +48,7 @@ set(LVR2_SOURCES
     io/modelio/DatIO.cpp
     io/modelio/LasIO.cpp
     io/modelio/GeoTIFFIO.cpp
-#    io/KinectIO.cpp
+    # io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp
     io/modelio/PPMIO.cpp
     io/modelio/PLYIO.cpp
@@ -102,7 +102,11 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
-)
+    io/kernels/DirectoryKernel.cpp
+    io/modelio/RdbxIO.cpp
+    io/schema/ScanProjectSchemaRdbx.cpp
+
+        )
 
 #####################################################################################
 # Add PCD io if PCL is installed
@@ -172,7 +176,8 @@ endif()
 
 set(LVR2_INTERNAL_DEPENDENCIES_STATIC
     lvr2rply_static
-    lvr2las_static)
+    lvr2las_static
+    )
 
 set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2rply
@@ -193,8 +198,10 @@ endif(UNIX)
 
 add_library(lvr2core OBJECT ${LVR2_SOURCES})
 
+
 if(WITH_3DTILES)
     add_dependencies(lvr2core cesium-native)
+
 endif(WITH_3DTILES)
 
 #####################################################################################
@@ -206,7 +213,11 @@ add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
 target_link_libraries(
   lvr2_static 
   ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
-  ${LVR2_LIB_DEPENDENCIES})
+  ${LVR2_LIB_DEPENDENCIES}
+
+)
+
+
 
 
 #####################################################################################
@@ -218,7 +229,8 @@ message(STATUS "Building shared library")
  target_link_libraries(
     lvr2 
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
-    ${LVR2_LIB_DEPENDENCIES})
+    ${LVR2_LIB_DEPENDENCIES}
+          )
 
 install(TARGETS lvr2_static lvr2
   EXPORT lvr2Targets

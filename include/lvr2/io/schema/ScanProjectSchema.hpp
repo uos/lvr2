@@ -31,6 +31,7 @@ struct Description
 
     StringOptional metaRoot;
     StringOptional meta;
+
 };
 
 std::ostream& operator<<(std::ostream& os, const Description& desc);

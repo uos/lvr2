@@ -22,6 +22,7 @@
 #include <string>
 
 #include <boost/variant.hpp>
+#include <yaml-cpp/yaml.h>
 
 namespace lvr2
 {
@@ -66,17 +67,23 @@ namespace lvr2
     // either one image or one image group
     using CameraImageOrGroup = Variant<CameraImagePtr, CameraImageGroupPtr>;
 
-    struct ScanProjectEntity
-    {
-        static constexpr char entity[] = "scan_project";
+    struct BaseEntity {
+        YAML::Node metadata;
+
     };
 
-    struct ScanPositionEntity
+    struct ScanProjectEntity: public BaseEntity
+    {
+        static constexpr char entity[] = "scan_project";
+
+    };
+
+    struct ScanPositionEntity: public BaseEntity
     {
         static constexpr char entity[] = "scan_position";
     };
 
-    struct SensorEntity
+    struct SensorEntity: public BaseEntity
     {
         static constexpr char entity[] = "sensor";
         // Optional name of this sensor: e.g. RieglVZ-400i
@@ -84,17 +91,17 @@ namespace lvr2
         // Fixed transformation to upper frame (ScanPosition)
     };
 
-    struct SensorDataEntity
+    struct SensorDataEntity: public BaseEntity
     {
         static constexpr char entity[] = "sensor_data";
     };
 
-    struct SensorDataGroupEntity
+    struct SensorDataGroupEntity: public BaseEntity
     {
         static constexpr char entity[] = "sensor_data_group";
     };
 
-    struct LabelDataEntity
+    struct LabelDataEntity: public BaseEntity
     {
         static constexpr char entity[] = "label_data";
     };
@@ -176,6 +183,9 @@ namespace lvr2
 
         /// Timestamp when this position was created
         double timestamp = 0.0;
+
+        /// Original name for the riegl scanproject since there could be empty scans
+        double original_name = 0;
 
         //// META END
 

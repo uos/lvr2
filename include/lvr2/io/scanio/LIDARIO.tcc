@@ -12,7 +12,7 @@ void LIDARIO<BaseIO>::save(
     auto Dgen = m_baseIO->m_description;
     Description d = Dgen->lidar(scanPosNo, lidarNo);
 
-    // std::cout << "LIDARIO - save data " << std::endl;
+    //std::cout << "LIDARIO - save data " << std::endl;
     // Save data
     for(size_t scanNo = 0; scanNo < lidar->scans.size(); scanNo++)
     {
@@ -35,6 +35,7 @@ boost::optional<YAML::Node> LIDARIO<BaseIO>::loadMeta(
         const size_t& scanPosNo,
         const size_t& lidarNo) const
 {
+
     Description d = m_baseIO->m_description->lidar(scanPosNo, lidarNo);
     return m_metaIO->load(d);
 }
@@ -44,6 +45,8 @@ LIDARPtr LIDARIO<BaseIO>::load(
     const size_t& scanPosNo,
     const size_t& lidarNo) const
 {
+    //std::cout << "LIDARIO - save data " << std::endl;
+
     LIDARPtr ret;
 
     auto Dgen = m_baseIO->m_description;
@@ -51,12 +54,13 @@ LIDARPtr LIDARIO<BaseIO>::load(
 
     if(!d.dataRoot)
     {
+
         return ret;
     }
-
     // check if group exists
     if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
+
         return ret;
     }
 
@@ -69,6 +73,7 @@ LIDARPtr LIDARIO<BaseIO>::load(
 
     if(d.meta)
     {
+
         YAML::Node meta;
         if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {

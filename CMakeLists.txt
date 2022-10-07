@@ -75,6 +75,25 @@ endif(MSVC)
 # EXTERNAL LIBRARIES
 ###############################################################################
 
+###############################################################################
+# RDB
+###############################################################################
+
+find_package(RDB REQUIRED)
+
+if(RDB_FOUND)
+    include_directories(${RDB_INCLUDE_DIRS})
+    message(STATUS "Found LibRDB at ${RDB_INCLUDE_DIRS}, ${RDB_LIBRARIES}.")
+
+    # TODO: Should we really do this?
+    install(TARGETS rdbcpp
+            EXPORT lvr2Targets
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            )
+endif()
+
+
 #------------------------------------------------------------------------------
 # Searching for Thread Building Blocks library
 #------------------------------------------------------------------------------
@@ -91,6 +110,7 @@ if(TIFF_FOUND)
     include_directories(${TIFF_INCLUDE_DIRS})
 endif(TIFF_FOUND)
 
+
 #------------------------------------------------------------------------------
 # Searching for GDAL
 #------------------------------------------------------------------------------
@@ -99,6 +119,7 @@ if(GDAL_FOUND)
 message(STATUS "Found GDAL")
     include_directories(${GDAL_INCLUDE_DIR})
 endif(GDAL_FOUND)
+
 
 #------------------------------------------------------------------------------
 # Searching for CUDA
@@ -172,6 +193,7 @@ message(STATUS "Found GSL")
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 message(STATUS "Found Eigen3")
+message(${EIGEN3_INCLUDE_DIR})
 
 #------------------------------------------------------------------------------
 # Searching for OpenCl
@@ -369,7 +391,7 @@ else(GLUT_FOUND)
   include_directories(${GLUT_INCLUDEDIR})
   link_directories(${GLUT_LIBDIR})
   set(GLUT_LIBRARIES ${pkgcfg_lib_GLUT_glut})
-  message(STATUD "Using ugly cmake cache hack to provide GLUT libraries: ": ${GLUT_LIBRARIES})
+  message(STATUS "Using ugly cmake cache hack to provide GLUT libraries: ": ${GLUT_LIBRARIES})
 endif(GLUT_FOUND)
 
 #------------------------------------------------------------------------------
@@ -644,6 +666,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${OpenMP_CXX_LIBRARIES}
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     m
+    ${RDB_LIBRARIES}
     )
 endif()
 
@@ -730,6 +753,9 @@ add_subdirectory(src/tools/lvr2_ground_level_extractor)
 # add_subdirectory(src/tools/lvr2_hdf5_convert_old)
 add_subdirectory(src/tools/lvr2_hdf5_inspect)
 add_subdirectory(src/tools/lvr2_3dtiles)
+
+# new by praktikum
+add_subdirectory(src/tools/teaser_example)
 
 
 

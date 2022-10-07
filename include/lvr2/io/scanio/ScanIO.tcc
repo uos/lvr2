@@ -178,7 +178,6 @@ ScanPtr ScanIO<BaseIO>::load(
     {
         return ret;
     }
-
     if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
@@ -489,6 +488,7 @@ ScanPtr ScanIO<BaseIO>::loadScan(
     const size_t& sensorNo,
     const size_t& scanNo) const
 {
+    cout << "scan read"<< endl;
     return load(scanPosNo, sensorNo, scanNo);
 }
 

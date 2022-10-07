@@ -10,21 +10,26 @@ void ScanProjectIO<BaseIO>::save(
     Description d = m_baseIO->m_description->scanProject();
 
 
-    // std::cout << "[ScanProjectIO - save]: Description" << std::endl;
-    // std::cout << d << std::endl;
-
-    // if(!d.dataRoot)
-    // {
-    //     std::cout << timestamp << "[ScanProjectIO] Description does not contain a data root for the ScanProject" << std::endl;
-    //     d.dataRoot = "";
-    // }
-
-    // std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
+//     std::cout << "[ScanProjectIO - save]: Description" << std::endl;
+//     std::cout << d << std::endl;
+//
+//     if(!d.dataRoot)
+//     {
+//         std::cout << timestamp << "[ScanProjectIO] Description does not contain a data root for the ScanProject" << std::endl;
+//         d.dataRoot = "";
+//     }
+//
+//     std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
     // Iterate over all positions and save
-    for (size_t i = 0; i < scanProject->positions.size(); i++)
+    size_t successfulScans =1;
+    for (size_t i = 1; i <= scanProject->positions.size(); i++)
     {
         // std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
-        m_scanPositionIO->saveScanPosition(i, scanProject->positions[i]);
+        if (!(m_scanPositionIO->saveScanPosition(successfulScans, scanProject->positions[i]))){
+            successfulScans--;
+
+        }
+        successfulScans++;
     }
 
     // Default scan project yaml
@@ -54,7 +59,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
     Description d = m_baseIO->m_description->scanProject();
 
     // std::cout << "[HDF5IO - ScanProjectIO - load]: Description" << std::endl;
-    // std::cout << d << std::endl;
+    std::cout << d << std::endl;
 
     if(!d.dataRoot)
     {
@@ -93,18 +98,28 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
 
 
     // Get all sub scans
-    size_t scanPosNo = 0;
+    size_t scanPosNo = 1;
     while(true)
     {  
         // std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
         // Get description for next scan
+
+        //hier werden die Directerys erstellen aber für alle Dateitypen identisch
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
         if(!scanPos)
         {
-            break;
+            Description d = m_baseIO->m_description->position(scanPosNo);
+            // Check if specified scan position exists
+            if(!m_baseIO->m_kernel->exists(*d.dataRoot))
+            {
+
+                break;
+            }
+
+
         }
 
-        // std::cout << "[ScanProjectIO - load] loaded ScanPosition "  << scanPosNo << std::endl;
+
         ret->positions.push_back(scanPos);
         scanPosNo++;
     }
@@ -169,6 +184,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::loadScanProject(ReductionAlgorithmPtr redu
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo, reduction);
         if(!scanPos)
         {
+            //if
             break;
         }
         ret->positions.push_back(scanPos);

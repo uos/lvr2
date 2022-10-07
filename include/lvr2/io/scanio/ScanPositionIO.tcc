@@ -5,29 +5,31 @@ namespace scanio
 {
 
 template <typename  BaseIO>
-void ScanPositionIO< BaseIO>::save(
+bool ScanPositionIO< BaseIO>::save(
     const size_t& scanPosNo, 
     ScanPositionPtr scanPositionPtr) const
 {
     Description d = m_baseIO->m_description->position(scanPosNo);
-  
-    // std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
-    // std::cout << d << std::endl;
+
+    std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
+    std::cout << d << std::endl;
 
     if(!d.dataRoot)
     {
         // dataRoot has to be specified!
-        return;
+        return false;
     }
 
     if(!scanPositionPtr)
     {
-        return;
+        return false;
     }
 
     // Save all lidar sensors
+    //cout <<scanPositionPtr->lidars.size()<< endl;
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
     {
+
         // std::cout << " [ScanPositionIO]: Writing lidar " << i << std::endl;
         m_lidarIO->save(scanPosNo, i, scanPositionPtr->lidars[i]);
     }
@@ -59,7 +61,7 @@ void ScanPositionIO< BaseIO>::save(
         node = *scanPositionPtr;
         m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
-
+    return true;
     // std::cout << "[ScanPositionIO] Meta written. " << std::endl;
 }
 
@@ -96,18 +98,25 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     if(d.meta)
     {
         YAML::Node meta;
+
         if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
 
+        // -1 because it somehow writes scanPosNo + 1 into the meta.yaml
+        // even though the debugger says scanPosNo is the right number
+        meta["original_name"] = scanPosNo - 1;
+
         try {
+
             ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
+
         } catch(const YAML::TypedBadConversion<ScanPosition>& ex) {
             std::cerr << "[ScanPositionIO - load] ERROR at Scan (" << scanPosNo << ") : Could not decode YAML as ScanPosition." << std::endl;
             throw ex;
         }
-       
+
     } else {
         // no meta name specified but scan position is there: 
         ret = std::make_shared<ScanPosition>();
@@ -190,11 +199,11 @@ ScanPositionPtr ScanPositionIO< BaseIO>::load(
 }
 
 template <typename  BaseIO>
-void ScanPositionIO< BaseIO>::saveScanPosition(
+bool ScanPositionIO< BaseIO>::saveScanPosition(
     const size_t& scanPosNo, 
     ScanPositionPtr scanPositionPtr) const
 {
-    save(scanPosNo, scanPositionPtr);
+   return save(scanPosNo, scanPositionPtr);
 }
 
 template <typename  BaseIO>

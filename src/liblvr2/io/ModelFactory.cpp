@@ -40,6 +40,7 @@
 #include "lvr2/io/modelio/DatIO.hpp"
 #include "lvr2/io/modelio/STLIO.hpp"
 #include "lvr2/io/modelio/B3dmIO.hpp"
+#include "lvr2/io/modelio/RdbxIO.hpp"
 
 // #include "lvr2/io/HDF5IO.hpp"
 // #include "lvr2/io/WaveformIO.hpp"
@@ -82,6 +83,11 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new AsciiIO;
     }
+    else if(extension == ".rdbx")
+    {
+        io = new RdbxIO;
+    }
+
 #ifdef LVR2_USE_RIVLIB
     else if(extension == ".rxp")
     {
@@ -208,7 +214,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
 
 void ModelFactory::saveModel( ModelPtr m, std::string filename)
 {
-    // Get file exptension
+    // Get file extension
     boost::filesystem::path selectedFile(filename);
     std::string extension = selectedFile.extension().string();
 
@@ -231,6 +237,11 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     {
         io = new STLIO;
     }
+    /**else if (extension == ".rdbx")
+    {
+        io = new RdbxIO;
+    }**/
+
 #ifdef LVR2_USE_3DTILES
     else if (extension == ".b3dm")
     {

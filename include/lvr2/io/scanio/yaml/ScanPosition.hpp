@@ -24,13 +24,14 @@ struct convert<lvr2::ScanPosition>
      * Encode Eigen matrix to yaml. 
      */
     static Node encode(const lvr2::ScanPosition& scanPos) {
-        Node node;
+        Node node = scanPos.metadata;
         
         node["entity"] = lvr2::ScanPosition::entity;
         node["type"] = lvr2::ScanPosition::type;
         node["pose_estimation"] = scanPos.poseEstimation;
         node["transformation"] = scanPos.transformation;
         node["timestamp"] = scanPos.timestamp;
+        node["original_name"] = scanPos.original_name;
 
         if(scanPos.boundingBox)
         {
@@ -42,17 +43,35 @@ struct convert<lvr2::ScanPosition>
 
     static bool decode(const Node& node, lvr2::ScanPosition& scanPos) 
     {
+        //skip this for now since we cant read the riegl scanprojects otherwise
         // Check if 'entity' and 'type' Tags are valid
         // maybe checking for both is redundant because they are the same
         // but maybe this changes in the future, so just leave it like this
-        if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "scan_position", 
-            lvr2::ScanPosition::entity, 
+    /*    if (!YAML_UTIL::ValidateEntityAndType(node,
+            "scan_position",
+            lvr2::ScanPosition::entity,
             lvr2::ScanPosition::type))
         {
             return false;
         }
-        
+*/
+
+        if(node["original_name"])
+        {
+            try {
+                scanPos.original_name = node["original_name"].as<double>();
+            } catch(const YAML::TypedBadConversion<double>& ex) {
+                std::cerr << "[YAML - ScanPosition - decode] ERROR: Could not decode 'orginal_name': "
+                          << node["original_name"] << " as double" << std::endl;
+                return false;
+            }
+        } else {
+            // TODO: was soll hier gespeichert werden
+            scanPos.original_name = -1;
+        }
+
+
+
         if(node["pose_estimation"])
         {
             try {
@@ -102,6 +121,11 @@ struct convert<lvr2::ScanPosition>
                 return false;
             }
         }
+
+        scanPos.metadata= node;
+        //TODO: Echten Namen finden eventuell bessere Ort finden
+
+
 
         return true;
     }

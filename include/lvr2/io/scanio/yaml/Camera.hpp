@@ -51,7 +51,7 @@ struct convert<lvr2::Camera>
                 camera.name = node["name"].as<std::string>();
             } catch(const YAML::TypedBadConversion<std::string>& ex) {
                 std::cerr << "[YAML - Camera - decode] ERROR: Could not decode 'name': " 
-                    << node["name"] << " as string" << std::endl; 
+                    << node["name"] << " as string" << std::endl;
                 return false;
             }
         }
@@ -77,7 +77,7 @@ struct convert<lvr2::Camera>
                 camera.model = node["model"].as<decltype(camera.model)>();
             } catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex) {
                 std::cerr << "[YAML - Camera - decode] ERROR: Could not decode 'model': " 
-                    << node["model"] << " as CameraModel" << std::endl; 
+                    << node["model"] << " as CameraModel" << std::endl;
                 return false;
             }
         }
