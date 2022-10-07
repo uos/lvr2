@@ -18,6 +18,7 @@ set(LVR2_ASCII_VIEWER_DEPS
     lvr2_static
     lvr2las_static
     lvr2rply_static
+    ${LVR2_LIB_DEPENDENCIES}
 )
 
 #####################################################################################

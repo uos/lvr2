@@ -754,8 +754,7 @@ add_subdirectory(src/tools/lvr2_ground_level_extractor)
 add_subdirectory(src/tools/lvr2_hdf5_inspect)
 add_subdirectory(src/tools/lvr2_3dtiles)
 
-# new by praktikum
-add_subdirectory(src/tools/teaser_example)
+#add_subdirectory(src/tools/teaser_example)
 
 
 
