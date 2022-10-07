@@ -21,10 +21,12 @@ void ScanProjectIO<BaseIO>::save(
 //
 //     std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
     // Iterate over all positions and save
-    size_t successfulScans =1;
-    for (size_t i = 1; i <= scanProject->positions.size(); i++)
+    size_t successfulScans = 1;
+
+    // Starting at i=0 but successfulScans = 1 because scanProject->positions[0] is Scan 1
+    for (size_t i = 0; i < scanProject->positions.size(); i++)
     {
-        // std::cout << "[ScanProjectIO] Save Pos" << i << std::endl;
+
         if (!(m_scanPositionIO->saveScanPosition(successfulScans, scanProject->positions[i]))){
             successfulScans--;
 
@@ -58,8 +60,8 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
     // Load description and meta data for scan project
     Description d = m_baseIO->m_description->scanProject();
 
-    // std::cout << "[HDF5IO - ScanProjectIO - load]: Description" << std::endl;
-    std::cout << d << std::endl;
+    //std::cout << "[HDF5IO - ScanProjectIO - load]: Description" << std::endl;
+    //std::cout << d << std::endl;
 
     if(!d.dataRoot)
     {
@@ -92,7 +94,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
         // some schemes do not have meta descriptions: slam6d
         // create without meta information: generate meta afterwards
 
-        // std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
+        std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
         ret = std::make_shared<ScanProject>();
     }
 
@@ -104,21 +106,18 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
         // std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
         // Get description for next scan
 
-        //hier werden die Directerys erstellen aber für alle Dateitypen identisch
+        //hier werden die Directories erstellt aber für alle Dateitypen identisch
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
         if(!scanPos)
         {
             Description d = m_baseIO->m_description->position(scanPosNo);
+
             // Check if specified scan position exists
             if(!m_baseIO->m_kernel->exists(*d.dataRoot))
             {
-
                 break;
             }
-
-
         }
-
 
         ret->positions.push_back(scanPos);
         scanPosNo++;
