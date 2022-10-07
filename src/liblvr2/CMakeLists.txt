@@ -99,6 +99,7 @@ set(LVR2_SOURCES
     util/Hdf5Util.cpp
     util/IOUtils.cpp
     util/Synthetic.cpp
+    util/ScanProjectSchemaUtils.cpp
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp

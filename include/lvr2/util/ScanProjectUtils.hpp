@@ -54,9 +54,13 @@ ScanProjectPtr scanProjectFromFile(const std::string& file);
  * 
  * @param dir                               A directory containing .ply files with point
  *                                          cloud data
- * @return ScanProjectPtr                   A new scan project or nullpt if loading failed.
+ * @return ScanProjectPtr                   A new scan project or nullptr if loading failed.
  */
 ScanProjectPtr scanProjectFromPLYFiles(const std::string& dir);
+
+
+ScanProjectPtr loadScanProject(const std::string& project, const std::string& schema);
+ 
 
 } // namespace LVR2
 
