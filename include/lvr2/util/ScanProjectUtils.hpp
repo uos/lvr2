@@ -60,14 +60,19 @@ ScanProjectPtr scanProjectFromFile(const std::string& file);
 ScanProjectPtr scanProjectFromPLYFiles(const std::string& dir);
 
 /**
- * @brief Loads a scan project from given source. The project is lazy-loaded,
- *        i.e., only the project structure and meta information is collected.
+ * @brief Loads a scan project from given source. 
  * 
  * @param schema    The schema name that describes the project's structure 
  * @param source    The data source
+ * @param loadData  If true, all data will be loaded. If false, only meta
+ *                  data and the project structure will be parsed.
+ * 
  * @return ScanProjectPtr   A new scan project or nullptr if loading failed.
  */
-ScanProjectPtr loadScanProject(const std::string& schema, const std::string source);
+ScanProjectPtr loadScanProject(
+    const std::string& schema, 
+    const std::string source, 
+    bool loadData = false);
  
 
 } // namespace LVR2

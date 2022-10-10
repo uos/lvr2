@@ -120,7 +120,7 @@ ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
     }
 }
 
-ScanProjectPtr loadScanProject(const std::string& schema, const std::string source)
+ScanProjectPtr loadScanProject(const std::string& schema, const std::string source, bool loadData)
 {
     boost::filesystem::path sourcePath(source);
 
@@ -134,14 +134,14 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string sour
 
         if(dirSchema && kernel)
         {
-            DirectoryIO dirio_in(kernel, dirSchema);
+            DirectoryIO dirio_in(kernel, dirSchema, loadData);
             return dirio_in.ScanProjectIO::load();
         }
     }
     // Check if we try to load a HDF5 file
     else if(sourcePath.extension() == ".h5")
     {
-        HDF5SchemaPtr hdf5Schema = hdf5SchemaFromName(schema);
+        HDF5SchemaPtr hdf5Schema = hdf5SchemaFromName(schema, loadData);
         HDF5KernelPtr kernel(new HDF5Kernel(source));
 
         if(hdf5Schema && kernel)
