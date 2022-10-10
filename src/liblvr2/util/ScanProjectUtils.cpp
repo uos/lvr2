@@ -1,6 +1,7 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Factories.hpp"
 #include "lvr2/util/ScanProjectUtils.hpp"
+#include "lvr2/util/ScanSchemaUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
 #include "lvr2/io/scanio/DirectoryIO.hpp"
@@ -40,7 +41,7 @@ std::pair<ScanPtr, Transformd> scanFromProject(ScanProjectPtr project, size_t sc
 ScanProjectPtr scanProjectFromHDF5(std::string file, const std::string& schemaName)
 {
     HDF5KernelPtr kernel(new HDF5Kernel(file));
-    HDF5SchemaPtr schema = hdf5SchemafromName(schemaName);
+    HDF5SchemaPtr schema = hdf5SchemaFromName(schemaName);
 
     lvr2::scanio::HDF5IO hdf5io(kernel, schema);
     return hdf5io.ScanProjectIO::load();
@@ -125,38 +126,76 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string sour
     boost::filesystem::path sourcePath(source);
 
     // Check if we try to load from a directory
-    if(boost::filesystem::is_directory(source) else
-        {
-            std::cout << timestamp << "Could not create schema or kernel." << std::endl;
-            std::cout << timestamp << "Schema name: " << schema << std::endl;
-            std::cout << timestamp << "Source: " << source << std::endl;
-        }yKernel(source));
+    if(boost::filesystem::is_directory(sourcePath))
+    {
+        DirectorySchemaPtr dirSchema = directorySchemaFromName(schema, source);
+        DirectoryKernelPtr kernel(new DirectoryKernel(source));
 
         if(dirSchema && kernel)
         {
-            DirectoryIO dirio_in(kernel, dirSchema, loadData);
+            lvr2::scanio::DirectoryIO dirio_in(kernel, dirSchema, loadData);
             return dirio_in.ScanProjectIO::load();
         }
     }
     // Check if we try to load a HDF5 file
     else if(sourcePath.extension() == ".h5")
     {
-        HDF5SchemaPtr hdf5Schema = hdf5SchemaFromName(schema, loadData);
+        HDF5SchemaPtr hdf5Schema = hdf5SchemaFromName(schema);
         HDF5KernelPtr kernel(new HDF5Kernel(source));
 
         if(hdf5Schema && kernel)
         {
-            HDF5IO hdf5io(kernel, hdf5Schema);
+            lvr2::scanio::HDF5IO hdf5io(kernel, hdf5Schema, loadData);
             return hdf5io.ScanProjectIO::load();
         }
     }
 
     // Loading failed. 
-    std::cout << timestamp << "Could not create schema or kernel." << std::endl;
+    std::cout << timestamp << "Could not create schema or kernel for loading." << std::endl;
     std::cout << timestamp << "Schema name: " << schema << std::endl;
     std::cout << timestamp << "Source: " << source << std::endl;
 
     return nullptr;
+}
+
+void saveScanProject(ScanProjectPtr project, const std::string& schema, const std::string target)
+{
+    if(project)
+    {
+        boost::filesystem::path targetPath(target);
+        if(boost::filesystem::is_directory(target))
+        {
+            DirectorySchemaPtr dirSchema = directorySchemaFromName(schema, target);
+            DirectoryKernelPtr kernel(new DirectoryKernel(target));
+
+            if (dirSchema && kernel)
+            {
+                lvr2::scanio::DirectoryIO dirio(kernel, dirSchema);
+                dirio.ScanProjectIO::save(project);
+            }
+
+        }
+        else if(targetPath.extension() == ".h5")
+        {
+            HDF5SchemaPtr hdf5Schema = hdf5SchemaFromName(schema);
+            HDF5KernelPtr kernel(new HDF5Kernel(target));
+
+            if (hdf5Schema && kernel)
+            {
+                lvr2::scanio::HDF5IO hdf5io(kernel, hdf5Schema);
+                hdf5io.ScanProjectIO::save(project);
+            }
+        }
+
+        // Saving failed.
+        std::cout << timestamp << "Could not create schema or kernel for saving." << std::endl;
+        std::cout << timestamp << "Schema name: " << schema << std::endl;
+        std::cout << timestamp << "Target: " << target << std::endl;
+    }
+    else
+    {
+        std::cout << timestamp << "Cannot save scan project from null pointer" << std::endl;
+    }
 }
 
 } // namespace lvr2 else

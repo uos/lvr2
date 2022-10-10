@@ -34,19 +34,42 @@
 
 #include "Options.hpp"
 
+#include <sstream>
+
 namespace scanproject_parser
 {
 
-Options::Options(int argc, char** argv) : m_descr("Supported options")
+std::string Options::getSupportedSchemasHelpString()
+{
+    std::stringstream ss;
+    ss << "Supported HDF5 schemas are: ";
+
+    for(auto s : lvr2::implementedHDF5Schemas)
+    {
+        ss << s << " ";
+    }
+
+    ss << std::endl;
+    ss << "Supported directory schemas are: ";
+    for(auto s : lvr2::implementedDirectorySchemas)
+    {
+        ss << s << " ";
+    }
+
+    return ss.str();
+}
+
+Options::Options(int argc, char** argv) : lvr2::BaseOption(argc, argv), m_descr("Scanproject tool options.\n" + getSupportedSchemasHelpString())
 {
 
     // Create option descriptions
 
     m_descr.add_options()
         ("help", "Produce help message")
-        ("inputDir", value<string>(), "Root of the raw data.")
-        ("outputDir", value<string>()->default_value("./"), "HDF5 file is written here.")
-        ("outputFile", value<string>()->default_value("data.h5"), "HDF5 file name.");
+        ("inputSource", value<string>()->default_value(""), "Source of the input data (directory or HDF5 file)")
+        ("outputSource", value<string>()->default_value(""), "Target source of converted project data (directory or HDF5 file).")
+        ("inputSchema", value<string>()->default_value(""), "Schema of the input data. Has to fit the structure of the input source")
+        ("outputSchema", value<string>()->default_value(""), "Schema of the output data. Has to fit the structure of the input source");
     
     // Parse command line and generate variables map
     positional_options_description p;
@@ -59,13 +82,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
         ::std::cout << m_descr << ::std::endl;
         exit(-1);
     }
-    else if (!m_variables.count("inputDir"))
-    {
-        std::cout << "Error: You must specify an input directory." << std::endl;
-        std::cout << std::endl;
-        std::cout << m_descr << std::endl;
-        exit(-1);
-    }
+   
 }
 
 Options::~Options()

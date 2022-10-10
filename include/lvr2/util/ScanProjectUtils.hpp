@@ -73,6 +73,18 @@ ScanProjectPtr loadScanProject(
     const std::string& schema, 
     const std::string source, 
     bool loadData = false);
+
+/**
+ * @brief Saves given scan project to a source using the given schema
+ * 
+ * @param project   A scan project
+ * @param schema    The schema for the written data
+ * @param target    The target (where to write, i.e., directory or HDF5 file)
+ */
+void saveScanProject(
+    ScanProjectPtr project,
+    const std::string& schema, 
+    const std::string target);
  
 
 } // namespace LVR2

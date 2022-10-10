@@ -35,6 +35,10 @@
 #ifndef OPTIONS_H_
 #define OPTIONS_H_
 
+#include "lvr2/config/BaseOption.hpp"
+#include "lvr2/util/ScanSchemaUtils.hpp"
+#include "lvr2/util/ScanProjectUtils.hpp"
+
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <string>
@@ -55,7 +59,7 @@ using namespace boost::program_options;
  * @brief A class to parse the program options for the reconstruction
  * 		  executable.
  */
-class Options
+class Options : public lvr2::BaseOption
 {
   public:
     /**
@@ -65,10 +69,11 @@ class Options
     Options(int argc, char** argv);
     virtual ~Options();
 
-    string getInputDir() const { return m_variables["inputDir"].as<string>(); }
-    string getOutputDir() const { return m_variables["outputDir"].as<string>(); }
-    string getOutputFile() const { return m_variables["outputFile"].as<string>(); }
-   
+    string getInputSource() const { return m_variables["inputSource"].as<string>(); }
+    string getOutputSource() const { return m_variables["outputSource"].as<string>(); }
+    string getOutputSchema() const { return m_variables["outputSchema"].as<string>(); }
+    string getInputSchema() const { return m_variables["inputSchema"].as<string>(); }
+
   private:
     /// The internally used variable map
     variables_map m_variables;
@@ -78,6 +83,9 @@ class Options
 
     /// The internally used positional option desription
     positional_options_description m_pdescr;
+
+    /// The help string that displays all implemented scan schemas
+    std::string getSupportedSchemasHelpString();
 };
 
 /// Overlaoeded outpur operator

@@ -1,33 +1,22 @@
 #include "Options.hpp"
 #include "lvr2/io/baseio/BaseIO.hpp"
-#include "lvr2/io/kernels/DirectoryKernel.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
-#include "lvr2/io/scanio/ScanProjectIO.hpp"
-#include "lvr2/io/scanio/DirectoryIO.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
+#include "lvr2/util/ScanProjectUtils.hpp"
 
 #include <boost/filesystem.hpp>
 
 using namespace lvr2;
-using namespace lvr2::scanio;
 
 int main(int argc, char** argv)
 {
-    std::string dir_in("/home/praktikum/chemnitz_2022-07-19.PROJ");
+    // Parse options
+    scanproject_parser::Options options(argc, argv);
+    options.printLogo();
 
-    DirectoryKernelPtr kernel_in(new DirectoryKernel(dir_in));
-    DirectorySchemaPtr schema_in(new ScanProjectSchemaRdbx(dir_in));
-    DirectoryIO dirio_in(kernel_in, schema_in);
+    // Laod scan project (without fetching data)
+    ScanProjectPtr inputProject = loadScanProject(options.getInputSchema(), options.getInputSource());
 
-    auto scanProject = dirio_in.ScanProjectIO::load();
-
-    std::string dir_out("/home/praktikum/Desktop/Schematest");
-
-    DirectoryKernelPtr kernel_out(new DirectoryKernel(dir_out));
-    DirectorySchemaPtr schema_out(new ScanProjectSchemaRawPly(dir_out));
-    DirectoryIO dirio_out(kernel_out, schema_out);
-
-    dirio_out.ScanProjectIO::save(scanProject);
+    // Save to target in new format
+    saveScanProject(inputProject, options.getOutputSchema(), options.getOutputSource());
 
     return 0;
 }

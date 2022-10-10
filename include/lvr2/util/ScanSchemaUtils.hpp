@@ -2,6 +2,7 @@
 #define SCANSCHEMAUTILS
 
 #include <string>
+#include <vector>
 
 #include "lvr2/io/schema/ScanProjectSchema.hpp"
 
@@ -26,6 +27,16 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
  *                              if the schema name is unknown.
  */
 HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName);
+
+/**
+ * @brief A list of the implemented directory schema names
+ */
+const std::vector<std::string> implementedDirectorySchemas = {"EUROC", "HYPERLIB", "RAW", "RAWPLY", "RDBX", "SLAM6D"};
+
+/**
+ * @brief A list of the implemented HDF5 schemas
+ */
+const std::vector<std::string> implementedHDF5Schemas = {"HDF5", "HDF5V2"};
 
 } // namespace lvr2
 

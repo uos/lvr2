@@ -32,6 +32,7 @@
 #include <algorithm>
 
 #include "lvr2/reconstruction/SearchTree.hpp"
+#include "lvr2/reconstruction/SearchTreeFlann.hpp"
 #include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/util/Panic.hpp"
 
@@ -81,10 +82,10 @@ SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr buffer)
         return std::make_shared<SearchTreeFlann<BaseVecT>>(buffer);
     }
 
-    if (name == "lvr2")
-    {
-        return std::make_shared<SearchKDTree<BaseVecT>>(buffer);
-    }
+    // if (name == "lvr2")
+    // {
+    //     return std::make_shared<SearchKDTree<BaseVecT>>(buffer);
+    // }
 
     return nullptr;
 }
