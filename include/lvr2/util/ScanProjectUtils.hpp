@@ -1,7 +1,8 @@
-#ifndef SCANPROJECTHELPER
-#define SCANPROJECTHELPER
+#ifndef SCANPROJECTUTILS
+#define SCANPROJECTUTILS
 
 #include <utility>
+#include <boost/optional.hpp>
 
 #include "lvr2/types/ScanTypes.hpp"
 
@@ -58,10 +59,17 @@ ScanProjectPtr scanProjectFromFile(const std::string& file);
  */
 ScanProjectPtr scanProjectFromPLYFiles(const std::string& dir);
 
-
-ScanProjectPtr loadScanProject(const std::string& project, const std::string& schema);
+/**
+ * @brief Loads a scan project from given source. The project is lazy-loaded,
+ *        i.e., only the project structure and meta information is collected.
+ * 
+ * @param schema    The schema name that describes the project's structure 
+ * @param source    The data source
+ * @return ScanProjectPtr   A new scan project or nullptr if loading failed.
+ */
+ScanProjectPtr loadScanProject(const std::string& schema, const std::string source);
  
 
 } // namespace LVR2
 
-#endif // SCANPROJECTHELPER
+#endif // SCANPROJECTUTILS

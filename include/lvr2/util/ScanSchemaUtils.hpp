@@ -25,7 +25,7 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
  * @return HDF5SchemaPtr        A pointer to a directory schema or nullptr 
  *                              if the schema name is unknown.
  */
-HDF5SchemaPtr hdf5SchemaFromFile(const std::string& schemaName);
+HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName);
 
 } // namespace lvr2
 

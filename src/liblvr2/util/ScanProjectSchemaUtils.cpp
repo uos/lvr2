@@ -61,7 +61,7 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
     return nullptr;
 }
 
-HDF5SchemaPtr hdf5SchemaFromFile(const std::string& schemaName)
+HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName)
 {
     std::string name = boost::to_upper_copy<std::string>(schemaName);
 
