@@ -1,3 +1,7 @@
+include_directories(include)
+
+
+set(CUDA_SEPARABLE_COMPILATION ON)
 #####################################################################################
 # Set source files
 #####################################################################################
@@ -17,16 +21,25 @@ set(LVR2_CUDA_NORMAL2_DEPS
     ${LVR2_LIB_DEPENDENCIES}
 )
 
-cuda_add_library(my_cuda_normals CudaNormals.cu)
-cuda_add_library(my_MortonCodes MortonCodes.cu)
+# PURE CUDA
+cuda_add_library(kernels_device 
+                src/kernels_device.cu
+                src/morton_code.cu
+                )
+target_link_libraries(kernels_device 
+    ${CUDA_LIBRARIES}
+)
 
-#####################################################################################
-# Add executable
-#####################################################################################
+# HEADER HOST - CODE: CUDA calls
+cuda_add_library(kernels_host src/kernels_host.cu)
+target_link_libraries(kernels_host
+    kernels_device
+)
 
+
+# PURE Host
 add_executable(lvr2_cuda_normals2 ${LVR2_CUDA_NORMAL_SRC2})
 target_link_libraries(lvr2_cuda_normals2 
     ${LVR2_CUDA_NORMAL2_DEPS}
-    my_cuda_normals
-    my_MortonCodes
+    kernels_host
 )

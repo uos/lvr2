@@ -29,15 +29,6 @@ unsigned long long int morton3D(float x, float y, float z, int idx, float resolu
     unsigned long long int yy = expandBits((unsigned long long int) y);
     unsigned long long int zz = expandBits((unsigned long long int) z);
 
-    if(idx == 0)
-    {
-        printf("x float: %f \n", x);
-        printf("x ulli:  %llu \n", x);
-        printf("xx: %f \n", x);
-        printf("yy: %f \n", y);
-        printf("zz: %f \n", z);
-    }
-
     return xx * 4 + yy * 2 + zz;
 }
 

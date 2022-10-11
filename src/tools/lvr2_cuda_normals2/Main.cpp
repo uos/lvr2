@@ -6,8 +6,7 @@
 #include "lvr2/util/Timestamp.hpp"
 #include "Options.hpp"
 
-#include "CudaNormals.cuh"
-#include "MortonCodes.cuh"
+#include "kernels_host.h"
 
 using namespace lvr2;
 
@@ -35,7 +34,7 @@ int main(int argc, char** argv)
     floatArr points = pbuffer->getPointArray();
     
     float* points_raw = &points[0];
-
+    /*
     // Create the normal array
     floatArr normals(new float[size]);
 
@@ -46,69 +45,30 @@ int main(int argc, char** argv)
 
     // Set the normal array
     pbuffer->setNormalArray(normals, num_points);
-
+    */
     unsigned long long int* mortonCodes = (unsigned long long int*)
                     malloc(sizeof(unsigned long long int) * num_points);
 
-
-    float* test_points = (float*) malloc(sizeof(float) * 9);
-    test_points[0] = 0.5;
-    test_points[1] = 0.25;
-    test_points[2] = 0.125;
-    test_points[3] = 0.0625;
-    test_points[4] = 0.03125;
-    test_points[5] = 0.015625;
-    test_points[6] = 1.0;
-    test_points[7] = 1.0;
-    test_points[8] = 1.0;
-
     // Get the morton codes of the 3D points
-    getMortonCodes(mortonCodes, test_points, 3);
-    /*
-    std::cout << "x: " << points_raw[0] << std::endl;
-    std::cout << "y: " << points_raw[1] << std::endl;
-    std::cout << "z: " << points_raw[2] << std::endl;
-    */
-    std::cout << mortonCodes[0] << std::endl;
-    /*
-    std::cout << "Point 0 x: " << test_points[0] << std:: endl;
-    std::cout << "Point 0 y: " << test_points[1] << std:: endl;
-    std::cout << "Point 0 z: " << test_points[2] << std:: endl;
+    morton_codes_host(mortonCodes, points_raw, num_points);
 
-    std::cout << "Point 0 x binary: "; 
-    floatToBinary(test_points[0]);
-    std::cout <<std::endl;
-    
-    std::cout << "Point 0 y binary: "; 
-    floatToBinary(test_points[1]);
-    std::cout <<std::endl;
-    
-    std::cout << "Point 0 z binary: "; 
-    floatToBinary(test_points[2]);
-    std::cout <<std::endl;
-                                             
-    std::cout << "x binary: " << std::bitset<64>(4692150331805532160) << std::endl;
-    std::cout << "y binary: " << std::bitset<64>(4687375547406221312) << std::endl;
-    std::cout << "z binary: " << std::bitset<64>(4682742812607774720) << std::endl;
-    */
-    std::cout << ("x binary: ");
-    floatToBinary(489335.468750);
+    // Create an array which stores the id of each point
+    int* point_IDs = (int*) malloc(sizeof(float) * num_points);
 
-    std::cout << ("y binary: ");
-    floatToBinary(236775.218750);
-
-    std::cout << ("z binary: ");
-    floatToBinary(116508.445312);
-    
-    std::cout << "ULLI: " << std::bitset<64>(4692150331805532160) << std::endl;
-    std::cout << "Morton Code: " << std::bitset<64>(mortonCodes[0]) << std::endl;
+    for(int i = 0; i < num_points; i++)
+    {
+        point_IDs[i] = i;
+    }
+    // Sorting key-value pairs. point_IDs holds the sorted indices
+    radix_sort(mortonCodes, point_IDs, num_points);
 
     // Save the new model as test.ply
     ModelFactory::saveModel(model, "test.ply");
 
-    free(normals_raw);
+    // free(normals_raw);
     free(mortonCodes);
-    floatToBinary(1.0f);
+    free(point_IDs);
+
 
     return 0;
 }
