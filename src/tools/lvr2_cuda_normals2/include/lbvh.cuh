@@ -59,11 +59,6 @@ namespace lbvh {
             unsigned int current_idx = node_idx;
             BVHNode* current_node = &nodes[current_idx];
 
-            int a;
-            int b = 1;
-
-            atomicAdd(&a, b);
-
             while(true) {
                 // Allow only one thread to process a node
                 if (atomicAdd(&(current_node->atomic), 1) != 1)
