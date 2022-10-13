@@ -73,6 +73,33 @@ namespace lvr2
     using PinholeModelPtr = std::shared_ptr<PinholeModel>;
     using PinholeModelOptional = boost::optional<PinholeModel>;
 
+    inline std::ostream& operator<<(std::ostream& os, const PinholeModel& m)
+    {
+        os << timestamp << "Pinhole Model" << std::endl;
+        os << timestamp << "-------------" << std::endl;
+        os << timestamp << "Fx: " << m.fx << std::endl;
+        os << timestamp << "Fy: " << m.fy << std::endl;
+        os << timestamp << "Cx: " << m.fx << std::endl;
+        os << timestamp << "Cy: " << m.fy << std::endl;
+        os << timestamp << "Width: " << m.width << std::endl;
+        os << timestamp << "Height: " << m.height << std::endl;
+        os << timestamp << "Distortion Model: " << m.distortionModel << std::endl;
+        for(size_t i = 0; i < m.distortionCoefficients.size(); i++)
+        {
+            os << timestamp << "Coeff  " << i << ": " << m.distortionCoefficients[i] << std::endl;
+        }
+        
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const PinholeModelPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
+
+
     struct CylindricalModel : CameraModel
     {
         static constexpr char type[] = "cylindrical";
@@ -94,6 +121,47 @@ namespace lvr2
 
     using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;
     using CylindricalModelOptional = boost::optional<CylindricalModel>;
+
+    inline std::ostream& operator<<(std::ostream& os, const CylindricalModel& m)
+    {
+        os << timestamp << "Cylindrical Model" << std::endl;
+        os << timestamp << "-------------" << std::endl;
+        for(size_t i = 0; i < m.principal.size(); i++)
+        {
+            os << timestamp << "Principal " << i << ": " << m.principal[i] << std::endl;
+        }
+        
+        for(size_t i = 0; i < m.focalLength.size(); i++)
+        {
+            os << timestamp << "FocalLength " << i << ": " << m.focalLength[i] << std::endl;
+        }
+
+        for(size_t i = 0; i < m.fov.size(); i++)
+        {
+            os << timestamp << "FOV " << i << ": " << m.fov[i] << std::endl;
+        }
+
+        os << timestamp << "Distortion Model: " << m.distortionModel << std::endl;
+
+        for(size_t i = 0; i < m.distortionCoefficients.size(); i++)
+        {
+            os << timestamp << "Distortion Coefficients " << i << ": " << m.distortionCoefficients[i] << std::endl;
+        }
+
+        for(size_t i = 0; i < m.distortion.size(); i++)
+        {
+            os << timestamp << "Distortion " << i << ": " << m.distortion[i] << std::endl;
+        }
+
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const CylindricalModelPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
 
     struct SphericalModel : CameraModel
     {
@@ -118,6 +186,31 @@ namespace lvr2
 
     using SphericalModelPtr = std::shared_ptr<SphericalModel>;
     using SphericalModelOptional = boost::optional<SphericalModel>;
+
+    inline std::ostream& operator<<(std::ostream& os, const SphericalModel& m)
+    {
+        os << timestamp << "Spherical Model" << std::endl;
+        os << timestamp << "---------------" << std::endl;
+        os << timestamp << "Phi: " << m.phi[0] << " " << m.phi[1] << " " << m.phi[2] << std::endl;
+        os << timestamp << "Theta: " << m.theta[0] << " " << m.theta[1] << " " << m.theta[2] << std::endl;
+        os << timestamp << "Range: " << m.range[0] << " " << m.range[1] << " " << m.range[2] << std::endl;
+        os << timestamp << "Principal: " << m.principal << std::endl;
+        os << timestamp << "Distortion Model: " << m.distortionModel << std::endl;
+        for(size_t i = 0; i < m.distortionCoefficients.size(); i++)
+        {
+            os << timestamp << "Distortion Coefficients " << i << ": " << m.distortionCoefficients[i] << std::endl;
+        }
+
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const SphericalModelPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
+
 
 } // namespace lvr2
 

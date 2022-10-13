@@ -170,6 +170,25 @@ namespace lvr2
         //// HIERARCHY END
     };
 
+    inline std::ostream& operator<<(std::ostream& os, const ScanProject& p)
+    {
+        os << timestamp << "Scan Project" << std::endl;
+        os << timestamp << "------------" << std::endl;
+        os << timestamp << "Name: " << p.name << std::endl;
+        os << timestamp << "Coordinate System: " << p.coordinateSystem << std::endl;
+        os << timestamp << "Unit: " << p.unit << std::endl;
+        os << timestamp << "Number of scan positions: " << p.positions.size() << std::endl;
+        os << timestamp << "Transformation: " << std::endl <<  p.transformation << std::endl;
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const ScanProjectPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Adress" << p.get() << std::endl;
+        return os;
+    }
+
     struct ScanPosition : ScanPositionEntity, Transformable, BoundedOptional
     {
         /// META BEGIN
@@ -204,6 +223,25 @@ namespace lvr2
         //// HIERARCHY END
     };
 
+    inline std::ostream& operator<<(std::ostream& os, const ScanPosition& p)
+    {
+        os << timestamp << "ScanPosition" << std::endl;
+        os << timestamp << "------------" << std::endl;
+        os << timestamp << "Timestamp" << p.timestamp << std::endl;
+        os << timestamp << "Number of cameras: " << p.cameras.size() << std::endl;
+        os << timestamp << "Number of scan positions: " << p.lidars.size() << std::endl;
+        os << timestamp << "Pose estimation: " << p.poseEstimation << std::endl;
+        os << timestamp << "Transformation: " << p.transformation << std::endl;
+        return os;
+    }
+    
+    inline std::ostream& operator<<(std::ostream& os, const ScanPositionPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
+
     /*****************************************************************************
  * @brief   Represents a LIDAR sensor that was used at a specific scan
  *          position. The intrinsic parameters are stored in here. Extrinsic parameters
@@ -228,7 +266,23 @@ namespace lvr2
         //// HIERARCHY END
     };
 
-    /*****************************************************************************
+    inline std::ostream& operator<<(std::ostream& os, const LIDAR& l)
+    {
+        os << timestamp << "Lidar" << std::endl;
+        os << timestamp << "-----" << std::endl;
+        os << timestamp << l.model;
+        os << timestamp << "Number of scans: " << l.scans.size() << std::endl;
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const LIDARPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
+
+/*****************************************************************************
  * @brief   Represents a camera that was used at a specific scan
  *          position. The intrinsic calibration is stored in the
  *          camera's camera field. Each image has its owen orientation
@@ -250,6 +304,21 @@ namespace lvr2
 
         //// HIERARCHY END
     };
+
+    inline std::ostream& operator<<(std::ostream& os, const Camera& c)
+    {
+        os << timestamp << "Camera" << std::endl;
+        os << timestamp << "------" << std::endl;
+        os << timestamp << "Number of image groups: " << c.images.size() << std::endl;
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const CameraPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
 
     /*****************************************************************************
  * @brief Struct to represent a scan within a scan project
@@ -329,7 +398,27 @@ namespace lvr2
         }
     };
 
-    /*****************************************************************************
+    inline std::ostream& operator<<(std::ostream& os, const Scan& s)
+    {
+        os << timestamp << "Scan" << std::endl;
+        os << timestamp << "----" << std::endl;
+        os << timestamp << "Number of Points: " << s.numPoints << std::endl;
+        os << timestamp << "Start time: " << s.startTime << std::endl;
+        os << timestamp << "End time: " << s.endTime << std::endl;
+        os << timestamp << "Pose estimation: " << std::endl << s.poseEstimation << std::endl;
+        os << timestamp << "Transformation: " << std::endl << s.transformation << std::endl;
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const ScanPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
+
+
+/*****************************************************************************
  * @brief   Struct to hold a camera image together with intrinsic 
  *          and extrinsic camera parameters
  * 
@@ -380,6 +469,27 @@ namespace lvr2
         double timestamp;
     };
 
+    inline std::ostream& operator<<(std::ostream& os, const CameraImage& i)
+    {
+        os << timestamp << "Camera image" << std::endl;
+        os << timestamp << "------------" << std::endl;
+        os << timestamp << "Timestamp: " << i.timestamp << std::endl;
+        os << timestamp << "Loaded: " << i.loaded() << std::endl;
+        os << timestamp << "Loadable: " << i.loadable() << std::endl;
+        os << timestamp << "Image dimensions: " << i.image.cols << " x " << i.image.rows << std::endl;
+        os << timestamp << "Extrinsics estimation: " << i.extrinsicsEstimation << std::endl;
+        os << timestamp << "Transformation: " << std::endl << i.transformation << std::endl;
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const CameraImagePtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
+
+
     struct CameraImageGroup : SensorDataGroupEntity, Transformable
     {
         static constexpr char type[] = "camera_images";
@@ -387,6 +497,22 @@ namespace lvr2
         // Data
         std::vector<CameraImageOrGroup> images;
     };
+
+    inline std::ostream& operator<<(std::ostream& os, const CameraImageGroup& i)
+    {
+        os << timestamp << "Camera image group" << std::endl;
+        os << timestamp << "------------------" << std::endl;
+        os << timestamp << "Number of images: " << i.images.size() << std::endl;
+        os << timestamp << "Transformation: " << std::endl << i.transformation << std::endl;
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const CameraImageGroupPtr p)
+    {
+         os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
 
     /*****************************************************************************
  * @brief   Struct to hold a camera hyperspectral panorama
@@ -414,6 +540,22 @@ namespace lvr2
 
     using HyperspectralPanoramaChannelPtr = std::shared_ptr<HyperspectralPanoramaChannel>;
     using HyperspectralPanoramaChannelOptional = boost::optional<HyperspectralPanoramaChannel>;
+
+    inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanoramaChannel& c)
+    {
+        os << timestamp << "Hyperspectral panorama channel" << std::endl;
+        os << timestamp << "------------------------------" << std::endl;
+        os << timestamp << "Timestamp: " << c.timestamp << std::endl;
+        os << timestamp << "Image dimensions: " << c.channel.cols << " x " << c.channel.rows << std::endl;
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanoramaChannelPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
 
     /*****************************************************************************
  * @brief   Struct to hold a camera hyperspectral panorama
@@ -463,7 +605,29 @@ namespace lvr2
     using HyperspectralPanoramaPtr = std::shared_ptr<HyperspectralPanorama>;
     using HyperspectralPanoramaOptional = boost::optional<HyperspectralPanorama>;
 
-    /*****************************************************************************
+    inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanorama& p)
+    {
+        os << timestamp << "Hyperspectral panorama" << std::endl;
+        os << timestamp << "----------------------" << std::endl;
+        os << timestamp << "Frames resolution: " << p.framesResolution << std::endl;
+        os << timestamp << "Band Axis: " << p.bandAxis << std::endl;
+        os << timestamp << "Frame Axis: " << p.frameAxis << std::endl;
+        os << timestamp << "Data Type: " << p.dataType << std::endl;
+        os << timestamp << "Number of channels: " << p.num_channels << std::endl;
+        os << timestamp << "Channel vector size: " << p.channels.size() << std::endl; 
+        os << timestamp << "Preview Type: " << p.previewType << std::endl;
+        os << timestamp << "Preview dimensions: " << p.preview.cols << " x " << p.preview.rows << std::endl;
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanoramaPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
+
+/*****************************************************************************
  * @brief   Struct to hold a hyperspectral camera model
  *          together with intrinsic, extrinsic and further parameters
  * 
@@ -488,6 +652,24 @@ namespace lvr2
         /// OpenCV representation
         std::vector<HyperspectralPanoramaPtr> panoramas;
     };
+
+    inline std::ostream& operator<<(std::ostream& os, const HyperspectralCamera& c)
+    {
+        os << timestamp << "Hyperspectral Camera" << std::endl;
+        os << timestamp << "----------------------" << std::endl;
+        os << timestamp << "Cylindrical Model: " << c.model << std::endl;
+        os << timestamp << "Extrinsics Estimation: " << std::endl << c.extrinsicsEstimation << std::endl;
+        os << timestamp << "Number of panoramas: " << c.panoramas.size() << std::endl; 
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const HyperspectralCameraPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
+
 
     /*****************************************************************************
  * @brief   Struct to hold a Fullwaveform Data for a scan
@@ -525,6 +707,25 @@ namespace lvr2
         //Eigen::Matrix<uint16_t, Eigen::Dynamic, Eigen::Dynamic>         waveformSamples;
     };
     using WaveformPtr = std::shared_ptr<Waveform>;
+
+    inline std::ostream& operator<<(std::ostream& os, const Waveform& w)
+    {
+        os << timestamp << "Waveform" << std::endl;
+        os << timestamp << "--------" << std::endl;
+        os << timestamp << "Max Bucket Size" << w.maxBucketSize << std::endl;
+        os << timestamp << "Echo Types: " << w.echoType.size() << std::endl;
+        os << timestamp << "Waveform Indices: " << w.waveformIndices.size() << std::endl;
+        os << timestamp << "Waveform Samples: " << w.waveformSamples.size() << std::endl;
+        os << timestamp << "Low Powers: " << w.lowPower.size() << std::endl;
+        return os;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const WaveformPtr p)
+    {
+        os << *p;
+        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        return os;
+    }
 
     /*****************************************************************************
  * @brief   Struct to represent a LabelInstance

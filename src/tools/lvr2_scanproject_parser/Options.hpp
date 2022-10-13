@@ -88,14 +88,7 @@ class Options : public lvr2::BaseOption
     std::string getSupportedSchemasHelpString();
 };
 
-/// Overlaoeded outpur operator
-inline ostream& operator<<(ostream& os, const Options& o)
-{
-    cout << "##### Program options: " << endl;
-    //    cout << "##### Data directory \t\t: "  << o.getDataDir() << endl;
 
-    return os;
-}
 
 } // namespace hdf5tool2
 
