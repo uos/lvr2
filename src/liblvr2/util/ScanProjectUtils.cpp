@@ -198,5 +198,108 @@ void saveScanProject(ScanProjectPtr& project, const std::string& schema, const s
     }
 }
 
+void printScanProjectStructure(const ScanProjectPtr project)
+{
+    std::cout << project << std::endl;
+
+    for(size_t i = 0; i < project->positions.size(); i++)
+    {
+        std::cout << timestamp << "Scan Position: " << i << " / " << project->positions.size() << std::endl;
+        printScanPositionStructure(project->positions[i]);
+    }
+}
+
+void printScanPositionStructure(const ScanPositionPtr p) 
+{
+    std::cout << p;
+    for(size_t i = 0; i < p->lidars.size(); i++)
+    {
+        std::cout << timestamp << "LiDAR " << i << " / " << p->lidars.size() << std::endl;
+        printLIDARStructure(p->lidars[i]);
+    }
+    for(size_t i = 0; i < p->cameras.size(); i++)
+    {
+        std::cout << timestamp << "Camera " << i << " / " << p->cameras.size() << std::endl;
+        printCameraStructure(p->cameras[i]);
+    }
+    for(size_t i = 0; i < p->hyperspectral_cameras.size(); i++)
+    {
+        std::cout << timestamp << "Hyperspectral Camera " << i << " / " << p->hyperspectral_cameras.size() << std::endl;
+        printHyperspectralCameraStructure(p->hyperspectral_cameras[i]);
+    }
+
+}
+
+void printScanStructure(const ScanPtr p) 
+{
+    std::cout << p;
+    // TODO: Implement output for point buffer
+}
+
+void printLIDARStructure(const LIDARPtr p) 
+{
+    std::cout << p;
+    for(size_t i = 0; i < p->scans.size(); i++)
+    {
+        std::cout << timestamp << "Scan " << i << " / " << p->scans.size() << std::endl;
+        printScanStructure(p->scans[i]);
+    }
+}
+
+void printCameraStructure(const CameraPtr p) 
+{
+    std::cout << p;
+
+    struct V : public boost::static_visitor<>
+    {
+        void operator()(const CameraImageGroupPtr p) const {printCameraImageGroupStructure(p);}
+        void operator()(const CameraImagePtr p) const { printCameraImageStructure(p);}
+    };
+
+    for(size_t i = 0; i < p->images.size(); i++)
+    {
+        std::cout << timestamp << "Camera image or group " << i << " / " << p->images.size() << std::endl;
+        CameraImageOrGroup ciog = p->images[i];
+        boost::apply_visitor(V{}, ciog);
+    }
+}
+
+void printCameraImageGroupStructure(const CameraImageGroupPtr p) 
+{
+    std::cout << p;
+    for(size_t i = 0; i < p->images.size(); i++)
+    {
+        std::cout << timestamp << "Image " << i << " / " << p->images.size() << std::endl;
+        std::cout << p->images[i];
+    }
+}
+
+void printHyperspectralCameraStructure(const HyperspectralCameraPtr p) 
+{
+    std::cout << p;
+    for(size_t i = 0; i < p->panoramas.size(); i++)
+    {
+        std::cout << timestamp << "Panorama " << i << " / " << p->panoramas.size() << std::endl;
+        printHyperspectralPanoramaStructure(p->panoramas[i]);
+    }
+}
+
+void printHyperspectralPanoramaStructure(const HyperspectralPanoramaPtr p) 
+{
+    std::cout << p;
+    for(size_t i = 0; i < p->channels.size(); i++)
+    {
+        std::cout << timestamp << "Channel " << i << " / " << p->channels.size() << std::endl;
+        std::cout << p->channels[i];
+    }
+}
+
+void printCameraImageStructure(const CameraImagePtr p)
+{
+    std::cout << p;
+}
+
+
+
 } // namespace lvr2 else
      

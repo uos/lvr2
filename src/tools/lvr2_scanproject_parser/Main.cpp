@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     // Load scan project (without fetching data)
     ScanProjectPtr inputProject = loadScanProject(options.getInputSchema(), options.getInputSource());
 
-    std::cout << inputProject << std::endl;
+    printScanProjectStructure(inputProject);
 
     // Save to target in new format
     saveScanProject(inputProject, options.getOutputSchema(), options.getOutputSource());

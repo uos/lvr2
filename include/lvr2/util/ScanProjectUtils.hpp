@@ -85,7 +85,32 @@ void saveScanProject(
     ScanProjectPtr& project,
     const std::string& schema, 
     const std::string target);
- 
+
+/**
+ * @brief Prints infos about all entities in the given scan project
+ */
+void printScanProjectStructure(const ScanProjectPtr project);
+
+/**
+ * @brief Prints detailed info about the scan position
+ */
+void printScanPositionStructure(const ScanPositionPtr p);
+
+
+void printLIDARStructure(const LIDARPtr p);
+
+void printCameraStructure(const CameraPtr p);
+
+void printHyperspectralCameraStructure(const HyperspectralCameraPtr p);
+
+void printScanStructure(const ScanPtr p);
+
+void printCameraImageStructure(const CameraImagePtr p);
+
+void printCameraImageGroupStructure(const CameraImageGroupPtr p);
+
+void printHyperspectralPanoramaStructure(const HyperspectralPanoramaPtr p);
+
 
 } // namespace LVR2
 

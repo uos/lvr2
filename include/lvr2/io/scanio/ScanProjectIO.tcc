@@ -104,7 +104,6 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
         // std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
         // Get description for next scan
 
-        //hier werden die Directerys erstellen aber für alle Dateitypen identisch
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
         if(!scanPos)
         {
@@ -118,10 +117,13 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
 
 
         }
+        else
+        {
+            ret->positions.push_back(scanPos);
+        }
 
-
-        ret->positions.push_back(scanPos);
         scanPosNo++;
+
     }
 
     return ret;
