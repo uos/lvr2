@@ -71,7 +71,7 @@ ScanProjectPtr scanProjectFromPLYFiles(const std::string& dir);
  */
 ScanProjectPtr loadScanProject(
     const std::string& schema, 
-    const std::string source, 
+    const std::string& source, 
     bool loadData = false);
 
 /**
@@ -82,7 +82,7 @@ ScanProjectPtr loadScanProject(
  * @param target    The target (where to write, i.e., directory or HDF5 file)
  */
 void saveScanProject(
-    ScanProjectPtr project,
+    ScanProjectPtr& project,
     const std::string& schema, 
     const std::string target);
  

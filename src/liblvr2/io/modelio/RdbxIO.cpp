@@ -301,7 +301,7 @@ namespace lvr2
         riegl::rdb::Context context;
         if (!context.databaseFileTypeCheck(filename))
         {
-            throw std::runtime_error("This is not a RDB 2 database file!");
+            throw std::runtime_error("This is not a RDB 2 database file: " + filename);
         }
 
         try {

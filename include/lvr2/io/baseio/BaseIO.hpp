@@ -32,7 +32,9 @@ struct FeatureConstruct;
  */
 
 template<typename SchemaPtrT, template<typename> typename ...Features>
-class BaseIO : public Features<BaseIO<SchemaPtrT, Features...> >...
+class BaseIO :  
+    public std::enable_shared_from_this<BaseIO<SchemaPtrT, Features...>>, 
+    public Features<BaseIO<SchemaPtrT, Features...> >...
 {
 protected:
     template <typename T, typename Tuple>

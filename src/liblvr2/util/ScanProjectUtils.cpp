@@ -121,7 +121,7 @@ ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
     }
 }
 
-ScanProjectPtr loadScanProject(const std::string& schema, const std::string source, bool loadData)
+ScanProjectPtr loadScanProject(const std::string& schema, const std::string& source, bool loadData)
 {
     boost::filesystem::path sourcePath(source);
 
@@ -133,8 +133,8 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string sour
 
         if(dirSchema && kernel)
         {
-            lvr2::scanio::DirectoryIO dirio_in(kernel, dirSchema, loadData);
-            return dirio_in.ScanProjectIO::load();
+            lvr2::scanio::DirectoryIOPtr dirio_in(new lvr2::scanio::DirectoryIO(kernel, dirSchema, loadData));
+            return dirio_in->ScanProjectIO::load();
         }
     }
     // Check if we try to load a HDF5 file
@@ -158,7 +158,7 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string sour
     return nullptr;
 }
 
-void saveScanProject(ScanProjectPtr project, const std::string& schema, const std::string target)
+void saveScanProject(ScanProjectPtr& project, const std::string& schema, const std::string target)
 {
     if(project)
     {
@@ -170,8 +170,8 @@ void saveScanProject(ScanProjectPtr project, const std::string& schema, const st
 
             if (dirSchema && kernel)
             {
-                lvr2::scanio::DirectoryIO dirio(kernel, dirSchema);
-                dirio.ScanProjectIO::save(project);
+                lvr2::scanio::DirectoryIOPtr dirio (new lvr2::scanio::DirectoryIO(kernel, dirSchema));
+                dirio->ScanProjectIO::save(project);
             }
 
         }

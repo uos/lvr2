@@ -195,14 +195,19 @@ ScanPtr ScanIO<BaseIO>::load(
             return ret;
         }
 
-        try {
+        try 
+        {
             ret = std::make_shared<Scan>(meta.as<Scan>());
-        } catch(const YAML::TypedBadConversion<Scan>& ex) {
+        } 
+        catch(const YAML::TypedBadConversion<Scan>& ex) 
+        {
             std::cerr << "[ScanIO - load] ERROR at Scan (" << scanPosNo << ", " << sensorNo << ", " << scanNo << ") : Could not decode YAML as Scan." << std::endl;
             throw ex;
         }
 
-    } else {
+    } 
+    else 
+    {
         // for schemas without meta information
         ret = std::make_shared<Scan>();
     }
@@ -210,18 +215,22 @@ ScanPtr ScanIO<BaseIO>::load(
     // std::cout << "[ScanIO - load] Meta loaded." << std::endl;
     // std::cout << "- points: " << ret->numPoints << std::endl;
 
-    /// Load each channel
-    /// We need to load each channel here, because the channel list is in the scan meta file
-    /// if you want to make it another way you need to change this first
-
     std::function<PointBufferPtr()> points_loader;
 
     if(d.data)
     {
-        points_loader = [this, d]() {
-            return this->m_pclIO->load(*d.dataRoot, *d.data);
+        // Here we need to keep the actual instance of the base io
+        // alive to assure that the original source paths are used
+        // to load the data. Even if the original loader goes out of
+        // scope the shared_from_this will keep it alive until the 
+        // points_loaded function is freed
+        points_loader = [t = m_baseIO->shared_from_this(), d]() 
+        {
+            return t->PointCloudIO<BaseIO>::load(*d.dataRoot, *d.data);
         };
-    } else {
+    } 
+    else 
+    {
 
         points_loader = [
             schema = m_baseIO->m_description,
@@ -271,13 +280,17 @@ ScanPtr ScanIO<BaseIO>::load(
                             if(!points)
                             {
                                 points = points_;
-                            } else {
+                            } 
+                            else 
+                            {
                                 for(auto elem : *points_)
                                 {
                                     (*points)[elem.first] = elem.second;
                                 }
                             }
-                        } else {
+                        } 
+                        else
+                        {
                             // channels in folder
                             auto vo = io.template loadVariantChannel<typename PointBuffer::val_type>(*dc.dataRoot, *dc.data);
                             if(vo)

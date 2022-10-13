@@ -44,6 +44,12 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
                   << rootDirectory << "." << std::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaRaw(rootDirectory));
     }
+      else if (name == "RAWPLY")
+    {
+        std::cout << timestamp << "Creating ScanProjectSchemaRawPly with root directory '" 
+                  << rootDirectory << "." << std::endl;
+        return DirectorySchemaPtr(new ScanProjectSchemaRaw(rootDirectory));
+    }
     else if (name == "SLAM6D")
     {   
         std::cout << timestamp << "Creating ScanProjectSchemaSlam6D with root directory '" 
@@ -52,7 +58,7 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
     }
     else if (name == "RDBX")
     {
-        std::cout << timestamp << "Creating ScanProjectSchemaSlam6D with root directory '" 
+        std::cout << timestamp << "Creating ScanProjectSchemaRDBX with root directory '" 
                   << rootDirectory << "." << std::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaRdbx(rootDirectory));
     }
