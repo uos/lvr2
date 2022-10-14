@@ -48,7 +48,7 @@ vector<coord<float>*> DMCVecPointHandle<BaseVecT>::getContainedPoints(int index)
     if((index - 7) > (containedPoints.size() - 1))
     {
         return vector<coord<float>*>();
-        std::cout << "no points for current cell" << std::endl;
+        std::cout << timestamp << "[DMCVecPointHandle] No points for current cell" << std::endl;
     }
     return containedPoints[index - 7];
 }

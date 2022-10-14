@@ -32,8 +32,8 @@
  *      Author: twiemann
  */
 
-#ifndef _LVR2_RECONSTRUCTION_HASHGRID_H_
-#define _LVR2_RECONSTRUCTION_HASHGRID_H_
+#ifndef HASHGRID
+#define HASHGRID
 
 #include <unordered_map>
 #include <vector>
@@ -317,4 +317,4 @@ protected:
 
 #include "HashGrid.tcc"
 
-#endif /* _LVR2_RECONSTRUCTION_HASHGRID_H_ */
+#endif // HASHGRID

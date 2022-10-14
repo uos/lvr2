@@ -63,7 +63,7 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
 
     // First, parse whole file to get BoundingBox and amount of points
     float ix, iy, iz;
-    std::cout << lvr2::timestamp << "Computing Bounding Box..." << std::endl;
+    std::cout << lvr2::timestamp << "[BigGrid] Computing Bounding Box..." << std::endl;
     m_numPoints = 0;
 
     LineReader lineReader(cloudPath);
@@ -212,7 +212,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
 {
     if (project->changed.size() <= 0)
     {
-        std::cout << timestamp << "Warning: No new scans to be added!" << std::endl;
+        std::cout << timestamp << "[BigGrid] Warning: No new scans to be added!" << std::endl;
         return;
     }
 
@@ -224,7 +224,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
     std::vector<bool> ignoredOrInvalid(numScans, false);
 
     std::stringstream ss;
-    ss << timestamp << "Building grid: loading " << numScans << " scan positions";
+    ss << timestamp << "[BigGrid] Building grid: loading " << numScans << " scan positions";
     lvr2::ProgressBar progressLoading(numScans, ss.str());
 
     // Iterate through ALL points to calculate transformed boundingboxes of scans
@@ -233,7 +233,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         ScanPositionPtr pos = project->project->positions.at(i);
         if (!pos || pos->lidars.empty())
         {
-            std::cout << timestamp << "Warning: scan position " << i << " is empty" << std::endl;
+            std::cout << timestamp << "[BigGrid] Warning: scan position " << i << " is empty" << std::endl;
             ignoredOrInvalid[i] = true;
             ++progressLoading;
             continue;
@@ -242,12 +242,12 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         LIDARPtr lidar = pos->lidars[0];
         if(lidar->scans.empty() || !lidar->scans[0])
         {
-            std::cout << timestamp << "Loading points with scanio" << std::endl;
+            std::cout << timestamp << "[BigGrid] Loading points with scanio" << std::endl;
             auto hdf5io = scanio::HDF5IOBase(project->kernel, project->schema); 
             ScanPtr scan = hdf5io.ScanIO::load(i, 0, 0);
             if(!scan)
             {
-                std::cout << timestamp << "Warning: Unable to get data for scan position " << i << std::endl;
+                std::cout << timestamp << "[BigGrid] Warning: Unable to get data for scan position " << i << std::endl;
                 ignoredOrInvalid[i] = true;
                 ++progressLoading;
                 continue;
@@ -327,7 +327,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         }
         if (!project->changed[i] && m_partialbb.isValid() && !m_partialbb.overlap(scanBoxes[i]))
         {
-            std::cout << timestamp << "Scan No. " << i << " ignored!" << std::endl;
+            std::cout << timestamp << "[BigGrid] Scan No. " << i << " ignored!" << std::endl;
             ignoredOrInvalid[i] = true;
             continue;
         }
@@ -371,9 +371,9 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
     }
     if (erased > 0)
     {
-        std::cout << timestamp << "Removed " << erased << " points from "
+        std::cout << timestamp << "[BigGrid] Removed " << erased << " points from "
                   << (oldSize - m_cells.size()) << " tiny cells." << std::endl;
-        std::cout << timestamp << m_numPoints << " in " << m_cells.size() << " cells remaining" << std::endl;
+        std::cout << timestamp << "[BigGrid] " << m_numPoints << " in " << m_cells.size() << " cells remaining" << std::endl;
     }
 
     boost::iostreams::mapped_file_params mmfparam;
@@ -385,7 +385,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
     float* mmfdata = (float*)m_PointFile.data();
 
     ss.str("");
-    ss << timestamp << "Building grid: filling cells";
+    ss << timestamp << "[BigGrid] Building grid: filling cells";
     lvr2::ProgressBar progressFilling(numScans, ss.str());
 
     Eigen::Vector4d original, transPoint;
@@ -443,7 +443,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
     {
         if (cell.inserted != cell.size)
         {
-            std::cout << timestamp << "Cell " << index.transpose() << ": " << cell.inserted << "/" << cell.size << std::endl;
+            std::cout << timestamp << "[BigGrid] Cell " << index.transpose() << ": " << cell.inserted << "/" << cell.size << std::endl;
             failed = true;
         }
     }
@@ -479,15 +479,15 @@ BigGrid<BaseVecT>::BigGrid(std::string path)
     size_t gridSize;
     fread(ifs, gridSize);
 
-    std::cout << timestamp << "\tLoading Exisiting Grid: " << std::endl;
-    std::cout << timestamp << "\tm_numPoints: \t\t\t" << m_numPoints << std::endl;
-    std::cout << timestamp << "\tm_pointBufferSize: \t\t\t" << m_pointBufferSize << std::endl;
-    std::cout << timestamp << "\tm_voxelSize: \t\t\t" << m_voxelSize << std::endl;
-    std::cout << timestamp << "\tm_extrude: \t\t\t" << m_extrude << std::endl;
-    std::cout << timestamp << "\tm_hasNormal: \t\t\t" << m_hasNormal << std::endl;
-    std::cout << timestamp << "\tm_scale: \t\t\t" << m_scale << std::endl;
-    std::cout << timestamp << "\tm_bb: \t\t\t" << m_bb << std::endl;
-    std::cout << timestamp << "\tGridSize: \t\t\t" << gridSize << std::endl;
+    std::cout << timestamp << "[BigGrid] \tLoading Exisiting Grid: " << std::endl;
+    std::cout << timestamp << "[BigGrid] \tm_numPoints: \t\t\t" << m_numPoints << std::endl;
+    std::cout << timestamp << "[BigGrid] \tm_pointBufferSize: \t\t\t" << m_pointBufferSize << std::endl;
+    std::cout << timestamp << "[BigGrid] \tm_voxelSize: \t\t\t" << m_voxelSize << std::endl;
+    std::cout << timestamp << "[BigGrid] \tm_extrude: \t\t\t" << m_extrude << std::endl;
+    std::cout << timestamp << "[BigGrid] \tm_hasNormal: \t\t\t" << m_hasNormal << std::endl;
+    std::cout << timestamp << "[BigGrid] \tm_scale: \t\t\t" << m_scale << std::endl;
+    std::cout << timestamp << "[BigGrid] \tm_bb: \t\t\t" << m_bb << std::endl;
+    std::cout << timestamp << "[BigGrid] \tGridSize: \t\t\t" << gridSize << std::endl;
 
     for (size_t i = 0; i < gridSize; i++)
     {

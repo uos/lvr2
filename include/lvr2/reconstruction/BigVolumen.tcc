@@ -59,7 +59,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
     m_numPoints = 0;
     size_t rsize = 0;
     LineReader lineReader(cloudPath);
-    cout << "INPUT FILE TYPE: ";
+    cout << timestamp << "[BigVolumen] INPUT FILE TYPE: ";
     if(lineReader.getFileType()==XYZ) cout << "XYZ" << endl;
     if(lineReader.getFileType()==XYZN) cout << "XYZN" << endl;
     if(lineReader.getFileType()==XYZRGB) cout << "XYZRGB" << endl;
@@ -132,7 +132,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         }
     }
 
-    cout << lvr2::timestamp << "finished BoundingBox" << endl;
+    cout << lvr2::timestamp << "[BigVolumen] Finished BoundingBox" << endl;
 
     //Make box side lenghts be divisible by voxel size
     float longestSide = m_bb.getLongestSide();
@@ -158,9 +158,9 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
     m_maxIndex = std::max(m_maxIndexX, std::max(m_maxIndexY,m_maxIndexZ)) ;
 
     m_maxIndexSquare = m_maxIndex * m_maxIndex;
-    std::cout << "BV: \t size: " << m_numPoints << std::endl;
-    std::cout << "BB: " << endl << m_bb << endl;
-    std::cout << "BV: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|" << m_maxIndexZ << std::endl;
+    std::cout << "[BigVolumen] BV: \t size: " << m_numPoints << std::endl;
+    std::cout << "[BigVolumen] BB: " << endl << m_bb << endl;
+    std::cout << "[BigVolumen] BV: " << m_maxIndexSquare << "|" << m_maxIndexX << "|" << m_maxIndexY << "|" << m_maxIndexZ << std::endl;
 
 
     //
@@ -180,10 +180,10 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         m_has_color = true;
     }
 
-    string comment = lvr2::timestamp.getElapsedTime() + "Building grid... ";
+    string comment = lvr2::timestamp.getElapsedTime() + "[BigVolumen] Building grid... ";
     lvr2::ProgressBar progress(this->m_numPoints, comment);
 
-    std::cout << lvr2::timestamp << "Starting grid generation..." << std::endl;
+    std::cout << lvr2::timestamp << "[BigVolumen] Starting grid generation..." << std::endl;
 
     while (lineReader.ok())
     {
@@ -310,8 +310,8 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         } else if (lineReader.getFileType() == XYZ)
         {
             boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,10000000));
-            if(rsize>0) std::cout << "RSIZE: " << rsize << endl;
-            else std::cout << "rsize :0 " << " lr: " << lineReader.ok() << endl;
+            if(rsize>0) std::cout << timestamp << "[BigVolumen] RSIZE: " << rsize << endl;
+            else std::cout << "[BigVolumen] rsize :0 " << " lr: " << lineReader.ok() << endl;
 //            std::cout << "RSIZE: " << rsize << endl;
             if (rsize <= 0  && !lineReader.ok())
             {
@@ -332,11 +332,11 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
                 size_t idz = calcIndex((iz - m_bb.getMin()[2]) / voxelsize);
                 if(idx > m_maxIndexX || idy > m_maxIndexY || idz > m_maxIndexZ)
                 {
-                    cout << "FUCK YOU " << idx << "|" << idy << "|" << idz << endl;
+                    cout << "[BigVolumen] Error " << idx << "|" << idy << "|" << idz << endl;
                 }
                 size_t h = hashValue(idx, idy, idz);
                 if(m_gridNumPoints[h].size > 0 && (m_gridNumPoints[h].ix != idx || m_gridNumPoints[h].iy != idy || m_gridNumPoints[h].iz != idz)   )
-                    cout << "FUCK 2000 " << m_gridNumPoints[h].ix << "|" << m_gridNumPoints[h].iy << "|" << m_gridNumPoints[h].iz << " - " << idx << "|" << idy << "|" <<idz << endl;
+                    cout << "[BigVolumen] Error " << m_gridNumPoints[h].ix << "|" << m_gridNumPoints[h].iy << "|" << m_gridNumPoints[h].iz << " - " << idx << "|" << idy << "|" <<idz << endl;
                 m_gridNumPoints[h].ix = idx;
                 m_gridNumPoints[h].iy = idy;
                 m_gridNumPoints[h].iz = idz;
@@ -444,7 +444,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
 
     // wrote everything to files
 
-    cout << lvr2::timestamp << " calculating boundingboxes of cells" << endl;
+    cout << lvr2::timestamp << "[BigVolumen] Calculating boundingboxes of cells" << endl;
     for(auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); it++)
     {
         float cx  = m_bb.getMin().x + it->second.ix * m_voxelSize;
@@ -468,7 +468,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
     }
     lineReader.rewind();
 
-    string comment2 = lvr2::timestamp.getElapsedTime() + "adding overlapping points";
+    string comment2 = lvr2::timestamp.getElapsedTime() + "[BigVolumen] Adding overlapping points";
     lvr2::ProgressBar progress2(m_numPoints, comment2);
     // Add overlapping points
     for(auto cell = m_gridNumPoints.begin() ; cell != m_gridNumPoints.end(); cell++)
@@ -914,7 +914,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
             }
         }
     }
-    cout << lvr2::timestamp << " finished serialization" << endl;
+    cout << lvr2::timestamp << "[BigVolumen] Finished serialization" << endl;
     for(auto cell = m_gridNumPoints.begin() ; cell != m_gridNumPoints.end(); cell++)
     {
         if(cell->second.ofs_points.is_open()) cell->second.ofs_points.close();

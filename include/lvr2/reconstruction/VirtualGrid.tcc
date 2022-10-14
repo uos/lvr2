@@ -38,7 +38,7 @@ VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb, float gridCellSize
     if (fmod(gridCellSize, voxelSize) != 0)
     {
         m_gridCellSize = ceil(gridCellSize / voxelSize) * voxelSize;
-        std::cout << timestamp << "Warning: Adjusted grid cell size to " << m_gridCellSize << std::endl;
+        std::cout << timestamp << "[VirtualGrid] Warning: Adjusted grid cell size to " << m_gridCellSize << std::endl;
     }
     else
     {

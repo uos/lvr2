@@ -386,7 +386,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
         // end of visiting all cells of the octree
         }
         
-        std::cout << levelCellCounter << " of " << cellCounter << " cells at level " << cur_Level << std::endl;
+        std::cout << timestamp << "[BigVolumen] LevelCellCounter of " << cellCounter << " cells at level " << cur_Level << std::endl;
     
     // end of visiting the current level
     }
@@ -564,7 +564,7 @@ template<typename BaseVecT, typename BoxT>
 void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 {
     // start building adaptive octree
-    string comment = timestamp.getElapsedTime() + "Creating Octree...";
+    string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating Octree...";
     cout << comment << endl;
     
 
@@ -573,11 +573,11 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     
     buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric, 0);
 
-    comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
+    comment = timestamp.getElapsedTime() + "[DMCReconstruction] Cleaning up RAM...";
     cout << comment << endl;
     m_pointHandler->clear();
 
-    comment = timestamp.getElapsedTime() + "Creating Mesh ";
+    comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating Mesh ";
     m_progressBar = new ProgressBar(m_leaves, comment);
     traverseTree(mesh, *octree);
     delete(octree);
@@ -590,7 +590,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
     // delta cannot be smaller than zero
     if(delta < 0)
     {
-        string comment = timestamp.getElapsedTime() + "Error: delta cannot be below zero."; 
+        string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Error: delta cannot be below zero."; 
         cout << comment << endl;
         return;
     }
@@ -598,14 +598,14 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
     //TODO: fix it
     else if(delta == 0)
     {
-        string comment = timestamp.getElapsedTime() + "Warning: delta is equal to zero. Returning flat mesh only."; 
+        string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Warning: delta is equal to zero. Returning flat mesh only."; 
         cout << comment << endl;
         getMesh(flatMesh);
     }
     // else the delta must be greater than 0
     else
     {
-        string comment = timestamp.getElapsedTime() + "Creating two meshes with delta delta of " + to_string(delta) + "."; 
+        string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating two meshes with delta delta of " + to_string(delta) + "."; 
         cout << comment << endl;
 
 
@@ -616,19 +616,19 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
 
         /* *************** FLAT OCTREE ************************* */
 
-        comment = timestamp.getElapsedTime() + "Building flat octree..."; 
+        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Building flat octree..."; 
         cout << comment << endl;
 
         // build flat tree without delta
         buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric, 0);
 
         // printing progress
-        comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
+        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Cleaning up RAM...";
         cout << comment << endl;
         m_pointHandler->clear();
         
         // creating mesh
-        comment = timestamp.getElapsedTime() + "Creating flat mesh ";
+        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating flat mesh ";
         m_progressBar = new ProgressBar(m_leaves, comment);
         traverseTree(flatMesh, *octree);
         cout << endl;
@@ -647,7 +647,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
 
         m_pointHandler = std::unique_ptr<DMCPointHandle<BaseVecT>>(new DMCVecPointHandle<BaseVecT>(containedPoints));
 
-        comment = timestamp.getElapsedTime() + "Building deep octree..."; 
+        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Building deep octree..."; 
         cout << comment << endl;
     
 
@@ -660,12 +660,12 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
         buildTree(*deepOctree, m_maxLevel, m_dual, reconstructionMetric, delta);
 
 
-        comment = timestamp.getElapsedTime() + "Cleaning up RAM...";
+        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Cleaning up RAM...";
         cout << comment << endl;
         m_pointHandler->clear();
 
       
-        comment = timestamp.getElapsedTime() + "Creating deep mesh ";
+        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating deep mesh ";
         m_progressBar = new ProgressBar(m_leaves, comment);
         traverseTree(deepMesh, *deepOctree);
         cout << endl;
@@ -697,7 +697,7 @@ DualLeaf<BaseVecT, BoxT>* DMCReconstruction<BaseVecT, BoxT>::getDualLeaf(
 
     if(cellHandles.size() != 8)
     {
-        std::cout << "ERROR - CellHandles Size is " << cellHandles.size() << " but must be 8!"<< std::endl;
+        std::cout << "[DMCReconstruction] ERROR - CellHandles Size is " << cellHandles.size() << " but must be 8!"<< std::endl;
     }
 
     // find vertex of each cell

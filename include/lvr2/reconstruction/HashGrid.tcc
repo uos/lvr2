@@ -73,7 +73,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(float resolution, BoundingBox<BaseVecT> bound
 
     if (!m_boundingBox.isValid())
     {
-        cout << timestamp << "Warning: Malformed BoundingBox." << endl;
+        cout << timestamp << "[HashGrid] Warning: Malformed BoundingBox." << endl;
     }
 
     BoxT::m_voxelsize = m_voxelsize;
@@ -146,8 +146,8 @@ HashGrid<BaseVecT, BoxT>::HashGrid(const std::vector<PointBufferPtr>& chunks,
     std::unique_ptr<ProgressBar> progress = nullptr;
     if (chunks.size() > 1)
     {
-        std::cout << timestamp.getElapsedTime() << "Number of Chunks: "<< chunks.size()<< std::endl;
-        std::string comment = timestamp.getElapsedTime() + "Loading grid ";
+        std::cout << timestamp.getElapsedTime() << "[HashGrid] Number of Chunks: "<< chunks.size()<< std::endl;
+        std::string comment = timestamp.getElapsedTime() + "[HashGrid] Loading grid ";
         progress.reset(new ProgressBar(chunks.size(), comment));
     }
     for (size_t i = 0; i < chunks.size(); i++)

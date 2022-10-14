@@ -140,7 +140,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                     exit(1);
                     */
                     ignoreSplit = true;
-                    std::cout << "WARNING: m_numPoints + numPoints = " << m_numPoints + numPoints
+                    std::cout << "[BigGridKdTree] WARNING: m_numPoints + numPoints = " << m_numPoints + numPoints
                               << " > " << s_maxNodePoints << ". Ignoring x-split" << std::endl;
                 }
             }
@@ -169,7 +169,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                     exit(1);
                     */
                     ignoreSplit = true;
-                    std::cout << "WARNING: m_numPoints + numPoints = " << m_numPoints + numPoints
+                    std::cout << "[BigGridKdTree] WARNING: m_numPoints + numPoints = " << m_numPoints + numPoints
                               << " > " << s_maxNodePoints << ". Ignoring y-split" << std::endl;
                 }
             }
@@ -197,7 +197,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                     exit(1);
                     */
                     ignoreSplit = true;
-                    std::cout << "WARNING: m_numPoints + numPoints = " << m_numPoints + numPoints
+                    std::cout << "[BigGridKdTree] WARNING: m_numPoints + numPoints = " << m_numPoints + numPoints
                               << " > " << s_maxNodePoints << ". Ignoring z-split" << std::endl;
                 }
             }
