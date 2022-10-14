@@ -26,10 +26,17 @@ int main(int argc, char** argv)
     // Load scan project (without fetching data)
     ScanProjectPtr inputProject = loadScanProject(options.getInputSchema(), options.getInputSource());
 
-    printScanProjectStructure(inputProject);
+    if(options.printStructure())
+    {
+        printScanProjectStructure(inputProject);
+    }
+    
+    if(options.convert())
+    {
+        // Save to target in new format
+        saveScanProject(inputProject, options.getOutputSchema(), options.getOutputSource());
+    }
 
-    // Save to target in new format
-    saveScanProject(inputProject, options.getOutputSchema(), options.getOutputSource());
 
     return 0;
 }
