@@ -37,6 +37,5 @@ int main(int argc, char** argv)
         saveScanProject(inputProject, options.getOutputSchema(), options.getOutputSource());
     }
 
-
     return 0;
 }

@@ -62,7 +62,7 @@ YAML::Node loadMetaInformation(const std::string &in)
         inPath += ".yaml";
     }
 
-    if (inPath.extension() == ".yaml" || inPath.extension() == ".json" || inPath.extension() == ".pose"|| inPath.extension() == ".scn" || inPath.extension() == ".img" )
+    if (inPath.extension() == ".yaml" || inPath.extension() == ".json" || inPath.extension() == ".pose" || inPath.extension() == ".img" || inPath.extension() == ".scn" )
     {
         YAML::Node n;
         if (boost::filesystem::exists(inPath))

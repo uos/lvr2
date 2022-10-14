@@ -9,13 +9,13 @@
 #endif()
 
 
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-find_package(teaserpp REQUIRED)
-#find_package(lvr2::ProgressBar)
-
-cmake_policy(SET CMP0074 NEW)
-set(Open3D_ROOT "/home/praktikum/open3d_install/")
-find_package(Open3D REQUIRED)
+#find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+#find_package(teaserpp REQUIRED)
+##find_package(lvr2::ProgressBar)
+#
+#cmake_policy(SET CMP0074 NEW)
+#set(Open3D_ROOT "/home/praktikum/open3d_install/")
+#find_package(Open3D REQUIRED)
 
 # Change this line to include your own executable file
 
@@ -24,15 +24,15 @@ find_package(Open3D REQUIRED)
 
 # Link to teaserpp & Eigen3
 #add_dependencies(Eigen3)
-
-
-set(teaser_example_DEPENDENCIES
-        lvr2_static
-        lvr2las_static
-        lvr2rply_static
-        ${teaser_example_DEPENDENCIES}
-        )
-
-#add_executable( teaser_example ${teaser_example_SOURCES} )
-add_executable(teaser_example Main.cpp util/pointtovertex.cpp util/MyMatching.cpp ${teaser_example_SOURCES} )
-target_link_libraries( teaser_example PUBLIC Eigen3::Eigen teaserpp::teaser_registration teaserpp::teaser_io PRIVATE Open3D::Open3D ${teaser_example_DEPENDENCIES} )
+#
+#
+#set(teaser_example_DEPENDENCIES
+#        lvr2_static
+#        lvr2las_static
+#        lvr2rply_static
+#        ${teaser_example_DEPENDENCIES}
+#        )
+#
+##add_executable( teaser_example ${teaser_example_SOURCES} )
+#add_executable(teaser_example Main.cpp util/pointtovertex.cpp util/MyMatching.cpp ${teaser_example_SOURCES} )
+#target_link_libraries( teaser_example PUBLIC Eigen3::Eigen teaserpp::teaser_registration teaserpp::teaser_io PRIVATE Open3D::Open3D ${teaser_example_DEPENDENCIES} )

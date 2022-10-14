@@ -81,8 +81,8 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
 
     Description d = m_baseIO->m_description->position(scanPosNo);
 
-    // std::cout << "[ScanPositionIO - load]"  << std::endl;
-    // std::cout << d <<  std::endl;
+//     std::cout << "[ScanPositionIO - load]"  << std::endl;
+//     std::cout << d <<  std::endl;
 
     if(!d.dataRoot)
     {
@@ -104,9 +104,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
             return ret;
         }
 
-        // -1 because it somehow writes scanPosNo + 1 into the meta.yaml
-        // even though the debugger says scanPosNo is the right number
-        meta["original_name"] = scanPosNo - 1;
+        meta["original_name"] = scanPosNo;
 
         try {
 
