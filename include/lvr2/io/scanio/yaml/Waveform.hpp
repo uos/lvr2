@@ -9,53 +9,52 @@
 #include "lvr2/io/YAML.hpp"
 #include "lvr2/util/YAMLUtil.hpp"
 
-namespace YAML {
-
-template<>
-struct convert<lvr2::Waveform> 
+namespace YAML
 {
 
-    /**
-     * Encode Eigen matrix to yaml. 
-     */
-    static Node encode(const lvr2::Waveform& waveform) {
-        
-        Node node;
-        node["entity"] = lvr2::Waveform::entity;
-        node["type"] = lvr2::Waveform::type;
-        node["maxBucketSize"] = waveform.maxBucketSize;
-
-        return node;
-    }
-
-    static bool decode(const Node& node, lvr2::Waveform& waveform) 
+    template <>
+    struct convert<lvr2::Waveform>
     {
-        // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "waveform", 
-            lvr2::Waveform::entity, 
-            lvr2::Waveform::type))
+
+        /**
+         * Encode Eigen matrix to yaml.
+         */
+        static Node encode(const lvr2::Waveform &waveform)
         {
-            return false;
+
+            Node node;
+            node["entity"] = lvr2::Waveform::entity;
+            node["type"] = lvr2::Waveform::type;
+            node["maxBucketSize"] = waveform.maxBucketSize;
+
+            return node;
         }
 
-        
-        // Get fields
-        if(node["maxBucketSize"])
+        static bool decode(const Node &node, lvr2::Waveform &waveform)
         {
-            waveform.maxBucketSize = node["maxBucketSize"].as<int>();
+            // Check if 'entity' and 'type' Tags are valid
+            if (!YAML_UTIL::ValidateEntityAndType(node,
+                                                  "waveform",
+                                                  lvr2::Waveform::entity,
+                                                  lvr2::Waveform::type))
+            {
+                return false;
+            }
+
+            // Get fields
+            if (node["maxBucketSize"])
+            {
+                waveform.maxBucketSize = node["maxBucketSize"].as<int>();
+            }
+            else
+            {
+                waveform.maxBucketSize = 0;
+            }
+
+            return true;
         }
-        else
-        {
-            waveform.maxBucketSize = 0; 
-        }
+    };
 
-        return true;
-    }
-
-};
-
-}  // namespace YAML
+} // namespace YAML
 
 #endif // LVR2_IO_YAML_WAVEFORM_IO_HPP
-

@@ -13,17 +13,17 @@ void LabelScanProjectIO<BaseIO>::saveLabelScanProject(const LabeledScanProjectEd
 
     if (labelScanProjectPtr->editMarkProject && labelScanProjectPtr->editMarkProject->project)
     {
-        std::cout << "[LabelScanProjectIO] Save ScanProject" << std::endl;
+        std::cout << timestamp << "[LabelScanProjectIO] Save ScanProject" << std::endl;
         m_scanProjectIO->saveScanProject(labelScanProjectPtr->editMarkProject->project);
     }
 
     if (labelScanProjectPtr->labelRoot && labelScanProjectPtr->labelRoot->points)
     {
-        std::cout << "[LabelScanProjectIO] Save Labeles" << std::endl;
+        std::cout << timestamp << "[LabelScanProjectIO] Save Labeles" << std::endl;
         m_labelIO->saveLabels(group, labelScanProjectPtr->labelRoot); 
     } else
     {
-     std::cout << "[LabelScanProjectIO] No Labeles" << std::endl;
+     std::cout << timestamp << "[LabelScanProjectIO] No Labeles" << std::endl;
     }
 }
 

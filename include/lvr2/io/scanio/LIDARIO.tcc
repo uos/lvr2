@@ -83,7 +83,7 @@ LIDARPtr LIDARIO<BaseIO>::load(
         try {
             ret = std::make_shared<LIDAR>(meta.as<LIDAR>());
         } catch(const YAML::TypedBadConversion<LIDAR>& ex) {
-            std::cerr << "[LIDARIO - load] ERROR at LIDAR (" << scanPosNo << ", " << lidarNo << ") : Could not decode YAML as LIDAR." << std::endl;
+            std::cout << timestamp << "[LIDARIO - load] ERROR at LIDAR (" << scanPosNo << ", " << lidarNo << ") : Could not decode YAML as LIDAR." << std::endl;
             throw ex;
         }
     } else {

@@ -5,9 +5,13 @@
 #include <sstream>
 
 #include <yaml-cpp/yaml.h>
+
+#include "lvr2/util/Timestamp.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/YAML.hpp"
 #include "lvr2/util/YAMLUtil.hpp"
+
+using lvr2::timestamp;
 
 namespace YAML {
 
@@ -50,7 +54,7 @@ struct convert<lvr2::Camera>
             try {
                 camera.name = node["name"].as<std::string>();
             } catch(const YAML::TypedBadConversion<std::string>& ex) {
-                std::cerr << "[YAML - Camera - decode] ERROR: Could not decode 'name': " 
+                std::cout << timestamp << "[YAML - Camera - decode] ERROR: Could not decode 'name': " 
                     << node["name"] << " as string" << std::endl;
                 return false;
             }
@@ -62,10 +66,13 @@ struct convert<lvr2::Camera>
 
         if(node["transformation"])
         {
-            try {
+            try 
+            {
                 camera.transformation = node["transformation"].as<lvr2::Transformd>();
-            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
-                std::cerr << "[YAML - Camera - decode] ERROR: Could not decode 'transformation': " 
+            } 
+            catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) 
+            {
+                std::cout <<  timestamp << "[YAML - Camera - decode] ERROR: Could not decode 'transformation': " 
                     << node["transformation"] << " as Transformd" << std::endl; 
                 return false;
             }
@@ -73,10 +80,13 @@ struct convert<lvr2::Camera>
 
         if(node["model"])
         {
-            try {
+            try 
+            {
                 camera.model = node["model"].as<decltype(camera.model)>();
-            } catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex) {
-                std::cerr << "[YAML - Camera - decode] ERROR: Could not decode 'model': " 
+            } 
+            catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex) 
+            {
+                std::cout <<  timestamp <<  "[YAML - Camera - decode] ERROR: Could not decode 'model': " 
                     << node["model"] << " as CameraModel" << std::endl;
                 return false;
             }

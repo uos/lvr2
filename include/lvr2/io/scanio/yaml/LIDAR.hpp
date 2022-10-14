@@ -3,6 +3,8 @@
 
 #include "lvr2/io/YAML.hpp"
 
+using lvr2::timestamp;
+
 namespace YAML {  
 
 /**
@@ -43,23 +45,31 @@ struct convert<lvr2::LIDAR>
 
         if(node["transformation"])
         {
-            try {
+            try 
+            {
                 lidar.transformation = node["transformation"].as<lvr2::Transformd>();
-            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
-                std::cerr << "[YAML - LIDAR - decode] ERROR: Could not decode 'transformation': "
+            } 
+            catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) 
+            {
+                std::cout << timestamp << "[YAML - LIDAR - decode] ERROR: Could not decode 'transformation': "
                     << node["transformation"] << " as Transformd" << std::endl; 
                 return false;
             }
-        } else {
+        } 
+        else 
+        {
             lidar.transformation = lvr2::Transformd::Identity();
         }
 
         if(node["name"])
         {
-            try {
+            try 
+            {
                 lidar.name = node["name"].as<std::string>();
-            } catch(const YAML::TypedBadConversion<std::string>& ex) {
-                std::cerr << "[YAML - LIDAR - decode] ERROR: Could not decode 'name': "
+            } 
+            catch(const YAML::TypedBadConversion<std::string>& ex) 
+            {
+                std::cout << timestamp << "[YAML - LIDAR - decode] ERROR: Could not decode 'name': "
                     << node["name"] << " as string" << std::endl; 
                 return false;
             }
@@ -67,23 +77,31 @@ struct convert<lvr2::LIDAR>
 
         if(node["model"])
         {
-            try {
+            try 
+            {
                 lidar.model = node["model"].as<lvr2::SphericalModel>();
-            } catch(const YAML::TypedBadConversion<lvr2::SphericalModel>& ex) {
-                std::cerr << "[YAML - LIDAR - decode] ERROR: Could not decode 'model': "
+            } 
+            catch(const YAML::TypedBadConversion<lvr2::SphericalModel>& ex) 
+            {
+                std::cout << timestamp << "[YAML - LIDAR - decode] ERROR: Could not decode 'model': "
                     << node["model"] << " as SphericalModel" << std::endl; 
                 return false;
             }
-        } else {
+        } 
+        else 
+        {
             lidar.model.range[0] = 0.0;
         }
 
         if(node["aabb"])
         {
-            try {
+            try 
+            {
                 lidar.boundingBox = node["aabb"].as<lvr2::BoundingBox<lvr2::BaseVector<float> > >();
-            } catch(const YAML::TypedBadConversion<lvr2::BoundingBox<lvr2::BaseVector<float> > >& ex) {
-                std::cerr << "[YAML - LIDAR - decode] ERROR: Could not decode 'aabb': "
+            } 
+            catch(const YAML::TypedBadConversion<lvr2::BoundingBox<lvr2::BaseVector<float> > >& ex) 
+            {
+                std::cout << timestamp << "[YAML - LIDAR - decode] ERROR: Could not decode 'aabb': "
                     << node["aabb"] << " as BoundingBox" << std::endl; 
                 return false;
             }

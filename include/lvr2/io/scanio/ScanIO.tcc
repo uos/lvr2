@@ -244,12 +244,12 @@ ScanPtr ScanIO<BaseIO>::load(
 
             if(!schema)
             {
-                std::cout << "Schema empty" << std::endl;
+                std::cout << timestamp << "[ScanIO]: Schema empty" << std::endl;
             }
 
             if(!kernel)
             {
-                std::cout << "Kernel empty" << std::endl;
+                std::cout << timestamp << "[ScanIO]: Kernel empty" << std::endl;
             }
 
             FeatureBuild<ScanIO> io(kernel, schema, false);
@@ -357,8 +357,8 @@ ScanPtr ScanIO<BaseIO>::load(
                             // 2. Used directory schema and stored binary channels
                             //    - this should not happen. binary channels must have an meta file
 
-                            std::cerr << "[ScanIO - load] ERROR: Could not load file by description: " << std::endl;
-                            std::cerr << dc << std::endl;
+                            std::cout << timestamp << "[ScanIO - load] ERROR: Could not load file by description: " << std::endl;
+                            std::cout << timestamp << dc << std::endl;
 
                             throw std::runtime_error("[ScanIO - Panic. Something orrured that should not happen]");
                         }
@@ -501,7 +501,6 @@ ScanPtr ScanIO<BaseIO>::loadScan(
     const size_t& sensorNo,
     const size_t& scanNo) const
 {
-    cout << "scan read"<< endl;
     return load(scanPosNo, sensorNo, scanNo);
 }
 

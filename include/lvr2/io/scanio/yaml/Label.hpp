@@ -8,6 +8,8 @@
 #include "lvr2/io/YAML.hpp"
 #include "lvr2/util/YAMLUtil.hpp"
 
+using lvr2::timestamp;
+
 namespace YAML {  
 
 /**

@@ -11,8 +11,8 @@ bool ScanPositionIO< BaseIO>::save(
 {
     Description d = m_baseIO->m_description->position(scanPosNo);
 
-    std::cout << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
-    std::cout << d << std::endl;
+    std::cout << timestamp << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
+    std::cout << timestamp << d << std::endl;
 
     if(!d.dataRoot)
     {
@@ -111,7 +111,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
             ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
 
         } catch(const YAML::TypedBadConversion<ScanPosition>& ex) {
-            std::cerr << "[ScanPositionIO - load] ERROR at Scan (" << scanPosNo << ") : Could not decode YAML as ScanPosition." << std::endl;
+            std::cout << timestamp << "[ScanPositionIO - load] ERROR at Scan (" << scanPosNo << ") : Could not decode YAML as ScanPosition." << std::endl;
             throw ex;
         }
 

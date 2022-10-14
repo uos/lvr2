@@ -62,8 +62,8 @@ BaseVector<size_t> ChunkIO<BaseIO>::loadAmount()
         = m_array_io->template load<size_t>(m_chunkName, m_amountName, dimensionAmount);
     if (dimensionAmount != 3)
     {
-        std::cout << "Error loading chunk data: amount has not the right "
-                     "dimension. Real: "
+        std::cout <<  timestamp << "Error loading chunk data: amount has not the correct "
+                     "dimension. Found: "
                   << dimensionAmount << "; Expected: 3" << std::endl;
     }
     else
@@ -82,8 +82,8 @@ float ChunkIO<BaseIO>::loadChunkSize()
         = m_array_io->template load<float>(m_chunkName, m_chunkSizeName, dimensionChunkSize);
     if (dimensionChunkSize != 1)
     {
-        std::cout << "Error loading chunk data: chunkSize has not the right "
-                     "dimension. Real: "
+        std::cout << "Error loading chunk data: chunkSize has not the correct "
+                     "dimension. Found: "
                   << dimensionChunkSize << "; Expected: 1" << std::endl;
         chunkSize = 0;
     }
@@ -104,13 +104,13 @@ BoundingBox<BaseVector<float>> ChunkIO<BaseIO>::loadBoundingBox()
     if (dimensionBox.size() < 2)
     {
         throw out_of_range(
-            "Error loading chunk data: bounding_box has not the right amount of dimensions. Real: "
+            "Error loading chunk data: bounding_box dimensions do not match. Found: "
             + to_string(dimensionBox.size()) + "; Expected: 2");
     }
     if (dimensionBox.at(0) != 2 && dimensionBox.at(1) != 3)
     {
         throw out_of_range(
-            "Error loading chunk data: bounding_box has not the right of dimension. Real: "
+            "Error loading chunk data: bounding_box dimensions do not match. Found: "
             + to_string(dimensionBox.at(0)) + ", " + to_string(dimensionBox.at(1))
             + "; Expected: {2, 3}");
     }

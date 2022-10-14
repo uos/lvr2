@@ -11,6 +11,8 @@
 #include "lvr2/util/YAMLUtil.hpp"
 #include "lvr2/io/YAML.hpp"
 
+using lvr2::timestamp;
+
 namespace YAML {
 
 template<>
@@ -51,10 +53,12 @@ struct convert<lvr2::CameraImage>
         // Get fields
         if(parsed_node["transformation"])
         {
-            try {
+            try 
+            {
                 scanImage.transformation = parsed_node["transformation"].as<lvr2::Transformd>();
-            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
-                std::cerr << "[YAML - CameraImage - decode] ERROR: Could not decode 'transformation': " 
+            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) 
+            {
+                std::cout <<  timestamp <<  "[YAML - CameraImage - decode] ERROR: Could not decode 'transformation': " 
                     << parsed_node["transformation"] << " as Transformd" << std::endl;
                 return false;
             }
@@ -68,10 +72,13 @@ struct convert<lvr2::CameraImage>
         if(parsed_node["pose_estimation"])
         {
             // NAN check?
-            try {
+            try 
+            {
                 scanImage.extrinsicsEstimation = parsed_node["pose_estimation"].as<lvr2::Extrinsicsd>();
-            } catch(const YAML::TypedBadConversion<lvr2::Extrinsicsd>& ex) {
-                std::cerr << "[YAML - CameraImage - decode] ERROR: Could not decode 'pose_estimation': " 
+            } 
+            catch(const YAML::TypedBadConversion<lvr2::Extrinsicsd>& ex) 
+            {
+                std::cout << timestamp << "[YAML - CameraImage - decode] ERROR: Could not decode 'pose_estimation': " 
                     << parsed_node["pose_estimation"] << " as Extrinsicsd" << std::endl;
                 return false;
             }
@@ -84,10 +91,13 @@ struct convert<lvr2::CameraImage>
 
         if(parsed_node["timestamp"])
         {
-            try {
+            try 
+            {
                 scanImage.timestamp = parsed_node["timestamp"].as<double>();
-            } catch(const YAML::TypedBadConversion<double>& ex) {
-                std::cerr << "[YAML - CameraImage - decode] ERROR: Could not decode 'timestamp': " 
+            } 
+            catch(const YAML::TypedBadConversion<double>& ex) 
+            {
+                std::cout <<  timestamp <<  "[YAML - CameraImage - decode] ERROR: Could not decode 'timestamp': " 
                     << node["timestamp"] << " as double" << std::endl; 
                 return false;
             }
@@ -135,8 +145,10 @@ struct convert<lvr2::CameraImageGroup>
         {
             try {
                 cameraImageGroup.transformation = node["transformation"].as<lvr2::Transformd>();
-            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
-                std::cerr << "[YAML - CameraImageGroup - decode] ERROR: Could not decode 'transformation': " 
+            } 
+            catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) 
+            {
+                std::cout <<  timestamp <<  "[YAML - CameraImageGroup - decode] ERROR: Could not decode 'transformation': " 
                     << node["transformation"] << " as Transformd" << std::endl; 
                 return false;
             }

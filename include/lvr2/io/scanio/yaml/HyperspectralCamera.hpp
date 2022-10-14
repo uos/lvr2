@@ -8,6 +8,9 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/YAMLUtil.hpp"
 
+using lvr2::timestamp;
+
+
 namespace YAML
 {
 
@@ -67,10 +70,13 @@ struct convert<lvr2::HyperspectralCamera>
 
         if(node["transformation"])
         {
-            try {
+            try 
+            {
                 camera.transformation = node["transformation"].as<decltype(camera.transformation)>();
-            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) {
-                std::cerr << "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'transformation': "
+            } 
+            catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) 
+            {
+                std::cout << timestamp << "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'transformation': "
                     << node["transformation"] << " as Transformd" << std::endl; 
                 return false;
             }
@@ -78,10 +84,13 @@ struct convert<lvr2::HyperspectralCamera>
 
         if(node["name"])
         {
-            try {
+            try 
+            {
                 camera.name = node["name"].as<decltype(camera.name)>();
-            } catch(const YAML::TypedBadConversion<std::string>& ex) {
-                std::cerr << "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'name': "
+            } 
+            catch(const YAML::TypedBadConversion<std::string>& ex) 
+            {
+                std::cout << timestamp << "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'name': "
                     << node["name"] << " as string" << std::endl; 
                 return false;
             }
@@ -89,14 +98,19 @@ struct convert<lvr2::HyperspectralCamera>
 
         if(node["model"])
         {
-            try {
+            try 
+            {
                 camera.model= node["model"].as<decltype(camera.model)>();
-            } catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex) {
-                std::cerr << "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'model': "
+            } 
+            catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex) 
+            {
+                std::cout << timestamp << "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'model': "
                     << node["model"] << " as CameraModel" << std::endl;
                 return false;
             }
-        } else {
+        } 
+        else 
+        {
             std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
                 << "WARNING: Hyperspectral camera has no sensor model in meta file." << std::endl;
         }

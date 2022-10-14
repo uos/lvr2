@@ -25,7 +25,7 @@ void PointCloudIO<BaseIO>::save(
     const std::string& groupandname, 
     PointBufferPtr pcl) const
 {
-    std::cout << "Store each channel individually" << std::endl;
+    std::cout << timestamp << "Storing each channel individually" << std::endl;
     for(auto elem : *pcl)
     {
         m_vchannel_io->save(groupandname, elem.first, elem.second);
