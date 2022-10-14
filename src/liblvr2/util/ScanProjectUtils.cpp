@@ -1,6 +1,6 @@
+#include "lvr2/util/ScanProjectUtils.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Factories.hpp"
-#include "lvr2/util/ScanProjectUtils.hpp"
 #include "lvr2/util/ScanSchemaUtils.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
@@ -49,7 +49,7 @@ ScanProjectPtr scanProjectFromHDF5(std::string file, const std::string& schemaNa
 
 ScanProjectPtr scanProjectFromFile(const std::string& file)
 {
-    std::cout << timestamp << "Creating scan project from single file: " << file << std::endl;
+    std::cout << timestamp << "[Load Scan Project from File] Creating scan project from single file: " << file << std::endl;
     ScanProjectPtr project(new ScanProject);
     ModelPtr model = ModelFactory::readModel(file);
 
@@ -76,14 +76,14 @@ ScanProjectPtr scanProjectFromFile(const std::string& file)
     }
     else
     {
-        std::cout << timestamp << "Unable to open file '" << file << "' for reading-" << std::endl;
+        std::cout << timestamp << "[Load Scan Project from file] Unable to open file '" << file << "' for reading-" << std::endl;
     }
     return nullptr;
 }
 
 ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
 {
-    std::cout << timestamp << "Creating scan project from a directory of .ply files..." << std::endl;
+    std::cout << timestamp << "[Load Scan Project from PLY] Creating scan project from a directory of .ply files..." << std::endl;
     ScanProjectPtr scanProject(new ScanProject);
     boost::filesystem::directory_iterator it{dir};
     while (it != boost::filesystem::directory_iterator{})
@@ -116,7 +116,7 @@ ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
     }
     else
     {
-        std::cout << timestamp << "Warning: scan project is empty." << std::endl;
+        std::cout << timestamp << "[Load Scan Project from PLY] Warning: scan project is empty." << std::endl;
         return nullptr;
     }
 }
@@ -151,9 +151,9 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string& sou
     }
 
     // Loading failed. 
-    std::cout << timestamp << "Could not create schema or kernel for loading." << std::endl;
-    std::cout << timestamp << "Schema name: " << schema << std::endl;
-    std::cout << timestamp << "Source: " << source << std::endl;
+    std::cout << timestamp << "[Load Scan Project] Could not create schema or kernel for loading." << std::endl;
+    std::cout << timestamp << "[Load Scan Project] Schema name: " << schema << std::endl;
+    std::cout << timestamp << "[Load Scan Project] Source: " << source << std::endl;
 
     return nullptr;
 }
@@ -188,13 +188,13 @@ void saveScanProject(ScanProjectPtr& project, const std::string& schema, const s
         }
 
         // Saving failed.
-        std::cout << timestamp << "Could not create schema or kernel for saving." << std::endl;
-        std::cout << timestamp << "Schema name: " << schema << std::endl;
-        std::cout << timestamp << "Target: " << target << std::endl;
+        std::cout << timestamp << "[Save Scan Project] Could not create schema or kernel for saving." << std::endl;
+        std::cout << timestamp << "[Save Scan Project] Schema name: " << schema << std::endl;
+        std::cout << timestamp << "[Save Scan Project] Target: " << target << std::endl;
     }
     else
     {
-        std::cout << timestamp << "Cannot save scan project from null pointer" << std::endl;
+        std::cout << timestamp << "[Save Scan Project] Cannot save scan project from null pointer" << std::endl;
     }
 }
 
@@ -299,6 +299,77 @@ void printCameraImageStructure(const CameraImagePtr p)
     std::cout << p;
 }
 
+void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki, bool saveBack)
+{
+    for(size_t positionNr = 0; positionNr < p->positions.size(); positionNr++)
+    {
+        ScanPositionPtr position = p->positions[positionNr];
+        if(position)
+        {
+            for(size_t lidarNr = 0; lidarNr < position->lidars.size(); lidarNr++)
+            {
+                LIDARPtr lidar = position->lidars[lidarNr];
+                if(lidar)
+                {
+                    for(size_t scanNr = 0; scanNr < lidar->scans.size(); scanNr++)
+                    {
+                        ScanPtr scan = lidar->scans[scanNr];
+                        if(scan)
+                        {
+                            std::cout << timestamp << "[Project Normal Estimation]: Loading scan " << scanNr 
+                                      << " from lidar " << lidarNr << " of scan position " << positionNr << std::endl;
+                        
+                            scan->load();
+                            PointBufferPtr ptBuffer = scan->points;
+                            if(ptBuffer)
+                            {
+                                size_t n = ptBuffer->numPoints();
+                                if(n)
+                                {
+                                    std::cout << timestamp << "[Project Normal Estimation]: Loaded " << n << " points" << std::endl;
+                                    std::cout << timestamp << "[Project Normal Estimation]: Building search tree..." << std::endl;
+
+                                    AdaptiveKSearchSurfacePtr<BaseVector<float>> surface(new AdaptiveKSearchSurface<BaseVector<float>>(ptBuffer, "flann", kn, ki));
+                                    surface->calculateSurfaceNormals();
+                                    surface->interpolateSurfaceNormals();
+
+                                    
+                                }
+                                else
+                                {
+                                    std::cout << timestamp << "[Project Normal Estimation]: No points in scan" << std::endl;
+                                }
+       
+                            } 
+                            else
+                            {
+                                std::cout << timestamp << "[Project Normal Estimation]:Unable to load point cloud data." << std::endl;
+                            }
+                        }
+                        else
+                        {
+                            std::cout << timestamp << "[Project Normal Estimation]: "
+                                      << "Unable to load scan " << scanNr << " of "
+                                      << "lidar " << lidarNr << std::endl; 
+                        }
+                    }
+                }
+                else
+                {
+                    std::cout << timestamp << "[Project Normal Estimation]: Unable to load lidar " 
+                                           << lidarNr << " of scan position " 
+                                           << positionNr << std::endl;
+                }
+            }
+        }
+        else
+        {
+            std::cout << timestamp 
+                      << "[Project Normal Estimation]: Unable to load scan position " 
+                      << positionNr << std::endl;
+        }
+    }
+}
 
 
 } // namespace lvr2 else

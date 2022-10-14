@@ -8,9 +8,9 @@ namespace scanio
 
 template <typename BaseIO>
 void ScanIO<BaseIO>::save(
-    const size_t& scanPosNo,
-    const size_t& sensorNo,
-    const size_t& scanNo,
+    const size_t &scanPosNo,
+    const size_t &sensorNo,
+    const size_t &scanNo,
     ScanPtr scanPtr) const
 {
     auto Dgen = m_baseIO->m_description;
@@ -19,33 +19,33 @@ void ScanIO<BaseIO>::save(
     // std::cout << "[ScanIO - save]" << std::endl;
     // std::cout << d << std::endl;
 
-    if(!d.dataRoot)
+    if (!d.dataRoot)
     {
         return;
     }
 
     const bool data_loaded_before = scanPtr->loaded();
 
-    if(!data_loaded_before)
+    if (!data_loaded_before)
     {
         scanPtr->load();
     }
 
     // std::cout << "ScanIO - save data " << scanPosNo << " " << sensorNo << " " << scanNo << std::endl;
     //// DATA
-    if(scanPtr->points)
+    if (scanPtr->points)
     {
-        if(d.data)
-        { 
+        if (d.data)
+        {
             // std::cout << "Save Channel wise" << std::endl;
             m_pclIO->save(*d.dataRoot, *d.data, scanPtr->points);
 
             // save metas
-            for(auto elem : *scanPtr->points)
+            for (auto elem : *scanPtr->points)
             {
                 Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
                 // Meta
-                if(dc.meta)
+                if (dc.meta)
                 {
                     YAML::Node meta;
                     meta = elem.second;
@@ -53,8 +53,9 @@ void ScanIO<BaseIO>::save(
                     m_baseIO->m_kernel->saveMetaYAML(*dc.metaRoot, *dc.meta, meta);
                 }
             }
-
-        } else {
+        }
+        else
+        {
             // std::cout << "Save Partial" << std::endl;
             // a lot of code for the problem of capsulating SOME channels into one PLY
             // there could be other channels that do not fit in this ply
@@ -64,29 +65,30 @@ void ScanIO<BaseIO>::save(
             std::unordered_map<std::string, PointBufferPtr> one_file_multi_channel;
 
             /// Data (Channel)
-            for(auto elem : *scanPtr->points)
+            for (auto elem : *scanPtr->points)
             {
                 // std::cout << "Save " << elem.first << std::endl;
                 Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
                 boost::filesystem::path proot(*dc.dataRoot);
 
-                
                 // std::cout << "Description of " <<  elem.first << std::endl;
                 // std::cout << dc << std::endl;
 
-                if(proot.extension() != "")
+                if (proot.extension() != "")
                 {
-                    if(one_file_multi_channel.find(proot.string()) == one_file_multi_channel.end())
+                    if (one_file_multi_channel.find(proot.string()) == one_file_multi_channel.end())
                     {
                         one_file_multi_channel[proot.string()] = PointBufferPtr(new PointBuffer);
                     }
                     (*one_file_multi_channel[proot.string()])[elem.first] = elem.second;
-                } else {
+                }
+                else
+                {
                     // group is no file
                     // concatenate group and dataset and store directly
                     // std::string filename = (proot / *dc.data).string();
                     // std::cout << "Store single channel " << elem.first << " to " << filename << std::endl;
-                    
+
                     std::string group, dataset;
                     std::tie(group, dataset) = hdf5util::validateGroupDataset(proot.string(), *dc.data);
 
@@ -97,9 +99,9 @@ void ScanIO<BaseIO>::save(
                 }
             }
 
-            // DATA of exceptional "one_file_multi_channel". there we need to call the 
+            // DATA of exceptional "one_file_multi_channel". there we need to call the
             // kernel directly, because we are now at file level
-            for(auto ex_elem : one_file_multi_channel)
+            for (auto ex_elem : one_file_multi_channel)
             {
                 std::string group, name;
                 std::tie(group, name) = hdf5util::validateGroupDataset("", ex_elem.first);
@@ -114,10 +116,10 @@ void ScanIO<BaseIO>::save(
 
             // META
             // save meta for each channel
-            for(auto elem : *scanPtr->points)
+            for (auto elem : *scanPtr->points)
             {
                 Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
-                if(dc.meta)
+                if (dc.meta)
                 {
                     YAML::Node meta;
                     meta = elem.second;
@@ -130,7 +132,7 @@ void ScanIO<BaseIO>::save(
         }
     }
 
-    if(!data_loaded_before)
+    if (!data_loaded_before)
     {
         scanPtr->release();
     }
@@ -138,7 +140,7 @@ void ScanIO<BaseIO>::save(
     // std::cout << "save SCAN META" << std::endl;
 
     //// META
-    if(d.meta)
+    if (d.meta)
     {
         YAML::Node node;
         node = *scanPtr;
@@ -146,15 +148,15 @@ void ScanIO<BaseIO>::save(
         // std::cout << "write YAML" << std::endl;
         m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
-    
+
     // std::cout << "Success" << std::endl;
 }
 
 template <typename BaseIO>
 boost::optional<YAML::Node> ScanIO<BaseIO>::loadMeta(
-    const size_t& scanPosNo, 
-    const size_t& sensorNo,
-    const size_t& scanNo) const
+    const size_t &scanPosNo,
+    const size_t &sensorNo,
+    const size_t &scanNo) const
 {
     auto Dgen = m_baseIO->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
@@ -163,9 +165,9 @@ boost::optional<YAML::Node> ScanIO<BaseIO>::loadMeta(
 
 template <typename BaseIO>
 ScanPtr ScanIO<BaseIO>::load(
-    const size_t& scanPosNo, 
-    const size_t& sensorNo,
-    const size_t& scanNo) const
+    const size_t &scanPosNo,
+    const size_t &sensorNo,
+    const size_t &scanNo) const
 {
     ScanPtr ret;
 
@@ -174,11 +176,11 @@ ScanPtr ScanIO<BaseIO>::load(
     auto Dgen = m_baseIO->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
 
-    if(!d.dataRoot)
+    if (!d.dataRoot)
     {
         return ret;
     }
-    if(!m_baseIO->m_kernel->exists(*d.dataRoot))
+    if (!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
         return ret;
     }
@@ -187,26 +189,25 @@ ScanPtr ScanIO<BaseIO>::load(
     // std::cout << d << std::endl;
 
     /// META
-    if(d.meta)
+    if (d.meta)
     {
         YAML::Node meta;
-        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if (!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
 
-        try 
+        try
         {
             ret = std::make_shared<Scan>(meta.as<Scan>());
-        } 
-        catch(const YAML::TypedBadConversion<Scan>& ex) 
+        }
+        catch (const YAML::TypedBadConversion<Scan> &ex)
         {
             std::cerr << "[ScanIO - load] ERROR at Scan (" << scanPosNo << ", " << sensorNo << ", " << scanNo << ") : Could not decode YAML as Scan." << std::endl;
             throw ex;
         }
-
-    } 
-    else 
+    }
+    else
     {
         // for schemas without meta information
         ret = std::make_shared<Scan>();
@@ -217,37 +218,35 @@ ScanPtr ScanIO<BaseIO>::load(
 
     std::function<PointBufferPtr()> points_loader;
 
-    if(d.data)
+    if (d.data)
     {
         // Here we need to keep the actual instance of the base io
         // alive to assure that the original source paths are used
         // to load the data. Even if the original loader goes out of
-        // scope the shared_from_this will keep it alive until the 
+        // scope the shared_from_this will keep it alive until the
         // points_loaded function is freed
-        points_loader = [t = m_baseIO->shared_from_this(), d]() 
+        points_loader = [t = m_baseIO->shared_from_this(), d]()
         {
             return t->PointCloudIO<BaseIO>::load(*d.dataRoot, *d.data);
         };
-    } 
-    else 
+    }
+    else
     {
 
-        points_loader = [
-            schema = m_baseIO->m_description,
-            kernel = m_baseIO->m_kernel,
-            scanPosNo,
-            sensorNo,
-            scanNo
-        ] ()
+        points_loader = [schema = m_baseIO->m_description,
+                            kernel = m_baseIO->m_kernel,
+                            scanPosNo,
+                            sensorNo,
+                            scanNo]()
         {
             PointBufferPtr points;
 
-            if(!schema)
+            if (!schema)
             {
                 std::cout << timestamp << "[ScanIO]: Schema empty" << std::endl;
             }
 
-            if(!kernel)
+            if (!kernel)
             {
                 std::cout << timestamp << "[ScanIO]: Kernel empty" << std::endl;
             }
@@ -256,12 +255,12 @@ ScanPtr ScanIO<BaseIO>::load(
 
             auto channel_metas = io.loadChannelMetas(scanPosNo, sensorNo, scanNo);
 
-            if(!channel_metas.empty())
+            if (!channel_metas.empty())
             {
-                for(auto elem : channel_metas)
+                for (auto elem : channel_metas)
                 {
                     // check if element was added already
-                    if(!points || points->find(elem.first) == points->end() )
+                    if (!points || points->find(elem.first) == points->end())
                     {
                         Description dc = schema->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
 
@@ -269,7 +268,7 @@ ScanPtr ScanIO<BaseIO>::load(
 
                         boost::filesystem::path proot(*dc.dataRoot);
 
-                        if(proot.extension() != "")
+                        if (proot.extension() != "")
                         {
                             // channels in file
                             std::string group, name;
@@ -277,41 +276,41 @@ ScanPtr ScanIO<BaseIO>::load(
                             PointBufferPtr points_ = kernel->loadPointBuffer(group, name);
 
                             // merge to complete map
-                            if(!points)
+                            if (!points)
                             {
                                 points = points_;
-                            } 
-                            else 
+                            }
+                            else
                             {
-                                for(auto elem : *points_)
+                                for (auto elem : *points_)
                                 {
                                     (*points)[elem.first] = elem.second;
                                 }
                             }
-                        } 
+                        }
                         else
                         {
                             // channels in folder
                             auto vo = io.template loadVariantChannel<typename PointBuffer::val_type>(*dc.dataRoot, *dc.data);
-                            if(vo)
+                            if (vo)
                             {
-                                if(!points)
+                                if (!points)
                                 {
                                     points.reset(new PointBuffer);
                                 }
                                 (*points)[elem.first] = *vo;
                             }
                         }
-
                     }
                 }
-
-            } else {
+            }
+            else
+            {
 
                 // std::cout << "Could not get channel metas" << std::endl;
 
                 // no meta information about channels
-                // could be in case of datasets cannot be 
+                // could be in case of datasets cannot be
 
                 // but we know that points must be there
                 Description dc = schema->scanChannel(scanPosNo, sensorNo, scanNo, "points");
@@ -319,35 +318,40 @@ ScanPtr ScanIO<BaseIO>::load(
                 // search for data root
                 boost::filesystem::path proot(*dc.dataRoot);
 
-                if(proot.extension() != "")
+                if (proot.extension() != "")
                 {
                     std::string group, dataset;
                     std::tie(group, dataset) = hdf5util::validateGroupDataset("", proot.string());
                     points = kernel->loadPointBuffer(group, dataset);
-                } else {
+                }
+                else
+                {
                     // search
-                    if(dc.data)
+                    if (dc.data)
                     {
                         boost::filesystem::path pdata = *dc.data;
-                        if(pdata.extension() != "")
+                        if (pdata.extension() != "")
                         {
                             // found potential file to filter for
-                            for(auto name : kernel->listDatasets(proot.string()) )
+                            for (auto name : kernel->listDatasets(proot.string()))
                             {
                                 PointBufferPtr points_ = kernel->loadPointBuffer(proot.string(), name);
 
-                                if(!points)
+                                if (!points)
                                 {
                                     points = points_;
-                                } else if(points_) {
-                                    for(auto elem : *points_)
+                                }
+                                else if (points_)
+                                {
+                                    for (auto elem : *points_)
                                     {
                                         (*points)[elem.first] = elem.second;
                                     }
                                 }
                             }
-
-                        } else {
+                        }
+                        else
+                        {
                             // situation:
                             // no extension of group and no extension of dataset
                             // no meta data
@@ -368,13 +372,14 @@ ScanPtr ScanIO<BaseIO>::load(
 
             return points;
         }; // points_loader lambda
-    }   
+    }
 
     // add reduced version
-    std::function<PointBufferPtr(ReductionAlgorithmPtr)> points_loader_reduced = [points_loader](ReductionAlgorithmPtr red) {
+    std::function<PointBufferPtr(ReductionAlgorithmPtr)> points_loader_reduced = [points_loader](ReductionAlgorithmPtr red)
+    {
         PointBufferPtr points = points_loader();
 
-        if(points)
+        if (points)
         {
             red->setPointBuffer(points);
             points = red->getReducedPoints();
@@ -387,15 +392,14 @@ ScanPtr ScanIO<BaseIO>::load(
     // TODO: add points_loader and points_loader_reduced to struct instead
     // Old:
 
-
     // ret->points = points_loader();
     // New:
-    
-    if(m_baseIO->m_load_data)
+
+    if (m_baseIO->m_load_data)
     {
         ret->points = points_loader();
     }
-    
+
     ret->points_loader = points_loader;
     ret->points_loader_reduced = points_loader_reduced;
 
@@ -404,9 +408,9 @@ ScanPtr ScanIO<BaseIO>::load(
 
 template <typename BaseIO>
 std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
-    const size_t& scanPosNo, 
-    const size_t& sensorNo,
-    const size_t& scanNo) const
+    const size_t &scanPosNo,
+    const size_t &sensorNo,
+    const size_t &scanNo) const
 {
     auto Dgen = m_baseIO->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
@@ -417,34 +421,33 @@ std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
     std::unordered_map<std::string, YAML::Node> channel_metas;
 
     // first hint: channels tag of scan meta
-    if(d.meta)
+    if (d.meta)
     {
         YAML::Node meta;
 
         // cout << m_baseIO << endl;
         // cout << m_baseIO->m_kernel << endl;
-        // cout << m_baseIO->m_kernel->fileResource() << endl;  
+        // cout << m_baseIO->m_kernel->fileResource() << endl;
 
         m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
 
         // std::cout << "loadChannelMetas - Loaded Meta: " << std::endl;
         // std::cout << meta << std::endl;
 
-        if(meta["channels"])
+        if (meta["channels"])
         {
-            for(auto it = meta["channels"].begin(); it != meta["channels"].end(); ++it)
+            for (auto it = meta["channels"].begin(); it != meta["channels"].end(); ++it)
             {
                 std::string channel_name = it->as<std::string>();
                 Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, channel_name);
 
                 // META
-                if(dc.meta)
+                if (dc.meta)
                 {
                     YAML::Node cmeta;
                     m_baseIO->m_kernel->loadMetaYAML(*dc.metaRoot, *dc.meta, cmeta);
 
-
-                    if(cmeta["name"])
+                    if (cmeta["name"])
                     {
                         channel_name = cmeta["name"].as<std::string>();
                     }
@@ -455,26 +458,26 @@ std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
             }
         }
     }
-    
+
     // second hint: parse directory for channel metas
     Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, "test");
-    if(dc.meta)
+    if (dc.meta)
     {
         std::string metaGroup = *dc.metaRoot;
         std::string metaFile = *dc.meta;
         std::tie(metaGroup, metaFile) = hdf5util::validateGroupDataset(metaGroup, metaFile);
 
         // std::cout << "Search for meta files in " << metaGroup << std::endl;
-        for(auto meta : m_baseIO->m_kernel->metas(metaGroup, "channel"))
+        for (auto meta : m_baseIO->m_kernel->metas(metaGroup, "channel"))
         {
             std::string channel_name = meta.first;
 
-            if(meta.second["name"])
+            if (meta.second["name"])
             {
                 channel_name = meta.second["name"].template as<std::string>();
             }
 
-            if(channel_metas.find(channel_name) == channel_metas.end())
+            if (channel_metas.find(channel_name) == channel_metas.end())
             {
                 // new channel found
                 channel_metas[channel_name] = meta.second;
@@ -483,13 +486,13 @@ std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
     }
 
     return channel_metas;
-}   
+}
 
 template <typename BaseIO>
 void ScanIO<BaseIO>::saveScan(
-    const size_t& scanPosNo,
-    const size_t& sensorNo,
-    const size_t& scanNo,
+    const size_t &scanPosNo,
+    const size_t &sensorNo,
+    const size_t &scanNo,
     ScanPtr scanPtr) const
 {
     save(scanPosNo, scanNo, scanPtr);
@@ -497,49 +500,48 @@ void ScanIO<BaseIO>::saveScan(
 
 template <typename BaseIO>
 ScanPtr ScanIO<BaseIO>::loadScan(
-    const size_t& scanPosNo,
-    const size_t& sensorNo,
-    const size_t& scanNo) const
+    const size_t &scanPosNo,
+    const size_t &sensorNo,
+    const size_t &scanNo) const
 {
     return load(scanPosNo, sensorNo, scanNo);
 }
 
 template <typename BaseIO>
 ScanPtr ScanIO<BaseIO>::loadScan(
-    const size_t& scanPosNo, 
-    const size_t& sensorNo,
-    const size_t& scanNo, 
+    const size_t &scanPosNo,
+    const size_t &sensorNo,
+    const size_t &scanNo,
     ReductionAlgorithmPtr reduction) const
 {
     ScanPtr ret = loadScan(scanPosNo, sensorNo, scanNo);
 
-    if(ret)
+    if (ret)
     {
         // ret->points = ret->points_loader_reduced(reduction);
-        
-        if(ret->points)
+
+        if (ret->points)
         {
             reduction->setPointBuffer(ret->points);
             ret->points = reduction->getReducedPoints();
-        } 
-        else if(ret->points_loader_reduced) 
+        }
+        else if (ret->points_loader_reduced)
         {
             ret->points = ret->points_loader_reduced(reduction);
-        } 
-        else if(ret->points_loader) 
+        }
+        else if (ret->points_loader)
         {
             ret->load();
-            if(ret->points)
+            if (ret->points)
             {
                 reduction->setPointBuffer(ret->points);
                 ret->points = reduction->getReducedPoints();
             }
         }
-
     }
 
     return ret;
-}
+    }
 
 } // namespace scanio
 

@@ -31,8 +31,8 @@
 
 #include <algorithm>
 
-#include "lvr2/reconstruction/SearchTree.hpp"
 #include "lvr2/reconstruction/SearchTreeFlann.hpp"
+#include "lvr2/reconstruction/SearchTree.hpp"
 #include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/util/Panic.hpp"
 

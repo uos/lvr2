@@ -45,15 +45,14 @@
 #include <chrono>
 #include <cmath>
 
+
+#include "PointsetSurface.hpp"
+
 #include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/geometry/Normal.hpp"
 #include "lvr2/geometry/Plane.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/util/Progress.hpp"
-
-
-
-#include "PointsetSurface.hpp"
 
 // #ifdef LVR2_USE_STANN
 // // SearchTreeStann
@@ -306,8 +305,10 @@ private:
 
     /// Type of used search tree
     string m_searchTreeName;
-
 };
+
+template<typename BaseVecT>
+using AdaptiveKSearchSurfacePtr = std::shared_ptr<AdaptiveKSearchSurface<BaseVecT>>;
 
 
 } // namespace lvr2

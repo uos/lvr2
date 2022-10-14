@@ -1,9 +1,12 @@
 #ifndef SCANPROJECTUTILS
 #define SCANPROJECTUTILS
+ 
+#undef USE_UNORDERED_MAP
 
 #include <utility>
 #include <boost/optional.hpp>
 
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
 namespace lvr2
@@ -96,21 +99,47 @@ void printScanProjectStructure(const ScanProjectPtr project);
  */
 void printScanPositionStructure(const ScanPositionPtr p);
 
-
+/**
+ * @brief Prints detailed infor about the LiDAR
+ */
 void printLIDARStructure(const LIDARPtr p);
 
+/**
+ * @brief Prints detailed infor about the camera
+ */
 void printCameraStructure(const CameraPtr p);
 
+/**
+ * @brief Prints detailed infor about the hyperspectral camera
+ */
 void printHyperspectralCameraStructure(const HyperspectralCameraPtr p);
 
+/**
+ * @brief Prints detailed infor about the scan
+ */
 void printScanStructure(const ScanPtr p);
 
+/**
+ * @brief Prints detailed infor about the camera image
+ */
 void printCameraImageStructure(const CameraImagePtr p);
 
+/**
+ * @brief Prints detailed infor about the camera image group
+ */
 void printCameraImageGroupStructure(const CameraImageGroupPtr p);
 
+/**
+ * @brief Prints detailed infor about the hyperspectral panorama
+ */
 void printHyperspectralPanoramaStructure(const HyperspectralPanoramaPtr p);
 
+void estimateProjectNormals(
+    ScanProjectPtr project,
+    size_t kn,
+    size_t ki,
+    bool saveBack = true
+);
 
 } // namespace LVR2
 

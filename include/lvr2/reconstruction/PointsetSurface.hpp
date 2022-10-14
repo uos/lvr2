@@ -38,10 +38,11 @@
 #include <memory>
 #include <utility>
 
+#include "lvr2/reconstruction/SearchTree.hpp"
 #include "lvr2/geometry/Normal.hpp"
 #include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
-#include "lvr2/reconstruction/SearchTree.hpp"
+
 
 using std::pair;
 

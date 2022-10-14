@@ -104,6 +104,9 @@ protected:
     boost::shared_array<CoordT> m_data;
 };
 
+template <typename BaseVecT>
+using SearchTreeFlannPtr = std::shared_ptr<SearchTreeFlann<BaseVecT>>;
+
 } // namespace lvr2
 
 #include "lvr2/reconstruction/SearchTreeFlann.tcc"
