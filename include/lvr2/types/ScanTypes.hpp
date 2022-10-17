@@ -323,7 +323,7 @@ namespace lvr2
     /*****************************************************************************
  * @brief Struct to represent a scan within a scan project
  ****************************************************************************/
-    struct Scan : SensorDataEntity, Transformable, BoundedOptional
+    struct Scan : std::enable_shared_from_this<Scan>, SensorDataEntity, Transformable, BoundedOptional
     {
         //// META BEGIN
         static constexpr char type[] = "scan";
@@ -365,6 +365,25 @@ namespace lvr2
         /// Loader
         std::function<PointBufferPtr()> points_loader;
         std::function<PointBufferPtr(ReductionAlgorithmPtr)> points_loader_reduced;
+
+        std::function<void(ScanPtr)> points_saver;
+        std::function<void(ReductionAlgorithmPtr)> points_saver_reduced;
+
+        void save()
+        {
+            if(loaded())
+            {
+                points_saver(shared_from_this());
+            }
+        }
+
+        void save_reduced(ReductionAlgorithmPtr p)
+        {
+            if(loaded())
+            {
+                points_saver_reduced(p);
+            }
+        }
 
         bool loadable() const
         {

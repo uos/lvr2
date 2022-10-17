@@ -217,6 +217,16 @@ ScanPtr ScanIO<BaseIO>::load(
     // std::cout << "- points: " << ret->numPoints << std::endl;
 
     std::function<PointBufferPtr()> points_loader;
+    std::function<void(ScanPtr)> points_saver;
+
+    // Creating a point saver lambda with information about
+    // the position of the current scan within the scan project
+    points_saver = [t = m_baseIO->shared_from_this(), scanPosNo, sensorNo, scanNo](ScanPtr p)
+    {
+        std::cout << timestamp << "[Point Saver (2)]: Saving scan " << scanNo
+                  << " of LiDAR " << sensorNo << " of scan position " << scanPosNo << std::endl;
+        t->ScanIO<BaseIO>::save(scanPosNo, sensorNo, scanNo, p);
+    };
 
     if (d.data)
     {
@@ -232,7 +242,6 @@ ScanPtr ScanIO<BaseIO>::load(
     }
     else
     {
-
         points_loader = [schema = m_baseIO->m_description,
                             kernel = m_baseIO->m_kernel,
                             scanPosNo,
@@ -243,12 +252,12 @@ ScanPtr ScanIO<BaseIO>::load(
 
             if (!schema)
             {
-                std::cout << timestamp << "[ScanIO]: Schema empty" << std::endl;
+                std::cout << timestamp << "[Point Loader]: Schema empty" << std::endl;
             }
 
             if (!kernel)
             {
-                std::cout << timestamp << "[ScanIO]: Kernel empty" << std::endl;
+                std::cout << timestamp << "[Point Loader]: Kernel empty" << std::endl;
             }
 
             FeatureBuild<ScanIO> io(kernel, schema, false);

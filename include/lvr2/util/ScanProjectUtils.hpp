@@ -137,8 +137,7 @@ void printHyperspectralPanoramaStructure(const HyperspectralPanoramaPtr p);
 void estimateProjectNormals(
     ScanProjectPtr project,
     size_t kn,
-    size_t ki,
-    bool saveBack = true
+    size_t ki
 );
 
 } // namespace LVR2

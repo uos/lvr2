@@ -299,7 +299,7 @@ void printCameraImageStructure(const CameraImagePtr p)
     std::cout << p;
 }
 
-void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki, bool saveBack)
+void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
 {
     for(size_t positionNr = 0; positionNr < p->positions.size(); positionNr++)
     {
@@ -333,7 +333,11 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki, bool saveBac
                                     surface->calculateSurfaceNormals();
                                     surface->interpolateSurfaceNormals();
 
-                                    
+                                    // Save data back to original project
+                                    scan->save();
+
+                                    // Free payload data
+                                    scan->release();
                                 }
                                 else
                                 {

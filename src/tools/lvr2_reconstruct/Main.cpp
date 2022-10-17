@@ -231,10 +231,10 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         std::string filePath = selectedFile.generic_path().string();
 
         if(selectedFile.extension().string() != ".h5") {
-            cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+            cout << timestamp << "[[LVR2 Reconstruct] IO Error: Unable to parse " << options.getInputFileName() << endl;
             return nullptr;
         }
-        cout << timestamp << "Loading h5 scanproject from " << filePath << endl;
+        cout << timestamp << "[LVR2 Reconstruct] Loading h5 scanproject from " << filePath << endl;
 
         // create hdf5 kernel and schema 
         FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
@@ -271,14 +271,14 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 auto lidar = pos->lidars.at(0);
                 auto scan = lidar->scans.at(0);
 
-                std::cout << timestamp << "Loading scan position " << positionIndex << std::endl;
+                std::cout << timestamp << "[LVR2 Reconstruct] Loading scan position " << positionIndex << std::endl;
 
                 // Load scan
                 scan->load(reduction_algorithm);
 
-                std::cout << timestamp << "Scan loaded scan has " << scan->numPoints << " points" << std::endl;
+                std::cout << timestamp << "[LVR2 Reconstruct] Scan loaded scan has " << scan->numPoints << " points" << std::endl;
                 std::cout << timestamp 
-                          << "Transforming scan: " << std::endl 
+                          << "[LVR2 Reconstruct] Transforming scan: " << std::endl 
                           <<  (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>() << std::endl;
 
                 // Transform the new pointcloud
@@ -300,12 +300,12 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 scan->release();
             }
             buffer = model->m_pointCloud;
-            std::cout << timestamp << "Loaded " << buffer->numPoints() << " points" << std::endl;
+            std::cout << timestamp << "[LVR2 Reconstruct] Loaded " << buffer->numPoints() << " points" << std::endl;
         }
         else
         {    
             // === Build the PointCloud ===
-            std::cout << timestamp << "Loading scan project" << std::endl;
+            std::cout << timestamp << "[LVR2 Reconstruct] Loading scan project" << std::endl;
             ScanProjectPtr project = scanProjectIO->loadScanProject();
             
             std::cout << project->positions.size() << std::endl;
@@ -315,7 +315,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             unsigned ctr = 0;
             for (ScanPositionPtr pos: project->positions)
             {
-                std::cout << "Loading scan position " << ctr << " / " << project->positions.size() << std::endl;
+                std::cout << "[LVR2 Reconstruct] Loading scan position " << ctr << " / " << project->positions.size() << std::endl;
                 for (LIDARPtr lidar: pos->lidars)
                 {
                     for (ScanPtr scan: lidar->scans)
@@ -372,7 +372,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Create point set surface object
     if(pcm_name == "PCL")
     {
-        cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << endl;
+        cout << timestamp << "[LVR2 Reconstruct] Using PCL as point cloud manager is not implemented yet!" << endl;
         panic_unimplemented("PCL as point cloud manager");
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN" || pcm_name == "LVR2")
@@ -402,8 +402,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     }
     else
     {
-        cout << timestamp << "Unable to create PointCloudManager." << endl;
-        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+        cout << timestamp << "[LVR2 Reconstruct] Unable to create PointCloudManager." << endl;
+        cout << timestamp << "[LVR2 Reconstruct] Unknown option '" << pcm_name << "'." << endl;
         return nullptr;
     }
 
@@ -421,11 +421,11 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         flipPoint[0] = v[0];
         flipPoint[1] = v[1];
         flipPoint[2] = v[2];
-        std::cout << timestamp << "Flip point for normal estimation set to : " << flipPoint << std::endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Flip point for normal estimation set to : " << flipPoint << std::endl;
     }
     else
     {
-         std::cout << timestamp << "No flip point set, defaulting to (0,0,0) " <<  std::endl;
+         std::cout << timestamp << "[LVR2 Reconstruct] No flip point set, defaulting to (0,0,0) " <<  std::endl;
     }
     surface->setFlipPoint(flipPoint);
     
@@ -454,7 +454,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 buffer->setNormalArray(normals, num_points);
                 gpu_surface.freeGPU();
             #else
-                std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
+                std::cout << timestamp << "[LVR2 Reconstruct] ERROR: GPU Driver not installed" << std::endl;
                 surface->calculateSurfaceNormals();
             #endif
         }
@@ -465,7 +465,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     }
     else
     {
-        cout << timestamp << "Using given normals." << endl;
+        cout << timestamp << "[LVR2 Reconstruct] Using given normals." << endl;
     }
 
     return surface;
@@ -487,7 +487,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     // Fail safe check
     if(decompositionType != "MT" && decompositionType != "MC" && decompositionType != "DMC" && decompositionType != "PMC" && decompositionType != "SF" )
     {
-        cout << "Unsupported decomposition type " << decompositionType << ". Defaulting to PMC." << endl;
+        cout << "[LVR2 Reconstruct] Unsupported decomposition type " << decompositionType << ". Defaulting to PMC." << endl;
         decompositionType = "PMC";
     }
 
@@ -581,7 +581,7 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
     {
         std::cout 
             << timestamp 
-            << "Warning: Spectral texturizing only supports one scan position. Ignoring all but the first." 
+            << "[LVR2 Reconstruct] Warning: Spectral texturizing only supports one scan position. Ignoring all but the first." 
             << std::endl;
     }
 
@@ -654,7 +654,7 @@ void addRaycastingTexturizer(const reconstruct::Options& options, lvr2::Material
             // Check if position exists
             if (!pos)
             {
-                std::cout << timestamp << "Cannot add ScanPosition " << positionIndex << " to scan project." << std::endl;
+                std::cout << timestamp << "[LVR2 Reconstruct] Cannot add ScanPosition " << positionIndex << " to scan project." << std::endl;
                 return;
             }
 
@@ -681,8 +681,8 @@ void addRaycastingTexturizer(const reconstruct::Options& options, lvr2::Material
 
     materializer.addTexturizer(texturizer);
 #else
-    std::cout << timestamp << "This software was compiled without support for Embree!\n";
-    std::cout << timestamp << "The RaycastingTexturizer needs the Embree library." << std::endl;
+    std::cout << timestamp << "[LVR2 Reconstruct] This software was compiled without support for Embree!\n";
+    std::cout << timestamp << "[LVR2 Reconstruct] The RaycastingTexturizer needs the Embree library." << std::endl;
 #endif
 }
 
@@ -719,7 +719,7 @@ void optimizeMesh(reconstruct::Options options, BaseMeshT& mesh)
     // =======================================================================
     if(options.getDanglingArtifacts())
     {
-        cout << timestamp << "Removing dangling artifacts" << endl;
+        cout << timestamp << "[LVR2 Reconstruct] Removing dangling artifacts" << endl;
         removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
     }
 
@@ -736,14 +736,14 @@ void optimizeMesh(reconstruct::Options options, BaseMeshT& mesh)
     {
         if (reductionRatio > 1.0)
         {
-            throw "The reduction ratio needs to be between 0 and 1!";
+            throw "[LVR2 Reconstruct] The reduction ratio has to be between 0 and 1";
         }
 
         size_t old = mesh.numVertices();
         size_t target = old * (1.0 - reductionRatio);
-        std::cout << timestamp << "Trying to remove " << old - target << " / " << old << " vertices." << std::endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Trying to remove " << old - target << " / " << old << " vertices." << std::endl;
         mesh.simplify(target);
-        std::cout << timestamp << "Removed " << old - mesh.numVertices() << " vertices." << std::endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Removed " << old - mesh.numVertices() << " vertices." << std::endl;
     }
 
     auto faceNormals = calcFaceNormals(mesh);
@@ -868,7 +868,7 @@ auto loadExistingMesh(reconstruct::Options options)
 
     if (!faceNormals)
     {
-        std::cout << timestamp << "Calculating face normals" << std::endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Calculating face normals" << std::endl;
         faceNormalMap = calcFaceNormals(mesh);
     }
 
@@ -925,7 +925,7 @@ int main(int argc, char** argv)
 
     if (options.useExistingMesh())
     {
-        std::cout << timestamp << "Loading existing mesh '" << options.getInputMeshName() << "' from file '" << options.getInputMeshFile() << "'" << std::endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Loading existing mesh '" << options.getInputMeshName() << "' from file '" << options.getInputMeshFile() << "'" << std::endl;
         std::tie(mesh, surface, faceNormals, clusterBiMap) = loadExistingMesh<lvr2::PMPMesh<Vec>, Vec>(options);
     }
     else
@@ -934,7 +934,7 @@ int main(int argc, char** argv)
         surface = loadPointCloud<Vec>(options);
         if (!surface)
         {
-            cout << "Failed to create pointcloud. Exiting." << endl;
+            cout << "[LVR2 Reconstruct] Failed to create pointcloud. Exiting." << endl;
             exit(EXIT_FAILURE);
         }
         
@@ -1072,7 +1072,7 @@ int main(int argc, char** argv)
         boost::filesystem::path outputFile = outputDir/selectedFile;
         std::string extension = selectedFile.extension().string();
 
-        cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
+        cout << timestamp << "[LVR2 Reconstruct] Saving mesh to "<< output_filename << "." << endl;
 
         if (extension == ".h5")
         {
@@ -1113,7 +1113,7 @@ int main(int argc, char** argv)
         //map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
     }
 
-    cout << timestamp << "Program end." << endl;
+    cout << timestamp << "[[LVR2 Reconstruct] Program end." << endl;
 
     return 0;
 }

@@ -68,10 +68,14 @@ Options::Options(int argc, char** argv) : lvr2::BaseOption(argc, argv), m_descr(
         ("help", "Produce help message")
         ("inputSource", value<string>()->default_value(""), "Source of the input data (directory or HDF5 file)")
         ("outputSource", value<string>()->default_value(""), "Target source of converted project data (directory or HDF5 file).")
-        ("printStructure,p", "Print structure of the loaded scan project")
-        ("convert,c", "Convert and save structure in a new schema defined by outputSchema and outputStructure")
         ("inputSchema", value<string>()->default_value(""), "Schema of the input data. Has to fit the structure of the input source")
-        ("outputSchema", value<string>()->default_value(""), "Schema of the output data. Has to fit the structure of the input source");
+        ("outputSchema", value<string>()->default_value(""), "Schema of the output data. Has to fit the structure of the input source")
+        ("kn", value<size_t>()->default_value(100), "Number of nearest neighbors for normal estimation")
+        ("ki", value<size_t>()->default_value(100), "Number of nearest neighbors for normal interpolation")
+        ("printStructure,p", "Print structure of the loaded scan project")
+        ("computeNormals,n", "Compute normals for each scan position in the project")
+        ("convert,c", "Convert and save structure in a new schema defined by outputSchema and outputStructure");
+
     
     // Parse command line and generate variables map
     positional_options_description p;

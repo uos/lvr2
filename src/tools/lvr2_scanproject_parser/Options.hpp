@@ -76,6 +76,11 @@ class Options : public lvr2::BaseOption
 
     bool printStructure() const { return m_variables.count("printStructure"); }
     bool convert() const {return m_variables.count("convert");}
+    bool computeNormals() const {return m_variables.count("computeNormals");}
+
+    size_t kn() const {return m_variables["kn"].as<size_t>();}
+    size_t ki() const {return m_variables["ki"].as<size_t>();}
+    
   private:
     /// The internally used variable map
     variables_map m_variables;

@@ -31,6 +31,11 @@ int main(int argc, char** argv)
         printScanProjectStructure(inputProject);
     }
     
+    if(options.computeNormals())
+    {
+        estimateProjectNormals(inputProject, options.kn(), options.ki());
+    }
+
     if(options.convert())
     {
         // Save to target in new format
