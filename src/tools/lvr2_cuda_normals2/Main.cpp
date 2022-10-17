@@ -46,28 +46,31 @@ int main(int argc, char** argv)
     // Set the normal array
     pbuffer->setNormalArray(normals, num_points);
     */
-    unsigned long long int* mortonCodes = (unsigned long long int*)
-                    malloc(sizeof(unsigned long long int) * num_points);
 
-    // Get the morton codes of the 3D points
-    morton_codes_host(mortonCodes, points_raw, num_points);
+    // unsigned long long int* mortonCodes = (unsigned long long int*)
+    //                 malloc(sizeof(unsigned long long int) * num_points);
 
-    // Create an array which stores the id of each point
-    int* point_IDs = (int*) malloc(sizeof(float) * num_points);
+    // // Get the morton codes of the 3D points
+    // morton_codes_host(mortonCodes, points_raw, num_points);
 
-    for(int i = 0; i < num_points; i++)
-    {
-        point_IDs[i] = i;
-    }
-    // Sorting key-value pairs. point_IDs holds the sorted indices
-    radix_sort(mortonCodes, point_IDs, num_points);
+    // // Create an array which stores the id of each point
+    // int* point_IDs = (int*) malloc(sizeof(float) * num_points);
+
+    // for(int i = 0; i < num_points; i++)
+    // {
+    //     point_IDs[i] = i;
+    // }
+    // // Sorting key-value pairs. point_IDs holds the sorted indices
+    // radix_sort(mortonCodes, point_IDs, num_points);
+    
+    build_lbvh(points_raw, num_points);
 
     // Save the new model as test.ply
     ModelFactory::saveModel(model, "test.ply");
 
     // free(normals_raw);
-    free(mortonCodes);
-    free(point_IDs);
+    // free(mortonCodes);
+    // free(point_IDs);
 
 
     return 0;

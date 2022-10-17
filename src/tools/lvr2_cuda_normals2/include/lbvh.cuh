@@ -1,5 +1,3 @@
-#ifdef __CUDA_ARCH__ 
-
 #pragma once
 #ifndef LBVH_CUH
 #define LBVH_CUH
@@ -48,9 +46,9 @@ namespace lbvh {
         __device__ inline bool is_leaf(const BVHNode* node) {
             return node->child_left == UINT_MAX && node->child_right == UINT_MAX;
         }
-
+        // TODO: Create cu file with this function
         // Sets the bounding box and traverses to root
-        __device__ void process_parent(unsigned int node_idx,
+        __device__ inline void process_parent(unsigned int node_idx,
                                        BVHNode* nodes,
                                        const unsigned long long int *morton_codes,
                                        unsigned int* root_index,
@@ -145,5 +143,3 @@ namespace lbvh {
 };
 
 #endif // LBVH_CUH
-
-#endif // CUDA_ARCH

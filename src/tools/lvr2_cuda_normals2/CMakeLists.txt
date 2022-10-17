@@ -25,13 +25,17 @@ set(LVR2_CUDA_NORMAL2_DEPS
 cuda_add_library(kernels_device 
                 src/kernels_device.cu
                 src/morton_code.cu
+                src/LBVHIndex.cu
+                src/lbvh_kernels.cu
                 )
 target_link_libraries(kernels_device 
     ${CUDA_LIBRARIES}
 )
 
 # HEADER HOST - CODE: CUDA calls
-cuda_add_library(kernels_host src/kernels_host.cu)
+cuda_add_library(kernels_host 
+                src/kernels_host.cu
+                )
 target_link_libraries(kernels_host
     kernels_device
 )
