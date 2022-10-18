@@ -26,20 +26,29 @@ int main(int argc, char** argv)
     // Load scan project (without fetching data)
     ScanProjectPtr inputProject = loadScanProject(options.getInputSchema(), options.getInputSource());
 
-    if(options.printStructure())
+    if (options.printStructure())
     {
         printScanProjectStructure(inputProject);
     }
-    
+
+    // Pointer to the scan project we are actually working on.
+    // Helpful, if only a partial project is used, i.e., for 
+    // normal estimation or plain eport
+    ScanProjectPtr workProject = inputProject;
+
+    if(options.scanPositions().size())
+    {
+        workProject = getSubProject(inputProject, options.scanPositions());
+    }
+
     if(options.computeNormals())
     {
-        estimateProjectNormals(inputProject, options.kn(), options.ki());
+        estimateProjectNormals(workProject, options.kn(), options.ki());
     }
 
     if(options.convert())
     {
-        // Save to target in new format
-        saveScanProject(inputProject, options.getOutputSchema(), options.getOutputSource());
+        saveScanProject(workProject, options.getOutputSchema(), options.getOutputSource());
     }
 
     return 0;

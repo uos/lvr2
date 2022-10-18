@@ -409,6 +409,7 @@ ScanPtr ScanIO<BaseIO>::load(
         ret->points = points_loader();
     }
 
+    ret->points_saver = points_saver;
     ret->points_loader = points_loader;
     ret->points_loader_reduced = points_loader_reduced;
 

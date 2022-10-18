@@ -87,7 +87,15 @@ ScanProjectPtr loadScanProject(
 void saveScanProject(
     ScanProjectPtr& project,
     const std::string& schema, 
-    const std::string target);
+    const std::string& target);
+
+void saveScanProject(
+    ScanProjectPtr& project,
+    const std::vector<size_t>& positions,
+    const std::string& schema,
+    const std::string& target);
+
+ScanProjectPtr getSubProject(ScanProjectPtr p, std::vector<size_t> indices);
 
 /**
  * @brief Prints infos about all entities in the given scan project

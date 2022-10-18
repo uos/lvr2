@@ -74,7 +74,7 @@ public:
      *
      * @param plyPath path of the point cloud
      */
-    BoundingBox(std::string plyPath);
+    explicit BoundingBox(std::string plyPath);
 
     /**
      * @brief Expands the bounding box if the given Vector \ref{v} is

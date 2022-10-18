@@ -158,7 +158,63 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string& sou
     return nullptr;
 }
 
-void saveScanProject(ScanProjectPtr& project, const std::string& schema, const std::string target)
+ScanProjectPtr getSubProject(ScanProjectPtr project, std::vector<size_t> positions)
+{
+    ScanProjectPtr tmp = std::make_shared<ScanProject>();
+    
+    // Copy meta data
+    tmp->boundingBox = project->boundingBox;
+    tmp->crs = project->crs;
+    tmp->name = project->name;
+    tmp->transformation = project->transformation;
+    tmp->unit = project->unit;
+
+    // Copy only selected scan position into new project
+    for(size_t i : positions)
+    {
+        if(i < project->positions.size())
+        {
+            tmp->positions.push_back(project->positions[i]);
+        }
+        else
+        {
+            std::cout   << timestamp << "[GetSubProject] Warning: Index" 
+                        << i << " out of range, size is " 
+                        << project->positions.size() << std::endl;
+        }
+    }
+
+    // Correct bounding box
+    std::cout << timestamp << "[GetSubProject] Correcting bounding box" << std::endl;
+
+    BoundingBox<BaseVector<float>> bb;
+    for(ScanPositionPtr p : tmp->positions)
+    {
+        if(p->boundingBox)
+        {
+            bb.expand(*(p->boundingBox));
+        }
+    }
+
+    std::cout << timestamp << "[GetSubProject] New bounding box is: " << bb << std::endl;
+
+    return tmp;
+}
+
+void saveScanProject(
+    ScanProjectPtr& project,
+    const std::vector<size_t>& positions,
+    const std::string& schema,
+    const std::string& target)
+{
+    // Create tmp scan project containing only the given positions
+    ScanProjectPtr tmp = getSubProject(project, positions);
+    
+    // Save scan project to destination
+    saveScanProject(tmp, schema, target);
+}
+
+void saveScanProject(ScanProjectPtr& project, const std::string& schema, const std::string& target)
 {
     if(project)
     {

@@ -80,8 +80,20 @@ class Options : public lvr2::BaseOption
 
     size_t kn() const {return m_variables["kn"].as<size_t>();}
     size_t ki() const {return m_variables["ki"].as<size_t>();}
-    
-  private:
+
+    std::vector<size_t> scanPositions()
+    {
+      if (m_variables.count("scanpositions"))
+      {
+        return m_variables["scanpositions"].as<std::vector<size_t>>();
+      }
+      else
+      {
+        return std::vector<size_t>();
+      }
+    }
+
+private :
     /// The internally used variable map
     variables_map m_variables;
 
