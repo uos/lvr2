@@ -17,10 +17,15 @@ find_path(RDB_INCLUDE_DIRS NAMES "riegl/rdb.hpp" HINTS "/usr/include/ /usr/local
 find_library(RDB_LIBRARY_IMPORT NAMES rdb.dll librdb.dylib librdb.so)
 get_filename_component(RDB_LIBRARY_DIRS ${RDB_LIBRARY_IMPORT} DIRECTORY)
 
+if(RDB_INCLUDE_DIRS AND RDB_LIBRARY_IMPORT)
+    set(RDB_FOUND YES)
+    set(RDB_LIBRARIES rdbc rdbcpp ${RDB_LIBRARY_IMPORT})
+endif()
+
 # create imported target rdbc
 if(TARGET rdbc)
-else()
-    add_library(rdbc SHARED IMPORTED GLOBAL)
+elseif(RDB_FOUND)
+    add_library(rdbc SHARED IMPORTED GLOBAL) 
 
     set_property(TARGET rdbc PROPERTY IMPORTED_LOCATION "${RDB_LIBRARY_IMPORT}")
     set_property(TARGET rdbc PROPERTY IMPORTED_IMPLIB   "${RDB_LIBRARY_IMPORT}")
@@ -34,8 +39,7 @@ endif()
 
 # create compiled target rdbcpp
 if(TARGET rdbcpp)
-
-else()
+elseif(RDB_FOUND)
     add_library(rdbcpp STATIC
             "${RDB_INCLUDE_DIRS}/riegl/rdb.cpp"
             )
@@ -43,16 +47,18 @@ else()
     target_include_directories(rdbcpp SYSTEM PUBLIC
             "${RDB_INCLUDE_DIRS}"
             )
-    target_link_libraries(rdbcpp PUBLIC ${RDB_LIBRARIES})
+    target_link_libraries(rdbcpp PUBLIC ${RDB_LIBRARY_IMPORT})
     if(NOT MSVC AND NOT MINGW)
         set_target_properties(rdbcpp PROPERTIES COMPILE_FLAGS "-fPIC")
     endif()
 endif()
 
-if(CMAKE_VERSION VERSION_EQUAL 3.8 OR CMAKE_VERSION VERSION_GREATER 3.8)
+
+
+if(CMAKE_VERSION VERSION_EQUAL 3.8 OR CMAKE_VERSION VERSION_GREATER 3.8 AND TARGET rdbcpp)
     # require C++11, which is supported only in cmake >= 3.8
     target_compile_features(rdbcpp PUBLIC cxx_std_11)
-elseif(CMAKE_VERSION VERSION_EQUAL 3.2 OR CMAKE_VERSION VERSION_GREATER 3.2)
+elseif(CMAKE_VERSION VERSION_EQUAL 3.2 OR CMAKE_VERSION VERSION_GREATER 3.2 AND TARGET rdbcpp)
     # require C++11, which is supported only in cmake >= 3.2
     # require C++11 by requiring rvalue reference (introduced in C++11)
     target_compile_features(rdbcpp PUBLIC cxx_rvalue_references)
@@ -78,12 +84,4 @@ elseif(NOT MSVC)
     endif()
 endif()
 
-
-set(RDB_LIBRARIES rdbc rdbcpp)
-
-if(RDB_INCLUDE_DIRS
-        AND RDB_LIBRARY_DIRS
-        AND RDB_LIBRARIES)
-    set(RDB_FOUND YES)
-endif()
 

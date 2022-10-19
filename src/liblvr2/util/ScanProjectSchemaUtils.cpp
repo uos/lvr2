@@ -4,9 +4,12 @@
 #include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHyperlib.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaSlam6D.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHDF5V2.hpp"
+
+#ifdef LVR2_USE_RDB
+#include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
+#endif
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -56,12 +59,14 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
                   << rootDirectory << "." << std::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaSlam6D(rootDirectory));
     }
+#ifdef LVR2_USE_RDB
     else if (name == "RDBX")
     {
         std::cout << timestamp << "Creating ScanProjectSchemaRDBX with root directory '" 
                   << rootDirectory << "." << std::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaRdbx(rootDirectory));
     }
+#endif
 
     std::cout << timestamp << "Unknown directory schema name '" << schemaName << "'." << std::endl;
     return nullptr;

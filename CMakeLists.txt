@@ -79,19 +79,20 @@ endif(MSVC)
 # RDB
 ###############################################################################
 
-find_package(RDB REQUIRED)
+find_package(RDB)
 
 if(RDB_FOUND)
     include_directories(${RDB_INCLUDE_DIRS})
     message(STATUS "Found LibRDB at ${RDB_INCLUDE_DIRS}, ${RDB_LIBRARIES}.")
 
-    # TODO: Should we really do this?
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_RDB)
+    
     install(TARGETS rdbcpp
             EXPORT lvr2Targets
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
             )
-endif()
+endif(RDB_FOUND)
 
 
 #------------------------------------------------------------------------------

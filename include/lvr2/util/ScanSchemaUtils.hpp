@@ -31,7 +31,15 @@ HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName);
 /**
  * @brief A list of the implemented directory schema names
  */
-const std::vector<std::string> implementedDirectorySchemas = {"EUROC", "HYPERLIB", "RAW", "RAWPLY", "RDBX", "SLAM6D"};
+const std::vector<std::string> implementedDirectorySchemas = {
+    "EUROC", 
+    "HYPERLIB", 
+    "RAW", 
+    "RAWPLY",
+#ifdef LVR2_USE_RDB 
+    "RDBX",
+#endif
+    "SLAM6D"};
 
 /**
  * @brief A list of the implemented HDF5 schemas

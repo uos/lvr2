@@ -104,11 +104,7 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
-    io/kernels/DirectoryKernel.cpp
-    io/modelio/RdbxIO.cpp
-    io/schema/ScanProjectSchemaRdbx.cpp
-
-        )
+    )
 
 #####################################################################################
 # Add PCD io if PCL is installed
@@ -131,6 +127,12 @@ if(WITH_FREENECT AND LIBFREENECT_FOUND)
         io/KinectGrabber.cpp 
         io/KinectIO.cpp)
 endif()
+
+if(RDB_FOUND)
+    list(APPEND LVR2_SOURCES 
+        io/modelio/RdbxIO.cpp
+        io/schema/ScanProjectSchemaRdbx.cpp)
+endif(RDB_FOUND)
 
 #####################################################################################
 # Draco Geometry Compression

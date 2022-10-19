@@ -40,7 +40,8 @@
 #include "lvr2/io/modelio/DatIO.hpp"
 #include "lvr2/io/modelio/STLIO.hpp"
 #include "lvr2/io/modelio/B3dmIO.hpp"
-#include "lvr2/io/modelio/RdbxIO.hpp"
+
+
 
 // #include "lvr2/io/HDF5IO.hpp"
 // #include "lvr2/io/WaveformIO.hpp"
@@ -51,6 +52,10 @@
 // PCL related includes
 #ifdef LVR2_USE_PCL
 #include "lvr2/io/PCDIO.hpp"
+#endif
+
+#ifdef LVR2_USE_RDB
+#include "lvr2/io/modelio/RdbxIO.hpp"
 #endif
 
 // RiVLib
@@ -83,17 +88,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     {
         io = new AsciiIO;
     }
-    else if(extension == ".rdbx")
-    {
-        io = new RdbxIO;
-    }
 
-#ifdef LVR2_USE_RIVLIB
-    else if(extension == ".rxp")
-    {
-        io = new RxpIO;
-    }
-#endif
     else if (extension == ".obj")
     {
         io = new ObjIO;
@@ -110,6 +105,18 @@ ModelPtr ModelFactory::readModel( std::string filename )
     else if (extension == ".b3dm")
     {
         io = new B3dmIO;
+    }
+#endif
+#ifdef LVR2_USE_RDB
+    else if(extension == ".rdbx")
+    {
+        io = new RdbxIO;
+    }
+#endif
+#ifdef LVR2_USE_RIVLIB
+    else if(extension == ".rxp")
+    {
+        io = new RxpIO;
     }
 #endif
     // else if (extension ==".lwf")
