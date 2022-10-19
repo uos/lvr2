@@ -1,5 +1,6 @@
 #include "LBVHIndex.cuh"
 #include "lbvh_kernels.cuh"
+#include "lbvh.cuh"
 
 #include <stdio.h>
 #include <thrust/sort.h>
@@ -84,31 +85,86 @@ void LBVHIndex::build(float* points, size_t num_points)
     unsigned long long int* h_morton_codes = (unsigned long long int*)
                     malloc(sizeof(unsigned long long int) * num_points);
 
-    // printf("Code: %llu \n", h_morton_codes[0]);
-
+    
     cudaMemcpy(h_morton_codes, d_morton_codes, size_morton, cudaMemcpyDeviceToHost);
     
-
-
-    // printf("Code: %llu \n", h_morton_codes[0]);
+    cudaFree(d_morton_codes);
 
     // thrust::sort_by_key(keys, keys + num_points, values);
     thrust::sort_by_key(h_morton_codes, h_morton_codes + num_points, 
                         aabbs);
+     gpuErrchk(cudaPeekAtLastError());
 
-    for(int i = 0; i < num_points - 1; i++)
+    // for(int i = 0; i < num_points - 1; i++)
+    // {
+    //     if(h_morton_codes[i] > h_morton_codes[i + 1])
+    //     {
+    //         printf("Error in sorting \n");
+    //         break;
+    //     }
+    // }
+    
+    // Create the nodes
+    BVHNode* nodes =  (struct BVHNode*) 
+                    malloc(sizeof(struct BVHNode) * m_num_nodes); 
+
+    BVHNode* d_nodes;
+    gpuErrchk(cudaMalloc(&d_nodes, sizeof(struct BVHNode) * m_num_nodes));
+
+    AABB* d_sorted_aabbs;
+    gpuErrchk(cudaMalloc(&d_sorted_aabbs, 
+            sizeof(struct AABB) * num_points));
+
+    gpuErrchk(cudaMemcpy(d_sorted_aabbs, aabbs, 
+            sizeof(struct AABB) * num_points, cudaMemcpyHostToDevice));
+
+    // Initialize the tree
+    initialize_tree_kernel<<<blocksPerGrid, threadsPerBlock>>>
+        (d_nodes, d_sorted_aabbs, num_points);
+
+    gpuErrchk(cudaPeekAtLastError());
+    // gpuErrchk(cudaFree(0));
+
+    // Construct the tree
+    unsigned int* root_node = (unsigned int*)
+        malloc(sizeof(unsigned int));
+    *root_node = UINT_MAX;
+
+    unsigned int* d_root_node;
+    gpuErrchk(cudaMalloc(&d_root_node, sizeof(unsigned int)));
+
+    gpuErrchk(cudaMemcpy(d_root_node, root_node, sizeof(unsigned int), 
+                cudaMemcpyHostToDevice));
+
+    unsigned long long int* d_sorted_morton_codes;
+    gpuErrchk(cudaMalloc(&d_sorted_morton_codes, size_morton));
+
+    gpuErrchk(cudaMemcpy(d_sorted_morton_codes, h_morton_codes, 
+            size_morton, cudaMemcpyHostToDevice));
+
+    construct_tree_kernel<<<blocksPerGrid, threadsPerBlock>>>
+        (d_nodes, d_root_node, d_sorted_morton_codes, num_points);
+
+    cudaMemcpy(nodes, d_nodes, m_num_nodes * sizeof(BVHNode), 
+                cudaMemcpyDeviceToHost);
+
+    for(int i = 0; i < m_num_nodes; i++)
     {
-        if(h_morton_codes[i] > h_morton_codes[i + 1])
-        {
-            printf("Error in sorting \n");
-            break;
-        }
+        printf("%u\n", nodes[i].range_left);
     }
-    
-    
 
-    cudaFree(d_morton_codes);
+    gpuErrchk(cudaPeekAtLastError());
+
+    gpuErrchk(cudaMemcpy(root_node, d_root_node, 
+            sizeof(unsigned int), cudaMemcpyDeviceToHost));
+
+    gpuErrchk(cudaFree(d_root_node));
+    gpuErrchk(cudaFree(d_sorted_aabbs));
+    gpuErrchk(cudaFree(d_sorted_morton_codes));
+    gpuErrchk(cudaFree(d_nodes));
     
+    free(root_node);
+    free(nodes);
     free(aabbs);
     free(extent);
     free(h_morton_codes);
@@ -125,8 +181,8 @@ AABB* LBVHIndex::getExtent(AABB* extent, float* points, size_t num_points)
     float min_y = INT_MAX;
     float min_z = INT_MAX;
 
-    float max_x = INT_MIN; 
-    float max_y = INT_MIN; 
+    float max_x = INT_MIN;
+    float max_y = INT_MIN;
     float max_z = INT_MIN;
 
     for(int i = 0; i < num_points; i++)

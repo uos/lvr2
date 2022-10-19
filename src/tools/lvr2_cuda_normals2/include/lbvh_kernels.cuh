@@ -28,16 +28,16 @@ void compute_morton_kernel(const AABB* __restrict__ aabbs,
 //                                              unsigned int N);
     
 
-// __global__ 
-// void initialize_tree_kernel(BVHNode *nodes,
-//                                        const AABB *sorted_aabbs,
-//                                        unsigned int N);
+__global__ 
+void initialize_tree_kernel(BVHNode *nodes,
+                            const AABB *sorted_aabbs,
+                            unsigned int N);
 
-// __global__ 
-// void construct_tree_kernel(BVHNode *nodes,
-//                                       unsigned int* root_index,
-//                                       const unsigned long long int *sorted_morton_codes,
-//                                       unsigned int N);
+__global__ 
+void construct_tree_kernel(BVHNode *nodes,
+                        unsigned int* root_index,
+                        const unsigned long long int *sorted_morton_codes,
+                        unsigned int N);
 
 
 // __global__ 

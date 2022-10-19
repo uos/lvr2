@@ -5,6 +5,7 @@
 #include "cuda_runtime.h"
 
 #include <cuda/std/limits>
+#include <stdio.h>
 
 #include "aabb.cuh"
 #include "morton_code.cuh"
