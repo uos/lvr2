@@ -93,4 +93,22 @@ HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName)
     return nullptr;
 }
 
+ScanProjectSchemaPtr schemaFromName(const std::string& schemaName, const std::string root)
+{
+    boost::filesystem::path path(root);
+
+    if(boost::filesystem::is_directory(path))
+    {
+        return directorySchemaFromName(schemaName, root);
+    }
+    else if(boost::filesystem::extension(path) == ".h5")
+    {
+        return hdf5SchemaFromName(schemaName);
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
 } //namespace lvr2

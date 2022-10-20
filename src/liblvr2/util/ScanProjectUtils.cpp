@@ -431,6 +431,113 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
     }
 }
 
+ScanProjectPtr loadScanPositionsExplicitly(
+    const std::string& schema,
+    const std::string& root,
+    const std::vector<size_t>& positions)
+{
+    
+    boost::filesystem::path targetPath(root);
+    if (boost::filesystem::is_directory(targetPath))
+    {
+        DirectorySchemaPtr dirSchema = directorySchemaFromName(schema, root);
+        DirectoryKernelPtr kernel(new DirectoryKernel(root));
 
-} // namespace lvr2 else
+        if (dirSchema && kernel)
+        {
+            lvr2::scanio::DirectoryIOPtr dirio(new lvr2::scanio::DirectoryIO(kernel, dirSchema));
+            ScanProjectPtr p = dirio->ScanProjectIO::load();
+            
+            // Clear scan positions
+            p->positions.clear();
+
+            // Iterator through given positions indices 
+            // and try to load them
+            for(size_t i : positions)
+            {
+                ScanPositionPtr pos = dirio->ScanPositionIO::load(i);
+                if(pos)
+                {
+                    std::cout << timestamp << "[Load Positions Explicitly] : Loading scan position " << i << std::endl;
+                    p->positions.push_back(pos);
+                }
+                else
+                {
+                    std::cout << timestamp 
+                              << "[Load Positions Explicitly] : Position with index " 
+                              << i << " cannot be loaded from directory." << std::endl;
+                }
+            }
+            return p;
+        }
+        else
+        {
+            if(!kernel)
+            {
+                std::cout << timestamp 
+                          << "[Load Positions Explicitly] : Could not create directory kernel from root " 
+                          << root << std::endl; 
+            }
+            if(!dirSchema)
+            {
+                std::cout << timestamp 
+                          << "[Load Positions Explicitly] : Could not create directory schema from name " 
+                          << schema << std::endl; 
+            }
+        }
+    }
+    else if (targetPath.extension() == ".h5")
+    {
+        HDF5SchemaPtr hdf5Schema = hdf5SchemaFromName(schema);
+        HDF5KernelPtr kernel(new HDF5Kernel(root));
+
+        if (hdf5Schema && kernel)
+        {
+            lvr2::scanio::HDF5IOPtr hdf5io(new lvr2::scanio::HDF5IO(kernel, hdf5Schema));
+
+            ScanProjectPtr p = hdf5io->ScanProjectIO::load();
+
+            // Clear scan positions
+            p->positions.clear();
+
+            // Iterator through given positions indices
+            // and try to load them
+            for (size_t i : positions)
+            {
+                ScanPositionPtr pos = hdf5io->ScanPositionIO::load(i);
+                if (pos)
+                {
+                    std::cout << timestamp << "[Load Positions Explicitly] : Loading scan position " << i << std::endl;
+                    p->positions.push_back(pos);
+                }
+                else
+                {
+                    std::cout << timestamp
+                              << "[Load Positions Explicitly] : Position with index "
+                              << i << " cannot be loaded from HDF5 file." << std::endl;
+                }
+            }
+            return p;
+        }
+        else
+        {
+            if(!kernel)
+            {
+                std::cout << timestamp 
+                          << "[Load Positions Explicitly] : Could not create HDF5 kernel from root " 
+                          << root << std::endl; 
+            }
+            if(!hdf5Schema)
+            {
+                std::cout << timestamp 
+                          << "[Load Positions Explicitly] : Could not create HDF5 schema from name " 
+                          << schema << std::endl; 
+            }
+        }
+    }
+    std::cout << timestamp << "[Load Positions Explicitly] : Could not load any data." << std::endl;
+    return nullptr;
+}
+
+} // namespace lvr2 
      

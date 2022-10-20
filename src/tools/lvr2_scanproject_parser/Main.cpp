@@ -36,9 +36,12 @@ int main(int argc, char** argv)
     // normal estimation or plain eport
     ScanProjectPtr workProject = inputProject;
 
-    if(options.scanPositions().size())
+    if (options.scanPositions().size())
     {
-        workProject = getSubProject(inputProject, options.scanPositions());
+        workProject = loadScanPositionsExplicitly(
+            options.getInputSchema(),
+            options.getInputSource(),
+            options.scanPositions());
     }
 
     if(options.computeNormals())

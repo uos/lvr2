@@ -7,6 +7,8 @@
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
+#include <memory>
+
 namespace lvr2
 {
 namespace scanio
@@ -21,6 +23,8 @@ public:
     : HDF5IOBase(kernel, schema, load_data)
     { }
 };
+
+using HDF5IOPtr = std::shared_ptr<HDF5IO>;
 
 } // namepsace scanio
 } // namespace lvr2

@@ -37,8 +37,8 @@ std::pair<ScanPtr, Transformd> scanFromProject(
 /**
  * @brief Loads a scanProject from given file / directory
  * 
- * @param file                              A HDF5-File containing a scan project
- * @param schemaName                        The name of a known HDF5 schema
+ * @param file          A HDF5-File containing a scan project
+ * @param schemaName    The name of a known HDF5 schema
  * @return ScanProjectPtr 
  */
 ScanProjectPtr scanProjectFromHDF5(std::string file, const std::string& schemaName);
@@ -46,8 +46,8 @@ ScanProjectPtr scanProjectFromHDF5(std::string file, const std::string& schemaNa
 /**
  * @brief Creates a scan project representation from a single file
  * 
- * @param file                              A file with point cloud data
- * @return ScanProjectPtr                   A new scan project or nullptr if loading failed
+ * @param file      A file with point cloud data
+ * @return ScanProjectPtr   A new scan project or nullptr if loading failed
  */
 ScanProjectPtr scanProjectFromFile(const std::string& file);
 
@@ -56,9 +56,8 @@ ScanProjectPtr scanProjectFromFile(const std::string& file);
  *        assumes that all .ply files in the directory contain point cloud data
  *        and that all point clouds are already registered in a common coordinate system.
  * 
- * @param dir                               A directory containing .ply files with point
- *                                          cloud data
- * @return ScanProjectPtr                   A new scan project or nullptr if loading failed.
+ * @param dir       A directory containing .ply files with point cloud data
+ * @return          A new scan project or nullptr if loading failed.
  */
 ScanProjectPtr scanProjectFromPLYFiles(const std::string& dir);
 
@@ -78,7 +77,7 @@ ScanProjectPtr loadScanProject(
     bool loadData = false);
 
 /**
- * @brief Saves given scan project to a source using the given schema
+ * @brief Saves given scan project to a target using the given schema
  * 
  * @param project   A scan project
  * @param schema    The schema for the written data
@@ -89,12 +88,29 @@ void saveScanProject(
     const std::string& schema, 
     const std::string& target);
 
+/**
+ * @brief Saves given scan positions of a scan project to a target 
+ *        using the given schema.
+ * 
+ * @param project   Source scan project 
+ * @param positions Scan positions that shall be saved
+ * @param schema    Schema of the target
+ * @param target    Target destination for saved data
+ */
 void saveScanProject(
     ScanProjectPtr& project,
     const std::vector<size_t>& positions,
     const std::string& schema,
     const std::string& target);
 
+/**
+ * @brief Retuns a new scan project that holds the given scan positions
+ *        from the source project
+ * 
+ * @param p         The source project          
+ * @param indices   Indices of scan positions that shall be included 
+ *                  in the returned scan project
+ */
 ScanProjectPtr getSubProject(ScanProjectPtr p, std::vector<size_t> indices);
 
 /**
@@ -142,11 +158,35 @@ void printCameraImageGroupStructure(const CameraImageGroupPtr p);
  */
 void printHyperspectralPanoramaStructure(const HyperspectralPanoramaPtr p);
 
+/**
+ * @brief Estimates normals for each scan position in the 
+ *        scan project. The results are written back to the
+ *        source, so schema and kernel that were used to load
+ *        the project have to support writing 
+ * 
+ * @param project   The scan project
+ * @param kn        Number of nearest neighbors for normal estimation
+ * @param ki        Number of nearest neighbors for normal interpolation
+ */
 void estimateProjectNormals(
     ScanProjectPtr project,
     size_t kn,
     size_t ki
 );
+
+/**
+ * @brief Creates a scan project consisting of only the given 
+ *        scan position indices
+ * 
+ * @param schema    A schema name
+ * @param root      Root resource containing the data
+ * @param positions Position indices that shall be loaded
+ * @return ScanProjectPtr A new scan project
+ */
+ScanProjectPtr loadScanPositionsExplicitly(
+    const std::string& schema,
+    const std::string& root,
+    const std::vector<size_t>& positions);
 
 } // namespace LVR2
 

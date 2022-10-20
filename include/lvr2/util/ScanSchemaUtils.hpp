@@ -28,6 +28,8 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
  */
 HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName);
 
+ScanProjectSchemaPtr schemaFromName(const std::string& schemaName, const std::string& root);
+
 /**
  * @brief A list of the implemented directory schema names
  */
