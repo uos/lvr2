@@ -26,50 +26,58 @@ public:
     void save(
         const size_t& scanPosNo,
         const size_t& camNo,
+        const size_t& groupNo,
         const size_t& imgNo,
         CameraImagePtr imgPtr
     ) const;
 
-    void save(
-        const size_t& scanPosNo,
-        const size_t& camNo,
-        const std::vector<size_t>& imgNos,
-        CameraImagePtr imgPtr
-    ) const;
+    // void save(
+    //     const size_t& scanPosNo,
+    //     const size_t& camNo,
+    //     const size_t& groupNo,
+    //     const std::vector<size_t>& imgNos,
+    //     const std::vector<CameraImagePtr>& imgPtr
+    // ) const;
 
     void saveCameraImage(
-        const size_t &scanPosNr,
-        const size_t &camNr,
-        const size_t &imgNr,
+        const size_t &scanPosNo,
+        const size_t &camNo,
+        const size_t& groupNo,
+        const size_t &imgNo,
         CameraImagePtr imgPtr) const;
 
     CameraImagePtr load(
         const size_t &scanPosNo,
         const size_t &camNo,
+        const size_t& groupNo,
         const size_t &imgNo) const;
 
-    CameraImagePtr load(
+    std::vector<CameraImagePtr> load(
         const size_t& scanPosNo,
         const size_t& camNo,
+        const size_t& groupNo,
         const std::vector<size_t>& imgNos
     ) const;
 
     boost::optional<YAML::Node> loadMeta(
         const size_t& scanPosNo,
         const size_t& camNo,
+        const size_t& groupNo,
         const std::vector<size_t>& imgNos
     ) const;
 
     boost::optional<YAML::Node> loadMeta(
         const size_t &scanPosNo,
         const size_t &camNo,
+        const size_t& groupNo,
         const size_t &imgNo
     ) const;
 
     CameraImagePtr loadCameraImage(
-        const size_t& scanPosNr,
-        const size_t& camNr,
-        const size_t& imgNr) const;
+        const size_t& scanPosNo,
+        const size_t& camNo,
+        const size_t& groupNo,
+        const size_t& imgNo) const;
     
 protected:
 

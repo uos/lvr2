@@ -89,107 +89,103 @@ template <typename BaseVecT>
 void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project)
 {
     m_images.clear();
-    // Iterate all Images and add them to the m_images
+
+    // Iterate over all images and add them to m_images
     for (auto position: project->positions)
     {
         for (auto camera: position->cameras)
         {
-            std::queue<std::pair<CameraImageOrGroup, ImageInfo>> processList;
-            for (auto elem: camera->images)
-            {
-                ImageInfo info;
-                info.model = camera->model;
-                auto pair = std::make_pair(elem, info);
-                processList.push(pair);
+            std::queue<std::pair<CameraImagePtr, ImageInfo>> processList;
+
+            // Load all images
+            for (auto group : camera->groups)
+            { 
+                for (auto elem : group->images)
+                {
+                    ImageInfo info;
+                    info.model = camera->model;
+                    auto pair = std::make_pair(elem, info);
+                    processList.push(pair);
+                }
             }
-            
-            
+
             while (!processList.empty())
             {
                 // Get the element to process
-                auto [imgOrGrp, info] = processList.front();                
+                auto [imagePtr, info] = processList.front();                
                 // Pop the element to be processed
                 processList.pop();
 
-                if (imgOrGrp.template is_type<CameraImageGroupPtr>())
-                {   // Add all elements to process list
-                    for (CameraImageOrGroup elem: imgOrGrp.template get<CameraImageGroupPtr>()->images)
-                    {
-                        processList.push({elem, info});
-                    }
-                }
-                // If its an image add the transform, the image and the camera model to the list
-                if (imgOrGrp.template is_type<CameraImagePtr>())
-                {
-                    // Set the image
-                    info.image = imgOrGrp.template get<CameraImagePtr>();
+                // Add the transform, the image and the camera model to the list
 
-                    // Rotation parts of transformations
-                    Quaterniond positionR(position->transformation.template topLeftCorner<3,3>()); // Position -> World
-                    Quaterniond cameraR(camera->transformation.template topLeftCorner<3,3>()); // Image -> Camera
-                    Quaterniond imageR(info.image->transformation.template topLeftCorner<3,3>()); // Image -> World
+                // Set the image
+                info.image = imagePtr;
 
-                    // Translation parts of transformations
-                    Vector3d positionT(position->transformation.template topRightCorner<3,1>()); // Position -> World
-                    Vector3d cameraT(camera->transformation.template topRightCorner<3,1>()); // Image -> Camera
-                    Vector3d imageT(info.image->transformation.template topRightCorner<3,1>()); // Image -> World
+                // Rotation parts of transformations
+                Quaterniond positionR(position->transformation.template topLeftCorner<3, 3>()); // Position -> World
+                Quaterniond cameraR(camera->transformation.template topLeftCorner<3, 3>());     // Image -> Camera
+                Quaterniond imageR(info.image->transformation.template topLeftCorner<3, 3>());  // Image -> World
 
-                    // Calculate Image -> World transform
-                    Vector3d translationI2W = positionR * imageT + positionT;
-                    Quaterniond rotationI2W = positionR * imageR;
-                    // Calculate Image -> Camera transform
-                    Vector3d translationI2C = cameraT;
-                    Quaterniond rotationI2C = cameraR;
+                // Translation parts of transformations
+                Vector3d positionT(position->transformation.template topRightCorner<3, 1>()); // Position -> World
+                Vector3d cameraT(camera->transformation.template topRightCorner<3, 1>());     // Image -> Camera
+                Vector3d imageT(info.image->transformation.template topRightCorner<3, 1>());  // Image -> World
 
-                    info.ImageToWorldRotation = rotationI2W.normalized().cast<float>();
-                    info.ImageToWorldTranslation = translationI2W.cast<float>();
-                    info.ImageToCameraRotation = rotationI2C.normalized().cast<float>();
-                    info.ImageToCameraTranslation = translationI2C.cast<float>();
+                // Calculate Image -> World transform
+                Vector3d translationI2W = positionR * imageT + positionT;
+                Quaterniond rotationI2W = positionR * imageR;
+                // Calculate Image -> Camera transform
+                Vector3d translationI2C = cameraT;
+                Quaterniond rotationI2C = cameraR;
 
-                    // Precalculate inverse Rotations because those are extremely expensive
-                    info.ImageToWorldRotationInverse = rotationI2W.normalized().inverse().cast<float>();
-                    info.ImageToCameraRotationInverse = rotationI2C.normalized().inverse().cast<float>();
-                    
-                    // Calculate camera origin in World space
-                    Vector3d origin(0,0,0); // Camera frame
-                    origin = rotationI2C.inverse() * (origin - translationI2C); // From Camera -> Image
-                    origin = rotationI2W * origin + translationI2W; // From Image -> World
-                    info.cameraOrigin = origin.cast<float>();
+                info.ImageToWorldRotation = rotationI2W.normalized().cast<float>();
+                info.ImageToWorldTranslation = translationI2W.cast<float>();
+                info.ImageToCameraRotation = rotationI2C.normalized().cast<float>();
+                info.ImageToCameraTranslation = translationI2C.cast<float>();
 
-                    // Precalculate the view direction vector in world space (only needs rotation no translation)
-                    Vector3d view_vec_world = rotationI2C.inverse() * Vector3d::UnitZ();
-                    view_vec_world = rotationI2W * view_vec_world;
-                    info.viewDirectionWorld = view_vec_world.normalized().cast<float>();
+                // Precalculate inverse Rotations because those are extremely expensive
+                info.ImageToWorldRotationInverse = rotationI2W.normalized().inverse().cast<float>();
+                info.ImageToCameraRotationInverse = rotationI2C.normalized().inverse().cast<float>();
 
-                    // === The camera intrinsics in the ringlok ScanProject are wrong === //
-                    // === These are the correct values for the Riegl camera === //
-                    info.model.fx = 2395.4336550315002;
-                    info.model.fy = 2393.3126174899603;
-                    info.model.cx = 3027.8728609530291;
-                    info.model.cy = 2031.02743729632;
+                // Calculate camera origin in World space
+                Vector3d origin(0, 0, 0);                                   // Camera frame
+                origin = rotationI2C.inverse() * (origin - translationI2C); // From Camera -> Image
+                origin = rotationI2W * origin + translationI2W;             // From Image -> World
+                info.cameraOrigin = origin.cast<float>();
 
-                    // Apply histogram equalization (works only on one channel matrices)
-                    // Convert to LAB color format
-                    info.image->load();
-                    cv::Mat lab;
-                    cv::cvtColor(info.image->image, lab, cv::COLOR_BGR2Lab);
+                // Precalculate the view direction vector in world space (only needs rotation no translation)
+                Vector3d view_vec_world = rotationI2C.inverse() * Vector3d::UnitZ();
+                view_vec_world = rotationI2W * view_vec_world;
+                info.viewDirectionWorld = view_vec_world.normalized().cast<float>();
 
-                    // Extract L channel
-                    std::vector<cv::Mat> channels(3);
-                    cv::split(lab, channels);
-                    cv::Mat LChannel = channels[0];
+                // === The camera intrinsics in the ringlok ScanProject are wrong === //
+                // === These are the correct values for the Riegl camera === //
+                info.model.fx = 2395.4336550315002;
+                info.model.fy = 2393.3126174899603;
+                info.model.cx = 3027.8728609530291;
+                info.model.cy = 2031.02743729632;
 
-                    // Apply clahe algorithm
-                    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(); // Create algorithm
-                    clahe->apply(LChannel, LChannel);
+                // Apply histogram equalization (works only on one channel matrices)
+                // Convert to LAB color format
+                info.image->load();
+                cv::Mat lab;
+                cv::cvtColor(info.image->image, lab, cv::COLOR_BGR2Lab);
 
-                    // Write the result back to the texture
-                    channels[0] = LChannel;
-                    cv::merge(channels, lab);
-                    cv::cvtColor(lab, info.image->image, cv::COLOR_Lab2BGR);
+                // Extract L channel
+                std::vector<cv::Mat> channels(3);
+                cv::split(lab, channels);
+                cv::Mat LChannel = channels[0];
 
-                    m_images.push_back(info);
-                }   
+                // Apply clahe algorithm
+                cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(); // Create algorithm
+                clahe->apply(LChannel, LChannel);
+
+                // Write the result back to the texture
+                channels[0] = LChannel;
+                cv::merge(channels, lab);
+                cv::cvtColor(lab, info.image->image, cv::COLOR_Lab2BGR);
+
+                m_images.push_back(info);
             }
         }
     }

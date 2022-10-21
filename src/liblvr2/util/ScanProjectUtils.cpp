@@ -306,17 +306,13 @@ void printCameraStructure(const CameraPtr p)
 {
     std::cout << p;
 
-    struct V : public boost::static_visitor<>
+    for(size_t i = 0; i < p->groups.size(); i++)
     {
-        void operator()(const CameraImageGroupPtr p) const {printCameraImageGroupStructure(p);}
-        void operator()(const CameraImagePtr p) const { printCameraImageStructure(p);}
-    };
-
-    for(size_t i = 0; i < p->images.size(); i++)
-    {
-        std::cout << timestamp << "Camera image or group " << i << " / " << p->images.size() << std::endl;
-        CameraImageOrGroup ciog = p->images[i];
-        boost::apply_visitor(V{}, ciog);
+        std::cout << timestamp << "Camera group " << i << " / " << p->groups.size() << std::endl;
+        CameraImageGroupPtr g = p->groups[i]; 
+        std::cout << timestamp << "Transformation: " << g->transformation << std::endl;
+        std::cout << timestamp << "Type: " << g->type << std::endl;
+        std::cout << timestamp << "Number of images: " << g->images.size() << std::endl;
     }
 }
 

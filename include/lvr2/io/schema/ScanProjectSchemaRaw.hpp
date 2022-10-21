@@ -1,5 +1,5 @@
-#ifndef SCANPROJETSCHEMA_RAW_HPP_
-#define SCANPROJETSCHEMA_RAW_HPP_
+#ifndef SCANPROJECTSCHEMARAW
+#define SCANPROJECTSCHEMARAW
 
 #include <string>
 
@@ -48,13 +48,14 @@ public:
 
     virtual Description cameraImage(
         const size_t& scanPosNo,
+        const size_t& groupNo,
         const size_t& camNo,
-        const std::vector<size_t>& cameraImageNos) const;
+        const size_t& imgNo) const override;
 
     virtual Description cameraImageGroup(
         const size_t& scanPosNo,
         const size_t& camNo,
-        const std::vector<size_t>& cameraImageGroupNos) const;
+        const size_t& GroupNo) const override;
 
     virtual Description hyperspectralCamera(
         const size_t& scanPosNo,
@@ -74,8 +75,7 @@ public:
         const size_t& scanPosNo,
         const size_t& camNo,
         const size_t& panoNo,
-        const size_t& channelNo) const;
-        
+        const size_t& channelNo) const;   
 };
 
 class ScanProjectSchemaRawPly : public ScanProjectSchemaRaw
@@ -94,4 +94,4 @@ public:
 
 } // namespace lvr2
 
-#endif // SCANPROJETSCHEMA_RAW_HPP_
+#endif // SCANPROJECTSCHEMARAW

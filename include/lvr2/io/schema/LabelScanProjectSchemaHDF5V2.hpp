@@ -1,5 +1,5 @@
-#ifndef LABELSCANPROJECTSCHEMA_HDF5V2_HPP
-#define LABELSCANPROJECTSCHEMA_HDF5V2_HPP
+#ifndef LABELSCANPROJECTSCHEMAHDF5V2
+#define LABELSCANPROJECTSCHEMAHDF5V2
 
 #include <string>
 
@@ -66,17 +66,18 @@ public:
     }
 
     virtual Description cameraImage(
-        const size_t &scanPosNo, 
-        const size_t &scanCameraNo, 
-        const std::vector<size_t> &cameraImageNos) const
+        const size_t &scanPosNo,
+        const size_t &camNo,
+        const size_t &GroupNo,
+        const size_t &imgNo) const override
     {
         return Description();
     }
 
     virtual Description cameraImageGroup(
-        const size_t &scanPosNo, 
-        const size_t &scanCameraNo, 
-        const std::vector<size_t> &cameraImageGroupNos) const
+        const size_t &scanPosNo,
+        const size_t &camNo,
+        const size_t &GroupNo) const override
     {
         return Description();
     }
@@ -85,7 +86,7 @@ public:
         const std::string &scanImagePath, const size_t &scanImageNo) const
     {
         return Description();
-    } 
+    }
 
     virtual Description labelInstance(const std::string& group, const std::string& className, const std::string &instanceName) const
     {
@@ -142,4 +143,4 @@ public:
 };
 } // namespace lvr2
 
-#endif
+#endif // LABELSCANPROJECTSCHEMAHDF5V2

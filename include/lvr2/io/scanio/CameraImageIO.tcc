@@ -8,45 +8,33 @@ template <typename BaseIO>
 void CameraImageIO<BaseIO>::save(
     const size_t& scanPosNo,
     const size_t& camNo,
+    const size_t& groupNo,
     const size_t& imgNo,
     CameraImagePtr imgPtr) const
 {
-    std::vector<size_t> imgNos = {imgNo};
-    save(scanPosNo, camNo, imgNos, imgPtr);
-}
+    // std::vector<size_t> imgNos = {imgNo};
+    // save(scanPosNo, camNo, groupNo, imgNos, imgPtr);
 
-template <typename BaseIO>
-void CameraImageIO<BaseIO>::save(
-    const size_t& scanPosNo,
-    const size_t& camNo,
-    const std::vector<size_t>& imgNos,
-    CameraImagePtr imgPtr) const
-{
     auto Dgen = m_baseIO->m_description;
-    Description d = Dgen->cameraImage(scanPosNo, camNo, imgNos);
 
-    // std::cout << "[CameraImageIO - save] Description:" << std::endl;
-    // std::cout << d << std::endl;
-
-
-    // save data
+    Description d = Dgen->cameraImage(scanPosNo, camNo, groupNo, imgNo);
 
     const bool data_loaded_before = imgPtr->loaded();
 
-    if(!data_loaded_before)
+    if (!data_loaded_before)
     {
         imgPtr->load();
     }
 
     m_imageIO->save(*d.dataRoot, *d.data, imgPtr->image);
 
-    if(!data_loaded_before)
+    if (!data_loaded_before)
     {
         imgPtr->release();
     }
 
     // save meta
-    if(d.meta)
+    if (d.meta)
     {
         YAML::Node node;
         node = *imgPtr;
@@ -54,26 +42,63 @@ void CameraImageIO<BaseIO>::save(
     }
 }
 
-template <typename BaseIO>
-CameraImagePtr CameraImageIO<BaseIO>::load(
-    const size_t& scanPosNo,
-    const size_t& camNo,
-    const size_t& imgNo) const
-{
-    std::vector<size_t> imgNos = {imgNo};
-    return load(scanPosNo, camNo, imgNos);
-}
+// template <typename BaseIO>
+// void CameraImageIO<BaseIO>::save(
+//     const size_t& scanPosNo,
+//     const size_t& camNo,
+//     const size_t& groupNo,
+//     const std::vector<size_t>& imgNos,
+//     const std::vector<CameraImagePtr>& imgPtr) const
+// {
+//     auto Dgen = m_baseIO->m_description;
+
+//     if (imgNos.size() == imgPtr.size())
+//     {
+//         for(auto i : imgNos)
+//         {
+//             Description d = Dgen->cameraImage(scanPosNo, camNo, groupNo, i);
+
+//             // std::cout << "[CameraImageIO - save] Description:" << std::endl;
+//             // std::cout << d << std::endl;
+
+//             // save data
+
+//             const bool data_loaded_before = imgPtr[i]->loaded();
+
+//             if (!data_loaded_before)
+//             {
+//                 imgPtr[i]->load();
+//             }
+
+//             m_imageIO->save(*d.dataRoot, *d.data, imgPtr[i]->image);
+
+//             if (!data_loaded_before)
+//             {
+//                 imgPtr[i]->release();
+//             }
+
+//             // save meta
+//             if (d.meta)
+//             {
+//                 YAML::Node node;
+//                 node = *imgPtr[i];
+//                 m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
+//             }
+//         }
+//     }
+// }
 
 template <typename BaseIO>
 CameraImagePtr CameraImageIO<BaseIO>::load(
     const size_t& scanPosNo,
     const size_t& camNo,
-    const std::vector<size_t>& imgNos) const
+    const size_t& groupNo,
+    const size_t& imgNo) const
 {
     CameraImagePtr ret;
 
     auto Dgen = m_baseIO->m_description;
-    Description d = Dgen->cameraImage(scanPosNo, camNo, imgNos);
+    Description d = Dgen->cameraImage(scanPosNo, camNo, groupNo, imgNo);
 
     if(!d.dataRoot)
     {
@@ -104,16 +129,19 @@ CameraImagePtr CameraImageIO<BaseIO>::load(
         }
 
         CameraImagePtr loaded = std::make_shared<CameraImage>();
-        if(YAML::convert<CameraImage>::decode(meta, *loaded) )
+        if (YAML::convert<CameraImage>::decode(meta, *loaded))
         {
             // success
             ret = loaded;
-        } else {
+        }
+        else
+        {
             // cannot decode
             return ret;
         }
-        
-    } else {
+    }
+    else
+    {
         ret = std::make_shared<CameraImage>();
     }
 
@@ -150,22 +178,46 @@ CameraImagePtr CameraImageIO<BaseIO>::load(
 }
 
 template <typename BaseIO>
-boost::optional<YAML::Node> CameraImageIO<BaseIO>::loadMeta(
+std::vector<CameraImagePtr> CameraImageIO<BaseIO>::load(
     const size_t& scanPosNo,
     const size_t& camNo,
-    const size_t& imgNo) const
+    const size_t& groupNo,
+    const std::vector<size_t>& imgNos) const
 {
-    std::vector<size_t> imgNos = {imgNo};
-    return loadMeta(scanPosNo, camNo, imgNos);
+    std::vector<CameraImagePtr> imgs;
+
+    for(auto i : imgNos)
+    {
+        CameraImagePtr img = load(scanPosNo, camNo, groupNo, i);
+        if(img)
+        {
+            imgs.push_back(img);
+        }
+    }
+
+    return imgs;
 }
 
 template <typename BaseIO>
 boost::optional<YAML::Node> CameraImageIO<BaseIO>::loadMeta(
     const size_t& scanPosNo,
     const size_t& camNo,
+    const size_t& groupNo,
+    const size_t& imgNo) const
+{
+    Description d = m_baseIO->m_description->cameraImage(scanPosNo, camNo, groupNo, imgNo);
+    return m_metaIO->load(d); 
+}
+
+template <typename BaseIO>
+boost::optional<YAML::Node> CameraImageIO<BaseIO>::loadMeta(
+    const size_t& scanPosNo,
+    const size_t& camNo,
+    const size_t& groupNo,
     const std::vector<size_t>& imgNos) const
 {
-    Description d = m_baseIO->m_description->cameraImage(scanPosNo, camNo, imgNos);
+    // TODO: Re-think if this function is really neccessary...
+    Description d = m_baseIO->m_description->cameraImage(scanPosNo, camNo, groupNo, imgNos);
     return m_metaIO->load(d); 
 }
 
@@ -173,19 +225,21 @@ template <typename BaseIO>
 void CameraImageIO<BaseIO>::saveCameraImage(
     const size_t& scanPosNr, 
     const size_t& camNr, 
+    const size_t& groupNo,
     const size_t& imgNr, 
     CameraImagePtr imgPtr) const
 {
-    save(scanPosNr, camNr, imgNr, imgPtr);
+    save(scanPosNr, camNr, groupNo, imgNr, imgPtr);
 }
 
 template <typename BaseIO>
 CameraImagePtr CameraImageIO<BaseIO>::loadCameraImage(
     const size_t& scanPosNr, 
     const size_t& camNr, 
+    const size_t& groupNo,
     const size_t& imgNr) const
 {
-    return load(scanPosNr, camNr, imgNr);
+    return load(scanPosNr, camNr, groupNo, imgNr);
 }
 
 } // namespace scanio

@@ -2,9 +2,8 @@
 
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/baseio/MetaIO.hpp"
-#include "lvr2/io/scanio/CameraImageIO.hpp"
-#include "lvr2/io/scanio/CameraImageIO.hpp"
 #include "lvr2/io/scanio/CameraImageGroupIO.hpp"
+#include "lvr2/io/scanio/CameraImageIO.hpp"
 #include "lvr2/io/scanio/yaml/Camera.hpp"
 
 namespace lvr2
@@ -43,7 +42,6 @@ protected:
 
     // dependencies
     MetaIO<BaseIO>* m_metaIO = static_cast<MetaIO<BaseIO>*>(m_baseIO);
-    CameraImageIO<BaseIO>* m_cameraImageIO = static_cast<CameraImageIO<BaseIO>*>(m_baseIO);
     CameraImageGroupIO<BaseIO>* m_cameraImageGroupIO = static_cast<CameraImageGroupIO<BaseIO>*>(m_baseIO);
 
     static constexpr const char* ID = "CameraIO";

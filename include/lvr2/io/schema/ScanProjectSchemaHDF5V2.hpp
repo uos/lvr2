@@ -36,6 +36,16 @@ public:
     virtual Description scanImage(
         const std::string &scanImagePath, const size_t &scanImageNo) const;
 
+    virtual Description cameraImage(
+        const size_t &scanPosNo,
+        const size_t &groupNo,
+        const size_t &camNo,
+        const size_t &imgNo) const override;
+
+    virtual Description cameraImageGroup(
+        const size_t &scanPosNo,
+        const size_t &camNo,
+        const size_t &GroupNo) const override;
 };
 
 } // namespace lvr2

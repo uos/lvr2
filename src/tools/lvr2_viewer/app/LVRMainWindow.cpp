@@ -3795,14 +3795,16 @@ void LVRMainWindow::doubleClick(QTreeWidgetItem* item, int column)
         if (info.suffix() == "h5")
         {
             auto hdf5IO = std::dynamic_pointer_cast<scanio::HDF5IO>(io);
-            auto camImage = hdf5IO->CameraImageIO::load(scanpos_nr, cam_nr, img_nr);
+            // TODO: Fixme: group is hardcoded! 
+            auto camImage = hdf5IO->CameraImageIO::load(scanpos_nr, cam_nr, 0, img_nr);
             img = camImage->image;
         }
         else
         {
             auto dirIO = std::dynamic_pointer_cast<lvr2::scanio::DirectoryIO>(io);
             // std::vector<size_t> img_nrs = {img_nr};
-            auto camImage = dirIO->CameraImageIO::load(scanpos_nr, cam_nr, img_nr);
+            // TODO: Fixme: group is hardcoded! 
+            auto camImage = dirIO->CameraImageIO::load(scanpos_nr, cam_nr, 0, img_nr);
             img = camImage->image;
 
             // why was the description used here? I think the version above is doing the same.

@@ -64,22 +64,22 @@ LVRScanCamItem::LVRScanCamItem(ScanCamBridgePtr bridge, QString name) :
 
     setCheckState(0, Qt::Checked);
 
-    //create a ScanImageItem for every image in the camera
-    for(int i = 0; i < m_scanCamBridge->m_cam->images.size(); i++)
+    // Create a ScanImageItem for every image in the camera
+    // To corrextly resemble the structure of the project 
+    // the images should be grouped in the future
+    size_t c = 0;
+    for(auto g : m_scanCamBridge->m_cam->groups)
     {
-        auto img_or_group = m_scanCamBridge->m_cam->images[i];
-
-        if(img_or_group.is_type<CameraImagePtr>() )
+        for (auto img : g->images)
         {
-            CameraImagePtr img;
-            img <<= img_or_group;
             ScanImageBridgePtr imgBridge(new LVRScanImageBridge(img));
+
             /// Fixme: How to lazy-load?==
-            QString imgName = "Image_" + i;
-            LVRScanImageItem* imgItem = new LVRScanImageItem(imgBridge, imgName);
+            QString imgName = "Image_" + c;
+            LVRScanImageItem *imgItem = new LVRScanImageItem(imgBridge, imgName);
             addChild(imgItem);
+            c++;
         }
-        
     }
 
     //add model for camera as child

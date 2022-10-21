@@ -50,7 +50,7 @@ namespace lvr2
     // Sensor recording types
     struct Scan; // LIDAR has N Scans
 
-    struct CameraImage; // Camera has N CameraImages
+    struct CameraImage; // Camera has n image groups
     struct CameraImageGroup;
 
     // shared ptr typedefs
@@ -300,7 +300,7 @@ namespace lvr2
         //// HIERARCHY BEGIN
         /// Pointer to a set of images taken at a scan position
         // std::vector<CameraImagePtr>       images;
-        std::vector<CameraImageOrGroup> images;
+        std::vector<CameraImageGroupPtr> groups;
 
         //// HIERARCHY END
     };
@@ -309,7 +309,7 @@ namespace lvr2
     {
         os << timestamp << "Camera" << std::endl;
         os << timestamp << "------" << std::endl;
-        os << timestamp << "Number of image groups: " << c.images.size() << std::endl;
+        os << timestamp << "Number of image groups: " << c.groups.size() << std::endl;
         return os;
     }
 
@@ -514,7 +514,7 @@ namespace lvr2
         static constexpr char type[] = "camera_images";
 
         // Data
-        std::vector<CameraImageOrGroup> images;
+        std::vector<CameraImagePtr> images;
     };
 
     inline std::ostream& operator<<(std::ostream& os, const CameraImageGroup& i)

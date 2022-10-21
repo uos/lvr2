@@ -24,51 +24,25 @@ public:
     void save(
         const size_t& scanPosNo,
         const size_t& camNo,
-        const size_t& imgNo,
-        CameraImageGroupPtr imgPtr
-    ) const;
+        const size_t& groupNo,
+        CameraImageGroupPtr groupPtr) const;
 
     void save(
-        const size_t& scanPosNo,
-        const size_t& camNo,
-        const std::vector<size_t>& imgNos,
-        CameraImageGroupPtr imgPtr
-    ) const;
-
-    CameraImageGroupPtr load(
-        const size_t& scanPosNo,
-        const size_t& camNo,
-        const size_t& imgNo
-    ) const;
-
-    CameraImageGroupPtr load(
-        const size_t& scanPosNo,
-        const size_t& camNo,
-        const std::vector<size_t>& imgNos
-    ) const;
+        const size_t &scanPosNo,
+        const size_t &camNo,
+        const size_t& groupNo,
+        const std::vector<size_t> &imgNos,
+        CameraImageGroupPtr imgPtr) const;
 
     boost::optional<YAML::Node> loadMeta(
         const size_t& scanPosNo,
         const size_t& camNo,
-        const size_t& imgNo) const;
+        const size_t& groupNo) const;
 
-    boost::optional<YAML::Node> loadMeta(
+    CameraImageGroupPtr load(
         const size_t& scanPosNo,
         const size_t& camNo,
-        const std::vector<size_t>& imgNos
-    ) const;
-
-    void saveCameraImage(
-        const size_t& scanPosNr,
-        const size_t& camNr,
-        const size_t& imgNr,
-        CameraImageGroupPtr imgPtr
-    ) const;
-
-    CameraImageGroupPtr loadCameraImage(
-        const size_t& scanPosNr,
-        const size_t& camNr,
-        const size_t& imgNr) const;
+        const size_t& groupNo) const;
     
 protected:
     BaseIO* m_baseIO = static_cast< BaseIO*>(this);

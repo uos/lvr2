@@ -109,7 +109,8 @@ Description ScanProjectSchemaEuRoC::scanChannel(
 Description ScanProjectSchemaEuRoC::cameraImage(
     const size_t& scanPosNo,
     const size_t& camNo,
-    const std::vector<size_t>& cameraImageNos) const
+    const size_t& groupNo,
+    const size_t& imgNo) const
 {
     Description d;
     Description dp = camera(scanPosNo, camNo);
@@ -119,8 +120,7 @@ Description ScanProjectSchemaEuRoC::cameraImage(
     size_t inc_odd = 50000128;
     // size_t inc_even = 49999872;
     size_t inc_dbl = 100000000;
-    size_t imgNo = cameraImageNos[0];
-
+ 
     size_t curr = start + inc_dbl * (imgNo / 2);
     if(imgNo % 2)
     {
@@ -141,9 +141,9 @@ Description ScanProjectSchemaEuRoC::cameraImage(
 }
 
 Description ScanProjectSchemaEuRoC::cameraImageGroup(
-    const size_t& scanPosNo,
-    const size_t& camNo,
-    const std::vector<size_t>& cameraImageGroupNos) const
+    const size_t &scanPosNo,
+    const size_t &camNo,
+    const size_t &GroupNo) const
 {
     Description d;
     return d;

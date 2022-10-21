@@ -122,29 +122,21 @@ Description ScanProjectSchemaRaw::scanChannel(
 Description ScanProjectSchemaRaw::cameraImage(
     const size_t& scanPosNo,
     const size_t& camNo,
-    const std::vector<size_t>& cameraImageNos) const
+    const size_t& groupNo,
+    const size_t& cameraImageNo) const
 {
-    if(cameraImageNos.size() == 0)
-    {
-        std::cout << "ERROR: cameraImageNos size = 0" << std::endl;   
-    }
 
-    std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << cameraImageNos[0];
+    std::stringstream image_sstr;
+    image_sstr << std::setfill('0') << std::setw(8) << cameraImageNo;
 
-    for(size_t i=1; i<cameraImageNos.size(); i++)
-    {
-        sstr << "/" << std::setfill('0') << std::setw(8) << cameraImageNos[i];
-    }
-
-    Description dp = camera(scanPosNo, camNo);
+    Description dp = cameraImageGroup(scanPosNo, camNo, groupNo);
 
     Description d;
-    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
-    d.data = "image.png";
+    d.dataRoot = *dp.dataRoot;
+    d.data = "image_" + image_sstr.str() + ".png";
 
     d.metaRoot = d.dataRoot;
-    d.meta = "meta.yaml";
+    d.meta = "meta_" + image_sstr.str() + ".yaml";
 
     return d;
 }
@@ -152,10 +144,24 @@ Description ScanProjectSchemaRaw::cameraImage(
 Description ScanProjectSchemaRaw::cameraImageGroup(
     const size_t& scanPosNo,
     const size_t& camNo,
-    const std::vector<size_t>& cameraImageGroupNos) const
+    const size_t& groupNo) const
 {
-    return cameraImage(scanPosNo, camNo, cameraImageGroupNos);
+
+    std::stringstream sstr;
+    sstr << std::setfill('0') << std::setw(8) << groupNo;
+
+    Description dp = camera(scanPosNo, camNo);
+
+    Description d;
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
+    d.data = "";
+
+    d.metaRoot = d.dataRoot;
+    d.meta = "";
+
+    return d;
 }
+
 
 Description ScanProjectSchemaRaw::hyperspectralCamera(
     const size_t& scanPosNo,

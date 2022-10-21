@@ -52,6 +52,24 @@ Description ScanProjectSchemaHDF5::lidar(
     return d;
 }
 
+Description ScanProjectSchemaHDF5::cameraImageGroup(
+    const size_t &scanPosNo,
+    const size_t &camNo,
+    const size_t &groupNo) const
+{
+    Description dp = camera(scanPosNo, camNo);
+    
+    std::stringstream sstr;
+    sstr << std::setfill('0') << std::setw(8) << groupNo;
+
+    Description d;
+    d.dataRoot = *dp.dataRoot + sstr.str();
+    d.metaRoot = d.dataRoot;
+    d.meta = "";
+
+    return d;
+}
+
 Description ScanProjectSchemaHDF5::camera(
     const size_t& scanPosNo,
     const size_t& camNo) const
@@ -110,41 +128,23 @@ Description ScanProjectSchemaHDF5::scanChannel(
 
 Description ScanProjectSchemaHDF5::cameraImage(
     const size_t& scanPosNo,
-    const size_t& camNo, 
-    const std::vector<size_t>& cameraImageNos) const
+    const size_t& camNo,
+    const size_t& groupNo, 
+    const size_t& imgNo) const
 {
-    if(cameraImageNos.size() == 0)
-    {
-        std::cout << "ERROR: cameraImageNos size = 0" << std::endl;   
-    }
+    Description dp = cameraImageGroup(scanPosNo, camNo, groupNo);
 
     std::stringstream sstr;
-    sstr << std::setfill('0') << std::setw(8) << cameraImageNos[0];
+    sstr << std::setfill('0') << std::setw(8) << imgNo;
 
-    for(size_t i=1; i<cameraImageNos.size(); i++)
-    {
-        sstr << "/" << std::setfill('0') << std::setw(8) << cameraImageNos[i];
-    }
-
-    Description dp = camera(scanPosNo, camNo);
-   
     Description d;
-    d.dataRoot = dp.dataRoot;
+    d.dataRoot = *dp.dataRoot;
+    d.metaRoot = d.dataRoot;
     d.data = sstr.str();
-    d.metaRoot = dp.metaRoot;
     d.meta = sstr.str();
 
     return d; 
 }
-
-Description ScanProjectSchemaHDF5::cameraImageGroup(
-    const size_t& scanPosNo,
-    const size_t& camNo, 
-    const std::vector<size_t>& cameraImageGroupNos) const
-{
-    return cameraImage(scanPosNo, camNo, cameraImageGroupNos);
-}
-
 
 Description ScanProjectSchemaHDF5::hyperspectralCamera(
     const size_t& scanPosNo,

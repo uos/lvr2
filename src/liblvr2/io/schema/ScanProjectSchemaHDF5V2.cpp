@@ -102,6 +102,25 @@ Description ScanProjectSchemaHDF5V2::scanCamera(const std::string &scanPositionP
     return d;
 }
 
+virtual Description cameraImage(
+    const size_t &scanPosNo,
+    const size_t &groupNo,
+    const size_t &camNo,
+    const size_t &imgNo) const 
+{
+    Description d;
+    return d;
+}
+
+virtual Description cameraImageGroup(
+    const size_t &scanPosNo,
+    const size_t &camNo,
+    const size_t &GroupNo) const 
+{
+    Description d;
+    return d;
+}
+
 Description ScanProjectSchemaHDF5V2::scanImage(
     const size_t &scanPosNo, 
     const size_t &scanCameraNo, 
