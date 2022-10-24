@@ -145,8 +145,8 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string& sou
 
         if(hdf5Schema && kernel)
         {
-            lvr2::scanio::HDF5IO hdf5io(kernel, hdf5Schema, loadData);
-            return hdf5io.ScanProjectIO::load();
+            lvr2::scanio::HDF5IOPtr hdf5io(new lvr2::scanio::HDF5IO(kernel, hdf5Schema, loadData));
+            return hdf5io->ScanProjectIO::load();
         }
     }
 

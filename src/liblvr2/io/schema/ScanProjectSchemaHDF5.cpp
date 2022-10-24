@@ -63,7 +63,7 @@ Description ScanProjectSchemaHDF5::cameraImageGroup(
     sstr << std::setfill('0') << std::setw(8) << groupNo;
 
     Description d;
-    d.dataRoot = *dp.dataRoot + sstr.str();
+    d.dataRoot = *dp.dataRoot + "/" + sstr.str();
     d.metaRoot = d.dataRoot;
     d.meta = "";
 

@@ -108,24 +108,17 @@ CameraImageGroupPtr CameraImageGroupIO<BaseIO>::load(
         for (size_t i = 0;; i++)
         {
             CameraImagePtr img = m_cameraImageIO->load(scanPosNo, camNo, groupNo, i);
+            
             if (img)
             {
                 ret->images.push_back(img);
             }
-            // else
-            // {
-            //     // recursion
-            //     CameraImageGroupPtr group = load(scanPosNo, camNo, imgNos_);
-            //     if (group)
-            //     {
-            //         return group;
-            //     }
-            //     else
-            //     {
-            //         // neither group nor image -> break loop
-            //         break;
-            //     }
-            // }
+            // Always test image 0 and 1. If numbering
+            // starts with i >= 2, data will not be found
+            else if(i > 1)
+            {
+                break;
+            }
         }
     }
 

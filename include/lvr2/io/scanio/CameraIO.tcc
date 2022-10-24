@@ -92,31 +92,18 @@ CameraPtr CameraIO<BaseIO>::load(
     while(true)
     {
         CameraImageGroupPtr group = m_cameraImageGroupIO->load(scanPosNo, scanCamNo, scanGroupNo);
-
+        std::cout << group << std::endl;
         if (group)
         {
             ret->groups.push_back(group);
         }
-        else
+        else if(scanGroupNo > 2)
         {
             break;
         }
-        // else
-        // {
-        //     CameraImageGroupPtr group = m_cameraImageGroupIO->load(scanPosNo, scanCamNo, scanGroupNo, scanImageNo);
-
-        //     if (group)
-        //     {
-        //         ret->images.push_back(group);
-        //     }
-        //     else
-        //     {
-        //         break;
-        //     }
-        // }
+      
         scanGroupNo++;
     }
-
     return ret;
 }
 

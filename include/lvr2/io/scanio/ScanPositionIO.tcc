@@ -106,17 +106,20 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
 
         meta["original_name"] = scanPosNo;
 
-        try {
+        try
+        {
 
             ret = std::make_shared<ScanPosition>(meta.as<ScanPosition>());
-
-        } catch(const YAML::TypedBadConversion<ScanPosition>& ex) {
+        }
+        catch (const YAML::TypedBadConversion<ScanPosition> &ex)
+        {
             std::cout << timestamp << "[ScanPositionIO - load] ERROR at Scan (" << scanPosNo << ") : Could not decode YAML as ScanPosition." << std::endl;
             throw ex;
         }
-
-    } else {
-        // no meta name specified but scan position is there: 
+    }
+    else
+    {
+        // no meta name specified but scan position is there:
         ret = std::make_shared<ScanPosition>();
     }
 
@@ -130,10 +133,12 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
         // std::cout << "[ScanPositionIO - load] Load LIDAR " << lidarNo << std::endl;
         LIDARPtr lidar = m_lidarIO->load(scanPosNo, lidarNo);
 
-        if(lidar)
+        if (lidar)
         {
             ret->lidars.push_back(lidar);
-        } else {
+        }
+        else
+        {
             break;
         }
 
@@ -148,10 +153,12 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     {
         // std::cout << "[ScanPositionIO - load] Load Camera " << camNo << std::endl;
         CameraPtr cam = m_cameraIO->load(scanPosNo, camNo);
-        if(cam)
+        if (cam)
         {
             ret->cameras.push_back(cam);
-        } else {
+        }
+        else
+        {
             break;
         }
         // std::cout << "[ScanPositionIO - load] Loaded Camera " << camNo << std::endl;

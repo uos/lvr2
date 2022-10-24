@@ -184,8 +184,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const ScanProjectPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Adress " << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "ScanProjectPtr is nullptr" << std::endl;
+        }
         return os;
     }
 
@@ -237,8 +244,15 @@ namespace lvr2
     
     inline std::ostream& operator<<(std::ostream& os, const ScanPositionPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address " << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "ScanPositionPtr is nullptr" << std::endl;
+        }
         return os;
     }
 
@@ -277,8 +291,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const LIDARPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address " << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "LIDARPtr is nullptr" << std::endl;
+        }
         return os;
     }
 
@@ -315,8 +336,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const CameraPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address " << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "CameraPtr is nullptr" << std::endl;
+        }
         return os;
     }
 
@@ -431,8 +459,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const ScanPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address " << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "ScanPtr is nullptr" << std::endl;
+        }
         return os;
     }
 
@@ -503,8 +538,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const CameraImagePtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address " << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "CameraImagePtr is nullptr" << std::endl;
+        }
         return os;
     }
 
@@ -528,8 +570,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const CameraImageGroupPtr p)
     {
-         os << *p;
-        os << timestamp << "Pointer Address " << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "CameraImageGroupPtr is nullptr" << std::endl;
+        }
         return os;
     }
 
@@ -571,8 +620,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanoramaChannelPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address " << p.get() << std::endl;
+       if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "HyperspectralPanoramaChannelPtr is nullptr" << std::endl;
+        }
         return os;
     }
 
@@ -641,8 +697,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanoramaPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address " << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "HyperspectralPanoramaPtr is nullptr" << std::endl;
+        }
         return os;
     }
 
@@ -684,8 +747,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralCameraPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address " << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "HyperspectralCameraPtr is nullptr" << std::endl;
+        }
         return os;
     }
 
@@ -741,8 +811,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const WaveformPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address " << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "Pointer Address " << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "WaveformPtr is nullptr" << std::endl;
+        }
         return os;
     }
 
