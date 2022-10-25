@@ -20,23 +20,6 @@ void CameraIO<BaseIO>::save(
         return;
     }
 
-    // // writing data
-    // for(size_t scanImageNo = 0; scanImageNo < cameraPtr->images.size(); scanImageNo++)
-    // {
-    //     if(cameraPtr->images[scanImageNo].is_type<CameraImagePtr>())
-    //     {
-    //         // Image
-    //         CameraImagePtr img;
-    //         img <<= cameraPtr->images[scanImageNo];
-    //         m_cameraImageIO->save(scanPosNo, scanCamNo, scanImageNo, img);
-    //     } else {
-    //         // Group
-    //         CameraImageGroupPtr group;
-    //         group <<= cameraPtr->images[scanImageNo];
-    //         m_cameraImageGroupIO->save(scanPosNo, scanCamNo, scanImageNo, group);
-    //     }
-    // }
-
     for(size_t i = 0; i < cameraPtr->groups.size(); i++)
     {
         m_cameraImageGroupIO->save(scanPosNo, scanCamNo, i, cameraPtr->groups[i]);
@@ -63,11 +46,13 @@ CameraPtr CameraIO<BaseIO>::load(
 
     if(!d.dataRoot)
     {
+        std::cout << "Data root is not set" << std::endl;
         return ret;
     }
 
     if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
+        std::cout << "Data root does not exist" << std::endl;
         return ret;
     }
 
@@ -77,7 +62,7 @@ CameraPtr CameraIO<BaseIO>::load(
         YAML::Node meta;
         if (!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
-            std::cout << meta << std::endl;
+            std::cout << "Failed to load meta data" << std::endl;
             return ret;
         }
         ret = std::make_shared<Camera>(meta.as<Camera>());
@@ -92,16 +77,14 @@ CameraPtr CameraIO<BaseIO>::load(
     while(true)
     {
         CameraImageGroupPtr group = m_cameraImageGroupIO->load(scanPosNo, scanCamNo, scanGroupNo);
-        std::cout << group << std::endl;
         if (group)
         {
             ret->groups.push_back(group);
         }
-        else if(scanGroupNo > 2)
+        else if(scanGroupNo > 1)
         {
             break;
         }
-      
         scanGroupNo++;
     }
     return ret;

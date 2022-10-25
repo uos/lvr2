@@ -1,5 +1,5 @@
-#ifndef LVR2_DIRECTORY_DATA_IO_HPP
-#define LVR2_DIRECTORY_DATA_IO_HPP
+#ifndef DIRECTORYDATAIO
+#define DIRECTORYDATAIO
 
 #include <yaml-cpp/yaml.h>
 #include <string>
@@ -112,4 +112,4 @@ std::ostream& operator<<(std::ostream& os, const DataIO::Header& header);
 
 #include "DirectoryDataIO.tcc"
 
-#endif // LVR2_DIRECTORY_DATA_IO_HPP
+#endif // DIRECTORYDATAIO

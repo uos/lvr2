@@ -49,7 +49,7 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             // what to do here?
         }
     } else {
-        std::cout << timestamp << " [MetaFormatFactory] Meta extension " << p.extension() << " unknown. " << std::endl; 
+        std::cout << timestamp << "[MetaFormatFactory] Meta extension " << p.extension() << " unknown. " << std::endl; 
     }
 }
 
@@ -74,7 +74,7 @@ YAML::Node loadMetaInformation(const std::string &in)
         else
         {
             std::cout << timestamp
-                      << "LoadMetaInformation(YAML): Unable to find yaml file: " << inPath << std::endl;
+                      << "[MetaFormatFactory] LoadMetaInformation(YAML): Unable to find yaml file: " << inPath << std::endl;
         }
         return n;
     }
@@ -106,7 +106,7 @@ YAML::Node loadMetaInformation(const std::string &in)
         else
         {
             std::cout << timestamp
-                      << "LoadMetaInformation(SLAM6D): Warning: No pose file found." << std::endl;
+                      << "[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No pose file found." << std::endl;
         }
 
         if (frames_exist)
@@ -121,14 +121,16 @@ YAML::Node loadMetaInformation(const std::string &in)
             sp.transformation = sp.poseEstimation;
             
             std::cout << timestamp
-                      << "LoadMetaInformation(SLAM6D): Warning: No frames file found." << std::endl;
+                      << "[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No frames file found." << std::endl;
         }
 
         node = sp;
 
         return node;
-    } else {
-        std::cout << "Kernel Panic: Meta extension " << inPath.extension() << " unknown. " << std::endl; 
+    }
+    else
+    {
+        std::cout << "[MetaFormatFactory] Kernel Panic: Meta extension " << inPath.extension() << " unknown. " << std::endl;
         YAML::Node node;
         return node;
     }

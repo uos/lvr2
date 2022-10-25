@@ -172,13 +172,12 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const ScanProject& p)
     {
-        os << timestamp << "Scan Project" << std::endl;
-        os << timestamp << "------------" << std::endl;
-        os << timestamp << "Name: " << p.name << std::endl;
-        os << timestamp << "Coordinate System: " << p.coordinateSystem << std::endl;
-        os << timestamp << "Unit: " << p.unit << std::endl;
-        os << timestamp << "Number of scan positions: " << p.positions.size() << std::endl;
-        os << timestamp << "Transformation: " << std::endl <<  p.transformation << std::endl;
+        os << timestamp << "[ScanProject] ----------------------------------------------------" << std::endl;
+        os << timestamp << "[ScanProject] Name: " << p.name << std::endl;
+        os << timestamp << "[ScanProject] Coordinate System: " << p.coordinateSystem << std::endl;
+        os << timestamp << "[ScanProject] Unit: " << p.unit << std::endl;
+        os << timestamp << "[ScanProject] Number of scan positions: " << p.positions.size() << std::endl;
+        os << timestamp << "[ScanProject] Transformation: " << std::endl <<  p.transformation << std::endl;
         return os;
     }
 
@@ -187,11 +186,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[ScanProject] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "ScanProjectPtr is nullptr" << std::endl;
+            os << timestamp << "[ScanProject] Nullptr" << std::endl;
         }
         return os;
     }
@@ -232,13 +231,12 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const ScanPosition& p)
     {
-        os << timestamp << "ScanPosition" << std::endl;
-        os << timestamp << "------------" << std::endl;
-        os << timestamp << "Timestamp" << p.timestamp << std::endl;
-        os << timestamp << "Number of cameras: " << p.cameras.size() << std::endl;
-        os << timestamp << "Number of scan positions: " << p.lidars.size() << std::endl;
-        os << timestamp << "Pose estimation: " << p.poseEstimation << std::endl;
-        os << timestamp << "Transformation: " << p.transformation << std::endl;
+        os << timestamp << "[ScanPosition] ---------------------------------------------------" << std::endl;
+        os << timestamp << "[ScanPosition] Timestamp" << p.timestamp << std::endl;
+        os << timestamp << "[ScanPosition] Number of cameras: " << p.cameras.size() << std::endl;
+        os << timestamp << "[ScanPosition] Number of scan positions: " << p.lidars.size() << std::endl;
+        os << timestamp << "[ScanPosition] Pose estimation: " << p.poseEstimation << std::endl;
+        os << timestamp << "[ScanPosition] Transformation: " << p.transformation << std::endl;
         return os;
     }
     
@@ -247,11 +245,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[ScanPosition] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "ScanPositionPtr is nullptr" << std::endl;
+            os << timestamp << "[ScanPosition] Nullptr" << std::endl;
         }
         return os;
     }
@@ -282,10 +280,9 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const LIDAR& l)
     {
-        os << timestamp << "Lidar" << std::endl;
-        os << timestamp << "-----" << std::endl;
+        os << timestamp << "[LiDAR] ----------------------------------------------------------" << std::endl;
         os << timestamp << l.model;
-        os << timestamp << "Number of scans: " << l.scans.size() << std::endl;
+        os << timestamp << "[LiDAR] Number of scans: " << l.scans.size() << std::endl;
         return os;
     }
 
@@ -294,11 +291,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[LiDAR] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "LIDARPtr is nullptr" << std::endl;
+            os << timestamp << "[LiDAR] Nullptr" << std::endl;
         }
         return os;
     }
@@ -328,9 +325,8 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const Camera& c)
     {
-        os << timestamp << "Camera" << std::endl;
-        os << timestamp << "------" << std::endl;
-        os << timestamp << "Number of image groups: " << c.groups.size() << std::endl;
+        os << timestamp << "[Camera] ---------------------------------------------------------" << std::endl;
+        os << timestamp << "[Camera] Number of image groups: " << c.groups.size() << std::endl;
         return os;
     }
 
@@ -339,11 +335,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[Camera] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "CameraPtr is nullptr" << std::endl;
+            os << timestamp << "[Camera] Nullptr" << std::endl;
         }
         return os;
     }
@@ -447,13 +443,12 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const Scan& s)
     {
-        os << timestamp << "Scan" << std::endl;
-        os << timestamp << "----" << std::endl;
-        os << timestamp << "Number of Points: " << s.numPoints << std::endl;
-        os << timestamp << "Start time: " << s.startTime << std::endl;
-        os << timestamp << "End time: " << s.endTime << std::endl;
-        os << timestamp << "Pose estimation: " << std::endl << s.poseEstimation << std::endl;
-        os << timestamp << "Transformation: " << std::endl << s.transformation << std::endl;
+        os << timestamp << "[Scan] -----------------------------------------------------------" << std::endl;
+        os << timestamp << "[Scan] Number of Points: " << s.numPoints << std::endl;
+        os << timestamp << "[Scan] Start time: " << s.startTime << std::endl;
+        os << timestamp << "[Scan] End time: " << s.endTime << std::endl;
+        os << timestamp << "[Scan] Pose estimation: " << std::endl << s.poseEstimation << std::endl;
+        os << timestamp << "[Scan] Transformation: " << std::endl << s.transformation << std::endl;
         return os;
     }
 
@@ -462,11 +457,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[Scan] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "ScanPtr is nullptr" << std::endl;
+            os << timestamp << "[Scan] NullPtr" << std::endl;
         }
         return os;
     }
@@ -525,14 +520,13 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const CameraImage& i)
     {
-        os << timestamp << "Camera image" << std::endl;
-        os << timestamp << "------------" << std::endl;
-        os << timestamp << "Timestamp: " << i.timestamp << std::endl;
-        os << timestamp << "Loaded: " << i.loaded() << std::endl;
-        os << timestamp << "Loadable: " << i.loadable() << std::endl;
-        os << timestamp << "Image dimensions: " << i.image.cols << " x " << i.image.rows << std::endl;
-        os << timestamp << "Extrinsics estimation: " << i.extrinsicsEstimation << std::endl;
-        os << timestamp << "Transformation: " << std::endl << i.transformation << std::endl;
+        os << timestamp << "[CameraImage] ----------------------------------------------------" << std::endl;
+        os << timestamp << "[CameraImage] Timestamp: " << i.timestamp << std::endl;
+        os << timestamp << "[CameraImage] Loaded: " << i.loaded() << std::endl;
+        os << timestamp << "[CameraImage] Loadable: " << i.loadable() << std::endl;
+        os << timestamp << "[CameraImage] Image dimensions: " << i.image.cols << " x " << i.image.rows << std::endl;
+        os << timestamp << "[CameraImage] Extrinsics estimation: " << i.extrinsicsEstimation << std::endl;
+        os << timestamp << "[CameraImage] Transformation: " << std::endl << i.transformation << std::endl;
         return os;
     }
 
@@ -541,11 +535,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[CameraImage] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "CameraImagePtr is nullptr" << std::endl;
+            os << timestamp << "[CameraImage] Nullptr" << std::endl;
         }
         return os;
     }
@@ -561,10 +555,9 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const CameraImageGroup& i)
     {
-        os << timestamp << "Camera image group" << std::endl;
-        os << timestamp << "------------------" << std::endl;
-        os << timestamp << "Number of images: " << i.images.size() << std::endl;
-        os << timestamp << "Transformation: " << std::endl << i.transformation << std::endl;
+        os << timestamp << "[CameraImageGroup] -----------------------------------------------" << std::endl;
+        os << timestamp << "[CameraImageGroup] Number of images: " << i.images.size() << std::endl;
+        os << timestamp << "[CameraImageGroup] Transformation: " << std::endl << i.transformation << std::endl;
         return os;
     }
 
@@ -573,11 +566,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[CameraImageGroup] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "CameraImageGroupPtr is nullptr" << std::endl;
+            os << timestamp << "[CameraImageGroup] Nullptr" << std::endl;
         }
         return os;
     }
@@ -611,10 +604,9 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanoramaChannel& c)
     {
-        os << timestamp << "Hyperspectral panorama channel" << std::endl;
-        os << timestamp << "------------------------------" << std::endl;
-        os << timestamp << "Timestamp: " << c.timestamp << std::endl;
-        os << timestamp << "Image dimensions: " << c.channel.cols << " x " << c.channel.rows << std::endl;
+        os << timestamp << "[HyperspectralPanoramaChannel] -----------------------------------" << std::endl;
+        os << timestamp << "[HyperspectralPanoramaChannel] Timestamp: " << c.timestamp << std::endl;
+        os << timestamp << "[HyperspectralPanoramaChannel] Image dimensions: " << c.channel.cols << " x " << c.channel.rows << std::endl;
         return os;
     }
 
@@ -623,11 +615,11 @@ namespace lvr2
        if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[HyperspectralPanoramaChannel] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "HyperspectralPanoramaChannelPtr is nullptr" << std::endl;
+            os << timestamp << "[HyperspectralPanoramaChannel] Nullptr" << std::endl;
         }
         return os;
     }
@@ -682,16 +674,15 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanorama& p)
     {
-        os << timestamp << "Hyperspectral panorama" << std::endl;
-        os << timestamp << "----------------------" << std::endl;
-        os << timestamp << "Frames resolution: " << p.framesResolution << std::endl;
-        os << timestamp << "Band Axis: " << p.bandAxis << std::endl;
-        os << timestamp << "Frame Axis: " << p.frameAxis << std::endl;
-        os << timestamp << "Data Type: " << p.dataType << std::endl;
-        os << timestamp << "Number of channels: " << p.num_channels << std::endl;
-        os << timestamp << "Channel vector size: " << p.channels.size() << std::endl; 
-        os << timestamp << "Preview Type: " << p.previewType << std::endl;
-        os << timestamp << "Preview dimensions: " << p.preview.cols << " x " << p.preview.rows << std::endl;
+        os << timestamp << "[HyperspectralPanorama] ------------------------------------------" << std::endl;
+        os << timestamp << "[HyperspectralPanorama] Frames resolution: " << p.framesResolution << std::endl;
+        os << timestamp << "[HyperspectralPanorama] Band Axis: " << p.bandAxis << std::endl;
+        os << timestamp << "[HyperspectralPanorama] Frame Axis: " << p.frameAxis << std::endl;
+        os << timestamp << "[HyperspectralPanorama] Data Type: " << p.dataType << std::endl;
+        os << timestamp << "[HyperspectralPanorama] Number of channels: " << p.num_channels << std::endl;
+        os << timestamp << "[HyperspectralPanorama] Channel vector size: " << p.channels.size() << std::endl; 
+        os << timestamp << "[HyperspectralPanorama] Preview Type: " << p.previewType << std::endl;
+        os << timestamp << "[HyperspectralPanorama] Preview dimensions: " << p.preview.cols << " x " << p.preview.rows << std::endl;
         return os;
     }
 
@@ -700,11 +691,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[HyperspectralPanorama] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "HyperspectralPanoramaPtr is nullptr" << std::endl;
+            os << timestamp << "[HyperspectralPanorama] Nullptr" << std::endl;
         }
         return os;
     }
@@ -737,11 +728,10 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralCamera& c)
     {
-        os << timestamp << "Hyperspectral Camera" << std::endl;
-        os << timestamp << "----------------------" << std::endl;
-        os << timestamp << "Cylindrical Model: " << c.model << std::endl;
-        os << timestamp << "Extrinsics Estimation: " << std::endl << c.extrinsicsEstimation << std::endl;
-        os << timestamp << "Number of panoramas: " << c.panoramas.size() << std::endl; 
+        os << timestamp << "[HyperspectralCamera] --------------------------------------------" << std::endl;
+        os << timestamp << "[HyperspectralCamera] Cylindrical Model: " << c.model << std::endl;
+        os << timestamp << "[HyperspectralCamera] Extrinsics Estimation: " << std::endl << c.extrinsicsEstimation << std::endl;
+        os << timestamp << "[HyperspectralCamera] Number of panoramas: " << c.panoramas.size() << std::endl; 
         return os;
     }
 
@@ -750,11 +740,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[HyperspectralCamera] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "HyperspectralCameraPtr is nullptr" << std::endl;
+            os << timestamp << "[HyperspectralCamera] Nullptr" << std::endl;
         }
         return os;
     }
@@ -799,13 +789,12 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const Waveform& w)
     {
-        os << timestamp << "Waveform" << std::endl;
-        os << timestamp << "--------" << std::endl;
-        os << timestamp << "Max Bucket Size" << w.maxBucketSize << std::endl;
-        os << timestamp << "Echo Types: " << w.echoType.size() << std::endl;
-        os << timestamp << "Waveform Indices: " << w.waveformIndices.size() << std::endl;
-        os << timestamp << "Waveform Samples: " << w.waveformSamples.size() << std::endl;
-        os << timestamp << "Low Powers: " << w.lowPower.size() << std::endl;
+        os << timestamp << "[Waveform] -------------------------------------------------------" << std::endl;
+        os << timestamp << "[Waveform] Max Bucket Size" << w.maxBucketSize << std::endl;
+        os << timestamp << "[Waveform] Echo Types: " << w.echoType.size() << std::endl;
+        os << timestamp << "[Waveform] Waveform Indices: " << w.waveformIndices.size() << std::endl;
+        os << timestamp << "[Waveform] Waveform Samples: " << w.waveformSamples.size() << std::endl;
+        os << timestamp << "[Waveform] Low Powers: " << w.lowPower.size() << std::endl;
         return os;
     }
 
@@ -814,11 +803,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[Waveform] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "WaveformPtr is nullptr" << std::endl;
+            os << timestamp << "[Waveform] Nullptr" << std::endl;
         }
         return os;
     }

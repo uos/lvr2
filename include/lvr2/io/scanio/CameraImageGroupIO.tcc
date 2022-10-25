@@ -104,7 +104,6 @@ CameraImageGroupPtr CameraImageGroupIO<BaseIO>::load(
     {
         // it is a group!
         // load data
-
         for (size_t i = 0;; i++)
         {
             CameraImagePtr img = m_cameraImageIO->load(scanPosNo, camNo, groupNo, i);
@@ -117,11 +116,13 @@ CameraImageGroupPtr CameraImageGroupIO<BaseIO>::load(
             // starts with i >= 2, data will not be found
             else if(i > 1)
             {
+                std::cout << "BREAK: " << i << std::endl;
                 break;
             }
+            std::cout << i << std::endl;
         }
     }
-
+    std::cout << "Return" << std::endl;
     return ret;
 }
 

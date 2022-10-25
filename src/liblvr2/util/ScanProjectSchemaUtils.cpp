@@ -78,7 +78,7 @@ HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName)
 
     if(name == "HDF5")
     {
-        std::cout << timestamp << "Creating ScanProjectSchemaHDF5." << std::endl;
+        std::cout << timestamp << "[HDF5SchemaFromName] Creating ScanProjectSchemaHDF5." << std::endl;
         return HDF5SchemaPtr(new ScanProjectSchemaHDF5);
     }
     else if(name == "HDFV5V2")

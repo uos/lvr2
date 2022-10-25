@@ -128,15 +128,14 @@ Description ScanProjectSchemaRdbx::cameraImage(
     const size_t &groupNo,
     const size_t &cameraImageNo) const
 {
-
     Description dp = lidar(scanPosNo, camNo);
     auto path = m_rootPath / dp.dataRoot.get() / "images";
 
     // Find the correct files
     std::vector<std::string> matching_files;
     boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
-    std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0" + std::to_string(cameraImageNo + 1) + "_([0-9])+\\.jpg");
-
+    //std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0" + std::to_string(cameraImageNo + 1) + "_([0-9])+\\.jpg");
+    std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0" + std::to_string(cameraImageNo + 1) + "\\_0"+std::to_string(groupNo + 1)+"\\.jpg");      
     // Search the directory
     for (boost::filesystem::directory_iterator i(path); i != end_itr; ++i)
     {
@@ -148,11 +147,21 @@ Description ScanProjectSchemaRdbx::cameraImage(
 
         auto path_str = i->path().filename().string();
 
-        if (regex_match(path_str, rxJPG))
+        if(i->path().extension() == ".jpg")
         {
-            matching_files.push_back(i->path().stem().string());
+            if (regex_match(path_str, rxJPG))
+            {
+                //std::cout << "Found match: " << groupNo << " " << cameraImageNo << " -> " << path_str << std::endl;
+                matching_files.push_back(i->path().stem().string());
+            }
+            else
+            {
+                //std::cout << "No match: " << groupNo << " " << cameraImageNo << " -> " << path_str << std::endl;
+            }
         }
     }
+    
+    std::cout << matching_files.size() << " " << groupNo << " " << cameraImageNo << std::endl;
 
     Description d;
     // Load images and meta data
@@ -208,7 +217,21 @@ Description ScanProjectSchemaRdbx::cameraImageGroup(
     const size_t &camNo,
     const size_t &GroupNo) const
 {
-    Description d;
-    return d;
+    // Riegl only has one group (at least we only support one right now)
+    // If we want support multiple image sets here, we need to extend
+    // the schema here to search for the correct images
+    if(GroupNo < 1)
+    {
+        // Same as camera without meta
+        Description d = camera(scanPosNo, camNo);
+        d.metaRoot = boost::none;
+        d.meta = boost::none;
+        return d;
+    }
+    else
+    {
+        return Description();
+    }
+    
 }
 } // lvr2
