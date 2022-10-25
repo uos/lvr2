@@ -25,7 +25,7 @@ sudo apt-get install build-essential \
      libvtk7-dev libvtk7-qt-dev libboost-all-dev \
      freeglut3-dev libhdf5-dev qtbase5-dev \
      qt5-default libqt5opengl5-dev liblz4-dev \
-     libopencv-dev libyaml-cpp-dev
+     libopencv-dev libyaml-cpp-dev libspdlog-dev
 ```
 
 A C++17 compiler is required, e.g., g++7, gcc7 need bo installed.
