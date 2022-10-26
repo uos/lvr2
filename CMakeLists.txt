@@ -77,25 +77,8 @@ endif(MSVC)
 # EXTERNAL LIBRARIES
 ###############################################################################
 
-###############################################################################
-# SPDLOG
-###############################################################################
-
-FetchContent_Declare(
-  spdlogrepo
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG        v1.x
-  FIND_PACKAGE_ARGS 
-)
-
-FetchContent_GetProperties(spdlogrepo)
-if(NOT spdlogrepo_POPULATED)
-  # Fetch the content using previously declared details
-  FetchContent_Populate(spdlogrepo)
-  add_subdirectory(${spdlogrepo_SOURCE_DIR}) 
-endif()
-
-
+add_subdirectory(ext/spdlog)
+include_directories(ext/spdlog/include)
 
 ###############################################################################
 # RDB
