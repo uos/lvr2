@@ -221,9 +221,6 @@ target_link_libraries(
 
 )
 
-
-
-
 #####################################################################################
 # Build shared library
 #####################################################################################
@@ -241,7 +238,6 @@ install(TARGETS lvr2_static lvr2
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-
 
 #####################################################################################
 # CUDA

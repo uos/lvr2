@@ -16,42 +16,48 @@
 using namespace lvr2;
 using namespace lvr2::scanio;
 
+#include "lvr2/util/Logging.hpp"
 
 int main(int argc, char** argv)
 {
-    // Parse options
-    scanproject_parser::Options options(argc, argv);
-    options.printLogo();
+    // // Parse options
+    // scanproject_parser::Options options(argc, argv);
+    // options.printLogo();
 
-    // Load scan project (without fetching data)
-    ScanProjectPtr inputProject = loadScanProject(options.getInputSchema(), options.getInputSource());
+    // // Load scan project (without fetching data)
+    // ScanProjectPtr inputProject = loadScanProject(options.getInputSchema(), options.getInputSource());
 
-    if (options.printStructure())
+    // if (options.printStructure())
+    // {
+    //     printScanProjectStructure(inputProject);
+    // }
+
+    // // Pointer to the scan project we are actually working on.
+    // // Helpful, if only a partial project is used, i.e., for 
+    // // normal estimation or plain eport
+    // ScanProjectPtr workProject = inputProject;
+
+    // if (options.scanPositions().size())
+    // {
+    //     workProject = loadScanPositionsExplicitly(
+    //         options.getInputSchema(),
+    //         options.getInputSource(),
+    //         options.scanPositions());
+    // }
+
+    // if(options.computeNormals())
+    // {
+    //     estimateProjectNormals(workProject, options.kn(), options.ki());
+    // }
+
+    // if(options.convert())
+    // {
+    //     saveScanProject(workProject, options.getOutputSchema(), options.getOutputSource());
+    // }
+
+    for(size_t i = 0; i < 100; i++)
     {
-        printScanProjectStructure(inputProject);
-    }
-
-    // Pointer to the scan project we are actually working on.
-    // Helpful, if only a partial project is used, i.e., for 
-    // normal estimation or plain eport
-    ScanProjectPtr workProject = inputProject;
-
-    if (options.scanPositions().size())
-    {
-        workProject = loadScanPositionsExplicitly(
-            options.getInputSchema(),
-            options.getInputSource(),
-            options.scanPositions());
-    }
-
-    if(options.computeNormals())
-    {
-        estimateProjectNormals(workProject, options.kn(), options.ki());
-    }
-
-    if(options.convert())
-    {
-        saveScanProject(workProject, options.getOutputSchema(), options.getOutputSource());
+        lvr2::log << "Test " << i << lvr2::endl;
     }
 
     return 0;

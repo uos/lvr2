@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 project(LAS_VEGAS VERSION 2)
+
+include(FetchContent)
 
 if(MSVC)
     set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
@@ -44,7 +46,7 @@ message(STATUS ${CMAKE_MODULE_PATH})
 
 include_directories(include)
 
-###############################################################################
+###############################################################################include(FetchContent)
 # Compiler specific settings
 ###############################################################################
 
@@ -79,7 +81,21 @@ endif(MSVC)
 # SPDLOG
 ###############################################################################
 
-find_package(spdlog CONFIG REQUIRED)
+FetchContent_Declare(
+  spdlogrepo
+  GIT_REPOSITORY https://github.com/gabime/spdlog.git
+  GIT_TAG        v1.x
+  FIND_PACKAGE_ARGS 
+)
+
+FetchContent_GetProperties(spdlogrepo)
+if(NOT spdlogrepo_POPULATED)
+  # Fetch the content using previously declared details
+  FetchContent_Populate(spdlogrepo)
+  add_subdirectory(${spdlogrepo_SOURCE_DIR}) 
+endif()
+
+
 
 ###############################################################################
 # RDB
@@ -429,6 +445,11 @@ endif(STANN_FOUND)
 ###############################################################################
 # USED THIRD PARTY STUFF
 ###############################################################################
+
+# spdmon
+set(SPDMON_INCLUDE_DIRS "ext/spdmon")
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SPDMON_INCLUDE_DIRS})
+include_directories(${SPDMON_INCLUDE_DIRS})
 
 # NanoFLANN
 add_subdirectory(ext/nanoflann)
