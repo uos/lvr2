@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp>
 
 #include <iostream>
+#include <thread>
 
 using namespace lvr2;
 using namespace lvr2::scanio;
@@ -57,7 +58,14 @@ int main(int argc, char** argv)
 
     for(size_t i = 0; i < 100; i++)
     {
-        lvr2::log << "Test " << i << lvr2::endl;
+        lvr2::log << LogLevel::err << "Test " << i << lvr2::endl;
+    }
+
+    lvr2::LVR2Monitor monitor( spdlog::level::debug, "Prefix text", 100);
+
+    for(size_t i = 0; i < 100; i++, ++monitor)
+    {
+        std::this_thread::sleep_for(2ms);
     }
 
     return 0;

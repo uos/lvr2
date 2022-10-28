@@ -3061,7 +3061,7 @@ inline auto format(const Locale& loc, format_string<T...> fmt, T&&... args)
 }
 
 template <typename... T, size_t SIZE, typename Allocator>
-FMT_DEPRECATED auto format_to(basic_memory_buffer<char, SIZE, Allocator>& buf,
+auto format_to(basic_memory_buffer<char, SIZE, Allocator>& buf,
                               format_string<T...> fmt, T&&... args)
     -> appender {
   detail::vformat_to(buf, string_view(fmt), fmt::make_format_args(args...));

@@ -80,6 +80,9 @@ endif(MSVC)
 add_subdirectory(ext/spdlog)
 include_directories(ext/spdlog/include)
 
+add_subdirectory(ext/spdmon)
+include_directories(ext/spdmon/include)
+
 ###############################################################################
 # RDB
 ###############################################################################

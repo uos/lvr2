@@ -95,10 +95,6 @@ install(
 
 # Find all headers and implementation files
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/external/spdlog)
-
-template_add_subdirectories(${CMAKE_CURRENT_LIST_DIR}/src)
-
 
 if(${PROJECT_NAME}_BUILD_EXECUTABLE)
   add_executable(${PROJECT_NAME} ${exe_sources})
@@ -333,18 +329,3 @@ endif()
 
 message(STATUS "Finished building requirements for installing the package.\n")
 
-#
-# Unit testing setup
-#
-
-if(${PROJECT_NAME}_ENABLE_UNIT_TESTING)
-  enable_testing()
-	message(STATUS "Build unit tests for the project. Tests should always be found in the test folder\n")
-  add_subdirectory(test)
-endif()
-
-if(${PROJECT_NAME}_ENABLE_BENCHMARKING)
-  enable_testing()
-	message(STATUS "Build benchmark tests for the project. Tests should always be found in the benchmark folder\n")
-  add_subdirectory(benchmark)
-endif()
