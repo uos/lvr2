@@ -36,7 +36,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options& op
     // Create point set surface object
     if (pcm_name == "PCL")
     {
-        cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << endl;
+        std::cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << std::endl;
         panic_unimplemented("PCL as point cloud manager");
     }
     else if (pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" ||
@@ -47,8 +47,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options& op
     }
     else
     {
-        cout << timestamp << "Unable to create PointCloudManager." << endl;
-        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+        std::cout << timestamp << "Unable to create PointCloudManager." << std::endl;
+        std::cout << timestamp << "Unknown option '" << pcm_name << "'." << std::endl;
         return nullptr;
     }
 
@@ -70,14 +70,14 @@ void saveMesh(int s = 0)
 {
     if (s != 0)
     {
-        std::cout << endl << "Received signal bit..." << endl;
+        std::cout << std::endl << "Received signal bit..." << std::endl;
     }
     SimpleFinalizer<Vec> fin;
     MeshBufferPtr res = fin.apply(mesh);
 
     ModelPtr m(new Model(res));
 
-    cout << timestamp << "Saving mesh." << endl;
+    std::cout << timestamp << "Saving mesh." << std::endl;
     ModelFactory::saveModel(m, "triangle_init_mesh.ply");
     exit(0);
 }
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
     // did model parse succeed
     if (!model)
     {
-        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+        std::cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -120,7 +120,7 @@ int main(int argc, char** argv)
 
     if (!buffer)
     {
-        cout << "Failed to create Buffer...exiting..." << endl;
+        std::cout << "Failed to create Buffer...exiting..." << std::endl;
         PointBuffer* pointBuffer = new PointBuffer(model.get()->m_mesh.get()->getVertices(),
                                                    model.get()->m_mesh.get()->numVertices());
         PointBufferPtr pointer(pointBuffer);
@@ -132,7 +132,7 @@ int main(int argc, char** argv)
     auto surface = loadPointCloud<Vec>(options, buffer);
     if (!surface)
     {
-        cout << "Failed to create pointcloud. Exiting." << endl;
+        std::cout << "Failed to create pointcloud. Exiting." << std::endl;
         return EXIT_FAILURE;
     }
 

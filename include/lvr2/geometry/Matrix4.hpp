@@ -124,7 +124,7 @@ public:
 
 			if(invert_z) yaw = -yaw;
 
-			cout << "YAW: " << yaw << " PITCH: " << pitch << endl;
+			std::cout << "YAW: " << yaw << " PITCH: " << pitch << std::endl;
 
 			if(fabs(yaw)   > 0.0001){
 				m2 = Matrix4(T(1.0, 0.0, 0.0), yaw);
@@ -456,7 +456,7 @@ public:
 				pose[5]  = atan2( _trY, _trX );
 			}
 
-			// cout << pose[3] << " " << pose[4] << " " << pose[5] << endl;
+			// std::cout << pose[3] << " " << pose[4] << " " << pose[5] << std::endl;
 
 			pose[0] = m[12];
 			pose[1] = m[13];
@@ -472,7 +472,7 @@ public:
 		ifstream in(filename.c_str());
 		for(int i = 0; i < 16; i++){
 			if(!in.good()){
-                cout << "Warning: Matrix::loadFromFile: File not found or corrupted: " << filename << endl;
+                std::cout << "Warning: Matrix::loadFromFile: File not found or corrupted: " << filename << std::endl;
 				return;
 			}
 			in >> m[i];
@@ -576,7 +576,7 @@ public:
 	    Matrix4<BaseVecT> Mout;
 	    ValueType  mdet = det();
 	    if ( fabs( mdet ) < 0.00000000000005 ) {
-	        cout << "Error matrix inverting! " << mdet << endl;
+	        std::cout << "Error matrix inverting! " << mdet << std::endl;
 	        return Mout;
 	    }
 	    ValueType  mtemp[9];
@@ -636,13 +636,13 @@ private:
  */
 template<typename T>
 inline ostream& operator<<(ostream& os, const Matrix4<T> matrix){
-	os << "Matrix:" << endl;
+	os << "Matrix:" << std::endl;
 	os << fixed;
 	for(int i = 0; i < 16; i++){
 		os << setprecision(4) << matrix[i] << " ";
-		if(i % 4 == 3) os << " " <<  endl;
+		if(i % 4 == 3) os << " " <<  std::endl;
 	}
-	os << endl;
+	os << std::endl;
 	return os;
 }
 

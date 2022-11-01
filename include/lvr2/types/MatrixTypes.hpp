@@ -39,6 +39,8 @@
 
 #include <Eigen/Dense>
 
+#include "lvr2/util/Logging.hpp"
+
 namespace lvr2
 {
 /// General alias for row major 4x4 matrices 
@@ -69,6 +71,16 @@ using Transformf = Transform<float>;
 
 /// 4x4 double precision transformation matrix
 using Transformd = Transform<double>;
+
+template<typename T>
+inline lvr2::Logger& operator<<(lvr2::Logger& log, const Transform<T>& t)
+{
+    log << "[" << t.coeff(0,0) << " " << t.coeff(0,1) << " " << t.coeff(0,2) << " " << t.coeff(0,3) << "]" <<lvr2::endl;
+    log << "[" << t.coeff(1,0) << " " << t.coeff(1,1) << " " << t.coeff(1,2) << " " << t.coeff(1,3) << "]" <<lvr2::endl;
+    log << "[" << t.coeff(2,0) << " " << t.coeff(2,1) << " " << t.coeff(2,2) << " " << t.coeff(2,3) << "]" <<lvr2::endl;
+    log << "[" << t.coeff(3,0) << " " << t.coeff(3,1) << " " << t.coeff(3,2) << " " << t.coeff(3,3) << "]" <<lvr2::endl;
+    return log;
+}
 
 /// General 3x3 rotation matrix
 template<typename T>

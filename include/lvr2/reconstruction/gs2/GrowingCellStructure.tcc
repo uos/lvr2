@@ -106,19 +106,19 @@ namespace lvr2 {
         }
 
 
-        cout << "Max depth of tt: " << (m_balances != 0 ? max_depth : tumble_tree->maxDepth()) << endl;
-        cout << "Not Deleted in TT: " << tumble_tree->notDeleted << endl;
-        cout << "Tumble Tree size: " << tumble_tree->size() << endl;
-        cout << "KD-Tree size: " << kd_tree->size() << endl;
-        cout << "Cell array size: " << cellVecSize() << endl;
-        cout << "Not found counter: " << notFoundCounter << endl;
-        cout << endl;
-        cout << "Equilaterality test percentage: " << equilaterality().second << endl;
-        cout << "Skewness test percentage: " << equilaterality().first << endl;
-        cout << "Average Valence: " << avgValence() << endl;
+        std::cout << "Max depth of tt: " << (m_balances != 0 ? max_depth : tumble_tree->maxDepth()) << std::endl;
+        std::cout << "Not Deleted in TT: " << tumble_tree->notDeleted << std::endl;
+        std::cout << "Tumble Tree size: " << tumble_tree->size() << std::endl;
+        std::cout << "KD-Tree size: " << kd_tree->size() << std::endl;
+        std::cout << "Cell array size: " << cellVecSize() << std::endl;
+        std::cout << "Not found counter: " << notFoundCounter << std::endl;
+        std::cout << std::endl;
+        std::cout << "Equilaterality test percentage: " << equilaterality().second << std::endl;
+        std::cout << "Skewness test percentage: " << equilaterality().first << std::endl;
+        std::cout << "Average Valence: " << avgValence() << std::endl;
 
-        cout << "Valances >= 10: " << numVertexValences(10) << endl;
-        cout << "Valances >= 15: " << numVertexValences(15) << endl;
+        std::cout << "Valances >= 10: " << numVertexValences(10) << std::endl;
+        std::cout << "Valances >= 15: " << numVertexValences(15) << std::endl;
         delete tumble_tree;
     }
 
@@ -138,7 +138,7 @@ namespace lvr2 {
     {
         //get random point of the pointcloud
         BaseVecT random_point = this->getRandomPointFromPointcloud();
-        //cout << "basic step" << endl;
+        //std::cout << "basic step" << std::endl;
         if(!m_useGSS) //if only gcs is used (gcs basic step)
         {
             VertexHandle winnerH = this->getClosestPointInMesh(random_point, progress_bar); //TODO: better runtime efficency(kd-tree)
@@ -195,7 +195,7 @@ namespace lvr2 {
         }
         else //GSS TODO: INCLUDE GSS ADDITIONS
         {
-            std::cout << "Using GSS" << endl;
+            std::cout << "Using GSS" << std::endl;
             //find closest structure
 
             //set approx error(s) and age of faces (using HashMap)
@@ -220,7 +220,7 @@ namespace lvr2 {
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeVertexSplit()
     {
-        //cout << "Vertex Split" << endl;
+        //std::cout << "Vertex Split" << std::endl;
         if(!m_useGSS) //GCS
         {
             //find vertex with highst sc, split that vertex
@@ -314,8 +314,8 @@ namespace lvr2 {
             else
             {
 
-                cout << "Lowest SC from Tumble Tree: " << min->signal_counter << " | " << (*min->duplicateMap.begin()).idx() << endl;
-                cout << "Colapse threshold: " << m_collapseThreshold << endl;
+                std::cout << "Lowest SC from Tumble Tree: " << min->signal_counter << " | " << (*min->duplicateMap.begin()).idx() << std::endl;
+                std::cout << "Colapse threshold: " << m_collapseThreshold << std::endl;
                 //found vertex with lowest sc
                 //TODO: collapse the edge leading to the vertex with the valence closest to six
                 if(min->signal_counter < this->getCollapseThreshold())
@@ -347,7 +347,7 @@ namespace lvr2 {
                         EdgeCollapseResult result = m_mesh->collapseEdge(eToSixVal.unwrap());
                         tumble_tree->remove(cellArr[result.removedPoint.idx()], result.removedPoint);
                         cellArr[result.removedPoint.idx()] = NULL;
-                        std::cout << "Collapsed an Edge!" << endl;
+                        std::cout << "Collapsed an Edge!" << std::endl;
                     }
                 }
             }
@@ -413,10 +413,10 @@ namespace lvr2 {
         {
             /*if(m_mesh->numVertices() != 4) TODO: PRINT NUMBER OF VERTICES WHILE ALSO PRINTING THE PROGRESS BAR...
             {
-                cout << "\33[2K\r" << endl;
+                std::cout << "\33[2K\r" << std::endl;
             }*/
             ++progress_bar;
-            //cout << "Vertices in Mesh: " << m_mesh->numVertices() << endl;
+            //std::cout << "Vertices in Mesh: " << m_mesh->numVertices() << std::endl;
 
             BaseVecT vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
             BaseVecT distanceVector = point - vertex;
@@ -463,15 +463,15 @@ namespace lvr2 {
         FaceHandle fH8 = m_mesh->addFace(v6,v7,v8);
 
         auto pair = m_mesh->triCircumCenter(fH1);
-        std::cout << "CircumCenter1: " << pair.first << "| Radius: " << pair.second << endl;
+        std::cout << "CircumCenter1: " << pair.first << "| Radius: " << pair.second << std::endl;
         auto pair1 = m_mesh->triCircumCenter(fH2);
-        std::cout << "CircumCenter1: " << pair1.first << "| Radius: " << pair1.second << endl;
+        std::cout << "CircumCenter1: " << pair1.first << "| Radius: " << pair1.second << std::endl;
         auto pair2 = m_mesh->triCircumCenter(fH3);
-        std::cout << "CircumCenter1: " << pair2.first << "| Radius: " << pair2.second << endl;
+        std::cout << "CircumCenter1: " << pair2.first << "| Radius: " << pair2.second << std::endl;
         auto pair3 = m_mesh->triCircumCenter(fH4);
-        std::cout << "CircumCenter1: " << pair3.first << "| Radius: " << pair3.second << endl;
+        std::cout << "CircumCenter1: " << pair3.first << "| Radius: " << pair3.second << std::endl;
         auto pair4 = m_mesh->triCircumCenter(fH5);
-        std::cout << "CircumCenter1: " << pair4.first << "| Radius: " << pair4.second << endl;
+        std::cout << "CircumCenter1: " << pair4.first << "| Radius: " << pair4.second << std::endl;
 
         //m_mesh->splitVertex(v8);
         //m_mesh->splitVertex(v8);
@@ -530,8 +530,8 @@ namespace lvr2 {
         BaseVecT min = bounding_box.getMin();
         BaseVecT max = bounding_box.getMax();
 
-        cout << "Bounding Box min: " << min << endl;
-        cout << "Bounding Box max: " << max << endl;
+        std::cout << "Bounding Box min: " << min << std::endl;
+        std::cout << "Bounding Box max: " << max << std::endl;
 
         float xdiff = (max.x - min.x) / 2;
         float ydiff = (max.y - min.y) / 2;
@@ -561,7 +561,7 @@ namespace lvr2 {
         auto vH3 = m_mesh->addVertex(right);
         auto vH4 = m_mesh->addVertex(back);
 
-        cout << vH1 << " | " << vH2 << " | " << vH3 << " | " << vH4 << endl;
+        std::cout << vH1 << " | " << vH2 << " | " << vH3 << " | " << vH4 << std::endl;
 
         FaceHandle fH1(0);
         FaceHandle fH2(0);
@@ -669,8 +669,8 @@ namespace lvr2 {
 
         avg_distance /= m_mesh->numVertices();
 
-        std::cout << "avg_distance to cloud: " << avg_distance << endl;
-        if(m_surface->get()->pointBuffer().get()->numPoints() < 10000000) std::cout << "avg distance between the points in the cloud: " << avgDistanceBetweenPointsInPointcloud() << endl;
+        std::cout << "avg_distance to cloud: " << avg_distance << std::endl;
+        if(m_surface->get()->pointBuffer().get()->numPoints() < 10000000) std::cout << "avg distance between the points in the cloud: " << avgDistanceBetweenPointsInPointcloud() << std::endl;
 
 
         double avg_len = 0;
@@ -744,7 +744,7 @@ namespace lvr2 {
      */
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::aggressiveCutOut(VertexHandle vH) {
-        cout << "Aggressive Cutout..." << endl;
+        std::cout << "Aggressive Cutout..." << std::endl;
         auto faces = m_mesh->getFacesOfVertex(vH);
         tumble_tree->remove(cellArr[vH.idx()], vH);
         for(auto face : faces)

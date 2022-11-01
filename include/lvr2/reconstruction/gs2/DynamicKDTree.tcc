@@ -36,7 +36,7 @@ namespace lvr2{
 
         // Tree is empty?
         if (node == NULL){
-            //cout << "Insert" << endl;
+            //std::cout << "Insert" << std::endl;
             return newNode(point, vH);
         }
 
@@ -174,7 +174,7 @@ namespace lvr2{
             }
             else // If node to be deleted is leaf node
             {
-                //std::cout << "Delete." << endl;
+                //std::endlcout << "Delete." << std::endl;
                 delete node;
                 return NULL;
             }
@@ -248,7 +248,7 @@ namespace lvr2{
             //now we got the closest of the right subtree, left subtree, and the currently closest
             float closest = min({closestLeft.second, closestRight.second, minDistSq});
 
-            //std::cout << "Depth: " << depth << endl;
+            //std::endlcout << "Depth: " << depth << std::endl;
 
             if(closest == closestLeft.second) return closestLeft; //left min is closest
             if(closest == closestRight.second) return closestRight; //right min is closest
@@ -272,13 +272,13 @@ namespace lvr2{
             //now we got the closest of the right subtree, left subtree, and the currently closest
             float closest = min({closestLeft.second, closestRight.second, minDistSq});
 
-            //std::cout << "Depth: " << depth << endl;
+            //std::endlcout << "Depth: " << depth << std::endl;
 
             if(closest == closestLeft.second) return closestLeft; //left min is closest
             if(closest == closestRight.second) return closestRight; //right min is closest
             return std::make_pair(minDist, minDistSq); //current node is closest
         }
-        //std::cout << "Depth: " << depth << endl;
+        //std::endlcout << "Depth: " << depth << std::endl;
         return std::make_pair(minDist, minDistSq);
     }
 

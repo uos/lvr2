@@ -116,13 +116,10 @@ CameraImageGroupPtr CameraImageGroupIO<BaseIO>::load(
             // starts with i >= 2, data will not be found
             else if(i > 1)
             {
-                std::cout << "BREAK: " << i << std::endl;
                 break;
             }
-            std::cout << i << std::endl;
         }
     }
-    std::cout << "Return" << std::endl;
     return ret;
 }
 

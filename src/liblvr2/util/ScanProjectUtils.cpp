@@ -50,7 +50,7 @@ ScanProjectPtr scanProjectFromHDF5(std::string file, const std::string& schemaNa
 
 ScanProjectPtr scanProjectFromFile(const std::string& file)
 {
-    lvr2::log << lvr2::info << "[Load Scan Project from File] Creating scan project from single file: " << file << lvr2::endl;
+    lvr2::logout::get() << lvr2::info << "[Load Scan Project from File] Creating scan project from single file: " << file << lvr2::endl;
     ScanProjectPtr project(new ScanProject);
     ModelPtr model = ModelFactory::readModel(file);
 
@@ -77,14 +77,14 @@ ScanProjectPtr scanProjectFromFile(const std::string& file)
     }
     else
     {
-        lvr2::log << lvr2::info << "[Load Scan Project from file] Unable to open file '" << file << "' for reading-" << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "[Load Scan Project from file] Unable to open file '" << file << "' for reading-" << lvr2::endl;
     }
     return nullptr;
 }
 
 ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
 {
-    lvr2::log << lvr2::info <<  "[Load Scan Project from PLY] Creating scan project from a directory of .ply files..." << lvr2::endl;
+    lvr2::logout::get() << lvr2::info <<  "[Load Scan Project from PLY] Creating scan project from a directory of .ply files..." << lvr2::endl;
     ScanProjectPtr scanProject(new ScanProject);
     boost::filesystem::directory_iterator it{dir};
     while (it != boost::filesystem::directory_iterator{})
@@ -117,7 +117,7 @@ ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
     }
     else
     {
-        lvr2::log << lvr2::warning << "[Load Scan Project from PLY] Warning: scan project is empty." << lvr2::endl;
+        lvr2::logout::get() << lvr2::warning << "[Load Scan Project from PLY] Warning: scan project is empty." << lvr2::endl;
         return nullptr;
     }
 }
@@ -152,9 +152,9 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string& sou
     }
 
     // Loading failed. 
-    lvr2::log << lvr2::error << "[Load Scan Project] Could not create schema or kernel for loading." << lvr2::endl;
-    lvr2::log << lvr2::error << "[Load Scan Project] Schema name: " << schema << lvr2::endl;
-    lvr2::log << lvr2::error << "[Load Scan Project] Source: " << source << lvr2::endl;
+    lvr2::logout::get() << lvr2::error << "[Load Scan Project] Could not create schema or kernel for loading." << lvr2::endl;
+    lvr2::logout::get() << lvr2::error << "[Load Scan Project] Schema name: " << schema << lvr2::endl;
+    lvr2::logout::get() << lvr2::error << "[Load Scan Project] Source: " << source << lvr2::endl;
 
     return nullptr;
 }
@@ -179,14 +179,14 @@ ScanProjectPtr getSubProject(ScanProjectPtr project, std::vector<size_t> positio
         }
         else
         {
-            lvr2::log << lvr2::warning << "[GetSubProject] Warning: Index" 
+            lvr2::logout::get() << lvr2::warning << "[GetSubProject] Warning: Index" 
                         << i << " out of range, size is " 
                         << project->positions.size() << lvr2::endl;
         }
     }
 
     // Correct bounding box
-    lvr2::log << lvr2::debug << "[GetSubProject] Correcting bounding box" << lvr2::endl;
+    lvr2::logout::get() << lvr2::debug << "[GetSubProject] Correcting bounding box" << lvr2::endl;
 
     BoundingBox<BaseVector<float>> bb;
     for(ScanPositionPtr p : tmp->positions)
@@ -197,7 +197,7 @@ ScanProjectPtr getSubProject(ScanProjectPtr project, std::vector<size_t> positio
         }
     }
 
-    lvr2::log << lvr2::info << "[GetSubProject] New bounding box is: " << bb << lvr2::endl;
+    lvr2::logout::get() << lvr2::info << "[GetSubProject] New bounding box is: " << bb << lvr2::endl;
 
     return tmp;
 }
@@ -245,43 +245,42 @@ void saveScanProject(ScanProjectPtr& project, const std::string& schema, const s
         }
 
         // Saving failed.
-        lvr2::log << lvr2::error << "[Save Scan Project] Could not create schema or kernel for saving." << lvr2::endl;
-        lvr2::log << lvr2::error << "[Save Scan Project] Schema name: " << schema << lvr2::endl;
-        lvr2::log << lvr2::error << "[Save Scan Project] Target: " << target << lvr2::endl;
+        lvr2::logout::get() << lvr2::error << "[Save Scan Project] Could not create schema or kernel for saving." << lvr2::endl;
+        lvr2::logout::get() << lvr2::error << "[Save Scan Project] Schema name: " << schema << lvr2::endl;
+        lvr2::logout::get() << lvr2::error << "[Save Scan Project] Target: " << target << lvr2::endl;
     }
     else
     {
-        lvr2::log << lvr2::error << "[Save Scan Project] Cannot save scan project from null pointer" << lvr2::endl;
+        lvr2::logout::get() << lvr2::error << "[Save Scan Project] Cannot save scan project from null pointer" << lvr2::endl;
     }
 }
 
 void printScanProjectStructure(const ScanProjectPtr project)
 {
-    lvr2::log << lvr2::info << project << lvr2::endl;
+    lvr2::logout::get() << lvr2::info << project << lvr2::endl;
 
     for(size_t i = 0; i < project->positions.size(); i++)
     {
-        lvr2::log << lvr2::error << "Scan Position: " << i << " / " << project->positions.size() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "[Scan Project] Position" << i << " / " << project->positions.size() << lvr2::endl;
         printScanPositionStructure(project->positions[i]);
     }
 }
 
 void printScanPositionStructure(const ScanPositionPtr p) 
 {
-    lvr2::log << lvr2::info << p;
+    lvr2::logout::get() << lvr2::info << p;
     for(size_t i = 0; i < p->lidars.size(); i++)
     {
-        lvr2::log << lvr2::info << "LiDAR " << i << " / " << p->lidars.size() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "[Scan Position] LiDAR " << i << " / " << p->lidars.size() << lvr2::endl;
         printLIDARStructure(p->lidars[i]);
     }
     for(size_t i = 0; i < p->cameras.size(); i++)
     {
-        lvr2::log << lvr2::info << "Camera " << i << " / " << p->cameras.size() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "[Scan Position] Camera " << i << " / " << p->cameras.size() << lvr2::endl;
         printCameraStructure(p->cameras[i]);
     }
     for(size_t i = 0; i < p->hyperspectral_cameras.size(); i++)
     {
-        lvr2::log << lvr2::info << "Hyperspectral Camera " << i << " / " << p->hyperspectral_cameras.size() << lvr2::endl;
         printHyperspectralCameraStructure(p->hyperspectral_cameras[i]);
     }
 
@@ -289,67 +288,67 @@ void printScanPositionStructure(const ScanPositionPtr p)
 
 void printScanStructure(const ScanPtr p) 
 {
-    lvr2::log << lvr2::info << p;
+    lvr2::logout::get() << lvr2::info << p;
     // TODO: Implement output for point buffer
 }
 
 void printLIDARStructure(const LIDARPtr p) 
 {
-    lvr2::log << lvr2::info << p;
+    lvr2::logout::get() << lvr2::info << p;
     for(size_t i = 0; i < p->scans.size(); i++)
     {
-        lvr2::log << lvr2::info << "Scan " << i << " / " << p->scans.size() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "[LiDAR] Scan " << i << " / " << p->scans.size() << lvr2::endl;
         printScanStructure(p->scans[i]);
     }
 }
 
 void printCameraStructure(const CameraPtr p) 
 {
-    lvr2::log << lvr2::info << p;
+    lvr2::logout::get() << lvr2::info << p;
 
     for(size_t i = 0; i < p->groups.size(); i++)
     {
-        lvr2::log << lvr2::info << "Camera group " << i << " / " << p->groups.size() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "[Camera] Camera group " << i << " / " << p->groups.size() << lvr2::endl;
         CameraImageGroupPtr g = p->groups[i]; 
-        lvr2::log << lvr2::info <<  "Transformation: " << g->transformation << lvr2::endl;
-        lvr2::log << lvr2::info << "Type: " << g->type << lvr2::endl;
-        lvr2::log << lvr2::info << "Number of images: " << g->images.size() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "[Camera] Transformation: " << g->transformation << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "[Camera] Type: " << g->type << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "[Camera] Number of images: " << g->images.size() << lvr2::endl;
     }
 }
 
 void printCameraImageGroupStructure(const CameraImageGroupPtr p) 
 {
-    lvr2::log << lvr2::info << p;
+    lvr2::logout::get() << lvr2::info << p;
     for(size_t i = 0; i < p->images.size(); i++)
     {
-        lvr2::log << lvr2::info << "Image " << i << " / " << p->images.size() << lvr2::endl;
-        lvr2::log << lvr2::info << p->images[i];
+        lvr2::logout::get() << lvr2::info << "[Image Group] Image " << i << " / " << p->images.size() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << p->images[i];
     }
 }
 
 void printHyperspectralCameraStructure(const HyperspectralCameraPtr p) 
 {
-    lvr2::log << lvr2::info << p;
+    lvr2::logout::get() << lvr2::info << p;
     for(size_t i = 0; i < p->panoramas.size(); i++)
     {
-        lvr2::log << lvr2::info <<  "Panorama " << i << " / " << p->panoramas.size() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info <<  "[Hyperspectral Camera] Panorama " << i << " / " << p->panoramas.size() << lvr2::endl;
         printHyperspectralPanoramaStructure(p->panoramas[i]);
     }
 }
 
 void printHyperspectralPanoramaStructure(const HyperspectralPanoramaPtr p) 
 {
-    lvr2::log << lvr2::info << p;
+    lvr2::logout::get() << lvr2::info << p;
     for(size_t i = 0; i < p->channels.size(); i++)
     {
-       lvr2::log << lvr2::info <<  "Channel " << i << " / " << p->channels.size() << lvr2::endl;
-       lvr2::log << lvr2::info <<  p->channels[i];
+       lvr2::logout::get() << lvr2::info <<  "[Panorama Structure] Channel " << i << " / " << p->channels.size() << lvr2::endl;
+       lvr2::logout::get() << lvr2::info <<  p->channels[i];
     }
 }
 
 void printCameraImageStructure(const CameraImagePtr p)
 {
-    lvr2::log << lvr2::info << p;
+    lvr2::logout::get() << lvr2::info << p;
 }
 
 void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
@@ -369,7 +368,7 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
                         ScanPtr scan = lidar->scans[scanNr];
                         if(scan)
                         {
-                            lvr2::log << lvr2::info << "[Project Normal Estimation]: Loading scan " << scanNr 
+                            lvr2::logout::get() << lvr2::info << "[Project Normal Estimation]: Loading scan " << scanNr 
                                       << " from lidar " << lidarNr << " of scan position " << positionNr << lvr2::endl;
                         
                             scan->load();
@@ -379,8 +378,8 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
                                 size_t n = ptBuffer->numPoints();
                                 if(n)
                                 {
-                                    lvr2::log << lvr2::info << "[Project Normal Estimation]: Loaded " << n << " points" << lvr2::endl;
-                                    lvr2::log << lvr2::info << "[Project Normal Estimation]: Building search tree..." << lvr2::endl;
+                                    lvr2::logout::get() << lvr2::info << "[Project Normal Estimation]: Loaded " << n << " points" << lvr2::endl;
+                                    lvr2::logout::get() << lvr2::info << "[Project Normal Estimation]: Building search tree..." << lvr2::endl;
 
                                     AdaptiveKSearchSurfacePtr<BaseVector<float>> surface(new AdaptiveKSearchSurface<BaseVector<float>>(ptBuffer, "flann", kn, ki));
                                     surface->calculateSurfaceNormals();
@@ -394,18 +393,18 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
                                 }
                                 else
                                 {
-                                    lvr2::log << lvr2::warning << "[Project Normal Estimation]: No points in scan" << lvr2::endl;
+                                    lvr2::logout::get() << lvr2::warning << "[Project Normal Estimation]: No points in scan" << lvr2::endl;
                                 }
        
                             } 
                             else
                             {
-                                lvr2::log << lvr2::warning << "[Project Normal Estimation]:Unable to load point cloud data." << lvr2::endl;
+                                lvr2::logout::get() << lvr2::warning << "[Project Normal Estimation]:Unable to load point cloud data." << lvr2::endl;
                             }
                         }
                         else
                         {
-                            lvr2::log << lvr2::warning << "[Project Normal Estimation]: "
+                            lvr2::logout::get() << lvr2::warning << "[Project Normal Estimation]: "
                                       << "Unable to load scan " << scanNr << " of "
                                       << "lidar " << lidarNr << lvr2::endl; 
                         }
@@ -413,7 +412,7 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
                 }
                 else
                 {
-                    lvr2::log << lvr2::warning << "[Project Normal Estimation]: Unable to load lidar " 
+                    lvr2::logout::get() << lvr2::warning << "[Project Normal Estimation]: Unable to load lidar " 
                                            << lidarNr << " of scan position " 
                                            << positionNr << lvr2::endl;
                 }
@@ -421,7 +420,7 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
         }
         else
         {
-            lvr2::log << lvr2::warning 
+            lvr2::logout::get() << lvr2::warning 
                       << "[Project Normal Estimation]: Unable to load scan position " 
                       << positionNr << lvr2::endl;
         }
@@ -455,12 +454,12 @@ ScanProjectPtr loadScanPositionsExplicitly(
                 ScanPositionPtr pos = dirio->ScanPositionIO::load(i);
                 if(pos)
                 {
-                    lvr2::log << lvr2::info << "[Load Positions Explicitly] : Loading scan position " << i << lvr2::endl;
+                    lvr2::logout::get() << lvr2::info << "[Load Positions Explicitly] : Loading scan position " << i << lvr2::endl;
                     p->positions.push_back(pos);
                 }
                 else
                 {
-                    lvr2::log << lvr2::info 
+                    lvr2::logout::get() << lvr2::info 
                               << "[Load Positions Explicitly] : Position with index " 
                               << i << " cannot be loaded from directory." << lvr2::endl;
                 }
@@ -471,13 +470,13 @@ ScanProjectPtr loadScanPositionsExplicitly(
         {
             if(!kernel)
             {
-                lvr2::log << lvr2::warning 
+                lvr2::logout::get() << lvr2::warning 
                           << "[Load Positions Explicitly] : Could not create directory kernel from root " 
                           << root << lvr2::endl; 
             }
             if(!dirSchema)
             {
-                lvr2::log << lvr2::warning 
+                lvr2::logout::get() << lvr2::warning 
                           << "[Load Positions Explicitly] : Could not create directory schema from name " 
                           << schema << lvr2::endl; 
             }
@@ -504,12 +503,12 @@ ScanProjectPtr loadScanPositionsExplicitly(
                 ScanPositionPtr pos = hdf5io->ScanPositionIO::load(i);
                 if (pos)
                 {
-                    lvr2::log << lvr2::info << "[Load Positions Explicitly] : Loading scan position " << i << lvr2::endl;
+                    lvr2::logout::get() << lvr2::info << "[Load Positions Explicitly] : Loading scan position " << i << lvr2::endl;
                     p->positions.push_back(pos);
                 }
                 else
                 {
-                    lvr2::log << lvr2::warning 
+                    lvr2::logout::get() << lvr2::warning 
                               << "[Load Positions Explicitly] : Position with index "
                               << i << " cannot be loaded from HDF5 file." << lvr2::endl;
                 }
@@ -520,19 +519,19 @@ ScanProjectPtr loadScanPositionsExplicitly(
         {
             if(!kernel)
             {
-                lvr2::log << lvr2::warning 
+                lvr2::logout::get() << lvr2::warning 
                           << "[Load Positions Explicitly] : Could not create HDF5 kernel from root " 
                           << root << lvr2::endl; 
             }
             if(!hdf5Schema)
             {
-                lvr2::log << lvr2::warning 
+                lvr2::logout::get() << lvr2::warning 
                           << "[Load Positions Explicitly] : Could not create HDF5 schema from name " 
                           << schema << lvr2::endl; 
             }
         }
     }
-    lvr2::log << lvr2::error << "[Load Positions Explicitly] : Could not load any data." << lvr2::endl;
+    lvr2::logout::get() << lvr2::error << "[Load Positions Explicitly] : Could not load any data." << lvr2::endl;
     return nullptr;
 }
 

@@ -1,11 +1,12 @@
-#ifndef LVR2_TYPES_CAMERA_MODELS_HPP
-#define LVR2_TYPES_CAMERA_MODELS_HPP
+#ifndef CAMERAMODELS
+#define CAMERAMODELS
 
 #include <vector>
 #include <string>
 #include <memory>
 #include "MatrixTypes.hpp"
 #include "lvr2/util/Panic.hpp"
+#include "lvr2/util/Logging.hpp"
 
 namespace lvr2
 {
@@ -73,6 +74,8 @@ namespace lvr2
     using PinholeModelPtr = std::shared_ptr<PinholeModel>;
     using PinholeModelOptional = boost::optional<PinholeModel>;
 
+
+
     inline std::ostream& operator<<(std::ostream& os, const PinholeModel& m)
     {
         os << timestamp << "Pinhole Model" << std::endl;
@@ -92,11 +95,55 @@ namespace lvr2
         return os;
     }
 
+    inline lvr2::Logger& operator<<(lvr2::Logger& log, const PinholeModel& m)
+    {
+
+        log << lvr2::info << "[Pinhole Model] Fx: " << m.fx << lvr2::endl;
+        log << "[Pinhole Model] Fy: " << m.fy << lvr2::endl;
+        log << "[Pinhole Model] Cx: " << m.fx << lvr2::endl;
+        log << "[Pinhole Model] Cy: " << m.fy << lvr2::endl;
+        log << "[Pinhole Model] Width: " << m.width << lvr2::endl;
+        log << "[Pinhole Model] Height: " << m.height << lvr2::endl;
+        log << "[Pinhole Model] Distortion Model: " << m.distortionModel << lvr2::endl;
+
+        for(size_t i = 0; i < m.distortionCoefficients.size(); i++)
+        {
+            log << "[Pinhole Model] Coeff  " << i << ": " << m.distortionCoefficients[i] << lvr2::endl;
+        }
+        
+        return log;
+    }
+
+
     inline std::ostream& operator<<(std::ostream& os, const PinholeModelPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address" << p.get() << std::endl;
+        if (p)
+        {
+            os << *p;
+            os << timestamp << "[Pinhole Model] Pointer Address" << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "[Pinhole Model] Nullptr" << std::endl;
+        }
+
         return os;
+    }
+
+
+    inline lvr2::Logger& operator<<(lvr2::Logger& log, const PinholeModelPtr p)
+    {
+        if (p)
+        {
+            log << *p;
+            log << "[Pinhole Model] Pointer Address" << p.get() << lvr2::endl;
+        }
+        else
+        {
+            log << lvr2::warning << "[Pinhole Model] Nullptr" << lvr2::endl;
+        }
+
+        return log;
     }
 
 
@@ -124,43 +171,96 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const CylindricalModel& m)
     {
-        os << timestamp << "Cylindrical Model" << std::endl;
-        os << timestamp << "-------------" << std::endl;
         for(size_t i = 0; i < m.principal.size(); i++)
         {
-            os << timestamp << "Principal " << i << ": " << m.principal[i] << std::endl;
+            os << timestamp << "[Cylindrical Model] Principal " << i << ": " << m.principal[i] << std::endl;
         }
         
         for(size_t i = 0; i < m.focalLength.size(); i++)
         {
-            os << timestamp << "FocalLength " << i << ": " << m.focalLength[i] << std::endl;
+            os << timestamp << "[Cylindrical Model] FocalLength " << i << ": " << m.focalLength[i] << std::endl;
         }
 
         for(size_t i = 0; i < m.fov.size(); i++)
         {
-            os << timestamp << "FOV " << i << ": " << m.fov[i] << std::endl;
+            os << timestamp << "[Cylindrical Model] FOV " << i << ": " << m.fov[i] << std::endl;
         }
 
-        os << timestamp << "Distortion Model: " << m.distortionModel << std::endl;
+        os << timestamp << "[Cylindrical Model] Distortion Model: " << m.distortionModel << std::endl;
 
         for(size_t i = 0; i < m.distortionCoefficients.size(); i++)
         {
-            os << timestamp << "Distortion Coefficients " << i << ": " << m.distortionCoefficients[i] << std::endl;
+            os << timestamp << "[Cylindrical Model] Distortion Coefficients " << i << ": " << m.distortionCoefficients[i] << std::endl;
         }
 
         for(size_t i = 0; i < m.distortion.size(); i++)
         {
-            os << timestamp << "Distortion " << i << ": " << m.distortion[i] << std::endl;
+            os << timestamp << "[Cylindrical Model] Distortion " << i << ": " << m.distortion[i] << std::endl;
+        }
+
+        return os;
+    }
+    
+    inline lvr2::Logger& operator<<(lvr2::Logger& log, const CylindricalModel& m)
+    {
+        for(size_t i = 0; i < m.principal.size(); i++)
+        {
+            log << "[Cylindrical Model] Principal " << i << ": " << m.principal[i] << lvr2::endl;
+        }
+        
+        for(size_t i = 0; i < m.focalLength.size(); i++)
+        {
+            log << "[Cylindrical Model] FocalLength " << i << ": " << m.focalLength[i] << lvr2::endl;
+        }
+
+        for(size_t i = 0; i < m.fov.size(); i++)
+        {
+            log << "[Cylindrical Model] FOV " << i << ": " << m.fov[i] << lvr2::endl;
+        }
+
+        log << "[Cylindrical Model] Distortion Model: " << m.distortionModel << lvr2::endl;
+
+        for(size_t i = 0; i < m.distortionCoefficients.size(); i++)
+        {
+            log << "[Cylindrical Model] Distortion Coefficients " << i << ": " << m.distortionCoefficients[i] << lvr2::endl;
+        }
+
+        for(size_t i = 0; i < m.distortion.size(); i++)
+        {
+            log  << "[Cylindrical Model] Distortion " << i << ": " << m.distortion[i] << lvr2::endl;
+        }
+
+        return log;
+    }
+
+    inline std::ostream& operator<<(std::ostream& os, const CylindricalModelPtr p)
+    {
+        if(p)
+        {
+            os << *p;
+            os << timestamp << "[Cylindrical Model] Pointer Address" << p.get() << std::endl;
+        }
+        else
+        {
+            os << timestamp << "[Cylindrical Model] Nullptr" << std::endl;
         }
 
         return os;
     }
 
-    inline std::ostream& operator<<(std::ostream& os, const CylindricalModelPtr p)
+    inline lvr2::Logger& operator<<(lvr2::Logger& log, const CylindricalModelPtr p)
     {
-        os << *p;
-        os << timestamp << "Pointer Address" << p.get() << std::endl;
-        return os;
+        if(p)
+        {
+            log << *p;
+            log << "[Cylindrical Model] Pointer Address" << p.get() << lvr2::endl;
+        }
+        else
+        {
+            log << lvr2::warning << "[Cylindrical Model] Nullptr" << lvr2::endl;
+        }
+
+        return log;
     }
 
     struct SphericalModel : CameraModel
@@ -189,29 +289,49 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const SphericalModel& m)
     {
-        os << timestamp << "Spherical Model" << std::endl;
-        os << timestamp << "---------------" << std::endl;
-        os << timestamp << "Phi: " << m.phi[0] << " " << m.phi[1] << " " << m.phi[2] << std::endl;
-        os << timestamp << "Theta: " << m.theta[0] << " " << m.theta[1] << " " << m.theta[2] << std::endl;
-        os << timestamp << "Range: " << m.range[0] << " " << m.range[1] << " " << m.range[2] << std::endl;
-        os << timestamp << "Principal: " << m.principal << std::endl;
-        os << timestamp << "Distortion Model: " << m.distortionModel << std::endl;
+        os << timestamp << "[Spherical Model] Phi: " << m.phi[0] << " " << m.phi[1] << " " << m.phi[2] << std::endl;
+        os << timestamp << "[Spherical Model] Theta: " << m.theta[0] << " " << m.theta[1] << " " << m.theta[2] << std::endl;
+        os << timestamp << "[Spherical Model] Range: " << m.range[0] << " " << m.range[1] << " " << m.range[2] << std::endl;
+        os << timestamp << "[Spherical Model] Principal: " << m.principal << std::endl;
+        os << timestamp << "[Spherical Model] Distortion Model: " << m.distortionModel << std::endl;
         for(size_t i = 0; i < m.distortionCoefficients.size(); i++)
         {
-            os << timestamp << "Distortion Coefficients " << i << ": " << m.distortionCoefficients[i] << std::endl;
+            os << timestamp << "[Spherical Model] Distortion Coefficients " << i << ": " << m.distortionCoefficients[i] << std::endl;
         }
 
         return os;
     }
 
-    inline std::ostream& operator<<(std::ostream& os, const SphericalModelPtr p)
+    inline lvr2::Logger& operator<<(lvr2::Logger& log, const SphericalModel& m)
     {
-        os << *p;
-        os << timestamp << "Pointer Address" << p.get() << std::endl;
-        return os;
+        log << lvr2::info << "[Spherical Model] Phi: " << m.phi[0] << " " << m.phi[1] << " " << m.phi[2] << lvr2::endl;
+        log << "[Spherical Model] Theta: " << m.theta[0] << " " << m.theta[1] << " " << m.theta[2] << lvr2::endl;
+        log << "[Spherical Model] Range: " << m.range[0] << " " << m.range[1] << " " << m.range[2] << lvr2::endl;
+        log << "[Spherical Model] Principal: " << m.principal << lvr2::endl;
+        log << "[Spherical Model] Distortion Model: " << m.distortionModel << lvr2::endl;
+        for(size_t i = 0; i < m.distortionCoefficients.size(); i++)
+        {
+            log << "[Spherical Model] Distortion Coefficients " << i << ": " << m.distortionCoefficients[i] << lvr2::endl;
+        }
+        return log;
+    }
+
+    inline lvr2::Logger& operator<<(lvr2::Logger& log, const SphericalModelPtr p)
+    {
+        if(p)
+        {
+            log << *p;
+            log << "[Spherical Model]  Pointer Address" << p.get() << lvr2::endl;
+        }
+        else
+        {
+            log << lvr2::warning << "[Spherical Model] Nullptr" << lvr2::endl;
+        }
+
+        return log;
     }
 
 
 } // namespace lvr2
 
-#endif // LVR2_TYPES_CAMERA_MODELS_HPP
+#endif // CAMERAMODELS

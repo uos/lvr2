@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
     // for(size_t i = 0; i < 100; i++)
     // {
-    //     usleep(10000);
+    //     usleep(1000000);
     //     ++monitor;
     // }
 

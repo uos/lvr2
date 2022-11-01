@@ -60,7 +60,7 @@ namespace lvr2{
 
         if(root == NULL)
         {
-            cout << "new root.." << endl;
+            std::cout << "new root.." << std::endl;
             auto cell = makeCell(sc, vH, NULL, NULL, NULL, 1);
             root = cell;
             return root;
@@ -115,7 +115,7 @@ namespace lvr2{
     Cell* TumbleTree::remove(double sc, VertexHandle vH, Cell* c, bool removeWhole)
     {
         if(c == NULL){
-            //cout << "Cell not found or tree null" << endl;
+            //std::cout << "Cell not found or tree null" << std::endl;
             return NULL;
         } //empty tree or not found
 
@@ -124,7 +124,7 @@ namespace lvr2{
         if(c->right) c->right->alpha *= c->alpha;
         c->alpha = 1;
 
-        //cout << "SC of interest: " << sc << " | Current sc: " << c->signal_counter << endl;
+        //std::cout << "SC of interest: " << sc << " | Current sc: " << c->signal_counter << std::endl;
 
         if(sc < c->signal_counter)
         {
@@ -154,7 +154,7 @@ namespace lvr2{
             {
                 long num = c->duplicateMap.numValues();
                 c->duplicateMap.erase(vH);
-                //if(num != c->duplicateMap.numValues()) cout << "found in duplicate Map" << endl;
+                //if(num != c->duplicateMap.numValues()) std::cout << "found in duplicate Map" << std::endl;
             }
             //no children
             else if(!c->left && !c->right)
@@ -272,13 +272,13 @@ namespace lvr2{
                 return c;
             else
             {
-                //cout << "Cell found, though it doesnt contain the found handle: " << vH.idx() << endl;
-                //cout << "It contains: " << endl;
+                //std::cout << "Cell found, though it doesnt contain the found handle: " << vH.idx() << std::endl;
+                //std::cout << "It contains: " << std::endl;
                 for(auto iter = c->duplicateMap.begin(); iter != c->duplicateMap.end(); ++iter)
                 {
-                    //cout << *iter << " ";
+                    //std::cout << *iter << " ";
                 }
-                //cout << endl;
+                //std::cout << std::endl;
                 return NULL; //if the key does not exist in the cell with the suitable signal counter
             }
         }
@@ -297,16 +297,16 @@ namespace lvr2{
 
         inorder(c->left);
 
-        cout << " | [";
-        cout << c->signal_counter;// * c->alpha;
-        cout << "{ ";
+        std::cout << " | [";
+        std::cout << c->signal_counter;// * c->alpha;
+        std::cout << "{ ";
         for(auto iter = c->duplicateMap.begin(); iter != c->duplicateMap.end(); ++iter)
         {
-            cout << *iter << ", ";
+            std::cout << *iter << ", ";
         }
-        cout << "}";
-        cout << "((" << c->alpha << "))";
-        cout << "]";
+        std::cout << "}";
+        std::cout << "((" << c->alpha << "))";
+        std::cout << "]";
 
         //if(c->right)c->right->alpha *= c->alpha;
 
@@ -320,7 +320,7 @@ namespace lvr2{
     void TumbleTree::update(double alpha)
     {
         if(root) root->alpha *= 1;//alpha;
-        else cout << "shut up mf " << endl;
+        else std::cout << "shut up mf " << std::endl;
     }
 
     /**
@@ -463,25 +463,25 @@ namespace lvr2{
     double TumbleTree::remove(Cell* c, VertexHandle vH)
     {
         //TODO: FIX PROBLEM FOR SC UPDATES.
-        //cout << "#####start remove" <<endl;
+        //std::cout << "#####start remove" <<std::endl;
         double sc = c->signal_counter;//* c->alpha;
         /*double tmp_sc = sc * c->alpha;
         Cell* tmp = c;
         while(tmp != root) //iterate up the tree to find the correct sc.
         {
             if(!tmp->parent){
-                cout << "NO PARENT!!!" << endl;
+                std::cout << "NO PARENT!!!" << std::endl;
                 break;
             }
 
             if(tmp->parent->parent == tmp || tmp->parent == tmp) //problem here
             {
-                cout << "circlleeeeee" << endl;
+                std::cout << "circlleeeeee" << std::endl;
                 break;
             }
             sc *= tmp->alpha;
             tmp = tmp->parent;
-            //cout << "Iterating the parents.. " << endl;
+            //std::cout << "Iterating the parents.. " << std::endl;
         }
         sc *= tmp->alpha; //include root alpha
 
@@ -489,15 +489,15 @@ namespace lvr2{
             c->parent->right == c ? c->parent->right = remove(tmp_sc, vH, c) : c->parent->left = remove(tmp_sc, vH, c);
         else if(c == root){
             root = remove(tmp_sc, vH, root);
-            cout << "root remove" << endl;
+            std::cout << "root remove" << std::endl;
         }
         else{
-            cout << "not possible" << endl;
+            std::cout << "not possible" << std::endl;
             exit(1);
         }*/
 
 
-        //cout << "#####end remove" << endl;
+        //std::cout << "#####end remove" << std::endl;
         root = remove(sc * c->alpha, vH, root);
         return sc; //return the correct sc
     }
@@ -510,7 +510,7 @@ namespace lvr2{
     void TumbleTree::display()
     {
         inorder(root);
-        cout << endl;
+        std::cout << std::endl;
     }
 
 

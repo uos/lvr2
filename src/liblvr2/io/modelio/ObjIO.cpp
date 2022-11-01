@@ -82,7 +82,7 @@ void ObjIO::parseMtlFile(
         std::vector<Texture>& textures,
         std::string mtlname)
 {
-    cout << "Parsing " << mtlname << endl;
+    std::cout << "Parsing " << mtlname << std::endl;
 
     // Get path object
     boost::filesystem::path p(mtlname);
@@ -123,7 +123,7 @@ void ObjIO::parseMtlFile(
                 else
                 {
                     //m = materials[matNames[matName]];
-                    cout << "ObjIO::parseMtlFile(): Warning: Duplicate material: " << matName << endl;
+                    std::cout << "ObjIO::parseMtlFile(): Warning: Duplicate material: " << matName << std::endl;
                 }
             }
             else if(keyword == "Ka")
@@ -159,7 +159,7 @@ void ObjIO::parseMtlFile(
     }
     else
     {
-        cout << "ObjIO::parseMtlFile(): Error opening '" << mtlname << "'." << endl;
+        std::cout << "ObjIO::parseMtlFile(): Error opening '" << mtlname << "'." << std::endl;
     }
 }
 
@@ -269,7 +269,7 @@ ModelPtr ObjIO::read(std::string filename)
                 std::map<std::string, int>::iterator it = matNames.find(mtlname);
                 if(it == matNames.end())
                 {
-                    cout << "ObjIO:read(): Warning material '" << mtlname << "' is undefined." << endl;
+                    std::cout << "ObjIO:read(): Warning material '" << mtlname << "' is undefined." << std::endl;
                 }
                 else
                 {
@@ -295,7 +295,7 @@ ModelPtr ObjIO::read(std::string filename)
     }
     else
     {
-        cout << timestamp << "ObjIO::read(): Unable to open file'" << filename << "'." << endl;
+        std::cout << timestamp << "ObjIO::read(): Unable to open file'" << filename << "'." << std::endl;
     }
 
     mesh->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);
@@ -307,7 +307,7 @@ ModelPtr ObjIO::read(std::string filename)
     }
     else
     {
-        cout << "ObjIO::read(): Warning: Face material index buffer does not match face number." << endl;
+        std::cout << "ObjIO::read(): Warning: Face material index buffer does not match face number." << std::endl;
     }
 
     mesh->setTextureCoordinates(Util::convert_vector_to_shared_array(texcoords));
@@ -387,7 +387,7 @@ void ObjIO::save( string filename )
 
         if ( !vertices )
         {
-            cerr << "Received no vertices to store. Aborting save operation." << endl;
+            cerr << "Received no vertices to store. Aborting save operation." << std::endl;
             return;
         }
         out << std::endl << std::endl << "##  Beginning of vertex definitions.\n";
@@ -407,7 +407,7 @@ void ObjIO::save( string filename )
                         << static_cast<float>(b)/255.0 ;
                     }
 
-                    out << endl;
+                    out << std::endl;
         }
 
         out<<std::endl;
@@ -419,7 +419,7 @@ void ObjIO::save( string filename )
             {
                 out << "vn " << normals[i*3 + 0] << " "
                         << normals[i*3 + 1] << " "
-                        << normals[i*3 + 2] << endl;
+                        << normals[i*3 + 2] << std::endl;
             }
         }
 
@@ -429,7 +429,7 @@ void ObjIO::save( string filename )
         {
             out << "vt " << textureCoordinates[i*2 + 0] << " "
                     << 1.0 - textureCoordinates[i*2 + 1] << " "
-                    << 0.0 << endl;
+                    << 0.0 << std::endl;
         }
 
 
@@ -437,15 +437,15 @@ void ObjIO::save( string filename )
         // format of a face: f v/vt/vn
         //for( size_t i = 0; i < lenFaces; ++i )
         //{
-            //cout << faceMaterialIndices[i] << " " << lenFaceMaterials << endl;
+            //std::cout << faceMaterialIndices[i] << " " << lenFaceMaterials << std::endl;
             //RGBMaterial* m = materials[faceMaterialIndices[i]];
             //if(m->texture_index >= 0)
             //{
-                //out << "usemtl texture_" << m->texture_index << endl;
+                //out << "usemtl texture_" << m->texture_index << std::endl;
             //}
             //else
             //{
-                //out << "usemtl color_" << faceMaterialIndices[i] << endl;
+                //out << "usemtl color_" << faceMaterialIndices[i] << std::endl;
             //}
 
             ////unsigned int* faceTextureIndices
@@ -461,7 +461,7 @@ void ObjIO::save( string filename )
                     //<< faceIndices[i * 3 + 1] + 1 << " "
                     //<< faceIndices[i * 3 + 2] + 1 << "/"
                     //<< faceIndices[i * 3 + 2] + 1 << "/"
-                    //<< faceIndices[i * 3 + 2] + 1 << endl;
+                    //<< faceIndices[i * 3 + 2] + 1 << std::endl;
         //}
 
         // format of a face: f v/vt/vn
@@ -492,7 +492,7 @@ void ObjIO::save( string filename )
 
             if( i == 0 || first != faceMaterialIndices[color_indices[i-1]] )
             {
-                out << "usemtl color_" << faceMaterialIndices[color_indices[i]] << endl;
+                out << "usemtl color_" << faceMaterialIndices[color_indices[i]] << std::endl;
                 out << "f "
                     << faceIndices[face_index * 3 + 0] + 1 << "/"
                     << faceIndices[face_index * 3 + 0] + 1 << "/"
@@ -502,7 +502,7 @@ void ObjIO::save( string filename )
                     << faceIndices[face_index * 3 + 1] + 1 << " "
                     << faceIndices[face_index * 3 + 2] + 1 << "/"
                     << faceIndices[face_index * 3 + 2] + 1 << "/"
-                    << faceIndices[face_index * 3 + 2] + 1 << endl;
+                    << faceIndices[face_index * 3 + 2] + 1 << std::endl;
 
             }else if( first == faceMaterialIndices[color_indices[i-1]] )
             {
@@ -515,11 +515,11 @@ void ObjIO::save( string filename )
                     << faceIndices[face_index * 3 + 1] + 1 << " "
                     << faceIndices[face_index * 3 + 2] + 1 << "/"
                     << faceIndices[face_index * 3 + 2] + 1 << "/"
-                    << faceIndices[face_index * 3 + 2] + 1 << endl;
+                    << faceIndices[face_index * 3 + 2] + 1 << std::endl;
             }
         }
 
-        out<<endl;
+        out<<std::endl;
 
         //textures
         for(size_t i = 0; i<texture_indices.size() ; i++)
@@ -529,7 +529,7 @@ void ObjIO::save( string filename )
 
             if(i==0 || first.m_texture != materials[faceMaterialIndices[texture_indices[i-1]]].m_texture )
             {
-                out << "usemtl texture_" << first.m_texture->idx() << endl;
+                out << "usemtl texture_" << first.m_texture->idx() << std::endl;
                 //std::cout << "usemtl texture_" << first->texture_index << std::endl;
                 out << "f "
                     << faceIndices[face_index * 3 + 0] + 1 << "/"
@@ -587,7 +587,7 @@ void ObjIO::save( string filename )
             }
             else
             {
-                mtlFile << "newmtl texture_"      << m.m_texture->idx() << endl;
+                mtlFile << "newmtl texture_"      << m.m_texture->idx() << std::endl;
                 mtlFile << "Ka 1.000 1.000 1.000" << std::endl;
                 mtlFile << "Kd 1.000 1.000 1.000" << std::endl;
                 mtlFile << "map_Kd texture_"      << m.m_texture->idx()

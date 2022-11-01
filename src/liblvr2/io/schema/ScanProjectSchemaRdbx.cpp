@@ -160,8 +160,6 @@ Description ScanProjectSchemaRdbx::cameraImage(
             }
         }
     }
-    
-    std::cout << matching_files.size() << " " << groupNo << " " << cameraImageNo << std::endl;
 
     Description d;
     // Load images and meta data

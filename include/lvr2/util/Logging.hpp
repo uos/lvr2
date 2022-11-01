@@ -33,7 +33,7 @@ private:
 
 class Logger
 {
-public:
+private:
 
     Logger()
     {
@@ -41,6 +41,16 @@ public:
         m_logger->set_pattern("[%H:%M:%S:%e]%^[%-7l]%$ %v");
         m_level = spdlog::level::info;
     }
+
+public:
+    static Logger& get()
+    {
+        static Logger inst;
+        return inst;
+    }
+
+    Logger(Logger const&) = delete;
+    void operator=(Logger const&) = delete;
 
     void flush()
     {
@@ -79,7 +89,8 @@ static LoggerWarning warning;
 static LoggerTrace trace;
 static LoggerInfo info;
 static LoggerDebug debug;
-static Logger log;
+
+using logout = Logger;
 
 template<typename T>
 inline Logger& operator<<(Logger& log, const T& s)

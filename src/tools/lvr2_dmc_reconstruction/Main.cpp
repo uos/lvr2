@@ -38,7 +38,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
     // Parse loaded data
     if (!model)
     {
-        cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << endl;
+        std::cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << std::endl;
         return nullptr;
     }
 
@@ -51,7 +51,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
     // Create point set surface object
     if(pcm_name == "PCL")
     {
-        cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << endl;
+        std::cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << std::endl;
         panic_unimplemented("PCL as point cloud manager");
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
@@ -81,8 +81,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
     }
     else
     {
-        cout << timestamp << "Unable to create PointCloudManager." << endl;
-        cout << timestamp << "Unknown option '" << pcm_name << "'." << endl;
+        std::cout << timestamp << "Unable to create PointCloudManager." << std::endl;
+        std::cout << timestamp << "Unknown option '" << pcm_name << "'." << std::endl;
         return nullptr;
     }
 
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
     auto surface = loadPointCloud<Vec>(options);
     if (!surface)
     {
-        cout << "Failed to create pointcloud. Exiting." << endl;
+        std::cout << "Failed to create pointcloud. Exiting." << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
     m = ModelPtr(new Model(meshBuffer));
     ModelFactory::saveModel(m, "deep_mesh.ply");
 
-    cout << timestamp << "Finished reconstruction" << endl;
+    std::cout << timestamp << "Finished reconstruction" << std::endl;
 
     return 0;
 }

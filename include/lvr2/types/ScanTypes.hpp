@@ -198,12 +198,11 @@ namespace lvr2
 
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const ScanProject& p)
     {
-        log << info <<     "[ScanProject] ----------------------------------------------------" << lvr2::endl;
-        log << "[ScanProject] Name: " << p.name << lvr2::endl;
-        log << "[ScanProject] Coordinate System: " << p.coordinateSystem << lvr2::endl;
-        log << "[ScanProject] Unit: " << p.unit << lvr2::endl;
-        log << "[ScanProject] Number of scan positions: " << p.positions.size() << lvr2::endl;
-        log << "[ScanProject] Transformation: " << lvr2::endl <<  p.transformation << lvr2::endl;
+        log << info << "[Scan Project] Name: " << p.name << lvr2::endl;
+        log << "[Scan Project] Coordinate System: " << p.coordinateSystem << lvr2::endl;
+        log << "[Scan Project] Unit: " << p.unit << lvr2::endl;
+        log << "[Scan Project] Number of scan positions: " << p.positions.size() << lvr2::endl;
+        log << "[Scan Project] Transformation: " << lvr2::endl <<  p.transformation << lvr2::endl;
         return log;
     }
 
@@ -212,11 +211,11 @@ namespace lvr2
         if (p)
         {
             log << *p;
-            log << "[ScanProject] Pointer Address " << p.get() << lvr2::endl;
+            log << "[Scan Project] Pointer Address " << p.get() << lvr2::endl;
         }
         else
         {
-            log << lvr2::warning << "[ScanProject] Nullptr" << lvr2::endl;
+            log << lvr2::warning << "[Scan Project] Nullptr" << lvr2::endl;
         }
         return log;
     }
@@ -257,12 +256,12 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const ScanPosition& p)
     {
-        os << timestamp << "[ScanPosition] ---------------------------------------------------" << std::endl;
-        os << timestamp << "[ScanPosition] Timestamp" << p.timestamp << std::endl;
-        os << timestamp << "[ScanPosition] Number of cameras: " << p.cameras.size() << std::endl;
-        os << timestamp << "[ScanPosition] Number of scan positions: " << p.lidars.size() << std::endl;
-        os << timestamp << "[ScanPosition] Pose estimation: " << p.poseEstimation << std::endl;
-        os << timestamp << "[ScanPosition] Transformation: " << p.transformation << std::endl;
+        os << timestamp << "[Scan Position] ---------------------------------------------------" << std::endl;
+        os << timestamp << "[Scan Position] Timestamp" << p.timestamp << std::endl;
+        os << timestamp << "[Scan Position] Number of cameras: " << p.cameras.size() << std::endl;
+        os << timestamp << "[Scan Position] Number of scan positions: " << p.lidars.size() << std::endl;
+        os << timestamp << "[Scan Position] Pose estimation: " << p.poseEstimation << std::endl;
+        os << timestamp << "[Scan Position] Transformation: " << p.transformation << std::endl;
         return os;
     }
     
@@ -271,23 +270,22 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "[ScanPosition] Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[Scan Position] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "[ScanPosition] Nullptr" << std::endl;
+            os << timestamp << "[Scan Position] Nullptr" << std::endl;
         }
         return os;
     }
  
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const ScanPosition& p)
     {
-        log << lvr2::info << "[ScanPosition] ---------------------------------------------------" << lvr2::endl;
-        log << "[ScanPosition] Timestamp" << p.timestamp << lvr2::endl;
-        log << "[ScanPosition] Number of cameras: " << p.cameras.size() << lvr2::endl;
-        log << "[ScanPosition] Number of scan positions: " << p.lidars.size() << lvr2::endl;
-        log << "[ScanPosition] Pose estimation: " << p.poseEstimation << lvr2::endl;
-        log  << "[ScanPosition] Transformation: " << p.transformation << lvr2::endl;
+        log << lvr2::info << "[Scan Position] Timestamp" << p.timestamp << lvr2::endl;
+        log << "[Scan Position] Number of cameras: " << p.cameras.size() << lvr2::endl;
+        log << "[Scan Position] Number of scan positions: " << p.lidars.size() << lvr2::endl;
+        log << "[Scan Position] Pose estimation: " << lvr2::endl << p.poseEstimation << lvr2::endl;
+        log << "[Scan Position] Transformation: " << lvr2::endl << p.transformation << lvr2::endl;
         return log;
     }
 
@@ -296,11 +294,11 @@ namespace lvr2
         if (p)
         {
             log << *p;
-            log << "[ScanPosition] Pointer Address " << p.get() << lvr2::endl;
+            log << "[Scan Position] Pointer Address " << p.get() << lvr2::endl;
         }
         else
         {
-            log << lvr2::warning << "[ScanPosition] Nullptr" << lvr2::endl;
+            log << lvr2::warning << "[Scan Position] Nullptr" << lvr2::endl;
         }
         return log;
     }
@@ -354,8 +352,7 @@ namespace lvr2
 
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const LIDAR& l)
     {
-        log << lvr2:: info << "[LiDAR] ----------------------------------------------------------" << lvr2::endl;
-        log << l.model;
+        log << lvr2::info << l.model;
         log << "[LiDAR] Number of scans: " << l.scans.size() << lvr2::endl;
         return log;
     }
@@ -406,8 +403,7 @@ namespace lvr2
 
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const Camera& c)
     {
-        log << lvr2::info << "[Camera] ---------------------------------------------------------" << lvr2::endl;
-        log << "[Camera] Number of image groups: " << c.groups.size() << lvr2::endl;
+        log << lvr2::info << "[Camera] Number of image groups: " << c.groups.size() << lvr2::endl;
         return log;
     }
 
@@ -546,12 +542,11 @@ namespace lvr2
 
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const Scan& s)
     {
-        log << lvr2::info << "[Scan] -----------------------------------------------------------" << lvr2::endl;
-        log << "[Scan] Number of Points: " << s.numPoints << lvr2::endl;
+        log << lvr2::info << "[Scan] Number of Points: " << s.numPoints << lvr2::endl;
         log << "[Scan] Start time: " << s.startTime << lvr2::endl;
         log << "[Scan] End time: " << s.endTime << lvr2::endl;
-        log << "[Scan] Pose estimation: " << lvr2::endl << s.poseEstimation << lvr2::endl;
-        log << "[Scan] Transformation: " << lvr2::endl << s.transformation << lvr2::endl;
+        log << "[Scan] Pose estimation: " << lvr2::endl << s.poseEstimation;
+        log << "[Scan] Transformation: " << lvr2::endl << s.transformation;
         return log;
     }
 
@@ -637,25 +632,24 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const CameraImage& i)
     {
-        os << timestamp << "[CameraImage] ----------------------------------------------------" << std::endl;
-        os << timestamp << "[CameraImage] Timestamp: " << i.timestamp << std::endl;
-        os << timestamp << "[CameraImage] Loaded: " << i.loaded() << std::endl;
-        os << timestamp << "[CameraImage] Loadable: " << i.loadable() << std::endl;
-        os << timestamp << "[CameraImage] Image dimensions: " << i.image.cols << " x " << i.image.rows << std::endl;
-        os << timestamp << "[CameraImage] Extrinsics estimation: " << i.extrinsicsEstimation << std::endl;
-        os << timestamp << "[CameraImage] Transformation: " << std::endl << i.transformation << std::endl;
+        os << timestamp << "[Camera Image] ----------------------------------------------------" << std::endl;
+        os << timestamp << "[Camera Image] Timestamp: " << i.timestamp << std::endl;
+        os << timestamp << "[Camera Image] Loaded: " << i.loaded() << std::endl;
+        os << timestamp << "[Camera Image] Loadable: " << i.loadable() << std::endl;
+        os << timestamp << "[Camera Image] Image dimensions: " << i.image.cols << " x " << i.image.rows << std::endl;
+        os << timestamp << "[Camera Image] Extrinsics estimation: " << i.extrinsicsEstimation << std::endl;
+        os << timestamp << "[Camera Image] Transformation: " << std::endl << i.transformation << std::endl;
         return os;
     }
 
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const CameraImage& i)
     {
-        log << lvr2::info << "[CameraImage] ----------------------------------------------------" << lvr2::endl;
-        log << "[CameraImage] Timestamp: " << i.timestamp << lvr2::endl;
-        log << "[CameraImage] Loaded: " << i.loaded() << lvr2::endl;
-        log << "[CameraImage] Loadable: " << i.loadable() << lvr2::endl;
-        log << "[CameraImage] Image dimensions: " << i.image.cols << " x " << i.image.rows << lvr2::endl;
-        log << "[CameraImage] Extrinsics estimation: " << i.extrinsicsEstimation << lvr2::endl;
-        log << "[CameraImage] Transformation: " << lvr2::endl << i.transformation << lvr2::endl;
+        log << lvr2::info << "[Camera Image] Timestamp: " << i.timestamp << lvr2::endl;
+        log << "[Camera Image] Loaded: " << i.loaded() << lvr2::endl;
+        log << "[Camera Image] Loadable: " << i.loadable() << lvr2::endl;
+        log << "[Camera Image] Image dimensions: " << i.image.cols << " x " << i.image.rows << lvr2::endl;
+        log << "[Camera Image] Extrinsics estimation: " << i.extrinsicsEstimation << lvr2::endl;
+        log << "[Camera Image] Transformation: " << lvr2::endl << i.transformation << lvr2::endl;
         return log;
     }
 
@@ -664,11 +658,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "[CameraImage] Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[Camera Image] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "[CameraImage] Nullptr" << std::endl;
+            os << timestamp << "[Camera Image] Nullptr" << std::endl;
         }
         return os;
     }
@@ -678,7 +672,7 @@ namespace lvr2
         if (p)
         {
             log << *p;
-            log << "[CameraImage] Pointer Address " << p.get() << lvr2::endl;
+            log << "[Camera Image] Pointer Address " << p.get() << lvr2::endl;
         }
         else
         {
@@ -698,17 +692,16 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const CameraImageGroup& i)
     {
-        os << timestamp << "[CameraImageGroup] -----------------------------------------------" << std::endl;
-        os << timestamp << "[CameraImageGroup] Number of images: " << i.images.size() << std::endl;
-        os << timestamp << "[CameraImageGroup] Transformation: " << std::endl << i.transformation << std::endl;
+        os << timestamp << "[Camera Image Group] -----------------------------------------------" << std::endl;
+        os << timestamp << "[Camera Image Group] Number of images: " << i.images.size() << std::endl;
+        os << timestamp << "[Camera Image Group] Transformation: " << std::endl << i.transformation << std::endl;
         return os;
     }
 
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const CameraImageGroup& i)
     {
-        log << lvr2::info << "[CameraImageGroup] -----------------------------------------------" << lvr2::endl;
-        log << "[CameraImageGroup] Number of images: " << i.images.size() << lvr2::endl;
-        log << "[CameraImageGroup] Transformation: " << lvr2::endl << i.transformation << lvr2::endl;
+        log << lvr2::info << "[Camera Image Group] Number of images: " << i.images.size() << lvr2::endl;
+        log << "[Camera Image Group] Transformation: " << lvr2::endl << i.transformation << lvr2::endl;
         return log;
     }
 
@@ -717,11 +710,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "[CameraImageGroup] Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[Camera Image Group] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "[CameraImageGroup] Nullptr" << std::endl;
+            os << timestamp << "[Camera Image Group] Nullptr" << std::endl;
         }
         return os;
     }
@@ -731,11 +724,11 @@ namespace lvr2
         if (p)
         {
             log << *p;
-            log << "[CameraImageGroup] Pointer Address " << p.get() << lvr2::endl;
+            log << "[Camera Image Group] Pointer Address " << p.get() << lvr2::endl;
         }
         else
         {
-            log << lvr2::warning << "[CameraImageGroup] Nullptr" << lvr2::endl;
+            log << lvr2::warning << "[Camera Image Group] Nullptr" << lvr2::endl;
         }
         return log;
     }
@@ -769,17 +762,16 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanoramaChannel& c)
     {
-        os << timestamp << "[HyperspectralPanoramaChannel] -----------------------------------" << std::endl;
-        os << timestamp << "[HyperspectralPanoramaChannel] Timestamp: " << c.timestamp << std::endl;
-        os << timestamp << "[HyperspectralPanoramaChannel] Image dimensions: " << c.channel.cols << " x " << c.channel.rows << std::endl;
+        os << timestamp << "[Hyperspectral Panorama Channel] -----------------------------------" << std::endl;
+        os << timestamp << "[Hyperspectral Panorama Channel] Timestamp: " << c.timestamp << std::endl;
+        os << timestamp << "[Hyperspectral Panorama Channel] Image dimensions: " << c.channel.cols << " x " << c.channel.rows << std::endl;
         return os;
     }
 
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const HyperspectralPanoramaChannel& c)
     {
-        log << lvr2::info << "[HyperspectralPanoramaChannel] -----------------------------------" << lvr2::endl;
-        log << "[HyperspectralPanoramaChannel] Timestamp: " << c.timestamp << lvr2::endl;
-        log << "[HyperspectralPanoramaChannel] Image dimensions: " << c.channel.cols << " x " << c.channel.rows << lvr2::endl;
+        log << lvr2::info << "[Hyperspectral Panorama Channel] Timestamp: " << c.timestamp << lvr2::endl;
+        log << "[Hyperspectral Panorama Channel] Image dimensions: " << c.channel.cols << " x " << c.channel.rows << lvr2::endl;
         return log;
     }
 
@@ -788,11 +780,11 @@ namespace lvr2
        if (p)
         {
             os << *p;
-            os << timestamp << "[HyperspectralPanoramaChannel] Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[Hyperspectral Panorama Channel] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "[HyperspectralPanoramaChannel] Nullptr" << std::endl;
+            os << timestamp << "[Hyperspectral Panorama Channel] Nullptr" << std::endl;
         }
         return os;
     }
@@ -802,11 +794,11 @@ namespace lvr2
        if (p)
         {
             log << *p;
-            log << "[HyperspectralPanoramaChannel] Pointer Address " << p.get() << lvr2::endl;
+            log << "[Hyperspectral Panorama Channel] Pointer Address " << p.get() << lvr2::endl;
         }
         else
         {
-            log << lvr2::warning << "[HyperspectralPanoramaChannel] Nullptr" << lvr2::endl;
+            log << lvr2::warning << "[Hyperspectral Panorama Channel] Nullptr" << lvr2::endl;
         }
         return log;
     }
@@ -861,29 +853,28 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanorama& p)
     {
-        os << timestamp << "[HyperspectralPanorama] ------------------------------------------" << std::endl;
-        os << timestamp << "[HyperspectralPanorama] Frames resolution: " << p.framesResolution << std::endl;
-        os << timestamp << "[HyperspectralPanorama] Band Axis: " << p.bandAxis << std::endl;
-        os << timestamp << "[HyperspectralPanorama] Frame Axis: " << p.frameAxis << std::endl;
-        os << timestamp << "[HyperspectralPanorama] Data Type: " << p.dataType << std::endl;
-        os << timestamp << "[HyperspectralPanorama] Number of channels: " << p.num_channels << std::endl;
-        os << timestamp << "[HyperspectralPanorama] Channel vector size: " << p.channels.size() << std::endl; 
-        os << timestamp << "[HyperspectralPanorama] Preview Type: " << p.previewType << std::endl;
-        os << timestamp << "[HyperspectralPanorama] Preview dimensions: " << p.preview.cols << " x " << p.preview.rows << std::endl;
+        os << timestamp << "[Hyperspectral Panorama] ------------------------------------------" << std::endl;
+        os << timestamp << "[Hyperspectral Panorama] Frames resolution: " << p.framesResolution << std::endl;
+        os << timestamp << "[Hyperspectral Panorama] Band Axis: " << p.bandAxis << std::endl;
+        os << timestamp << "[Hyperspectral Panorama] Frame Axis: " << p.frameAxis << std::endl;
+        os << timestamp << "[Hyperspectral Panorama] Data Type: " << p.dataType << std::endl;
+        os << timestamp << "[Hyperspectral Panorama] Number of channels: " << p.num_channels << std::endl;
+        os << timestamp << "[Hyperspectral Panorama] Channel vector size: " << p.channels.size() << std::endl; 
+        os << timestamp << "[Hyperspectral Panorama] Preview Type: " << p.previewType << std::endl;
+        os << timestamp << "[Hyperspectral Panorama] Preview dimensions: " << p.preview.cols << " x " << p.preview.rows << std::endl;
         return os;
     }
 
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const HyperspectralPanorama& p)
     {
-        log << lvr2::info << "[HyperspectralPanorama] ------------------------------------------" << lvr2::endl;
-        log << "[HyperspectralPanorama] Frames resolution: " << p.framesResolution << lvr2::endl;
-        log << "[HyperspectralPanorama] Band Axis: " << p.bandAxis << lvr2::endl;
-        log << "[HyperspectralPanorama] Frame Axis: " << p.frameAxis << lvr2::endl;
-        log << "[HyperspectralPanorama] Data Type: " << p.dataType << lvr2::endl;
-        log << "[HyperspectralPanorama] Number of channels: " << p.num_channels << lvr2::endl;
-        log << "[HyperspectralPanorama] Channel vector size: " << p.channels.size() << lvr2::endl; 
-        log << "[HyperspectralPanorama] Preview Type: " << p.previewType << lvr2::endl;
-        log << "[HyperspectralPanorama] Preview dimensions: " << p.preview.cols << " x " << p.preview.rows << lvr2::endl;
+        log << lvr2::info << "[Hyperspectral Panorama] Frames resolution: " << p.framesResolution << lvr2::endl;
+        log << "[Hyperspectral Panorama] Band Axis: " << p.bandAxis << lvr2::endl;
+        log << "[Hyperspectral Panorama] Frame Axis: " << p.frameAxis << lvr2::endl;
+        log << "[Hyperspectral Panorama] Data Type: " << p.dataType << lvr2::endl;
+        log << "[Hyperspectral Panorama] Number of channels: " << p.num_channels << lvr2::endl;
+        log << "[Hyperspectral Panorama] Channel vector size: " << p.channels.size() << lvr2::endl; 
+        log << "[Hyperspectral Panorama] Preview Type: " << p.previewType << lvr2::endl;
+        log << "[Hyperspectral Panorama] Preview dimensions: " << p.preview.cols << " x " << p.preview.rows << lvr2::endl;
         return log;
     }
 
@@ -892,25 +883,25 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "[HyperspectralPanorama] Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[Hyperspectral Panorama] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "[HyperspectralPanorama] Nullptr" << std::endl;
+            os << timestamp << "[Hyperspectral Panorama] Nullptr" << std::endl;
         }
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& os, const HyperspectralPanoramaPtr p)
+    inline lvr2::Logger& operator<<(lvr2::Logger& log, const HyperspectralPanoramaPtr p)
     {
         if (p)
         {
             log << *p;
-            log << "[HyperspectralPanorama] Pointer Address " << p.get() << lvr2::endl;
+            log << "[Hyperspectral Panorama] Pointer Address " << p.get() << lvr2::endl;
         }
         else
         {
-            log << lvr2::warning << "[HyperspectralPanorama] Nullptr" << lvr2::endl;
+            log << lvr2::warning << "[Hyperspectral Panorama] Nullptr" << lvr2::endl;
         }
         return log;
     }
@@ -943,19 +934,18 @@ namespace lvr2
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralCamera& c)
     {
-        os << timestamp << "[HyperspectralCamera] --------------------------------------------" << std::endl;
-        os << timestamp << "[HyperspectralCamera] Cylindrical Model: " << c.model << std::endl;
-        os << timestamp << "[HyperspectralCamera] Extrinsics Estimation: " << std::endl << c.extrinsicsEstimation << std::endl;
-        os << timestamp << "[HyperspectralCamera] Number of panoramas: " << c.panoramas.size() << std::endl; 
+        os << timestamp << "[Hyperspectral Camera] --------------------------------------------" << std::endl;
+        os << timestamp << "[Hyperspectral Camera] Cylindrical Model: " << c.model << std::endl;
+        os << timestamp << "[Hyperspectral Camera] Extrinsics Estimation: " << std::endl << c.extrinsicsEstimation << std::endl;
+        os << timestamp << "[Hyperspectral Camera] Number of panoramas: " << c.panoramas.size() << std::endl; 
         return os;
     }
 
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const HyperspectralCamera& c)
     {
-        log << lvr2::info << "[HyperspectralCamera] --------------------------------------------" << lvr2::endl;
-        log << "[HyperspectralCamera] Cylindrical Model: " << c.model << lvr2::endl;
-        log << "[HyperspectralCamera] Extrinsics Estimation: " << lvr2::endl << c.extrinsicsEstimation << lvr2::endl;
-        log << "[HyperspectralCamera] Number of panoramas: " << c.panoramas.size() << lvr2::endl; 
+        log << lvr2::info << "[Hyperspectral Camera] Cylindrical Model: " << c.model << lvr2::endl;
+        log << "[Hyperspectral Camera] Extrinsics Estimation: " << lvr2::endl << c.extrinsicsEstimation << lvr2::endl;
+        log << "[Hyperspectral Camera] Number of panoramas: " << c.panoramas.size() << lvr2::endl; 
         return log;
     }
 
@@ -965,11 +955,11 @@ namespace lvr2
         if (p)
         {
             os << *p;
-            os << timestamp << "[HyperspectralCamera] Pointer Address " << p.get() << std::endl;
+            os << timestamp << "[Hyperspectral Camera] Pointer Address " << p.get() << std::endl;
         }
         else
         {
-            os << timestamp << "[HyperspectralCamera] Nullptr" << std::endl;
+            os << timestamp << "[Hyperspectral Camera] Nullptr" << std::endl;
         }
         return os;
     }
@@ -979,11 +969,11 @@ namespace lvr2
         if (p)
         {
             log << *p;
-            log << "[HyperspectralCamera] Pointer Address " << p.get() << lvr2::endl;
+            log << "[Hyperspectral Camera] Pointer Address " << p.get() << lvr2::endl;
         }
         else
         {
-            log << lvr2::warning << "[HyperspectralCamera] Nullptr" << lvr2::endl;
+            log << lvr2::warning << "[Hyperspectral Camera] Nullptr" << lvr2::endl;
         }
         return log;
     }
@@ -1039,8 +1029,7 @@ namespace lvr2
 
     inline lvr2::Logger& operator<<(lvr2::Logger& log, const Waveform& w)
     {
-        log << lvr2::info << "[Waveform] -------------------------------------------------------" << lvr2::endl;
-        log << "[Waveform] Max Bucket Size" << w.maxBucketSize << lvr2::endl;
+        log << lvr2::info << "[Waveform] Max Bucket Size" << w.maxBucketSize << lvr2::endl;
         log << "[Waveform] Echo Types: " << w.echoType.size() << lvr2::endl;
         log << "[Waveform] Waveform Indices: " << w.waveformIndices.size() << lvr2::endl;
         log << "[Waveform] Waveform Samples: " << w.waveformSamples.size() << lvr2::endl;
