@@ -132,7 +132,7 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     ClusterHandle cluster
 )
 {
-    cout << "Wrong" << endl;
+    std::cout << "Wrong" << std::endl;
     // Calculate the texture size
     unsigned short int sizeX = ceil((boundingRect.m_maxDistA - boundingRect.m_minDistA) / m_texelSize);
     unsigned short int sizeY = ceil((boundingRect.m_maxDistB - boundingRect.m_minDistB) / m_texelSize);

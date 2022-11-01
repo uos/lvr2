@@ -85,7 +85,7 @@ size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collap
         return 0;
     }
 
-    cout << timestamp << "Trying to remove all holes with size ≤ " << maxSize << endl;
+    std::cout << timestamp << "Trying to remove all holes with size ≤ " << maxSize << std::endl;
 
 
     // First, we need to have a ClusterBiMap where each cluster describes one
@@ -272,7 +272,9 @@ size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collap
     }
 
     if(!timestamp.isQuiet())
-        cout << endl;
+    {
+        std::cout << std::endl;
+    }
 
     return failedToFillCount;
 }

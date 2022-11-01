@@ -232,7 +232,9 @@ void Tesselator<BaseVecT>::apply(
     m_tesselator = 0;
 
     if(!timestamp.isQuiet())
-        cout << endl;
+    {
+        std::cout << std::endl;
+    }
 }
 
 template<typename BaseVecT>

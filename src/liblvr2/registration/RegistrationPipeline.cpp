@@ -138,7 +138,7 @@ void RegistrationPipeline::doRegistration()
 
     if (m_options->verbose)
     {
-        cout << "start SLAMAlign registration" << endl;
+        std::cout << "start SLAMAlign registration" << std::endl;
     }
 
     // start the registration (with params from m_options)
@@ -146,7 +146,7 @@ void RegistrationPipeline::doRegistration()
 
     if (m_options->verbose)
     {
-        cout << "end SLAMAlign registration" << endl;
+        std::cout << "end SLAMAlign registration" << std::endl;
     }
 
     // if all values are new, the second registration is not needed 
@@ -162,7 +162,7 @@ void RegistrationPipeline::doRegistration()
                   align.scan(i)->pose()))
         {
             m_scans->changed.at(i) = true;
-            cout << "New Values"<< endl;
+            std::cout << "New Values"<< std::endl;
         }
         // new pose of the first scan is same as the old pose
         else if (i != 0)
@@ -170,16 +170,16 @@ void RegistrationPipeline::doRegistration()
             all_values_new = false;
         }
     }
-    cout << "First registration done" << endl;
+    std::cout << "First registration done" << std::endl;
 
     // new align with fix old values only when not all poses new
     if (all_values_new)
     {
-        cout << "no new registration" << endl;
+        std::cout << "no new registration" << std::endl;
     }
     else
     {
-        cout << "start new registration with some fix poses" << endl;
+        std::cout << "start new registration with some fix poses" << std::endl;
 
         // do the same as above only with the m_scans->changed array wich says which scan is fix
         align = SLAMAlign(*m_options, m_scans->changed);
@@ -206,7 +206,7 @@ void RegistrationPipeline::doRegistration()
         {
             posPtr->lidars[0]->scans[0]->transformation = align.scan(i)->pose();
             posPtr->transformation = align.scan(i)->pose();
-            cout << "Pose Scan Nummer " << i << endl << posPtr->lidars[0]->scans[0]->transformation << endl;
+            std::cout << "Pose Scan Nummer " << i << std::endl << posPtr->lidars[0]->scans[0]->transformation << std::endl;
         }
     }
 }

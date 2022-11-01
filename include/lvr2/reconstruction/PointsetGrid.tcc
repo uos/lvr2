@@ -49,7 +49,7 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
     // Get indexed point buffer pointer
     auto numPoint = m_surface->pointBuffer()->numPoints();
 
-    cout << timestamp << "Creating grid" << endl;
+    std::cout << timestamp << "Creating grid" << std::endl;
 
     FloatChannel pts = *(m_surface->pointBuffer()->getFloatChannel("points"));
 
@@ -114,7 +114,7 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
         float projectedDistance;
         float euklideanDistance;
 
-        //cout << euklideanDistance << " " << projectedDistance << endl;
+        //std::cout << euklideanDistance << " " << projectedDistance << std::endl;
 
         std::tie(projectedDistance, euklideanDistance) =
             this->m_surface->distance(this->m_queryPoints[i].m_position);

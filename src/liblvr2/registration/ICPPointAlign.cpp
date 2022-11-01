@@ -38,8 +38,6 @@
 #include <iomanip>
 #include <chrono>
 
-using namespace std;
-
 namespace lvr2
 {
 
@@ -96,7 +94,7 @@ Transformd ICPPointAlign::match()
 
         if (m_verbose)
         {
-            cout << timestamp << "ICP Error is " << ret << " in iteration " << iteration << " / " << m_maxIterations << " using " << pairs << " points." << endl;
+            std::cout << timestamp << "ICP Error is " << ret << " in iteration " << iteration << " / " << m_maxIterations << " using " << pairs << " points." << std::endl;
         }
 
         // Check minimum distance
@@ -107,16 +105,16 @@ Transformd ICPPointAlign::match()
     }
 
     auto duration = chrono::steady_clock::now() - start_time;
-    cout << setw(6) << (int)(duration.count() / 1e6) << " ms, ";
-    cout << "Error: " << fixed << setprecision(3) << setw(7) << ret;
+    std::cout << setw(6) << (int)(duration.count() / 1e6) << " ms, ";
+    std::cout << "Error: " << fixed << setprecision(3) << setw(7) << ret;
     if (iteration < m_maxIterations)
     {
-        cout << " after " << iteration << " Iterations";
+        std::cout << " after " << iteration << " Iterations";
     }
-    cout << endl;
+    std::cout << std::endl;
     if (m_verbose)
     {
-        cout << "Result: " << endl << m_dataCloud->deltaPose() << endl;
+        std::cout << "Result: " << std::endl << m_dataCloud->deltaPose() << std::endl;
     }
 
     return delta;

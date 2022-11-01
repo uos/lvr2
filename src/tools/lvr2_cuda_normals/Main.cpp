@@ -70,19 +70,19 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     {
         num_points = model->m_pointCloud->numPoints();
         points = model->m_pointCloud->getPointArray();
-        cout << timestamp << "Read " << num_points << " points from " << filename << endl;
+        std::cout << timestamp << "Read " << num_points << " points from " << filename << std::endl;
     }
     else
     {
-        cout << timestamp << "Warning: No point cloud data found in " << filename << endl;
+        std::cout << timestamp << "Warning: No point cloud data found in " << filename << std::endl;
         return;
     }
 
     floatArr normals = floatArr(new float[ num_points * 3 ]);
 
-    cout << timestamp << "Constructing kd-tree..." << endl;
+    std::cout << timestamp << "Constructing kd-tree..." << std::endl;
     CudaSurface gpu_surface(points, num_points);
-    cout << timestamp << "Finished kd-tree construction." << endl;
+    std::cout << timestamp << "Finished kd-tree construction." << std::endl;
 
     gpu_surface.setKn(opt.kn());
     gpu_surface.setKi(opt.ki());
@@ -98,11 +98,11 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     }
     gpu_surface.setFlippoint(opt.flipx(), opt.flipy(), opt.flipz());
 
-    cout << timestamp << "Start Normal Calculation..." << endl;
+    std::cout << timestamp << "Start Normal Calculation..." << std::endl;
     gpu_surface.calculateNormals();
 
     gpu_surface.getNormals(normals);
-    cout << timestamp << "Finished Normal Calculation. " << endl;
+    std::cout << timestamp << "Finished Normal Calculation. " << std::endl;
 
     size_t nc;
     model->m_pointCloud->setNormalArray(normals, num_points);
@@ -149,7 +149,7 @@ void reconstructAndSave(PointBufferPtr& buffer, cuda_normals::Options& opt)
 
     ModelPtr m( new Model( res ) );
 
-    cout << timestamp << "Saving mesh." << endl;
+    std::cout << timestamp << "Saving mesh." << std::endl;
     ModelFactory::saveModel( m, "triangle_mesh.ply");
 }
 
@@ -157,7 +157,7 @@ int main(int argc, char** argv){
 
 
     cuda_normals::Options opt(argc, argv);
-    cout << opt << endl;
+    std::cout << opt << std::endl;
 
 
     boost::filesystem::path inFile(opt.inputFile());
@@ -179,7 +179,7 @@ int main(int argc, char** argv){
                 int num = 0;
                 if(sscanf(currentFile.c_str(), "scan%3d", &num))
                 {
-                    cout << timestamp << "Processing " << p.string() << endl;
+                    std::cout << timestamp << "Processing " << p.string() << std::endl;
                     PointBufferPtr buffer(new PointBuffer );
 
                     computeNormals(p.string(), opt, buffer);

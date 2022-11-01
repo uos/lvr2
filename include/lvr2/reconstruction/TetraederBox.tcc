@@ -125,7 +125,7 @@ void TetraederBox<BaseVecT>::getSurface(
     // found in the TetraederDefinitionTable.
     for(int t_number = 0; t_number < 6; t_number++)
     {
-        //cout << "NEW TETRA" << " " << t_number <<  endl;
+       
         // Get the 4 vertices of the current tetraeder
         BaseVecT t_vertices[4];
         for(int i = 0; i < 4; i++)

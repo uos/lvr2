@@ -37,8 +37,6 @@
 
 #include <fstream>
 
-using namespace std;
-
 namespace lvr2
 {
 
@@ -192,7 +190,7 @@ const std::pair<Transformd, FrameUse>& SLAMScanWrapper::frame(size_t index) cons
 
 void SLAMScanWrapper::writeFrames(std::string path) const
 {
-    ofstream out(path);
+    std::ofstream out(path);
     for (const std::pair<Transformd, FrameUse>& frame : m_frames)
     {
         for (int i = 0; i < 16; i++)
@@ -200,7 +198,7 @@ void SLAMScanWrapper::writeFrames(std::string path) const
             out << frame.first(i) << " ";
         }
 
-        out << (int)frame.second << endl;
+        out << (int)frame.second << std::endl;
     }
 }
 

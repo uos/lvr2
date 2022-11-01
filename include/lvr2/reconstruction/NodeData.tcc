@@ -223,7 +223,7 @@ void NodeData<BaseVecT>::writeBuffer()
     }
     else
     {
-        cout << "ERROR: " << errno << ": " << strerror(errno) << endl;
+        std::cout << "ERROR: " << errno << ": " << strerror(errno) << std::endl;
         throw std::runtime_error("asd");
     }
 
@@ -242,7 +242,7 @@ void NodeData<BaseVecT>::writeBuffer()
     }
     else
     {
-        cout << "ERROR: " << errno << ": " << strerror(errno) << endl;
+        std::cout << "ERROR: " << errno << ": " << strerror(errno) << std::endl;
         throw std::runtime_error("asd");
     }
 
@@ -266,10 +266,10 @@ template <typename BaseVecT>
 BaseVecT NodeData<BaseVecT>::get(int i)
 {
 
-    //    cout << "s " << m_readBuffer.size() << endl;
+    //    std::cout << "s " << m_readBuffer.size() << std::endl;
     if (i >= m_readBufferIndex && i - m_readBufferIndex < m_readBuffer.size() / 3)
     {
-        //        cout << "got data from buffer" << endl;
+        //        std::cout << "got data from buffer" << std::endl;
         BaseVecT ret(m_readBuffer[(i - m_readBufferIndex) * 3],
                      m_readBuffer[((i - m_readBufferIndex) * 3) + 1],
                      m_readBuffer[((i - m_readBufferIndex) * 3) + 2]);
@@ -277,7 +277,7 @@ BaseVecT NodeData<BaseVecT>::get(int i)
     }
     else
     {
-        //        cout << "read buffer again" << endl;
+        //        std::cout << "read buffer again" << std::endl;
         fillBuffer(i);
 
         BaseVecT ret(m_readBuffer[(i - m_readBufferIndex) * 3],
@@ -291,10 +291,10 @@ template <typename BaseVecT>
 BaseVecT NodeData<BaseVecT>::getNormal(int i)
 {
 
-    //    cout << "s " << m_readBuffer.size() << endl;
+    //    std::cout << "s " << m_readBuffer.size() << std::endl;
     if (i >= m_readBufferIndexNormal && i - m_readBufferIndexNormal < m_readBufferNormal.size() / 3)
     {
-        //        cout << "got data from buffer" << endl;
+        //        std::cout << "got data from buffer" << std::endl;
         BaseVecT ret(m_readBufferNormal[(i - m_readBufferIndexNormal) * 3],
                      m_readBufferNormal[((i - m_readBufferIndexNormal) * 3) + 1],
                      m_readBufferNormal[((i - m_readBufferIndexNormal) * 3) + 2]);
@@ -302,7 +302,7 @@ BaseVecT NodeData<BaseVecT>::getNormal(int i)
     }
     else
     {
-        //        cout << "read buffer again" << endl;
+        //        std::cout << "read buffer again" << std::endl;
         fillBufferNormal(i);
 
         BaseVecT ret(m_readBufferNormal[(i - m_readBufferIndexNormal) * 3],

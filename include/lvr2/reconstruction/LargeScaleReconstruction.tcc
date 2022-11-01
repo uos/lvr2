@@ -458,7 +458,7 @@ namespace lvr2
 
         auto timeDiffMs = lvr2::timestamp.getCurrentTimeInMs() - startTimeMs;
 
-        cout << "[LargeScaleReconstruction] Finished complete reconstruction in " << (timeDiffMs / 1000.0) << "s" << endl;
+        std::cout << "[LargeScaleReconstruction] Finished complete reconstruction in " << (timeDiffMs / 1000.0) << "s" << std::endl;
     }
 
     template <typename BaseVecT>
@@ -561,7 +561,7 @@ namespace lvr2
 
         auto timeDiffMs = lvr2::timestamp.getCurrentTimeInMs() - startTimeMs;
 
-        cout << "[LargeScaleReconstruction] Finished complete reconstruction in " << (timeDiffMs / 1000.0) << "s" << endl;
+        std::cout << "[LargeScaleReconstruction] Finished complete reconstruction in " << (timeDiffMs / 1000.0) << "s" << std::endl;
     }
 
     template<typename BaseVecT>
@@ -789,7 +789,7 @@ namespace lvr2
 
         if (m_options.removeDanglingArtifacts)
         {
-            cout << timestamp << "[LargeScaleReconstruction] Removing dangling artifacts" << endl;
+            std::cout << timestamp << "[LargeScaleReconstruction] Removing dangling artifacts" << std::endl;
             removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
         }
 
@@ -884,7 +884,7 @@ namespace lvr2
         reconstruction->getMesh(mesh);
 
         if (m_options.removeDanglingArtifacts) {
-            cout << timestamp << "[LargeScaleReconstruction] Removing dangling artifacts" << endl;
+            std::cout << timestamp << "[LargeScaleReconstruction] Removing dangling artifacts" << std::endl;
             removeDanglingCluster(mesh, static_cast<size_t>(m_options.removeDanglingArtifacts));
         }
 
@@ -920,7 +920,7 @@ namespace lvr2
 
         if(project->project->positions.size() != project->changed.size())
         {
-            cout << timestamp << "[LargeScaleReconstruction] Inconsistency between number of given scans and diff-vector (scans to consider)! exit..." << endl;
+            std::cout << timestamp << "[LargeScaleReconstruction] Inconsistency between number of given scans and diff-vector (scans to consider)! exit..." << std::endl;
             bool a = false;
             for(int i = 1; i < size; i++)
             {
@@ -930,9 +930,9 @@ namespace lvr2
             return 0;
         }
 
-        cout << lvr2::timestamp << "[LargeScaleReconstruction] Starting BigGrid" << endl;
+        std::cout << lvr2::timestamp << "[LargeScaleReconstruction] Starting BigGrid" << std::endl;
         BigGrid<BaseVecT> bg( m_options.bgVoxelSize ,project, m_options.scale);
-        cout << lvr2::timestamp << "[LargeScaleReconstruction] BigGrid finished " << endl;
+        std::cout << lvr2::timestamp << "[LargeScaleReconstruction] BigGrid finished " << std::endl;
 
         BoundingBox<BaseVecT> bb = bg.getBB();
 
@@ -943,7 +943,7 @@ namespace lvr2
 
 
         BoundingBox<BaseVecT> partbb = bg.getpartialBB();
-        cout << lvr2::timestamp << "[LargeScaleReconstruction] Generating VGrid" << endl;
+        std::cout << lvr2::timestamp << "[LargeScaleReconstruction] Generating VGrid" << std::endl;
 
         VirtualGrid<BaseVecT> vGrid(
                 bg.getpartialBB(), chunkSize, m_options.bgVoxelSize);
@@ -953,7 +953,7 @@ namespace lvr2
         BaseVecT addMax = BaseVecT(std::ceil(partbb.getMax().x / chunkSize) * chunkSize, std::ceil(partbb.getMax().y / chunkSize) * chunkSize, std::ceil(partbb.getMax().z / chunkSize) * chunkSize);
         newChunksBB.expand(addMin);
         newChunksBB.expand(addMax);
-        cout << lvr2::timestamp << "[LargeScaleReconstruction] Finished vGrid" << endl;
+        std::cout << lvr2::timestamp << "[LargeScaleReconstruction] Finished vGrid" << std::endl;
         std::cout << lvr2::timestamp << "[LargeScaleReconstruction] Got: " 
                                      << partitionBoxes.size() << " chunks" << std::endl;
 
@@ -970,7 +970,7 @@ namespace lvr2
         size_t numChunks_global = (cmBB.getXSize() / chunkSize) * (cmBB.getYSize() / chunkSize) * (cmBB.getZSize() / chunkSize);
         size_t numChunks_partial = partitionBoxes.size();
 
-        cout << lvr2::timestamp << "[LargeScaleReconstruction] Saving " << numChunks_global - numChunks_partial << " Chunks compared to full reconstruction" << endl;
+        std::cout << lvr2::timestamp << "[LargeScaleReconstruction] Saving " << numChunks_global - numChunks_partial << " Chunks compared to full reconstruction" << std::endl;
 
         BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
@@ -998,10 +998,10 @@ namespace lvr2
 
         unsigned long timeSum = timeEnd - timeStart;
 
-        cout << "[LargeScaleReconstruction] Finished complete reconstruction in " << (double) (timeSum/1000.0) << "s" << endl;
-        cout << "[LargeScaleReconstruction] Initialization: " << (double) ((timeInit-timeStart)/1000.0) << "s" << endl;
-        cout << "[LargeScaleReconstruction] Calculation: " << (double) ((timeCalc-timeInit)/1000.0) << "s" << endl;
-        cout << "[LargeScaleReconstruction] Combine chunks: " << (double) ((timeEnd-timeCalc)/1000.0) << "s" << endl;
+        std::cout << "[LargeScaleReconstruction] Finished complete reconstruction in " << (double) (timeSum/1000.0) << "s" << std::endl;
+        std::cout << "[LargeScaleReconstruction] Initialization: " << (double) ((timeInit-timeStart)/1000.0) << "s" << std::endl;
+        std::cout << "[LargeScaleReconstruction] Calculation: " << (double) ((timeCalc-timeInit)/1000.0) << "s" << std::endl;
+        std::cout << "[LargeScaleReconstruction] Combine chunks: " << (double) ((timeEnd-timeCalc)/1000.0) << "s" << std::endl;
 
 
         return 1;
@@ -1173,8 +1173,8 @@ namespace lvr2
                 timeSum += timeEnd - timeStart;
             }
 
-            cout << "[LargeScaleReconstruction] ChunkManagerIO Time: " <<(double) (timeSum / 1000.0) << " s" << endl;
-            cout << lvr2::timestamp << "finished" << endl;
+            std::cout << "[LargeScaleReconstruction] ChunkManagerIO Time: " <<(double) (timeSum / 1000.0) << " s" << std::endl;
+            std::cout << lvr2::timestamp << "finished" << std::endl;
 
             if(h == 0 && m_options.hasOutput(LSROutput::BigMesh))
             {
@@ -1320,11 +1320,11 @@ namespace lvr2
             fl.read(result, len);
             fl.close();
 
-            cout << "Sending " << len << " bytes." << endl;
+            std::cout << "Sending " << len << " bytes." << std::endl;
             MPI_Send(&len, 1, MPI_INT, 0, 15 , MPI_COMM_WORLD);
-            cout << "Sending data." << endl;
+            std::cout << "Sending data." << std::endl;
             MPI_Send(result, len, MPI_CHAR, 0, 16 , MPI_COMM_WORLD);
-            cout << "Sending chunk " << chunk + 1 << endl;
+            std::cout << "Sending chunk " << chunk + 1 << std::endl;
             MPI_Send(&chunk, 1, MPI_INT, 0, 17, MPI_COMM_WORLD);
             std::remove(largeScale.str().c_str());
             delete [] result;

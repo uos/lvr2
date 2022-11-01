@@ -367,8 +367,8 @@ void LVRCorrespondanceDialog::saveCorrespondences()
                 double* start = item->getStart();
                 double* end = item->getEnd();
                 outfile << start[0] << " " << start[1] << " " << start[2] << " ";
-                outfile << end[0] << " " << end[1] << " " << end[2] << endl;
-                cout << start << " " << end << endl;
+                outfile << end[0] << " " << end[1] << " " << end[2] << std::endl;
+                std::cout << start << " " << end << std::endl;
             }
             ++it;
         }
@@ -490,7 +490,7 @@ boost::optional<Transformf> LVRCorrespondanceDialog::getTransformation()
     }
     else
     {
-        cout << "Need at least 4 corresponding points" << endl;
+        std::cout << "Need at least 4 corresponding points" << std::endl;
         return boost::none;
     }
 }

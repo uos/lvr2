@@ -85,9 +85,9 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     if(!this->m_searchTree)
     {
        this->m_searchTree = getSearchTree<BaseVecT>("flann", buffer);
-       cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] No valid search tree specified (" << searchTreeName << ")." << endl;
-       cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Maybe you did not install the required library." << endl;
-       cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Defaulting to flann." << endl;
+       std::cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] No valid search tree specified (" << searchTreeName << ")." << std::endl;
+       std::cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Maybe you did not install the required library." << std::endl;
+       std::cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Defaulting to flann." << std::endl;
     }
 
     if(posefile != "")
@@ -101,11 +101,11 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
  template<typename BaseVecT>
  void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
  {
-     cout << timestamp << "[AdaptiveKSearchSurface] Parsing scan poses." << endl;
+     std::cout << timestamp << "[AdaptiveKSearchSurface] Parsing scan poses." << std::endl;
      std::ifstream in(posefile.c_str());
      if(!in.good())
      {
-         cout << timestamp << "[AdaptiveKSearchSurface] Unable to open scan pose file " << posefile << endl;
+         std::cout << timestamp << "[AdaptiveKSearchSurface] Unable to open scan pose file " << posefile << std::endl;
          return;
      }
 
@@ -132,16 +132,16 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
          loader->setPointArray(points, v.size());
          size_t n = v.size();
 
-         cout << timestamp << "[AdaptiveKSearchSurface]  Creating pose search tree(" << m_searchTreeName << ") with "
-              << n << " poses." << endl;
+         std::cout << timestamp << "[AdaptiveKSearchSurface]  Creating pose search tree(" << m_searchTreeName << ") with "
+              << n << " poses." << std::endl;
 
          this->m_poseTree = getSearchTree<BaseVecT>(m_searchTreeName, loader);
 
 
          if( !this->m_poseTree )
          {
-             cout << timestamp << "[AdaptiveKSearchSurface] No Valid Searchtree class specified!" << endl;
-             cout << timestamp << "[AdaptiveKSearchSurface] Class: " << m_searchTreeName << endl;
+             std::cout << timestamp << "[AdaptiveKSearchSurface] No Valid Searchtree class specified!" << std::endl;
+             std::cout << timestamp << "[AdaptiveKSearchSurface] Class: " << m_searchTreeName << std::endl;
          }
      }
  }
@@ -149,12 +149,12 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::init()
 {
-    cout << timestamp << "[AdaptiveKSearchSurface] Dataset statistics: " << endl;
-    cout << timestamp << "[AdaptiveKSearchSurface] \t\tNum points: " << this->m_pointBuffer->numPoints() << endl;
-    cout << timestamp << "[AdaptiveKSearchSurface] \t\tkn, ki, kd: "<< this->m_kn << ", " << this->m_ki << ", " << this->m_kd << endl;
+    std::cout << timestamp << "[AdaptiveKSearchSurface] Dataset statistics: " << std::endl;
+    std::cout << timestamp << "[AdaptiveKSearchSurface] \t\tNum points: " << this->m_pointBuffer->numPoints() << std::endl;
+    std::cout << timestamp << "[AdaptiveKSearchSurface] \t\tkn, ki, kd: "<< this->m_kn << ", " << this->m_ki << ", " << this->m_kd << std::endl;
     const auto& min = this->m_boundingBox.getMin(), max = this->m_boundingBox.getMax();
-    cout << timestamp << "[AdaptiveKSearchSurface] \t\tBB of points: [" << min.x << ", " << min.y << ", " << min.z << "] - ["
-         << max.x << ", " << max.y << ", " << max.z << "]" << endl;
+    std::cout << timestamp << "[AdaptiveKSearchSurface] \t\tBB of points: [" << min.x << ", " << min.y << ", " << min.z << "] - ["
+         << max.x << ", " << max.y << ", " << max.z << "]" << std::endl;
     this->m_flipPoint = this->m_boundingBox.getCentroid();
 }
 
@@ -167,7 +167,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     size_t numPoints = this->m_pointBuffer->numPoints();
     const FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
 
-    cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Initializing normal array..." << endl;
+    std::cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Initializing normal array..." << std::endl;
 
     floatArr normals = floatArr( new float[numPoints * 3] );
     this->m_pointBuffer->setNormalArray(normals, numPoints);
@@ -276,7 +276,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
         ++progress;
     }
-    cout << endl;
+    std::cout << std::endl;
 
     if(this->m_ki)
     {
@@ -318,8 +318,8 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 
         ++progress;
     }
-    cout << endl;
-    cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Copying normals..." << endl;
+    std::cout << std::endl;
+    std::cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Copying normals..." << std::endl;
 
     for(size_t i = 0; i < numPoints; i++){
         normals[i] = tmp[i];
@@ -499,7 +499,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
 
     if(isnan(normal.getX()) || isnan(normal.getY()) || isnan(normal.getZ()))
     {
-        cout << timestamp << "[AdaptiveKSearchSurface] Warning: Nan-coordinate in plane normal." << endl;
+        std::cout << timestamp << "[AdaptiveKSearchSurface] Warning: Nan-coordinate in plane normal." << std::endl;
     }
 
     // Create a plane representation and return the result
@@ -661,7 +661,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
        {
            ids.insert(number());
            c++;
-           if (c == 20) cout << timestamp << "[AdaptiveKSearchSurface] Deadlock" << endl;
+           if (c == 20) std::cout << timestamp << "[AdaptiveKSearchSurface] Deadlock" << std::endl;
        }
        while (ids.size() < 3 && c <= 20);
 
@@ -781,7 +781,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
 //             // Check for deadlock
 //             if(c > 50)
 //             {
-//                 cout << "DL " << k << endl;
+//                 std::cout << "DL " << k << std::endl;
 //                 ok = false;
 //                 return p;
 //             }

@@ -411,7 +411,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
         }
     }
 
-    cout << endl;
+    std::cout << std::endl;
 
     MeshBufferPtr buffer = MeshBufferPtr( new MeshBuffer );
     buffer->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);

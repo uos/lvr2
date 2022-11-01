@@ -288,20 +288,20 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
         }
     }
 
-    cout << endl;
+    std::cout << std::endl;
 
     // Write result
     // TODO: Merge texturizer results
     if (m_texturizers)
     {
 
-        cout << timestamp << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
-        << " clusters while generating textures" << endl;
+        std::cout << timestamp << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
+        << " clusters while generating textures" << std::endl;
 
-        cout << timestamp << "(" << numClustersTooSmall << " below threshold, "
-        << numClustersTooLarge << " above limit, " << m_cluster.numCluster() << " total)" << endl;
+        std::cout << timestamp << "(" << numClustersTooSmall << " below threshold, "
+        << numClustersTooLarge << " above limit, " << m_cluster.numCluster() << " total)" << std::endl;
 
-        cout << timestamp << "Generated " << textureCount << " textures" << endl;
+        std::cout << timestamp << "Generated " << textureCount << " textures" << std::endl;
 
         // Holds all textures in the order determined by Texture::m_index
         StableVector<TextureHandle, Texture> combined_textures;

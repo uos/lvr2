@@ -64,7 +64,7 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     }
 
     if(!timestamp.isQuiet())
-        cout << endl;
+        std::cout << std::endl;
 
     BoxTraits<BoxT> traits;
 
@@ -156,7 +156,7 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
             }
             ++SFProgress;
         }
-        cout << endl;
+        std::cout << std::endl;
     }
 
      if(traits.type == "BilinearFastBox")
@@ -170,7 +170,7 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
              box->optimizePlanarFaces(mesh, 5);
              ++progress;
          }
-         cout << endl;
+         std::cout << std::endl;
      }
 
 }
@@ -200,7 +200,7 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(
 //    }
 
 //    if(!timestamp.isQuiet())
-//        cout << endl;
+//        std::cout << std::endl;
 }
 
 } // namespace lvr2

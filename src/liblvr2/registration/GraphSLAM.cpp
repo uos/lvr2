@@ -139,7 +139,7 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last, const
             iteration < m_options->slamIterations;
             iteration++)
     {
-        cout << "GraphSLAM Iteration " << iteration << " of " << m_options->slamIterations << endl;
+        std::cout << "GraphSLAM Iteration " << iteration << " of " << m_options->slamIterations << std::endl;
 
         createGraph(scans, last, graph);
 
@@ -168,7 +168,7 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last, const
                 Matrix4ToEuler(initialPose, theta, pos);
                 if (m_options->verbose)
                 {
-                    cout << "Start of " << i << ": " << pos.transpose() << ", " << theta.transpose() << endl;
+                    std::cout << "Start of " << i << ": " << pos.transpose() << ", " << theta.transpose() << std::endl;
                 }
 
                 double ctx, stx, cty, sty;
@@ -220,7 +220,7 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last, const
 
                 if (m_options->verbose)
                 {
-                    cout << "End: pos: " << pos.transpose() << "," << endl << "theta: " << theta.transpose() << endl;
+                    std::cout << "End: pos: " << pos.transpose() << "," << std::endl << "theta: " << theta.transpose() << std::endl;
                 }
 
                 transform = transform * initialPose.inverse();
@@ -241,7 +241,7 @@ void GraphSLAM::doGraphSLAM(const vector<SLAMScanPtr>& scans, size_t last, const
             }
         }
 
-        cout << "Sum of Position differences = " << sum_position_diff << endl;
+        std::cout << "Sum of Position differences = " << sum_position_diff << std::endl;
 
         double avg = sum_position_diff / n;
         if (avg < m_options->slamEpsilon)

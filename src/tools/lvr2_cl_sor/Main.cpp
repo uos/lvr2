@@ -125,25 +125,25 @@ int main(int argc, char** argv){
     {
         num_points = model->m_pointCloud->numPoints();
         points = model->m_pointCloud->getPointArray();
-        cout << timestamp << "Read " << num_points << " points from " << argv[1] << endl;
+        std::cout << timestamp << "Read " << num_points << " points from " << argv[1] << std::endl;
     }
     else
     {
-        cout << timestamp << "Warning: No point cloud data found in " << argv[1] << endl;
+        std::cout << timestamp << "Warning: No point cloud data found in " << argv[1] << std::endl;
         return 0;
     }
 
     lvr2::uintArr inlier = lvr2::uintArr(new unsigned int[num_points]);
 
-    cout << timestamp << "Constructing kd-tree..." << endl;
+    std::cout << timestamp << "Constructing kd-tree..." << std::endl;
     ClSOR sor(points, num_points, 40);
-    cout << timestamp << "Finished kd-tree construction." << endl;
+    std::cout << timestamp << "Finished kd-tree construction." << std::endl;
 
 
     sor.calcDistances();
-    cout << timestamp << "Got Nearest Neighbors" << std::endl;
+    std::cout << timestamp << "Got Nearest Neighbors" << std::endl;
     sor.calcStatistics();
-    cout << timestamp << "Got Statistics" << std::endl;
+    std::cout << timestamp << "Got Statistics" << std::endl;
     sor.setMult(1.5);
 
     int j  = sor.getInliers(inlier);

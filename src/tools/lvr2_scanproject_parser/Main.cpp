@@ -21,52 +21,57 @@ using namespace lvr2::scanio;
 
 int main(int argc, char** argv)
 {
-    // // Parse options
-    // scanproject_parser::Options options(argc, argv);
-    // options.printLogo();
+    // Parse options
+    scanproject_parser::Options options(argc, argv);
+    options.printLogo();
 
-    // // Load scan project (without fetching data)
-    // ScanProjectPtr inputProject = loadScanProject(options.getInputSchema(), options.getInputSource());
+    // Load scan project (without fetching data)
+    ScanProjectPtr inputProject = loadScanProject(options.getInputSchema(), options.getInputSource());
 
-    // if (options.printStructure())
-    // {
-    //     printScanProjectStructure(inputProject);
-    // }
-
-    // // Pointer to the scan project we are actually working on.
-    // // Helpful, if only a partial project is used, i.e., for 
-    // // normal estimation or plain eport
-    // ScanProjectPtr workProject = inputProject;
-
-    // if (options.scanPositions().size())
-    // {
-    //     workProject = loadScanPositionsExplicitly(
-    //         options.getInputSchema(),
-    //         options.getInputSource(),
-    //         options.scanPositions());
-    // }
-
-    // if(options.computeNormals())
-    // {
-    //     estimateProjectNormals(workProject, options.kn(), options.ki());
-    // }
-
-    // if(options.convert())
-    // {
-    //     saveScanProject(workProject, options.getOutputSchema(), options.getOutputSource());
-    // }
-
-    for(size_t i = 0; i < 100; i++)
+    if (options.printStructure())
     {
-        lvr2::log << LogLevel::err << "Test " << i << lvr2::endl;
+        printScanProjectStructure(inputProject);
     }
 
-    lvr2::LVR2Monitor monitor( spdlog::level::debug, "Prefix text", 100);
+    // Pointer to the scan project we are actually working on.
+    // Helpful, if only a partial project is used, i.e., for 
+    // normal estimation or plain eport
+    ScanProjectPtr workProject = inputProject;
 
-    for(size_t i = 0; i < 100; i++, ++monitor)
+    if (options.scanPositions().size())
     {
-        std::this_thread::sleep_for(2ms);
+        workProject = loadScanPositionsExplicitly(
+            options.getInputSchema(),
+            options.getInputSource(),
+            options.scanPositions());
     }
+
+    if(options.computeNormals())
+    {
+        estimateProjectNormals(workProject, options.kn(), options.ki());
+    }
+
+    if(options.convert())
+    {
+        saveScanProject(workProject, options.getOutputSchema(), options.getOutputSource());
+    }
+
+    // for(size_t i = 0; i < 5; i++)
+    // {
+    //     lvr2::log << lvr2::error << "Error " << i << lvr2::endl;
+    //     lvr2::log << lvr2::warning << "Warning " << i << lvr2::endl;
+    //     lvr2::log << lvr2::debug << "Debug " << i << lvr2::endl;
+    //     lvr2::log << lvr2::info << "Info " << i << lvr2::endl;
+    //     lvr2::log << lvr2::trace << "Trace " << i << lvr2::endl;
+    // }
+
+    // lvr2::LVR2Monitor monitor( spdlog::level::debug, "Prefix text", 100);
+
+    // for(size_t i = 0; i < 100; i++)
+    // {
+    //     usleep(10000);
+    //     ++monitor;
+    // }
 
     return 0;
 }

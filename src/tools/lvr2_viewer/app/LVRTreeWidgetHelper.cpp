@@ -56,7 +56,7 @@ PointBufferPtr LVRTreeWidgetHelper::getPointBuffer(QString name)
         {
             if( (*m_it)->text(0) == name)
             {
-                cout << "Name check: " << (*m_it)->text(0).toStdString() << " " << name.toStdString() << endl;
+                std::cout << "Name check: " << (*m_it)->text(0).toStdString() << " " << name.toStdString() << std::endl;
                 // Find point cloud sub item
                 LVRModelItem* item = static_cast<LVRModelItem*>(*m_it);
                 for(size_t i = 0; i < item->childCount(); i++)
@@ -107,7 +107,7 @@ MeshBufferPtr LVRTreeWidgetHelper::getMeshBuffer(QString name)
 
 LVRModelItem* LVRTreeWidgetHelper::getModelItem(QString name)
 {
-    cout << "GET MODEL ITEM" << endl;
+    std::cout << "GET MODEL ITEM" << std::endl;
     LVRModelItem* ptr;
     QTreeWidgetItemIterator it(m_treeWidget);
     while (*it)

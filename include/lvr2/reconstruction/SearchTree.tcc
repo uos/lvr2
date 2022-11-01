@@ -36,8 +36,6 @@
 #include "lvr2/util/Timestamp.hpp"
 
 #include <iostream>
-using std::cout;
-using std::endl;
 
 namespace lvr2 {
 

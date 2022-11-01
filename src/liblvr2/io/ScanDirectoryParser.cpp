@@ -50,7 +50,7 @@ void ScanDirectoryParser::setPointCloudPrefix(const std::string& prefix)
 }
 void ScanDirectoryParser::setPointCloudExtension(const std::string& extension)
 {
-    cout << extension << endl;
+    std::cout << extension << std::endl;
     m_pointExtension = extension;
 }
 void ScanDirectoryParser::setPosePrefix(const std::string& prefix)

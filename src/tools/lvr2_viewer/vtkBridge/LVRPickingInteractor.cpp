@@ -114,7 +114,7 @@ void LVRPickingInteractor::setRenderer(vtkSmartPointer<vtkRenderer> renderer)
     m_renderer->ComputeVisiblePropBounds(b);
     // Set radius to one percent of the largest scene dimension
     double s = std::max(fabs(b[0] - b[1]), std::max(fabs(b[2] - b[3]), fabs(b[4] - b[5]))) * 0.1;
-    cout << s << endl;
+    std::cout << s << std::endl;
     sphereSource->SetRadius(s);
 
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -679,9 +679,9 @@ void LVRPickingInteractor::hoverShooter()
     camera->GetFocalPoint(focal);
     camera->GetViewUp(direction);
 
-//    cout << "STEP: " << step << endl;
-//    cout << "POSITION: " << position[0] << " " << position[1] << " " << position[2] << endl;
-//    cout << "DIRECTION: " << direction[0] << " " << direction[1] << " " << direction[2] << endl;
+//    std::cout << "STEP: " << step << std::endl;
+//    std::cout << "POSITION: " << position[0] << " " << position[1] << " " << position[2] << std::endl;
+//    std::cout << "DIRECTION: " << direction[0] << " " << direction[1] << " " << direction[2] << std::endl;
 
     camera->SetPosition(
                 position[0] + step * direction[0],
@@ -1739,7 +1739,7 @@ void LVRPickingInteractor::OnChar()
         case 'd':
         case 'D':
             strafeShooter(this->m_motionFactor);
-            cout << "D" << endl;
+            std::cout << "D" << std::endl;
             break;
         case 'u':
         case 'U':

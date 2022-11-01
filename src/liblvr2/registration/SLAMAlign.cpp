@@ -10,7 +10,7 @@
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
  *     * Neither the name of the University Osnabrück nor the
- *       names of its contributors may be used to endorse or promote products
+ *       names of its contributors may be used to std::endlorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -38,8 +38,6 @@
 #include "lvr2/registration/Metascan.hpp"
 
 #include <iomanip>
-
-using namespace std;
 
 namespace lvr2
 {
@@ -117,7 +115,7 @@ void SLAMAlign::reduceScan(const SLAMScanPtr& scan)
 
         if (m_options.verbose)
         {
-            cout << "Removed " << (prev - scan->numPoints()) << " / " << prev << " Points -> " << scan->numPoints() << " left" << endl;
+            std::cout << "Removed " << (prev - scan->numPoints()) << " / " << prev << " Points -> " << scan->numPoints() << " left" << std::endl;
         }
     }
 }
@@ -146,16 +144,15 @@ void SLAMAlign::match()
     {
         if (m_new_scans.empty() || m_new_scans.at(m_icp_graph.at(i).second))
         {
-            cout << m_scans.size() << endl;
-            ;
+            std::cout << m_scans.size() << std::endl;
 
             if (m_options.verbose)
             {
-                cout << "Iteration " << setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << endl;
+                std::cout << "Iteration " << setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << std::endl;
             }
             else
             {
-                cout << setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << flush;
+                std::cout << setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << std::flush;
             }
 
             SLAMScanPtr prev = m_options.metascan ? m_metascan : m_scans[m_icp_graph.at(i).first];
@@ -229,7 +226,7 @@ void SLAMAlign::checkLoopCloseOtherOrder(size_t last)
 {
     if (m_options.verbose)
     {
-        cout << "check if a loop exists. current scan: " << m_icp_graph.at(last).second << endl;
+        std::cout << "check if a loop exists. current scan: " << m_icp_graph.at(last).second << std::endl;
     }
     int no_loop = INT_MAX;
     vector<SLAMScanPtr> scans;
@@ -259,7 +256,7 @@ void SLAMAlign::checkLoopCloseOtherOrder(size_t last)
             pow(m_scans.at(last)->innerScan()->poseEstimation(3,2) - scans.at(i)->innerScan()->poseEstimation(3,2), 2.0));
         if (i != no_loop && distance_to_other < m_options.closeLoopDistance)
         {
-            cout << "found loop" << endl;
+            std::cout << "found loop" << std::endl;
             m_graph.doGraphSLAM(scans, last, new_scans);
             return;
         }
@@ -311,7 +308,7 @@ void SLAMAlign::checkLoopClose(size_t last)
 
 void SLAMAlign::loopClose(size_t first, size_t last)
 {
-    cout << "Loopclose " << first << " -> " << last << endl;
+    std::cout << "Loopclose " << first << " -> " << last << std::endl;
 
     Metascan* metaFirst = new Metascan();
     Metascan* metaLast = new Metascan();
@@ -371,7 +368,7 @@ void SLAMAlign::finish()
     createIcpGraph();
     for (int i = 0; i< m_icp_graph.size(); i++)
     {
-        cout << "icp graph: " << m_icp_graph.at(i).first << ":" << m_icp_graph.at(i).second << endl;
+        std::cout << "icp graph: " << m_icp_graph.at(i).first << ":" << m_icp_graph.at(i).second << std::endl;
     }
     
     match();
@@ -386,7 +383,7 @@ void SLAMAlign::createIcpGraph()
 {
     if (m_options.verbose)
     {
-        cout << "create ICP Graph" << endl;
+        std::cout << "create ICP Graph" << std::endl;
     }
     m_icp_graph = std::vector<std::pair<int, int>>();
     vector<vector<double>> mat(m_scans.size());
@@ -418,7 +415,7 @@ void SLAMAlign::createIcpGraph()
 
             if (m_options.verbose)
             {
-                cout << "Calculated euclidean distancex: scan_0, scan_" << i << ", d="<< v->at(i) << endl;
+                std::cout << "Calculated euclidean distancex: scan_0, scan_" << i << ", d="<< v->at(i) << std::endl;
             }
         }
     }
@@ -444,7 +441,7 @@ void SLAMAlign::createIcpGraph()
             {
                 if (!scan_in_graph.at(y) && x!=y && mat[x][y] < minimum)
                 {
-                    //cout << "new min: ";
+                    //std::cout << "new min: ";
                     minimum = mat[x][y];
                     old_scan = x;
                     new_scan = y;
@@ -471,7 +468,7 @@ void SLAMAlign::createIcpGraph()
 
                 if (m_options.verbose)
                 {
-                    cout << "Calculated euclidean distancex: scan_" << new_scan << ", scan_" << i << ", d="<< v->at(i) << endl;
+                    std::cout << "Calculated euclidean distancex: scan_" << new_scan << ", scan_" << i << ", d="<< v->at(i) << std::endl;
                 }
             }
         }
@@ -479,7 +476,7 @@ void SLAMAlign::createIcpGraph()
 
     if (m_options.verbose)
     {
-        cout << "create ICP Graph finish" << endl;
+        std::cout << "create ICP Graph finish" << std::endl;
     }
 }
 

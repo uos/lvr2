@@ -58,7 +58,6 @@
 
 using std::unordered_set;
 using std::max;
-using std::log;
 
 namespace lvr2
 {
@@ -265,7 +264,7 @@ BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
     // TODO reasonable error handling necessary for empty contour vector
     if (contour.size() == 0)
     {
-        cout << "Empty contour array." << endl;
+        std::cout << "Empty contour array." << std::endl;
     }
     int minArea = std::numeric_limits<int>::max();
 
@@ -530,7 +529,7 @@ DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanes(
 )
 {
     DenseClusterMap<Plane<BaseVecT>> planes;
-    size_t defaultClusterThreshold = 10 * log(mesh.numFaces());
+    size_t defaultClusterThreshold = 10 * std::log(mesh.numFaces());
     size_t minClusterThresholdSize = max(static_cast<size_t>(minClusterSize), defaultClusterThreshold);
 
     // For all clusters in cluster map
@@ -559,7 +558,7 @@ DenseClusterMap<Plane<BaseVecT>> calcRegressionPlanesRANSAC(
 )
 {
     DenseClusterMap<Plane<BaseVecT>> planes;
-    size_t defaultClusterThreshold = 10 * log(mesh.numFaces());
+    size_t defaultClusterThreshold = 10 * std::log(mesh.numFaces());
     size_t minClusterThresholdSize = max(static_cast<size_t>(minClusterSize), defaultClusterThreshold);
 
     // For all clusters in cluster map
@@ -899,7 +898,7 @@ void optimizePlaneIntersections(
     }
 
     if(!timestamp.isQuiet())
-        cout << endl;
+        std::cout << std::endl;
 }
 
 template<typename BaseVecT>

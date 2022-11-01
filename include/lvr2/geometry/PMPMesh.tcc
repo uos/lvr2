@@ -619,7 +619,7 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
 
     m_mesh.remove_edge_property(visitedEdges);
 
-    cout << timestamp << "Found " << contours.size() << " holes" << endl;
+    std::cout << timestamp << "Found " << contours.size() << " holes" << std::endl;
 
     if (contours.empty())
     {
@@ -705,11 +705,11 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
             }
             catch(PanicException exception)
             {
-                std::cerr << "Error filling a hole: " << exception.what() << endl;
+                std::cerr << "Error filling a hole: " << exception.what() << std::endl;
             }
             catch(pmp::TopologyException exception)
             {
-                std::cerr << "Error filling a hole: " << exception.what() << endl;
+                std::cerr << "Error filling a hole: " << exception.what() << std::endl;
             }
         }
     }
@@ -737,8 +737,8 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
             }
         }
     }
-    cout << endl;
-    cout << timestamp << "Filled " << filled << " / " << contours.size() << " holes" << endl;
+    std::cout << std::endl;
+    std::cout << timestamp << "Filled " << filled << " / " << contours.size() << " holes" << std::endl;
 }
 
 template<typename BaseVecT>

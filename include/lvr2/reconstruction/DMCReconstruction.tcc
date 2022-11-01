@@ -565,7 +565,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 {
     // start building adaptive octree
     string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating Octree...";
-    cout << comment << endl;
+    std::cout << comment << std::endl;
     
 
     // metric is set here
@@ -574,14 +574,14 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric, 0);
 
     comment = timestamp.getElapsedTime() + "[DMCReconstruction] Cleaning up RAM...";
-    cout << comment << endl;
+    std::cout << comment << std::endl;
     m_pointHandler->clear();
 
     comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating Mesh ";
     m_progressBar = new ProgressBar(m_leaves, comment);
     traverseTree(mesh, *octree);
     delete(octree);
-    cout << endl;
+    std::cout << std::endl;
 }
 
 template<typename BaseVecT, typename BoxT>
@@ -591,7 +591,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
     if(delta < 0)
     {
         string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Error: delta cannot be below zero."; 
-        cout << comment << endl;
+        std::cout << comment << std::endl;
         return;
     }
     // if delta is equal to zero, just use the the simple getMesh function
@@ -599,14 +599,14 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
     else if(delta == 0)
     {
         string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Warning: delta is equal to zero. Returning flat mesh only."; 
-        cout << comment << endl;
+        std::cout << comment << std::endl;
         getMesh(flatMesh);
     }
     // else the delta must be greater than 0
     else
     {
         string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating two meshes with delta delta of " + to_string(delta) + "."; 
-        cout << comment << endl;
+        std::cout << comment << std::endl;
 
 
         // use this metric
@@ -617,21 +617,21 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
         /* *************** FLAT OCTREE ************************* */
 
         comment = timestamp.getElapsedTime() + "[DMCReconstruction] Building flat octree..."; 
-        cout << comment << endl;
+        std::cout << comment << std::endl;
 
         // build flat tree without delta
         buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric, 0);
 
         // printing progress
         comment = timestamp.getElapsedTime() + "[DMCReconstruction] Cleaning up RAM...";
-        cout << comment << endl;
+        std::cout << comment << std::endl;
         m_pointHandler->clear();
         
         // creating mesh
         comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating flat mesh ";
         m_progressBar = new ProgressBar(m_leaves, comment);
         traverseTree(flatMesh, *octree);
-        cout << endl;
+        std::cout << std::endl;
         
         
         /* *************** DEEP OCTREE ************************* */
@@ -648,7 +648,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
         m_pointHandler = std::unique_ptr<DMCPointHandle<BaseVecT>>(new DMCVecPointHandle<BaseVecT>(containedPoints));
 
         comment = timestamp.getElapsedTime() + "[DMCReconstruction] Building deep octree..."; 
-        cout << comment << endl;
+        std::cout << comment << std::endl;
     
 
         // we have to increase m_maxLevel and put it into buildTree as levels (2nd param.)
@@ -661,14 +661,14 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
 
 
         comment = timestamp.getElapsedTime() + "[DMCReconstruction] Cleaning up RAM...";
-        cout << comment << endl;
+        std::cout << comment << std::endl;
         m_pointHandler->clear();
 
       
         comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating deep mesh ";
         m_progressBar = new ProgressBar(m_leaves, comment);
         traverseTree(deepMesh, *deepOctree);
-        cout << endl;
+        std::cout << std::endl;
         
         
         return;
@@ -917,7 +917,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(
 //    }
 
 //    if(!timestamp.isQuiet())
-//        cout << endl;
+//        std::cout << std::endl;
 }
 
 } // namespace lvr2

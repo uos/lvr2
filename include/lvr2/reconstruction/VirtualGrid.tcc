@@ -112,7 +112,9 @@ void VirtualGrid<BaseVecT>::generateNeighbours()
         }
     }
     if(!timestamp.isQuiet())
-        cout << endl;
+    {
+        std::cout << std::endl;
+    }
 }
 
 } // namespace lvr2

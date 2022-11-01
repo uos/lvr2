@@ -73,7 +73,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(float resolution, BoundingBox<BaseVecT> bound
 
     if (!m_boundingBox.isValid())
     {
-        cout << timestamp << "[HashGrid] Warning: Malformed BoundingBox." << endl;
+        std::cout << timestamp << "[HashGrid] Warning: Malformed BoundingBox." << std::endl;
     }
 
     BoxT::m_voxelsize = m_voxelsize;

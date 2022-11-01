@@ -232,7 +232,7 @@ size_t iterativeEdgeCollapse(
     }
 
 
-    cout << endl << timestamp << "Collapsed " << collapsedEdgeCount << " edges..." << endl;
+    std::cout << std::endl << timestamp << "Collapsed " << collapsedEdgeCount << " edges..." << std::endl;
 
     return collapsedEdgeCount;
 }

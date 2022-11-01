@@ -106,8 +106,8 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 {
     using std::make_tuple;
 
-    DOINDEBUG(dout() << "##################################################" << endl);
-    DOINDEBUG(dout() << "##### addFace(): " << v1H << " -> " << v2H << " -> " << v3H << endl);
+    DOINDEBUG(dout() << "##################################################" << std::endl);
+    DOINDEBUG(dout() << "##### addFace(): " << v1H << " -> " << v2H << " -> " << v3H << std::endl);
 
     // =======================================================================
     // = Create broken edges
@@ -178,7 +178,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         // --> Case (A): neither edge is part of a face (both edges are new)
         if (!eIn.face && !eOut.face)
         {
-            DOINDEBUG(dout() << "Case (A) for " << vH << endl);
+            DOINDEBUG(dout() << "Case (A) for " << vH << std::endl);
 
             // We need to handle the special case of `v` not having an
             // outgoing edge.
@@ -214,8 +214,8 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
                 eIn.next = eStartH;
                 getE(eEndH).next = eOutH;
 
-                DOINDEBUG(dout() << "(A) ... setting " << eInH << ".next = " << eStartH << endl);
-                DOINDEBUG(dout() << "(A) ... setting " << eEndH << ".next = " << eOutH << endl);
+                DOINDEBUG(dout() << "(A) ... setting " << eInH << ".next = " << eStartH << std::endl);
+                DOINDEBUG(dout() << "(A) ... setting " << eEndH << ".next = " << eOutH << std::endl);
             }
             else
             {
@@ -226,7 +226,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         // --> Case (B): only the ingoing edge is part of a face
         else if (eIn.face && !eOut.face)
         {
-            DOINDEBUG(dout() << "Case (B) for " << vH << endl);
+            DOINDEBUG(dout() << "Case (B) for " << vH << std::endl);
 
             // We know that `v` has at least two outgoing edges (since
             // there is a face adjacent to it).
@@ -249,7 +249,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 
             auto eH = eHOpt.unwrap();
             
-            DOINDEBUG(dout() << "(B) ... setting " << eH << ".next = " << eOutH << endl);
+            DOINDEBUG(dout() << "(B) ... setting " << eH << ".next = " << eOutH << std::endl);
 
             if (previousNexts.find(eH.idx()) == previousNexts.end())
             {
@@ -261,10 +261,10 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         // --> Case (C): only the outgoing edge is part of a face
         else if (!eIn.face && eOut.face)
         {
-            DOINDEBUG(dout() << "Case (C) for " << vH << endl);
+            DOINDEBUG(dout() << "Case (C) for " << vH << std::endl);
             DOINDEBUG(
                 dout() << "(C) ... setting " << eInH << ".next = "
-                       << getE(eOut.twin).next << endl);
+                       << getE(eOut.twin).next << std::endl);
 
             previousNexts[eInH.idx()] = eIn.next.idx();
 
@@ -275,7 +275,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
         {
             DOINDEBUG(
                 dout() << "Case (D) for " << vH
-                       << "(eIn = " << eInH << ", eOut = " << eOutH << ")" << endl);
+                       << "(eIn = " << eInH << ", eOut = " << eOutH << ")" << std::endl);
 
             // Here, two fan blades around `v` will be connected. Both blades
             // need to be in the right order for this to work. The order is
@@ -337,10 +337,10 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
 
                 DOINDEBUG(
                     dout() << "(D) ... setting " << inactiveBladeEndH << ".next = "
-                           << getE(eInBladeEndH).next << endl);
+                           << getE(eInBladeEndH).next << std::endl);
                 DOINDEBUG(
                     dout() << "(D) ... setting " << eInBladeEndH << ".next = "
-                           << getE(eOut.twin).next << endl);
+                           << getE(eOut.twin).next << std::endl);
             }
         }
     }
@@ -407,7 +407,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
     // =======================================================================
     // = Debug output
     // =======================================================================
-    DOINDEBUG(dout() << "+------ Summary face " << newFaceH << " ------+" << endl);
+    DOINDEBUG(dout() << "+------ Summary face " << newFaceH << " ------+" << std::endl);
     auto startEdgeH = f.edge;
     auto eH = startEdgeH;
     int i = 0;
@@ -420,7 +420,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
             dout() << "| " << source.idx() << " ==> " << eH
                    << " ==> " << target.idx() << " [next: " << e.next
                    << ", twin-next: " << getE(e.twin).next << "]"
-                   << endl);
+                   << std::endl);
 
         eH = e.next;
         i++;
@@ -429,7 +429,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
             panic("bug in HEM: face with invalid internal next handles added");
         }
     } while (eH != startEdgeH);
-    DOINDEBUG(dout() << "+-----------------------------+" << endl);
+    DOINDEBUG(dout() << "+-----------------------------+" << std::endl);
     return newFaceH;
 }
 
@@ -881,7 +881,7 @@ EdgeSplitResult HalfEdgeMesh<BaseVecT>::splitEdge(EdgeHandle edgeH) {
 
     if(this->isBorderEdge(edgeH))
     {
-        std::cout << "splitEdge() cannot be called with border edge" << endl;
+        std::cout << "splitEdge() cannot be called with border edge" << std::endl;
         VertexHandle dummy(std::numeric_limits<int>::max());
         return EdgeSplitResult(dummy); //return a result with a dummy vector
     }
@@ -1219,7 +1219,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     // If there is a face above, collapse it.
     if (faceAboveH)
     {
-        DOINDEBUG(dout() << "... has face above" << endl);
+        DOINDEBUG(dout() << "... has face above" << std::endl);
 
         // The situations looks like this now:
         //
@@ -1271,7 +1271,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     }
     else
     {
-        DOINDEBUG(dout() << "... doesn't have a face above" << endl);
+        DOINDEBUG(dout() << "... doesn't have a face above" << std::endl);
 
         // The situation looks like this now:
         //
@@ -1303,7 +1303,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
 
     if (faceBelowH)
     {
-        DOINDEBUG(dout() << "... has face below" << endl);
+        DOINDEBUG(dout() << "... has face below" << std::endl);
 
         // The situation looks like this now:
         //
@@ -1357,7 +1357,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     }
     else
     {
-        DOINDEBUG(dout() << "!(faceBelow || hasTriangleBelow)" << endl);
+        DOINDEBUG(dout() << "!(faceBelow || hasTriangleBelow)" << std::endl);
 
         // The situation looks like this now:
         //
@@ -1390,7 +1390,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     }
 
     // Delete one vertex
-    DOINDEBUG(dout() << "Remove vertex: " << vertexToRemoveH << endl);
+    DOINDEBUG(dout() << "Remove vertex: " << vertexToRemoveH << std::endl);
     m_vertices.erase(vertexToRemoveH);
 
     // Delete edges and faces
@@ -1402,7 +1402,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
         // Actually delete edges and the face above
         DOINDEBUG(
             dout() << "Remove face above with edges: " << faceAboveH << ", "
-                << edgeToRemove0 << ", " << edgeToRemove1 << endl
+                << edgeToRemove0 << ", " << edgeToRemove1 << std::endl
         );
 
         m_edges.erase(edgeToRemove0);
@@ -1417,7 +1417,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
         // Actually delete edges and the faces
         DOINDEBUG(
             dout() << "Remove face below with edges: " << faceBelowH << ", "
-                << edgeToRemove0 << ", " << edgeToRemove1 << endl
+                << edgeToRemove0 << ", " << edgeToRemove1 << std::endl
         );
 
         m_edges.erase(edgeToRemove0);
@@ -1425,7 +1425,7 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
         m_faces.erase(faceBelowH.unwrap());
     }
 
-    DOINDEBUG(dout() << "Remove start edges: " << startEdgeH << " and " << startEdge.twin << endl);
+    DOINDEBUG(dout() << "Remove start edges: " << startEdgeH << " and " << startEdge.twin << std::endl);
     m_edges.erase(startEdgeH);
     m_edges.erase(startEdgeTwinH);
 
@@ -1464,7 +1464,7 @@ bool HalfEdgeMesh<BaseVecT>::isFlippable(EdgeHandle handle) const
     {
         if(getE(getE(getE(getE(hEH).next).twin).next).next.idx() == getE(getE(getE(getE(getE(hEH).next).next).twin).next).twin.idx())
         {
-            cout << "Hütchen detected" << endl;
+            std::cout << "Hütchen detected" << std::endl;
             return false;
         }
     }
@@ -1598,7 +1598,7 @@ void HalfEdgeMesh<BaseVecT>::flipEdge(EdgeHandle edgeH)
     }
     else
     {
-        //cout << "Edge not flippable!" << endl;
+        //std::cout << "Edge not flippable!" << std::endl;
         return;
     }
 }
@@ -1795,7 +1795,7 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
 
         if (!valid)
         {
-            cerr << "Broken Contour" << endl;
+            cerr << "Broken Contour" << std::endl;
             continue;
         }
 
@@ -1809,7 +1809,7 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
         contours.push_back(currContour);
     }
 
-    cout << timestamp << "Found " << contours.size() << " holes" << endl;
+    std::cout << timestamp << "Found " << contours.size() << " holes" << std::endl;
 
     string comment = timestamp.getElapsedTime() + "Removing holes";
     ProgressBar progress(contours.size(), comment);
@@ -1855,10 +1855,10 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
         }
         catch(PanicException exception)
         {
-            std::cerr << "Nope" << endl;
+            std::cerr << "Nope" << std::endl;
         }
     }
-    cout << endl;
+    std::cout << std::endl;
 }
 
 /**
@@ -1916,21 +1916,21 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
 {
     using std::endl;
 
-    cout << endl;
-    cout << "===============================" << endl;
-    cout << "===     Integrity check     ===" << endl;
-    cout << "===============================" << endl;
+    std::cout << std::endl;
+    std::cout << "===============================" << std::endl;
+    std::cout << "===     Integrity check     ===" << std::endl;
+    std::cout << "===============================" << std::endl;
 
     bool error = false;
 
     // First: let's visit all faces
-    cout << endl;
-    cout << "+--------------------+" << endl;
-    cout << "| Checking all faces |" << endl;
-    cout << "+--------------------+" << endl;
+    std::cout << std::endl;
+    std::cout << "+--------------------+" << std::endl;
+    std::cout << "| Checking all faces |" << std::endl;
+    std::cout << "+--------------------+" << std::endl;
     for (auto fH : m_faces)
     {
-        cout << "== Checking Face " << fH << "..." << endl;
+        std::cout << "== Checking Face " << fH << "..." << std::endl;
         auto startEdgeH = getF(fH).edge;
         auto eH         = startEdgeH;
         int edgeCount   = 0;
@@ -1939,13 +1939,13 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
             auto& e     = getE(eH);
             auto source = getE(e.twin).target;
             auto target = e.target;
-            cout << "   | " << eH << ": " << source << " ==> " << target << " [next: " << e.next
-                 << ", twin: " << e.twin << ", twin-face: " << getE(e.twin).face << "]" << endl;
+            std::cout << "   | " << eH << ": " << source << " ==> " << target << " [next: " << e.next
+                 << ", twin: " << e.twin << ", twin-face: " << getE(e.twin).face << "]" << std::endl;
 
             if (getE(eH).face != fH)
             {
-                cout << "!!!!! Face handle of " << eH << " is " << getE(eH).face << " instead of "
-                     << fH << "!!!!!" << endl;
+                std::cout << "!!!!! Face handle of " << eH << " is " << getE(eH).face << " instead of "
+                     << fH << "!!!!!" << std::endl;
                 error = true;
             }
 
@@ -1953,23 +1953,23 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
             edgeCount++;
             if (edgeCount >= 20)
             {
-                cout << "   ... stopping iteration after 20 edges." << endl;
+                std::cout << "   ... stopping iteration after 20 edges." << std::endl;
                 break;
             }
         } while (eH != startEdgeH);
 
         if (edgeCount != 3)
         {
-            cout << "!!!!! More than 3 edges reached from " << fH << endl;
+            std::cout << "!!!!! More than 3 edges reached from " << fH << std::endl;
             error = true;
         }
     }
 
     // Next, we try to reach all boundary edges
-    cout << endl;
-    cout << "+-------------------------------------+" << endl;
-    cout << "| Trying to walk on boundary edges... |" << endl;
-    cout << "+-------------------------------------+" << endl;
+    std::cout << std::endl;
+    std::cout << "+-------------------------------------+" << std::endl;
+    std::cout << "| Trying to walk on boundary edges... |" << std::endl;
+    std::cout << "+-------------------------------------+" << std::endl;
 
     DenseAttrMap<HalfEdgeHandle, bool> visited(m_edges.size(), false);
     for (auto startEdgeH : m_edges)
@@ -1982,29 +1982,29 @@ bool HalfEdgeMesh<BaseVecT>::debugCheckMeshIntegrity() const
         }
         visited[startEdgeH] = true;
 
-        cout << "== Starting at " << startEdgeH << endl;
+        std::cout << "== Starting at " << startEdgeH << std::endl;
 
         do
         {
             loopEdgeH          = getE(loopEdgeH).next;
             const auto twinH   = getE(loopEdgeH).twin;
             visited[loopEdgeH] = true;
-            cout << "   | -> " << loopEdgeH << " [twin: " << twinH << " | " << getE(twinH).target
-                 << " --> " << getE(loopEdgeH).target << "]" << endl;
+            std::cout << "   | -> " << loopEdgeH << " [twin: " << twinH << " | " << getE(twinH).target
+                 << " --> " << getE(loopEdgeH).target << "]" << std::endl;
         } while (loopEdgeH != startEdgeH);
     }
 
     // Next, we list all vertices that are not connected to anything yet
-    cout << endl;
-    cout << "+-------------------------------+" << endl;
-    cout << "| List of unconnected vertices: |" << endl;
-    cout << "+-------------------------------+" << endl;
+    std::cout << std::endl;
+    std::cout << "+-------------------------------+" << std::endl;
+    std::cout << "| List of unconnected vertices: |" << std::endl;
+    std::cout << "+-------------------------------+" << std::endl;
 
     for (auto vH : m_vertices)
     {
         if (!getV(vH).outgoing)
         {
-            cout << "== " << vH << endl;
+            std::cout << "== " << vH << std::endl;
         }
     }
 
@@ -2079,16 +2079,16 @@ template <typename BaseVecT>
 HalfEdgeHandle
     HalfEdgeMesh<BaseVecT>::findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH)
 {
-    DOINDEBUG(dout() << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl);
+    DOINDEBUG(dout() << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << std::endl);
     auto foundEdge = edgeBetween(fromH, toH);
     if (foundEdge)
     {
-        DOINDEBUG(dout() << ">> found: " << foundEdge << endl);
+        DOINDEBUG(dout() << ">> found: " << foundEdge << std::endl);
         return foundEdge.unwrap();
     }
     else
     {
-        DOINDEBUG(dout() << ">> adding pair..." << endl);
+        DOINDEBUG(dout() << ">> adding pair..." << std::endl);
         return addEdgePair(fromH, toH).first;
     }
 }
@@ -2097,17 +2097,17 @@ template <typename BaseVecT>
 HalfEdgeHandle
 HalfEdgeMesh<BaseVecT>::findOrCreateEdgeBetween(VertexHandle fromH, VertexHandle toH, bool& added)
 {
-  DOINDEBUG(dout() << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << endl);
+  DOINDEBUG(dout() << "# findOrCreateEdgeBetween: " << fromH << " --> " << toH << std::endl);
   auto foundEdge = edgeBetween(fromH, toH);
   if (foundEdge)
   {
-    DOINDEBUG(dout() << ">> found: " << foundEdge << endl);
+    DOINDEBUG(dout() << ">> found: " << foundEdge << std::endl);
     added = false;
     return foundEdge.unwrap();
   }
   else
   {
-    DOINDEBUG(dout() << ">> adding pair..." << endl);
+    DOINDEBUG(dout() << ">> adding pair..." << std::endl);
     added = true;
     return addEdgePair(fromH, toH).first;
   }
@@ -2176,12 +2176,12 @@ OptionalHalfEdgeHandle
 {
     // This function simply follows `next` and `twin` handles to visit all
     // edges around a vertex.
-    DOINDEBUG(dout() << ">> Trying to find an edge around " << vH << " ..." << endl);
+    DOINDEBUG(dout() << ">> Trying to find an edge around " << vH << " ..." << std::endl);
 
     auto& v = getV(vH);
     if (!v.outgoing)
     {
-        DOINDEBUG(dout() << ">> ... " << vH << " has no outgoing edge, returning none." << endl);
+        DOINDEBUG(dout() << ">> ... " << vH << " has no outgoing edge, returning none." << std::endl);
         return OptionalHalfEdgeHandle();
     }
 
@@ -2197,7 +2197,7 @@ OptionalHalfEdgeHandle HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(
 {
     // This function simply follows `next` and `twin` handles to visit all
     // edges around a vertex.
-    DOINDEBUG(dout() << ">> Trying to find an edge starting from " << startEdgeH << " ..." << endl);
+    DOINDEBUG(dout() << ">> Trying to find an edge starting from " << startEdgeH << " ..." << std::endl);
 
     OptionalHalfEdgeHandle out;
     circulateAroundVertex(startEdgeH, [&, this](auto ingoingEdgeH)
@@ -2205,7 +2205,7 @@ OptionalHalfEdgeHandle HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(
         DOINDEBUG(
             dout() << ">> ... >> LOOP: loop-" << ingoingEdgeH << " @ "
                << getE(ingoingEdgeH).face
-               << " with next: " << getE(ingoingEdgeH).next << endl
+               << " with next: " << getE(ingoingEdgeH).next << std::endl
         );
 
         if (pred(ingoingEdgeH))
@@ -2220,12 +2220,12 @@ OptionalHalfEdgeHandle HalfEdgeMesh<BaseVecT>::findEdgeAroundVertex(
     {
         DOINDEBUG(
             dout() << ">> ... we visited all edges once without success, returning none."
-                << endl
+                << std::endl
         );
     }
     else
     {
-        DOINDEBUG(dout() << ">> ... found " << out.unwrap() << "." << endl);
+        DOINDEBUG(dout() << ">> ... found " << out.unwrap() << "." << std::endl);
     }
 
     return out;

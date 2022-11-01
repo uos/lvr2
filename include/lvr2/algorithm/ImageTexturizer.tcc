@@ -68,7 +68,7 @@ TextureHandle ImageTexturizer<BaseVecT>::generateTexture(
     // Create texture
     Texture texture(index, sizeX, sizeY, 3, 1, this->m_texelSize);
 
-    cout << "images: " << images.size() << endl;
+    std::cout << "images: " << images.size() << std::endl;
 
     // load images if not already done
     if (!image_data_initialized)
@@ -123,11 +123,11 @@ TextureHandle ImageTexturizer<BaseVecT>::generateTexture(
 
 //                    img_data.extrinsics = tmp;
 
-                    //cout << "Projection: " << intrinsics << endl;
+                    //std::cout << "Projection: " << intrinsics << std::endl;
 
                     p = angle_rot * p;
 
-                    //cout << "P:" << p << endl;
+                    //std::cout << "P:" << p << std::endl;
 
                     double angle = p.dot(direction);
 
@@ -140,11 +140,11 @@ TextureHandle ImageTexturizer<BaseVecT>::generateTexture(
                         Eigen::Vector3d proj = intrinsics * p; // [s * u, s * v, s * 1] = s * [u, v, 1]
                         proj /= proj[2];                       //  (s * [u, v, 1] ) / s
 
-                        //cout << "Undist: " << proj[0] << " " << proj[1] << endl;
+                        //std::cout << "Undist: " << proj[0] << " " << proj[1] << std::endl;
 
                         undistorted_to_distorted_uv(proj[0], proj[1], img_data);
 
-                        //cout << "Dist:   " << proj[0] << " " << proj[1] << endl;
+                        //std::cout << "Dist:   " << proj[0] << " " << proj[1] << std::endl;
 
                         // TODO fix negated logic...
                         // if (proj[0] < 0 || std::floor(proj[0]) >= img_data.data.cols ||
@@ -200,7 +200,7 @@ void ImageTexturizer<BaseVecT>::init_image_data()
         {
             ImageData<BaseVecT> image_data;
 
-            cout << "INIT ADD: " << img.image_file.string() << endl;
+            std::cout << "INIT ADD: " << img.image_file.string() << std::endl;
 
             //load image
             image_data.data = cv::imread(img.image_file.string(), CV_LOAD_IMAGE_COLOR);

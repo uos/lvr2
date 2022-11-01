@@ -231,10 +231,10 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         std::string filePath = selectedFile.generic_path().string();
 
         if(selectedFile.extension().string() != ".h5") {
-            cout << timestamp << "[[LVR2 Reconstruct] IO Error: Unable to parse " << options.getInputFileName() << endl;
+            std::cout << timestamp << "[[LVR2 Reconstruct] IO Error: Unable to parse " << options.getInputFileName() << std::endl;
             return nullptr;
         }
-        cout << timestamp << "[LVR2 Reconstruct] Loading h5 scanproject from " << filePath << endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Loading h5 scanproject from " << filePath << std::endl;
 
         // create hdf5 kernel and schema 
         FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
@@ -372,7 +372,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Create point set surface object
     if(pcm_name == "PCL")
     {
-        cout << timestamp << "[LVR2 Reconstruct] Using PCL as point cloud manager is not implemented yet!" << endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Using PCL as point cloud manager is not implemented yet!" << std::endl;
         panic_unimplemented("PCL as point cloud manager");
     }
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN" || pcm_name == "LVR2")
@@ -402,8 +402,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     }
     else
     {
-        cout << timestamp << "[LVR2 Reconstruct] Unable to create PointCloudManager." << endl;
-        cout << timestamp << "[LVR2 Reconstruct] Unknown option '" << pcm_name << "'." << endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Unable to create PointCloudManager." << std::endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Unknown option '" << pcm_name << "'." << std::endl;
         return nullptr;
     }
 
@@ -465,7 +465,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     }
     else
     {
-        cout << timestamp << "[LVR2 Reconstruct] Using given normals." << endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Using given normals." << std::endl;
     }
 
     return surface;
@@ -487,7 +487,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     // Fail safe check
     if(decompositionType != "MT" && decompositionType != "MC" && decompositionType != "DMC" && decompositionType != "PMC" && decompositionType != "SF" )
     {
-        cout << "[LVR2 Reconstruct] Unsupported decomposition type " << decompositionType << ". Defaulting to PMC." << endl;
+        std::cout << "[LVR2 Reconstruct] Unsupported decomposition type " << decompositionType << ". Defaulting to PMC." << std::endl;
         decompositionType = "PMC";
     }
 
@@ -719,7 +719,7 @@ void optimizeMesh(reconstruct::Options options, BaseMeshT& mesh)
     // =======================================================================
     if(options.getDanglingArtifacts())
     {
-        cout << timestamp << "[LVR2 Reconstruct] Removing dangling artifacts" << endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Removing dangling artifacts" << std::endl;
         removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
     }
 
@@ -934,7 +934,7 @@ int main(int argc, char** argv)
         surface = loadPointCloud<Vec>(options);
         if (!surface)
         {
-            cout << "[LVR2 Reconstruct] Failed to create pointcloud. Exiting." << endl;
+            std::cout << "[LVR2 Reconstruct] Failed to create pointcloud. Exiting." << std::endl;
             exit(EXIT_FAILURE);
         }
         
@@ -1062,7 +1062,7 @@ int main(int argc, char** argv)
     {
         m->m_pointCloud = surface->pointBuffer();
 
-        cout << "REPAIR SAVING" << endl;
+        std::cout << "REPAIR SAVING" << std::endl;
     }
 
     for(const std::string& output_filename : options.getOutputFileNames())
@@ -1072,7 +1072,7 @@ int main(int argc, char** argv)
         boost::filesystem::path outputFile = outputDir/selectedFile;
         std::string extension = selectedFile.extension().string();
 
-        cout << timestamp << "[LVR2 Reconstruct] Saving mesh to "<< output_filename << "." << endl;
+        std::cout << timestamp << "[LVR2 Reconstruct] Saving mesh to "<< output_filename << "." << std::endl;
 
         if (extension == ".h5")
         {
@@ -1113,7 +1113,7 @@ int main(int argc, char** argv)
         //map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
     }
 
-    cout << timestamp << "[[LVR2 Reconstruct] Program end." << endl;
+    std::cout << timestamp << "[[LVR2 Reconstruct] Program end." << std::endl;
 
     return 0;
 }
