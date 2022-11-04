@@ -349,7 +349,7 @@ void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage, float redu
 
     if (allowedMemUsage == AllowedMemoryUsage::Moderate)
     {
-        numThreads = std::max(numThreads / 8, (size_t)1);
+        numThreads = std::max(numThreads / 4, (size_t)1);
     }
 
     std::vector<HLODTree*> canBeSimplified;

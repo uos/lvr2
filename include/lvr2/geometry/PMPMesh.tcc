@@ -619,15 +619,14 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
 
     m_mesh.remove_edge_property(visitedEdges);
 
-    cout << timestamp << "Found " << contours.size() << " holes" << endl;
-
     if (contours.empty())
     {
         return;
     }
 
-    string comment = timestamp.getElapsedTime() + "Removing holes";
-    ProgressBar progress(contours.size(), comment);
+    std::stringstream ss;
+    ss << timestamp << "[PMPMesh] Filling " << contours.size() << " holes";
+    ProgressBar progress(contours.size(), ss.str());
 
     pmp::SurfaceHoleFilling holeFilling(m_mesh);
     size_t filled = 0;
@@ -737,8 +736,7 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
             }
         }
     }
-    cout << endl;
-    cout << timestamp << "Filled " << filled << " / " << contours.size() << " holes" << endl;
+    std::cout << "\r" << timestamp << "[PMPMesh] Filled " << filled << " / " << contours.size() << " holes         " << endl;
 }
 
 template<typename BaseVecT>

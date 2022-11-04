@@ -51,9 +51,9 @@ std::istream& operator>>(std::istream& in, LSROutput& output)
         output = LSROutput::BigMesh;
     else if (token == "chunks" || token == "chunksply")
         output = LSROutput::ChunksPly;
-    else if (token == "chunkshdf5")
+    else if (token == "chunkshdf5" || token == "hdf5")
         output = LSROutput::ChunksHdf5;
-    else if (token == "3dtiles" || token == "tiles3d")
+    else if (token == "3dtiles" || token == "tiles3d" || token == "tiles")
 #ifdef LVR2_USE_3DTILES
         output = LSROutput::Tiles3d;
 #else
@@ -123,7 +123,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("partMethod", value<uint>(&m_options.partMethod)->default_value(m_options.partMethod),
      "Option to change the partition-process to a gridbase partition (0 = kd-Tree; 1 = VGrid)")
 
-    ("chunkSize", value<float>(&m_options.bgVoxelSize)->default_value(m_options.bgVoxelSize),
+    ("chunkSize,c", value<float>(&m_options.bgVoxelSize)->default_value(m_options.bgVoxelSize),
      "Set the chunksize for the virtual grid.")
 
     ("noExtrude,E", bool_switch(&noExtrude),
@@ -141,7 +141,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("optimizePlanes,o", bool_switch(&m_options.optimizePlanes),
      "Shift all triangle vertices of a cluster onto their shared plane.")
 
-    ("planeNormalThreshold,pnt", value<float>(&m_options.planeNormalThreshold)->default_value(m_options.planeNormalThreshold),
+    ("planeNormalThreshold,p", value<float>(&m_options.planeNormalThreshold)->default_value(m_options.planeNormalThreshold),
      "Normal threshold for plane optimization. Default 0.85 equals about 3 degrees.")
 
     ("planeIterations", value<uint>(&m_options.planeIterations)->default_value(m_options.planeIterations),
@@ -162,13 +162,13 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("kn", value<uint>(&m_options.kn)->default_value(m_options.kn),
      "Size of k-neighborhood used for normal estimation.")
 
-    ("minPlaneSize,mp", value<uint>(&m_options.minPlaneSize)->default_value(m_options.minPlaneSize),
+    ("minPlaneSize,m", value<uint>(&m_options.minPlaneSize)->default_value(m_options.minPlaneSize),
      "Minimum value for plane optimzation.")
 
     ("retesselate,t", bool_switch(&m_options.retesselate),
      "Retesselate regions that are in a regression plane. Implies --optimizePlanes.")
 
-    ("lineFusionThreshold,lft", value<float>(&m_options.lineFusionThreshold)->default_value(m_options.lineFusionThreshold),
+    ("lineFusionThreshold,l", value<float>(&m_options.lineFusionThreshold)->default_value(m_options.lineFusionThreshold),
      "Threshold for fusing line segments while tesselating.")
 
     ("threads", value<int>(&m_numThreads)->default_value(m_numThreads),
