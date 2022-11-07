@@ -3,31 +3,50 @@
 #include "lbvh.cuh"
 
 #include <stdio.h>
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <string>
 #include <thrust/sort.h>
+#include <nvrtc.h>
+#include <cuda.h>
 
 #include "GPUErrorCheck.h"
 
 using namespace lbvh;
 
 __host__
-LBVHIndex::LBVHIndex(int leaf_size, bool sort_queries, bool compact, bool shrink_to_fit)
+LBVHIndex::LBVHIndex()
 {
-    m_num_objects = 0;
-    m_num_nodes = 0;
-    m_leaf_size = leaf_size;
-    m_sort_queries = sort_queries;
-    m_compact = compact;
-    m_shrink_to_fit = shrink_to_fit;
+    this->m_num_objects = 0;
+    this->m_num_nodes = 0;
+    this->m_leaf_size = false;
+    this->m_sort_queries = false;
+    this->m_compact = false;
+    this->m_shrink_to_fit = false;
+    
+}
+
+__host__
+LBVHIndex::LBVHIndex(int leaf_size, bool sort_queries, 
+                    bool compact, bool shrink_to_fit)
+{
+    this->m_num_objects = 0;
+    this->m_num_nodes = 0;
+    this->m_leaf_size = leaf_size;
+    this->m_sort_queries = sort_queries;
+    this->m_compact = compact;
+    this->m_shrink_to_fit = shrink_to_fit;
 
 }
 
 __host__
 void LBVHIndex::build(float* points, size_t num_points)
 {
-    m_points = points;
+    this->m_points = points;
 
-    m_num_objects = num_points;
-    m_num_nodes = 2 * m_num_objects - 1;
+    this->m_num_objects = num_points;
+    this->m_num_nodes = 2 * m_num_objects - 1;
 
     // initialize AABBs
     AABB* aabbs = (struct AABB*) malloc(sizeof(struct AABB) * num_points);
@@ -45,6 +64,8 @@ void LBVHIndex::build(float* points, size_t num_points)
     // Get the extent
     AABB* extent = (struct AABB*) malloc(sizeof(struct AABB)); 
     getExtent(extent, points, m_num_objects);
+
+    this->m_extent = extent;
 
     AABB* d_extent;
     gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
@@ -93,7 +114,9 @@ void LBVHIndex::build(float* points, size_t num_points)
     // thrust::sort_by_key(keys, keys + num_points, values);
     thrust::sort_by_key(h_morton_codes, h_morton_codes + num_points, 
                         aabbs);
-     gpuErrchk(cudaPeekAtLastError());
+    gpuErrchk(cudaPeekAtLastError());
+
+    this->m_sorted_indices = h_morton_codes;
 
     // for(int i = 0; i < num_points - 1; i++)
     // {
@@ -147,29 +170,96 @@ void LBVHIndex::build(float* points, size_t num_points)
 
     cudaMemcpy(nodes, d_nodes, m_num_nodes * sizeof(BVHNode), 
                 cudaMemcpyDeviceToHost);
-
-    for(int i = 0; i < m_num_nodes; i++)
-    {
-        printf("%u\n", nodes[i].range_left);
-    }
-
+    
     gpuErrchk(cudaPeekAtLastError());
+
+    this->m_nodes = nodes;
 
     gpuErrchk(cudaMemcpy(root_node, d_root_node, 
             sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    
+    // TODO: Root node might be wrong?
+    this->m_root_node = root_node;
+
+    printf("Root: %u \n", *this->m_root_node);
 
     gpuErrchk(cudaFree(d_root_node));
     gpuErrchk(cudaFree(d_sorted_aabbs));
     gpuErrchk(cudaFree(d_sorted_morton_codes));
     gpuErrchk(cudaFree(d_nodes));
     
-    free(root_node);
-    free(nodes);
-    free(aabbs);
-    free(extent);
-    free(h_morton_codes);
+    // free(root_node);
+    // free(nodes);
+    // free(aabbs);
+    // free(extent);
+    // free(h_morton_codes);
 
     return;
+}
+
+__host__
+void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* args, 
+                    float* points_raw, size_t num_points,
+                    const char* kernel)
+{
+    // const BVHNode *nodes,
+    
+    // const float3* __restrict__ points,
+    float3* points = (float3*) malloc(sizeof(float3) * num_points);
+    for(int i = 0; i < num_points; i++)
+    {
+        points[i].x = points_raw[3 * i + 0];
+        points[i].y = points_raw[3 * i + 1];
+        points[i].z = points_raw[3 * i + 2];
+    }
+    
+    // TODO: Implement sorting of indices
+    // const unsigned int* __restrict__ sorted_indices,
+    unsigned int* sorted_indices = (unsigned int*) 
+                malloc(sizeof(unsigned int) * num_queries);
+
+    for(int i = 0; i < num_queries; i++)
+    {
+        sorted_indices[i] = i;
+    }
+
+    // const unsigned int root_index,
+    // = this->m_root_node
+
+    // const float max_radius,
+    // TODO: Implement radius
+    float max_radius = FLT_MAX;
+    
+    // const float3* __restrict__ query_points,
+    float3* query_points = (float3*) malloc(sizeof(float3) * num_points);
+    for(int i = 0; i < num_points; i++)
+    {
+        query_points[i].x = queries_raw[3 * i + 0];
+        query_points[i].y = queries_raw[3 * i + 1];
+        query_points[i].z = queries_raw[3 * i + 2];
+    }
+
+    // const unsigned int* __restrict__ sorted_queries,
+    // = sorted_indices
+
+    // const unsigned int N,
+    // = num_queries
+    
+    // // custom parameters
+    // unsigned int* indices_out,
+    // float* distances_out,
+    // unsigned int* n_neighbors_out
+
+    // Get the ptx from the query_knn_kernels
+    std::string ptx;
+
+    // const char** log_string;
+
+    getPtxFromCuString(ptx, "query_knn_kernels", kernel, NULL, NULL);
+
+    std::cout << "PTX kernel: " << std::endl;
+    std::cout << ptx << std::endl;
+
 }
 
 // Get the extent of the points 
@@ -227,4 +317,112 @@ AABB* LBVHIndex::getExtent(AABB* extent, float* points, size_t num_points)
     extent->max.z = max_z;
     
     return extent;
+}
+
+// #define NVRTC_CHECK_ERROR(func)                                                                                      \
+//     do                                                                                                                 \
+//     {                                                                                                                  \
+//       nvrtcResult code = func;                                                                                         \
+//       if (code != NVRTC_SUCCESS)                                                                                       \
+//       {                                                                                                                \
+//         std::cout << "Error in NVRTC" << std::string(nvrtcGetErrorString(code));                                       \
+//         throw Exception("ERROR: " __FILE__ "(" LINE_STR "): " + std::string(nvrtcGetErrorString(code)));               \
+//       }                                                                                                                \
+//     } while (0)
+
+#define NVRTC_SAFE_CALL(x)                                        \
+  do {                                                            \
+    nvrtcResult result = x;                                       \
+    if (result != NVRTC_SUCCESS) {                                \
+      std::cerr << "\nerror: " #x " failed with error "           \
+                << nvrtcGetErrorString(result) << '\n';           \
+      exit(1);                                                    \
+    }                                                             \
+  } while(0)
+
+__host__
+std::string LBVHIndex::getSampleDir()
+{
+    // TODO: Don't use hard coded path
+    return std::string("/home/till/Develop/src/tools/lvr2_cuda_normals2/src");
+}
+
+__host__                            // Rückgabe String // Bsp: square_kernel.cu  // Inhalt d Datei     //Name Programm = NULL
+void LBVHIndex::getPtxFromCuString( std::string& ptx, const char* sample_name, const char* cu_source, const char* name, const char** log_string )
+{
+    // Create program
+    nvrtcProgram prog;
+    NVRTC_SAFE_CALL( nvrtcCreateProgram( &prog, cu_source, sample_name, 0, NULL, NULL ) );
+
+    // Gather NVRTC options
+    std::string cuda_include = std::string("-I") + std::string(CUDA_INCLUDE_DIRS);
+    std::vector<const char*> options = {
+        "-I/home/till/Develop/src/tools/lvr2_cuda_normals2/include",
+        cuda_include.c_str()
+    };
+
+    const std::string base_dir = getSampleDir();
+
+    // // Set sample dir as the primary include path
+    // std::string sample_dir;
+    // if( sample_name )
+    // {
+    //     sample_dir = std::string( "-I" ) + base_dir + '/' + sample_name;
+    //     options.push_back( sample_dir.c_str() );
+    // }
+
+    // Collect include dirs
+    // std::vector<std::string> include_dirs;
+    // const char*              abs_dirs[] = {SAMPLES_ABSOLUTE_INCLUDE_DIRS};
+    // const char*              rel_dirs[] = {SAMPLES_RELATIVE_INCLUDE_DIRS};
+
+    // for( const char* dir : abs_dirs )
+    // {
+    //     include_dirs.push_back( std::string( "-I" ) + dir );
+    // }
+    // for( const char* dir : rel_dirs )
+    // {
+    //     include_dirs.push_back( "-I" + base_dir + '/' + dir );
+    // }
+    // for( const std::string& dir : include_dirs)
+    // {
+    //     options.push_back( dir.c_str() );
+    // }
+
+    // Collect NVRTC options
+    // const char*  compiler_options[] = {};
+    // std::copy( compiler_options , compiler_options + sizeof(compiler_options) / sizeof(char*) , std::back_inserter( options ) );
+    
+    // std::cout << (int) options.size() << std::endl;
+    // std::cout << *options.data() << std::endl;
+
+
+    // JIT compile CU to PTX
+    const nvrtcResult compileRes = nvrtcCompileProgram( prog, (int)options.size(), options.data() );
+    // const char *options2[] = {"-I/home/till/Develop/src/tools/lvr2_cuda_normals2/src"};
+    // const nvrtcResult compileRes = nvrtcCompileProgram( prog, 1, options );
+    std::cout << compileRes << std::endl;
+    // Retrieve log output
+    size_t log_size = 0;
+    NVRTC_SAFE_CALL( nvrtcGetProgramLogSize( prog, &log_size ) );
+
+    char* log = new char[log_size];
+    if( log_size > 1 )
+    {
+        NVRTC_SAFE_CALL( nvrtcGetProgramLog( prog, log ) );
+        // if( log_string )
+        //     *log_string = log.c_str();
+    }
+    
+    if( compileRes != NVRTC_SUCCESS )
+        throw std::runtime_error( "NVRTC Compilation failed.\n");
+
+    // Retrieve PTX code
+    size_t ptx_size = 0;
+    NVRTC_SAFE_CALL( nvrtcGetPTXSize( prog, &ptx_size ) );
+    ptx.resize( ptx_size );
+    NVRTC_SAFE_CALL( nvrtcGetPTX( prog, &ptx[0] ) );
+
+    // Cleanup
+    NVRTC_SAFE_CALL( nvrtcDestroyProgram( &prog ) );
 }

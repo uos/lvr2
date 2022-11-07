@@ -1,6 +1,9 @@
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <bitset>
+#include <vector>
+#include <fstream>
+#include <string>
 
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Timestamp.hpp"
@@ -17,6 +20,15 @@ void floatToBinary(float f)
         std::cout << std::bitset<8>(bits[n]);
     std::cout << std::endl;
     
+}
+
+std::string read_kernel(std::string file_path)
+{
+    std::ifstream in(file_path);
+    std::string contents((std::istreambuf_iterator<char>(in)),
+        std::istreambuf_iterator<char>());
+
+    return contents;
 }
 
 int main(int argc, char** argv)
@@ -63,7 +75,32 @@ int main(int argc, char** argv)
     // // Sorting key-value pairs. point_IDs holds the sorted indices
     // radix_sort(mortonCodes, point_IDs, num_points);
     
-    build_lbvh(points_raw, num_points);
+    // Read in query_knn_kernels.cu
+    
+    std::string kernel_str;
+
+    kernel_str = read_kernel("../src/tools/lvr2_cuda_normals2/src/query_knn_kernels.cu");
+    
+    // size_t kernel_size = kernel_str.size();
+    const char* kernel = kernel_str.c_str();
+
+    std::cout << "Cuda Kernel: " << std::endl;
+    std::cout << kernel << std::endl;
+
+
+    // Create test queries
+    
+    size_t num_queries = 1;
+
+    float* queries = (float*) malloc(sizeof(float) * 3);
+    queries[0] = 1.5f;
+    queries[1] = 1.5f;
+    queries[2] = 1.5f;
+
+    float* args = (float*) malloc(sizeof(float));
+    args[0] = 1.0f;
+
+    build_lbvh(points_raw, num_points, queries, num_queries, args, kernel);
 
     // Save the new model as test.ply
     ModelFactory::saveModel(model, "test.ply");
@@ -71,7 +108,6 @@ int main(int argc, char** argv)
     // free(normals_raw);
     // free(mortonCodes);
     // free(point_IDs);
-
 
     return 0;
 }

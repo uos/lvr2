@@ -22,14 +22,22 @@ set(LVR2_CUDA_NORMAL2_DEPS
 )
 
 # PURE CUDA
+message(STATUS "AAA ${CUDA_INCLUDE_DIRS}")
+
+add_definitions(-DCUDA_INCLUDE_DIRS="${CUDA_INCLUDE_DIRS}")
 cuda_add_library(kernels_device 
                 src/kernels_device.cu
                 src/morton_code.cu
                 src/LBVHIndex.cu
                 src/lbvh_kernels.cu
+                #src/query_knn_kernels.cu
+                #src/query_knn.cu
+                #src/query.cu
                 )
 target_link_libraries(kernels_device 
     ${CUDA_LIBRARIES}
+    /usr/local/cuda/lib64/libnvrtc.so
+    #TODO Find nvrtc library
 )
 
 # HEADER HOST - CODE: CUDA calls
