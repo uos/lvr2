@@ -8,7 +8,7 @@ boost::shared_array<T> DataIO::load()
     
     movePosition(sizeof(Header) + m_header.JSON_BYTES);
 
-    std::cout << "Load " << m_header.DATA_BYTES / sizeof(T) << " elements " << std::endl;
+    // std::cout << "Load " << m_header.DATA_BYTES / sizeof(T) << " elements " << std::endl;
     ret.reset(new T[m_header.DATA_BYTES / sizeof(T)]);
     m_file.read(reinterpret_cast<char*>(&ret[0]), m_header.DATA_BYTES);
     m_pos += m_header.DATA_BYTES;
@@ -44,7 +44,7 @@ void DataIO::save(
     header.MAGIC[1] = 'a';
     header.MAGIC[2] = 't';
     header.MAGIC[3] = 'a';
-    header.VERSION = 1;
+    header.VERSION = version();
 
     header.DATA_BYTES = sizeof(T);
     for(size_t i=0; i<shape.size(); i++)
