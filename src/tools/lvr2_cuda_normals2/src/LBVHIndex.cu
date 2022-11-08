@@ -15,7 +15,6 @@
 
 using namespace lbvh;
 
-__host__
 LBVHIndex::LBVHIndex()
 {
     this->m_num_objects = 0;
@@ -27,7 +26,6 @@ LBVHIndex::LBVHIndex()
     
 }
 
-__host__
 LBVHIndex::LBVHIndex(int leaf_size, bool sort_queries, 
                     bool compact, bool shrink_to_fit)
 {
@@ -40,7 +38,6 @@ LBVHIndex::LBVHIndex(int leaf_size, bool sort_queries,
 
 }
 
-__host__
 void LBVHIndex::build(float* points, size_t num_points)
 {
     this->m_points = points;
@@ -197,7 +194,6 @@ void LBVHIndex::build(float* points, size_t num_points)
     return;
 }
 
-__host__
 void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* args, 
                     float* points_raw, size_t num_points,
                     const char* kernel)
@@ -264,7 +260,6 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
 
 // Get the extent of the points 
 // (minimum and maximum values in each dimension)
-__host__ 
 AABB* LBVHIndex::getExtent(AABB* extent, float* points, size_t num_points)
 {
     float min_x = INT_MAX;
@@ -346,8 +341,7 @@ std::string LBVHIndex::getSampleDir()
     // TODO: Don't use hard coded path
     return std::string("/home/till/Develop/src/tools/lvr2_cuda_normals2/src");
 }
-
-__host__                            // Rückgabe String // Bsp: square_kernel.cu  // Inhalt d Datei     //Name Programm = NULL
+                         // Rückgabe String // Bsp: square_kernel.cu  // Inhalt d Datei     //Name Programm = NULL
 void LBVHIndex::getPtxFromCuString( std::string& ptx, const char* sample_name, const char* cu_source, const char* name, const char** log_string )
 {
     // Create program
@@ -358,44 +352,17 @@ void LBVHIndex::getPtxFromCuString( std::string& ptx, const char* sample_name, c
     std::string cuda_include = std::string("-I") + std::string(CUDA_INCLUDE_DIRS);
     std::vector<const char*> options = {
         "-I/home/till/Develop/src/tools/lvr2_cuda_normals2/include",
-        cuda_include.c_str()
+        cuda_include.c_str(),
+        "-std=c++17",
+        "-DK=5"
     };
+    //      "-I/usr/local/cuda/include",
+    //      "-I/usr/local/include",
+    //      "-I/usr/include/x86_64-linux-gnu",
+    //      "-I/usr/include",
+    //      "-I/home/amock/workspaces/lvr/Develop/src/tools/lvr2_cuda_normals2/include"
 
     const std::string base_dir = getSampleDir();
-
-    // // Set sample dir as the primary include path
-    // std::string sample_dir;
-    // if( sample_name )
-    // {
-    //     sample_dir = std::string( "-I" ) + base_dir + '/' + sample_name;
-    //     options.push_back( sample_dir.c_str() );
-    // }
-
-    // Collect include dirs
-    // std::vector<std::string> include_dirs;
-    // const char*              abs_dirs[] = {SAMPLES_ABSOLUTE_INCLUDE_DIRS};
-    // const char*              rel_dirs[] = {SAMPLES_RELATIVE_INCLUDE_DIRS};
-
-    // for( const char* dir : abs_dirs )
-    // {
-    //     include_dirs.push_back( std::string( "-I" ) + dir );
-    // }
-    // for( const char* dir : rel_dirs )
-    // {
-    //     include_dirs.push_back( "-I" + base_dir + '/' + dir );
-    // }
-    // for( const std::string& dir : include_dirs)
-    // {
-    //     options.push_back( dir.c_str() );
-    // }
-
-    // Collect NVRTC options
-    // const char*  compiler_options[] = {};
-    // std::copy( compiler_options , compiler_options + sizeof(compiler_options) / sizeof(char*) , std::back_inserter( options ) );
-    
-    // std::cout << (int) options.size() << std::endl;
-    // std::cout << *options.data() << std::endl;
-
 
     // JIT compile CU to PTX
     const nvrtcResult compileRes = nvrtcCompileProgram( prog, (int)options.size(), options.data() );
@@ -412,6 +379,7 @@ void LBVHIndex::getPtxFromCuString( std::string& ptx, const char* sample_name, c
         NVRTC_SAFE_CALL( nvrtcGetProgramLog( prog, log ) );
         // if( log_string )
         //     *log_string = log.c_str();
+        std::cout << log << std::endl;
     }
     
     if( compileRes != NVRTC_SUCCESS )
