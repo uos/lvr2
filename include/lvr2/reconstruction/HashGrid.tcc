@@ -73,7 +73,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(float resolution, BoundingBox<BaseVecT> bound
 
     if (!m_boundingBox.isValid())
     {
-        std::cout << timestamp << "[HashGrid] Warning: Malformed BoundingBox." << std::endl;
+        lvr2::logout::get() << lvr2::warning << "[HashGrid] Malformed BoundingBox." << lvr2::endl;
     }
 
     BoxT::m_voxelsize = m_voxelsize;
@@ -143,13 +143,14 @@ HashGrid<BaseVecT, BoxT>::HashGrid(const std::vector<PointBufferPtr>& chunks,
     Vector3i index;
     BaseVecT innerChunkMin = boundingBox.getMin();
     BaseVecT innerChunkMax = boundingBox.getMax();
-    std::unique_ptr<ProgressBar> progress = nullptr;
+    std::unique_ptr<lvr2::Monitor> progress = nullptr;
+
     if (chunks.size() > 1)
     {
-        std::cout << timestamp.getElapsedTime() << "[HashGrid] Number of Chunks: "<< chunks.size()<< std::endl;
-        std::string comment = timestamp.getElapsedTime() + "[HashGrid] Loading grid ";
-        progress.reset(new ProgressBar(chunks.size(), comment));
+        lvr2::logout::get() << lvr2::info << "[HashGrid] Number of Chunks: "<< chunks.size() << lvr2::endl;
+        progress.reset(new lvr2::Monitor(lvr2::LogLevel::info, "[HashGrid] Loading grid", chunks.size()));
     }
+
     for (size_t i = 0; i < chunks.size(); i++)
     {
         auto& chunk = chunks.at(i);
@@ -184,10 +185,11 @@ HashGrid<BaseVecT, BoxT>::HashGrid(const std::vector<PointBufferPtr>& chunks,
         }
 
         if(progress)
+        {
             ++(*progress);
+        }
     }
-    if(progress)
-        std::cout << std::endl;
+    lvr2::logout::get() << lvr2::endl;
 
     fillNeighbors();
 }

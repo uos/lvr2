@@ -32,7 +32,7 @@
  *      Author: Isaak Mitschke
  */
 
-#include "lvr2/util/Timestamp.hpp"
+#include "lvr2/util/Logging.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 
 namespace lvr2
@@ -130,18 +130,10 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
 
                 if (leftbb.getXSize() == 0 || rightbb.getXSize() == 0)
                 {
-                    /*
-                    std::cout << leftbb << std::endl;
-                    std::cout << rightbb << std::endl;
-                    std::cerr
-                        << "Error: Requested Maximum Leafsize is Smaller than a points in a
-                    voxel(X)"
-                        << std::endl;
-                    exit(1);
-                    */
                     ignoreSplit = true;
-                    std::cout << "[BigGridKdTree] WARNING: m_numPoints + numPoints = " << m_numPoints + numPoints
-                              << " > " << s_maxNodePoints << ". Ignoring x-split" << std::endl;
+                    lvr2::logout::get() << lvr2::warning 
+                        << "[BigGridKdTree] WARNING: m_numPoints + numPoints = " << m_numPoints + numPoints
+                        << " > " << s_maxNodePoints << ". Ignoring x-split" << lvr2::endl;
                 }
             }
             // Split at Y-Axis
@@ -169,8 +161,10 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                     exit(1);
                     */
                     ignoreSplit = true;
-                    std::cout << "[BigGridKdTree] WARNING: m_numPoints + numPoints = " << m_numPoints + numPoints
-                              << " > " << s_maxNodePoints << ". Ignoring y-split" << std::endl;
+                    lvr2::logout::get() 
+                        << lvr2::warning  << "[BigGridKdTree] m_numPoints + numPoints = " 
+                        << m_numPoints + numPoints
+                        << " > " << s_maxNodePoints << ". Ignoring y-split" << lvr2::endl;
                 }
             }
             // Split at Z-Axis
@@ -197,19 +191,18 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                     exit(1);
                     */
                     ignoreSplit = true;
-                    std::cout << "[BigGridKdTree] WARNING: m_numPoints + numPoints = " << m_numPoints + numPoints
-                              << " > " << s_maxNodePoints << ". Ignoring z-split" << std::endl;
+                    lvr2::logout::get() << lvr2::warning 
+                        << "[BigGridKdTree] m_numPoints + numPoints = " 
+                        << m_numPoints + numPoints
+                        << " > " << s_maxNodePoints << ". Ignoring z-split" << lvr2::endl;
                 }
             }
 
             if (!ignoreSplit)
             {
-                // std::cout << lvr2::timestamp << " rsize start "  << std::endl;
                 size_t rightSize = m_grid->getSizeofBox(rightbb);
-                // std::cout << lvr2::timestamp << " lsize start "  << std::endl;
                 size_t leftSize = m_grid->getSizeofBox(leftbb);
 
-                // std::cout << lvr2::timestamp << " size_end "  << std::endl;
                 BigGridKdTree* leftChild = new BigGridKdTree(leftbb, leftSize);
                 BigGridKdTree* rightChild = new BigGridKdTree(rightbb, rightSize);
                 m_children.push_back(leftChild);

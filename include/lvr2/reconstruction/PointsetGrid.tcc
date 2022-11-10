@@ -32,6 +32,8 @@
  *      Author: twiemann
  */
 
+#include "lvr2/util/Logging.hpp"
+
 namespace lvr2
 {
 
@@ -49,7 +51,7 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
     // Get indexed point buffer pointer
     auto numPoint = m_surface->pointBuffer()->numPoints();
 
-    std::cout << timestamp << "Creating grid" << std::endl;
+    lvr2::logout::get() << lvr2::info << "[PointsetSurface] Creating grid" << lvr2::endl;
 
     FloatChannel pts = *(m_surface->pointBuffer()->getFloatChannel("points"));
 
@@ -101,16 +103,14 @@ template<typename BaseVecT, typename BoxT>
 void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
 {
     // Status message output
-    string comment = timestamp.getElapsedTime() + "Calculating distance values ";
-    ProgressBar progress(this->m_queryPoints.size(), comment);
-
-    Timestamp ts;
+    lvr2::Monitor progress(lvr2::LogLevel::info, "Calculating distance values", this->m_queryPoints.size());
 
     // Calculate a distance value for each query point
 #ifndef MSVC
     #pragma omp parallel for schedule(dynamic, 16)
 #endif
-    for( int i = 0; i < (int)this->m_queryPoints.size(); i++){
+    for(size_t i = 0; i < this->m_queryPoints.size(); i++)
+    {
         float projectedDistance;
         float euklideanDistance;
 
@@ -126,7 +126,6 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
         this->m_queryPoints[i].m_distance = projectedDistance;
         ++progress;
     }
-    std::cout << std::endl;
 
     // remove cells with invalid corners
     auto it = this->m_cells.begin();

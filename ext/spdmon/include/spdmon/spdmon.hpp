@@ -121,6 +121,7 @@ namespace spdmon
             Update(n);
         }
 
+
         void SetTotal(unsigned int n)
         {
             total_ = n;
@@ -294,6 +295,33 @@ namespace spdmon
             std::copy(kTermMoveUp.begin(), kTermMoveUp.end(), std::back_inserter(buf));
             fwrite(buf.data(), 1, buf.size(), file_);
             fflush(file_);
+        }
+
+
+        void Flush()
+        {
+            fmt::memory_buffer buf;
+            std::copy(kTermMoveUp.begin(), kTermMoveUp.end(), std::back_inserter(buf));
+            fwrite(buf.data(), 1, buf.size(), file_);
+            fflush(file_);
+        }
+
+        void Flush(const std::string& s)
+        {
+            // fmt::memory_buffer buf;
+            // std::copy(kTermMoveUp.begin(), kTermMoveUp.end(), std::back_inserter(buf));
+            // fwrite(buf.data(), 1, buf.size(), file_);
+            // fflush(file_);
+
+            std::string clear;
+            clear.insert(0, width_, ' ');
+            fwrite(clear.data(), 1, clear.size(), file_);
+            fflush(file_);
+
+            // std::copy(kTermMoveUp.begin(), kTermMoveUp.end(), std::back_inserter(buf));
+            // fwrite(buf.data(), 1, buf.size(), file_);
+            // fflush(file_);
+            
         }
 
         const std::string kTermMoveUp = "\x1B[A";

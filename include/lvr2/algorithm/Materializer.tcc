@@ -35,6 +35,7 @@
 
 #include "lvr2/algorithm/ClusterAlgorithms.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
+#include "lvr2/util/Logging.hpp"
 #include <opencv2/features2d.hpp>
 
 
@@ -90,8 +91,7 @@ void Materializer<BaseVecT>::saveTextures()
 template<typename BaseVecT>
 MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 {
-    string msg = timestamp.getElapsedTime() + "Generating materials ";
-    ProgressBar progress(m_cluster.numCluster(), msg);
+    lvr2::Monitor monitor(lvr2::LogLevel::info, "Generating materials", m_cluster.numCluster());
 
     // Prepare result
     DenseClusterMap<Material> clusterMaterials;
@@ -108,7 +108,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
     // For all clusters ...
     for (auto clusterH : m_cluster)
     {
-        ++progress;
+        ++monitor;
 
 
         // Get number of faces in cluster
@@ -285,23 +285,25 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                     vertexTexCoords.insert(vertexH, mapping);
                 }
             }
-        }
+        }   
     }
-
-    std::cout << std::endl;
+    lvr2::logout::get() << lvr2::endl;
 
     // Write result
     // TODO: Merge texturizer results
     if (m_texturizers)
     {
 
-        std::cout << timestamp << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
-        << " clusters while generating textures" << std::endl;
+        lvr2::logout::get() << lvr2::info << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
+            << " clusters while generating textures" << lvr2::endl;
 
-        std::cout << timestamp << "(" << numClustersTooSmall << " below threshold, "
-        << numClustersTooLarge << " above limit, " << m_cluster.numCluster() << " total)" << std::endl;
+        lvr2::logout::get() << lvr2::info 
+            << "(" << numClustersTooSmall << " below threshold, "
+            << numClustersTooLarge << " above limit, " 
+            << m_cluster.numCluster() << " total)" << lvr2::endl;
 
-        std::cout << timestamp << "Generated " << textureCount << " textures" << std::endl;
+        lvr2::logout::get() << lvr2::info << 
+            "Generated " << textureCount << " textures" << lvr2::endl;
 
         // Holds all textures in the order determined by Texture::m_index
         StableVector<TextureHandle, Texture> combined_textures;

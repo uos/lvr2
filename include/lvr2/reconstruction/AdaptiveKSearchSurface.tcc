@@ -46,7 +46,7 @@
 #include <algorithm>
 
 #include "lvr2/util/Factories.hpp"
-#include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Logging.hpp"
 
 namespace lvr2
 {
@@ -85,9 +85,9 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     if(!this->m_searchTree)
     {
        this->m_searchTree = getSearchTree<BaseVecT>("flann", buffer);
-       std::cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] No valid search tree specified (" << searchTreeName << ")." << std::endl;
-       std::cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Maybe you did not install the required library." << std::endl;
-       std::cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Defaulting to flann." << std::endl;
+       lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] No valid search tree specified (" << searchTreeName << ")." << lvr2::endl;
+       lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] Maybe you did not install the required library." << lvr2::endl;
+       lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] Defaulting to flann." << lvr2::endl;
     }
 
     if(posefile != "")
@@ -101,12 +101,12 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
  template<typename BaseVecT>
  void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
  {
-     std::cout << timestamp << "[AdaptiveKSearchSurface] Parsing scan poses." << std::endl;
+     lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Parsing scan poses." << lvr2::endl;
      std::ifstream in(posefile.c_str());
-     if(!in.good())
+     if (!in.good())
      {
-         std::cout << timestamp << "[AdaptiveKSearchSurface] Unable to open scan pose file " << posefile << std::endl;
-         return;
+        lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] Unable to open scan pose file " << posefile << lvr2::endl;
+        return;
      }
 
      // Read vertex information
@@ -132,16 +132,16 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
          loader->setPointArray(points, v.size());
          size_t n = v.size();
 
-         std::cout << timestamp << "[AdaptiveKSearchSurface]  Creating pose search tree(" << m_searchTreeName << ") with "
-              << n << " poses." << std::endl;
+         lvr2::logout::get() << lvr2::info <<  "[AdaptiveKSearchSurface]  Creating pose search tree(" << m_searchTreeName << ") with "
+              << n << " poses." << lvr2::endl;
 
          this->m_poseTree = getSearchTree<BaseVecT>(m_searchTreeName, loader);
 
 
          if( !this->m_poseTree )
          {
-             std::cout << timestamp << "[AdaptiveKSearchSurface] No Valid Searchtree class specified!" << std::endl;
-             std::cout << timestamp << "[AdaptiveKSearchSurface] Class: " << m_searchTreeName << std::endl;
+             lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] No Valid Searchtree class specified!" << lvr2::endl;
+             lvr2::logout::get() << lvr2::warning <<  "[AdaptiveKSearchSurface] Class: " << m_searchTreeName << lvr2::endl;
          }
      }
  }
@@ -149,12 +149,17 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::init()
 {
-    std::cout << timestamp << "[AdaptiveKSearchSurface] Dataset statistics: " << std::endl;
-    std::cout << timestamp << "[AdaptiveKSearchSurface] \t\tNum points: " << this->m_pointBuffer->numPoints() << std::endl;
-    std::cout << timestamp << "[AdaptiveKSearchSurface] \t\tkn, ki, kd: "<< this->m_kn << ", " << this->m_ki << ", " << this->m_kd << std::endl;
+    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Dataset statistics: " << lvr2::endl;
+    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Num points: " << this->m_pointBuffer->numPoints() << lvr2::endl;
+    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] kn, ki, kd: "<< this->m_kn << ", " << this->m_ki << ", " << this->m_kd << lvr2::endl;
     const auto& min = this->m_boundingBox.getMin(), max = this->m_boundingBox.getMax();
-    std::cout << timestamp << "[AdaptiveKSearchSurface] \t\tBB of points: [" << min.x << ", " << min.y << ", " << min.z << "] - ["
-         << max.x << ", " << max.y << ", " << max.z << "]" << std::endl;
+    lvr2::logout::get() 
+        << lvr2::info 
+        << "[AdaptiveKSearchSurface] BB of points: [" 
+        << min.x << ", " << min.y << ", " << min.z << "] - ["
+        << max.x << ", " << max.y << ", " << max.z << "]" 
+        << lvr2::endl;
+
     this->m_flipPoint = this->m_boundingBox.getCentroid();
 }
 
@@ -167,15 +172,13 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     size_t numPoints = this->m_pointBuffer->numPoints();
     const FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
 
-    std::cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Initializing normal array..." << std::endl;
+    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Initializing normal array..." << lvr2::endl;
 
     floatArr normals = floatArr( new float[numPoints * 3] );
     this->m_pointBuffer->setNormalArray(normals, numPoints);
 
-    // Create a progress counter
-    string comment = timestamp.getElapsedTime() + "[AdaptiveKSearchSurface] Estimating normals ";
-    lvr2::ProgressBar progress(numPoints, comment);
-
+    // Create a monitor counter
+    lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Estimating normals", numPoints);
     #pragma omp parallel for schedule(dynamic, 12)
     for(size_t i = 0; i < numPoints; i++) {
         // We have to fit these vector to have the
@@ -274,10 +277,9 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         normals[i*3 + 1] = normal.y;
         normals[i*3 + 2] = normal.z;
 
-        ++progress;
+        ++monitor;
     }
-    std::cout << std::endl;
-
+   
     if(this->m_ki)
     {
         interpolateSurfaceNormals();
@@ -297,9 +299,8 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
         Normal<typename BaseVecT::CoordType>(0, 0, 1)
     );
 
-    // Create progress output
-    string comment = timestamp.getElapsedTime() + "[AdaptiveKSearchSurface] Interpolating normals ";
-    lvr2::ProgressBar progress(numPoints, comment);
+    // Create monitor output
+    lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Interpolating normals", numPoints);
 
     // Interpolate normals
     #pragma omp parallel for schedule(dynamic, 12)
@@ -316,10 +317,9 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
         }
         tmp[i] = mean.normalized();
 
-        ++progress;
+        ++monitor;
     }
-    std::cout << std::endl;
-    std::cout << timestamp.getElapsedTime() << "[AdaptiveKSearchSurface] Copying normals..." << std::endl;
+    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Copying normals..." << lvr2::endl;
 
     for(size_t i = 0; i < numPoints; i++){
         normals[i] = tmp[i];
@@ -499,7 +499,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
 
     if(isnan(normal.getX()) || isnan(normal.getY()) || isnan(normal.getZ()))
     {
-        std::cout << timestamp << "[AdaptiveKSearchSurface] Warning: Nan-coordinate in plane normal." << std::endl;
+        lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] Warning: Nan-coordinate in plane normal." << lvr2::endl;
     }
 
     // Create a plane representation and return the result
@@ -654,16 +654,19 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
    while((nonimproving_iterations < 5) && (iterations < max_interations))
    {
        // randomly choose 3 disjoint points
-       int c = 0;
+        int c = 0;
 
-       ids.clear();
-       do
-       {
-           ids.insert(number());
-           c++;
-           if (c == 20) std::cout << timestamp << "[AdaptiveKSearchSurface] Deadlock" << std::endl;
-       }
-       while (ids.size() < 3 && c <= 20);
+        ids.clear();
+        do
+        {
+            ids.insert(number());
+            c++;
+            if (c == 20)
+            {
+                lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] Deadlock" << lvr2::endl;
+            }
+        } 
+        while (ids.size() < 3 && c <= 20);
 
        auto it = ids.begin();
 

@@ -40,6 +40,7 @@
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Util.hpp"
+#include "lvr2/util/Logging.hpp"
 
 namespace lvr2
 {
@@ -231,8 +232,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
     // This counter is used to determine the index of a newly inserted vertex
     size_t vertexCount = 0;
 
-    string comment = timestamp.getElapsedTime() + "Finalizing mesh ";
-    ProgressBar progress(m_cluster.numCluster(), comment);
+    lvr2::Monitor monitor(lvr2::LogLevel::info, "Finalizing mesh", m_cluster.numCluster());
 
     // Loop over all clusters
     for (auto clusterH: m_cluster)
@@ -244,7 +244,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
         // Vector for storing indices of created faces
         vector<unsigned int> faceIndices;
 
-        ++progress;
+        ++monitor;
 
         auto& cluster = m_cluster.getCluster(clusterH);
 
@@ -410,8 +410,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
             }
         }
     }
-
-    std::cout << std::endl;
+    lvr2::logout::get() << lvr2::endl;
 
     MeshBufferPtr buffer = MeshBufferPtr( new MeshBuffer );
     buffer->setVertices(Util::convert_vector_to_shared_array(vertices), vertices.size() / 3);

@@ -33,7 +33,7 @@
  */
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"
-#include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Logging.hpp"
 
 namespace lvr2
 {
@@ -48,8 +48,7 @@ template<typename BaseVecT, typename BoxT>
 void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 {
     // Status message for mesh generation
-    string comment = timestamp.getElapsedTime() + "Creating mesh ";
-    ProgressBar progress(m_grid->getNumberOfCells(), comment);
+    lvr2::Monitor monitor(lvr2::LogLevel::info, "Creating mesh", m_grid->getNumberOfCells());
 
     // Some pointers
     BoxT* b;
@@ -60,18 +59,15 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
     {
         cell->getSurface(mesh, m_grid->getQueryPoints(), global_index);
         if(!timestamp.isQuiet())
-            ++progress;
+            ++monitor;
     }
-
-    if(!timestamp.isQuiet())
-        std::cout << std::endl;
+    lvr2::logout::get() << lvr2::endl;
 
     BoxTraits<BoxT> traits;
 
     if(traits.type == "SharpBox")  // Perform edge flipping for extended marching cubes
     {
-        string SFComment = timestamp.getElapsedTime() + "Flipping edges  ";
-        ProgressBar SFProgress(this->m_grid->getNumberOfCells(), SFComment);
+        lvr2::Monitor SFProgress(lvr2::LogLevel::info, "Flipping edges", this->m_grid->getNumberOfCells());
         for(auto& [ _, cell ] : m_grid->getCells())
         {
 
@@ -156,23 +152,21 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
             }
             ++SFProgress;
         }
-        std::cout << std::endl;
     }
+    lvr2::logout::get() << lvr2::endl;
 
-     if(traits.type == "BilinearFastBox")
-     {
-         string comment = timestamp.getElapsedTime() + "Optimizing plane contours  ";
-         ProgressBar progress(this->m_grid->getNumberOfCells(), comment);
-         for(auto& [ _, cell ] : m_grid->getCells())
-         {
-          // F... type safety. According to traits object this is OK!
-             BilinearFastBox<BaseVecT>* box = reinterpret_cast<BilinearFastBox<BaseVecT>*>(cell);
-             box->optimizePlanarFaces(mesh, 5);
-             ++progress;
-         }
-         std::cout << std::endl;
-     }
-
+    if (traits.type == "BilinearFastBox")
+    {
+        lvr2::Monitor monitor(lvr2::LogLevel::info, "Optimizing plane contours", this->m_grid->getNumberOfCells());
+        for (auto &[_, cell] : m_grid->getCells())
+        {
+            // F... type safety. According to traits object this is OK!
+            BilinearFastBox<BaseVecT> *box = reinterpret_cast<BilinearFastBox<BaseVecT> *>(cell);
+            box->optimizePlanarFaces(mesh, 5);
+            ++monitor;
+        }
+        lvr2::logout::get() << lvr2::endl;
+    }
 }
 
 template<typename BaseVecT, typename BoxT>
@@ -185,7 +179,7 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(
 {
 //    // Status message for mesh generation
 //    string comment = timestamp.getElapsedTime() + "Creating Mesh ";
-//    ProgressBar progress(m_grid->getNumberOfCells(), comment);
+//    ProgressBar monitor(m_grid->getNumberOfCells(), comment);
 
 //    // Some pointers
 //    BoxT* b;
@@ -196,7 +190,7 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(
 //    {
 //        cell->getSurface(mesh, m_grid->getQueryPoints(), global_index, bb, duplicates, comparePrecision);
 //        if(!timestamp.isQuiet())
-//            ++progress;
+//            ++monitor;
 //    }
 
 //    if(!timestamp.isQuiet())

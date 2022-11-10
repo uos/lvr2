@@ -7,29 +7,14 @@
 #include <spdmon/spdmon.hpp>
 
 #include <sstream>
+#include <iostream>
 
 namespace lvr2
 {
 
 using LogLevel = spdlog::level::level_enum;
 
-class LVR2Monitor
-{
-public:
-    LVR2Monitor(const spdlog::level::level_enum& level, const std::string& text, const size_t& max)
-        : m_monitor(text, max)
-    {
 
-    }
-
-    inline void operator++()
-    {
-        ++m_monitor;
-    }
-
-private:
-     spdmon::Progress m_monitor;
-};
 
 class Logger
 {
@@ -52,11 +37,16 @@ public:
     Logger(Logger const&) = delete;
     void operator=(Logger const&) = delete;
 
-    void flush()
+    void print()
     {
         m_logger->log(m_level, m_buffer.str());
         m_buffer.str("");
         m_buffer.clear();
+    }
+
+    void flush()
+    {
+        m_logger->flush();
     }
 
     template<typename T>
@@ -74,6 +64,30 @@ private:
     std::shared_ptr<spdlog::logger> m_logger;
     LogLevel                        m_level;
     std::stringstream               m_buffer;
+};
+
+class Monitor
+{
+public:
+    Monitor(const LogLevel& level, const std::string& text, const size_t& max, size_t width = 0)
+        : m_monitor(text, max, false, stderr, width), m_prefixText(text)
+    {
+
+    }
+
+    inline void operator++()
+    {
+        ++m_monitor;
+    }
+
+    ~Monitor()
+    {
+        m_monitor.Flush(m_prefixText + " - Done");
+    }
+
+private:
+     spdmon::Progress m_monitor;
+     std::string m_prefixText;
 };
 
 struct LoggerEndline{};
@@ -102,7 +116,7 @@ inline Logger& operator<<(Logger& log, const T& s)
 template<>
 inline Logger& operator<<(Logger& log, const LoggerEndline& endl)
 {
-    log.flush();
+    log.print();
     return log;
 }
 
