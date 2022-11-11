@@ -35,7 +35,7 @@
 #include "lvr2/algorithm/pmp/SurfaceHoleFilling.h"
 #include "lvr2/algorithm/pmp/SurfaceSmoothing.h"
 #include "lvr2/algorithm/pmp/SurfaceSimplification.h"
-#include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Logging.hpp"
 
 #include <unordered_set>
 
@@ -116,7 +116,7 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
 
     if (this->numFaces() < numFaces)
     {
-        std::cout << "Warning: " << numFaces - this->numFaces() << " faces could not be added." << std::endl;
+        lvr2::logout::get() << lvr2::warning << numFaces - this->numFaces() << " faces could not be added." << lvr2::endl;
     }
 
     if (ptr->hasFaceNormals())
@@ -626,7 +626,7 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
 
     std::stringstream ss;
     ss << timestamp << "[PMPMesh] Filling " << contours.size() << " holes";
-    ProgressBar progress(contours.size(), ss.str());
+    lvr2::Monitor monitor(lvr2::LogLevel::info, ss.str(), contours.size());
 
     pmp::SurfaceHoleFilling holeFilling(m_mesh);
     size_t filled = 0;
@@ -638,7 +638,7 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
         vector<pmp::Vertex> contour;
         for (pmp::Halfedge contour_heH : contours)
         {
-            ++progress;
+            ++monitor;
             seen.clear();
             contour.clear();
             try
@@ -704,11 +704,11 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
             }
             catch(PanicException exception)
             {
-                std::cerr << "Error filling a hole: " << exception.what() << std::endl;
+                lvr2::logout::get() << lvr2::warning << exception.what() << lvr2::endl;
             }
             catch(pmp::TopologyException exception)
             {
-                std::cerr << "Error filling a hole: " << exception.what() << std::endl;
+                lvr2::logout::get() << lvr2::warning <<  "Error filling a hole: " << exception.what() << lvr2::endl;
             }
         }
     }
@@ -716,7 +716,7 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
     {
         for (pmp::Halfedge contour_heH : contours)
         {
-            ++progress; // advance the progress bar
+            ++monitor; // advance the progress bar
             try
             {
                 holeFilling.fill_hole(contour_heH);
@@ -736,8 +736,8 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
             }
         }
     }
-    cout << endl;
-    cout << timestamp << "Filled " << filled << " / " << contours.size() << " holes" << endl;
+
+    lvr2::logout::get() << lvr2::info << "Filled " << filled << " / " << contours.size() << " holes" << lvr2::endl;
 }
 
 template<typename BaseVecT>

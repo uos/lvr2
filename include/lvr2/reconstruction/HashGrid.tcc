@@ -141,15 +141,12 @@ HashGrid<BaseVecT, BoxT>::HashGrid(const std::vector<PointBufferPtr>& chunks,
 {
     BaseVecT box_center;
     Vector3i index;
-<<<<<<< HEAD
+
     BaseVecT innerChunkMin = boundingBox.getMin();
     BaseVecT innerChunkMax = boundingBox.getMax();
     std::unique_ptr<lvr2::Monitor> progress = nullptr;
-
-=======
     BoundingBox<BaseVecT> innerChunkBB = boundingBox;
-    std::unique_ptr<ProgressBar> progress = nullptr;
->>>>>>> develop
+
     if (chunks.size() > 1)
     {
         lvr2::logout::get() << lvr2::info << "[HashGrid] Number of Chunks: "<< chunks.size() << lvr2::endl;
