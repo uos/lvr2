@@ -48,7 +48,7 @@ using std::string;
 using std::vector;
 
 
-namespace transform 
+namespace lvr2transform 
 {
 
   using namespace boost::program_options;

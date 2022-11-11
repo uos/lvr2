@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     size_t num;
 
     // get options
-    transform::Options options(argc, argv);
+    lvr2transform::Options options(argc, argv);
 
     // quit if usage was printed
     if(options.printUsage())

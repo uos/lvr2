@@ -14,9 +14,8 @@
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/types/PointBuffer.hpp"
-#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
-#include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/gs2/GrowingCellStructure.hpp"
+#include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 
 #include <signal.h>
 

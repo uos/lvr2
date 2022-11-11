@@ -3,6 +3,7 @@ set(LVR2_SOURCES
     algorithm/ChunkManager.cpp
     algorithm/ChunkHashGrid.cpp
     algorithm/HLODTree.cpp
+    algorithm/UtilAlgorithms.cpp
     algorithm/pmp/DifferentialGeometry.cpp
     algorithm/pmp/DistancePointTriangle.cpp
     algorithm/pmp/DifferentialGeometry.cpp
@@ -104,6 +105,28 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
+    )
+
+# Glob files for PCHs manually to exclude 
+# headers that cause problems, e.g., raycasting
+file(GLOB LVR2_PCHS 
+    ../../include/lvr2/algorithm/*.hpp
+    ../../include/lvr2/algorithm/pmp/*.hpp
+    ../../include/lvr2/attrmaps/*.hpp
+    ../../include/lvr2/geometry/*.hpp
+    ../../include/lvr2/geometry/pmp/*.hpp
+    ../../include/lvr2/io/*.hpp
+    ../../include/lvr2/io/baseio/*.hpp
+    ../../include/lvr2/io/baseio/yaml/*.hpp
+    ../../include/lvr2/io/kernels/*.hpp
+    ../../include/lvr2/io/meshio/*.hpp
+    ../../include/lvr2/io/meshio/yaml/*.hpp
+    ../../include/lvr2/io/scanio/yaml/*.hpp
+    ../../include/lvr2/io/schema/*.hpp
+    ../../include/lvr2/reconstruction/*.hpp
+    ../../include/lvr2/registration/*.hpp
+    ../../include/lvr2/texture/*.hpp
+    ../../include/lvr2/types/*.hpp
     )
 
 #####################################################################################
@@ -218,8 +241,9 @@ target_link_libraries(
   lvr2_static 
   ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
   ${LVR2_LIB_DEPENDENCIES}
-
 )
+
+target_precompile_headers(lvr2_static PUBLIC ${LVR2_PCHS})
 
 
 
@@ -241,6 +265,10 @@ install(TARGETS lvr2_static lvr2
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+
+target_precompile_headers(lvr2 REUSE_FROM lvr2_static)
+
+
 
 
 #####################################################################################

@@ -33,5 +33,7 @@ endif( ${NABO_FOUND} )
 add_executable(lvr2_reconstruct ${RECONSTRUCT_SOURCES})
 target_link_libraries(lvr2_reconstruct ${LVR2_RECONSTRUCT_DEPENDENCIES})
 
+
+
 install(TARGETS lvr2_reconstruct
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

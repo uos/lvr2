@@ -41,7 +41,7 @@
                 !vc("rx") && !vc("ry") && !vc("rz") && \
                 !vc("tx") && !vc("ty") && !vc("tz") )
 
-namespace transform {
+namespace lvr2transform {
 
 Options::Options(int argc, char** argv) : m_descr("Supported options")
 {

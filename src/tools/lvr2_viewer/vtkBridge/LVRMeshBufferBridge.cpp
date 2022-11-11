@@ -50,6 +50,9 @@
 
 #include "lvr2/util/Util.hpp"
 
+#include <map>
+#include <vector>
+
 namespace lvr2
 {
 
@@ -286,12 +289,12 @@ namespace lvr2
 
     void LVRMeshBufferBridge::computeMaterialGroups(vector<MaterialGroup*>& textureMaterials, vector<MaterialGroup*>& colorMaterials)
     {
-        map<int, MaterialGroup*> texMatMap;
-        map<VecUChar, MaterialGroup*, Util::ColorVecCompare> colorMatMap;
+        std::map<int, MaterialGroup*> texMatMap;
+        std::map<VecUChar, MaterialGroup*, Util::ColorVecCompare> colorMatMap;
 
         // Get buffers
-        vector<Material>  &materials = m_meshBuffer->getMaterials();
-        vector<Texture>   &textures = m_meshBuffer->getTextures();
+        std::vector<Material>  &materials = m_meshBuffer->getMaterials();
+        std::vector<Texture>   &textures = m_meshBuffer->getTextures();
         floatArr	      textureCoords;
         indexArray	      faceMaterials;
 
@@ -304,8 +307,8 @@ namespace lvr2
         // sort faces by their material
         for(size_t i = 0; i < m_numFaces; i++)
         {
-            map<int, MaterialGroup*>::iterator texIt;
-            map<VecUChar, MaterialGroup*, Util::ColorVecCompare>::iterator colIt;
+            std::map<int, MaterialGroup*>::iterator texIt;
+            std::map<VecUChar, MaterialGroup*, Util::ColorVecCompare>::iterator colIt;
 
             // Get material by index and lookup in map. If present
             // add face index to the corresponding group. Create a new
@@ -359,8 +362,8 @@ namespace lvr2
             vector<int>& indices)
     {
         // Mapping stuff
-        map<int, int> indexMap;
-        map<int, int>::iterator it;
+        std::map<int, int> indexMap;
+        std::map<int, int>::iterator it;
         int globalIndex = 0;
 
         // Get vertex buffer
@@ -441,8 +444,8 @@ namespace lvr2
             vector<int>& indices)
     {
         int globalIndex = 0;
-        map<int, int> indexMap;
-        map<int, int>::iterator it;
+        std::map<int, int> indexMap;
+        std::map<int, int>::iterator it;
 
         size_t n   = m_meshBuffer->numVertices();
         size_t n_i = m_meshBuffer->numFaces();

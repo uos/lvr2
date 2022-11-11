@@ -33,8 +33,8 @@
  *   co-Author: Dominik Feldschnieders (dofeldsc@uos.de)
  */
 
-#ifndef LVR2_RECONSTRUCTION_ADAPTIVEKSEARCHSURFACE_H_
-#define LVR2_RECONSTRUCTION_ADAPTIVEKSEARCHSURFACE_H_
+#ifndef ADAPTIVEKSEARCHSURFACE
+#define ADAPTIVEKSEARCHSURFACE
 
 #include <cassert>
 #include <fstream>
@@ -45,7 +45,7 @@
 #include <chrono>
 #include <cmath>
 
-
+#include "SearchTreeFlann.hpp"
 #include "PointsetSurface.hpp"
 
 #include "lvr2/types/PointBuffer.hpp"
@@ -60,7 +60,7 @@
 // #endif
 
 // #include "SearchTreeNanoflann.hpp"
-#include "SearchTreeFlann.hpp"
+
 #include "lvr2/algorithm/KDTree.hpp"
 
 // // SearchTreePCL
@@ -315,4 +315,4 @@ using AdaptiveKSearchSurfacePtr = std::shared_ptr<AdaptiveKSearchSurface<BaseVec
 
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.tcc"
 
-#endif // LVR2_RECONSTRUCTION_ADAPTIVEKSEARCHSURFACE_H_
+#endif // ADAPTIVEKSEARCHSURFACE
