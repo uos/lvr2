@@ -30,5 +30,6 @@ endif( ${NABO_FOUND} )
 add_executable(lvr2_transform_model ${LVR2_TRANSFORM_SOURCES})
 target_link_libraries(lvr2_transform_model ${LVR2_TRANSFORM_DEPENDENCIES})
 
+
 install(TARGETS lvr2_transform_model
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

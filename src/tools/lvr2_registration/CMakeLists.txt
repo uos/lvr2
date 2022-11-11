@@ -22,4 +22,5 @@ set(LVR2_REGISTRATION_DEPENDENCIES
 add_executable(lvr2_registration ${LVR2_REGISTRATION_SOURCES})
 target_link_libraries(lvr2_registration ${LVR2_REGISTRATION_DEPENDENCIES})
 
+
 install(TARGETS lvr2_registration RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

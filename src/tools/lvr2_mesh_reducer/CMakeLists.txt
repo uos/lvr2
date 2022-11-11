@@ -43,6 +43,7 @@ find_package(HDF5 QUIET REQUIRED)
 include_directories(${HDF5_INCLUDE_DIR})
 target_link_libraries(lvr2_mesh_reduce ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
+
 if(CUDA_FOUND)
         target_link_libraries(lvr2_mesh_reduce lvr2cuda)
         target_compile_definitions(lvr2_mesh_reduce PRIVATE CUDA_FOUND=1)
