@@ -246,7 +246,7 @@ namespace spdmon
         unsigned int miniterations_{1};
         std::string bar_tpl_{""};
         std::mutex mutex_;
-
+    protected:
         const std::string kTermEraseLine = "\x1B[0K";
         const std::string kTermEol = "\n";
         const std::string kLbarFmt = "{desc}: {frac:3.0f}% |";
@@ -262,7 +262,8 @@ namespace spdmon
                           FILE *file = stderr, unsigned int width = 0)
             : BaseProgress(desc, total, ascii),
               width_(width),
-              file_(file)
+              file_(file),
+              terminated_(false)
 
         {
             if (width_ == 0)
@@ -306,22 +307,18 @@ namespace spdmon
             fflush(file_);
         }
 
-        void Flush(const std::string& s)
+        void Terminate()
         {
-            // fmt::memory_buffer buf;
-            // std::copy(kTermMoveUp.begin(), kTermMoveUp.end(), std::back_inserter(buf));
-            // fwrite(buf.data(), 1, buf.size(), file_);
-            // fflush(file_);
-
-            std::string clear;
-            clear.insert(0, width_, ' ');
-            fwrite(clear.data(), 1, clear.size(), file_);
-            fflush(file_);
-
-            // std::copy(kTermMoveUp.begin(), kTermMoveUp.end(), std::back_inserter(buf));
-            // fwrite(buf.data(), 1, buf.size(), file_);
-            // fflush(file_);
-            
+            // Delete output from terminal only once
+            // after progress has finished
+            if(!terminated_)
+            {
+                fmt::memory_buffer buf;
+                std::copy(kTermEraseLine.begin(), kTermEraseLine.end(), std::back_inserter(buf));
+                fwrite(buf.data(), 1, buf.size(), file_);
+                fflush(file_);
+                terminated_ = true;
+            }            
         }
 
         const std::string kTermMoveUp = "\x1B[A";
@@ -329,6 +326,7 @@ namespace spdmon
     private:
         unsigned int width_;
         FILE *file_;
+        bool terminated_;
     };
 
     class StatusLine;

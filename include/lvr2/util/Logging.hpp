@@ -82,7 +82,12 @@ public:
 
     ~Monitor()
     {
-        m_monitor.Flush(m_prefixText + " - Done");
+        m_monitor.Terminate();
+    }
+
+    void terminate()
+    {
+        m_monitor.Terminate();
     }
 
 private:

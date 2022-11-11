@@ -319,6 +319,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 
         ++monitor;
     }
+    monitor.terminate();
     lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Copying normals..." << lvr2::endl;
 
     for(size_t i = 0; i < numPoints; i++){
