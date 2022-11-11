@@ -39,7 +39,9 @@ public:
     void process_queries(float* queries_raw, size_t num_queries, 
                         float* args, float* points_raw, 
                         size_t num_points,
-                        const char* kernel);
+                        const char* cu_src,
+                        const char* kernel_name,
+                        int K);
     
     AABB* getExtent(AABB* extent, float* points, size_t num_points);
 

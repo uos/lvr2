@@ -48,28 +48,28 @@ void radix_sort(unsigned long long int* keys, int* values, size_t num_points)
 void build_lbvh(float* points, size_t num_points,
                 float* queries, size_t num_queries,
                 float* args,
-                const char* kernel)
+                const char* kernel, const char* kernel_name)
 {
     int size_points = num_points * 3 * sizeof(float);
-   
-    float* d_points;
-    cudaMalloc(&d_points, size_points);
-    cudaMemcpy(d_points, points, size_points, cudaMemcpyHostToDevice);
 
     int leaf_size = 1;
     bool sort_queries = true;
     bool compact = true;
     bool shrink_to_fit = true;
 
+    int K = 1;
+
     lbvh::LBVHIndex tree(leaf_size, sort_queries, compact, shrink_to_fit);
 
+    std::cout << "Building tree" << std::endl;
     tree.build(points, num_points);
+    std::cout << "Done building tree." << std::endl;
+    
 
     // TODO: Don't process the queries here
     tree.process_queries(queries, num_queries, args, points, num_points, 
-                        kernel);
+                        kernel, kernel_name, K);
     
-    cudaFree(d_points);
 
     return;
 }

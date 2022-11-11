@@ -77,30 +77,69 @@ int main(int argc, char** argv)
     
     // Read in query_knn_kernels.cu
     
-    std::string kernel_str;
 
-    kernel_str = read_kernel("../src/tools/lvr2_cuda_normals2/src/query_knn_kernels.cu");
+
+    std::string kernel_file = "query_knn_kernels.cu";
+    std::string kernel_name = "query_knn_kernel";
+
+    std::string kernel_path = "../src/tools/lvr2_cuda_normals2/src/query_knn_kernels.cu";
+    std::string cu_src = read_kernel(kernel_path);
     
     // size_t kernel_size = kernel_str.size();
-    const char* kernel = kernel_str.c_str();
+    const char* kernel = cu_src.c_str();
 
-    std::cout << "Cuda Kernel: " << std::endl;
-    std::cout << kernel << std::endl;
+    // std::cout << "Cuda Kernel: " << std::endl;
+    // std::cout << kernel << std::endl;
 
+    // Create test points
+    num_points = 6;
+    float* test_points = (float*) malloc(sizeof(float) * num_points * 3);
+
+    test_points[0] = 0.0f;
+    test_points[1] = 1.0f;
+    test_points[2] = 2.0f;
+
+    test_points[3] = 100.0f;
+    test_points[4] = 99.0f;
+    test_points[5] = 101.0f;
+
+    test_points[6] = -25.0f;
+    test_points[7] = -26.0f;
+    test_points[8] = -27.0f;
+
+    test_points[9] = 0.5f;
+    test_points[10] = 1.5f;
+    test_points[11] = 2.25f;
+
+    test_points[12] = 111.0f;
+    test_points[13] = 101.0f;
+    test_points[14] = 100.0f;
+
+    test_points[15] = -40.0f;
+    test_points[16] = -45.5f;
+    test_points[17] = -35.25f;
 
     // Create test queries
     
-    size_t num_queries = 1;
+    size_t num_queries = 3;
 
-    float* queries = (float*) malloc(sizeof(float) * 3);
-    queries[0] = 1.5f;
-    queries[1] = 1.5f;
-    queries[2] = 1.5f;
+    float* queries = (float*) malloc(sizeof(float) * 3 * 3);
+    queries[0] = 0.0f;
+    queries[1] = 1.0f;
+    queries[2] = 2.0f;
+
+    queries[3] = 100.0f;
+    queries[4] = 99.0f;
+    queries[5] = 101.0f;
+
+    queries[6] = -25.0f;
+    queries[7] = -26.0f;
+    queries[8] = -27.0f;
 
     float* args = (float*) malloc(sizeof(float));
     args[0] = 1.0f;
 
-    build_lbvh(points_raw, num_points, queries, num_queries, args, kernel);
+    build_lbvh(points_raw, num_points, queries, num_queries, args, kernel, kernel_name.c_str());
 
     // Save the new model as test.ply
     ModelFactory::saveModel(model, "test.ply");

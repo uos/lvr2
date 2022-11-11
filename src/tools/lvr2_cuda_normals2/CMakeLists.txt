@@ -6,7 +6,7 @@ set(CUDA_SEPARABLE_COMPILATION ON)
 # Set source files
 #####################################################################################
 
-set(LVR2_CUDA_NORMAL_SRC2
+set(LVR2_CUDA_NORMAL2_SRC
     Main.cpp
     Options.cpp
 )
@@ -36,8 +36,9 @@ cuda_add_library(kernels_device
                 )
 target_link_libraries(kernels_device 
     ${CUDA_LIBRARIES}
+    # TODO Find nvrtc library
     /usr/local/cuda/lib64/libnvrtc.so
-    #TODO Find nvrtc library
+    ${CUDA_CUDA_LIBRARY}
 )
 
 # HEADER HOST - CODE: CUDA calls
@@ -50,7 +51,7 @@ target_link_libraries(kernels_host
 
 
 # PURE Host
-add_executable(lvr2_cuda_normals2 ${LVR2_CUDA_NORMAL_SRC2})
+add_executable(lvr2_cuda_normals2 ${LVR2_CUDA_NORMAL2_SRC})
 target_link_libraries(lvr2_cuda_normals2 
     ${LVR2_CUDA_NORMAL2_DEPS}
     kernels_host
