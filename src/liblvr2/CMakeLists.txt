@@ -3,6 +3,7 @@ set(LVR2_SOURCES
     algorithm/ChunkManager.cpp
     algorithm/ChunkHashGrid.cpp
     algorithm/HLODTree.cpp
+    algorithm/UtilAlgorithms.cpp
     algorithm/pmp/DifferentialGeometry.cpp
     algorithm/pmp/DistancePointTriangle.cpp
     algorithm/pmp/DifferentialGeometry.cpp
@@ -218,9 +219,13 @@ target_link_libraries(
   lvr2_static 
   ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
   ${LVR2_LIB_DEPENDENCIES}
-
 )
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> develop
 #####################################################################################
 # Build shared library
 #####################################################################################

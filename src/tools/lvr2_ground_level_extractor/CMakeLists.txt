@@ -37,7 +37,7 @@ endif(PCL_FOUND)
 
 add_executable(lvr2_ground_level_extractor ${GROUND_LEVEL_EXTRACTOR_SOURCES})
 target_link_libraries(lvr2_ground_level_extractor ${LVR2_GROUND_LEVEL_EXTRACTOR_DEPENDENCIES})
-
+target_precompile_headers(lvr2_ground_level_extractor PUBLIC  ${LVR2_PCHS})
 find_package(HDF5 QUIET REQUIRED)
 include_directories(${HDF5_INCLUDE_DIR})
 target_link_libraries(lvr2_ground_level_extractor ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})

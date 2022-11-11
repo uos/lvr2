@@ -33,5 +33,6 @@ endif( ${NABO_FOUND} )
 add_executable(lvr2_image_normals ${LVR2_IMG_NORMAL_SRC})
 target_link_libraries(lvr2_image_normals ${LVR2_IMG_NORMAL_DEPS})
 
+
 install(TARGETS lvr2_image_normals
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

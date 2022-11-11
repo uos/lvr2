@@ -35,6 +35,7 @@
 
 #ifndef LVR2_ALGORITHM_RAYCASTING_CLRAYCASTER
 #define LVR2_ALGORITHM_RAYCASTING_CLRAYCASTER
+#if defined LVR2_USE_OPENCL
 
 #include <chrono>
 #include "lvr2/types/MeshBuffer.hpp"
@@ -230,4 +231,5 @@ private:
 
 #include "CLRaycaster.tcc"
 
+#endif // OpenCL definded
 #endif // LVR2_ALGORITHM_RAYCASTING_CLRAYCASTER

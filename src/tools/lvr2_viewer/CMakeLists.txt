@@ -209,6 +209,7 @@ add_executable(lvr2_viewer
 
 
 target_link_libraries(lvr2_viewer ${LVR2_VIEWER_DEPENDENCIES})
+target_precompile_headers(lvr2_viewer PUBLIC  ${LVR2_PCHS})
 
 if(CUDA_FOUND)
         target_link_libraries(lvr2_viewer lvr2cuda)

@@ -22,28 +22,34 @@ std::string dataIOTypeName()
 }
 
 template<>
-std::string dataIOTypeName<unsigned char>();
+std::string dataIOTypeName<bool>();
 
 template<>
-std::string dataIOTypeName<unsigned short>();
+std::string dataIOTypeName<uint8_t>();
 
 template<>
-std::string dataIOTypeName<unsigned int>();
+std::string dataIOTypeName<uint16_t>();
 
 template<>
-std::string dataIOTypeName<unsigned long int>();
+std::string dataIOTypeName<uint32_t>();
+
+template<>
+std::string dataIOTypeName<uint64_t>();
 
 template<>
 std::string dataIOTypeName<char>();
 
 template<>
-std::string dataIOTypeName<short>();
+std::string dataIOTypeName<int8_t>();
 
 template<>
-std::string dataIOTypeName<int>();
+std::string dataIOTypeName<int16_t>();
 
 template<>
-std::string dataIOTypeName<long int>();
+std::string dataIOTypeName<int32_t>();
+
+template<>
+std::string dataIOTypeName<int64_t>();
 
 template<>
 std::string dataIOTypeName<float>();
@@ -61,27 +67,81 @@ public:
         long unsigned int DATA_BYTES;
     };
     
-    DataIO(std::string filename, std::ios_base::openmode ios_mode = std::ios::in | std::ios::out );
+    DataIO(std::string filename, 
+        std::ios_base::openmode ios_mode = std::ios::in | std::ios::out );
 
+    ~DataIO();
+
+    
+    /**
+     * @brief Load the header from file
+     * 
+     * @return Header 
+     */
     Header loadHeader();
 
+    /**
+     * @brief Get all meta data as YAML node
+     * 
+     * @return YAML::Node 
+     */
     YAML::Node loadMeta();
 
+    /**
+     * @brief Load the shape from file
+     * 
+     * @return std::vector<size_t> 
+     */
     std::vector<size_t> loadShape();
     
+    /**
+     * @brief Returns type of the elements
+     * 
+     * if(dataIOTypeName<float>() == io.loadType())
+     * {
+     *    data = io.load<float>();
+     * }
+     * 
+     * @return std::string 
+     */
     std::string loadType();
 
+    /**
+     * @brief 
+     * 
+     * @tparam T 
+     * @return boost::shared_array<T> 
+     */
     template<typename T>
     boost::shared_array<T> load();
 
+    /**
+     * @brief Load data and write shape to "shape"
+     * 
+     * @tparam T  type of the data. Can be obtained by reading the meta data first
+     * @param shape shape of the data
+     * @return boost::shared_array<T>  returned data
+     */
     template<typename T>
     boost::shared_array<T> load(std::vector<size_t>& shape);
 
+    /**
+     * @brief Save multidiomensional data of type T and shape "shape"
+     * 
+     * @tparam T typename of data elements
+     * @param shape multidimensional shape
+     * @param data data buffer
+     */
     template<typename T>
     void save(const std::vector<size_t>& shape, 
               const boost::shared_array<T>& data);
 
-    ~DataIO();
+    /**
+     * @brief Version of the IO. Update in cpp to signal a version change
+     * 
+     * @return int the version
+     */
+    int version() const;
 
 private:
 
@@ -100,6 +160,7 @@ private:
     }
 
     std::fstream m_file;
+
     Header m_header;
     size_t m_pos;
 };

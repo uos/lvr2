@@ -234,7 +234,7 @@ inline void setPixel(TexCoords uv, Texture& tex, cv::Vec3b color)
  * @brief Copied from 
  * https://gitlab.informatik.uni-osnabrueck.de/Las_Vegas_Reconstruction/Develop/-/blob/feature/cloud_colorizer/src/tools/lvr2_cloud_colorizer/Main.cpp
  */
-void undistorted_to_distorted_uv(
+inline void undistorted_to_distorted_uv(
     double &u,
     double &v,
     PinholeModel model)

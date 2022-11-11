@@ -100,7 +100,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
 
 
     // Get all sub scans
-    size_t scanPosNo = 1;
+    size_t scanPosNo = 0;
     while(true)
     {  
         // std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
@@ -108,19 +108,13 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
 
         // Generate Directories for all Filetypes
         ScanPositionPtr scanPos = m_scanPositionIO->loadScanPosition(scanPosNo);
-        if(!scanPos)
-        {
-            Description d = m_baseIO->m_description->position(scanPosNo);
-
-            // Check if specified scan position exists
-            if(!m_baseIO->m_kernel->exists(*d.dataRoot))
-            {
-                break;
-            }
-        }
-        else
+        if(scanPos)
         {
             ret->positions.push_back(scanPos);
+        }
+        else if(scanPosNo > 1)
+        {
+            break;
         }
 
         scanPosNo++;

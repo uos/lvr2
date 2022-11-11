@@ -38,6 +38,9 @@
 #include <vector>
 #include <memory>
 
+// Required here since OpenCV leaks the USE_UNORDERED_MAP
+// resulting in compiler errors from flann
+#undef USE_UNORDERED_MAP
 #include <flann/flann.hpp>
 
 #include "lvr2/util/Timestamp.hpp"

@@ -61,13 +61,15 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
     {
         std::unordered_set<Vector3i> localCells;
         Vector3i index;
+        BaseVecT center;
         #pragma omp for schedule(dynamic,64) nowait
         for(size_t i = 0; i < numPoint; i++)
         {
             BaseVecT point = pts[i];
-            if (bb.contains(point))
+            this->calcIndex(point, index);
+            this->indexToCenter(index, center);
+            if (bb.contains(center))
             {
-                this->calcIndex(point, index);
                 localCells.insert(index);
             }
         }
@@ -75,6 +77,7 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
         if (extrude)
         {
             std::unordered_set<Vector3i> innerOnly = localCells;
+            Vector3i pos;
             for (auto& index : innerOnly)
             {
                 for (int dx = -1; dx <= 1; dx++)
@@ -83,7 +86,12 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
                     {
                         for (int dz = -1; dz <= 1; dz++)
                         {
-                            localCells.insert(index + Vector3i(dx, dy, dz));
+                            pos = index + Vector3i(dx, dy, dz);
+                            this->indexToCenter(pos, center);
+                            if (bb.contains(center))
+                            {
+                                localCells.insert(pos);
+                            }
                         }
                     }
                 }

@@ -141,10 +141,15 @@ HashGrid<BaseVecT, BoxT>::HashGrid(const std::vector<PointBufferPtr>& chunks,
 {
     BaseVecT box_center;
     Vector3i index;
+<<<<<<< HEAD
     BaseVecT innerChunkMin = boundingBox.getMin();
     BaseVecT innerChunkMax = boundingBox.getMax();
     std::unique_ptr<lvr2::Monitor> progress = nullptr;
 
+=======
+    BoundingBox<BaseVecT> innerChunkBB = boundingBox;
+    std::unique_ptr<ProgressBar> progress = nullptr;
+>>>>>>> develop
     if (chunks.size() > 1)
     {
         lvr2::logout::get() << lvr2::info << "[HashGrid] Number of Chunks: "<< chunks.size() << lvr2::endl;
@@ -160,9 +165,8 @@ HashGrid<BaseVecT, BoxT>::HashGrid(const std::vector<PointBufferPtr>& chunks,
 
         if (!innerBoxes.empty())
         {
-            // get the min and max vector of the inner chunk bounding box
-            innerChunkMin = innerBoxes.at(i).getMin();
-            innerChunkMax = innerBoxes.at(i).getMax();
+            // get the inner chunk bounding box
+            innerChunkBB = innerBoxes.at(i);
         }
 
         for(size_t cellCount = 0; cellCount < numCells; cellCount++)
@@ -170,8 +174,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(const std::vector<PointBufferPtr>& chunks,
             // Check if the voxel is inside of our bounding box.
             // If not, we skip it, because some other chunk is responsible for the voxel.
             box_center = centers[cellCount];
-            if(box_center.x < innerChunkMin.x || box_center.y < innerChunkMin.y || box_center.z < innerChunkMin.z ||
-                box_center.x > innerChunkMax.x || box_center.y > innerChunkMax.y || box_center.z > innerChunkMax.z )
+            if(!innerChunkBB.contains(box_center))
             {
                 continue;
             }

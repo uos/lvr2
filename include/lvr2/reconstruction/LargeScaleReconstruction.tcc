@@ -323,9 +323,6 @@ namespace lvr2
                     {
                         lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Merging " << neighborQPs.size() << " neighbors" << lvr2::endl;
 
-                        // QueryPoints are on the corners of the cells, and rounding errors can cause
-                        // them to land in either cell when using calcIndex. So we shift them by half a voxel.
-                        BaseVecT halfVoxel(voxelSize / 2, voxelSize / 2, voxelSize / 2);
                         auto& queryPoints = ps_grid->getQueryPoints();
                         #pragma omp parallel
                         {
