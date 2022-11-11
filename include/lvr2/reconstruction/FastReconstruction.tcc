@@ -61,7 +61,6 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
         if(!timestamp.isQuiet())
             ++monitor;
     }
-    lvr2::logout::get() << lvr2::endl;
 
     BoxTraits<BoxT> traits;
 
@@ -153,7 +152,6 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
             ++SFProgress;
         }
     }
-    lvr2::logout::get() << lvr2::endl;
 
     if (traits.type == "BilinearFastBox")
     {
@@ -165,7 +163,6 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
             box->optimizePlanarFaces(mesh, 5);
             ++monitor;
         }
-        lvr2::logout::get() << lvr2::endl;
     }
 }
 

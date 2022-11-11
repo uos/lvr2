@@ -456,7 +456,6 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
             throw std::runtime_error("BigGrid creation failed: Inconsistent number of points in cells");
         }
     }
-    lvr2::logout::get() << lvr2::endl;
 }
 
 template <typename T>

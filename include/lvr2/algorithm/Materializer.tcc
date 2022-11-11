@@ -287,7 +287,6 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             }
         }   
     }
-    lvr2::logout::get() << lvr2::endl;
 
     // Write result
     // TODO: Merge texturizer results

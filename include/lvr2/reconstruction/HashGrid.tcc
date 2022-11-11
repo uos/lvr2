@@ -189,7 +189,6 @@ HashGrid<BaseVecT, BoxT>::HashGrid(const std::vector<PointBufferPtr>& chunks,
             ++(*progress);
         }
     }
-    lvr2::logout::get() << lvr2::endl;
 
     fillNeighbors();
 }
