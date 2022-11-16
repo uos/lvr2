@@ -82,12 +82,12 @@ configure_file(
     @ONLY
 )
 
-install(
-  FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME_LOWERCASE}/version.hpp
-  DESTINATION
-    include/${PROJECT_NAME_LOWERCASE}
-)
+# install(
+#    FILES
+#     ${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME_LOWERCASE}/version.hpp
+#    DESTINATION
+#      include/${PROJECT_NAME_LOWERCASE}
+# )
 
 #
 # Create library, setup header and source files
