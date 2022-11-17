@@ -64,7 +64,6 @@ namespace lbvh {
         do {
             parent_idx = current->parent;
             const auto parent = &nodes[parent_idx];
-
             const unsigned int child_l = current->child_left;
             const unsigned int child_r = current->child_right;
 

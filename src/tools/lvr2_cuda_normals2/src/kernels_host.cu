@@ -57,14 +57,11 @@ void build_lbvh(float* points, size_t num_points,
     bool compact = true;
     bool shrink_to_fit = true;
 
-    int K = 1;
+    int K = 3;
 
     lbvh::LBVHIndex tree(leaf_size, sort_queries, compact, shrink_to_fit);
 
-    std::cout << "Building tree" << std::endl;
     tree.build(points, num_points);
-    std::cout << "Done building tree." << std::endl;
-    
 
     // TODO: Don't process the queries here
     tree.process_queries(queries, num_queries, args, points, num_points, 

@@ -25,7 +25,6 @@ namespace lbvh {
                              const float3* __restrict__ query_point,
                              const float max_radius)
     {
-
         StaticPriorityQueue<float, K> queue(max_radius);
         query_knn(nodes, points, sorted_indices, root_index, query_point, queue);
         return queue; //std::move(queue);

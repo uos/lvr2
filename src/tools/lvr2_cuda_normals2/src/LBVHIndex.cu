@@ -17,6 +17,66 @@
 
 using namespace lbvh;
 
+// Only for testing
+float quadratic_distance(float p1, float p2, float p3, float q1, float q2, float q3)
+{
+    return (p1 - q1) * (p1 - q1) + (p2 - q2) * (p2 - q2) + (p3 - q3) * (p3 - q3);
+}
+
+// Only for testing
+void findKNN(int k, float* points, size_t num_points, float* queries, size_t num_queries)
+{
+    std::cout << "Brute forcing KNN..." << std::endl;
+    float neighs[num_queries][k];
+
+    float distances[num_queries][num_points];
+
+    unsigned int indices[num_queries][num_points];
+
+    for(int j = 0; j < num_queries; j++)
+    {
+        for(int i = 0; i < num_points; i++)
+        {
+            indices[j][i] = i;
+        }
+
+    }
+
+    for(int i = 0; i < num_queries; i++)
+    {
+        for(int j = 0; j < num_points; j++)
+        {
+            distances[i][j] = quadratic_distance(
+                                    points[3 * j + 0],
+                                    points[3 * j + 1],
+                                    points[3 * j + 2],
+                                    queries[3 * i + 0],
+                                    queries[3 * i + 1],
+                                    queries[3 * i + 2]);
+        }
+    }
+    for(int i = 0; i < num_queries; i++)
+    {
+        thrust::sort_by_key(distances[i], distances[i] + num_points, indices[i]);
+
+    }
+
+    for(int i = 0; i < num_queries; i++)
+    {
+        std::cout << "Query " << i << ": " << std::endl;
+        std::cout << "Neighbors: " << std::endl;
+        for(int j = 0; j < k; j++){
+            std::cout << indices[i][j] << std::endl;
+        }
+        std::cout << "Distances: " << std::endl;
+        for(int j = 0; j < k; j++)
+        {
+            std::cout << distances[i][j] << std::endl;
+        }
+    }
+}
+
+
 LBVHIndex::LBVHIndex()
 {
     this->m_num_objects = 0;
@@ -112,8 +172,8 @@ void LBVHIndex::build(float* points, size_t num_points)
 
 
     // Create array of indices with an index for each point
-    unsigned long long int* indices = (unsigned long long int*)
-        malloc(sizeof(unsigned long long int) * num_points);
+    unsigned int* indices = (unsigned int*)
+        malloc(sizeof(unsigned int) * num_points);
 
     for(int i = 0; i < num_points; i++)
     {
@@ -136,6 +196,7 @@ void LBVHIndex::build(float* points, size_t num_points)
     gpuErrchk(cudaPeekAtLastError());
 
     this->m_sorted_indices = indices;
+
 
     // for(int i = 0; i < num_points - 1; i++)
     // {
@@ -198,9 +259,9 @@ void LBVHIndex::build(float* points, size_t num_points)
             sizeof(unsigned int), cudaMemcpyDeviceToHost));
     
     // TODO: Root node might be wrong?
-    this->m_root_node = root_node;
+    this->m_root_node = root_node[0];
 
-    printf("Root: %u \n", *this->m_root_node);
+    printf("Root: %u \n", this->m_root_node);
 
     gpuErrchk(cudaFree(d_root_node));
     gpuErrchk(cudaFree(d_sorted_aabbs));
@@ -296,10 +357,10 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
     // const unsigned int* __restrict__ sorted_indices,
     // this->m_sorted_indices
     unsigned long long int* d_sorted_indices;
-    gpuErrchk( cudaMalloc(&d_sorted_indices, sizeof(unsigned long long int) * num_points) );
+    gpuErrchk( cudaMalloc(&d_sorted_indices, sizeof(unsigned int) * num_points) );
 
     gpuErrchk( cudaMemcpy(d_sorted_indices, this->m_sorted_indices,
-            sizeof(unsigned long long int) * num_points,
+            sizeof(unsigned int) * num_points,
             cudaMemcpyHostToDevice) );
 
     // const unsigned int root_index,
@@ -412,6 +473,10 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
     unsigned int* d_n_neighbors_out;
     gpuErrchk( cudaMalloc(&d_n_neighbors_out, sizeof(unsigned int) * num_queries) );
 
+     cudaMemcpy(this->m_sorted_indices, d_sorted_indices,
+            sizeof(unsigned int) * num_points,
+            cudaMemcpyDeviceToHost);
+
     // Gather the arguments
     void *params[] = 
     {
@@ -429,16 +494,15 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
     };
 
     std::cout << "Launching Kernel" << std::endl;
- 
+
     // Launch the kernel
-    cuLaunchKernel(kernel, 
+    CUDA_SAFE_CALL( cuLaunchKernel(kernel, 
         4, 1, 1,  // grid dim
         256, 1, 1,    // block dim
         0, NULL,    // shared mem and stream
         params,       // arguments
         0
-    );      
-    printf("TEST\n");
+    ) );      
 
     //CUDA_SAFE_CALL(cuCtxSynchronize());
 
@@ -456,11 +520,27 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
             sizeof(unsigned int) * num_queries,
             cudaMemcpyDeviceToHost) );
 
-    // std::cout << "Number of neighbors: " << std::endl;
-    // for(int i = 0; i < num_queries; i++)
-    // {
-    //     std::cout << n_neighbors_out[i] << std::endl;
-    // }
+    printf("K = %d \n", K);
+
+    std::cout << "Number of neighbors: " << std::endl;
+    for(int i = 0; i < num_queries; i++)
+    {
+        std::cout << n_neighbors_out[i] << std::endl;
+    }
+
+    std::cout << "Neighbor Index: " << std::endl;
+
+    for(int i = 0; i < num_queries * K; i++)
+    {
+        std::cout << indices_out[i] << std::endl;
+    }
+
+    std::cout << "Distances Out: " << std::endl;
+
+    for(int i = 0; i < num_queries * K; i++)
+    {
+        std::cout << distances_out[i] << std::endl;
+    }
 
     // // TESTING FOR SAXPY.CU
 
@@ -515,6 +595,8 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
     // free(hY);
     // free(hOut);
     
+
+    findKNN(K, points_raw, num_points, queries_raw, num_queries);
 
 }
 
@@ -592,7 +674,7 @@ void LBVHIndex::getPtxFromCuString( std::string& ptx, const char* sample_name, c
         "-I/home/till/Develop/src/tools/lvr2_cuda_normals2/include",
         cuda_include.c_str(),
         "-std=c++17",
-        "-DK=5"
+        "-DK=3"
     };
     //      "-I/usr/local/cuda/include",
     //      "-I/usr/local/include",

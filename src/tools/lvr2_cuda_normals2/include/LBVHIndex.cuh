@@ -22,13 +22,13 @@ public:
     bool m_shrink_to_fit;
 
     float* m_points;
-    unsigned long long int* m_sorted_indices;
+    unsigned int* m_sorted_indices;
 
     char* m_mode;
     float m_radius;
     AABB* m_extent;
     BVHNode* m_nodes;
-    unsigned int* m_root_node;
+    unsigned int m_root_node;
     
     LBVHIndex();
 
