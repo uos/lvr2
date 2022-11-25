@@ -194,41 +194,48 @@ namespace spdmon
 
         void RenderProgress(timepoint_t now, unsigned int width, fmt::memory_buffer &buf)
         {
+           
             last_print_n_ = n_;
-            const auto elapsed = now - started_at_;
+            //const auto elapsed = now - started_at_;
+            const std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - started_at_);
 
-            if (total_ == 0)
-            {
-                fmt::format_to(buf, kNoTotalFmt, fmt::arg("desc", desc_),
-                               fmt::arg("n", n_),
-                               fmt::arg("elapsed", elapsed),
-                               fmt::arg("eol", kTermEol));
+            if (total_ == 0) {
+                fmt::format_to(
+                    buf, kNoTotalFmt, fmt::arg("desc", desc_), fmt::arg("n", n_), fmt::arg("elapsed", elapsed),
+                    fmt::arg("eol", kTermEol));
                 return;
             }
 
             const float frac = static_cast<float>(n_.load()) / static_cast<float>(total_);
-            // auto eta = elapsed * (1 / frac - 1);
-            const auto remaining = (frac > 0) ? elapsed * (1 / frac - 1) : duration_t(0);
+            auto eta = elapsed * (1 / frac - 1);
+            std::chrono::duration<float, std::milli> remaining = (frac > 0) ? elapsed * (1 / frac - 1) : duration_t(0);
 
             fmt::memory_buffer right;
 
             const float percent = frac * 100;
+           try
+           {
+                fmt::format_to(buf, kLbarFmt, fmt::arg("desc", desc_), fmt::arg("frac", percent));
 
-            fmt::format_to(buf, kLbarFmt, fmt::arg("desc", desc_),
-                           fmt::arg("frac", percent));
-            fmt::format_to(right, kRbarFmt, fmt::arg("n", n_),
-                           fmt::arg("total", total_),
-                           fmt::arg("elapsed", elapsed),
-                           fmt::arg("remaining", remaining),
-                           fmt::arg("eol", kTermEol));
+                fmt::format_to(
+                    right, kRbarFmt, fmt::arg("n", n_), fmt::arg("total", total_), fmt::arg("elapsed", elapsed),
+                    fmt::arg("remaining", remaining), fmt::arg("eol", kTermEol));
 
-            const auto space_for_bar = static_cast<unsigned int>(width - buf.size() - right.size() + kTermEol.size());
-            if (space_for_bar > 0)
+                const auto space_for_bar = static_cast<unsigned int>(width - buf.size() - right.size() + kTermEol.size());
+
+                if (space_for_bar > 0) {
+                    FormatBarTo(buf, space_for_bar, frac);
+                }
+
+                buf.reserve(buf.size() + right.size());
+                std::copy(right.begin(), right.end(), std::back_inserter(buf));
+            } 
+            catch (...) 
             {
-                FormatBarTo(buf, space_for_bar, frac);
+                // In rare cases a format exception might happen. 
+                // We currently just ignore it as it will only 
+                // cause a missing update in the status information
             }
-            buf.reserve(buf.size() + right.size());
-            std::copy(right.begin(), right.end(), std::back_inserter(buf));
         }
 
         virtual void ShowProgress(timepoint_t now = clock_t::now()) = 0;
@@ -245,8 +252,9 @@ namespace spdmon
         duration_t mininterval_{std::chrono::milliseconds(10)};
         unsigned int miniterations_{1};
         std::string bar_tpl_{""};
-        std::mutex mutex_;
+        
     protected:
+        std::mutex mutex_;
         const std::string kTermEraseLine = "\x1B[0K";
         const std::string kTermEol = "\n";
         const std::string kLbarFmt = "{desc}: {frac:3.0f}% |";
@@ -291,11 +299,17 @@ namespace spdmon
         {
             // called from BaseProgress when it decided the spdmon bar needs
             // to be printed again
-            fmt::memory_buffer buf;
-            RenderProgress(now, width_, buf);
-            std::copy(kTermMoveUp.begin(), kTermMoveUp.end(), std::back_inserter(buf));
-            fwrite(buf.data(), 1, buf.size(), file_);
-            fflush(file_);
+            try {
+                fmt::memory_buffer buf;
+                RenderProgress(now, width_, buf);
+                std::copy(kTermMoveUp.begin(), kTermMoveUp.end(), std::back_inserter(buf));
+                fwrite(buf.data(), 1, buf.size(), file_);
+                fflush(file_);
+            }
+            catch(...)
+            {
+                std::cout << "ShowProgress" << std::endl;
+            }
         }
 
 
