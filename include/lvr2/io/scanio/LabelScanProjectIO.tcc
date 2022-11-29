@@ -13,17 +13,17 @@ void LabelScanProjectIO<BaseIO>::saveLabelScanProject(const LabeledScanProjectEd
 
     if (labelScanProjectPtr->editMarkProject && labelScanProjectPtr->editMarkProject->project)
     {
-        std::cout << timestamp << "[LabelScanProjectIO] Save ScanProject" << std::endl;
+        lvr2::logout::get() << lvr2::info << "[LabelScanProjectIO] Save ScanProject" << lvr2::endl;
         m_scanProjectIO->saveScanProject(labelScanProjectPtr->editMarkProject->project);
     }
 
     if (labelScanProjectPtr->labelRoot && labelScanProjectPtr->labelRoot->points)
     {
-        std::cout << timestamp << "[LabelScanProjectIO] Save Labeles" << std::endl;
+        lvr2::logout::get() << lvr2::info << "[LabelScanProjectIO] Save Labels" << lvr2::endl;
         m_labelIO->saveLabels(group, labelScanProjectPtr->labelRoot); 
     } else
     {
-     std::cout << timestamp << "[LabelScanProjectIO] No Labeles" << std::endl;
+     lvr2::logout::get() << lvr2::warning << "[LabelScanProjectIO] No Labels" << lvr2::endl;
     }
 }
 
@@ -39,7 +39,7 @@ LabeledScanProjectEditMarkPtr LabelScanProjectIO<BaseIO>::loadLabelScanProject()
     std::string pointCloud("/pointCloud");
     if (m_baseIO->m_kernel->exists(pointCloud))
     {
-        std::cout << "[LabelScanProjectIO] Load Labeles" << std::endl;
+        lvr2::logout::get() << "[LabelScanProjectIO] Load Labels" << lvr2::endl;
         ret->labelRoot = m_labelIO->loadLabels(pointCloud);;
     }
     return ret;

@@ -68,8 +68,8 @@ void FullWaveformIO<Derived>::saveLabelWaveform(
     const std::string& groupName,
     const WaveformPtr& fwPtr)
 {
-    std::cout << fwPtr->maxBucketSize << std::endl;
-    std::cout << fwPtr->waveformIndices.size() << std::endl;
+    lvr2::logout::get() << fwPtr->maxBucketSize << lvr2::endl;
+    lvr2::logout::get() << fwPtr->waveformIndices.size() << lvr2::endl;
     // saving Waveform samples
     uint16Arr waveformData = uint16Arr(new uint16_t[long(fwPtr->lowPower.size()) * long(fwPtr->maxBucketSize + 2)]());
     for(int i = 0; i < fwPtr->lowPower.size(); i++)
@@ -176,8 +176,8 @@ WaveformPtr FullWaveformIO<Derived>::loadFullWaveform(const size_t& scanPosNo, c
     }
     else
     {
-        std::cout << timestamp << "WaveformIO::load(): Warning: No meta data found for "
-                  << groupName << "/" << waveformName << "." << std::endl;
+        lvr2::logout::get() << lvr2::warning << "WaveformIO::load(): Warning: No meta data found for "
+                  << groupName << "/" << waveformName << "." << lvr2::endl;
     }
 
     // Load actual data

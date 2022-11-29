@@ -62,9 +62,9 @@ BaseVector<size_t> ChunkIO<BaseIO>::loadAmount()
         = m_array_io->template load<size_t>(m_chunkName, m_amountName, dimensionAmount);
     if (dimensionAmount != 3)
     {
-        std::cout <<  timestamp << "Error loading chunk data: amount has not the correct "
+        lvr2::logout::get() << lvr2::error << "Error loading chunk data: amount has not the correct "
                      "dimension. Found: "
-                  << dimensionAmount << "; Expected: 3" << std::endl;
+                  << dimensionAmount << "; Expected: 3" << lvr2::endl;
     }
     else
     {
@@ -82,9 +82,9 @@ float ChunkIO<BaseIO>::loadChunkSize()
         = m_array_io->template load<float>(m_chunkName, m_chunkSizeName, dimensionChunkSize);
     if (dimensionChunkSize != 1)
     {
-        std::cout << "Error loading chunk data: chunkSize has not the correct "
+        lvr2::logout::get() << lvr2::error << "Error loading chunk data: chunkSize has not the correct "
                      "dimension. Found: "
-                  << dimensionChunkSize << "; Expected: 1" << std::endl;
+                  << dimensionChunkSize << "; Expected: 1" << lvr2::endl;
         chunkSize = 0;
     }
     else

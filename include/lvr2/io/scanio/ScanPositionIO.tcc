@@ -11,8 +11,8 @@ bool ScanPositionIO< BaseIO>::save(
 {
     Description d = m_baseIO->m_description->position(scanPosNo);
 
-    std::cout << timestamp << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << std::endl;
-    std::cout << timestamp << d << std::endl;
+    lvr2::logout::get() << lvr2::info << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << lvr2::endl;
+    lvr2::logout::get() << lvr2::info << d << lvr2::endl;
 
     if(!d.dataRoot)
     {
@@ -30,20 +30,20 @@ bool ScanPositionIO< BaseIO>::save(
     for(size_t i = 0; i < scanPositionPtr->lidars.size(); i++)
     {
 
-        // std::cout << " [ScanPositionIO]: Writing lidar " << i << std::endl;
+        // lvr2::logout::get() << " [ScanPositionIO]: Writing lidar " << i << lvr2::endl;
         m_lidarIO->save(scanPosNo, i, scanPositionPtr->lidars[i]);
     }
 
-    // std::cout << "[ScanPositionIO] LIDARs written. " << std::endl;
+    // lvr2::logout::get() << "[ScanPositionIO] LIDARs written. " << lvr2::endl;
 
     // Save all scan camera sensors
     for(size_t i = 0; i < scanPositionPtr->cameras.size(); i++)
     {
-        // std::cout << " [ScanPositionIO]: Writing camera " << i << std::endl;
+        // lvr2::logout::get() << " [ScanPositionIO]: Writing camera " << i << lvr2::endl;
         m_cameraIO->save(scanPosNo, i, scanPositionPtr->cameras[i]);
     }
 
-    // std::cout << "[ScanPositionIO] Cameras written. " << std::endl;
+    // lvr2::logout::get() << "[ScanPositionIO] Cameras written. " << lvr2::endl;
     
     // Save all hyperspectral camera sensors
     for(size_t i=0; i < scanPositionPtr->hyperspectral_cameras.size(); i++)
@@ -51,9 +51,9 @@ bool ScanPositionIO< BaseIO>::save(
         m_hyperspectralCameraIO->save(scanPosNo, i, scanPositionPtr->hyperspectral_cameras[i]);
     }
 
-    // std::cout << "[ScanPositionIO] Hyper written. " << std::endl;
+    // lvr2::logout::get() << "[ScanPositionIO] Hyper written. " << lvr2::endl;
 
-    // std::cout << "[ScanPositionIO - save] Write Meta." << std::endl;
+    // lvr2::logout::get() << "[ScanPositionIO - save] Write Meta." << lvr2::endl;
     // Save meta information
     if(d.meta)
     {
@@ -62,7 +62,7 @@ bool ScanPositionIO< BaseIO>::save(
         m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
     return true;
-    // std::cout << "[ScanPositionIO] Meta written. " << std::endl;
+    // lvr2::logout::get() << "[ScanPositionIO] Meta written. " << lvr2::endl;
 }
 
 template <typename BaseIO>
@@ -81,8 +81,8 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
 
     Description d = m_baseIO->m_description->position(scanPosNo);
 
-//     std::cout << "[ScanPositionIO - load]"  << std::endl;
-//     std::cout << d <<  std::endl;
+//     lvr2::logout::get() << "[ScanPositionIO - load]"  << lvr2::endl;
+//     lvr2::logout::get() << d <<  lvr2::endl;
 
     if(!d.dataRoot)
     {
@@ -113,7 +113,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
         }
         catch (const YAML::TypedBadConversion<ScanPosition> &ex)
         {
-            std::cout << timestamp << "[ScanPositionIO - load] ERROR at Scan (" << scanPosNo << ") : Could not decode YAML as ScanPosition." << std::endl;
+            lvr2::logout::get() << lvr2::error << "[ScanPositionIO - Load] Scan (" << scanPosNo << ") : Could not decode YAML as ScanPosition." << lvr2::endl;
             throw ex;
         }
     }
@@ -124,13 +124,13 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     }
 
     //// DATA
-    // std::cout << "[ScanPositionIO - load] Load SENSORS " << std::endl;
+    // lvr2::logout::get() << "[ScanPositionIO - load] Load SENSORS " << lvr2::endl;
 
     // Get all lidar sensors
     size_t lidarNo = 0;
     while(true)
     {
-        // std::cout << "[ScanPositionIO - load] Load LIDAR " << lidarNo << std::endl;
+        // lvr2::logout::get() << "[ScanPositionIO - load] Load LIDAR " << lidarNo << lvr2::endl;
         LIDARPtr lidar = m_lidarIO->load(scanPosNo, lidarNo);
 
         if (lidar)
@@ -142,7 +142,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
             break;
         }
 
-        // std::cout << "[ScanPositionIO - load] Loaded LIDAR " << lidarNo << std::endl;
+        // lvr2::logout::get() << "[ScanPositionIO - load] Loaded LIDAR " << lidarNo << lvr2::endl;
 
         ++lidarNo;
     }
@@ -151,7 +151,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     size_t camNo = 0;
     while(true)
     {
-        // std::cout << "[ScanPositionIO - load] Load Camera " << camNo << std::endl;
+        // lvr2::logout::get() << "[ScanPositionIO - load] Load Camera " << camNo << lvr2::endl;
         CameraPtr cam = m_cameraIO->load(scanPosNo, camNo);
         if (cam)
         {
@@ -161,7 +161,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
         {
             break;
         }
-        // std::cout << "[ScanPositionIO - load] Loaded Camera " << camNo << std::endl;
+        // lvr2::logout::get() << "[ScanPositionIO - load] Loaded Camera " << camNo << lvr2::endl;
         camNo++;
     }
 
@@ -178,7 +178,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
             break;
         }
 
-        // std::cout << "[ScanPositionIO - load] Loaded HyperCamera " << hCamNo << std::endl;
+        // lvr2::logout::get() << "[ScanPositionIO - load] Loaded HyperCamera " << hCamNo << lvr2::endl;
 
         hCamNo++;
     }

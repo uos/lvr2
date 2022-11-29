@@ -243,11 +243,13 @@ void saveScanProject(ScanProjectPtr& project, const std::string& schema, const s
                 hdf5io.ScanProjectIO::save(project);
             }
         }
-
-        // Saving failed.
-        lvr2::logout::get() << lvr2::error << "[Save Scan Project] Could not create schema or kernel for saving." << lvr2::endl;
-        lvr2::logout::get() << lvr2::error << "[Save Scan Project] Schema name: " << schema << lvr2::endl;
-        lvr2::logout::get() << lvr2::error << "[Save Scan Project] Target: " << target << lvr2::endl;
+        else
+        {
+            // Saving failed.
+            lvr2::logout::get() << lvr2::error << "[Save Scan Project] Could not create schema or kernel for saving." << lvr2::endl;
+            lvr2::logout::get() << lvr2::error << "[Save Scan Project] Schema name: " << schema << lvr2::endl;
+            lvr2::logout::get() << lvr2::error << "[Save Scan Project] Target: " << target << lvr2::endl;
+        }
     }
     else
     {
@@ -533,6 +535,211 @@ ScanProjectPtr loadScanPositionsExplicitly(
     }
     lvr2::logout::get() << lvr2::error << "[Load Positions Explicitly] : Could not load any data." << lvr2::endl;
     return nullptr;
+}
+
+void writeScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly)
+{
+    // Step 0: Check if output file is valid
+    std::ofstream outfile;
+    outfile.open(plyFile.c_str(), std::ios::binary);
+    
+    if(!outfile.good())
+    {
+        lvr2::logout::get() << lvr2::warning << "[WriteScanProjectToPLY]: Unable to open file '" << plyFile << "' for writing." << lvr2::endl;
+    }
+
+    // Step 1: Manually count all points in project, search for normal and color information.
+    size_t numPointsInProject = 0;
+    size_t scansWithNormals = 0;
+    size_t scansWithColors = 0;
+    size_t totalScans = 0;
+    for(size_t positionNo = 0; positionNo < project->positions.size(); positionNo++)
+    {
+        for(size_t lidarNo = 0; lidarNo < project->positions[positionNo]->lidars.size(); lidarNo++)
+        {
+            LIDARPtr lidar = project->positions[positionNo]->lidars[lidarNo];
+            if(lidar->scans.size() > 0)
+            {
+                for(size_t scanNo = 0; scanNo < lidar->scans.size(); scanNo++)
+                {
+                    // Stop of more data is present
+                    if (scanNo > 1 && firstScanOnly)
+                    {
+                        break;
+                    }
+
+                    // Get current scan
+                    ScanPtr scan = lidar->scans[scanNo];
+
+                    // Load payload data 
+                    scan->load();
+                    PointBufferPtr points = scan->points;
+
+                    if(points)
+                    {
+                        totalScans++;
+                        numPointsInProject += points->numPoints();
+                        if(points->hasColors())
+                        {
+                            scansWithColors++;
+                        }
+
+                        if(points->hasNormals())
+                        {
+                            scansWithNormals++;
+                        }
+                    }
+
+                    // Release data. This causes IO overhead, but
+                    // we do not want to store all data in RAM
+                    scan->release();
+                }
+            }
+        }
+    }
+    lvr2::logout::get() << lvr2::info << "[WriteScanProjectToPLY]: Scan project has " << numPointsInProject << "points." << lvr2::endl;
+    lvr2::logout::get() << "[WriteScanProjectToPLY]: Found " << scansWithNormals << " scans with normals." << lvr2::endl;
+    lvr2::logout::get() << "[WriteScanProjectToPLY]: Found " << scansWithColors << " scans with colors." << lvr2::endl;
+
+    // Check color / normal consistency
+    bool exportColors = (scansWithColors == totalScans);
+    bool exportNormals = (scansWithNormals == totalScans);
+
+    if(exportNormals)
+    {
+        lvr2::logout::get() << "[WriteScanProjectToPLY]: Exporting normals." << lvr2::endl;
+    }
+
+    if(exportColors)
+    {
+        lvr2::logout::get() << "[WriteScanProjectToPLY]: Exporting colors." << lvr2::endl;
+    }
+    
+    // Step 2: Write PLY header
+    outfile << "ply" << std::endl;
+    outfile << "format binary_little_endian 1.0" << std::endl;
+    outfile << "element vertex " << numPointsInProject << std::endl;
+    outfile << "property float x" << std::endl;
+    outfile << "property float y" << std::endl;
+    outfile << "property float z" << std::endl;
+
+    if(exportColors)
+    {
+        outfile << "property uchar red" << std::endl;
+        outfile << "property uchar green" << std::endl;
+        outfile << "property uchar blue" << std::endl;
+    }
+
+    if(exportNormals)
+    {
+        outfile << "property float nx" << std::endl;
+        outfile << "property float ny" << std::endl;
+        outfile << "property float nz" << std::endl;
+    }
+    outfile << "end_header" << std::endl;
+
+    // Step 3: Write data chunks from scans
+    size_t c = 0;
+    for (size_t positionNo = 0; positionNo < project->positions.size(); positionNo++)
+    {
+        for (size_t lidarNo = 0; lidarNo < project->positions[positionNo]->lidars.size(); lidarNo++)
+        {
+            LIDARPtr lidar = project->positions[positionNo]->lidars[lidarNo];
+            if (lidar->scans.size() > 0)
+            {
+                for (size_t scanNo = 0; scanNo < lidar->scans.size(); scanNo++)
+                {
+                    // Stop of more data is present
+                    if (scanNo > 1 && firstScanOnly)
+                    {
+                        break;
+                    }
+
+                    // Get current scan
+                    ScanPtr scan = lidar->scans[scanNo];
+
+                    lvr2::logout::get() 
+                        << lvr2::info << "[WriteScanProjectToPLY]: Exporting scan " 
+                        << c << " of " << totalScans << lvr2::endl;
+                    c++;
+                    // Load payload data
+                    scan->load();
+
+                    PointBufferPtr pointBuffer = scan->points;
+                    if (pointBuffer)
+                    {
+                        // Transform scan data
+                        Transformd poseScanPosition = project->positions[positionNo]->transformation;
+                    
+
+                        size_t np, nn, nc;
+                        size_t w_color;
+                        np = pointBuffer->numPoints();
+                        nc = nn = np;
+
+                        floatArr points = pointBuffer->getPointArray();
+                        ucharArr colors = pointBuffer->getColorArray(w_color);
+                        floatArr normals = pointBuffer->getNormalArray();
+
+                        // Determine size of single point
+                        size_t buffer_size = 3 * sizeof(float);
+
+                        if (colors)
+                        {
+                            buffer_size += w_color * sizeof(unsigned char);
+                        }
+
+                        if (normals)
+                        {
+                            buffer_size += 3 * sizeof(float);
+                        }
+
+                        char *buffer = new char[buffer_size];
+
+                        for (size_t i = 0; i < np; i++)
+                        {
+                            char *ptr = &buffer[0];
+
+                            // Write coordinates to buffer
+                            *((float *)ptr) = points[3 * i];
+                            ptr += sizeof(float);
+                            *((float *)ptr) = points[3 * i + 1];
+                            ptr += sizeof(float);
+                            *((float *)ptr) = points[3 * i + 2];
+
+                            // Write colors to buffer
+                            if (colors)
+                            {
+                                ptr += sizeof(float);
+                                *((unsigned char *)ptr) = colors[3 * i];
+                                ptr += sizeof(unsigned char);
+                                *((unsigned char *)ptr) = colors[3 * i + 1];
+                                ptr += sizeof(unsigned char);
+                                *((unsigned char *)ptr) = colors[3 * i + 2];
+                            }
+
+                            if (normals)
+                            {
+                                ptr += sizeof(unsigned char);
+                                *((float *)ptr) = normals[3 * i];
+                                ptr += sizeof(float);
+                                *((float *)ptr) = normals[3 * i + 1];
+                                ptr += sizeof(float);
+                                *((float *)ptr) = normals[3 * i + 2];
+                            }
+                            outfile.write((const char *)buffer, buffer_size);
+                        }
+
+                        delete[] buffer;
+
+                        // Release data again.
+                        scan->release();
+                    }
+                }
+            }
+        }
+    }
+    outfile.close();
 }
 
 } // namespace lvr2 

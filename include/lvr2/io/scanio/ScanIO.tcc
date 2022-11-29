@@ -1,5 +1,3 @@
-
-
 namespace lvr2
 {
 
@@ -16,8 +14,8 @@ void ScanIO<BaseIO>::save(
     auto Dgen = m_baseIO->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
 
-    // std::cout << "[ScanIO - save]" << std::endl;
-    // std::cout << d << std::endl;
+    // lvr2::logout::get() << "[ScanIO - save]" << lvr2::endl;
+    // lvr2::logout::get() << d << lvr2::endl;
 
     if (!d.dataRoot)
     {
@@ -31,13 +29,13 @@ void ScanIO<BaseIO>::save(
         scanPtr->load();
     }
 
-    // std::cout << "ScanIO - save data " << scanPosNo << " " << sensorNo << " " << scanNo << std::endl;
+    // lvr2::logout::get() << "ScanIO - save data " << scanPosNo << " " << sensorNo << " " << scanNo << lvr2::endl;
     //// DATA
     if (scanPtr->points)
     {
         if (d.data)
         {
-            // std::cout << "Save Channel wise" << std::endl;
+            // lvr2::logout::get() << "Save Channel wise" << lvr2::endl;
             m_pclIO->save(*d.dataRoot, *d.data, scanPtr->points);
 
             // save metas
@@ -56,7 +54,7 @@ void ScanIO<BaseIO>::save(
         }
         else
         {
-            // std::cout << "Save Partial" << std::endl;
+            // lvr2::logout::get() << "Save Partial" << lvr2::endl;
             // a lot of code for the problem of capsulating SOME channels into one PLY
             // there could be other channels that do not fit in this ply
 
@@ -67,12 +65,12 @@ void ScanIO<BaseIO>::save(
             /// Data (Channel)
             for (auto elem : *scanPtr->points)
             {
-                // std::cout << "Save " << elem.first << std::endl;
+                // lvr2::logout::get() << "Save " << elem.first << lvr2::endl;
                 Description dc = Dgen->scanChannel(scanPosNo, sensorNo, scanNo, elem.first);
                 boost::filesystem::path proot(*dc.dataRoot);
 
-                // std::cout << "Description of " <<  elem.first << std::endl;
-                // std::cout << dc << std::endl;
+                // lvr2::logout::get() << "Description of " <<  elem.first << lvr2::endl;
+                // lvr2::logout::get() << dc << lvr2::endl;
 
                 if (proot.extension() != "")
                 {
@@ -87,12 +85,12 @@ void ScanIO<BaseIO>::save(
                     // group is no file
                     // concatenate group and dataset and store directly
                     // std::string filename = (proot / *dc.data).string();
-                    // std::cout << "Store single channel " << elem.first << " to " << filename << std::endl;
+                    // lvr2::logout::get() << "Store single channel " << elem.first << " to " << filename << lvr2::endl;
 
                     std::string group, dataset;
                     std::tie(group, dataset) = hdf5util::validateGroupDataset(proot.string(), *dc.data);
 
-                    // std::cout << "Save " << elem.first << " to " << group << " - " << dataset << std::endl;
+                    // lvr2::logout::get() << "Save " << elem.first << " to " << group << " - " << dataset << lvr2::endl;
 
                     // Data
                     m_vchannel_io->save(group, dataset, elem.second);
@@ -106,13 +104,13 @@ void ScanIO<BaseIO>::save(
                 std::string group, name;
                 std::tie(group, name) = hdf5util::validateGroupDataset("", ex_elem.first);
 
-                // std::cout << "Save Channel Group to file: " << ex_elem.first << std::endl;
-                // std::cout << *ex_elem.second << std::endl;
+                // lvr2::logout::get() << "Save Channel Group to file: " << ex_elem.first << lvr2::endl;
+                // lvr2::logout::get() << *ex_elem.second << lvr2::endl;
 
                 m_baseIO->m_kernel->savePointBuffer(group, name, ex_elem.second);
             }
 
-            // std::cout << "Save Channel METAs" << std::endl;
+            // lvr2::logout::get() << "Save Channel METAs" << lvr2::endl;
 
             // META
             // save meta for each channel
@@ -128,7 +126,7 @@ void ScanIO<BaseIO>::save(
                 }
             }
 
-            // std::cout << "END channels" << std::endl;
+            // lvr2::logout::get() << "END channels" << lvr2::endl;
         }
     }
 
@@ -137,7 +135,7 @@ void ScanIO<BaseIO>::save(
         scanPtr->release();
     }
 
-    // std::cout << "save SCAN META" << std::endl;
+    // lvr2::logout::get() << "save SCAN META" << lvr2::endl;
 
     //// META
     if (d.meta)
@@ -145,11 +143,11 @@ void ScanIO<BaseIO>::save(
         YAML::Node node;
         node = *scanPtr;
 
-        // std::cout << "write YAML" << std::endl;
+        // lvr2::logout::get() << "write YAML" << lvr2::endl;
         m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 
-    // std::cout << "Success" << std::endl;
+    // lvr2::logout::get() << "Success" << lvr2::endl;
 }
 
 template <typename BaseIO>
@@ -185,8 +183,8 @@ ScanPtr ScanIO<BaseIO>::load(
         return ret;
     }
 
-    // std::cout << "[ScanIO - load] Description:" << std::endl;
-    // std::cout << d << std::endl;
+    // lvr2::logout::get() << "[ScanIO - load] Description:" << lvr2::endl;
+    // lvr2::logout::get() << d << lvr2::endl;
 
     /// META
     if (d.meta)
@@ -203,7 +201,7 @@ ScanPtr ScanIO<BaseIO>::load(
         }
         catch (const YAML::TypedBadConversion<Scan> &ex)
         {
-            std::cerr << "[ScanIO - load] ERROR at Scan (" << scanPosNo << ", " << sensorNo << ", " << scanNo << ") : Could not decode YAML as Scan." << std::endl;
+            lvr2::logout::get() << lvr2::error << "[ScanIO - load] Scan (" << scanPosNo << ", " << sensorNo << ", " << scanNo << ") : Could not decode YAML as Scan." << lvr2::endl;
             throw ex;
         }
     }
@@ -213,8 +211,8 @@ ScanPtr ScanIO<BaseIO>::load(
         ret = std::make_shared<Scan>();
     }
 
-    // std::cout << "[ScanIO - load] Meta loaded." << std::endl;
-    // std::cout << "- points: " << ret->numPoints << std::endl;
+    // lvr2::logout::get() << "[ScanIO - load] Meta loaded." << lvr2::endl;
+    // lvr2::logout::get() << "- points: " << ret->numPoints << lvr2::endl;
 
     std::function<PointBufferPtr()> points_loader;
     std::function<void(ScanPtr)> points_saver;
@@ -223,8 +221,8 @@ ScanPtr ScanIO<BaseIO>::load(
     // the position of the current scan within the scan project
     points_saver = [t = m_baseIO->shared_from_this(), scanPosNo, sensorNo, scanNo](ScanPtr p)
     {
-        std::cout << timestamp << "[Point Saver (2)]: Saving scan " << scanNo
-                  << " of LiDAR " << sensorNo << " of scan position " << scanPosNo << std::endl;
+        lvr2::logout::get() << lvr2::info << "[Point Saver (2)]: Saving scan " << scanNo
+                  << " of LiDAR " << sensorNo << " of scan position " << scanPosNo << lvr2::endl;
         t->ScanIO<BaseIO>::save(scanPosNo, sensorNo, scanNo, p);
     };
 
@@ -252,12 +250,12 @@ ScanPtr ScanIO<BaseIO>::load(
 
             if (!schema)
             {
-                std::cout << timestamp << "[Point Loader]: Schema empty" << std::endl;
+                lvr2::logout::get() << lvr2::warning << "[Point Loader]: Schema empty" << lvr2::endl;
             }
 
             if (!kernel)
             {
-                std::cout << timestamp << "[Point Loader]: Kernel empty" << std::endl;
+                lvr2::logout::get() << lvr2::warning << "[Point Loader]: Kernel empty" << lvr2::endl;
             }
 
             FeatureBuild<ScanIO> io(kernel, schema, false);
@@ -316,7 +314,7 @@ ScanPtr ScanIO<BaseIO>::load(
             else
             {
 
-                // std::cout << "Could not get channel metas" << std::endl;
+                // lvr2::logout::get() << "Could not get channel metas" << lvr2::endl;
 
                 // no meta information about channels
                 // could be in case of datasets cannot be
@@ -370,8 +368,8 @@ ScanPtr ScanIO<BaseIO>::load(
                             // 2. Used directory schema and stored binary channels
                             //    - this should not happen. binary channels must have an meta file
 
-                            std::cout << timestamp << "[ScanIO - load] ERROR: Could not load file by description: " << std::endl;
-                            std::cout << timestamp << dc << std::endl;
+                            lvr2::logout::get() << lvr2::error << "[ScanIO - load] Could not load file by description: " << lvr2::endl;
+                            lvr2::logout::get() << lvr2::error << dc << lvr2::endl;
 
                             throw std::runtime_error("[ScanIO - Panic. Something orrured that should not happen]");
                         }
@@ -425,8 +423,8 @@ std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
     auto Dgen = m_baseIO->m_description;
     Description d = Dgen->scan(scanPosNo, sensorNo, scanNo);
 
-    // std::cout << "loadChannelMetas from description" << std::endl;
-    // std::cout << d << std::endl;
+    // lvr2::logout::get() << "loadChannelMetas from description" << lvr2::endl;
+    // lvr2::logout::get() << d << lvr2::endl;
 
     std::unordered_map<std::string, YAML::Node> channel_metas;
 
@@ -441,8 +439,8 @@ std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
 
         m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta);
 
-        // std::cout << "loadChannelMetas - Loaded Meta: " << std::endl;
-        // std::cout << meta << std::endl;
+        // lvr2::logout::get() << "loadChannelMetas - Loaded Meta: " << lvr2::endl;
+        // lvr2::logout::get() << meta << lvr2::endl;
 
         if (meta["channels"])
         {
@@ -462,7 +460,7 @@ std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
                         channel_name = cmeta["name"].as<std::string>();
                     }
 
-                    // std::cout << "First Hint found: " << channel_name << std::endl;
+                    // lvr2::logout::get() << "First Hint found: " << channel_name << lvr2::endl;
                     channel_metas[channel_name] = cmeta;
                 }
             }
@@ -477,7 +475,7 @@ std::unordered_map<std::string, YAML::Node> ScanIO<BaseIO>::loadChannelMetas(
         std::string metaFile = *dc.meta;
         std::tie(metaGroup, metaFile) = hdf5util::validateGroupDataset(metaGroup, metaFile);
 
-        // std::cout << "Search for meta files in " << metaGroup << std::endl;
+        // lvr2::logout::get() << "Search for meta files in " << metaGroup << lvr2::endl;
         for (auto meta : m_baseIO->m_kernel->metas(metaGroup, "channel"))
         {
             std::string channel_name = meta.first;

@@ -25,7 +25,7 @@ void PointCloudIO<BaseIO>::save(
     const std::string& groupandname, 
     PointBufferPtr pcl) const
 {
-    std::cout << timestamp << "Storing each channel individually" << std::endl;
+    lvr2::logout::get() << lvr2::info << "Storing each channel individually" << lvr2::endl;
     for(auto elem : *pcl)
     {
         m_vchannel_io->save(groupandname, elem.first, elem.second);
@@ -37,7 +37,7 @@ PointBufferPtr PointCloudIO<BaseIO>::load(
     const std::string& group, 
     const std::string& name) const
 {
-    // std::cout << "[IO: PointCloudIO - load]: " << group << ", " << name << std::endl;
+    // lvr2::logout::get() << "[IO: PointCloudIO - load]: " << group << ", " << name << lvr2::endl;
     boost::filesystem::path p(name);
     if(p.extension() == "") {
         // no extension: assuming to store each channel
@@ -51,7 +51,7 @@ template<typename BaseIO>
 PointBufferPtr PointCloudIO<BaseIO>::load(
     const std::string& group) const
 {
-    // std::cout << "[IO: PointCloudIO - load]: " << group << std::endl;
+    // lvr2::logout::get() << "[IO: PointCloudIO - load]: " << group << lvr2::endl;
     PointBufferPtr ret;
 
     using VChannelT = typename PointBuffer::val_type;

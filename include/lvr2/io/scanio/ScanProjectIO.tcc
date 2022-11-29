@@ -10,16 +10,16 @@ void ScanProjectIO<BaseIO>::save(
     Description d = m_baseIO->m_description->scanProject();
 
 
-//     std::cout << "[ScanProjectIO - save]: Description" << std::endl;
-//     std::cout << d << std::endl;
+//     lvr2::logout::get() << "[ScanProjectIO - save]: Description" << lvr2::endl;
+//     lvr2::logout::get() << d << lvr2::endl;
 //
 //     if(!d.dataRoot)
 //     {
-//         std::cout << timestamp << "[ScanProjectIO] Description does not contain a data root for the ScanProject" << std::endl;
+//         lvr2::logout::get() << lvr2::info << "[ScanProjectIO] Description does not contain a data root for the ScanProject" << lvr2::endl;
 //         d.dataRoot = "";
 //     }
 //
-//     std::cout << "[ScanProjectIO] Save Scan Project "<< std::endl;
+//     lvr2::logout::get() << "[ScanProjectIO] Save Scan Project "<< lvr2::endl;
     // Iterate over all positions and save
     size_t successfulScans = 1;
 
@@ -39,8 +39,8 @@ void ScanProjectIO<BaseIO>::save(
     {
         YAML::Node node;
         node = *scanProject;
-        // std::cout << "[ScanProjectIO] saveMetaYAML, Group: "
-        //             << *d.groupName << ", metaName: " << *d.metaName << std::endl;
+        // lvr2::logout::get() << "[ScanProjectIO] saveMetaYAML, Group: "
+        //             << *d.groupName << ", metaName: " << *d.metaName << lvr2::endl;
         m_baseIO->m_kernel->saveMetaYAML(*d.metaRoot, *d.meta, node);
     }
 }
@@ -60,8 +60,8 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
     // Load description and meta data for scan project
     Description d = m_baseIO->m_description->scanProject();
 
-    //std::cout << "[HDF5IO - ScanProjectIO - load]: Description" << std::endl;
-    //std::cout << d << std::endl;
+    //lvr2::logout::get() << "[HDF5IO - ScanProjectIO - load]: Description" << lvr2::endl;
+    //lvr2::logout::get() << d << lvr2::endl;
 
     if(!d.dataRoot)
     {
@@ -70,21 +70,24 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
 
     if(*d.dataRoot != "" && !m_baseIO->m_kernel->exists(*d.dataRoot))
     {
-        std::cout << "[ScanProjectIO] Warning: '" << *d.dataRoot << "' does not exist." << std::endl; 
+        lvr2::logout::get() << lvr2::warning << "[ScanProjectIO] Warning: '" << *d.dataRoot << "' does not exist." << lvr2::endl; 
         return ret;
     }
 
     if(d.meta)
     {
         YAML::Node meta;
-        if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
+        if (!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
             return ret;
         }
-        try {
+        try
+        {
             ret = std::make_shared<ScanProject>(meta.as<ScanProject>());
-        } catch(const YAML::TypedBadConversion<ScanProject>& ex) {
-            std::cerr << "[ScanProjectIO - load] ERROR at ScanProject: Could not decode YAML as ScanProject." << std::endl;
+        }
+        catch (const YAML::TypedBadConversion<ScanProject> &ex)
+        {
+            lvr2::logout::get() << lvr2::error << "[ScanProjectIO - load] ScanProject: Could not decode YAML as ScanProject." << lvr2::endl;
             throw ex;
         }
     } 
@@ -94,7 +97,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
         // some schemes do not have meta descriptions: slam6d
         // create without meta information: generate meta afterwards
 
-        std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
+        lvr2::logout::get() << lvr2::warning << "[ScanProjectIO] Could not load meta information. No meta name specified." << lvr2::endl;
         ret = std::make_shared<ScanProject>();
     }
 
@@ -103,7 +106,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
     size_t scanPosNo = 0;
     while(true)
     {  
-        // std::cout << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << std::endl;
+        // lvr2::logout::get() << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << lvr2::endl;
         // Get description for next scan
 
         // Generate Directories for all Filetypes
@@ -152,7 +155,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::loadScanProject(ReductionAlgorithmPtr redu
 
     if(*d.dataRoot != "" && !m_baseIO->m_kernel->exists(*d.dataRoot))
     {
-        std::cout << "[ScanProjectIO] Warning: '" << *d.dataRoot << "' does not exist." << std::endl; 
+        lvr2::logout::get() << lvr2::warning << "[ScanProjectIO] " << *d.dataRoot << "' does not exist." << lvr2::endl; 
         return ret;
     }
 
@@ -168,7 +171,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::loadScanProject(ReductionAlgorithmPtr redu
         // some schemes do not have meta descriptions: slam6d
         // create without meta information: generate meta afterwards
 
-        // std::cout << timestamp << "[ScanProjectIO] Could not load meta information. No meta name specified." << std::endl;
+        // lvr2::logout::get() << lvr2::info << "[ScanProjectIO] Could not load meta information. No meta name specified." << lvr2::endl;
         ret = std::make_shared<ScanProject>();
     }
 

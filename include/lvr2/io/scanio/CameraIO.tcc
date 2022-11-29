@@ -46,13 +46,12 @@ CameraPtr CameraIO<BaseIO>::load(
 
     if(!d.dataRoot)
     {
-        std::cout << "Data root is not set" << std::endl;
         return ret;
     }
 
     if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
-        std::cout << "Data root does not exist" << std::endl;
+        //std::cout << "Data root does not exist" << std::endl;
         return ret;
     }
 
@@ -62,7 +61,7 @@ CameraPtr CameraIO<BaseIO>::load(
         YAML::Node meta;
         if (!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
-            std::cout << "Failed to load meta data" << std::endl;
+            //std::cout << "Failed to load meta data" << std::endl;
             return ret;
         }
         ret = std::make_shared<Camera>(meta.as<Camera>());

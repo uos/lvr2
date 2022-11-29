@@ -33,6 +33,7 @@
  */
 
  
+
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <cmath>
@@ -199,9 +200,8 @@ void transformAndReducePointCloud(
             }
             else
             {
-                std::cout << "The following is for debugging purpose" << std::endl;
-                std::cout << "Cntr: " << (cntr * 3) << " targetSize: " << targetSize << std::endl;
-                std::cout << "nip : " << n_ip << " modulo " << modulo << std::endl;
+                lvr2::logout::get() << lvr2::debug << "[TransformAndReducePointCloud] Cntr: " << (cntr * 3) << " targetSize: " << targetSize << lvr2::endl;
+                lvr2::logout::get() << "TransformAndReducePointCloud] nip : " << n_ip << " modulo " << modulo << lvr2::endl;
                 break;
             }
 
@@ -235,6 +235,8 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
     size_t numPoints = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
 
+    lvr2::Monitor pointMonitor(lvr2::LogLevel::info, "[TransformPointCloud] Transforming points", numPoints);
+
     #pragma omp parallel for
     for(size_t i = 0; i < numPoints; i++)
     {
@@ -248,6 +250,8 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
         arr[3 * i]     = tv[0];
         arr[3 * i + 1] = tv[1];
         arr[3 * i + 2] = tv[2];
+
+        ++pointMonitor;
     }
 
     // Transform normals according to rotation part of the 
@@ -256,7 +260,7 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
 
     if(normals)
     {
-        std::cout << timestamp << "Transforming normals..." << std::endl;
+        lvr2::Monitor normalMonitor(lvr2::LogLevel::info, "[TransformPointCloud] Transforming normals", numPoints);
         Eigen::Matrix<T, 3, 3> rotation = transformation.template block<3, 3>(0, 0);
 
         #pragma omp parallel for
@@ -272,6 +276,8 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
             normals[3 * i] = tv[0];
             normals[3 * i + 1] = tv[1];
             normals[3 * i + 2] = tv[2];
+
+            ++normalMonitor;
         }
     }
 }
@@ -385,6 +391,12 @@ void matrixToPose(const Transform<T>& mat, Vector3<T>& position, Vector3<T>& rot
     position = mat.template block<3, 1>(0, 3).template cast<T>();
 }
 
-
+template<typename T>
+void transformPointBuffer(PointBufferPtr points, Transform<T>& transform)
+{
+    ModelPtr model(new Model);
+    model->m_pointCloud = points;
+    transformPointCloud(model, transform);
+}
 
 } // namespace lvr2

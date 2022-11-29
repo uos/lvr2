@@ -188,6 +188,23 @@ ScanProjectPtr loadScanPositionsExplicitly(
     const std::string& root,
     const std::vector<size_t>& positions);
 
+/**
+ * @brief Writes the point cloud data from a scan project to a 
+ *        PLY file. It transforms all point cloud according to the 
+ *        stored transformation into the global coordinate system.
+ *        Exported are points, normals (if present) and colors (if present).   
+ * 
+ *        Normals and colors will only be exported if they exist for 
+ *        all scans.  
+ *     
+ * @param project           A scan project
+ * @param plyFile           The target .ply file
+ * @param firstScanOnly     If true, only the first scan of each lidar will be 
+ *                          exported, otherwise all scans will be loaded, converted
+ *                          written to the target file.
+ */
+void writeScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly = true);
+
 } // namespace LVR2
 
 #endif // SCANPROJECTUTILS

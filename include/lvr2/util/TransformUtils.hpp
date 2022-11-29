@@ -37,6 +37,7 @@
 
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/Model.hpp"
+#include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/CoordinateTransform.hpp"
 
 #include <Eigen/Dense>
@@ -668,6 +669,17 @@ void eigenToEuler(Transform<T>& mat, T* pose)
         pose[2] = m[14];
     }
 }
+
+/**
+ * @brief   Transforms a scan according to the given transformation, including
+ *          normals if present.
+ * 
+ * @tparam T 
+ * @param scan 
+ * @param transform 
+ */
+template<typename T>
+void transformPointBuffer(PointBufferPtr points, Transform<T>& transform);
 
 
 

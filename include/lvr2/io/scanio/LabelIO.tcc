@@ -74,11 +74,11 @@ void LabelIO<Derived>::saveLabels(
     //save Waveform
     if(labelRootPtr->waveform)
     {
-        std::cout << timestamp << "[LabelIO]Saving Waveform" << std::endl;
+        lvr2::logout::get() << lvr2::info << "[LabelIO] Saving Waveform" << lvr2::endl;
         m_fullWaveformIO->saveLabelWaveform(groupPath.string(),labelRootPtr->waveform);      
     }else
     {
-        std::cout << timestamp << "[LabelIO]No Waveform" << std::endl;
+        lvr2::logout::get() << lvr2::info << "[LabelIO] No Waveform" << lvr2::endl;
     }
 
 }
@@ -144,7 +144,7 @@ LabelRootPtr LabelIO<Derived>::loadLabels(const std::string& group) const
     boost::filesystem::path waveformPath(groupPath / boost::filesystem::path("waveform"));
     if (m_baseIO->m_kernel->exists(waveformPath.string()))
     {
-            std::cout << timestamp << "[LabelIO] Read Waveform" << std::endl;
+            lvr2::logout::get() << lvr2::info << "[LabelIO] Read Waveform" << lvr2::endl;
             WaveformPtr fwPtr = m_fullWaveformIO->loadLabelWaveform(groupPath.string());
             ret->waveform = fwPtr;
     }

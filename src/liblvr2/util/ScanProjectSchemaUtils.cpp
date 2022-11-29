@@ -1,5 +1,5 @@
 #include "lvr2/util/ScanProjectUtils.hpp"
-#include "lvr2/util/Timestamp.hpp"
+#include "lvr2/util/Logging.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaEuRoC.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHyperlib.hpp"
@@ -22,8 +22,8 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
     // Check root directory
     if(!boost::filesystem::is_directory(boost::filesystem::path(rootDirectory)))
     {
-        std::cout << timestamp << "Cannot create directory schema. Given root is not a directory: '"
-                  << rootDirectory << "'." << std::endl;
+        lvr2::logout::get() << lvr2::warning << "Cannot create directory schema. Given root is not a directory: '"
+                  << rootDirectory << "'." << lvr2::endl;
         return nullptr;
     }
     
@@ -31,44 +31,44 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
 
     if(name == "EUROC")
     {
-        std::cout << timestamp << "Creating ScanProjectSchemaEuRoC with root directory '" 
-                  << rootDirectory << "." << std::endl;
+        lvr2::logout::get() << lvr2::info << "Creating ScanProjectSchemaEuRoC with root directory '" 
+                  << rootDirectory << "." << lvr2::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaEuRoC(rootDirectory));
     } 
     else if (name == "HYPERLIB")
     {
-        std::cout << timestamp << "Error: ScanProjectSchemaHyperlib not implemented yet." << std::endl;
+        lvr2::logout::get() << lvr2::error << "ScanProjectSchemaHyperlib not implemented yet." << lvr2::endl;
         //return DirectorySchemaPtr(new ScanProjectSchemaHyperlib(rootDirectory));
         return nullptr;
     } 
     else if (name == "RAW")
     {
-        std::cout << timestamp << "Creating ScanProjectSchemaRaw with root directory '" 
-                  << rootDirectory << "." << std::endl;
+        lvr2::logout::get() << lvr2::info << "Creating ScanProjectSchemaRaw with root directory '" 
+                  << rootDirectory << "." << lvr2::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaRaw(rootDirectory));
     }
       else if (name == "RAWPLY")
     {
-        std::cout << timestamp << "Creating ScanProjectSchemaRawPly with root directory '" 
-                  << rootDirectory << "." << std::endl;
+        lvr2::logout::get() << lvr2::info << "Creating ScanProjectSchemaRawPly with root directory '" 
+                  << rootDirectory << "." << lvr2::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaRaw(rootDirectory));
     }
     else if (name == "SLAM6D")
     {   
-        std::cout << timestamp << "Creating ScanProjectSchemaSlam6D with root directory '" 
-                  << rootDirectory << "." << std::endl;
+        lvr2::logout::get() << lvr2::info << "Creating ScanProjectSchemaSlam6D with root directory '" 
+                  << rootDirectory << "." << lvr2::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaSlam6D(rootDirectory));
     }
 #ifdef LVR2_USE_RDB
     else if (name == "RDBX")
     {
-        std::cout << timestamp << "Creating ScanProjectSchemaRDBX with root directory '" 
-                  << rootDirectory << "." << std::endl;
+        lvr2::logout::get() << lvr2::info << "Creating ScanProjectSchemaRDBX with root directory '" 
+                  << rootDirectory << "." << lvr2::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaRdbx(rootDirectory));
     }
 #endif
 
-    std::cout << timestamp << "Unknown directory schema name '" << schemaName << "'." << std::endl;
+    lvr2::logout::get() << lvr2::error << "Unknown directory schema name '" << schemaName << "'." << lvr2::endl;
     return nullptr;
 }
 
@@ -78,18 +78,18 @@ HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName)
 
     if(name == "HDF5")
     {
-        std::cout << timestamp << "[HDF5SchemaFromName] Creating ScanProjectSchemaHDF5." << std::endl;
+        lvr2::logout::get() << lvr2::info << "[HDF5SchemaFromName] Creating ScanProjectSchemaHDF5." << lvr2::endl;
         return HDF5SchemaPtr(new ScanProjectSchemaHDF5);
     }
     else if(name == "HDFV5V2")
     {
-        std::cout << timestamp << "Error: ScanProjectSchemaHDF5V2 not fully implemented." << std::endl;
+        lvr2::logout::get() << lvr2::error << "[HDF5SchemaFromName] ScanProjectSchemaHDF5V2 not fully implemented." << lvr2::endl;
         return nullptr;
-        //std::cout << timestamp << "Creating ScanProjectSchemaHDF5V2." << std::endl;
+        //lvr2::logout::get() << timestamp << "Creating ScanProjectSchemaHDF5V2." << lvr2::endl;
         //return HDF5SchemaPtr(new ScanProjectSchemaHDF5V2);
     }
 
-    std::cout << timestamp << "Unknown HDF5 schema name '" << schemaName << "'." << std::endl;
+    lvr2::logout::get() <<  lvr2::error << "Unknown HDF5 schema name '" << schemaName << "'." << lvr2::endl;
     return nullptr;
 }
 
