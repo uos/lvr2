@@ -56,6 +56,11 @@ int main(int argc, char** argv)
         saveScanProject(workProject, options.getOutputSchema(), options.getOutputSource());
     }
 
+    if(options.getPLYFileName() != "")
+    {
+        writeScanProjectToPLY(workProject, options.getPLYFileName());
+    }
+
     // for(size_t i = 0; i < 5; i++)
     // {
     //     lvr2::log << lvr2::error << "Error " << i << lvr2::endl;

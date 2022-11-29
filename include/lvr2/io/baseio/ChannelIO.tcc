@@ -16,23 +16,29 @@ ChannelOptional<T> ChannelIO<BaseIO>::load(
     if constexpr(FileKernel::ImplementedTypes::contains<T>())
     {
         ret = loadFundamental<T>(group, name);
-    } else {
+    }
+    else
+    {
         // NOT IMPLEMENTED TYPE TO READ
 
         T tmp_obj;
         size_t tmp_size;
         ucharArr tmp_buffer = byteEncode(tmp_obj, tmp_size);
-        
-        if(tmp_buffer)
+
+        if (tmp_buffer)
         {
-            if(byteDecode<T>(&tmp_buffer[0], tmp_size))
+            if (byteDecode<T>(&tmp_buffer[0], tmp_size))
             {
                 ret = loadCustom<T>(group, name);
-            } else {
-                std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
             }
-        } else {
-            std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
+            else
+            {
+                lvr2::logout::get() << lvr2::warning << "[ChannelIO] Type not implemented for " << group << "/" << name << lvr2::endl;
+            }
+        }
+        else
+        {
+            lvr2::logout::get() << lvr2::warning << "[ChannelIO] Type not implemented for " << group << "/" << name << lvr2::endl;
         }
     }
 
@@ -49,16 +55,20 @@ void ChannelIO<BaseIO>::save(
     if constexpr(FileKernel::ImplementedTypes::contains<T>())
     {
         saveFundamental(group, name, channel);
-    } else {
+    }
+    else
+    {
 
-        if(channel.width() == 1 && channel.numElements() > 0)
+        if (channel.width() == 1 && channel.numElements() > 0)
         {
             // could be dynamic channel
             // check if serialization is implemented for the specific type
             saveCustom(group, name, channel);
-        } else {
+        }
+        else
+        {
             // NOT IMPLEMENTED TYPE TO WRITE
-            std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
+            lvr2::logout::get() << lvr2::warning << "[ChannelIO] Type not implemented for " << group << "/" << name << lvr2::endl;
         }
     }
 }
@@ -86,17 +96,17 @@ void ChannelIO<BaseIO>::saveCustom(
     std::string name,
     const Channel<T>& channel) const
 {
-    // std::cout << "[ChannelIO - saveCustom ]" << std::endl;
+    // lvr2::logout::get() << "[ChannelIO - saveCustom ]" << lvr2::endl;
     size_t tmp_size;
     T tmp_obj;
     boost::shared_array<unsigned char> buffer = byteEncode(tmp_obj, tmp_size);
-    
-    if(buffer)
+
+    if (buffer)
     {
         // saving is possible via uchar buffer
         // Determine size of shared array
         size_t total_size = sizeof(size_t);
-        for(size_t i = 0; i<channel.numElements(); i++)
+        for (size_t i = 0; i < channel.numElements(); i++)
         {
             size_t buffer_size;
             buffer = byteEncode(channel[i][0], buffer_size);
@@ -105,22 +115,22 @@ void ChannelIO<BaseIO>::saveCustom(
         }
 
         boost::shared_array<unsigned char> data(new unsigned char[total_size]);
-        unsigned char* data_ptr = &data[0];
-        
+        unsigned char *data_ptr = &data[0];
+
         size_t Npoints = channel.numElements();
-        unsigned char* Npointsc = reinterpret_cast<unsigned char*>(&Npoints);
+        unsigned char *Npointsc = reinterpret_cast<unsigned char *>(&Npoints);
         memcpy(data_ptr, Npointsc, sizeof(size_t));
         data_ptr += sizeof(size_t);
 
-        // std::cout << "Write Meta: " << Npoints << " points" << std::endl;
+        // lvr2::logout::get() << "Write Meta: " << Npoints << " points" << lvr2::endl;
 
         // Filling shared_array with data
-        for(size_t i = 0; i<channel.numElements(); i++)
+        for (size_t i = 0; i < channel.numElements(); i++)
         {
             size_t buffer_size;
             buffer = byteEncode(channel[i][0], buffer_size);
-            unsigned char* bsize = reinterpret_cast<unsigned char*>(&buffer_size);
-    
+            unsigned char *bsize = reinterpret_cast<unsigned char *>(&buffer_size);
+
             // write buffer size
             memcpy(data_ptr, bsize, sizeof(size_t));
             data_ptr += sizeof(size_t);
@@ -133,8 +143,10 @@ void ChannelIO<BaseIO>::saveCustom(
         dims[0] = total_size;
         dims[1] = 1;
         m_baseIO->m_kernel->saveUCharArray(group, name, dims, data);
-    } else {
-        std::cout << "[ChannelIO] Type not implemented for " << group << "/" << name << std::endl;
+    }
+    else
+    {
+        lvr2::logout::get() << lvr2::warning << "[ChannelIO] Type not implemented for " << group << "/" << name << lvr2::endl;
     }
 }
 
@@ -156,33 +168,34 @@ std::vector<size_t> ChannelIO<BaseIO>::loadDimensions(
 // PROTECTED
 
 // LOADER
-template<typename BaseIO>
-template<typename T>
-ChannelOptional<T> ChannelIO<BaseIO>::loadFundamental( 
+template <typename BaseIO>
+template <typename T>
+ChannelOptional<T> ChannelIO<BaseIO>::loadFundamental(
     std::string group,
     std::string name) const
 {
     ChannelOptional<T> ret;
 
-    if constexpr(FileKernel::ImplementedTypes::contains<T>())
+    if constexpr (FileKernel::ImplementedTypes::contains<T>())
     {
         std::vector<size_t> dims;
         boost::shared_array<T> arr = m_baseIO->m_kernel->template loadArray<T>(group, name, dims);
 
-        if(arr)
+        if (arr)
         {
-            if(dims.size() != 2)
+            if (dims.size() != 2)
             {
-                std::cout << timestamp << "[ChannelIO] Trying to load data with dim = " 
-                        << dims.size() << ". Should be 2." << std::endl;
+                lvr2::logout::get() << lvr2::warning << "[ChannelIO] Trying to load data with dim = "
+                          << dims.size() << ". Should be 2." << lvr2::endl;
                 return ret;
             }
             Channel<T> c(dims[0], dims[1], arr);
             ret = c;
             return ret;
         }
-
-    } else {
+    }
+    else
+    {
         // WARNINGS
     }
     return ret;
@@ -201,22 +214,24 @@ ChannelOptional<T> ChannelIO<BaseIO>::loadCustom(
     // found readable custom type
     std::vector<size_t> dims;
     ucharArr buffer = m_baseIO->m_kernel->loadUCharArray(group, name, dims);
-    
-    unsigned char* data_ptr = &buffer[0];
-    size_t Npoints = *reinterpret_cast<size_t*>(data_ptr);
+
+    unsigned char *data_ptr = &buffer[0];
+    size_t Npoints = *reinterpret_cast<size_t *>(data_ptr);
     data_ptr += sizeof(size_t);
 
     Channel<T> cd(Npoints, 1);
 
-    for(size_t i=0; i<Npoints; i++)
+    for (size_t i = 0; i < Npoints; i++)
     {
-        const size_t elem_size = *reinterpret_cast<const size_t*>(data_ptr);
+        const size_t elem_size = *reinterpret_cast<const size_t *>(data_ptr);
         data_ptr += sizeof(size_t);
         auto dataopt = byteDecode<T>(data_ptr, elem_size);
-        if(dataopt)
+        if (dataopt)
         {
             cd[i][0] = *dataopt;
-        } else {
+        }
+        else
+        {
             // could not load object of type T
             return ret;
         }
@@ -224,7 +239,7 @@ ChannelOptional<T> ChannelIO<BaseIO>::loadCustom(
     }
 
     ret = cd;
-    
+
     return ret;
 }
 
@@ -236,20 +251,22 @@ void ChannelIO<BaseIO>::saveFundamental(
     std::string name,
     const Channel<T>& channel) const
 {
-    // std::cout << "ChannelIO - saveFundamental" << std::endl;
-    if constexpr(FileKernel::ImplementedTypes::contains<T>())
+    // lvr2::logout::get() << "ChannelIO - saveFundamental" << lvr2::endl;
+    if constexpr (FileKernel::ImplementedTypes::contains<T>())
     {
         std::vector<size_t> dims(2);
         dims[0] = channel.numElements();
         dims[1] = channel.width();
-        // std::cout << "Save Channel " << dims[0] << "x" << dims[1] << std::endl;  
+        // lvr2::logout::get() << "Save Channel " << dims[0] << "x" << dims[1] << lvr2::endl;
         m_baseIO->m_kernel->template saveArray<T>(group, name, dims, channel.dataPtr());
-    } else {
+    }
+    else
+    {
         // TODO: Error or Warning?
         std::stringstream ss;
         ss << "Kernel does not support channels of type '" << channel.typeName() << "'";
-        std::cout << ss.str() << std::endl;
-        throw std::runtime_error(ss.str());  
+        lvr2::logout::get() << ss.str() << lvr2::endl;
+        throw std::runtime_error(ss.str());
     }
 }
 

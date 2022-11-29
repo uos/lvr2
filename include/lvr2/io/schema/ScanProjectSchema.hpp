@@ -8,6 +8,9 @@
 #include <boost/filesystem.hpp>
 
 #include <yaml-cpp/yaml.h>
+
+#include "lvr2/util/Logging.hpp"
+
 namespace lvr2
 {
 
@@ -36,7 +39,30 @@ struct Description
 
 std::ostream& operator<<(std::ostream& os, const Description& desc);
 
+inline lvr2::Logger &operator<<(lvr2::Logger &log, const Description &desc)
+{
+    if(desc.dataRoot)
+    {
+        log << "[LVR Description] DataRoot: " << *desc.dataRoot << lvr2::endl;
+    }
 
+    if(desc.data)
+    {
+        log << "[LVR Description] Data: " << *desc.data << lvr2::endl;
+    }
+
+    if(desc.metaRoot)
+    {
+        log << "[LVR Description] Meta Root: " << *desc.metaRoot << lvr2::endl;
+    }
+
+    if(desc.meta)
+    {
+        log << "[LVR Description] Meta: " << *desc.meta << lvr2::endl;
+    }
+    
+    return log;
+}
 
 class ScanProjectSchema
 {

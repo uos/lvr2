@@ -12,7 +12,7 @@ bool ScanPositionIO< BaseIO>::save(
     Description d = m_baseIO->m_description->position(scanPosNo);
 
     lvr2::logout::get() << lvr2::info << "[ScanPositionIO] ScanPosition " << scanPosNo << " - Description: " << lvr2::endl;
-    lvr2::logout::get() << lvr2::info << d << lvr2::endl;
+    lvr2::logout::get() << lvr2::info << d;
 
     if(!d.dataRoot)
     {

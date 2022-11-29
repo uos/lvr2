@@ -49,7 +49,7 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             // what to do here?
         }
     } else {
-        std::cout << timestamp << "[MetaFormatFactory] Meta extension " << p.extension() << " unknown. " << std::endl; 
+        lvr2::logout::get() << lvr2::warning << "[MetaFormatFactory] Meta extension " << p.extension() << " unknown. " << lvr2::endl; 
     }
 }
 
@@ -67,14 +67,14 @@ YAML::Node loadMetaInformation(const std::string &in)
         YAML::Node n;
         if (boost::filesystem::exists(inPath))
         {
-            // std::cout << timestamp
-            //           << "LoadMetaInformation(YAML): Loading " << inPath << std::endl;
+            // lvr2::logout::get() << timestamp
+            //           << "LoadMetaInformation(YAML): Loading " << inPath << lvr2::endl;
             n = YAML::LoadFile(inPath.string());
         }
         else
         {
-            std::cout << timestamp
-                      << "[MetaFormatFactory] LoadMetaInformation(YAML): Unable to find yaml file: " << inPath << std::endl;
+            lvr2::logout::get() << lvr2::error
+                      << "[MetaFormatFactory] LoadMetaInformation(YAML): Unable to find yaml file: " << inPath << lvr2::endl;
         }
         return n;
     }
@@ -105,14 +105,14 @@ YAML::Node loadMetaInformation(const std::string &in)
         }
         else
         {
-            std::cout << timestamp
-                      << "[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No pose file found." << std::endl;
+            lvr2::logout::get() << lvr2::warning
+                      << "[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No pose file found." << lvr2::endl;
         }
 
         if (frames_exist)
         {
-            // std::cout << timestamp
-            //           << "LoadMetaInformation(SLAM6D): Loading " << framesInPath << std::endl;
+            // lvr2::logout::get() << timestamp
+            //           << "LoadMetaInformation(SLAM6D): Loading " << framesInPath << lvr2::endl;
             sp.transformation = getTransformationFromFrames<double>(framesPath);
         }
         else
@@ -120,8 +120,8 @@ YAML::Node loadMetaInformation(const std::string &in)
             // node frames found. taking poseEstimate as transformation
             sp.transformation = sp.poseEstimation;
             
-            std::cout << timestamp
-                      << "[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No frames file found." << std::endl;
+            lvr2::logout::get() << warning
+                      << "[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No frames file found." << lvr2::endl;
         }
 
         node = sp;
@@ -130,7 +130,7 @@ YAML::Node loadMetaInformation(const std::string &in)
     }
     else
     {
-        std::cout << "[MetaFormatFactory] Kernel Panic: Meta extension " << inPath.extension() << " unknown. " << std::endl;
+        lvr2::logout::get() << lvr2::error << "[MetaFormatFactory] Meta extension " << inPath.extension() << " unknown. " << lvr2::endl;
         YAML::Node node;
         return node;
     }

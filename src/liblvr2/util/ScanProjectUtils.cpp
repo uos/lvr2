@@ -660,7 +660,7 @@ void writeScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bo
 
                     lvr2::logout::get() 
                         << lvr2::info << "[WriteScanProjectToPLY]: Exporting scan " 
-                        << c << " of " << totalScans << lvr2::endl;
+                        << c + 1 << " of " << totalScans << lvr2::endl;
                     c++;
                     // Load payload data
                     scan->load();

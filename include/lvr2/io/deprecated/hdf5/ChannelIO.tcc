@@ -26,34 +26,36 @@ ChannelOptional<T> ChannelIO<Derived>::load(
 {
     ChannelOptional<T> ret;
 
-    if constexpr ( hdf5util::H5AllowedTypes::contains<T>())
+    if constexpr (hdf5util::H5AllowedTypes::contains<T>())
     {
-      
-        if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
+
+        if (m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
         {
-            if(g.exist(datasetName))
+            if (g.exist(datasetName))
             {
                 HighFive::DataSet dataset = g.getDataSet(datasetName);
                 std::vector<size_t> dim = dataset.getSpace().getDimensions();
-                
+
                 size_t elementCount = 1;
                 for (auto e : dim)
                     elementCount *= e;
 
-                if(elementCount)
+                if (elementCount)
                 {
                     ret = Channel<T>(dim[0], dim[1]);
                     dataset.read(ret->dataPtr().get());
                 }
             }
-        } else {
+        }
+        else
+        {
             throw std::runtime_error("[Hdf5 - ChannelIO]: Hdf5 file not open.");
         }
-      
-    } else {
-        std::cout << "[ChannelIO]: Type not supported " << std::endl; 
     }
-
+    else
+    {
+        std::cout << "[ChannelIO]: Type not supported " << std::endl;
+    }
 
     return ret;
 }

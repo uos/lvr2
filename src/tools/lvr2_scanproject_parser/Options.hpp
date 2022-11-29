@@ -74,6 +74,8 @@ class Options : public lvr2::BaseOption
     string getOutputSchema() const { return m_variables["outputSchema"].as<string>(); }
     string getInputSchema() const { return m_variables["inputSchema"].as<string>(); }
 
+    string getPLYFileName() const {return m_variables["plyFileName"].as<string>();}
+
     bool printStructure() const { return m_variables.count("printStructure"); }
     bool convert() const {return m_variables.count("convert");}
     bool computeNormals() const {return m_variables.count("computeNormals");}

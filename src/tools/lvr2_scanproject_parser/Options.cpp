@@ -70,6 +70,7 @@ Options::Options(int argc, char** argv) : lvr2::BaseOption(argc, argv), m_descr(
         ("outputSource", value<string>()->default_value(""), "Target source of converted project data (directory or HDF5 file).")
         ("inputSchema", value<string>()->default_value(""), "Schema of the input data. Has to fit the structure of the input source")
         ("outputSchema", value<string>()->default_value(""), "Schema of the output data. Has to fit the structure of the input source")
+        ("plyFileName", value<string>()->default_value(""), "If defined, all scans will be exported into a single .ply file")
         ("scanpositions",  value<std::vector<size_t>>()->multitoken(), "List of scan positions to load from a scan project")
         ("kn", value<size_t>()->default_value(100), "Number of nearest neighbors for normal estimation")
         ("ki", value<size_t>()->default_value(100), "Number of nearest neighbors for normal interpolation")
