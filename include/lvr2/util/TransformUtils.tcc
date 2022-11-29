@@ -276,6 +276,84 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
     }
 }
 
+
+template<typename T>
+void transformModel(ModelPtr model, const Transform<T>& transformation)
+{
+    lvr2::Matrix4<lvr2::BaseVector<T> > mat;
+    mat[0]  = transformation(0, 0);
+    mat[1]  = transformation(0, 1);
+    mat[2]  = transformation(0, 2);
+    mat[3]  = transformation(0, 3);
+
+    mat[4]  = transformation(1, 0);
+    mat[5]  = transformation(1, 1);
+    mat[6]  = transformation(1, 2);
+    mat[7]  = transformation(1, 3);
+
+    mat[8]  = transformation(2, 0);
+    mat[9]  = transformation(2, 1);
+    mat[10] = transformation(2, 2);
+    mat[11] = transformation(2, 3);
+
+    mat[12] = transformation(3, 0);
+    mat[13] = transformation(3, 1);
+    mat[14] = transformation(3, 2);
+    mat[15] = transformation(3, 3);
+    if(model->m_pointCloud)
+    {
+      PointBufferPtr p_buffer = model->m_pointCloud;
+
+      std::cout << timestamp << "Using points" << std::endl;
+      FloatChannelOptional points = p_buffer->getFloatChannel("points");
+
+      cout << mat;
+      for(size_t i = 0; i < points->numElements(); i++)
+      {
+        lvr2::BaseVector<T> v((*points)[i][0], (*points)[i][1], (*points)[i][2]);
+        v = mat * v;
+        (*points)[i] = v;
+      }
+
+      floatArr normals = model->m_pointCloud->getNormalArray();
+
+      if(normals)
+      {
+        std::cout << timestamp << "Transforming normals..." << std::endl;
+        Eigen::Matrix<T, 3, 3> rotation = transformation.template block<3, 3>(0, 0);
+
+        for (size_t i = 0; i < points->numElements(); i++)
+        {
+          float x = (*points)[i][0];
+          float y = (*points)[i][1];
+          float z = (*points)[i][2];
+
+          Vector3<T> n(x, y, z);
+          Vector3<T> tv = rotation * n;
+
+          normals[3 * i] = tv[0];
+          normals[3 * i + 1] = tv[1];
+          normals[3 * i + 2] = tv[2];
+        }
+      }
+    }
+
+    // Get mesh buffer
+    if(model->m_mesh)
+    {
+      MeshBufferPtr m_buffer = model->m_mesh;
+
+      FloatChannelOptional points = m_buffer->getFloatChannel("vertices");
+
+      for(size_t i = 0; i < points->numElements(); i++)
+      {
+        lvr2::BaseVector<T> v((*points)[i][0], (*points)[i][1], (*points)[i][2]);
+        v = mat * v;
+        (*points)[i] = v;
+      }
+    }
+}
+
 template<typename T>
 Transform<T> transformFrame(const Transform<T>& frame, const CoordinateTransform<T>& ct)
 {

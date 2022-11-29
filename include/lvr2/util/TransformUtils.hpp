@@ -38,6 +38,7 @@
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/Model.hpp"
 #include "lvr2/util/CoordinateTransform.hpp"
+#include "lvr2/geometry/Matrix4.hpp"
 
 #include <Eigen/Dense>
 
@@ -116,6 +117,15 @@ void transformAndReducePointCloud(ModelPtr& model, int modulo, const CoordinateT
  */
 template<typename T>
 void transformPointCloud(ModelPtr model, const Transform<T>& transformation);
+
+/**
+ * @brief   Transforms a model containing to the given
+ *          transformation (usually from a .frames file)
+ * @param   A model containing point cloud data.
+ * @param   A transformation.
+ */
+template<typename T>
+void transformModel(ModelPtr model, const Transform<T>& transformation);
 
 /**
  * @brief   Transforms the given source frame according to the given coordinate
