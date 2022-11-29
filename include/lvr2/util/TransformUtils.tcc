@@ -476,7 +476,7 @@ void transformPointBuffer(PointBufferPtr points, Transform<T>& transform)
 {
     ModelPtr model(new Model);
     model->m_pointCloud = points;
-    transformModel(model, transform);
+    transformPointCloud(model, transform);
 }
 
 } // namespace lvr2

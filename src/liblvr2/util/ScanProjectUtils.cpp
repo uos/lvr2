@@ -2,6 +2,7 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Factories.hpp"
 #include "lvr2/util/ScanSchemaUtils.hpp"
+#include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/util/Logging.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/scanio/HDF5IO.hpp"
@@ -669,8 +670,15 @@ void writeScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bo
                     if (pointBuffer)
                     {
                         // Transform scan data
-                        Transformd poseScanPosition = project->positions[positionNo]->transformation;
-                    
+                        Transformd positionPose = project->positions[positionNo]->transformation;
+                        Transformd lidarPose = project->positions[positionNo]->lidars[lidarNo]->transformation;
+                        Transformd transformation = transformRegistration(positionPose, lidarPose);
+                        
+                        // lvr2::logout::get() << "Pose: " << positionPose << lvr2::endl;
+                        // lvr2::logout::get() << "Lidar: " << lidarPose << lvr2::endl;
+                        // lvr2::logout::get() << "Transform: " << transformation << lvr2::endl;
+
+                        transformPointBuffer(pointBuffer, transformation);
 
                         size_t np, nn, nc;
                         size_t w_color;
