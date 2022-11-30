@@ -97,7 +97,7 @@ PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, con
             if(buffer)
             {
                 std::cout << timestamp << "Building octree with voxel size " << voxelSize << " from " << i->m_filename << std::endl;
-                OctreeReduction oct(buffer, voxelSize, 5);
+                RandomSampleOctreeReduction oct(buffer, voxelSize, 5);
                 PointBufferPtr reduced = oct.getReducedPoints();
 
                 // Apply transformation

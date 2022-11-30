@@ -614,7 +614,7 @@ namespace lvr2
             {
                 // reduction is necessary to avoid GPU memory overflow
                 lvr2::logout::get() << lvr2::warning << "[LargeScaleReconstruction] Chunk has too many points: " << numPoints << ". Reducing." << lvr2::endl;
-                OctreeReduction oct(p_loader, targetSize, 10);
+                RandomSampleOctreeReduction oct(p_loader, targetSize, 10);
                 p_loader = oct.getReducedPoints();
                 numPoints = p_loader->numPoints();
                 targetSize *= 2; // bigger voxel size means more points removed during reduction in the next iteration

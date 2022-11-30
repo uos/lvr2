@@ -58,25 +58,8 @@ int main(int argc, char** argv)
 
     if(options.getPLYFileName() != "")
     {
-        writeScanProjectToPLY(workProject, options.getPLYFileName());
+        exportScanProjectToPLY(workProject, options.getPLYFileName());
     }
-
-    // for(size_t i = 0; i < 5; i++)
-    // {
-    //     lvr2::log << lvr2::error << "Error " << i << lvr2::endl;
-    //     lvr2::log << lvr2::warning << "Warning " << i << lvr2::endl;
-    //     lvr2::log << lvr2::debug << "Debug " << i << lvr2::endl;
-    //     lvr2::log << lvr2::info << "Info " << i << lvr2::endl;
-    //     lvr2::log << lvr2::trace << "Trace " << i << lvr2::endl;
-    // }
-
-    // lvr2::LVR2Monitor monitor( spdlog::level::debug, "Prefix text", 100);
-
-    // for(size_t i = 0; i < 100; i++)
-    // {
-    //     usleep(1000000);
-    //     ++monitor;
-    // }
 
     return 0;
 }

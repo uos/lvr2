@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
             else if(options.getVoxelSize())
             {
                 std::cout << timestamp << "Octree reduction with voxel size " << options.getVoxelSize() << std::endl;
-                OctreeReduction oct(buffer, options.getVoxelSize(), 5);
+                RandomSampleOctreeReduction oct(buffer, options.getVoxelSize(), 5);
                 result = oct.getReducedPoints();
             }
 

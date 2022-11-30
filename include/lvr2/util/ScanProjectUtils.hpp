@@ -203,7 +203,7 @@ ScanProjectPtr loadScanPositionsExplicitly(
  *                          exported, otherwise all scans will be loaded, converted
  *                          written to the target file.
  */
-void writeScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly = true);
+void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly = true);
 
 } // namespace LVR2
 

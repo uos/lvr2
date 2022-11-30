@@ -86,7 +86,7 @@ void SLAMScanWrapper::transform(const Transformd& transform, bool writeFrame, Fr
 
 void SLAMScanWrapper::reduce(double voxelSize, int maxLeafSize)
 {
-    OctreeReduction reduction(m_points.data(), m_numPoints, voxelSize, maxLeafSize);
+    RandomSampleOctreeReduction reduction(m_points.data(), m_numPoints, voxelSize, maxLeafSize);
     m_points.resize(m_numPoints);
 }
 

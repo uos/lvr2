@@ -538,7 +538,7 @@ ScanProjectPtr loadScanPositionsExplicitly(
     return nullptr;
 }
 
-void writeScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly)
+void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly)
 {
     // Step 0: Check if output file is valid
     std::ofstream outfile;

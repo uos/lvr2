@@ -43,11 +43,8 @@
 namespace lvr2
 {
 
-OctreeReduction::OctreeReduction(PointBufferPtr& pointBuffer, float voxelSize, size_t maxPointsPerVoxel)
-    : m_voxelSize(voxelSize),
-      m_maxPointsPerVoxel(maxPointsPerVoxel),
-      m_numPoints(pointBuffer->numPoints()),
-      m_pointBuffer(pointBuffer)
+RandomSampleOctreeReduction::RandomSampleOctreeReduction(PointBufferPtr pointBuffer, float voxelSize, size_t maxPointsPerVoxel)
+    : OctreeReductionBase(pointBuffer, voxelSize, maxPointsPerVoxel)
 {
     if (m_numPoints == 0)
     {
@@ -76,12 +73,8 @@ OctreeReduction::OctreeReduction(PointBufferPtr& pointBuffer, float voxelSize, s
     }
 }
 
-OctreeReduction::OctreeReduction(Vector3f* points, size_t& n, float voxelSize, size_t maxPointsPerVoxel)
-    : m_voxelSize(voxelSize),
-      m_maxPointsPerVoxel(maxPointsPerVoxel),
-      m_numPoints(n),
-      m_points(points),
-      m_pointBuffer(nullptr)
+RandomSampleOctreeReduction::RandomSampleOctreeReduction(Vector3f* points, size_t& n, float voxelSize, size_t maxPointsPerVoxel)
+    :  OctreeReductionBase(nullptr, voxelSize, maxPointsPerVoxel), m_points(points)
 {
     if (m_numPoints == 0)
     {
@@ -91,7 +84,7 @@ OctreeReduction::OctreeReduction(Vector3f* points, size_t& n, float voxelSize, s
     n = m_numPoints;
 }
 
-void OctreeReduction::init()
+void RandomSampleOctreeReduction::init()
 {
     m_flags = new bool[m_numPoints];
     std::fill_n(m_flags, m_numPoints, false);
@@ -148,7 +141,7 @@ void OctreeReduction::init()
     m_flags = nullptr;
 }
 
-PointBufferPtr OctreeReduction::getReducedPoints()
+PointBufferPtr RandomSampleOctreeReduction::getReducedPoints()
 {
     if (!m_pointBuffer)
     {
@@ -157,7 +150,7 @@ PointBufferPtr OctreeReduction::getReducedPoints()
     return subSamplePointBuffer(m_pointBuffer, m_pointIndices);
 }
 
-void OctreeReduction::createOctree(size_t start, size_t n, const Vector3f& min, const Vector3f& max, unsigned int level)
+void RandomSampleOctreeReduction::createOctree(size_t start, size_t n, const Vector3f& min, const Vector3f& max, unsigned int level)
 {
     // Stop recursion - not enough points in voxel
     if (n <= m_maxPointsPerVoxel)
@@ -224,7 +217,7 @@ void OctreeReduction::createOctree(size_t start, size_t n, const Vector3f& min, 
     }
 }
 
-size_t OctreeReduction::splitPoints(size_t start, size_t n, unsigned int axis, float splitValue)
+size_t RandomSampleOctreeReduction::splitPoints(size_t start, size_t n, unsigned int axis, float splitValue)
 {
     size_t l = start;
     size_t r = start + n - 1;
