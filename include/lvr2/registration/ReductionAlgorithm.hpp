@@ -36,6 +36,8 @@
 namespace lvr2
 {
 
+enum PointReductionAlgorihmTag {NONE, ALL, FIXED_SIZE, PERCENTAGE, OCTREE_RANDOM, OCTREE_NEAREST, OCTREE_CENTER};
+
 /**
  * @brief Interface defintion for algorithms that reduce point 
  *        buffer objects

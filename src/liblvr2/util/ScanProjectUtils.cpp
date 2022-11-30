@@ -11,6 +11,8 @@
 #include "lvr2/io/kernels/HDF5Kernel.hpp"
 
 #include <boost/filesystem.hpp>
+#include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/iostreams/stream.hpp>
 
 namespace lvr2
 {
@@ -538,7 +540,7 @@ ScanProjectPtr loadScanPositionsExplicitly(
     return nullptr;
 }
 
-void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly)
+void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly, PointReductionAlgorihmTag algTag)
 {
     // Step 0: Check if output file is valid
     std::ofstream outfile;
@@ -549,11 +551,36 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
         lvr2::logout::get() << lvr2::warning << "[WriteScanProjectToPLY]: Unable to open file '" << plyFile << "' for writing." << lvr2::endl;
     }
 
-    // Step 1: Manually count all points in project, search for normal and color information.
+
     size_t numPointsInProject = 0;
     size_t scansWithNormals = 0;
     size_t scansWithColors = 0;
     size_t totalScans = 0;
+    size_t w_color;
+
+    // Create three memory mapped files for temporary
+    // point cloud data
+    boost::iostreams::mapped_file_params params;
+    params.new_file_size = 10e7 * 3 * sizeof(float);
+    params.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+
+    boost::iostreams::mapped_file pointFile;
+    boost::iostreams::mapped_file colorFile;
+    boost::iostreams::mapped_file normalFile;
+
+    params.path = "points.tmp";
+    pointFile.open(params);
+    float* mmf_points = (float*)pointFile.data();
+
+    params.path = "colors.tmp";
+    colorFile.open(params);
+    unsigned char* mmf_colors = (unsigned char*)colorFile.data();
+
+    params.path = "normals.tmp";
+    normalFile.open(params);
+    float* mmf_normals = (float*)normalFile.data();
+
+    // Go through all scans
     for(size_t positionNo = 0; positionNo < project->positions.size(); positionNo++)
     {
         for(size_t lidarNo = 0; lidarNo < project->positions[positionNo]->lidars.size(); lidarNo++)
@@ -576,19 +603,52 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
                     scan->load();
                     PointBufferPtr points = scan->points;
 
+                    // Transform scan data
+                    Transformd positionPose = project->positions[positionNo]->transformation;
+                    Transformd lidarPose = project->positions[positionNo]->lidars[lidarNo]->transformation;
+                    Transformd transformation = transformRegistration(positionPose, lidarPose);
+
+                    transformPointBuffer(points, transformation);
+
                     if(points)
                     {
                         totalScans++;
-                        numPointsInProject += points->numPoints();
+ 
+                        //Write points
+                        for(size_t i = 0; i < points->numPoints(); i++)
+                        {
+                            floatArr pts = points->getPointArray();
+                            mmf_points[3 * numPointsInProject + 3 * i    ] = pts[i * 3];
+                            mmf_points[3 * numPointsInProject + 3 * i + 1] = pts[i * 3 + 1];
+                            mmf_points[3 * numPointsInProject + 3 * i + 2] = pts[i * 3 + 2];
+                        }
+
+
                         if(points->hasColors())
                         {
+                            // TODO: Implement with correct color width
+                            ucharArr pts = points->getColorArray(w_color);
+                            for(size_t i = 0; i < points->numPoints(); i++)
+                            {
+                                mmf_colors[3 * numPointsInProject + 3 * i    ] = pts[i * 3];
+                                mmf_colors[3 * numPointsInProject + 3 * i + 1] = pts[i * 3 + 1];
+                                mmf_colors[3 * numPointsInProject + 3 * i + 2] = pts[i * 3 + 2];
+                            }
                             scansWithColors++;
                         }
 
                         if(points->hasNormals())
                         {
+                            floatArr pts = points->getNormalArray();
+                            for(size_t i = 0; i < points->numPoints(); i++)
+                            {
+                                mmf_normals[3 * numPointsInProject + 3 * i    ] = pts[i * 3];
+                                mmf_normals[3 * numPointsInProject + 3 * i + 1] = pts[i * 3 + 1];
+                                mmf_normals[3 * numPointsInProject + 3 * i + 2] = pts[i * 3 + 2];
+                            }
                             scansWithNormals++;
                         }
+                        numPointsInProject += points->numPoints();
                     }
 
                     // Release data. This causes IO overhead, but
@@ -639,115 +699,64 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
     }
     outfile << "end_header" << std::endl;
 
-    // Step 3: Write data chunks from scans
-    size_t c = 0;
-    for (size_t positionNo = 0; positionNo < project->positions.size(); positionNo++)
+    // Determine size of single point
+    size_t buffer_size = 3 * sizeof(float);
+
+    if (exportColors)
     {
-        for (size_t lidarNo = 0; lidarNo < project->positions[positionNo]->lidars.size(); lidarNo++)
-        {
-            LIDARPtr lidar = project->positions[positionNo]->lidars[lidarNo];
-            if (lidar->scans.size() > 0)
-            {
-                for (size_t scanNo = 0; scanNo < lidar->scans.size(); scanNo++)
-                {
-                    // Stop of more data is present
-                    if (scanNo > 1 && firstScanOnly)
-                    {
-                        break;
-                    }
-
-                    // Get current scan
-                    ScanPtr scan = lidar->scans[scanNo];
-
-                    lvr2::logout::get() 
-                        << lvr2::info << "[WriteScanProjectToPLY]: Exporting scan " 
-                        << c + 1 << " of " << totalScans << lvr2::endl;
-                    c++;
-                    // Load payload data
-                    scan->load();
-
-                    PointBufferPtr pointBuffer = scan->points;
-                    if (pointBuffer)
-                    {
-                        // Transform scan data
-                        Transformd positionPose = project->positions[positionNo]->transformation;
-                        Transformd lidarPose = project->positions[positionNo]->lidars[lidarNo]->transformation;
-                        Transformd transformation = transformRegistration(positionPose, lidarPose);
-                        
-                        // lvr2::logout::get() << "Pose: " << positionPose << lvr2::endl;
-                        // lvr2::logout::get() << "Lidar: " << lidarPose << lvr2::endl;
-                        // lvr2::logout::get() << "Transform: " << transformation << lvr2::endl;
-
-                        transformPointBuffer(pointBuffer, transformation);
-
-                        size_t np, nn, nc;
-                        size_t w_color;
-                        np = pointBuffer->numPoints();
-                        nc = nn = np;
-
-                        floatArr points = pointBuffer->getPointArray();
-                        ucharArr colors = pointBuffer->getColorArray(w_color);
-                        floatArr normals = pointBuffer->getNormalArray();
-
-                        // Determine size of single point
-                        size_t buffer_size = 3 * sizeof(float);
-
-                        if (colors)
-                        {
-                            buffer_size += w_color * sizeof(unsigned char);
-                        }
-
-                        if (normals)
-                        {
-                            buffer_size += 3 * sizeof(float);
-                        }
-
-                        char *buffer = new char[buffer_size];
-
-                        for (size_t i = 0; i < np; i++)
-                        {
-                            char *ptr = &buffer[0];
-
-                            // Write coordinates to buffer
-                            *((float *)ptr) = points[3 * i];
-                            ptr += sizeof(float);
-                            *((float *)ptr) = points[3 * i + 1];
-                            ptr += sizeof(float);
-                            *((float *)ptr) = points[3 * i + 2];
-
-                            // Write colors to buffer
-                            if (colors)
-                            {
-                                ptr += sizeof(float);
-                                *((unsigned char *)ptr) = colors[3 * i];
-                                ptr += sizeof(unsigned char);
-                                *((unsigned char *)ptr) = colors[3 * i + 1];
-                                ptr += sizeof(unsigned char);
-                                *((unsigned char *)ptr) = colors[3 * i + 2];
-                            }
-
-                            if (normals)
-                            {
-                                ptr += sizeof(unsigned char);
-                                *((float *)ptr) = normals[3 * i];
-                                ptr += sizeof(float);
-                                *((float *)ptr) = normals[3 * i + 1];
-                                ptr += sizeof(float);
-                                *((float *)ptr) = normals[3 * i + 2];
-                            }
-                            outfile.write((const char *)buffer, buffer_size);
-                        }
-
-                        delete[] buffer;
-
-                        // Release data again.
-                        scan->release();
-                    }
-                }
-            }
-        }
+        buffer_size += w_color * sizeof(unsigned char);
     }
+
+    if (exportNormals)
+    {
+        buffer_size += 3 * sizeof(float);
+    }
+
+    // Alloc buffer for a single point
+    char *buffer = new char[buffer_size];
+
+    // Read data from memory mapped files and write 
+    // to target file
+    for (size_t i = 0; i < numPointsInProject; i++)
+    {
+        char *ptr = &buffer[0];
+
+        // Write coordinates to buffer
+        *((float *)ptr) = mmf_points[3 * i];
+        ptr += sizeof(float);
+        *((float *)ptr) = mmf_points[3 * i + 1];
+        ptr += sizeof(float);
+        *((float *)ptr) = mmf_points[3 * i + 2];
+
+        // Write colors to buffer
+        if (exportColors)
+        {
+            ptr += sizeof(float);
+            *((unsigned char *)ptr) = mmf_colors[3 * i];
+            ptr += sizeof(unsigned char);
+            *((unsigned char *)ptr) = mmf_colors[3 * i + 1];
+            ptr += sizeof(unsigned char);
+            *((unsigned char *)ptr) = mmf_colors[3 * i + 2];
+        }
+
+        if (exportNormals)
+        {
+            ptr += sizeof(unsigned char);
+            *((float *)ptr) = mmf_normals[3 * i];
+            ptr += sizeof(float);
+            *((float *)ptr) = mmf_normals[3 * i + 1];
+            ptr += sizeof(float);
+            *((float *)ptr) = mmf_normals[3 * i + 2];
+        }
+        outfile.write((const char *)buffer, buffer_size);
+    }
+
+    // Cleanup
+    delete[] buffer;
     outfile.close();
+    pointFile.close();
+    normalFile.close();
+    colorFile.close();
 }
 
 } // namespace lvr2 
