@@ -86,6 +86,7 @@ set(LVR2_SOURCES
     registration/Metascan.cpp
     registration/SLAMAlign.cpp
     registration/GraphSLAM.cpp
+    registration/NearestCenterOctreeReduction.cpp
     registration/RandomSampleOctreeReduction.cpp
     registration/RegistrationPipeline.cpp
     registration/FPFH.cpp

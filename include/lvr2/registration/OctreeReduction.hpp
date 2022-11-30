@@ -48,6 +48,12 @@
 namespace lvr2
 {
 
+/// Enum of implemented octree variants
+enum OctreeType {RANDOM_SAMPLE, NEAREST_CENTER, CENTER};
+
+/**
+ * @brief Abstract base class for all octree-based reduction algorithms
+ */
 class OctreeReductionBase
 {
 public:
@@ -151,6 +157,7 @@ private:
 
 class NearestCenterOctreeReduction : public OctreeReductionBase
 {
+public:
       /**
      * @brief Constructs octtree that holds up to \ref maxPointsPerVoxel
      *        points per voxel. It selects one point per voxel which is 
@@ -164,11 +171,37 @@ class NearestCenterOctreeReduction : public OctreeReductionBase
     NearestCenterOctreeReduction(PointBufferPtr pointBuffer, float voxelSize, size_t maxPointsPerVoxel);
 
     /**
-     * @brief Get the Reduced Points object. ONLY WORKS IF PointBufferPtr CONSTRUCTOR WAS USED
+     * @brief Get the Reduced Points object. 
      * 
      * @return PointBufferPtr The reduced points
      */
-    PointBufferPtr getReducedPoints() override;    
+    PointBufferPtr getReducedPoints() override;   
+
+private:
+    /// Builds the octree
+    void init();
+
+    /// @brief Recursive helper function to build the octree
+    /// @param start            Start index of the points to distribute
+    /// @param n                Number of points to distribute
+    /// @param min              Min coordinates of current bounding volume
+    /// @param max              Max coordinates of current bounding volume
+    /// @param level            Octree depth
+    void createOctree(size_t start, size_t n, const Vector3f& min, const Vector3f& max, unsigned int level = 0);
+
+    /// @brief Sorts the leaf points according to split value 
+    /// @param start            Start index of the points
+    /// @param n                Number of points to distribute
+    /// @param axis             Split axis
+    /// @param splitValue       Split valie
+    /// @return 
+    size_t splitPoints(size_t start, size_t n, unsigned int axis, float splitValue);
+
+    /// Array representation of the initial point cloud
+    floatArr                m_points;
+
+    /// Index array with the filtered points 
+    std::vector<size_t>     m_samplePointIndices;
 };
 
 /**
@@ -178,12 +211,23 @@ class NearestCenterOctreeReduction : public OctreeReductionBase
 class OctreeReductionAlgorithm : public ReductionAlgorithm
 {
 public:
-    OctreeReductionAlgorithm(float voxelSize, size_t maxPoints) : 
-        m_octree(nullptr), m_voxelSize(voxelSize), m_maxPoints(maxPoints) {};
+    OctreeReductionAlgorithm(float voxelSize, size_t maxPoints, OctreeType type = RANDOM_SAMPLE) : 
+        m_octree(nullptr), m_voxelSize(voxelSize), m_maxPoints(maxPoints), m_reductionType(type) {};
 
     void setPointBuffer(PointBufferPtr ptr) override
     {
         // Create octree
+        switch(m_reductionType)
+        {
+            case RANDOM_SAMPLE:
+                m_octree.reset(new RandomSampleOctreeReduction(ptr, m_voxelSize, m_maxPoints));
+                break;
+            case NEAREST_CENTER:
+                m_octree.reset(new NearestCenterOctreeReduction(ptr, m_voxelSize, m_maxPoints));
+                break;
+            default:
+                m_octree.reset(new RandomSampleOctreeReduction(ptr, m_voxelSize, m_maxPoints));
+        }
         m_octree.reset(new RandomSampleOctreeReduction(ptr, m_voxelSize, m_maxPoints));
     }
 
@@ -210,6 +254,9 @@ private:
 
     /// Maximum number of points
     size_t m_maxPoints;
+
+    /// Indicates the used octree reduction type
+    OctreeType m_reductionType;
 };
 
 } // namespace lvr2
