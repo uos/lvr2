@@ -166,11 +166,11 @@ int main(int argc, char** argv)
 
     build_lbvh(points_raw, num_points, queries, num_queries, args, kernel, kernel_name.c_str(), normals);
 
-    // floatArr new_normals = floatArr(&normals[0]);
+    floatArr new_normals = floatArr(&normals[0]);
 
-    // pbuffer->setNormalArray(new_normals, num_points);
+    pbuffer->setNormalArray(new_normals, num_points);
 
-    // std::cout << new_normals[0] << std::endl;
+    std::cout << new_normals[0] << std::endl;
 
     // Save the new model as test.ply
     ModelFactory::saveModel(model, "test.ply");

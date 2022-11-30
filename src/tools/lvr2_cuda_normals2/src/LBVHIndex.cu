@@ -543,8 +543,12 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
 
     // Create device memory
     float* d_points;
-    gpuErrchk( cudaMalloc(&d_points, 
-        sizeof(float) * 3 * num_points) );
+    gpuErrchk( cudaMalloc(&d_points,
+        sizeof(float) * 3 * num_points));
+
+    float* d_queries;
+    gpuErrchk( cudaMalloc(&d_queries, 
+        sizeof(float) * 3 * num_queries) );
 
     unsigned int* d_n_neighbors_out;
     gpuErrchk( cudaMalloc(&d_n_neighbors_out, 
@@ -565,6 +569,10 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
     // Copy to device
     gpuErrchk( cudaMemcpy(d_points, points,
         sizeof(float) * 3 * num_points,
+        cudaMemcpyHostToDevice));
+
+    gpuErrchk( cudaMemcpy(d_queries, queries,
+        sizeof(float) * 3 * num_queries,
         cudaMemcpyHostToDevice) );
 
     gpuErrchk( cudaMemcpy(d_n_neighbors_out, n_neighbors_out,
@@ -582,12 +590,18 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
     gpuErrchk( cudaMemcpy(d_normals, normals,
         sizeof(float) * 3 * num_normals,
         cudaMemcpyHostToDevice) );
-    std::cout << "IDX: " << indices_out[0] << std::endl;
+    
     calculate_normals_kernel<<<blocksPerGrid, threadsPerBlock>>>
-        (d_points, num_normals, d_n_neighbors_out, d_indices_out, d_neigh_sum, 
+        (d_points, d_queries, num_queries, d_n_neighbors_out, d_indices_out, d_neigh_sum, 
         d_normals);
 
     cudaDeviceSynchronize();
+
+    gpuErrchk( cudaMemcpy(normals, d_normals,
+        sizeof(float) * 3 * num_normals,
+        cudaMemcpyDeviceToHost) );
+
+    std::cout << "No Problemo." << std::endl;
 }
 
 // Get the extent of the points 
