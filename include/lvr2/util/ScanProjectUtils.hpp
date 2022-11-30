@@ -8,6 +8,7 @@
 
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
 
 namespace lvr2
 {
@@ -203,7 +204,7 @@ ScanProjectPtr loadScanPositionsExplicitly(
  *                          exported, otherwise all scans will be loaded, converted
  *                          written to the target file.
  */
-void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly = true, PointReductionAlgorihmTag = NONE);
+void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly = true, OctreeReductionAlgorithmPtr red = nullptr);
 
 
 

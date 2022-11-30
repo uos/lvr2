@@ -76,8 +76,11 @@ Options::Options(int argc, char** argv) : lvr2::BaseOption(argc, argv), m_descr(
         ("ki", value<size_t>()->default_value(100), "Number of nearest neighbors for normal interpolation")
         ("printStructure,p", "Print structure of the loaded scan project")
         ("computeNormals,n", "Compute normals for each scan position in the project")
-        ("convert,c", "Convert and save structure in a new schema defined by outputSchema and outputStructure");
-
+        ("convert,c", "Convert and save structure in a new schema defined by outputSchema and outputStructure")
+        ("reduction", value<string>()->default_value(""), "Reduce the point cloud data with given reduction method. Possible methods are OCTREE_RANDOM, OCTREE_NEAREST, OCTREE_CENTER")
+        ("minPointsInVoxel", value<size_t>()->default_value(10), "Minimum number of points per voxel in voxel-based reduction.")
+        ("voxelSize", value<float>()->default_value(10), "Voxel size for reduction." );
+    
     
     // Parse command line and generate variables map
     positional_options_description p;

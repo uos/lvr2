@@ -6,6 +6,7 @@
 #include "lvr2/io/scanio/ScanProjectIO.hpp"
 #include "lvr2/io/scanio/DirectoryIO.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
+#include "lvr2/registration/OctreeReduction.hpp"
 
 #include "Options.hpp"
 
@@ -58,7 +59,26 @@ int main(int argc, char** argv)
 
     if(options.getPLYFileName() != "")
     {
-        exportScanProjectToPLY(workProject, options.getPLYFileName());
+        if(options.getReduction() == "")
+        {
+            lvr2::logout::get() << lvr2::info << "[Main] Exporting all points to '" << options.getReduction() << "'." << lvr2::endl;
+            exportScanProjectToPLY(workProject, options.getPLYFileName());
+        }
+        else
+        {
+            OctreeReductionAlgorithmPtr red = nullptr;
+            if(options.getReduction() == "OCTREE_RANDOM")
+            {
+                lvr2::logout::get() 
+                    << lvr2::info << "[Main] Exporting with octree random sampling to '" 
+                    << options.getReduction() << "'." << lvr2::endl;
+
+                red.reset(new OctreeReductionAlgorithm(
+                    options.getVoxelSize(), 
+                    options.getMinPointsInVoxel(), RANDOM_SAMPLE));
+            }
+            exportScanProjectToPLY(workProject, options.getPLYFileName(), true, red);
+        }
     }
 
     return 0;

@@ -259,6 +259,8 @@ private:
     OctreeType m_reductionType;
 };
 
+using OctreeReductionAlgorithmPtr = std::shared_ptr<OctreeReductionAlgorithm>;
+
 } // namespace lvr2
 
 #endif

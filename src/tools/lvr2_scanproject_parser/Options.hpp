@@ -38,6 +38,7 @@
 #include "lvr2/config/BaseOption.hpp"
 #include "lvr2/util/ScanSchemaUtils.hpp"
 #include "lvr2/util/ScanProjectUtils.hpp"
+#include "lvr2/registration/ReductionAlgorithm.hpp"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -75,6 +76,9 @@ class Options : public lvr2::BaseOption
     string getInputSchema() const { return m_variables["inputSchema"].as<string>(); }
 
     string getPLYFileName() const {return m_variables["plyFileName"].as<string>();}
+    string getReduction() const {return m_variables["reduction"].as<string>();}
+
+    float getVoxelSize() const {return m_variables["voxelSize"].as<float>();}
 
     bool printStructure() const { return m_variables.count("printStructure"); }
     bool convert() const {return m_variables.count("convert");}
@@ -82,6 +86,7 @@ class Options : public lvr2::BaseOption
 
     size_t kn() const {return m_variables["kn"].as<size_t>();}
     size_t ki() const {return m_variables["ki"].as<size_t>();}
+    size_t getMinPointsInVoxel() const {return m_variables["minPointsInVoxel"].as<size_t>();}
 
     std::vector<size_t> scanPositions()
     {

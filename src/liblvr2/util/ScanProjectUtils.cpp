@@ -540,7 +540,7 @@ ScanProjectPtr loadScanPositionsExplicitly(
     return nullptr;
 }
 
-void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly, PointReductionAlgorihmTag algTag)
+void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly, OctreeReductionAlgorithmPtr red)
 {
     // Step 0: Check if output file is valid
     std::ofstream outfile;
@@ -598,9 +598,19 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
 
                     // Get current scan
                     ScanPtr scan = lidar->scans[scanNo];
-
+                    
                     // Load payload data 
-                    scan->load();
+                    if(red)
+                    {
+                        lvr2::logout::get() << lvr2::info << "[WriteScanProjectToPLY] Loading reduced points" << lvr2::endl;
+                        scan->load(red);
+                    }
+                    else
+                    {
+                        lvr2::logout::get() << lvr2::info << "[WriteScanProjectToPLY] Loading all points" << lvr2::endl;
+                        scan->load();
+                    }
+                    
                     PointBufferPtr points = scan->points;
 
                     // Transform scan data
@@ -658,7 +668,7 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
             }
         }
     }
-    lvr2::logout::get() << lvr2::info << "[WriteScanProjectToPLY]: Scan project has " << numPointsInProject << "points." << lvr2::endl;
+    lvr2::logout::get() << lvr2::info << "[WriteScanProjectToPLY]: Scan project has " << numPointsInProject << " points." << lvr2::endl;
     lvr2::logout::get() << "[WriteScanProjectToPLY]: Found " << scansWithNormals << " scans with normals." << lvr2::endl;
     lvr2::logout::get() << "[WriteScanProjectToPLY]: Found " << scansWithColors << " scans with colors." << lvr2::endl;
 
