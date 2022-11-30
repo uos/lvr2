@@ -1,6 +1,7 @@
 #include "LBVHIndex.cuh"
 #include "lbvh_kernels.cuh"
 #include "lbvh.cuh"
+#include "normals_kernel.cuh"
 
 #include <stdio.h>
 #include <vector>
@@ -302,7 +303,8 @@ void LBVHIndex::build(float* points, size_t num_points)
 void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* args, 
                     float* points_raw, size_t num_points,
                     const char* cu_src, const char* kernel_name,
-                    int K=1)
+                    int K,
+                    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
 {
     // Get the ptx of the kernel
     std::string ptx_src;
@@ -433,9 +435,6 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
     
     // // custom parameters
     // unsigned int* indices_out,
-    unsigned int* indices_out = (unsigned int*) 
-                malloc(sizeof(unsigned int) * num_queries * K);
-
     for(int i = 0; i < num_queries * K; i++)
     {
         indices_out[i] = UINT32_MAX;
@@ -450,9 +449,6 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
 
 
     // float* distances_out,
-    float* distances_out = (float*)
-                malloc(sizeof(float) * num_queries * K);
-
     for(int i = 0; i < num_queries * K; i++)
     {
         distances_out[i] = FLT_MAX;
@@ -467,9 +463,6 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
 
 
     // unsigned int* n_neighbors_out
-    unsigned int* n_neighbors_out = (unsigned int*)
-                malloc(sizeof(unsigned int) * num_queries);
-
     unsigned int* d_n_neighbors_out;
     gpuErrchk( cudaMalloc(&d_n_neighbors_out, sizeof(unsigned int) * num_queries) );
 
@@ -495,10 +488,14 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
 
     std::cout << "Launching Kernel" << std::endl;
 
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
+                        / threadsPerBlock;
+
     // Launch the kernel
     CUDA_SAFE_CALL( cuLaunchKernel(kernel, 
-        4, 1, 1,  // grid dim
-        256, 1, 1,    // block dim
+        blocksPerGrid, 1, 1,  // grid dim
+        threadsPerBlock, 1, 1,    // block dim
         0, NULL,    // shared mem and stream
         params,       // arguments
         0
@@ -520,84 +517,77 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
             sizeof(unsigned int) * num_queries,
             cudaMemcpyDeviceToHost) );
 
-    printf("K = %d \n", K);
+    // findKNN(K, points_raw, num_points, queries_raw, num_queries);
 
-    std::cout << "Number of neighbors: " << std::endl;
-    for(int i = 0; i < num_queries; i++)
+}
+
+ void LBVHIndex::calculate_normals(float* normals, size_t num_normals,
+                        float* queries, size_t num_queries,
+                        int K,
+                        float* points, size_t num_points,
+                        unsigned int* n_neighbors_out, unsigned int* indices_out)
+{
+    // Save the sum of all previous neighbors, important for indexing for radius search
+    // (not necessarily K neighbors per query)
+    unsigned int* neigh_sum = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
+
+    neigh_sum[0] = 0;
+    for(int i = 1; i < num_queries; i++)
     {
-        std::cout << n_neighbors_out[i] << std::endl;
+        neigh_sum[i] = neigh_sum[i - 1] + n_neighbors_out[i - 1];
     }
 
-    std::cout << "Neighbor Index: " << std::endl;
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (num_normals + threadsPerBlock - 1) 
+                        / threadsPerBlock;
 
-    for(int i = 0; i < num_queries * K; i++)
-    {
-        std::cout << indices_out[i] << std::endl;
-    }
+    // Create device memory
+    float* d_points;
+    gpuErrchk( cudaMalloc(&d_points, 
+        sizeof(float) * 3 * num_points) );
 
-    std::cout << "Distances Out: " << std::endl;
+    unsigned int* d_n_neighbors_out;
+    gpuErrchk( cudaMalloc(&d_n_neighbors_out, 
+        sizeof(unsigned int) * num_queries) );
 
-    for(int i = 0; i < num_queries * K; i++)
-    {
-        std::cout << distances_out[i] << std::endl;
-    }
+    unsigned int* d_indices_out;
+    gpuErrchk( cudaMalloc(&d_indices_out, 
+        sizeof(unsigned int) * K * num_queries) );
 
-    // // TESTING FOR SAXPY.CU
+    unsigned int* d_neigh_sum;
+    gpuErrchk( cudaMalloc(&d_neigh_sum, 
+        sizeof(unsigned int) * num_queries) );
 
-    // // Generate input for execution, and create output buffers.
-    // size_t n = 128 * 32;
-    // size_t bufferSize = n * sizeof(float);
-    // float a = 5.1f;
-    // float *hX = (float*)malloc(n * sizeof(float));
-    // float *hY = (float*)malloc(n * sizeof(float));
-    // float *hOut = (float*)malloc(n * sizeof(float));
+    float* d_normals;
+    gpuErrchk( cudaMalloc(&d_normals, 
+        sizeof(float) * 3 * num_normals) );
 
-    // // float *hX = new float[n], *hY = new float[n], *hOut = new float[n];
-    // for (size_t i = 0; i < n; ++i) {
-    //     hX[i] = static_cast<float>(i);
-    //     hY[i] = static_cast<float>(i * 2);
-    // }
+    // Copy to device
+    gpuErrchk( cudaMemcpy(d_points, points,
+        sizeof(float) * 3 * num_points,
+        cudaMemcpyHostToDevice) );
 
-    // float* dX;
-    // float* dY;
-    // float* dOut;
+    gpuErrchk( cudaMemcpy(d_n_neighbors_out, n_neighbors_out,
+        sizeof(unsigned int) * num_queries, 
+        cudaMemcpyHostToDevice) );
 
-    // cudaMalloc(&dX, sizeof(float) * n);
-    // cudaMalloc(&dY, sizeof(float) * n);
-    // cudaMalloc(&dOut, sizeof(float) * n);
+    gpuErrchk( cudaMemcpy(d_indices_out, indices_out,
+        sizeof(unsigned int) * K * num_queries, 
+        cudaMemcpyHostToDevice) );
     
-    // cudaMemcpy(dX, hX, sizeof(float) * n, cudaMemcpyHostToDevice);
-    // cudaMemcpy(dY, hY, sizeof(float) * n, cudaMemcpyHostToDevice);
+    gpuErrchk( cudaMemcpy(d_neigh_sum, neigh_sum, 
+        sizeof(unsigned int) * num_queries, 
+        cudaMemcpyHostToDevice) );
 
-    // // Execute SAXPY.
-    // void *params[] = { &a, &dX, &dY, &dOut, &n };
-    // CUDA_SAFE_CALL(
-    // cuLaunchKernel(kernel,
-    //     32, 1, 1, // grid dim
-    //     128, 1, 1, // block dim
-    //     0, NULL, // shared mem and stream
-    //     params, 0)); // arguments
-        
-    // // Retrieve and print output.
-    // // CUDA_SAFE_CALL(cuMemcpyDtoH(hOut, dOut, bufferSize));
-    // cudaMemcpy(hOut, dOut, sizeof(float) * n, cudaMemcpyDeviceToHost);
+    gpuErrchk( cudaMemcpy(d_normals, normals,
+        sizeof(float) * 3 * num_normals,
+        cudaMemcpyHostToDevice) );
+    std::cout << "IDX: " << indices_out[0] << std::endl;
+    calculate_normals_kernel<<<blocksPerGrid, threadsPerBlock>>>
+        (d_points, num_normals, d_n_neighbors_out, d_indices_out, d_neigh_sum, 
+        d_normals);
 
-
-    // for (size_t i = 0; i < n; ++i) {
-    //     std::cout << a << " * " << hX[i] << " + " << hY[i] << " = " << hOut[i] << '\n';
-    // }
-
-    // cudaFree(dX);
-    // cudaFree(dY);
-    // cudaFree(dOut);
-
-    // free(hX);
-    // free(hY);
-    // free(hOut);
-    
-
-    findKNN(K, points_raw, num_points, queries_raw, num_queries);
-
+    cudaDeviceSynchronize();
 }
 
 // Get the extent of the points 
@@ -674,7 +664,7 @@ void LBVHIndex::getPtxFromCuString( std::string& ptx, const char* sample_name, c
         "-I/home/till/Develop/src/tools/lvr2_cuda_normals2/include",
         cuda_include.c_str(),
         "-std=c++17",
-        "-DK=3"
+        "-DK=50"
     };
     //      "-I/usr/local/cuda/include",
     //      "-I/usr/local/include",

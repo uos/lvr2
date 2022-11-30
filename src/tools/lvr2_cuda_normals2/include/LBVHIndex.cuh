@@ -41,7 +41,14 @@ public:
                         size_t num_points,
                         const char* cu_src,
                         const char* kernel_name,
-                        int K);
+                        int K,
+                        unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out);
+
+    void calculate_normals(float* normals, size_t num_normals,
+                        float* queries, size_t num_queries,
+                        int K,
+                        float* points, size_t num_points,
+                        unsigned int* n_neighbors_out, unsigned int* indices_out);
     
     AABB* getExtent(AABB* extent, float* points, size_t num_points);
 

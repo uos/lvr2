@@ -710,7 +710,7 @@ endif(NOT MSVC)
 
 add_subdirectory(src/tools/lvr2_reconstruct)
 # This is throwing an undefined reference to 'main' error
-#add_subdirectory(src/tools/lvr2_dmc_reconstruction)
+# add_subdirectory(src/tools/lvr2_dmc_reconstruction)
 add_subdirectory(src/tools/lvr2_gs_reconstruction)
 add_subdirectory(src/tools/lvr2_asciiconverter)
 add_subdirectory(src/tools/lvr2_transform)

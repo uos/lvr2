@@ -136,22 +136,41 @@ int main(int argc, char** argv)
     // queries[7] = 27.0f;
     // queries[8] = 28.0f;
 
-    size_t num_queries = 2;
+    size_t num_queries = num_points;
 
-    float* queries = (float*) malloc(sizeof(float) * 3 * num_queries);
-    queries[0] = 0.0f;
-    queries[1] = 0.0f;
-    queries[2] = 0.0f;
+    float* queries = points_raw;
 
-    queries[3] = 50.0f;
-    queries[4] = 50.0f;
-    queries[5] = 50.0f;
+    // float* queries = (float*) malloc(sizeof(float) * 3 * num_queries);
+    // queries[0] = 0.0f;
+    // queries[1] = 0.0f;
+    // queries[2] = 0.0f;
+
+    // queries[3] = 50.0f;
+    // queries[4] = 50.0f;
+    // queries[5] = 50.0f;
+
+    // queries[6] = 20.0f;
+    // queries[7] = 20.0f;
+    // queries[8] = 20.0f;
+
+    // queries[9] = 150.0f;
+    // queries[10] = 150.0f;
+    // queries[11] = 150.0f;
     
 
     float* args = (float*) malloc(sizeof(float));
     args[0] = 1.0f;
 
-    build_lbvh(points_raw, num_points, queries, num_queries, args, kernel, kernel_name.c_str());
+    // the normals will be stored here
+    float* normals = (float*) malloc(sizeof(float) * num_queries * 3);
+
+    build_lbvh(points_raw, num_points, queries, num_queries, args, kernel, kernel_name.c_str(), normals);
+
+    // floatArr new_normals = floatArr(&normals[0]);
+
+    // pbuffer->setNormalArray(new_normals, num_points);
+
+    // std::cout << new_normals[0] << std::endl;
 
     // Save the new model as test.ply
     ModelFactory::saveModel(model, "test.ply");

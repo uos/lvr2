@@ -19,6 +19,7 @@ void build_lbvh(float* points,
                 size_t num_queries,
                 float* args,
                 const char* kernel,
-                const char* kernel_name);
+                const char* kernel_name,
+                float* normals);
 
 #endif // KERNELS_HOST

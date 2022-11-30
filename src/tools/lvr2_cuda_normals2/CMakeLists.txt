@@ -30,6 +30,8 @@ cuda_add_library(kernels_device
                 src/morton_code.cu
                 src/LBVHIndex.cu
                 src/lbvh_kernels.cu
+                src/normals_kernel.cu
+                #src/LBVHTree.cu
                 #src/query_knn_kernels.cu
                 #src/query_knn.cu
                 #src/query.cu
