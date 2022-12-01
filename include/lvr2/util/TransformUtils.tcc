@@ -266,9 +266,9 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
         #pragma omp parallel for
         for (size_t i = 0; i < numPoints; i++)
         {
-            float x = arr[3 * i];
-            float y = arr[3 * i + 1];
-            float z = arr[3 * i + 2];
+            float x = normals[3 * i];
+            float y = normals[3 * i + 1];
+            float z = normals[3 * i + 2];
 
             Vector3<T> n(x, y, z);
             Vector3<T> tv = rotation * n;
