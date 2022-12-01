@@ -19,7 +19,7 @@ public:
     unsigned int m_leaf_size;
     bool m_sort_queries;
     bool m_compact;
-    bool m_shrink_to_fit;
+    bool m_shrink_to_fit;   // Probably not needed
 
     float* m_points;
     unsigned int* m_sorted_indices;

@@ -49,6 +49,19 @@ void build_lbvh(float* points, size_t num_points,
                 n_neighbors_out, indices_out);
 
 
+    // for(int i = 0; i < num_queries; i++)
+    // {
+    //     if(normals[3 * i + 0] == 0.0f && normals[3 * i + 1] == 0.0 && normals[3 * i + 2] == 0.0)
+    //     {
+    //         std::cout << "No normal at Point " << i << std::endl;
+    //     } 
+    // }
+
+    // Normal outlier
+    // normals[3 * 141707 + 0] = 1.0f;
+    // normals[3 * 141707 + 1] = 1.0f;
+    // normals[3 * 141707 + 2] = 1.0f;
+
     // CPU NORMALS ###############################################################################################################
 
     // // Perform PCA to get the normal for each point

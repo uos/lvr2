@@ -69,7 +69,7 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
     yy /= n;
     yz /= n;
     zz /= n;
-
+    
     float3 weighted_dir = {0.0f, 0.0f, 0.0f};
     float3 axis_dir;
 
@@ -134,6 +134,12 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
 
     // Normalize normal
     float mag = sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
+    // if(tid == 141707)
+    // {
+    //     printf("At point without normal: %d \n", tid);
+    //     printf("Normal is (%f, %f, %f) \n", normal.x, normal.y, normal.z);
+    //     printf("Magnitude is  %f \n", mag);
+    // }
 
     normal.x /= mag;
     normal.y /= mag;
@@ -143,6 +149,7 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
     normals[3 * tid + 0] = normal.x;
     normals[3 * tid + 1] = normal.y;
     normals[3 * tid + 2] = normal.z;
+
 
 
     // if(tid == num_queries - 1)

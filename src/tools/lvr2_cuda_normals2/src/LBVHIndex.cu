@@ -82,7 +82,7 @@ LBVHIndex::LBVHIndex()
 {
     this->m_num_objects = 0;
     this->m_num_nodes = 0;
-    this->m_leaf_size = false;
+    this->m_leaf_size = 1;
     this->m_sort_queries = false;
     this->m_compact = false;
     this->m_shrink_to_fit = false;
@@ -188,6 +188,9 @@ void LBVHIndex::build(float* points, size_t num_points)
     
     // Sort the AABBs by the indices
     AABB* sorted_aabbs = (AABB*) malloc(sizeof(AABB) * num_points);
+    // TODO: Sort AABBs with thrust?
+    // thrust::sort_by_key(h_morton_codes, h_morton_codes + num_points,
+    //                  sorted_aabbs)
 
     for(int i = 0; i < num_points; i++)
     {
@@ -249,19 +252,131 @@ void LBVHIndex::build(float* points, size_t num_points)
     construct_tree_kernel<<<blocksPerGrid, threadsPerBlock>>>
         (d_nodes, d_root_node, d_sorted_morton_codes, num_points);
 
+    std::cout << "Old nodes number: " << this->m_num_nodes << std::endl;
+    // Optimize the tree
+    if(this->m_leaf_size > 1)
+    {
+        std::cout << "Optimizing Tree" << std::endl;
+        unsigned int* valid = (unsigned int*)
+            malloc(sizeof(unsigned int) * this->m_num_nodes);
+
+        for(int i = 0; i < this->m_num_nodes; i++)
+        {
+            valid[i] = 1;
+        }
+
+        unsigned int* d_valid;
+        cudaMalloc(&d_valid, sizeof(unsigned int) * this->m_num_nodes);
+
+        cudaMemcpy(d_valid, valid, 
+            sizeof(unsigned int) * this->m_num_nodes,
+            cudaMemcpyHostToDevice);
+
+        optimize_tree_kernel<<<blocksPerGrid, threadsPerBlock>>>
+            (d_nodes, d_root_node, d_valid, this->m_leaf_size, this->m_num_objects);
+
+        cudaMemcpy(valid, d_valid, 
+            sizeof(unsigned int) * this->m_num_nodes,
+            cudaMemcpyDeviceToHost);
+
+        // Compact tree to increase bandwidth
+        if(this->m_compact)
+        {
+            std::cout << "Compacting Tree" << std::endl;
+            // Get the cumulative sum of valid, but start with 0
+            unsigned int* valid_sums = (unsigned int*)
+                malloc(sizeof(unsigned int) * this->m_num_nodes + 1);
+
+            valid_sums[0] = 0;
+            for(int i = 1; i < this->m_num_nodes + 1; i++)
+            {
+                valid_sums[i] = valid_sums[i - 1] + valid[i - 1];
+            }
+
+            // Number of the actually used nodes after optimizing
+            unsigned int new_node_count = valid_sums[this->m_num_nodes];
+            
+            // // Leave out the last element again
+            // unsigned int* valid_sums_aligned = (unsigned int*)
+            //     malloc(sizeof(unsigned int) * this->m_num_nodes);
+
+            // // TODO: Does this work this way?
+            // valid_sums_aligned = &valid_sums[0];
+
+            // Calculate the isum parameter
+            unsigned int* isum = (unsigned int*)
+                malloc(sizeof(unsigned int) * this->m_num_nodes);
+
+            for(int i = 0; i < this->m_num_nodes; i++)
+            {
+                // isum[i] = i - valid_sums_aligned[i];
+                isum[i] = i - valid_sums[i];
+            }
+            // Reuse valid space, since it not needed anymore
+            unsigned int free_indices_size = isum[new_node_count];
+
+            unsigned int* free = (unsigned int*)
+                malloc(sizeof(unsigned int) * free_indices_size);
+
+            free = &valid[0];
+
+            // valid_sums, isum, free, new_node_count
+            unsigned int* d_valid_sums;
+            unsigned int* d_isum;
+            unsigned int* d_free;
+
+            cudaMalloc(&d_valid_sums, sizeof(unsigned int) * this->m_num_nodes + 1);
+            cudaMalloc(&d_isum, sizeof(unsigned int) * this->m_num_nodes);
+            cudaMalloc(&d_free, sizeof(unsigned int) * free_indices_size);
+
+            cudaMemcpy(d_valid_sums, valid_sums,
+                sizeof(unsigned int) * this->m_num_nodes + 1,
+                cudaMemcpyHostToDevice);
+            cudaMemcpy(d_isum, isum,
+                sizeof(unsigned int) * this->m_num_nodes,
+                cudaMemcpyHostToDevice);
+            cudaMemcpy(d_free, free,
+                sizeof(unsigned int) * free_indices_size,
+                cudaMemcpyHostToDevice);
+            
+            int threadsPerBlock = 256;
+            int blocksPerGrid = (new_node_count + threadsPerBlock - 1) 
+                        / threadsPerBlock;
+
+            compute_free_indices_kernel<<<blocksPerGrid, threadsPerBlock>>>
+                (d_valid_sums, d_isum, d_free, new_node_count);
+
+            cudaMemcpy(valid_sums, d_valid_sums, 
+                sizeof(unsigned int) * this->m_num_nodes + 1,
+                cudaMemcpyDeviceToHost);
+
+            // get the sum of the first object that has to be moved
+            unsigned int first_moved = valid_sums[new_node_count];
+
+            threadsPerBlock = 256;
+            blocksPerGrid = (this->m_num_nodes + threadsPerBlock - 1) 
+                        / threadsPerBlock;
+
+            // self.nodes, root_node, valid_sums_aligned, free, first_moved, new_node_count, self.num_nodes
+            compact_tree_kernel<<<blocksPerGrid, threadsPerBlock>>>
+            (d_nodes, d_root_node, d_valid_sums, d_free, first_moved, new_node_count, this->m_num_nodes);
+
+            this->m_num_nodes = new_node_count;
+        }
+
+    }
+    std::cout << "Done!" << std::endl;
+    std::cout << "New nodes number: " << this->m_num_nodes << std::endl;
+
     cudaMemcpy(nodes, d_nodes, m_num_nodes * sizeof(BVHNode), 
                 cudaMemcpyDeviceToHost);
-    
-    gpuErrchk(cudaPeekAtLastError());
 
     this->m_nodes = nodes;
 
     gpuErrchk(cudaMemcpy(root_node, d_root_node, 
             sizeof(unsigned int), cudaMemcpyDeviceToHost));
     
-    // TODO: Root node might be wrong?
     this->m_root_node = root_node[0];
-
     printf("Root: %u \n", this->m_root_node);
 
     gpuErrchk(cudaFree(d_root_node));
@@ -404,7 +519,6 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
             sizeof(float3) * num_queries,
             cudaMemcpyHostToDevice) );
 
-    // TODO: Implement sorting of queries
     // const unsigned int* __restrict__ sorted_queries,
     unsigned int* sorted_queries = (unsigned int*) 
                 malloc(sizeof(unsigned int) * num_queries);
@@ -412,6 +526,40 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
     for(int i = 0; i < num_queries; i++)
     {
         sorted_queries[i] = i;
+    }
+
+    // only for large queries: sort them in morton order to prevent too much warp divergence on tree traversal
+    if(this->m_sort_queries)
+    {
+        // queries, self.extent, morton_codes, queries.shape[0])
+        AABB* d_extent;
+        gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
+        //cudaMalloc(&d_extent, sizeof(struct AABB));
+    
+        gpuErrchk(cudaMemcpy(d_extent, this->m_extent, sizeof(struct AABB), cudaMemcpyHostToDevice));
+        //cudaMemcpy(d_extent, extent, sizeof(struct AABB), cudaMemcpyHostToDevice);
+
+        unsigned long long int* morton_codes_query =
+            (unsigned long long int*)
+            malloc(sizeof(unsigned long long int) * num_queries);
+
+        unsigned long long int* d_morton_codes_query;
+        cudaMalloc(&d_morton_codes_query, 
+            sizeof(unsigned long long int) * num_queries);
+
+        int threadsPerBlock = 256;
+        int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
+                        / threadsPerBlock;
+
+        compute_morton_points_kernel<<<blocksPerGrid, threadsPerBlock>>>
+            (d_query_points, d_extent, d_morton_codes_query, num_queries);
+
+        cudaMemcpy(morton_codes_query, d_morton_codes_query,
+            sizeof(unsigned long long int) * num_queries,
+            cudaMemcpyDeviceToHost);
+        
+        thrust::sort_by_key(morton_codes_query, morton_codes_query + num_queries, 
+                        sorted_queries);
     }
 
     unsigned int* d_sorted_queries;
@@ -601,7 +749,6 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
         sizeof(float) * 3 * num_normals,
         cudaMemcpyDeviceToHost) );
 
-    std::cout << "No Problemo." << std::endl;
 }
 
 // Get the extent of the points 
