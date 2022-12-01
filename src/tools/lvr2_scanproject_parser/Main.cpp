@@ -71,11 +71,21 @@ int main(int argc, char** argv)
             {
                 lvr2::logout::get() 
                     << lvr2::info << "[Main] Exporting with octree random sampling to '" 
-                    << options.getReduction() << "'." << lvr2::endl;
+                    << options.getPLYFileName() << "'." << lvr2::endl;
 
                 red.reset(new OctreeReductionAlgorithm(
                     options.getVoxelSize(), 
                     options.getMinPointsInVoxel(), RANDOM_SAMPLE));
+            }
+            if(options.getReduction() == "OCTREE_NEAREST")
+            {
+                lvr2::logout::get() 
+                    << lvr2::info << "[Main] Exporting with nearest center sampling to '" 
+                    << options.getPLYFileName() << "'." << lvr2::endl;
+
+                red.reset(new OctreeReductionAlgorithm(
+                    options.getVoxelSize(), 
+                    options.getMinPointsInVoxel(), NEAREST_CENTER));
             }
             exportScanProjectToPLY(workProject, options.getPLYFileName(), true, red);
         }
