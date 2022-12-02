@@ -543,6 +543,32 @@ ScanProjectPtr loadScanPositionsExplicitly(
     return nullptr;
 }
 
+size_t countPointsInScanProject(ScanProjectPtr project, bool firstScanOnly)
+{
+    size_t n = 0;
+     // Go through all scans
+    for(size_t positionNo = 0; positionNo < project->positions.size(); positionNo++)
+    {
+        for(size_t lidarNo = 0; lidarNo < project->positions[positionNo]->lidars.size(); lidarNo++)
+        {
+            LIDARPtr lidar = project->positions[positionNo]->lidars[lidarNo];
+            if(lidar->scans.size() > 0)
+            {
+                for(size_t scanNo = 0; scanNo < lidar->scans.size(); scanNo++)
+                {
+                    // Stop of more data is present
+                    if (scanNo > 1 && firstScanOnly)
+                    {
+                        break;
+                    }
+                    n += lidar->scans[scanNo]->numPoints; 
+                }
+            }
+        }
+    }
+    return n;
+}
+
 void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly, OctreeReductionAlgorithmPtr red)
 {
     // Step 0: Check if output file is valid
@@ -555,7 +581,7 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
     }
 
 
-    size_t numPointsInProject = 0;
+    size_t numPointsInProject = countPointsInScanProject(project, true);
     size_t scansWithNormals = 0;
     size_t scansWithColors = 0;
     size_t totalScans = 0;
@@ -564,7 +590,11 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
     // Create three memory mapped files for temporary
     // point cloud data
     boost::iostreams::mapped_file_params params;
-    params.new_file_size = 10e7 * 3 * sizeof(float);
+
+    // Worst case estimated of required file size: we assume that 
+    // the buffers are not reduced and create files large enough
+    // to hold all data
+    params.new_file_size = numPointsInProject * 3 * sizeof(float); 
     params.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
 
     boost::iostreams::mapped_file pointFile;
@@ -582,6 +612,9 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
     params.path = "normals.tmp";
     normalFile.open(params);
     float* mmf_normals = (float*)normalFile.data();
+
+    // Reset (for robustness we count the points that were actually loaded
+    numPointsInProject = 0; 
 
     // Go through all scans
     for(size_t positionNo = 0; positionNo < project->positions.size(); positionNo++)
