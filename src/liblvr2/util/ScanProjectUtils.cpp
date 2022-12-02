@@ -14,6 +14,8 @@
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/iostreams/stream.hpp>
 
+#include <atomic>
+
 namespace lvr2
 {
 
@@ -624,9 +626,10 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
                     if(points)
                     {
                         totalScans++;
+                        
+                        //Write points
                         #pragma omp task
                         {
-                        //Write points
                         for(size_t i = 0; i < points->numPoints(); i++)
                         {
                             floatArr pts = points->getPointArray();
@@ -636,36 +639,37 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
                         }
                         }
 
-                        #pragma omp task
-                        {
                         if(points->hasColors())
                         {
                             // TODO: Implement with correct color width
                             ucharArr pts = points->getColorArray(w_color);
+                             #pragma omp task
+                            {
                             for(size_t i = 0; i < points->numPoints(); i++)
                             {
                                 mmf_colors[3 * numPointsInProject + 3 * i    ] = pts[i * 3];
                                 mmf_colors[3 * numPointsInProject + 3 * i + 1] = pts[i * 3 + 1];
                                 mmf_colors[3 * numPointsInProject + 3 * i + 2] = pts[i * 3 + 2];
                             }
+                            }
                             scansWithColors++;
                         }
-                        }
-
-                        #pragma omp task
-                        {
+                        
                         if(points->hasNormals())
                         {
                             floatArr pts = points->getNormalArray();
+                            #pragma omp task
+                            {
                             for(size_t i = 0; i < points->numPoints(); i++)
                             {
                                 mmf_normals[3 * numPointsInProject + 3 * i    ] = pts[i * 3];
                                 mmf_normals[3 * numPointsInProject + 3 * i + 1] = pts[i * 3 + 1];
                                 mmf_normals[3 * numPointsInProject + 3 * i + 2] = pts[i * 3 + 2];
                             }
+                            }
                             scansWithNormals++;
                         }
-                        }
+                        
                         numPointsInProject += points->numPoints();
                     }
                     #pragma omp barrier
