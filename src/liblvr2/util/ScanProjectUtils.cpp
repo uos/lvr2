@@ -387,8 +387,9 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
                                     lvr2::logout::get() << lvr2::info << "[Project Normal Estimation]: Building search tree..." << lvr2::endl;
 
                                     AdaptiveKSearchSurfacePtr<BaseVector<float>> surface(new AdaptiveKSearchSurface<BaseVector<float>>(ptBuffer, "flann", kn, ki));
+                                    surface->setFlipPoint(BaseVector<float>(0, 0, 0));
                                     surface->calculateSurfaceNormals();
-                                    surface->interpolateSurfaceNormals();
+                                    // surface->interpolateSurfaceNormals(); -> not required, already done in calculateSurfaceNormals
 
                                     // Save data back to original project
                                     scan->save();
@@ -619,11 +620,12 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
                     Transformd transformation = transformRegistration(positionPose, lidarPose);
 
                     transformPointBuffer(points, transformation);
-
+                    lvr2::logout::get() << lvr2::info << "[WriteScanProjectToPLY] Writing tmp chunks..." << lvr2::endl;
                     if(points)
                     {
                         totalScans++;
- 
+                        #pragma omp task
+                        {
                         //Write points
                         for(size_t i = 0; i < points->numPoints(); i++)
                         {
@@ -632,8 +634,10 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
                             mmf_points[3 * numPointsInProject + 3 * i + 1] = pts[i * 3 + 1];
                             mmf_points[3 * numPointsInProject + 3 * i + 2] = pts[i * 3 + 2];
                         }
+                        }
 
-
+                        #pragma omp task
+                        {
                         if(points->hasColors())
                         {
                             // TODO: Implement with correct color width
@@ -646,7 +650,10 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
                             }
                             scansWithColors++;
                         }
+                        }
 
+                        #pragma omp task
+                        {
                         if(points->hasNormals())
                         {
                             floatArr pts = points->getNormalArray();
@@ -658,9 +665,10 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
                             }
                             scansWithNormals++;
                         }
+                        }
                         numPointsInProject += points->numPoints();
                     }
-
+                    #pragma omp barrier
                     // Release data. This causes IO overhead, but
                     // we do not want to store all data in RAM
                     scan->release();

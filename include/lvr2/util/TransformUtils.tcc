@@ -263,6 +263,8 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
         lvr2::Monitor normalMonitor(lvr2::LogLevel::info, "[TransformPointCloud] Transforming normals", numPoints);
         Eigen::Matrix<T, 3, 3> rotation = transformation.template block<3, 3>(0, 0);
 
+        Eigen::Matrix<T, 3, 3> rotinvtrans= rotation.inverse().transpose();
+
         #pragma omp parallel for
         for (size_t i = 0; i < numPoints; i++)
         {
@@ -271,7 +273,7 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
             float z = normals[3 * i + 2];
 
             Vector3<T> n(x, y, z);
-            Vector3<T> tv = rotation * n;
+            Vector3<T> tv = rotinvtrans * n;
 
             normals[3 * i] = tv[0];
             normals[3 * i + 1] = tv[1];
