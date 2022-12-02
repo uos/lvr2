@@ -10,7 +10,8 @@ void calculate_normals_kernel
     float* queries, size_t num_queries, 
     unsigned int* n_neighbors_out, unsigned int* indices_out, 
     unsigned int* neigh_sum,
-    float* normals);
+    float* normals,
+    float flip_x, float flip_y, float flip_z);
 }
 
 #endif // LBVH_NORMALS_KERNEL

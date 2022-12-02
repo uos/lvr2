@@ -8,7 +8,8 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
     float* queries, size_t num_queries, 
     unsigned int* n_neighbors_out, unsigned int* indices_out, 
     unsigned int* neigh_sum,
-    float* normals)
+    float* normals,
+    float flip_x, float flip_y, float flip_z)
 {
     unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -144,6 +145,26 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
     normal.x /= mag;
     normal.y /= mag;
     normal.z /= mag;
+
+    // Check if the normals need to be flipped
+    float vertex_x = queries[3 * tid + 0];
+    float vertex_y = queries[3 * tid + 1];
+    float vertex_z = queries[3 * tid + 2];
+
+    // flip the normals
+    float x_dir = flip_x - vertex_x;
+    float y_dir = flip_y - vertex_y;
+    float z_dir = flip_z - vertex_z;
+
+    float scalar = x_dir * normal.x + y_dir * normal.y + z_dir * normal.z;
+
+    // TODO < or > ?
+    if(scalar < 0)
+    {
+        normal.x = -normal.x;
+        normal.y = -normal.y;
+        normal.z = -normal.z;
+    }
 
     // Set the normal in the normal array
     normals[3 * tid + 0] = normal.x;

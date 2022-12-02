@@ -86,6 +86,10 @@ LBVHIndex::LBVHIndex()
     this->m_sort_queries = false;
     this->m_compact = false;
     this->m_shrink_to_fit = false;
+
+    this->m_flip_x = 1000000.0;
+    this->m_flip_y = 1000000.0;
+    this->m_flip_z = 1000000.0;
     
 }
 
@@ -99,6 +103,10 @@ LBVHIndex::LBVHIndex(int leaf_size, bool sort_queries,
     this->m_compact = compact;
     this->m_shrink_to_fit = shrink_to_fit;
 
+    this->m_flip_x = 1000000.0;
+    this->m_flip_y = 1000000.0;
+    this->m_flip_z = 1000000.0;
+    
 }
 
 void LBVHIndex::build(float* points, size_t num_points)
@@ -741,7 +749,7 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
     
     calculate_normals_kernel<<<blocksPerGrid, threadsPerBlock>>>
         (d_points, d_queries, num_queries, d_n_neighbors_out, d_indices_out, d_neigh_sum, 
-        d_normals);
+        d_normals, this->m_flip_x, this->m_flip_y, this->m_flip_z);
 
     cudaDeviceSynchronize();
 

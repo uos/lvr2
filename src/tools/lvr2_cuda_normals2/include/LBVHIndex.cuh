@@ -29,6 +29,11 @@ public:
     AABB* m_extent;
     BVHNode* m_nodes;
     unsigned int m_root_node;
+
+    // TODO Do we need this here?
+    float m_flip_x;
+    float m_flip_y;
+    float m_flip_z;
     
     LBVHIndex();
 
