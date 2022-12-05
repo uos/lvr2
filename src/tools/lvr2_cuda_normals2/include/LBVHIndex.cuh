@@ -37,7 +37,8 @@ public:
     
     LBVHIndex();
 
-    LBVHIndex(int leaf_size, bool sort_queries, bool compact, bool shrink_to_fit);
+    LBVHIndex(int leaf_size, bool sort_queries, bool compact, bool shrink_to_fit, 
+                        float flip_x=1000000.0f, float flip_y=1000000.0f, float flip_z=1000000.0f);
 
     void build(float* points, size_t num_points);
 

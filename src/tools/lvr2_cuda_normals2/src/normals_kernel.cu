@@ -6,8 +6,9 @@ using namespace lbvh;
 
 __global__ void lbvh::calculate_normals_kernel(float* points, 
     float* queries, size_t num_queries, 
+    int K,
     unsigned int* n_neighbors_out, unsigned int* indices_out, 
-    unsigned int* neigh_sum,
+    // unsigned int* neigh_sum,
     float* normals,
     float flip_x, float flip_y, float flip_z)
 {
@@ -22,8 +23,16 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
 
     int n = n_neighbors_out[tid];
 
+    // if(tid == 5875)
+    // {
+    //     printf("Neighbors: %d \n", n);
+    // }
+
     if(n < 3)
     {
+        normals[3 * tid + 0] = 0.0f;
+        normals[3 * tid + 1] = 0.0f;
+        normals[3 * tid + 2] = 0.0f;
         return; // Not enough neighbors
     }
 
@@ -32,10 +41,18 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
 
     for(int i = 0; i < n; i++)
     {
-        sum.x += points[ 3 * indices_out[ neigh_sum[tid] + i] + 0];
-        sum.y += points[ 3 * indices_out[ neigh_sum[tid] + i] + 1];
-        sum.z += points[ 3 * indices_out[ neigh_sum[tid] + i] + 2];
+        // Coordinates of point which is the i-th neighbor
+        sum.x += points[ 3 * indices_out[K * tid + i] + 0];
+        sum.y += points[ 3 * indices_out[K * tid + i] + 1];
+        sum.z += points[ 3 * indices_out[K * tid + i] + 2];
     }
+
+    // for(int i = 0; i < n; i++)
+    // {
+    //     sum.x += points[ 3 * indices_out[ neigh_sum[tid] + i] + 0];
+    //     sum.y += points[ 3 * indices_out[ neigh_sum[tid] + i] + 1];
+    //     sum.z += points[ 3 * indices_out[ neigh_sum[tid] + i] + 2];
+    // }
 
     sum.x /= n; // x,y,z coordinates of centroid
     sum.y /= n;
@@ -48,12 +65,18 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
 
     for(int i = 0; i < n; i++)
     {
-        float3 r = 
+        float3 r =
         {
-            points[ 3 * indices_out[ neigh_sum[tid] + i] + 0] - sum.x,
-            points[ 3 * indices_out[ neigh_sum[tid] + i] + 1] - sum.y,
-            points[ 3 * indices_out[ neigh_sum[tid] + i] + 2] - sum.z
+            points[ 3 * indices_out[K * tid + i] + 0] - sum.x,
+            points[ 3 * indices_out[K * tid + i] + 1] - sum.y,
+            points[ 3 * indices_out[K * tid + i] + 2] - sum.z
         };
+        // float3 r = 
+        // {
+        //     points[ 3 * indices_out[ neigh_sum[tid] + i] + 0] - sum.x,
+        //     points[ 3 * indices_out[ neigh_sum[tid] + i] + 1] - sum.y,
+        //     points[ 3 * indices_out[ neigh_sum[tid] + i] + 2] - sum.z
+        // };
 
         xx += r.x * r.x;
         xy += r.x * r.y;
@@ -133,6 +156,14 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
     // Create the normal
     float3 normal = weighted_dir;
 
+
+    // if(tid == 5875)
+    // {
+    //     printf("Px: %f \n", normal.x);
+    //     printf("Px: %f \n", normal.y);
+    //     printf("Px: %f \n", normal.z);
+    // }
+
     // Normalize normal
     float mag = sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
     // if(tid == 141707)
@@ -140,6 +171,11 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
     //     printf("At point without normal: %d \n", tid);
     //     printf("Normal is (%f, %f, %f) \n", normal.x, normal.y, normal.z);
     //     printf("Magnitude is  %f \n", mag);
+    // }
+
+    // if(tid == 5875)
+    // {
+    //     printf("MAG: %f \n", mag);
     // }
 
     normal.x /= mag;
@@ -166,13 +202,29 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
         normal.z = -normal.z;
     }
 
+    // TODO Set normals to zero if nan or inf values occur
+    // Done?
+    if(!(scalar <= 0 || scalar >= 0) || isinf(scalar))
+    {
+        normal.x = 0.0f;
+        normal.y = 0.0f;
+        normal.z = 0.0f;
+    }
+
+    // TODO Is the indexing here correct?
     // Set the normal in the normal array
     normals[3 * tid + 0] = normal.x;
     normals[3 * tid + 1] = normal.y;
     normals[3 * tid + 2] = normal.z;
 
 
-
+    // if(tid == 35402)
+    // {
+    //     printf("Scalar: %f\n", scalar);
+    //     printf("Px: %f \n", normal.x);
+    //     printf("Px: %f \n", normal.y);
+    //     printf("Px: %f \n", normal.z);
+    // }
     // if(tid == num_queries - 1)
     //     printf("All working fine. \n");
 

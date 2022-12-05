@@ -172,6 +172,12 @@ int main(int argc, char** argv)
 
     std::cout << new_normals[0] << std::endl;
 
+    // int point_idx = 5875;
+
+    // std::cout << "x: " << normals[3 * point_idx + 0] << std::endl;
+    // std::cout << "y: " << normals[3 * point_idx + 1] << std::endl;
+    // std::cout << "z: " << normals[3 * point_idx + 2] << std::endl;
+
     // Save the new model as test.ply
     ModelFactory::saveModel(model, "test.ply");
 

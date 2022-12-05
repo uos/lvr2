@@ -94,7 +94,8 @@ LBVHIndex::LBVHIndex()
 }
 
 LBVHIndex::LBVHIndex(int leaf_size, bool sort_queries, 
-                    bool compact, bool shrink_to_fit)
+                    bool compact, bool shrink_to_fit, 
+                    float flip_x, float flip_y, float flip_z)
 {
     this->m_num_objects = 0;
     this->m_num_nodes = 0;
@@ -103,9 +104,9 @@ LBVHIndex::LBVHIndex(int leaf_size, bool sort_queries,
     this->m_compact = compact;
     this->m_shrink_to_fit = shrink_to_fit;
 
-    this->m_flip_x = 1000000.0;
-    this->m_flip_y = 1000000.0;
-    this->m_flip_z = 1000000.0;
+    this->m_flip_x = flip_x;
+    this->m_flip_y = flip_y;
+    this->m_flip_z = flip_z;
     
 }
 
@@ -499,6 +500,7 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
 
     // const float max_radius,
     // TODO: Implement radius
+    // Seems to work now 
     this->m_radius = FLT_MAX;
 
     // float* max_radius = (float*) malloc(sizeof(float));
@@ -683,15 +685,16 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
                         float* points, size_t num_points,
                         unsigned int* n_neighbors_out, unsigned int* indices_out)
 {
-    // Save the sum of all previous neighbors, important for indexing for radius search
-    // (not necessarily K neighbors per query)
-    unsigned int* neigh_sum = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
+    //### This does not work ### ...at least it should not work
+    // // Save the sum of all previous neighbors, important for indexing for radius search
+    // // (not necessarily K neighbors per query)
+    // unsigned int* neigh_sum = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
 
-    neigh_sum[0] = 0;
-    for(int i = 1; i < num_queries; i++)
-    {
-        neigh_sum[i] = neigh_sum[i - 1] + n_neighbors_out[i - 1];
-    }
+    // neigh_sum[0] = 0;
+    // for(int i = 1; i < num_queries; i++)
+    // {
+    //     neigh_sum[i] = neigh_sum[i - 1] + n_neighbors_out[i - 1];
+    // }
 
     int threadsPerBlock = 256;
     int blocksPerGrid = (num_normals + threadsPerBlock - 1) 
@@ -739,16 +742,16 @@ void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* a
         sizeof(unsigned int) * K * num_queries, 
         cudaMemcpyHostToDevice) );
     
-    gpuErrchk( cudaMemcpy(d_neigh_sum, neigh_sum, 
-        sizeof(unsigned int) * num_queries, 
-        cudaMemcpyHostToDevice) );
+    // gpuErrchk( cudaMemcpy(d_neigh_sum, neigh_sum, 
+    //     sizeof(unsigned int) * num_queries, 
+    //     cudaMemcpyHostToDevice) );
 
     gpuErrchk( cudaMemcpy(d_normals, normals,
         sizeof(float) * 3 * num_normals,
         cudaMemcpyHostToDevice) );
     
     calculate_normals_kernel<<<blocksPerGrid, threadsPerBlock>>>
-        (d_points, d_queries, num_queries, d_n_neighbors_out, d_indices_out, d_neigh_sum, 
+        (d_points, d_queries, num_queries, K, d_n_neighbors_out, d_indices_out,// d_neigh_sum,
         d_normals, this->m_flip_x, this->m_flip_y, this->m_flip_z);
 
     cudaDeviceSynchronize();
