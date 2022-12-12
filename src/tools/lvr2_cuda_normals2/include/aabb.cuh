@@ -2,7 +2,7 @@
 #ifndef AABB_CUH
 #define AABB_CUH
 
-#include <cuda_runtime.h>
+//#include <cuda_runtime.h>
 
 namespace lbvh {
     struct AABB

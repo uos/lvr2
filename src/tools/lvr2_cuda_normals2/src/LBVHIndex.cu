@@ -2,6 +2,7 @@
 #include "lbvh_kernels.cuh"
 #include "lbvh.cuh"
 #include "normals_kernel.cuh"
+#include "aabb.cuh"
 
 #include <stdio.h>
 #include <vector>
@@ -424,7 +425,7 @@ void LBVHIndex::build(float* points, size_t num_points)
     }                                                             \
   } while(0)
 
-void LBVHIndex::process_queries(float* queries_raw, size_t num_queries, float* args, 
+void LBVHIndex::process_queries(float* queries_raw, size_t num_queries,
                     float* points_raw, size_t num_points,
                     const char* cu_src, const char* kernel_name,
                     int K,

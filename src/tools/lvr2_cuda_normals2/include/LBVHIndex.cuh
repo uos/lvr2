@@ -3,14 +3,20 @@
 
 #include <string>
 
-#include <cuda_runtime.h>
+//#include <cuda_runtime.h>
 
-#include "aabb.cuh"
-#include "lbvh.cuh"
-#include "lbvh_kernels.cuh"
+// #include "aabb.cuh"
+// #include "lbvh.cuh"
+
+
+// #include "lbvh_kernels.cuh"
 
 namespace lbvh
 {
+
+struct AABB;        // Forward Declaration
+struct BVHNode;     // Forward Declaration
+
 class LBVHIndex
 {
 public:
@@ -34,7 +40,7 @@ public:
     float m_flip_x;
     float m_flip_y;
     float m_flip_z;
-    
+
     LBVHIndex();
 
     LBVHIndex(int leaf_size, bool sort_queries, bool compact, bool shrink_to_fit, 
@@ -43,10 +49,8 @@ public:
     void build(float* points, size_t num_points);
 
     void process_queries(float* queries_raw, size_t num_queries, 
-                        float* args, float* points_raw, 
-                        size_t num_points,
-                        const char* cu_src,
-                        const char* kernel_name,
+                        float* points_raw, size_t num_points,
+                        const char* cu_src, const char* kernel_name,
                         int K,
                         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out);
 
@@ -55,7 +59,7 @@ public:
                         int K,
                         float* points, size_t num_points,
                         unsigned int* n_neighbors_out, unsigned int* indices_out);
-    
+
     AABB* getExtent(AABB* extent, float* points, size_t num_points);
 
     std::string getSampleDir();

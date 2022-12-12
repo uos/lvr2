@@ -1,5 +1,5 @@
-#ifndef KERNELS_HOST
-#define KERNELS_HOST
+#ifndef LBVH_KERNELS_HOST
+#define LBVH_KERNELS_HOST
 
 // morton codes
 // void morton_codes_host(unsigned long long int* mortonCodes, 
@@ -13,7 +13,7 @@ void radix_sort(unsigned long long int* keys,
 
 
 // building tree
-void build_lbvh(float* points, 
+void build_lbvh(float* points,
                 unsigned long num_points,
                 float* queries,
                 size_t num_queries,
@@ -22,4 +22,4 @@ void build_lbvh(float* points,
                 const char* kernel_name,
                 float* normals);
 
-#endif // KERNELS_HOST
+#endif // LBVH_KERNELS_HOST

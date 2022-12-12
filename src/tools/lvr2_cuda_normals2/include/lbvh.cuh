@@ -2,7 +2,7 @@
 #ifndef LBVH_CUH
 #define LBVH_CUH
 
-#include <cuda_runtime.h>
+//#include <cuda_runtime.h>
 
 #include <cuda/std/limits>
 

@@ -21,14 +21,14 @@ set(LVR2_CUDA_NORMAL2_DEPS
     ${LVR2_LIB_DEPENDENCIES}
 )
 
-# PURE CUDA
-message(STATUS "AAA ${CUDA_INCLUDE_DIRS}")
+# message(STATUS "AAA ${CUDA_INCLUDE_DIRS}")
 
+# PURE CUDA
 add_definitions(-DCUDA_INCLUDE_DIRS="${CUDA_INCLUDE_DIRS}")
 cuda_add_library(kernels_device 
                 src/kernels_device.cu
                 src/morton_code.cu
-                src/LBVHIndex.cu
+                #src/LBVHIndex.cu
                 src/lbvh_kernels.cu
                 src/normals_kernel.cu
                 #src/LBVHTree.cu
@@ -45,7 +45,8 @@ target_link_libraries(kernels_device
 
 # HEADER HOST - CODE: CUDA calls
 cuda_add_library(kernels_host 
-                src/kernels_host.cu
+                #src/kernels_host.cu
+                src/LBVHIndex.cu
                 )
 target_link_libraries(kernels_host
     kernels_device
