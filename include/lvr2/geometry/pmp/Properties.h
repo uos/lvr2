@@ -35,8 +35,8 @@ public:
     //! Free unused memory.
     virtual void free_memory() = 0;
 
-    //! Clear the array.
-    virtual void clear() = 0;
+    //! Erase the contents of the property without calling destructors.
+    virtual void shallow_clear() = 0;
 
     //! Let two elements swap their storage place.
     virtual void swap(size_t i0, size_t i1) = 0;
@@ -71,7 +71,7 @@ public:
             properties.add(HighFive::Chunking({ dims[0] }));
             group.createDataSet<uint8_t>(name_, dataSpace, properties).write_raw(start);
         }
-        clear();
+        shallow_clear();
     }
 
     //! Restore contents from group after unload().
@@ -120,7 +120,16 @@ public: // interface of BasePropertyArray
 
     void free_memory() override { data_.shrink_to_fit(); }
 
-    void clear() override { VectorType().swap(data_); }
+    void shallow_clear() override
+    {
+        // free the memory without calling any destructors:
+        // pretend like data is a trivially destructible type (like uint8_t)
+        uint8_t* raw_ptr = (uint8_t*)data_.data();
+        // replace data_ with a new empty vector in a way that assumes it was uninitialized memory
+        new (&data_) VectorType();
+        // free the memory
+        delete[] raw_ptr;
+    }
 
     void swap(size_t i0, size_t i1) override
     {
@@ -207,6 +216,11 @@ inline std::pair<uint8_t*, size_t> PropertyArray<bool>::raw_data()
     auto begin = data_.begin()._M_p;
     auto end = (data_.end() - 1)._M_p + 1; // -1 + 1 to get a past-the-end whole pointer, not past-the-end bit
     return std::make_pair((uint8_t*)begin, (end - begin) * sizeof(*begin));
+}
+template <>
+inline void PropertyArray<bool>::shallow_clear()
+{
+    VectorType().swap(data_);
 }
 
 template <class T>
@@ -530,7 +544,7 @@ public:
     void shallow_clear()
     {
         for (auto& parray : parrays_)
-            parray->clear();
+            parray->shallow_clear();
     }
 
     // reserve memory for n entries in all arrays

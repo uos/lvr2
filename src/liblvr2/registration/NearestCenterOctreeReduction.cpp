@@ -51,8 +51,7 @@ NearestCenterOctreeReduction::NearestCenterOctreeReduction(PointBufferPtr pointB
         return;
     }
 
-    // Create index array that is used to re-organize 
-    // the points
+    // Create index array that is used to re-organize the points
     m_pointIndices.resize(m_numPoints);
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < m_numPoints; i++)
@@ -63,14 +62,6 @@ NearestCenterOctreeReduction::NearestCenterOctreeReduction(PointBufferPtr pointB
     // Save pointer to point cloud data
     m_points = m_pointBuffer->getPointArray();
 
-    // Build octree
-    init();
-
-}
-
-
-void NearestCenterOctreeReduction::init()
-{
     pmp::BoundingBox bb;
     #pragma omp parallel for schedule(static) reduction(+:bb)
     for (size_t i = 0; i < m_numPoints; i++)
@@ -87,41 +78,12 @@ void NearestCenterOctreeReduction::init()
         bb = pmp::BoundingBox(center - halfSize, center + halfSize);
     }
 
+    size_t* start = m_pointIndices.data();
+    size_t* end = start + m_numPoints;
+
     #pragma omp parallel // allows "pragma omp task"
     #pragma omp single   // only execute every task once
-    createOctree(0, m_numPoints, bb.min(), bb.max());
-
-    // size_t l = 0, r = m_numPoints - 1;
-    // for (;;)
-    // {
-    //     // find first deleted and last un-deleted
-    //     while (l < r && !m_flags[l])
-    //     {
-    //         l++;
-    //     }
-    //     while (l < r && m_flags[r])
-    //     {
-    //         r--;
-    //     }
-    //     if (l >= r)
-    //     {
-    //         break;
-    //     }
-    //     if (m_pointBuffer)
-    //     {
-    //         std::swap(m_pointIndices[l], m_pointIndices[r]);
-    //     }
-    //     else
-    //     {
-    //         std::swap(m_points[l], m_points[r]);
-    //     }
-    //     l++;
-    //     r--;
-    // }
-    // m_numPoints = l;
-
-    // delete[] m_flags;
-    // m_flags = nullptr;
+    createOctree(start, end, bb.min(), bb.max());
 }
 
 PointBufferPtr NearestCenterOctreeReduction::getReducedPoints()
@@ -133,11 +95,15 @@ PointBufferPtr NearestCenterOctreeReduction::getReducedPoints()
     return subSamplePointBuffer(m_pointBuffer, m_samplePointIndices);
 }
 
-void NearestCenterOctreeReduction::createOctree(size_t start, size_t n, const Vector3f& min, const Vector3f& max, unsigned int level)
+void NearestCenterOctreeReduction::createOctree(size_t* start, size_t* end, const Vector3f& min, const Vector3f& max, unsigned int level)
 {
     // Stop recursion - not enough points in voxel
-    if (n <= m_maxPointsPerVoxel)
+    if (end - start <= m_maxPointsPerVoxel)
     {
+        for (size_t* it = start; it != end; ++it)
+        {
+            m_samplePointIndices.push_back(*it);
+        }
         return;
     }
 
@@ -148,32 +114,28 @@ void NearestCenterOctreeReduction::createOctree(size_t start, size_t n, const Ve
     // Stop recursion if voxel size is below given limit
     if (max[axis] - min[axis] <= m_voxelSize)
     {
-        size_t nearest = 0;
+        size_t nearest = *start;
         float minDist = std::numeric_limits<float>::max();
-        for(size_t i = start; i < start + n - 1; i++)
+        for (size_t* it = start; it != end; ++it)
         {
-            float x = m_points[3 * i];
-            float y = m_points[3 * i + 1];
-            float z = m_points[3 * i + 2];
-            
-            // Use squared distances to get rid of the sqrt
-            float dst = (x - center[0]) * (x - center[0]) + 
-                        (y - center[1]) * (y - center[1]) +
-                        (z - center[2]) * (z - center[2]);
+            Vector3f p(m_points[*it * 3], m_points[*it * 3 + 1], m_points[*it * 3 + 2]);
 
-            if(dst < minDist)
+            // Use squared distances to get rid of the sqrt
+            float dst = (p - center).squaredNorm();
+
+            if (dst < minDist)
             {
                 minDist = dst;
-                nearest = i;
+                nearest = *it;
             }
         }
-       
+
         m_samplePointIndices.push_back(nearest);
         return;
     }
 
     // Sort and get new split index
-    size_t startRight = splitPoints(start, n, axis, center[axis]);
+    size_t* mid = splitPoints(start, end, axis, center[axis]);
 
     Vector3f lMin = min, lMax = max;
     Vector3f rMin = min, rMax = max;
@@ -181,44 +143,24 @@ void NearestCenterOctreeReduction::createOctree(size_t start, size_t n, const Ve
     lMax[axis] = center[axis];
     rMin[axis] = center[axis];
 
-    size_t numPointsLeft = startRight - start;
-    size_t numPointsRight = (start + n) - startRight;
-    bool leftSplit = numPointsLeft > m_maxPointsPerVoxel;
-    bool rightSplit = numPointsRight > m_maxPointsPerVoxel;
+    // spawn left tree as a task, execute right tree in this thread
+    #pragma omp task
+    createOctree(start, mid,  lMin, lMax, level + 1);
 
-    if (leftSplit && rightSplit)
-    {
-        // both trees needed => spawn left as task, do right on this thread
-        #pragma omp task
-        createOctree(start,      numPointsLeft,  lMin, lMax, level + 1);
-
-        createOctree(startRight, numPointsRight, rMin, rMax, level + 1);
-    }
-    else if (leftSplit)
-    {
-        createOctree(start,      numPointsLeft,  lMin, lMax, level + 1);
-    }
-    else if (rightSplit)
-    {
-        createOctree(startRight, numPointsRight, rMin, rMax, level + 1);
-    }
+    createOctree(mid, end, rMin, rMax, level + 1);
 }
 
-size_t NearestCenterOctreeReduction::splitPoints(size_t start, size_t n, unsigned int axis, float splitValue)
+size_t* NearestCenterOctreeReduction::splitPoints(size_t* start, size_t* end, unsigned int axis, float splitValue)
 {
-    size_t l = start;
-    size_t r = start + n - 1;
-
+    size_t* l = start;
+    size_t* r = end - 1;
     for (;;)
     {
-        // Find first and last in range
-        Vector3f p_l(m_points[3 * l], m_points[3 * l + 1], m_points[3 * l + 2]);
-        Vector3f p_r(m_points[3 * r], m_points[3 * r + 1], m_points[3 * r + 2]);
-        while (l < r && p_l[axis] < splitValue)
+        while (l < r && m_points[*l * 3 + axis] < splitValue)
         {
             ++l;
         }
-        while (l < r && p_r[axis] >= splitValue)
+        while (l < r && m_points[*r * 3 + axis] >= splitValue)
         {
             --r;
         }
@@ -228,11 +170,7 @@ size_t NearestCenterOctreeReduction::splitPoints(size_t start, size_t n, unsigne
             break;
         }
 
-        // Swap indices in point buffer
-        if (m_pointBuffer)
-        {
-            std::swap(m_pointIndices[l], m_pointIndices[r]);
-        }
+        std::swap(*l, *r);
     }
     return l;
 }

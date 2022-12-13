@@ -37,8 +37,6 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/Tiles3dIO.hpp"
 #include "lvr2/io/meshio/HDF5IO.hpp"
-#include "lvr2/util/Timestamp.hpp"
-#include "lvr2/util/Progress.hpp"
 #include "lvr2/config/lvropenmp.hpp"
 
 #include <boost/filesystem.hpp>
@@ -62,8 +60,9 @@ const pmp::Point flip_point(100000, 100000, 100000);
 
 void print_chunk_size_error()
 {
-    std::cout << "Error: If your input does not contain Chunks, you need to specify a chunk size." << std::endl;
-    std::cout << "       Even if you don't want any splitting, you still need to explicitly set it to -1." << std::endl;
+    lvr2::Logger::get() << lvr2::error
+                        << "Error: If your input does not contain Chunks, you need to specify a chunk size." << lvr2::endl
+                        << "       Even if you don't want any splitting, you still need to explicitly set it to -1." << lvr2::endl;
 }
 
 int main(int argc, char** argv)
@@ -85,6 +84,7 @@ int main(int argc, char** argv)
     try
     {
         using namespace boost::program_options;
+        namespace po = boost::program_options;
 
         bool help = false;
 
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
         ("inputFile", value<fs::path>(&input_file),
          "The input. See below for accepted formats.")
 
-        ("outputDir", value<fs::path>(&output_dir)->default_value(output_dir),
+        ("outputDir,o", value<fs::path>(&output_dir)->default_value(output_dir),
          "A Directory for the output.")
 
         ("memUsage", value<AllowedMemoryUsage>(&allowedMemUsage)->default_value(allowedMemUsage),
@@ -147,23 +147,29 @@ int main(int argc, char** argv)
 
         if (help)
         {
-            std::cout << "The Mesh to 3D Tiles conversion tool" << std::endl;
-            std::cout << "Usage: " << std::endl;
-            std::cout << "\tlvr2_3dtiles [OPTIONS] <inputFile> [<outputDir>]" << std::endl;
-            std::cout << std::endl;
-            options.print(std::cout);
-            std::cout << std::endl;
-            std::cout << "<inputFile> is the file where the input mesh is stored" << std::endl;
-            std::cout << "    Possible inputs:" << std::endl;
-            std::cout << "        - most Mesh formats (see meshio for a full list)" << std::endl;
-            std::cout << "        - a HDF5 file with a single mesh" << std::endl;
-            std::cout << "        - a HDF5 file with chunks in /chunks/x_y_z" << std::endl;
-            std::cout << "        - a directory containing chunks named x_y_z.*" << std::endl;
-            std::cout << "          This option requires a chunk_metadata.yaml in the folder containing" << std::endl;
-            std::cout << "          at least chunk_size and voxel_size." << std::endl;
-            std::cout << std::endl;
-            std::cout << "<outputDir> is the directory to create the output in." << std::endl;
-            std::cout << "    THE CONTENT OF THIS DIRECTORY WILL BE DELETED!" << std::endl;
+            stringstream options_ss;
+            options.print(options_ss);
+
+            auto& log = lvr2::Logger::get();
+            log << lvr2::info
+                << "The Mesh to 3D Tiles conversion tool" << lvr2::endl
+                << "Usage: " << lvr2::endl
+                << "    lvr2_3dtiles [OPTIONS] <inputFile> [<outputDir>]" << lvr2::endl
+                << lvr2::endl
+                << options_ss.str() << lvr2::endl
+                << lvr2::endl
+                << "<inputFile> is the file where the input mesh is stored" << lvr2::endl
+                << "    Possible inputs:" << lvr2::endl
+                << "        - most Mesh formats (see meshio for a full list)" << lvr2::endl
+                << "        - a HDF5 file with a single mesh" << lvr2::endl
+                << "        - a HDF5 file with chunks in /chunks/x_y_z" << lvr2::endl
+                << "        - a directory containing chunks named x_y_z.*" << lvr2::endl
+                << "          This option requires a chunk_metadata.yaml in the folder containing" << lvr2::endl
+                << "          at least chunk_size and voxel_size." << lvr2::endl
+                << "" << lvr2::endl
+                << "<outputDir> is the directory to create the output in." << lvr2::endl
+                << "    THE CONTENT OF THIS DIRECTORY WILL BE DELETED!"
+                << lvr2::endl;
         }
 
         notify(variables);
@@ -175,25 +181,25 @@ int main(int argc, char** argv)
 
         if (variables.count("inputFile") == 0)
         {
-            throw error("Missing <inputFile> Parameter");
+            throw po::error("Missing <inputFile> Parameter");
         }
         if (!fs::exists(input_file))
         {
-            throw error("Input file does not exist");
+            throw po::error("Input file does not exist");
         }
         if (!fs::is_directory(input_file))
         {
             input_file_extension = input_file.extension().string();
             if (input_file_extension.empty())
             {
-                throw error("Input file has no extension");
+                throw po::error("Input file has no extension");
             }
             input_file_extension = input_file_extension.substr(1);
         }
 
         if (reduction_factor < 0.0f || reduction_factor > 1.0f)
         {
-            throw error("reductionFactor must be between 0 and 1");
+            throw po::error("reductionFactor must be between 0 and 1");
         }
 
         has_chunk_size = variables.count("chunkSize") > 0;
@@ -213,7 +219,7 @@ int main(int argc, char** argv)
     std::unordered_map<Vector3i, Tree::Ptr> chunks;
     std::vector<Texture> textures;
 
-    std::cout << timestamp << "Reading mesh " << input_file;
+    lvr2::logout::get() << lvr2::info << "Reading mesh " << input_file;
 
     std::shared_ptr<HighFive::File> mesh_file = nullptr;
     if (allowedMemUsage < AllowedMemoryUsage::Unbounded)
@@ -225,7 +231,7 @@ int main(int argc, char** argv)
 
     if (fs::is_directory(input_file))
     {
-        std::cout << " from chunks in a folder" << std::endl;
+        lvr2::Logger::get() << lvr2::info << " from chunks in a folder" << lvr2::endl;
         std::string path = input_file.string();
         if (path.back() != '/')
         {
@@ -253,7 +259,7 @@ int main(int argc, char** argv)
         const auto root = kernel->m_hdf5File->getGroup("/");
         if (root.hasAttribute("chunk_size"))
         {
-            std::cout << " from chunks in Hdf5" << std::endl;
+            lvr2::logout::get() << " from chunks in Hdf5" << lvr2::endl;
 
             chunk_size = hdf5util::getAttribute<float>(root, "chunk_size").get();
             float voxel_size = hdf5util::getAttribute<float>(root, "voxel_size").get();
@@ -269,7 +275,7 @@ int main(int argc, char** argv)
         }
         else
         {
-            std::cout << " using meshio::HDF5IO" << std::endl;
+            lvr2::logout::get() << " using meshio::HDF5IO" << lvr2::endl;
 
             if (!has_chunk_size)
             {
@@ -287,7 +293,7 @@ int main(int argc, char** argv)
 
             buffer = io.loadMesh(mesh_name);
 
-            std::cout << timestamp << "Converting to PMPMesh" << std::endl;
+            lvr2::logout::get() << lvr2::info << "Converting to PMPMesh" << lvr2::endl;
             mesh = Mesh(buffer);
 
             if (!buffer->getMaterials().empty())
@@ -332,7 +338,7 @@ int main(int argc, char** argv)
     }
     else if (pmp::SurfaceMeshIO::supports_extension(input_file_extension))
     {
-        std::cout << " using pmp::SurfaceMeshIO" << std::endl;
+        lvr2::logout::get() << " using pmp::SurfaceMeshIO" << lvr2::endl;
 
         if (!has_chunk_size)
         {
@@ -344,7 +350,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        std::cout << " using ModelFactory" << std::endl;
+        lvr2::logout::get() << " using ModelFactory" << lvr2::endl;
 
         if (!has_chunk_size)
         {
@@ -353,7 +359,7 @@ int main(int argc, char** argv)
         }
 
         ModelPtr model = ModelFactory::readModel(input_file.string());
-        std::cout << timestamp << "Converting to PMPMesh" << std::endl;
+        lvr2::logout::get() << lvr2::info << "Converting to PMPMesh" << lvr2::endl;
         mesh = Mesh(model->m_mesh);
     }
 
@@ -363,18 +369,18 @@ int main(int argc, char** argv)
         auto& surface_mesh = mesh.getSurfaceMesh();
         if (fix_mesh)
         {
-            std::cout << timestamp << "Fixing mesh" << std::endl;
+            lvr2::logout::get() << lvr2::info << "Fixing mesh" << lvr2::endl;
             surface_mesh.duplicate_non_manifold_vertices();
             surface_mesh.remove_degenerate_faces();
         }
         surface_mesh.garbage_collection();
 
-        std::cout << timestamp << "Calculating normals" << std::endl;
+        lvr2::logout::get() << lvr2::info << "Calculating normals" << lvr2::endl;
         pmp::SurfaceNormals::compute_vertex_normals(surface_mesh, flip_point);
 
         for (auto file : mesh_out_files)
         {
-            std::cout << timestamp << "Writing mesh to " << file << std::endl;
+            lvr2::logout::get() << lvr2::info << "Writing mesh to " << file << lvr2::endl;
             surface_mesh.write(file.string());
         }
     }
@@ -398,6 +404,16 @@ int main(int argc, char** argv)
         else
         {
             auto& surface_mesh = mesh.getSurfaceMesh();
+
+            {
+                // remove color if present
+                auto v_color = surface_mesh.get_vertex_property<pmp::Color>("v:color");
+                if (v_color)
+                {
+                    surface_mesh.remove_vertex_property(v_color);
+                }
+            }
+
             auto f_dist = surface_mesh.get_face_property<pmp::IndexType>("f:material");
             auto v_dist = surface_mesh.add_vertex_property<pmp::IndexType>("v:material", pmp::PMP_MAX_INDEX);
             #pragma omp parallel for schedule(static)
@@ -411,7 +427,7 @@ int main(int argc, char** argv)
                     {
                         if (v_dist[vH] != pmp::PMP_MAX_INDEX && v_dist[vH] != id)
                         {
-                            std::cout << "ERROR: vertex " << vH << " has multiple materials" << std::endl;
+                            lvr2::Logger::get() << lvr2::error << "ERROR: vertex " << vH << " has multiple materials" << lvr2::endl;
                         }
                         v_dist[vH] = id;
                     }
@@ -454,12 +470,12 @@ int main(int argc, char** argv)
     }
 
     tree->refresh();
-    std::cout << timestamp << "Constructed tree with depth " << tree->depth() << ". Creating LOD" << std::endl;
+    lvr2::logout::get() << lvr2::info << "Constructed tree with depth " << tree->depth() << ". Creating LOD" << lvr2::endl;
     tree->finalize(allowedMemUsage, reduction_factor, normal_deviation);
 
     // ==================== Write to file ====================
 
-    std::cout << timestamp << "Creating 3D Tiles" << std::endl;
+    lvr2::logout::get() << lvr2::info << "Creating 3D Tiles" << lvr2::endl;
 
     IO io(output_dir.string());
     io.write(tree, compress, scale);
@@ -473,7 +489,7 @@ int main(int argc, char** argv)
         fs::remove(name);
     }
 
-    std::cout << timestamp << "Finished" << std::endl;
+    lvr2::logout::get() << lvr2::info << "Finished" << lvr2::endl;
 
     return 0;
 }
@@ -487,7 +503,7 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
 {
     size_t empty = 0;
 
-    ProgressBar progress(chunk_files.size(), "Reading chunks");
+    lvr2::Monitor progress(lvr2::LogLevel::info, "Reading chunks", chunk_files.size());
     for (size_t i = 0; i < chunk_files.size(); i++)
     {
         auto name = chunk_files[i];
@@ -495,7 +511,7 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
         int read = std::sscanf(name.c_str(), "%d_%d_%d", &x, &y, &z);
         if (read != 3)
         {
-            std::cout << "Skipping " << name << std::endl;
+            lvr2::Logger::get() << lvr2::info << "Skipping " << name << lvr2::endl;
             ++progress;
             continue;
         }
@@ -526,12 +542,12 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
 
         ++progress;
     }
-    std::cout << "\r";
+    progress.terminate();
 
     if (empty > 0)
     {
-        std::cout << timestamp << empty << " chunks contained only overlap with other chunks" << std::endl;
+        lvr2::logout::get() << lvr2::info << empty << " chunks contained only overlap with other chunks" << lvr2::endl;
     }
 
-    std::cout << timestamp << "Found " << chunks.size() << " Chunks" << std::endl;
+    lvr2::logout::get() << lvr2::info << "Found " << chunks.size() << " Chunks" << lvr2::endl;
 }

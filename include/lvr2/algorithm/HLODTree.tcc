@@ -340,10 +340,11 @@ void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage, float redu
     if (allowedMemUsage == AllowedMemoryUsage::Minimal || numThreads == 1)
     {
         size_t total = countAllSimplify();
-        ProgressBar progress(total, "Generating LOD");
+        lvr2::Monitor progress(lvr2::LogLevel::info, "Generating LOD", total);
         size_t fullySimplified = finalizeRecursive(reductionFactor, normalDeviation, progress);
-        std::cout << "\r" << timestamp << "LOD: " << fullySimplified << " / " << total
-                  << " meshes reached simplification limit" << std::endl;
+        progress.terminate();
+        lvr2::Logger::get() << lvr2::info << "LOD: " << fullySimplified << " / " << total
+                            << " meshes reached simplification limit" << lvr2::endl;
         return;
     }
 
@@ -355,7 +356,7 @@ void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage, float redu
     std::vector<HLODTree*> canBeSimplified;
     while (!collectSimplify(canBeSimplified))
     {
-        ProgressBar progress(canBeSimplified.size(), "Generating LOD of one Layer");
+        lvr2::Monitor progress(lvr2::LogLevel::info, "Generating LOD of one Layer", canBeSimplified.size());
         size_t fullySimplified = 0;
 
         #pragma omp parallel for reduction(+:fullySimplified) num_threads(numThreads)
@@ -368,16 +369,18 @@ void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage, float redu
             ++progress;
         }
 
-        std::cout << "\r" << timestamp << "LOD: " << fullySimplified << " / " << canBeSimplified.size()
-                  << " meshes reached simplification limit" << std::endl;
+        progress.terminate();
+
+        lvr2::Logger::get() << lvr2::info << "LOD: " << fullySimplified << " / " << canBeSimplified.size()
+                            << " meshes reached simplification limit" << lvr2::endl;
 
         canBeSimplified.clear();
     }
-    std::cout << timestamp << "Finished generating LOD" << std::endl;
+    lvr2::Logger::get() << lvr2::info << "Finished generating LOD" << lvr2::endl;
 }
 
 template<typename BaseVecT>
-size_t HLODTree<BaseVecT>::finalizeRecursive(float reductionFactor, float normalDeviation, ProgressBar& progress)
+size_t HLODTree<BaseVecT>::finalizeRecursive(float reductionFactor, float normalDeviation, lvr2::Monitor& progress)
 {
     if (isLeaf() || m_simplified)
     {
@@ -497,6 +500,17 @@ size_t HLODTree<BaseVecT>::countAllSimplify() const
     if (shouldCombine())
     {
         count++;
+    }
+    return count;
+}
+
+template<typename BaseVecT>
+size_t HLODTree<BaseVecT>::countAllMeshes() const
+{
+    size_t count = m_mesh ? 1 : 0;
+    for (auto& child : m_children)
+    {
+        count += child->countAllMeshes();
     }
     return count;
 }

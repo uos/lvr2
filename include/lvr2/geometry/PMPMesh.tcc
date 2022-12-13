@@ -250,13 +250,7 @@ MeshBufferPtr PMPMesh<BaseVecT>::toMeshBuffer_const() const
     if (src_tex)
     {
         floatArr tex(new float[num_vertices * 2]);
-        #pragma omp parallel for schedule(static)
-        for (size_t i = 0; i < num_vertices; i++)
-        {
-            auto t = src_tex[pmp::Vertex(i)];
-            tex[i * 2 + 0] = t.x();
-            tex[i * 2 + 1] = t.y();
-        }
+        std::copy_n((float*)src_tex.data(), num_vertices * 2, tex.get());
         buffer->setTextureCoordinates(tex);
     }
 

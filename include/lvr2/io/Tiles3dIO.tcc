@@ -79,7 +79,11 @@ void Tiles3dIO<BaseVecT>::write(TreeConstPtr& tree, bool compress, float scale)
     tileset.root.refine = Cesium3DTiles::Tile::Refine::ADD;
 
     tree->finalize();
-    writeTiles(tileset.root, tree, compress, m_rootDir, "tiles/s");
+
+    size_t numMeshes = tree->countAllMeshes();
+    lvr2::Monitor progress(lvr2::LogLevel::info, "Writing tiles: ", numMeshes);
+    writeTiles(tileset.root, tree, compress, m_rootDir, "tiles/s", progress);
+    progress.terminate();
 
     Tiles3dIO_internal::writeTileset(tileset, m_rootDir, scale);
 }
@@ -89,7 +93,8 @@ void Tiles3dIO<BaseVecT>::writeTiles(Cesium3DTiles::Tile& tile,
                                      TreeConstPtr& tree,
                                      bool compress,
                                      const std::string& outputDir,
-                                     const std::string& prefix)
+                                     const std::string& prefix,
+                                     lvr2::Monitor& progress)
 {
     tile.geometricError = tree->depth() == 0 ? 0.0 : std::pow(10, tree->depth() - 1);
     Tiles3dIO_internal::convertBoundingBox(tree->bb(), tile.boundingVolume);
@@ -100,7 +105,7 @@ void Tiles3dIO<BaseVecT>::writeTiles(Cesium3DTiles::Tile& tile,
     {
         std::string next_prefix = prefix;
         Tiles3dIO_internal::indexToName(i, next_prefix, children.size() - 1);
-        writeTiles(tile.children[i], children[i], compress, outputDir, next_prefix);
+        writeTiles(tile.children[i], children[i], compress, outputDir, next_prefix, progress);
     }
 
     auto mesh = tree->mesh();
@@ -137,6 +142,7 @@ void Tiles3dIO<BaseVecT>::writeTiles(Cesium3DTiles::Tile& tile,
         {
             io.save(outputDir + filename);
         }
+        ++progress;
     }
 }
 

@@ -106,7 +106,7 @@ void segmentMesh(pmp::SurfaceMesh& mesh, float chunkSize, std::unordered_map<Vec
     std::vector<SegmentMetaData> segments;
 
     std::vector<pmp::Vertex> queue;
-    ProgressBar progress(mesh.n_vertices(), "Segmenting mesh");
+    lvr2::Monitor progress(lvr2::LogLevel::info, "Segmenting mesh", mesh.n_vertices());
 
     for (auto vH : mesh.vertices())
     {
@@ -163,7 +163,8 @@ void segmentMesh(pmp::SurfaceMesh& mesh, float chunkSize, std::unordered_map<Vec
         }
     }
 
-    std::cout << "\r" << timestamp << "Found " << segments.size() << " initial segments" << std::endl;
+    progress.terminate();
+    lvr2::Logger::get() << lvr2::info << "Found " << segments.size() << " initial segments" << lvr2::endl;
 
     // ==================== merge small segments within a chunk together ====================
 
@@ -248,8 +249,8 @@ void segmentMesh(pmp::SurfaceMesh& mesh, float chunkSize, std::unordered_map<Vec
 
     if (!outChunks.empty())
     {
-        std::cout << timestamp << "Merged " << (segments.size() - outSegments.size()) << " small segments into "
-                  << outChunks.size() << " chunks" << std::endl;
+        lvr2::Logger::get() << lvr2::info << "Merged " << (segments.size() - outSegments.size()) << " small segments into "
+                            << outChunks.size() << " chunks" << lvr2::endl;
     }
 }
 
@@ -586,7 +587,7 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb)
             }
             else
             {
-                std::cout << "Warning: Vertex " << src << " should have been deleted, but it is not." << std::endl;
+                lvr2::Logger::get() << lvr2::warning << "Warning: Vertex " << src << " should have been deleted, but it is not." << lvr2::endl;
             }
         }
     }

@@ -283,9 +283,11 @@ std::unique_ptr<draco::Mesh> toDracoMesh(ModelPtr modelPtr)
     floatArr vertices = modelPtr->m_mesh->getVertices();
     floatArr vertexNormals = modelPtr->m_mesh->getVertexNormals();    
     ucharArr vertexColors = modelPtr->m_mesh->getVertexColors(w);
-    bool hasVertexColors = modelPtr->m_mesh->hasVertexColors();
+    floatArr vertexTextureCoordinates = modelPtr->m_mesh->getTextureCoordinates();
+    bool hasVertexNormals = vertexNormals != nullptr;
+    bool hasVertexTextureCoordinates = vertexTextureCoordinates != nullptr;
+    bool hasVertexColors = vertexColors != nullptr && !hasVertexTextureCoordinates;
     bool hasFaceColors = modelPtr->m_mesh->hasFaceColors();
-    bool hasVertexNormals = modelPtr->m_mesh->hasVertexNormals();
     bool hasFaceNormals = modelPtr->m_mesh->hasFaceNormals();
 
     // size_t   numVertexConfidences;
@@ -294,8 +296,6 @@ std::unique_ptr<draco::Mesh> toDracoMesh(ModelPtr modelPtr)
     // size_t   numVertexIntensities;
     // floatArr vertexIntensities = modelPtr->m_mesh->getVertexIntensityArray(numVertexIntensities);
 
-    size_t   numVertexTextureCoordinates = numVertices;
-    floatArr vertexTextureCoordinates = modelPtr->m_mesh->getTextureCoordinates();
 
     size_t  numFaces = modelPtr->m_mesh->numFaces();
     uintArr faces = modelPtr->m_mesh->getFaceIndices();
@@ -357,6 +357,17 @@ std::unique_ptr<draco::Mesh> toDracoMesh(ModelPtr modelPtr)
                                      draco::MeshAttributeElementType::MESH_VERTEX_ATTRIBUTE);
     }
 
+    if (hasVertexTextureCoordinates)
+    {
+        draco::GeometryAttribute attribute;
+        attribute.Init(draco::GeometryAttribute::TEX_COORD, nullptr, 2, draco::DT_FLOAT32, false,
+                       sizeof(float) * 2, 0);
+        vertexTextureCoordinatesAttId =
+            mesh->AddAttribute(attribute, true, faceIndexed ? numFaces * 3 : numVertices);
+        mesh->SetAttributeElementType(vertexTextureCoordinatesAttId,
+                                     draco::MeshAttributeElementType::MESH_VERTEX_ATTRIBUTE);
+    }
+
     // if (numVertexConfidences > 0)
     // {
     //     draco::GeometryAttribute attribute;
@@ -390,17 +401,6 @@ std::unique_ptr<draco::Mesh> toDracoMesh(ModelPtr modelPtr)
 
     //     metadata->AddAttributeMetadata(std::unique_ptr<draco::AttributeMetadata>(attributeMeta));
     // }
-
-    if (vertexTextureCoordinates)
-    {
-        draco::GeometryAttribute attribute;
-        attribute.Init(draco::GeometryAttribute::TEX_COORD, nullptr, 3, draco::DT_FLOAT32, false,
-                       sizeof(float) * 3, 0);
-        vertexTextureCoordinatesAttId = mesh->AddAttribute(
-            attribute, true, faceIndexed ? numFaces * 3 : numVertexTextureCoordinates);
-        mesh->SetAttributeElementType(vertexTextureCoordinatesAttId,
-                                     draco::MeshAttributeElementType::MESH_VERTEX_ATTRIBUTE);
-    }
 
     if (faceMaterialIndices)
     {
@@ -610,6 +610,16 @@ std::unique_ptr<draco::Mesh> toDracoMesh(ModelPtr modelPtr)
                 color[1] = vertexColors[3 * i.value() + 1];
                 color[2] = vertexColors[3 * i.value() + 2];
                 colors->SetAttributeValue(i, color);
+            }
+        }
+
+        // apply texture coordinates
+        if (hasVertexTextureCoordinates)
+        {
+            auto texcoords = mesh->attribute(vertexTextureCoordinatesAttId);
+            for (draco::AttributeValueIndex i(0); i < numVertices; i++)
+            {
+                texcoords->SetAttributeValue(i, vertexTextureCoordinates.get() + i.value() * 2);
             }
         }
 

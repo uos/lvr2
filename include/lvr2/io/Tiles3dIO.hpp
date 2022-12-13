@@ -76,7 +76,8 @@ private:
                     TreeConstPtr& tree,
                     bool compress,
                     const std::string& outputDir,
-                    const std::string& prefix = "");
+                    const std::string& prefix,
+                    lvr2::Monitor& progress);
 
     std::string m_rootDir;
 };

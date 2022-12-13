@@ -36,7 +36,7 @@
 
 #include "lvr2/geometry/LazyMesh.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
-#include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Logging.hpp"
 
 #include <memory>
 
@@ -272,7 +272,7 @@ private:
     {
         return m_combineDepth == -1 || m_depth <= m_combineDepth;
     }
-    size_t finalizeRecursive(float reductionFactor, float normalDeviation, ProgressBar& progress);
+    size_t finalizeRecursive(float reductionFactor, float normalDeviation, lvr2::Monitor& progress);
     /// Combine the child meshes into this node's mesh.
     void combine();
     /// Simplify the mesh. Returns true if it can be further simplified.
@@ -281,6 +281,8 @@ private:
     bool collectSimplify(std::vector<HLODTree*>& canBeSimplified);
     /// Counts all subtrees for which shouldCombine() returns true.
     size_t countAllSimplify() const;
+    /// Counts all meshes in this subtree.
+    size_t countAllMeshes() const;
 
     static Ptr partitionRecursive(Ptr* start, Ptr* end, int combineDepth);
 
@@ -291,6 +293,9 @@ private:
     int m_combineDepth = -1; // see shouldCombine()
 
     bool m_simplified = false;
+
+    template<typename T>
+    friend class Tiles3dIO;
 };
 
 } // namespace lvr2

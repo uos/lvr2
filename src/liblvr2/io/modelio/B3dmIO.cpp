@@ -36,6 +36,8 @@
 
 #include "lvr2/io/modelio/B3dmIO.hpp"
 
+#include "lvr2/util/Logging.hpp"
+
 #include "lvr2/io/modelio/DracoEncoder.hpp"
 #include "lvr2/io/modelio/DracoDecoder.hpp"
 #include <draco/io/gltf_encoder.h>
@@ -339,7 +341,8 @@ void B3dmIO::saveCompressed(const std::string& filename)
     mesh->SetCompressionEnabled(true);
     draco::DracoCompressionOptions options;
     options.compression_level = 10;
-    options.quantization_bits_position = 0; // would crash for some meshes
+    options.quantization_bits_position = 0; // causes very visible artifacts
+    options.quantization_bits_tex_coord = 0;
     mesh->SetCompressionOptions(options);
 
     draco::Scene scene;
@@ -360,8 +363,16 @@ void B3dmIO::saveCompressed(const std::string& filename)
         convert_texture(texture, draco_texture->source_image().MutableEncodedData());
 
         draco_texture->source_image().set_mime_type(MIME_TYPE);
-        
+
         material->SetTextureMap(std::move(draco_texture), draco::TextureMap::Type::COLOR, 0);
+
+        material->GetTextureMapByIndex(0)->SetProperties(
+            draco::TextureMap::Type::COLOR,
+            draco::TextureMap::WrappingMode(draco::TextureMap::AxisWrappingMode::CLAMP_TO_EDGE),
+            0,
+            draco::TextureMap::FilterType::LINEAR,
+            draco::TextureMap::FilterType::LINEAR_MIPMAP_LINEAR
+        );
     }
 
     auto mesh_group_id = scene.AddMeshGroup();

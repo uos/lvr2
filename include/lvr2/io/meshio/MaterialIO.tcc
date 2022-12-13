@@ -1,5 +1,6 @@
 #include "MaterialIO.hpp"
 #include <lvr2/io/meshio/yaml/Material.hpp>
+#include "lvr2/util/Progress.hpp"
 
 namespace lvr2
 {

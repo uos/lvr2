@@ -74,7 +74,7 @@ RandomSampleOctreeReduction::RandomSampleOctreeReduction(PointBufferPtr pointBuf
 }
 
 RandomSampleOctreeReduction::RandomSampleOctreeReduction(Vector3f* points, size_t& n, float voxelSize, size_t maxPointsPerVoxel)
-    :  OctreeReductionBase(nullptr, voxelSize, maxPointsPerVoxel), m_points(points)
+    :  OctreeReductionBase(n, voxelSize, maxPointsPerVoxel), m_points(points)
 {
     if (m_numPoints == 0)
     {
@@ -224,7 +224,6 @@ size_t RandomSampleOctreeReduction::splitPoints(size_t start, size_t n, unsigned
 
     for (;;)
     {
-        // find first deleted and last un-deleted
         while (l < r && m_points[l][axis] < splitValue)
         {
             ++l;

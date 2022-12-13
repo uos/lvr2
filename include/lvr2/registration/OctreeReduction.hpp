@@ -80,6 +80,20 @@ public:
     virtual PointBufferPtr getReducedPoints() = 0;
 
 protected:
+
+    /**
+     * @brief Construct a new Octree Reduction Base object with an external point buffer
+     * 
+     * @param numPoints         Number of points in the point buffer
+     * @param voxelSize         Voxel size of the octree
+     * @param maxPointsPerVoxel Maximum points per voxel
+     */
+    OctreeReductionBase(size_t numPoints, float voxelSize, size_t maxPointsPerVoxel) 
+        : m_voxelSize(voxelSize), 
+          m_maxPointsPerVoxel(maxPointsPerVoxel), 
+          m_numPoints(numPoints), 
+          m_pointBuffer(nullptr) {}
+
     /// Indices of the points that are kept after reduction
     std::vector<size_t> m_pointIndices;
 
@@ -178,24 +192,21 @@ public:
     PointBufferPtr getReducedPoints() override;   
 
 private:
-    /// Builds the octree
-    void init();
-
     /// @brief Recursive helper function to build the octree
     /// @param start            Start index of the points to distribute
-    /// @param n                Number of points to distribute
+    /// @param end              Past-the-end index of the points to distribute
     /// @param min              Min coordinates of current bounding volume
     /// @param max              Max coordinates of current bounding volume
     /// @param level            Octree depth
-    void createOctree(size_t start, size_t n, const Vector3f& min, const Vector3f& max, unsigned int level = 0);
+    void createOctree(size_t* start, size_t* end, const Vector3f& min, const Vector3f& max, unsigned int level = 0);
 
     /// @brief Sorts the leaf points according to split value 
     /// @param start            Start index of the points
-    /// @param n                Number of points to distribute
+    /// @param end              Past-the-end index of the points
     /// @param axis             Split axis
     /// @param splitValue       Split valie
-    /// @return 
-    size_t splitPoints(size_t start, size_t n, unsigned int axis, float splitValue);
+    /// @return the split point
+    size_t* splitPoints(size_t* start, size_t* end, unsigned int axis, float splitValue);
 
     /// Array representation of the initial point cloud
     floatArr                m_points;
