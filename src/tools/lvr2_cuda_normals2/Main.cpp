@@ -9,8 +9,6 @@
 #include "lvr2/util/Timestamp.hpp"
 #include "Options.hpp"
 
- // #include "kernels_host.h"
-
 #include "LBVHIndex.cuh"
 
 using namespace lvr2;
@@ -24,14 +22,14 @@ void floatToBinary(float f)
     
 }
 
-std::string read_kernel(std::string file_path)
-{
-    std::ifstream in(file_path);
-    std::string contents((std::istreambuf_iterator<char>(in)),
-        std::istreambuf_iterator<char>());
+// std::string read_kernel(std::string file_path)
+// {
+//     std::ifstream in(file_path);
+//     std::string contents((std::istreambuf_iterator<char>(in)),
+//         std::istreambuf_iterator<char>());
 
-    return contents;
-}
+//     return contents;
+// }
 
 int main(int argc, char** argv)
 {
@@ -53,23 +51,22 @@ int main(int argc, char** argv)
     int leaf_size = 1;
     bool sort_queries = true;
     bool compact = true;
-    bool shrink_to_fit = true;
 
     int K = 50;
 
-    lbvh::LBVHIndex tree(leaf_size, sort_queries, compact, shrink_to_fit);
+    lbvh::LBVHIndex tree(leaf_size, sort_queries, compact);
 
     tree.build(points_raw, num_points);
 
 
-    // Get the Query Kernel
-    std::string kernel_file = "query_knn_kernels.cu";
-    std::string kernel_name = "query_knn_kernel";
+    // // Get the Query Kernel
+    // std::string kernel_file = "query_knn_kernels.cu";
+    // std::string kernel_name = "query_knn_kernel";
 
-    std::string kernel_path = "../src/tools/lvr2_cuda_normals2/src/query_knn_kernels.cu";
-    std::string cu_src = read_kernel(kernel_path);
+    // std::string kernel_path = "../src/tools/lvr2_cuda_normals2/src/query_knn_kernels.cu";
+    // std::string cu_src = read_kernel(kernel_path);
     
-    const char* kernel = cu_src.c_str();
+    // const char* kernel = cu_src.c_str();
 
     // Get the queries
     size_t num_queries = num_points;
@@ -87,9 +84,9 @@ int main(int argc, char** argv)
                 malloc(sizeof(float) * num_queries * K);
 
     // Process the queries 
-    tree.process_queries(queries, num_queries, points_raw, num_points, 
-                        kernel, kernel_name.c_str(), K,
-                        n_neighbors_out, indices_out, distances_out);
+    tree.kSearch(queries, num_queries,
+                K,
+                n_neighbors_out, indices_out, distances_out);
 
 
     // Create the normal array
@@ -97,7 +94,7 @@ int main(int argc, char** argv)
 
     // Calculate the normals
     tree.calculate_normals(normals, num_queries,
-                queries, num_queries, K, points_raw, num_points,
+                queries, num_queries, K,
                 n_neighbors_out, indices_out);
 
     // Set the normals in the Model
