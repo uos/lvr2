@@ -395,21 +395,48 @@ void LBVHIndex::build(float* points, size_t num_points)
 void LBVHIndex::kSearch(
     float* query_points, size_t num_queries,
     int K, 
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-)
+    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
 {
     this->m_radius = FLT_MAX;
+    
+    this->process_queries(query_points, num_queries, K, 
+        n_neighbors_out, indices_out, distances_out);
+}
+
+void LBVHIndex::kSearch_dev_ptr(
+    float* query_points, size_t num_queries,
+    int K, 
+    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
+{
+    this->m_radius = FLT_MAX;
+    
     this->process_queries(query_points, num_queries, K, 
         n_neighbors_out, indices_out, distances_out);
 }
 
 void LBVHIndex::radiusSearch(
     float* query_points, size_t num_queries,
-    int K, int r,
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-)
+    int K, float r,
+    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
+{
+    // Malloc the output arrays here
+    n_neighbors_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
+    indices_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries * K);
+    distances_out = (float*) malloc(sizeof(float) * num_queries * K);
+
+    this->m_radius = r;
+    
+    this->process_queries(query_points, num_queries, K, 
+        n_neighbors_out, indices_out, distances_out);
+}
+
+void LBVHIndex::radiusSearch_dev_ptr(
+    float* query_points, size_t num_queries,
+    int K, float r,
+    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
 {
     this->m_radius = r;
+    
     this->process_queries(query_points, num_queries, K, 
         n_neighbors_out, indices_out, distances_out);
 }
@@ -417,14 +444,15 @@ void LBVHIndex::radiusSearch(
 void LBVHIndex::process_queries(
     float* queries_raw, size_t num_queries,
     int K,
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-)
+    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
 {
     // Get the Query Kernel
+    // TODO Dont use hardcoded path
     std::string kernel_file = "query_knn_kernels.cu";
     std::string kernel_name = "query_knn_kernel";
     std::string kernel_path = "../src/tools/lvr2_cuda_normals2/src/query_knn_kernels.cu";
 
+    // Read the kernel file
     std::ifstream in(kernel_path);
     std::string cu_src((std::istreambuf_iterator<char>(in)),
         std::istreambuf_iterator<char>());
@@ -452,41 +480,53 @@ void LBVHIndex::process_queries(
             sizeof(BVHNode) * this->m_num_nodes,
             cudaMemcpyHostToDevice) );
 
-    //TODO Do this in the kernel
-    float3* points3 = (float3*) malloc(sizeof(float3) * this->m_num_objects);
-    for(int i = 0; i < this->m_num_objects; i++)
-    {
-        points3[i].x = this->m_points[3 * i + 0];
-        points3[i].y = this->m_points[3 * i + 1];
-        points3[i].z = this->m_points[3 * i + 2];
-    }
+    //TODO Do this in the kernel -> Is done in the kernel now
+    // float3* points3 = (float3*) malloc(sizeof(float3) * this->m_num_objects);
+    // for(int i = 0; i < this->m_num_objects; i++)
+    // {
+    //     points3[i].x = this->m_points[3 * i + 0];
+    //     points3[i].y = this->m_points[3 * i + 1];
+    //     points3[i].z = this->m_points[3 * i + 2];
+    // }
 
-    float3* d_points3;
-    gpuErrchk( cudaMalloc(&d_points3, sizeof(float3) * this->m_num_objects) );
-    gpuErrchk( cudaMemcpy(d_points3, points3, 
-            sizeof(float3) * this->m_num_objects, 
-            cudaMemcpyHostToDevice) );
+    // float3* d_points3;
+    // gpuErrchk( cudaMalloc(&d_points3, sizeof(float3) * this->m_num_objects) );
+    // gpuErrchk( cudaMemcpy(d_points3, points3, 
+    //         sizeof(float3) * this->m_num_objects, 
+    //         cudaMemcpyHostToDevice) );
     
+    float* d_points;
+    cudaMalloc(&d_points, sizeof(float) * 3 * this->m_num_objects);
+    cudaMemcpy(d_points, this->m_points,
+        sizeof(float) * 3 * this->m_num_objects,
+        cudaMemcpyHostToDevice);
+
     unsigned long long int* d_sorted_indices;
     gpuErrchk( cudaMalloc(&d_sorted_indices, sizeof(unsigned int) * this->m_num_objects) );
     gpuErrchk( cudaMemcpy(d_sorted_indices, this->m_sorted_indices,
             sizeof(unsigned int) * this->m_num_objects,
             cudaMemcpyHostToDevice) );
 
-    //TODO Do this in the kernel
-    float3* query_points = (float3*) malloc(sizeof(float3) * num_queries);
-    for(int i = 0; i < num_queries; i++)
-    {
-        query_points[i].x = queries_raw[3 * i + 0];
-        query_points[i].y = queries_raw[3 * i + 1];
-        query_points[i].z = queries_raw[3 * i + 2];
-    }
+    //TODO Do this in the kernel -> Is now done in the kernel
+    // float3* query_points = (float3*) malloc(sizeof(float3) * num_queries);
+    // for(int i = 0; i < num_queries; i++)
+    // {
+    //     query_points[i].x = queries_raw[3 * i + 0];
+    //     query_points[i].y = queries_raw[3 * i + 1];
+    //     query_points[i].z = queries_raw[3 * i + 2];
+    // }
 
-    float3* d_query_points;
-    gpuErrchk( cudaMalloc(&d_query_points, sizeof(float3) * num_queries) );
-    gpuErrchk( cudaMemcpy(d_query_points, query_points,
-            sizeof(float3) * num_queries,
-            cudaMemcpyHostToDevice) );
+    // float3* d_query_points;
+    // gpuErrchk( cudaMalloc(&d_query_points, sizeof(float3) * num_queries) );
+    // gpuErrchk( cudaMemcpy(d_query_points, query_points,
+    //         sizeof(float3) * num_queries,
+    //         cudaMemcpyHostToDevice) );
+
+    float* d_query_points;
+    cudaMalloc(&d_query_points, sizeof(float) * 3 * num_queries);
+    cudaMemcpy(d_query_points, queries_raw,
+        sizeof(float) * 3 * num_queries,
+        cudaMemcpyHostToDevice);
 
     unsigned int* sorted_queries = (unsigned int*) 
                 malloc(sizeof(unsigned int) * num_queries);
@@ -534,29 +574,29 @@ void LBVHIndex::process_queries(
             cudaMemcpyHostToDevice) );
 
     // Initialise the output arrays
-    //TODO Do this in the kernel
-    for(int i = 0; i < num_queries * K; i++)
-    {
-        indices_out[i] = UINT32_MAX;
-    }
+    // TODO Do this in the kernel -> Done in kernel
+    // for(int i = 0; i < num_queries * K; i++)
+    // {
+    //     indices_out[i] = UINT32_MAX;
+    // }
 
     unsigned int* d_indices_out;
     gpuErrchk( cudaMalloc(&d_indices_out, sizeof(unsigned int) * num_queries * K) );
-    gpuErrchk( cudaMemcpy(d_indices_out, indices_out,
-            sizeof(unsigned int) * num_queries * K,
-            cudaMemcpyHostToDevice) );
+    // gpuErrchk( cudaMemcpy(d_indices_out, indices_out,
+    //         sizeof(unsigned int) * num_queries * K,
+    //         cudaMemcpyHostToDevice) );
 
-    //TODO Do this in the kernel
-    for(int i = 0; i < num_queries * K; i++)
-    {
-        distances_out[i] = FLT_MAX;
-    }
+    //TODO Do this in the kernel -> Done in kernel
+    // for(int i = 0; i < num_queries * K; i++)
+    // {
+    //     distances_out[i] = FLT_MAX;
+    // }
 
     float* d_distances_out;
     gpuErrchk( cudaMalloc(&d_distances_out, sizeof(float) * num_queries * K) );
-    gpuErrchk( cudaMemcpy(d_distances_out, distances_out,
-            sizeof(float) * num_queries * K,
-            cudaMemcpyHostToDevice) );
+    // gpuErrchk( cudaMemcpy(d_distances_out, distances_out,
+    //         sizeof(float) * num_queries * K,
+    //         cudaMemcpyHostToDevice) );
 
     unsigned int* d_n_neighbors_out;
     gpuErrchk( cudaMalloc(&d_n_neighbors_out, sizeof(unsigned int) * num_queries) );
@@ -565,7 +605,7 @@ void LBVHIndex::process_queries(
     void *params[] = 
     {
         &d_nodes,
-        &d_points3,
+        &d_points,
         &d_sorted_indices,
         &this->m_root_node,
         &this->m_radius,
@@ -601,9 +641,11 @@ void LBVHIndex::process_queries(
     gpuErrchk( cudaMemcpy(n_neighbors_out, d_n_neighbors_out,
             sizeof(unsigned int) * num_queries,
             cudaMemcpyDeviceToHost) );
+    
+    
 
     // findKNN(K, points_raw, num_points, queries_raw, num_queries);
-
+    return;
 }
 
  void LBVHIndex::calculate_normals(
@@ -625,19 +667,7 @@ void LBVHIndex::process_queries(
     float* d_queries;
     gpuErrchk( cudaMalloc(&d_queries, 
         sizeof(float) * 3 * num_queries) );
-
-    unsigned int* d_n_neighbors_out;
-    gpuErrchk( cudaMalloc(&d_n_neighbors_out, 
-        sizeof(unsigned int) * num_queries) );
-
-    unsigned int* d_indices_out;
-    gpuErrchk( cudaMalloc(&d_indices_out, 
-        sizeof(unsigned int) * K * num_queries) );
-
-    unsigned int* d_neigh_sum;
-    gpuErrchk( cudaMalloc(&d_neigh_sum, 
-        sizeof(unsigned int) * num_queries) );
-
+    
     float* d_normals;
     gpuErrchk( cudaMalloc(&d_normals, 
         sizeof(float) * 3 * num_normals) );
@@ -651,16 +681,23 @@ void LBVHIndex::process_queries(
         sizeof(float) * 3 * num_queries,
         cudaMemcpyHostToDevice) );
 
+    // gpuErrchk( cudaMemcpy(d_normals, normals,
+    //     sizeof(float) * 3 * num_normals,
+    //     cudaMemcpyHostToDevice) );
+
+    unsigned int* d_n_neighbors_out;
+    unsigned int* d_indices_out;
+
+    gpuErrchk( cudaMalloc(&d_n_neighbors_out, 
+        sizeof(unsigned int) * num_queries) );
+    gpuErrchk( cudaMalloc(&d_indices_out, 
+        sizeof(unsigned int) * K * num_queries) );
+
     gpuErrchk( cudaMemcpy(d_n_neighbors_out, n_neighbors_out,
         sizeof(unsigned int) * num_queries, 
         cudaMemcpyHostToDevice) );
-
     gpuErrchk( cudaMemcpy(d_indices_out, indices_out,
         sizeof(unsigned int) * K * num_queries, 
-        cudaMemcpyHostToDevice) );
-
-    gpuErrchk( cudaMemcpy(d_normals, normals,
-        sizeof(float) * 3 * num_normals,
         cudaMemcpyHostToDevice) );
     
     // Call the normals kernel
@@ -675,6 +712,14 @@ void LBVHIndex::process_queries(
         sizeof(float) * 3 * num_normals,
         cudaMemcpyDeviceToHost) );
 
+}
+
+void knn_normals(
+    float* query_points, size_t num_queries,
+    int K,
+    float* normals, size_t num_normals)
+{
+    
 }
 
 // Get the extent of the points 

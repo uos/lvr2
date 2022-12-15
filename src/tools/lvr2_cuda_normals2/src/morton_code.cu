@@ -1,66 +1,9 @@
 #include "morton_code.cuh"
-#include "aabb.cuh"
 
 #include <stdio.h>
 
 using namespace lbvh;
 
-// Get the extent of the points 
-// (minimum and maximum values in each dimension)
-__device__ __host__ AABB lbvh::getExtent(float* points, size_t num_points)
-{
-    float min_x = INT_MAX;
-    float min_y = INT_MAX;
-    float min_z = INT_MAX;
-
-    float max_x = INT_MIN; 
-    float max_y = INT_MIN; 
-    float max_z = INT_MIN;
-
-    for(int i = 0; i < 3 * num_points; i += 3)
-    {
-        if(points[i + 0] < min_x)
-        {
-            min_x = points[i + 0];
-        }
-
-        if(points[i + 1] < min_y)
-        {
-            min_y = points[i + 1];
-        }
-
-        if(points[i + 2] < min_z)
-        {
-            min_z = points[i + 2];
-        }
-
-        if(points[i + 0] > max_x)
-        {
-            max_x = points[i + 0];
-        }
-
-        if(points[i + 1] > max_y)
-        {
-            max_y = points[i + 1];
-        }
-
-        if(points[i + 2] > max_z)
-        {
-            max_z = points[i + 2];
-        }
-    }
-    
-    AABB extent;
-    extent.min.x = min_x;
-    extent.min.y = min_y;
-    extent.min.z = min_z;
-    
-    extent.max.x = max_x;
-    extent.max.y = max_y;
-    extent.max.z = max_z;
-    
-    return extent;
-}
 
 __device__ HashType lbvh::expand_bits(HashType v)
 {

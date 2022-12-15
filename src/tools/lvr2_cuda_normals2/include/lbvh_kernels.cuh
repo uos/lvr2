@@ -22,7 +22,7 @@ void compute_morton_kernel(const AABB* __restrict__ aabbs,
                         unsigned int N); 
    
 __global__ 
-void compute_morton_points_kernel(float3* __restrict__ const points,
+void compute_morton_points_kernel(float* __restrict__ const points,     // Changed from float3* to float*
                                              AABB* __restrict__ const extent,
                                              unsigned long long int* morton_codes,
                                              unsigned int N);

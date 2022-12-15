@@ -9,11 +9,6 @@ namespace lbvh
 
 typedef unsigned long long int HashType;
 
-// Get the extent of the points 
-// (minimum and maximum values in each dimension)
-__device__ __host__ AABB getExtent(float* d_points, size_t num_points);
-
-
 __device__ HashType expand_bits(HashType v);
 
 // Calculates a Morton code for the

@@ -11,15 +11,22 @@
 namespace lbvh {
 
     template<typename Handler>
-    __forceinline__ __device__ void handle_node(const BVHNode *node,
-                                                        const float3* __restrict__ points,
-                                                        const unsigned int* __restrict__ sorted_indices,
-                                                        const float3* __restrict__ query_point,
-                                                        Handler& handler)
+    __forceinline__ __device__ void handle_node(
+        const BVHNode *node,
+        const float* __restrict__ points,       // Changed from float3* to float*
+        const unsigned int* __restrict__ sorted_indices,
+        const float3* __restrict__ query_point,
+        Handler& handler)
     {
         for(int i=node->range_left; i<=node->range_right; ++i) { // range is inclusive!
             auto index = sorted_indices[i];
-            auto point = points[index];
+            // auto point = points[index];
+            float3 point = 
+            {
+                points[3 * index + 0],
+                points[3 * index + 1],
+                points[3 * index + 2]
+            };
             float dist = sq_length3(point-*query_point);
 
             if(dist <= handler.max_distance()) {
@@ -46,12 +53,13 @@ namespace lbvh {
      *                          }
      */
     template<typename Handler>
-    __device__ void query(const BVHNode* __restrict__ nodes,
-                             const float3* __restrict__ points,
-                             const unsigned int* __restrict__ sorted_indices,
-                             unsigned int root_index,
-                             const float3* __restrict__ query_point,
-                             Handler& handler)
+    __device__ void query(
+        const BVHNode* __restrict__ nodes,
+        const float* __restrict__ points,      // Changed from float3* to float*
+        const unsigned int* __restrict__ sorted_indices,
+        unsigned int root_index,
+        const float3* __restrict__ query_point,
+        Handler& handler)
     {
         bool bt = false;
         unsigned int last_idx = UINT_MAX;

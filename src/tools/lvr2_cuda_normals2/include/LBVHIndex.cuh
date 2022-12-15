@@ -48,10 +48,22 @@ public:
         int K, 
         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
     );
+    // Not implemented yet
+    void kSearch_dev_ptr(
+        float* query_points, size_t num_queries,
+        int K, 
+        unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
+    );
 
     void radiusSearch(
         float* query_points, size_t num_queries,
-        int K, int r,
+        int K, float r,
+        unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
+    );
+    // Not implemented yet
+    void radiusSearch_dev_ptr(
+        float* query_points, size_t num_queries,
+        int K, float r,
         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
     );
 
@@ -70,6 +82,11 @@ public:
 
     // TODO Neue Funktion, die im Kernel Nachbarn findet und gleichzeitig (im Anschluss) Normalen berechnet
     //      Rückgabe nur die Normalen
+    void knn_normals(
+        float* query_points, size_t num_queries,
+        int K,
+        float* normals, size_t num_normals
+    );
 
     // TODO Neue Funktion, die indices_out, etc. als cuda Buffer (Pointer) "zurückgibt"
 

@@ -74,14 +74,14 @@ int main(int argc, char** argv)
     float* queries = points_raw;
 
     // Create the return arrays
-    unsigned int* n_neighbors_out = (unsigned int*)
-                malloc(sizeof(unsigned int) * num_queries);
+    unsigned int* n_neighbors_out;
+    unsigned int* indices_out;
+    float* distances_out;
 
-    unsigned int* indices_out = (unsigned int*) 
-                malloc(sizeof(unsigned int) * num_queries * K);
-
-    float* distances_out = (float*)
-                malloc(sizeof(float) * num_queries * K);
+    // Malloc the output arrays here
+    n_neighbors_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
+    indices_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries * K);
+    distances_out = (float*) malloc(sizeof(float) * num_queries * K);
 
     // Process the queries 
     tree.kSearch(queries, num_queries,
