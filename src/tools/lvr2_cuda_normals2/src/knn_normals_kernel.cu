@@ -1,28 +1,70 @@
-#include "normals_kernel.cuh"
-
-#include <stdio.h>
+#include "query_knn.cuh"
 
 using namespace lbvh;
 
-__global__ void lbvh::calculate_normals_kernel(float* points, 
-    float* queries, size_t num_queries, 
-    int K,
-    unsigned int* n_neighbors_out, unsigned int* indices_out, 
-    // unsigned int* neigh_sum,
-    float* normals,
-    float flip_x, float flip_y, float flip_z)
+extern "C" __global__ void knn_normals_kernel(
+    const BVHNode *nodes,
+    const float* __restrict__ points,         
+    const unsigned int* __restrict__ sorted_indices,
+    const unsigned int root_index,
+    const float max_radius,
+    const float* __restrict__ query_points,    
+    const unsigned int* __restrict__ sorted_queries,
+    const unsigned int num_queries, 
+    // custom parameters
+    float* normals
+    //float flip_x=1000000.0, float flip_y=1000000.0, float flip_z=1000000.0
+)
 {
+    
     unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if(tid >= num_queries)
+    
+    if (tid >= num_queries)
     {
         return;
     }
 
-    // http://www.ilikebigbits.com/2017_09_25_plane_from_points_2.html
+    float flip_x=1000000.0; 
+    float flip_y=1000000.0; 
+    float flip_z=1000000.0;
 
-    unsigned int n = n_neighbors_out[tid];
+    StaticPriorityQueue<float, K> queue(max_radius);
+    unsigned int query_idx = sorted_queries[tid];
+
+    // unsigned int indices_out[K];
+    // float distances_out[K];
+    // unsigned int n_neighbors_out[1];
+
+    // unsigned int index_out;
+    // float distance_out;
+    // unsigned int n_neighbors_out;
+
+    // for(int i = 0; i < K; i++)
+    // {
+    //     indices_out[K * query_idx + i] = UINT_MAX;
+    //     distances_out[K * query_idx + i] = FLT_MAX;
+    // }
+
+    float3 query_point =       
+    {
+        query_points[3 * query_idx + 0],
+        query_points[3 * query_idx + 1],
+        query_points[3 * query_idx + 2]
+    };
+    // query_knn(nodes, points, sorted_indices, root_index, &query_points[query_idx], queue);
+    query_knn(nodes, points, sorted_indices, root_index, &query_point, queue);
+    __syncwarp(); // synchronize the warp before the write operation
+    // write back the results at the correct position
+    // queue.write_results(&indices_out[0], &distances_out[0], &n_neighbors_out[0]);
+    // queue.write_results(&index_out, &distance_out, &n_neighbors_out);
+
+    // http://www.ilikebigbits.com/2017_09_25_plane_from_points_2.html
+    __syncthreads();
+
+    unsigned int n = queue.size();
     const float nf = (float) n;
+
+    // unsigned int n = n_neighbors_out;
 
     if(n < 3)
     {
@@ -37,10 +79,11 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
 
     for(int i = 0; i < n; i++)
     {
+        auto k = queue[i];
         // Coordinates of point which is the i-th neighbor
-        sum.x += points[ 3 * indices_out[K * tid + i] + 0];
-        sum.y += points[ 3 * indices_out[K * tid + i] + 1];
-        sum.z += points[ 3 * indices_out[K * tid + i] + 2];
+        sum.x += points[ 3 * k.id + 0];
+        sum.y += points[ 3 * k.id + 1];
+        sum.z += points[ 3 * k.id + 2];
     }
 
     sum.x /= nf; // x,y,z coordinates of centroid
@@ -54,13 +97,14 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
 
     for(int i = 0; i < n; i++)
     {
+        auto k = queue[i];
         float3 r =
         {
-            points[ 3 * indices_out[K * tid + i] + 0] - sum.x,
-            points[ 3 * indices_out[K * tid + i] + 1] - sum.y,
-            points[ 3 * indices_out[K * tid + i] + 2] - sum.z
+            points[ 3 * k.id + 0] - sum.x,
+            points[ 3 * k.id + 1] - sum.y,
+            points[ 3 * k.id + 2] - sum.z
         };
-       
+
         xx += r.x * r.x;
         xy += r.x * r.y;
         xz += r.x * r.z;
@@ -141,15 +185,15 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
 
     // Normalize normal
     float mag = sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
-
+   
     normal.x /= mag;
     normal.y /= mag;
     normal.z /= mag;
 
     // Check if the normals need to be flipped
-    float vertex_x = queries[3 * tid + 0];
-    float vertex_y = queries[3 * tid + 1];
-    float vertex_z = queries[3 * tid + 2];
+    float vertex_x = query_points[3 * tid + 0];
+    float vertex_y = query_points[3 * tid + 1];
+    float vertex_z = query_points[3 * tid + 2];
 
     // flip the normals
     float x_dir = flip_x - vertex_x;
@@ -174,10 +218,11 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
         normal.y = 0.0f;
         normal.z = 0.0f;
     }
-
+    
     // TODO Is the indexing here correct?
     // Set the normal in the normal array
     normals[3 * tid + 0] = normal.x;
     normals[3 * tid + 1] = normal.y;
     normals[3 * tid + 2] = normal.z;
+
 }

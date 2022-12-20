@@ -3,6 +3,7 @@
 #include "lbvh.cuh"
 #include "normals_kernel.cuh"
 #include "aabb.cuh"
+// #include "knn_normals_kernel.cuh"
 
 #include <stdio.h>
 #include <vector>
@@ -111,7 +112,15 @@ LBVHIndex::LBVHIndex(int leaf_size, bool sort_queries,
 
 void LBVHIndex::build(float* points, size_t num_points)
 {
-    this->m_points = points;
+    // this->m_points = points;
+
+    // Upload points to GPU
+    this->m_d_points;
+    cudaMalloc(&this->m_d_points,
+        sizeof(float) * 3 * num_points);
+    cudaMemcpy(this->m_d_points, points,
+        sizeof(float) * 3 * num_points,
+        cudaMemcpyHostToDevice);
 
     this->m_num_objects = num_points;
     this->m_num_nodes = 2 * m_num_objects - 1;
@@ -194,7 +203,12 @@ void LBVHIndex::build(float* points, size_t num_points)
 
     gpuErrchk(cudaPeekAtLastError());
 
-    this->m_sorted_indices = indices;
+    // TODO nicht 
+    cudaMalloc(&this->m_d_sorted_indices,
+        sizeof(unsigned int) * num_points);
+    cudaMemcpy(this->m_d_sorted_indices, indices,
+        sizeof(unsigned int) * num_points,
+        cudaMemcpyHostToDevice);
     
     // Create the nodes
     BVHNode* nodes =  (struct BVHNode*) 
@@ -391,12 +405,12 @@ void LBVHIndex::build(float* points, size_t num_points)
     }                                                             \
   } while(0)
 
-
+// TODO Als const
 void LBVHIndex::kSearch(
     float* query_points, size_t num_queries,
     int K, 
     unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
-{
+{   // TODO Nicht als Klassenvariable
     this->m_radius = FLT_MAX;
     
     this->process_queries(query_points, num_queries, K, 
@@ -410,7 +424,7 @@ void LBVHIndex::kSearch_dev_ptr(
 {
     this->m_radius = FLT_MAX;
     
-    this->process_queries(query_points, num_queries, K, 
+    this->process_queries_dev_ptr(query_points, num_queries, K, 
         n_neighbors_out, indices_out, distances_out);
 }
 
@@ -437,7 +451,7 @@ void LBVHIndex::radiusSearch_dev_ptr(
 {
     this->m_radius = r;
     
-    this->process_queries(query_points, num_queries, K, 
+    this->process_queries_dev_ptr(query_points, num_queries, K, 
         n_neighbors_out, indices_out, distances_out);
 }
 
@@ -445,6 +459,50 @@ void LBVHIndex::process_queries(
     float* queries_raw, size_t num_queries,
     int K,
     unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
+    const
+{
+    unsigned int* d_n_neighbors_out; 
+    unsigned int* d_indices_out; 
+    float* d_distances_out;
+
+    // Allocate output buffer
+    gpuErrchk( cudaMalloc(&d_indices_out, sizeof(unsigned int) * num_queries * K) );
+    gpuErrchk( cudaMalloc(&d_distances_out, sizeof(float) * num_queries * K) );
+    gpuErrchk( cudaMalloc(&d_n_neighbors_out, sizeof(unsigned int) * num_queries) );
+
+    // Upload
+    float* d_query_points;
+    cudaMalloc(&d_query_points, sizeof(float) * 3 * num_queries);
+    cudaMemcpy(d_query_points, queries_raw,
+        sizeof(float) * 3 * num_queries,
+        cudaMemcpyHostToDevice);
+
+    // Compute on GPU
+    this->process_queries_dev_ptr(
+        d_query_points, num_queries,
+        K,
+        d_n_neighbors_out, d_indices_out, d_distances_out
+    );
+
+    // Download
+    gpuErrchk( cudaMemcpy(indices_out, d_indices_out,
+            sizeof(unsigned int) * num_queries * K,
+            cudaMemcpyDeviceToHost) );
+
+    gpuErrchk( cudaMemcpy(distances_out, d_distances_out,
+            sizeof(float) * num_queries * K,
+            cudaMemcpyDeviceToHost) );
+
+    gpuErrchk( cudaMemcpy(n_neighbors_out, d_n_neighbors_out,
+            sizeof(unsigned int) * num_queries,
+            cudaMemcpyDeviceToHost) );
+}
+
+void LBVHIndex::process_queries_dev_ptr(
+    float* d_query_points, size_t num_queries,
+    int K,
+    unsigned int* d_n_neighbors_out, unsigned int* d_indices_out, float* d_distances_out)
+    const
 {
     // Get the Query Kernel
     // TODO Dont use hardcoded path
@@ -475,58 +533,23 @@ void LBVHIndex::process_queries(
     // Prepare kernel launch
     BVHNode* d_nodes;
     gpuErrchk( cudaMalloc(&d_nodes, sizeof(BVHNode) * this->m_num_nodes) );
-
     gpuErrchk( cudaMemcpy(d_nodes, this->m_nodes, 
             sizeof(BVHNode) * this->m_num_nodes,
             cudaMemcpyHostToDevice) );
 
-    //TODO Do this in the kernel -> Is done in the kernel now
-    // float3* points3 = (float3*) malloc(sizeof(float3) * this->m_num_objects);
-    // for(int i = 0; i < this->m_num_objects; i++)
-    // {
-    //     points3[i].x = this->m_points[3 * i + 0];
-    //     points3[i].y = this->m_points[3 * i + 1];
-    //     points3[i].z = this->m_points[3 * i + 2];
-    // }
+    // // TODO Muss weg -> global
+    // float* d_points;
+    // cudaMalloc(&d_points, sizeof(float) * 3 * this->m_num_objects);
+    // cudaMemcpy(d_points, this->m_points,
+    //     sizeof(float) * 3 * this->m_num_objects,
+    //     cudaMemcpyHostToDevice);
 
-    // float3* d_points3;
-    // gpuErrchk( cudaMalloc(&d_points3, sizeof(float3) * this->m_num_objects) );
-    // gpuErrchk( cudaMemcpy(d_points3, points3, 
-    //         sizeof(float3) * this->m_num_objects, 
+    // // TODO Muss weg -> global
+    // unsigned int* d_sorted_indices;
+    // gpuErrchk( cudaMalloc(&d_sorted_indices, sizeof(unsigned int) * this->m_num_objects) );
+    // gpuErrchk( cudaMemcpy(d_sorted_indices, this->m_sorted_indices,
+    //         sizeof(unsigned int) * this->m_num_objects,
     //         cudaMemcpyHostToDevice) );
-    
-    float* d_points;
-    cudaMalloc(&d_points, sizeof(float) * 3 * this->m_num_objects);
-    cudaMemcpy(d_points, this->m_points,
-        sizeof(float) * 3 * this->m_num_objects,
-        cudaMemcpyHostToDevice);
-
-    unsigned long long int* d_sorted_indices;
-    gpuErrchk( cudaMalloc(&d_sorted_indices, sizeof(unsigned int) * this->m_num_objects) );
-    gpuErrchk( cudaMemcpy(d_sorted_indices, this->m_sorted_indices,
-            sizeof(unsigned int) * this->m_num_objects,
-            cudaMemcpyHostToDevice) );
-
-    //TODO Do this in the kernel -> Is now done in the kernel
-    // float3* query_points = (float3*) malloc(sizeof(float3) * num_queries);
-    // for(int i = 0; i < num_queries; i++)
-    // {
-    //     query_points[i].x = queries_raw[3 * i + 0];
-    //     query_points[i].y = queries_raw[3 * i + 1];
-    //     query_points[i].z = queries_raw[3 * i + 2];
-    // }
-
-    // float3* d_query_points;
-    // gpuErrchk( cudaMalloc(&d_query_points, sizeof(float3) * num_queries) );
-    // gpuErrchk( cudaMemcpy(d_query_points, query_points,
-    //         sizeof(float3) * num_queries,
-    //         cudaMemcpyHostToDevice) );
-
-    float* d_query_points;
-    cudaMalloc(&d_query_points, sizeof(float) * 3 * num_queries);
-    cudaMemcpy(d_query_points, queries_raw,
-        sizeof(float) * 3 * num_queries,
-        cudaMemcpyHostToDevice);
 
     unsigned int* sorted_queries = (unsigned int*) 
                 malloc(sizeof(unsigned int) * num_queries);
@@ -568,47 +591,23 @@ void LBVHIndex::process_queries(
 
     unsigned int* d_sorted_queries;
     gpuErrchk( cudaMalloc(&d_sorted_queries, sizeof(unsigned int) * num_queries) );
-
     gpuErrchk( cudaMemcpy(d_sorted_queries, sorted_queries,
             sizeof(unsigned int) * num_queries,
             cudaMemcpyHostToDevice) );
 
-    // Initialise the output arrays
-    // TODO Do this in the kernel -> Done in kernel
-    // for(int i = 0; i < num_queries * K; i++)
-    // {
-    //     indices_out[i] = UINT32_MAX;
-    // }
+    // TODO Is there a better way to do this?
+    float* d_points = const_cast<float*>(this->m_d_points);
+    unsigned int* d_sorted_indices = const_cast<unsigned int*>(this->m_d_sorted_indices);
+    unsigned int root_node = this->m_root_node;
+    float radius = this->m_radius;
 
-    unsigned int* d_indices_out;
-    gpuErrchk( cudaMalloc(&d_indices_out, sizeof(unsigned int) * num_queries * K) );
-    // gpuErrchk( cudaMemcpy(d_indices_out, indices_out,
-    //         sizeof(unsigned int) * num_queries * K,
-    //         cudaMemcpyHostToDevice) );
-
-    //TODO Do this in the kernel -> Done in kernel
-    // for(int i = 0; i < num_queries * K; i++)
-    // {
-    //     distances_out[i] = FLT_MAX;
-    // }
-
-    float* d_distances_out;
-    gpuErrchk( cudaMalloc(&d_distances_out, sizeof(float) * num_queries * K) );
-    // gpuErrchk( cudaMemcpy(d_distances_out, distances_out,
-    //         sizeof(float) * num_queries * K,
-    //         cudaMemcpyHostToDevice) );
-
-    unsigned int* d_n_neighbors_out;
-    gpuErrchk( cudaMalloc(&d_n_neighbors_out, sizeof(unsigned int) * num_queries) );
-
-    // Gather the arguments
     void *params[] = 
     {
         &d_nodes,
         &d_points,
         &d_sorted_indices,
-        &this->m_root_node,
-        &this->m_radius,
+        &root_node,
+        &radius,
         &d_query_points,
         &d_sorted_queries,
         &num_queries,
@@ -630,17 +629,7 @@ void LBVHIndex::process_queries(
         0
     ) );      
     
-    gpuErrchk( cudaMemcpy(indices_out, d_indices_out,
-            sizeof(unsigned int) * num_queries * K,
-            cudaMemcpyDeviceToHost) );
-
-    gpuErrchk( cudaMemcpy(distances_out, d_distances_out,
-            sizeof(float) * num_queries * K,
-            cudaMemcpyDeviceToHost) );
-
-    gpuErrchk( cudaMemcpy(n_neighbors_out, d_n_neighbors_out,
-            sizeof(unsigned int) * num_queries,
-            cudaMemcpyDeviceToHost) );
+    
     
     
 
@@ -659,11 +648,11 @@ void LBVHIndex::process_queries(
     int blocksPerGrid = (num_normals + threadsPerBlock - 1) 
                         / threadsPerBlock;
 
-    // Create device memory
-    float* d_points;
-    gpuErrchk( cudaMalloc(&d_points,
-        sizeof(float) * 3 * this->m_num_objects));
+    // float* d_points;
+    // gpuErrchk( cudaMalloc(&d_points,
+    //     sizeof(float) * 3 * this->m_num_objects));
 
+    // Create device memory
     float* d_queries;
     gpuErrchk( cudaMalloc(&d_queries, 
         sizeof(float) * 3 * num_queries) );
@@ -673,9 +662,9 @@ void LBVHIndex::process_queries(
         sizeof(float) * 3 * num_normals) );
 
     // Copy to device
-    gpuErrchk( cudaMemcpy(d_points, this->m_points,
-        sizeof(float) * 3 * this->m_num_objects,
-        cudaMemcpyHostToDevice));
+    // gpuErrchk( cudaMemcpy(d_points, this->m_points,
+    //     sizeof(float) * 3 * this->m_num_objects,
+    //     cudaMemcpyHostToDevice));
 
     gpuErrchk( cudaMemcpy(d_queries, queries,
         sizeof(float) * 3 * num_queries,
@@ -702,7 +691,7 @@ void LBVHIndex::process_queries(
     
     // Call the normals kernel
     calculate_normals_kernel<<<blocksPerGrid, threadsPerBlock>>>
-        (d_points, d_queries, num_queries, K, d_n_neighbors_out, d_indices_out,
+        (this->m_d_points, d_queries, num_queries, K, d_n_neighbors_out, d_indices_out,
         d_normals, this->m_flip_x, this->m_flip_y, this->m_flip_z);
 
     cudaDeviceSynchronize();
@@ -714,11 +703,150 @@ void LBVHIndex::process_queries(
 
 }
 
-void knn_normals(
+void LBVHIndex::knn_normals(
     float* query_points, size_t num_queries,
     int K,
     float* normals, size_t num_normals)
 {
+    // Get the Query Kernel
+    // TODO Dont use hardcoded path
+    std::string kernel_file = "knn_normals_kernel.cu";
+    std::string kernel_name = "knn_normals_kernel";
+    std::string kernel_path = "../src/tools/lvr2_cuda_normals2/src/knn_normals_kernel.cu";
+
+    // Read the kernel file
+    std::ifstream in(kernel_path);
+    std::string cu_src((std::istreambuf_iterator<char>(in)),
+        std::istreambuf_iterator<char>());
+
+    // Get the ptx of the kernel
+    std::string ptx_src;
+
+    getPtxFromCuString(ptx_src, kernel_name.c_str(), cu_src.c_str(), NULL, NULL);
+
+    // Init cuda
+    cudaFree(0);
+    
+    // Get the cuda module and function
+    CUmodule module;
+    CUfunction kernel;
+
+    CUDA_SAFE_CALL(cuModuleLoadDataEx(&module, ptx_src.c_str(), 0, 0, 0));
+    CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, kernel_name.c_str()));
+
+    // Prepare kernel launch
+    BVHNode* d_nodes;
+    gpuErrchk( cudaMalloc(&d_nodes, sizeof(BVHNode) * this->m_num_nodes) );
+    gpuErrchk( cudaMemcpy(d_nodes, this->m_nodes, 
+        sizeof(BVHNode) * this->m_num_nodes,
+        cudaMemcpyHostToDevice) );
+    
+    // float* d_points;
+    // cudaMalloc(&d_points, sizeof(float) * 3 * this->m_num_objects);
+    // cudaMemcpy(d_points, this->m_points,
+    //     sizeof(float) * 3 * this->m_num_objects,
+    //     cudaMemcpyHostToDevice);
+
+    // unsigned int* d_sorted_indices;
+    // gpuErrchk( cudaMalloc(&d_sorted_indices, sizeof(unsigned int) * this->m_num_objects) );
+    // gpuErrchk( cudaMemcpy(d_sorted_indices, this->m_sorted_indices,
+    //     sizeof(unsigned int) * this->m_num_objects,
+    //     cudaMemcpyHostToDevice) );
+
+    float* d_query_points;
+    cudaMalloc(&d_query_points, sizeof(float) * 3 * num_queries);
+    cudaMemcpy(d_query_points, query_points,
+        sizeof(float) * 3 * num_queries,
+        cudaMemcpyHostToDevice);
+
+    unsigned int* sorted_queries = (unsigned int*) 
+                malloc(sizeof(unsigned int) * num_queries);
+
+    for(int i = 0; i < num_queries; i++)
+    {
+        sorted_queries[i] = i;
+    }
+
+    // Only for large queries: Sort them in morton order to prevent too much warp divergence on tree traversal
+    if(this->m_sort_queries)
+    {
+        AABB* d_extent;
+        gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
+        gpuErrchk(cudaMemcpy(d_extent, this->m_extent, 
+            sizeof(struct AABB), 
+            cudaMemcpyHostToDevice));
+
+        unsigned long long int* morton_codes_query =
+            (unsigned long long int*)
+            malloc(sizeof(unsigned long long int) * num_queries);
+
+        unsigned long long int* d_morton_codes_query;
+        cudaMalloc(&d_morton_codes_query, 
+            sizeof(unsigned long long int) * num_queries);
+
+        int threadsPerBlock = 256;
+        int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
+                        / threadsPerBlock;
+
+        compute_morton_points_kernel<<<blocksPerGrid, threadsPerBlock>>>
+            (d_query_points, d_extent, d_morton_codes_query, num_queries);
+
+        cudaMemcpy(morton_codes_query, d_morton_codes_query,
+            sizeof(unsigned long long int) * num_queries,
+            cudaMemcpyDeviceToHost);
+        
+        thrust::sort_by_key(morton_codes_query, morton_codes_query + num_queries, 
+                        sorted_queries);
+    }
+
+    unsigned int* d_sorted_queries;
+    gpuErrchk( cudaMalloc(&d_sorted_queries, sizeof(unsigned int) * num_queries) );
+    gpuErrchk( cudaMemcpy(d_sorted_queries, sorted_queries,
+            sizeof(unsigned int) * num_queries,
+            cudaMemcpyHostToDevice) );
+
+    float* d_normals;
+    gpuErrchk( cudaMalloc(&d_normals, 
+        sizeof(float) * 3 * num_normals) );
+
+    float radius = FLT_MAX;
+    
+    // Gather the arguments
+    void *params[] = 
+    {
+        &d_nodes,
+        &this->m_d_points,
+        &this->m_d_sorted_indices,
+        &this->m_root_node,
+        &radius,
+        &d_query_points,
+        &d_sorted_queries,
+        &num_queries,
+        &d_normals
+    };
+
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
+                        / threadsPerBlock;
+
+    // Launch the kernel
+    CUDA_SAFE_CALL( cuLaunchKernel(kernel, 
+        blocksPerGrid, 1, 1,  // grid dim
+        threadsPerBlock, 1, 1,    // block dim
+        0, NULL,    // shared mem and stream
+        params,       // arguments
+        0
+    ) );    
+
+    cudaDeviceSynchronize();
+
+    // knn_normals_kernel<<<blocksPerGrid, threadsPerBlock>>>
+    //     (d_nodes, d_points, d_sorted_indices, this->m_root_node, this->m_radius,
+    //     d_query_points, d_sorted_queries, num_queries, d_normals);
+
+    cudaMemcpy(normals, d_normals,
+        sizeof(float) * 3 * num_normals,
+        cudaMemcpyDeviceToHost);  
     
 }
 
@@ -778,13 +906,14 @@ AABB* LBVHIndex::getExtent(AABB* extent, float* points, size_t num_points)
     return extent;
 }
 
-std::string LBVHIndex::getSampleDir()
+std::string LBVHIndex::getSampleDir() const
 {
     // TODO: Don't use hard coded path
     return std::string("/home/till/Develop/src/tools/lvr2_cuda_normals2/src");
 }
                          // Rückgabe String // Bsp: square_kernel.cu  // Inhalt d Datei     //Name Programm = NULL
 void LBVHIndex::getPtxFromCuString( std::string& ptx, const char* sample_name, const char* cu_source, const char* name, const char** log_string )
+const
 {
     // Create program
     nvrtcProgram prog;

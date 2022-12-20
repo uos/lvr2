@@ -42,13 +42,3 @@ extern "C" __global__ void query_knn_kernel(
     // write back the results at the correct position
     queue.write_results(&indices_out[query_idx * K], &distances_out[query_idx * K], &n_neighbors_out[query_idx]);
 }
-
-// #include "test_func.cuh"
-// //#include "query_knn.cuh"
-
-// using namespace lbvh;
-
-// extern "C" __global__ void test_kernel()
-// {
-//     test_func();
-// }

@@ -31,6 +31,7 @@ cuda_add_library(kernels_device
                 #src/LBVHIndex.cu
                 src/lbvh_kernels.cu
                 src/normals_kernel.cu
+                #src/knn_normals_kernel.cu
                 #src/LBVHTree.cu
                 #src/query_knn_kernels.cu
                 #src/query_knn.cu

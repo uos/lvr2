@@ -5,7 +5,7 @@
 
 // default is one nearest neighbor
 #ifndef K
-#define K 1
+#define K 50
 #endif
 
 namespace lbvh {

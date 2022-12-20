@@ -12,14 +12,15 @@ struct BVHNode;     // Forward Declaration
 class LBVHIndex
 {
 public:
+    // CPU
     unsigned int m_num_objects;
     unsigned int m_num_nodes;
     unsigned int m_leaf_size;
     bool m_sort_queries;
     bool m_compact;
 
-    float* m_points;   
-    unsigned int* m_sorted_indices;
+    // float* m_points;   
+    // unsigned int* m_sorted_indices;
 
     char* m_mode;
     float m_radius;
@@ -32,6 +33,10 @@ public:
     float m_flip_y;
     float m_flip_z;
 
+    // GPU
+    float* m_d_points;
+    unsigned int* m_d_sorted_indices;
+
     LBVHIndex();
 
     LBVHIndex(
@@ -42,13 +47,13 @@ public:
     void build(
         float* points, size_t num_points
     );
-
+    // TODO Make these const
     void kSearch(
         float* query_points, size_t num_queries,
         int K, 
         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
     );
-    // Not implemented yet
+    
     void kSearch_dev_ptr(
         float* query_points, size_t num_queries,
         int K, 
@@ -60,7 +65,7 @@ public:
         int K, float r,
         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
     );
-    // Not implemented yet
+    
     void radiusSearch_dev_ptr(
         float* query_points, size_t num_queries,
         int K, float r,
@@ -71,7 +76,13 @@ public:
         float* queries_raw, size_t num_queries, 
         int K,
         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-    );
+    ) const;
+
+    void process_queries_dev_ptr(
+        float* d_query_points, size_t num_queries,
+        int K,
+        unsigned int* d_n_neighbors_out, unsigned int* d_indices_out, float* d_distances_out
+    ) const;
 
     void calculate_normals(
         float* normals, size_t num_normals,
@@ -94,13 +105,13 @@ public:
         AABB* extent, float* points, size_t num_points
     );
 
-    std::string getSampleDir();
+    std::string getSampleDir() const;
 
     void getPtxFromCuString( 
         std::string& ptx, const char* sample_name, 
         const char* cu_source, const char* name, 
         const char** log_string 
-    );
+    ) const;
 
 };
 

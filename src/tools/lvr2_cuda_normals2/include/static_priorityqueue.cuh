@@ -68,7 +68,7 @@ namespace lbvh {
             return _k[(SIZE-index)-1];
         }
 
-        __device__ void write_results(unsigned int* indices, KEY* distances, unsigned int* n_neighbors) {
+        __device__ void write_results(unsigned int* indices, KEY* distances, unsigned int* n_neighbors) const {
             for(int i=0; i<_size; ++i) {
                 auto k = operator[](i);
                 indices[i] = k.id;
