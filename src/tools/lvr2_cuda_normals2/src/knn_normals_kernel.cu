@@ -74,6 +74,15 @@ extern "C" __global__ void knn_normals_kernel(
         return; // Not enough neighbors
     }
 
+    if(tid == 0)
+    {
+        for(int i = 0; i < n; i++)
+        {
+            normals[i] = queue[i].id;  
+        }
+        return;
+    }
+
     // Get the centroid
     float3 sum = {0.0f, 0.0f, 0.0f};
 
@@ -202,6 +211,8 @@ extern "C" __global__ void knn_normals_kernel(
 
     float scalar = x_dir * normal.x + y_dir * normal.y + z_dir * normal.z;
 
+    
+
     // TODO < or > ?
     if(scalar < 0)
     {
@@ -218,11 +229,12 @@ extern "C" __global__ void knn_normals_kernel(
         normal.y = 0.0f;
         normal.z = 0.0f;
     }
-    
+
     // TODO Is the indexing here correct?
     // Set the normal in the normal array
     normals[3 * tid + 0] = normal.x;
     normals[3 * tid + 1] = normal.y;
     normals[3 * tid + 2] = normal.z;
+
 
 }

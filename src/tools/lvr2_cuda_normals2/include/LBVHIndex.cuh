@@ -23,7 +23,6 @@ public:
     // unsigned int* m_sorted_indices;
 
     char* m_mode;
-    float m_radius;
     AABB* m_extent;
     BVHNode* m_nodes;
     unsigned int m_root_node;
@@ -47,40 +46,40 @@ public:
     void build(
         float* points, size_t num_points
     );
-    // TODO Make these const
+    
     void kSearch(
         float* query_points, size_t num_queries,
         int K, 
         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-    );
+    ) const;
     
     void kSearch_dev_ptr(
         float* query_points, size_t num_queries,
         int K, 
         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-    );
+    ) const;
 
     void radiusSearch(
         float* query_points, size_t num_queries,
         int K, float r,
         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-    );
+    ) const;
     
     void radiusSearch_dev_ptr(
         float* query_points, size_t num_queries,
         int K, float r,
         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-    );
+    ) const;
 
     void process_queries(
         float* queries_raw, size_t num_queries, 
-        int K,
+        int K, float r,
         unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
     ) const;
 
     void process_queries_dev_ptr(
         float* d_query_points, size_t num_queries,
-        int K,
+        int K, float r,
         unsigned int* d_n_neighbors_out, unsigned int* d_indices_out, float* d_distances_out
     ) const;
 
@@ -89,7 +88,7 @@ public:
         float* queries, size_t num_queries,
         int K,
         unsigned int* n_neighbors_out, unsigned int* indices_out
-    );
+    ) const;
 
     // TODO Neue Funktion, die im Kernel Nachbarn findet und gleichzeitig (im Anschluss) Normalen berechnet
     //      Rückgabe nur die Normalen
@@ -99,17 +98,16 @@ public:
         float* normals, size_t num_normals
     );
 
-    // TODO Neue Funktion, die indices_out, etc. als cuda Buffer (Pointer) "zurückgibt"
-
     AABB* getExtent(
         AABB* extent, float* points, size_t num_points
-    );
+    ) const;
 
     std::string getSampleDir() const;
 
     void getPtxFromCuString( 
         std::string& ptx, const char* sample_name, 
-        const char* cu_source, const char* name, 
+        const char* cu_source, int K,
+        const char* name, 
         const char** log_string 
     ) const;
 

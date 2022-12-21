@@ -409,55 +409,55 @@ void LBVHIndex::build(float* points, size_t num_points)
 void LBVHIndex::kSearch(
     float* query_points, size_t num_queries,
     int K, 
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
+    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
+)   const
 {   // TODO Nicht als Klassenvariable
-    this->m_radius = FLT_MAX;
+    float radius = FLT_MAX;
     
-    this->process_queries(query_points, num_queries, K, 
+    this->process_queries(query_points, num_queries, K, radius,
         n_neighbors_out, indices_out, distances_out);
 }
 
 void LBVHIndex::kSearch_dev_ptr(
     float* query_points, size_t num_queries,
     int K, 
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
+    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
+)   const
 {
-    this->m_radius = FLT_MAX;
+    float radius = FLT_MAX;
     
-    this->process_queries_dev_ptr(query_points, num_queries, K, 
+    this->process_queries_dev_ptr(query_points, num_queries, K, radius,
         n_neighbors_out, indices_out, distances_out);
 }
 
 void LBVHIndex::radiusSearch(
     float* query_points, size_t num_queries,
     int K, float r,
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
+    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
+)   const
 {
     // Malloc the output arrays here
     n_neighbors_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
     indices_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries * K);
     distances_out = (float*) malloc(sizeof(float) * num_queries * K);
-
-    this->m_radius = r;
     
-    this->process_queries(query_points, num_queries, K, 
+    this->process_queries(query_points, num_queries, K, r,
         n_neighbors_out, indices_out, distances_out);
 }
 
 void LBVHIndex::radiusSearch_dev_ptr(
     float* query_points, size_t num_queries,
     int K, float r,
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
+    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
+)   const
 {
-    this->m_radius = r;
-    
-    this->process_queries_dev_ptr(query_points, num_queries, K, 
+    this->process_queries_dev_ptr(query_points, num_queries, K, r,
         n_neighbors_out, indices_out, distances_out);
 }
 
 void LBVHIndex::process_queries(
     float* queries_raw, size_t num_queries,
-    int K,
+    int K, float r,
     unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
     const
 {
@@ -480,7 +480,7 @@ void LBVHIndex::process_queries(
     // Compute on GPU
     this->process_queries_dev_ptr(
         d_query_points, num_queries,
-        K,
+        K, r,
         d_n_neighbors_out, d_indices_out, d_distances_out
     );
 
@@ -500,9 +500,9 @@ void LBVHIndex::process_queries(
 
 void LBVHIndex::process_queries_dev_ptr(
     float* d_query_points, size_t num_queries,
-    int K,
-    unsigned int* d_n_neighbors_out, unsigned int* d_indices_out, float* d_distances_out)
-    const
+    int K, float r,
+    unsigned int* d_n_neighbors_out, unsigned int* d_indices_out, float* d_distances_out
+)   const
 {
     // Get the Query Kernel
     // TODO Dont use hardcoded path
@@ -518,7 +518,7 @@ void LBVHIndex::process_queries_dev_ptr(
     // Get the ptx of the kernel
     std::string ptx_src;
 
-    getPtxFromCuString(ptx_src, kernel_name.c_str(), cu_src.c_str(), NULL, NULL);
+    getPtxFromCuString(ptx_src, kernel_name.c_str(), cu_src.c_str(), K, NULL, NULL);
 
     // Init cuda
     cudaFree(0);
@@ -599,7 +599,7 @@ void LBVHIndex::process_queries_dev_ptr(
     float* d_points = const_cast<float*>(this->m_d_points);
     unsigned int* d_sorted_indices = const_cast<unsigned int*>(this->m_d_sorted_indices);
     unsigned int root_node = this->m_root_node;
-    float radius = this->m_radius;
+    float radius = r;
 
     void *params[] = 
     {
@@ -629,10 +629,6 @@ void LBVHIndex::process_queries_dev_ptr(
         0
     ) );      
     
-    
-    
-    
-
     // findKNN(K, points_raw, num_points, queries_raw, num_queries);
     return;
 }
@@ -642,7 +638,7 @@ void LBVHIndex::process_queries_dev_ptr(
     float* queries, size_t num_queries,
     int K,
     unsigned int* n_neighbors_out, unsigned int* indices_out
-)
+)   const
 {
     int threadsPerBlock = 256;
     int blocksPerGrid = (num_normals + threadsPerBlock - 1) 
@@ -722,7 +718,7 @@ void LBVHIndex::knn_normals(
     // Get the ptx of the kernel
     std::string ptx_src;
 
-    getPtxFromCuString(ptx_src, kernel_name.c_str(), cu_src.c_str(), NULL, NULL);
+    getPtxFromCuString(ptx_src, kernel_name.c_str(), cu_src.c_str(), K, NULL, NULL);
 
     // Init cuda
     cudaFree(0);
@@ -852,7 +848,7 @@ void LBVHIndex::knn_normals(
 
 // Get the extent of the points 
 // (minimum and maximum values in each dimension)
-AABB* LBVHIndex::getExtent(AABB* extent, float* points, size_t num_points)
+AABB* LBVHIndex::getExtent(AABB* extent, float* points, size_t num_points) const
 {
     float min_x = INT_MAX;
     float min_y = INT_MAX;
@@ -912,12 +908,14 @@ std::string LBVHIndex::getSampleDir() const
     return std::string("/home/till/Develop/src/tools/lvr2_cuda_normals2/src");
 }
                          // Rückgabe String // Bsp: square_kernel.cu  // Inhalt d Datei     //Name Programm = NULL
-void LBVHIndex::getPtxFromCuString( std::string& ptx, const char* sample_name, const char* cu_source, const char* name, const char** log_string )
+void LBVHIndex::getPtxFromCuString( std::string& ptx, const char* sample_name, const char* cu_source, int K, const char* name, const char** log_string )
 const
 {
     // Create program
     nvrtcProgram prog;
     NVRTC_SAFE_CALL( nvrtcCreateProgram( &prog, cu_source, sample_name, 0, NULL, NULL ) );
+
+    std::string K_str = "-DK=" + std::to_string(K); 
 
     // Gather NVRTC options
     std::string cuda_include = std::string("-I") + std::string(CUDA_INCLUDE_DIRS);
@@ -925,7 +923,7 @@ const
         "-I/home/till/Develop/src/tools/lvr2_cuda_normals2/include",
         cuda_include.c_str(),
         "-std=c++17",
-        "-DK=50"
+        K_str.c_str()
     };
 
     const std::string base_dir = getSampleDir();

@@ -32,6 +32,15 @@ __global__ void lbvh::calculate_normals_kernel(float* points,
         return; // Not enough neighbors
     }
 
+    // if(tid == 0)
+    // {
+    //     for(int i = 0; i < n; i++)
+    //     {
+    //         normals[i] = indices_out[i];  
+    //     }
+    //     return;
+    // }
+
     // Get the centroid
     float3 sum = {0.0f, 0.0f, 0.0f};
 

@@ -72,44 +72,49 @@ int main(int argc, char** argv)
     size_t num_queries = num_points;
 
     float* queries = points_raw;
+
+    // Create the normal array
+    float* normals = (float*) malloc(sizeof(float) * num_queries * 3);
+
+    int mode = 1;
     // #########################################################################################
-
-    float* normals = (float*) malloc(sizeof(float) * 3 * num_queries);
-    std::cout << normals[0] << std::endl;
-
-    tree.knn_normals(
-        queries, 
-        num_queries, 
-        K,
-        normals,
-        num_queries
-    );
+    if(mode == 0)
+    {
+        tree.knn_normals(
+            queries, 
+            num_queries, 
+            K,
+            normals,
+            num_queries
+        );
+    }
 
     //##########################################################################################
+    if(mode == 1)
+    {
+        // Create the return arrays
+        unsigned int* n_neighbors_out;
+        unsigned int* indices_out;
+        float* distances_out;
 
-    // // Create the return arrays
-    // unsigned int* n_neighbors_out;
-    // unsigned int* indices_out;
-    // float* distances_out;
+        // Malloc the output arrays here
+        n_neighbors_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
+        indices_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries * K);
+        distances_out = (float*) malloc(sizeof(float) * num_queries * K);
 
-    // // Malloc the output arrays here
-    // n_neighbors_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
-    // indices_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries * K);
-    // distances_out = (float*) malloc(sizeof(float) * num_queries * K);
+        // Process the queries 
+        tree.kSearch(queries, num_queries,
+                    K,
+                    n_neighbors_out, indices_out, distances_out);
 
-    // // Process the queries 
-    // tree.kSearch(queries, num_queries,
-    //             K,
-    //             n_neighbors_out, indices_out, distances_out);
+        // Calculate the normals
+        tree.calculate_normals(normals, num_queries,
+                    queries, num_queries, K,
+                    n_neighbors_out, indices_out);
 
+        std::cout << n_neighbors_out[666] << std::endl;
 
-    // // Create the normal array
-    // float* normals = (float*) malloc(sizeof(float) * num_queries * 3);
-
-    // // Calculate the normals
-    // tree.calculate_normals(normals, num_queries,
-    //             queries, num_queries, K,
-    //             n_neighbors_out, indices_out);
+    }
 
     // ########################################################################################
     // Set the normals in the Model
@@ -117,9 +122,11 @@ int main(int argc, char** argv)
 
     pbuffer->setNormalArray(new_normals, num_points);
 
-    std::cout << new_normals[0] << std::endl;
-    std::cout << new_normals[1] << std::endl;
-    std::cout << new_normals[2] << std::endl;
+
+    // for(int i = 0; i < 50; i++)
+    // {
+    //     std::cout << new_normals[i] << std::endl;
+    // }
     
     // Save the new model as test.ply
     ModelFactory::saveModel(model, "test.ply");
