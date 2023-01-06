@@ -311,10 +311,39 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             // The aggregated scans
             ModelPtr model = std::make_shared<Model>();
             model->m_pointCloud = nullptr;
-            unsigned ctr = 0;
+            lvr2::Monitor mon(lvr2::LogLevel::info, "[LVR2 Reconstruct] Loading scan positions", project->positions.size());
+
+            
+            size_t npoints_total = 0;
+            // Count total number of points
+            for (auto pos: project->positions)
+            {
+                for (auto lidar: pos->lidars)
+                {
+                    for (auto scan: lidar->scans)
+                    {
+                        npoints_total += scan->numPoints;
+                    }
+                }
+            }
+
+            // Allocate buffers for coordinates, colors and normals
+            lvr2::floatArr coords(new float[npoints_total * 3]);
+            lvr2::floatArr normals(new float[npoints_total * 3]);
+            lvr2::ucharArr colors(new uchar[npoints_total * 3]);
+            auto coord_output = coords.get();
+            auto normal_output = normals.get();
+            auto color_output = colors.get();
+
+            bool has_normals = true;
+            bool has_colors = true;
+            int color_width = -1;
+
+            lvr2::logout::get() << "[LVR2 Reconstruct] Total number of points: " << npoints_total << lvr2::endl;
+
             for (ScanPositionPtr pos: project->positions)
             {
-                lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Loading scan position " << ctr << " / " << project->positions.size() << lvr2::endl;
+                ++mon;
                 for (LIDARPtr lidar: pos->lidars)
                 {
                     for (ScanPtr scan: lidar->scans)
@@ -331,19 +360,51 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                             std::make_shared<Model>(scan->points),
                             (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>());
                         
-                        // Merge pointcloud and new scan 
-                        // TODO: Maybe merge by allocation all needed memory first instead of constant allocations
-                        if (model->m_pointCloud)
+                        // Copy coordinates
+                        coord_output = std::copy(
+                            scan->points->getPointArray().get(),
+                            scan->points->getPointArray().get() + (scan->points->numPoints() * 3),
+                            coord_output
+                        );
+
+                        // Copy normals
+                        if (scan->points->hasNormals() && has_normals)
                         {
-                            *model->m_pointCloud = mergePointBuffers(*model->m_pointCloud, *scan->points);
+                            normal_output = std::copy(
+                                scan->points->getNormalArray().get(),
+                                scan->points->getNormalArray().get() + (scan->points->numPoints() * 3),
+                                normal_output
+                            );
                         }
                         else
                         {
-                            model->m_pointCloud = std::make_shared<PointBuffer>();
-                            *model->m_pointCloud = *scan->points; // Copy the first scan
+                            has_normals = false;
                         }
-                        
-                        
+
+                        // Copy colors
+                        if (scan->points->hasColors() && has_colors)
+                        {
+                            size_t width;
+                            scan->points->getColorArray(width);
+                            if (width == color_width || color_width == -1)
+                            {
+                                color_width = width;
+                                color_output = std::copy(
+                                    scan->points->getColorArray(width).get(),
+                                    scan->points->getColorArray(width).get() + (scan->points->numPoints() * width),
+                                    color_output
+                                );
+                            }
+                            else
+                            {
+                                has_colors = false;
+                            }
+
+                        }
+                        else
+                        {
+                            has_colors = false;
+                        }
                         
                         // If not previously loaded unload
                         if (!was_loaded)
@@ -352,6 +413,18 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                         }
                     }
                 }
+            }
+            // Create new point buffer
+            model->m_pointCloud = std::make_shared<PointBuffer>(coords, npoints_total);
+            // Add normals
+            if (has_normals)
+            {
+                model->m_pointCloud->setNormalArray(normals, npoints_total);
+            }
+            // Add colors
+            if (has_colors)
+            {
+                model->m_pointCloud->setColorArray(colors, npoints_total, color_width);
             }
 
             reduction_algorithm->setPointBuffer(model->m_pointCloud);
