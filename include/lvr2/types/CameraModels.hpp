@@ -82,8 +82,8 @@ namespace lvr2
         os << timestamp << "-------------" << std::endl;
         os << timestamp << "Fx: " << m.fx << std::endl;
         os << timestamp << "Fy: " << m.fy << std::endl;
-        os << timestamp << "Cx: " << m.fx << std::endl;
-        os << timestamp << "Cy: " << m.fy << std::endl;
+        os << timestamp << "Cx: " << m.cx << std::endl;
+        os << timestamp << "Cy: " << m.cy << std::endl;
         os << timestamp << "Width: " << m.width << std::endl;
         os << timestamp << "Height: " << m.height << std::endl;
         os << timestamp << "Distortion Model: " << m.distortionModel << std::endl;
@@ -100,8 +100,8 @@ namespace lvr2
 
         log << lvr2::info << "[Pinhole Model] Fx: " << m.fx << lvr2::endl;
         log << "[Pinhole Model] Fy: " << m.fy << lvr2::endl;
-        log << "[Pinhole Model] Cx: " << m.fx << lvr2::endl;
-        log << "[Pinhole Model] Cy: " << m.fy << lvr2::endl;
+        log << "[Pinhole Model] Cx: " << m.cx << lvr2::endl;
+        log << "[Pinhole Model] Cy: " << m.cy << lvr2::endl;
         log << "[Pinhole Model] Width: " << m.width << lvr2::endl;
         log << "[Pinhole Model] Height: " << m.height << lvr2::endl;
         log << "[Pinhole Model] Distortion Model: " << m.distortionModel << lvr2::endl;
