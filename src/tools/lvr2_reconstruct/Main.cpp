@@ -531,17 +531,9 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
     {
         return;
     }
-
-    // TODO: Check if the scanproject has spectral data
-    boost::filesystem::path selectedFile( options.getInputFileName());
-    std::string filePath = selectedFile.generic_path().string();
-
-    // create hdf5 kernel and schema 
-    HDF5KernelPtr hdfKernel = std::make_shared<HDF5Kernel>(filePath);
-    HDF5SchemaPtr hdfSchema = std::make_shared<ScanProjectSchemaHDF5>();
     
     // create io object for hdf5 files
-    auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
+    auto hdf5IO = getScanProjectIO(options);
 
     if(options.getScanPositionIndex().size() > 1)
     {
@@ -551,9 +543,7 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
     }
 
     // load panorama from hdf5 file
-    auto panorama = hdf5IO.HyperspectralPanoramaIO::load(options.getScanPositionIndex()[0], 0, 0);
-
-    
+    auto panorama = hdf5IO->HyperspectralPanoramaIO::load(options.getScanPositionIndex()[0], 0, 0);
 
     // If there is no spectral data
     if (!panorama)
@@ -594,7 +584,7 @@ void addRaycastingTexturizer(const reconstruct::Options& options, lvr2::Material
     auto io = getScanProjectIO(options);
     if (!io)
     {
-        lvr2::logout::get() << lvr2::error << "Cannot add RGB Texturizer! Could not parse " << options.getInputFileName() << lvr2::endl;
+        lvr2::logout::get() << lvr2::error << "Cannot add RGB Texturizer! Could not parse " << options.getInputFileName() << " as a ScanProject" << lvr2::endl;
         return;
     }
 
@@ -960,31 +950,21 @@ int main(int argc, char** argv)
     // When using textures ...
     if (options.generateTextures())
     {
-
-        boost::filesystem::path selectedFile( options.getInputFileName());
-        std::string filePath = selectedFile.generic_path().string();
-
-        if(selectedFile.extension().string() != ".h5") {
-            materializer.setTexturizer(texturizer);
-        } 
-        else 
-        {
-            addSpectralTexturizers(options, materializer);
+        addSpectralTexturizers(options, materializer);
 
 #ifdef LVR2_USE_EMBREE
-            if (options.useRaycastingTexturizer())
-            {
-                addRaycastingTexturizer(options, materializer, mesh, clusterBiMap);
-            }
-            else
-            {
-                materializer.addTexturizer(texturizer);
-            }
-#else
+        if (options.useRaycastingTexturizer())
+        {
+            addRaycastingTexturizer(options, materializer, mesh, clusterBiMap);
+        }
+        else
+        {
             materializer.addTexturizer(texturizer);
+        }
+#else
+        materializer.addTexturizer(texturizer);
 #endif
             
-        }
     }
 
     // Generate materials
