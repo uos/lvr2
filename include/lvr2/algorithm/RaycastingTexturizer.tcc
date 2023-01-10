@@ -158,40 +158,49 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                 view_vec_world = rotationI2W * view_vec_world;
                 info.viewDirectionWorld = view_vec_world.normalized().cast<float>();
 
-                // === The camera intrinsics in the ringlok ScanProject are wrong === //
-                // === These are the correct values for the Riegl camera === //
-                info.model.fx = 2395.4336550315002;
-                info.model.fy = 2393.3126174899603;
-                info.model.cx = 3027.8728609530291;
-                info.model.cy = 2031.02743729632;
 
-                // Apply histogram equalization (works only on one channel matrices)
-                // Convert to LAB color format
+                //=== The Camera Matrix is stored adjusted for image resolution -> the values have to be scaled ===//
                 info.image->load();
-                cv::Mat lab;
-                cv::cvtColor(info.image->image, lab, cv::COLOR_BGR2Lab);
+                auto width = info.image->image.cols;
+                auto height = info.image->image.rows;
+                info.model.fx *= width;
+                info.model.fy *= height;
+                info.model.cx = width / 2 + info.model.cx * width;
+                info.model.cy = height / 2 + info.model.cy * height;
 
-                // Extract L channel
-                std::vector<cv::Mat> channels(3);
-                cv::split(lab, channels);
-                cv::Mat LChannel = channels[0];
-
-                // Apply clahe algorithm
-                cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(); // Create algorithm
-                clahe->apply(LChannel, LChannel);
-
-                // Write the result back to the texture
-                channels[0] = LChannel;
-                cv::merge(channels, lab);
-                cv::cvtColor(lab, info.image->image, cv::COLOR_Lab2BGR);
+                this->applyCLAHE(info.image->image);
 
                 m_images.push_back(info);
             }
         }
     }
 
-    std::cout << timestamp << "[RaycastingTexturizer] Loaded " << m_images.size() << " images" << std::endl;
+    lvr2::logout::get() << "[RaycastingTexturizer] Loaded " << m_images.size() << " images" << lvr2::endl;
 }
+
+template <typename BaseVecT>
+void RaycastingTexturizer<BaseVecT>::equalizeHistogram(cv::Mat& img) const
+{
+    // Apply histogram equalization (works only on one channel matrices)
+    // Convert to LAB color format
+    cv::Mat lab;
+    cv::cvtColor(img, lab, cv::COLOR_BGR2Lab);
+
+    // Extract L channel
+    std::vector<cv::Mat> channels(3);
+    cv::split(lab, channels);
+    cv::Mat LChannel = channels[0];
+
+    // Apply clahe algorithm
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(); // Create algorithm
+    clahe->apply(LChannel, LChannel);
+
+    // Write the result back to the image
+    channels[0] = LChannel;
+    cv::merge(channels, lab);
+    cv::cvtColor(lab, img, cv::COLOR_Lab2BGR);
+}
+
 
 inline Vector2i texelFromUV(const TexCoords& uv, const Texture& tex)
 {

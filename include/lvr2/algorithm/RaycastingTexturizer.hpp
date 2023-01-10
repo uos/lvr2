@@ -115,6 +115,8 @@ public:
 
 private:
 
+    void equalizeHistogram(cv::Mat& img) const;
+
     struct ImageInfo
     {
         Eigen::Quaternionf ImageToWorldRotation;
