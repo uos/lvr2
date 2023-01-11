@@ -145,17 +145,16 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                 info.ImageToWorldRotationInverse = rotationI2W.normalized().inverse().cast<float>();
                 info.ImageToCameraRotationInverse = rotationI2C.normalized().inverse().cast<float>();
 
+                // Total transform from image to world
+                Eigen::Isometry3d total(position->transformation * info.image->transformation * camera->transformation.inverse());
+
                 // Calculate camera origin in World space
-                Vector3d origin(0, 0, 0);                                   // Camera frame
-                origin = rotationI2C.inverse() * (origin - translationI2C); // From Camera -> Image
-                origin = rotationI2W * origin + translationI2W;             // From Image -> World
-                info.cameraOrigin = origin.cast<float>();
+                Vector3d origin_world = total * Vector3d::Zero();
+                info.cameraOrigin = origin_world.cast<float>();
 
                 // Precalculate the view direction vector in world space (only needs rotation no translation)
-                Vector3d view_vec_world = rotationI2C.inverse() * Vector3d::UnitZ();
-                view_vec_world = rotationI2W * view_vec_world;
+                Vector3d view_vec_world = total.rotation().inverse().transpose() * Vector3d::UnitZ();
                 info.viewDirectionWorld = view_vec_world.normalized().cast<float>();
-
 
                 //=== The Camera Matrix is stored adjusted for image resolution -> the values have to be scaled ===//
                 info.image->load();
