@@ -168,7 +168,7 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                 info.model.cx = width / 2 + info.model.cx * width;
                 info.model.cy = height / 2 + info.model.cy * height;
 
-                this->applyCLAHE(info.image->image);
+                this->equalizeHistogram(info.image->image);
 
                 m_images.push_back(info);
             }
