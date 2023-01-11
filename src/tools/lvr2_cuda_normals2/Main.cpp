@@ -76,7 +76,7 @@ int main(int argc, char** argv)
     // Create the normal array
     float* normals = (float*) malloc(sizeof(float) * num_queries * 3);
 
-    int mode = 1;
+    int mode = 0;
     // #########################################################################################
     if(mode == 0)
     {
@@ -127,6 +127,9 @@ int main(int argc, char** argv)
     // {
     //     std::cout << new_normals[i] << std::endl;
     // }
+    std::cout << new_normals[0] << std::endl;
+    std::cout << new_normals[555] << std::endl;
+    std::cout << new_normals[100000] << std::endl;
     
     // Save the new model as test.ply
     ModelFactory::saveModel(model, "test.ply");

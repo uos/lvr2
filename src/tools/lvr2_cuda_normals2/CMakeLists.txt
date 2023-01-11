@@ -26,7 +26,7 @@ set(LVR2_CUDA_NORMAL2_DEPS
 # PURE CUDA
 add_definitions(-DCUDA_INCLUDE_DIRS="${CUDA_INCLUDE_DIRS}")
 cuda_add_library(kernels_device 
-                src/kernels_device.cu
+                #src/kernels_device.cu
                 src/morton_code.cu
                 #src/LBVHIndex.cu
                 src/lbvh_kernels.cu

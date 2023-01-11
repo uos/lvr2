@@ -55,6 +55,7 @@
 #include "lvr2/algorithm/Materializer.hpp"
 #include "lvr2/algorithm/Texturizer.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp" // Has to be included before anything includes opencv stuff, see https://github.com/flann-lib/flann/issues/214 
+#include "lvr2/reconstruction/CudaKSearchSurface.hpp"
 #include "lvr2/algorithm/SpectralTexturizer.hpp"
 
 #ifdef LVR2_USE_EMBREE
@@ -67,6 +68,7 @@
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/SearchTree.hpp"
 #include "lvr2/reconstruction/SearchTreeFlann.hpp"
+#include "lvr2/reconstruction/SearchTreeLBVH.hpp"
 #include "lvr2/reconstruction/HashGrid.hpp"
 #include "lvr2/reconstruction/PointsetGrid.hpp"
 #include "lvr2/reconstruction/SharpBox.hpp"
@@ -399,6 +401,14 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             plane_fit_method,
             options.getScanPoseFile()
         );
+
+    }
+    else if(pcm_name == "LBVH_CUDA")
+    {
+        surface = make_shared<CudaKSearchSurface<BaseVecT>>(
+            buffer,
+            options.getKn()
+        );
     }
     else
     {
@@ -450,7 +460,19 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     {
         cout << timestamp << "Using given normals." << endl;
     }
-
+    if(pcm_name == "LBVH_CUDA")
+    {
+        std::cout << *buffer << std::endl;
+        surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
+            buffer,
+            "FLANN",
+            options.getKn(),
+            options.getKi(),
+            options.getKd(),
+            0,
+            options.getScanPoseFile()
+        );
+    }
     return surface;
 }
 

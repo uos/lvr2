@@ -1,8 +1,8 @@
-#include "LBVHIndex.cuh"
-#include "lbvh_kernels.cuh"
-#include "lbvh.cuh"
-#include "normals_kernel.cuh"
-#include "aabb.cuh"
+#include "lvr2/reconstruction/cuda/LBVHIndex.hpp"
+#include "lvr2/reconstruction/cuda/lbvh/lbvh_kernels.cuh"
+#include "lvr2/reconstruction/cuda/lbvh/lbvh.cuh"
+#include "lvr2/reconstruction/cuda/lbvh/normals_kernel.cuh"
+#include "lvr2/reconstruction/cuda/lbvh/aabb.cuh"
 // #include "knn_normals_kernel.cuh"
 
 #include <stdio.h>
@@ -16,77 +16,80 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "GPUErrorCheck.h"
+#include "lvr2/reconstruction/cuda/lbvh/GPUErrorCheck.h"
 
+using namespace lvr2;
 using namespace lbvh;
 
-// Only for testing
-float quadratic_distance(float p1, float p2, float p3, float q1, float q2, float q3)
+// // Only for testing
+// float quadratic_distance(float p1, float p2, float p3, float q1, float q2, float q3)
+// {
+//     return (p1 - q1) * (p1 - q1) + (p2 - q2) * (p2 - q2) + (p3 - q3) * (p3 - q3);
+// }
+
+// // Only for testing
+// void findKNN(int k, float* points, size_t num_points, float* queries, size_t num_queries)
+// {
+//     std::cout << "Brute forcing KNN..." << std::endl;
+//     float neighs[num_queries][k];
+
+//     float distances[num_queries][num_points];
+
+//     unsigned int indices[num_queries][num_points];
+
+//     for(int j = 0; j < num_queries; j++)
+//     {
+//         for(int i = 0; i < num_points; i++)
+//         {
+//             indices[j][i] = i;
+//         }
+
+//     }
+
+//     for(int i = 0; i < num_queries; i++)
+//     {
+//         for(int j = 0; j < num_points; j++)
+//         {
+//             distances[i][j] = quadratic_distance(
+//                                     points[3 * j + 0],
+//                                     points[3 * j + 1],
+//                                     points[3 * j + 2],
+//                                     queries[3 * i + 0],
+//                                     queries[3 * i + 1],
+//                                     queries[3 * i + 2]);
+//         }
+//     }
+//     for(int i = 0; i < num_queries; i++)
+//     {
+//         thrust::sort_by_key(distances[i], distances[i] + num_points, indices[i]);
+
+//     }
+
+//     for(int i = 0; i < num_queries; i++)
+//     {
+//         std::cout << "Query " << i << ": " << std::endl;
+//         std::cout << "Neighbors: " << std::endl;
+//         for(int j = 0; j < k; j++){
+//             std::cout << indices[i][j] << std::endl;
+//         }
+//         std::cout << "Distances: " << std::endl;
+//         for(int j = 0; j < k; j++)
+//         {
+//             std::cout << distances[i][j] << std::endl;
+//         }
+//     }
+// }
+
+namespace lvr2
 {
-    return (p1 - q1) * (p1 - q1) + (p2 - q2) * (p2 - q2) + (p3 - q3) * (p3 - q3);
-}
-
-// Only for testing
-void findKNN(int k, float* points, size_t num_points, float* queries, size_t num_queries)
-{
-    std::cout << "Brute forcing KNN..." << std::endl;
-    float neighs[num_queries][k];
-
-    float distances[num_queries][num_points];
-
-    unsigned int indices[num_queries][num_points];
-
-    for(int j = 0; j < num_queries; j++)
-    {
-        for(int i = 0; i < num_points; i++)
-        {
-            indices[j][i] = i;
-        }
-
-    }
-
-    for(int i = 0; i < num_queries; i++)
-    {
-        for(int j = 0; j < num_points; j++)
-        {
-            distances[i][j] = quadratic_distance(
-                                    points[3 * j + 0],
-                                    points[3 * j + 1],
-                                    points[3 * j + 2],
-                                    queries[3 * i + 0],
-                                    queries[3 * i + 1],
-                                    queries[3 * i + 2]);
-        }
-    }
-    for(int i = 0; i < num_queries; i++)
-    {
-        thrust::sort_by_key(distances[i], distances[i] + num_points, indices[i]);
-
-    }
-
-    for(int i = 0; i < num_queries; i++)
-    {
-        std::cout << "Query " << i << ": " << std::endl;
-        std::cout << "Neighbors: " << std::endl;
-        for(int j = 0; j < k; j++){
-            std::cout << indices[i][j] << std::endl;
-        }
-        std::cout << "Distances: " << std::endl;
-        for(int j = 0; j < k; j++)
-        {
-            std::cout << distances[i][j] << std::endl;
-        }
-    }
-}
-
 
 LBVHIndex::LBVHIndex()
 {
     this->m_num_objects = 0;
     this->m_num_nodes = 0;
     this->m_leaf_size = 1;
-    this->m_sort_queries = false;
-    this->m_compact = false;
+    this->m_sort_queries = true;
+    this->m_compact = true;
 
     this->m_flip_x = 1000000.0;
     this->m_flip_y = 1000000.0;
@@ -94,9 +97,14 @@ LBVHIndex::LBVHIndex()
     
 }
 
-LBVHIndex::LBVHIndex(int leaf_size, bool sort_queries, 
-                    bool compact,
-                    float flip_x, float flip_y, float flip_z)
+LBVHIndex::LBVHIndex(
+    int leaf_size, 
+    bool sort_queries, 
+    bool compact,
+    float flip_x, 
+    float flip_y, 
+    float flip_z
+)
 {
     this->m_num_objects = 0;
     this->m_num_nodes = 0;
@@ -112,10 +120,9 @@ LBVHIndex::LBVHIndex(int leaf_size, bool sort_queries,
 
 void LBVHIndex::build(float* points, size_t num_points)
 {
-    // this->m_points = points;
+
 
     // Upload points to GPU
-    this->m_d_points;
     cudaMalloc(&this->m_d_points,
         sizeof(float) * 3 * num_points);
     cudaMemcpy(this->m_d_points, points,
@@ -406,10 +413,13 @@ void LBVHIndex::build(float* points, size_t num_points)
   } while(0)
 
 void LBVHIndex::kSearch(
-    float* query_points, size_t num_queries,
+    float* query_points, 
+    size_t num_queries,
     int K, 
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-)   const
+    unsigned int* n_neighbors_out, 
+    unsigned int* indices_out, 
+    float* distances_out
+) const
 {   
     float radius = FLT_MAX;
     
@@ -418,10 +428,13 @@ void LBVHIndex::kSearch(
 }
 
 void LBVHIndex::kSearch_dev_ptr(
-    float* query_points, size_t num_queries,
+    float* query_points, 
+    size_t num_queries,
     int K, 
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-)   const
+    unsigned int* n_neighbors_out, 
+    unsigned int* indices_out, 
+    float* distances_out
+) const
 {
     float radius = FLT_MAX;
     
@@ -430,10 +443,14 @@ void LBVHIndex::kSearch_dev_ptr(
 }
 
 void LBVHIndex::radiusSearch(
-    float* query_points, size_t num_queries,
-    int K, float r,
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-)   const
+    float* query_points, 
+    size_t num_queries,
+    int K, 
+    float r,
+    unsigned int* n_neighbors_out, 
+    unsigned int* indices_out, 
+    float* distances_out
+) const
 {
     // Malloc the output arrays here
     n_neighbors_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
@@ -445,20 +462,28 @@ void LBVHIndex::radiusSearch(
 }
 
 void LBVHIndex::radiusSearch_dev_ptr(
-    float* query_points, size_t num_queries,
-    int K, float r,
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out
-)   const
+    float* query_points, 
+    size_t num_queries,
+    int K, 
+    float r,
+    unsigned int* n_neighbors_out, 
+    unsigned int* indices_out, 
+    float* distances_out
+) const
 {
     this->process_queries_dev_ptr(query_points, num_queries, K, r,
         n_neighbors_out, indices_out, distances_out);
 }
 
 void LBVHIndex::process_queries(
-    float* queries_raw, size_t num_queries,
-    int K, float r,
-    unsigned int* n_neighbors_out, unsigned int* indices_out, float* distances_out)
-    const
+    float* queries_raw, 
+    size_t num_queries,
+    int K, 
+    float r,
+    unsigned int* n_neighbors_out, 
+    unsigned int* indices_out, 
+    float* distances_out
+) const
 {
     unsigned int* d_n_neighbors_out; 
     unsigned int* d_indices_out; 
@@ -498,16 +523,20 @@ void LBVHIndex::process_queries(
 }
 
 void LBVHIndex::process_queries_dev_ptr(
-    float* d_query_points, size_t num_queries,
-    int K, float r,
-    unsigned int* d_n_neighbors_out, unsigned int* d_indices_out, float* d_distances_out
-)   const
+    float* d_query_points, 
+    size_t num_queries,
+    int K, 
+    float r,
+    unsigned int* d_n_neighbors_out, 
+    unsigned int* d_indices_out, 
+    float* d_distances_out
+) const
 {
     // Get the Query Kernel
-    // TODO Dont use hardcoded path
     std::string kernel_file = "query_knn_kernels.cu";
     std::string kernel_name = "query_knn_kernel";
-    std::string kernel_path = "../src/tools/lvr2_cuda_normals2/src/query_knn_kernels.cu";
+    std::string kernel_dir = std::string(LBVH_KERNEL_DIR);
+    std::string kernel_path = kernel_dir + "/" + kernel_file;
 
     // Read the kernel file
     std::ifstream in(kernel_path);
@@ -517,7 +546,14 @@ void LBVHIndex::process_queries_dev_ptr(
     // Get the ptx of the kernel
     std::string ptx_src;
 
-    getPtxFromCuString(ptx_src, kernel_name.c_str(), cu_src.c_str(), K, NULL, NULL);
+    getPtxFromCuString(
+        ptx_src, 
+        kernel_name.c_str(), 
+        cu_src.c_str(), 
+        K, 
+        NULL, 
+        NULL
+    );
 
     // Init cuda
     cudaFree(0);
@@ -535,20 +571,6 @@ void LBVHIndex::process_queries_dev_ptr(
     gpuErrchk( cudaMemcpy(d_nodes, this->m_nodes, 
             sizeof(BVHNode) * this->m_num_nodes,
             cudaMemcpyHostToDevice) );
-
-    // // TODO Muss weg -> global
-    // float* d_points;
-    // cudaMalloc(&d_points, sizeof(float) * 3 * this->m_num_objects);
-    // cudaMemcpy(d_points, this->m_points,
-    //     sizeof(float) * 3 * this->m_num_objects,
-    //     cudaMemcpyHostToDevice);
-
-    // // TODO Muss weg -> global
-    // unsigned int* d_sorted_indices;
-    // gpuErrchk( cudaMalloc(&d_sorted_indices, sizeof(unsigned int) * this->m_num_objects) );
-    // gpuErrchk( cudaMemcpy(d_sorted_indices, this->m_sorted_indices,
-    //         sizeof(unsigned int) * this->m_num_objects,
-    //         cudaMemcpyHostToDevice) );
 
     unsigned int* sorted_queries = (unsigned int*) 
                 malloc(sizeof(unsigned int) * num_queries);
@@ -619,6 +641,7 @@ void LBVHIndex::process_queries_dev_ptr(
     int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
                         / threadsPerBlock;
 
+
     // Launch the kernel
     CUDA_SAFE_CALL( cuLaunchKernel(kernel, 
         blocksPerGrid, 1, 1,  // grid dim
@@ -633,10 +656,13 @@ void LBVHIndex::process_queries_dev_ptr(
 }
 
  void LBVHIndex::calculate_normals(
-    float* normals, size_t num_normals,
-    float* queries, size_t num_queries,
+    float* normals, 
+    size_t num_normals,
+    float* queries, 
+    size_t num_queries,
     int K,
-    unsigned int* n_neighbors_out, unsigned int* indices_out
+    unsigned int* n_neighbors_out, 
+    unsigned int* indices_out
 )   const
 {
     int threadsPerBlock = 256;
@@ -698,18 +724,21 @@ void LBVHIndex::process_queries_dev_ptr(
 
 }
 
+// TODO Make this const?
 void LBVHIndex::knn_normals(
-    float* query_points, size_t num_queries,
+    float* query_points, 
+    size_t num_queries,
     int K,
-    float* normals, size_t num_normals
+    float* normals, 
+    size_t num_normals
 )
 {
     // Get the Query Kernel
-    // TODO Dont use hardcoded path
     std::string kernel_file = "knn_normals_kernel.cu";
     std::string kernel_name = "knn_normals_kernel";
-    std::string kernel_path = "../src/tools/lvr2_cuda_normals2/src/knn_normals_kernel.cu";
-
+    std::string kernel_dir = std::string(LBVH_KERNEL_DIR);
+    std::string kernel_path = kernel_dir + "/" + kernel_file;
+    
     // Read the kernel file
     std::ifstream in(kernel_path);
     std::string cu_src((std::istreambuf_iterator<char>(in)),
@@ -807,11 +836,6 @@ void LBVHIndex::knn_normals(
 
     float radius = FLT_MAX;
 
-    // // TODO Is there a better way to do this?
-    // float* d_points = const_cast<float*>(this->m_d_points);
-    // unsigned int* d_sorted_indices = const_cast<unsigned int*>(this->m_d_sorted_indices);
-    // unsigned int root_node = this->m_root_node;
-    
     // Gather the arguments
     void *params[] = 
     {
@@ -853,7 +877,11 @@ void LBVHIndex::knn_normals(
 
 // Get the extent of the points 
 // (minimum and maximum values in each dimension)
-AABB* LBVHIndex::getExtent(AABB* extent, float* points, size_t num_points) const
+AABB* LBVHIndex::getExtent(
+    AABB* extent, 
+    float* points, 
+    size_t num_points
+) const
 {
     float min_x = INT_MAX;
     float min_y = INT_MAX;
@@ -909,12 +937,17 @@ AABB* LBVHIndex::getExtent(AABB* extent, float* points, size_t num_points) const
 
 std::string LBVHIndex::getSampleDir() const
 {
-    // TODO: Don't use hard coded path
-    return std::string("/home/till/Develop/src/tools/lvr2_cuda_normals2/src");
+    return std::string(LBVH_KERNEL_DIR);
 }
-                         // Rückgabe String // Bsp: square_kernel.cu  // Inhalt d Datei     //Name Programm = NULL
-void LBVHIndex::getPtxFromCuString( std::string& ptx, const char* sample_name, const char* cu_source, int K, const char* name, const char** log_string )
-const
+
+void LBVHIndex::getPtxFromCuString( 
+    std::string& ptx, 
+    const char* sample_name, 
+    const char* cu_source, 
+    int K, 
+    const char* name, 
+    const char** log_string 
+) const
 {
     // Create program
     nvrtcProgram prog;
@@ -923,9 +956,15 @@ const
     std::string K_str = "-DK=" + std::to_string(K); 
 
     // Gather NVRTC options
-    std::string cuda_include = std::string("-I") + std::string(CUDA_INCLUDE_DIRS);
+    std::string kernel_includes = std::string("-I") + 
+        std::string(LBVH_KERNEL_INCLUDES);
+
+    std::string cuda_include = std::string("-I") + 
+        std::string(CUDA_INCLUDE_DIRS);
+    
     std::vector<const char*> options = {
-        "-I/home/till/Develop/src/tools/lvr2_cuda_normals2/include",
+        //"-I/home/till/Develop/src/tools/lvr2_cuda_normals2/include",
+        kernel_includes.c_str(),
         cuda_include.c_str(),
         "-std=c++17",
         K_str.c_str()
@@ -959,3 +998,5 @@ const
     // Cleanup
     NVRTC_SAFE_CALL( nvrtcDestroyProgram( &prog ) );
 }
+
+} // namespace lvr2

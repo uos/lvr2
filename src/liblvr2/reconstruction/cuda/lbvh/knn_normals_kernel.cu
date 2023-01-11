@@ -1,6 +1,10 @@
 #include "query_knn.cuh"
 
+using namespace lvr2;
 using namespace lbvh;
+
+namespace lvr2
+{
 
 extern "C" __global__ void knn_normals_kernel(
     const BVHNode *nodes,
@@ -34,32 +38,15 @@ extern "C" __global__ void knn_normals_kernel(
     normals[3 * query_idx + 1] = 0.0f;
     normals[3 * query_idx + 2] = 0.0f;
 
-    // unsigned int indices_out[K];
-    // float distances_out[K];
-    // unsigned int n_neighbors_out[1];
-
-    // unsigned int index_out;
-    // float distance_out;
-    // unsigned int n_neighbors_out;
-
-    // for(int i = 0; i < K; i++)
-    // {
-    //     indices_out[K * query_idx + i] = UINT_MAX;
-    //     distances_out[K * query_idx + i] = FLT_MAX;
-    // }
-
     float3 query_point =       
     {
         query_points[3 * query_idx + 0],
         query_points[3 * query_idx + 1],
         query_points[3 * query_idx + 2]
     };
-    // query_knn(nodes, points, sorted_indices, root_index, &query_points[query_idx], queue);
+    
     query_knn(nodes, points, sorted_indices, root_index, &query_point, queue);
     __syncwarp(); // synchronize the warp before the write operation
-    // write back the results at the correct position
-    // queue.write_results(&indices_out[0], &distances_out[0], &n_neighbors_out[0]);
-    // queue.write_results(&index_out, &distance_out, &n_neighbors_out);
 
     // http://www.ilikebigbits.com/2017_09_25_plane_from_points_2.html
     __syncthreads();
@@ -70,11 +57,11 @@ extern "C" __global__ void knn_normals_kernel(
 
     if(n < 3)
     {
-        // TODO tid or query_idx?
+        // Not enough neighbors
         normals[3 * query_idx + 0] = 0.0f;
         normals[3 * query_idx + 1] = 0.0f;
         normals[3 * query_idx + 2] = 0.0f;
-        return; // Not enough neighbors
+        return; 
     }
 
 
@@ -83,8 +70,7 @@ extern "C" __global__ void knn_normals_kernel(
 
     for(int i = 0; i < n; i++)
     {
-        // TODO Indexing?
-        auto k = queue[query_idx * K + i];
+        auto k = queue[i];
         // Coordinates of point which is the i-th neighbor
         sum.x += points[ 3 * k.id + 0];
         sum.y += points[ 3 * k.id + 1];
@@ -102,8 +88,7 @@ extern "C" __global__ void knn_normals_kernel(
 
     for(int i = 0; i < n; i++)
     {
-        // TODO Indexing?
-        auto k = queue[query_idx * K + i];
+        auto k = queue[i];
         float3 r =
         {
             points[ 3 * k.id + 0] - sum.x,
@@ -208,7 +193,6 @@ extern "C" __global__ void knn_normals_kernel(
 
     float scalar = x_dir * normal.x + y_dir * normal.y + z_dir * normal.z;
 
-    // TODO < or > ?
     if(scalar < 0)
     {
         normal.x = -normal.x;
@@ -216,29 +200,20 @@ extern "C" __global__ void knn_normals_kernel(
         normal.z = -normal.z;
     }
 
-    // TODO Set normals to zero if nan or inf values occur
-    // Done?
+    // Set normals to zero if nan or inf values occur
     if(!(scalar <= 0 || scalar >= 0) || isinf(scalar))
     {
         normal.x = 0.0f;
         normal.y = 0.0f;
         normal.z = 0.0f;
     }
-
-    // float x = normal.x;
-    // float y = normal.y;
-    // float z = normal.z;
-
-    // TODO Is the indexing here correct?
+   
     // Set the normal in the normal array
-    // TODO tid or query_idx?
     normals[3 * query_idx + 0] = normal.x;
     normals[3 * query_idx + 1] = normal.y;
     normals[3 * query_idx + 2] = normal.z;
 
-    // normals[3 * query_idx + 0] = 0.0f;
-    // normals[3 * query_idx + 1] = 0.0f;
-    // normals[3 * query_idx + 2] = 0.0f;
-
     return;
 }
+
+} // namespace lvr2

@@ -231,11 +231,27 @@ install(TARGETS lvr2_static lvr2
 #####################################################################################
 
 if(CUDA_FOUND)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
+    set(LBVH_KERNEL_INCLUDES "${LAS_VEGAS_SOURCE_DIR}/include/lvr2/reconstruction/cuda/lbvh")
+    add_definitions(-DLBVH_KERNEL_INCLUDES="${LBVH_KERNEL_INCLUDES}")
+    
+    set(LBVH_KERNEL_DIR "${LAS_VEGAS_SOURCE_DIR}/src/liblvr2/reconstruction/cuda/lbvh")
+    add_definitions(-DLBVH_KERNEL_DIR="${LBVH_KERNEL_DIR}")
+    
+    add_definitions(-DCUDA_INCLUDE_DIRS="${CUDA_INCLUDE_DIRS}")
+    
+    set(CUDA_SEPARABLE_COMPILATION ON)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
+    message(WARNING "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!${LBVH_KERNEL_INCLUDES}")
 
     # List of CUDA kernel code sources
     set(LVR2_CUDA_SRC
         reconstruction/cuda/CudaSurface.cu
+        reconstruction/cuda/LBVHIndex.cu
+        # TODO Eigentlich andere Bibliothek
+        reconstruction/cuda/lbvh/lbvh_kernels.cu
+        reconstruction/cuda/lbvh/morton_code.cu
+        reconstruction/cuda/lbvh/normals_kernel.cu
     )
 
     # Fix broken VTK flags
@@ -263,6 +279,20 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
     cuda_add_library(lvr2cuda SHARED ${LVR2_CUDA_CPP_SRC} ${LVR2_CUDA_SRC})
 
     target_link_libraries(lvr2cuda lvr2)
+
+    target_link_libraries(lvr2cuda
+        ${CUDA_LIBRARIES}
+        # TODO Find nvrtc library
+        /usr/local/cuda/lib64/libnvrtc.so
+        ${CUDA_CUDA_LIBRARY}
+    )
+
+    target_link_libraries(lvr2cuda_static
+        ${CUDA_LIBRARIES}
+        # TODO Find nvrtc library
+        /usr/local/cuda/lib64/libnvrtc.so
+        ${CUDA_CUDA_LIBRARY}
+    )
 
     install(
         TARGETS lvr2cuda_static lvr2cuda

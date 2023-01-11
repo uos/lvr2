@@ -29,7 +29,6 @@ endif( ${NABO_FOUND} )
 #####################################################################################
 # Add executable
 #####################################################################################
-
 add_executable(lvr2_reconstruct ${RECONSTRUCT_SOURCES})
 target_link_libraries(lvr2_reconstruct ${LVR2_RECONSTRUCT_DEPENDENCIES})
 
