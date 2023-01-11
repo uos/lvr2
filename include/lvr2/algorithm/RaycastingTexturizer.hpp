@@ -119,12 +119,9 @@ private:
 
     struct ImageInfo
     {
-        Eigen::Quaternionf ImageToWorldRotation;
-        Eigen::Quaternionf ImageToWorldRotationInverse;
-        Eigen::Quaternionf ImageToCameraRotation;
-        Eigen::Quaternionf ImageToCameraRotationInverse;
-        Eigen::Vector3f ImageToWorldTranslation;
-        Eigen::Vector3f ImageToCameraTranslation;
+        Eigen::Isometry3f transform;
+        Eigen::Isometry3f inverse_transform;
+
         Eigen::Vector3f cameraOrigin;
         Eigen::Vector3f viewDirectionWorld;
         CameraImagePtr image;

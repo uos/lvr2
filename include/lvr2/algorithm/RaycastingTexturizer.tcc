@@ -119,34 +119,10 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                 // Set the image
                 info.image = imagePtr;
 
-                // Rotation parts of transformations
-                Quaterniond positionR(position->transformation.template topLeftCorner<3, 3>()); // Position -> World
-                Quaterniond cameraR(camera->transformation.template topLeftCorner<3, 3>());     // Image -> Camera
-                Quaterniond imageR(info.image->transformation.template topLeftCorner<3, 3>());  // Image -> World
-
-                // Translation parts of transformations
-                Vector3d positionT(position->transformation.template topRightCorner<3, 1>()); // Position -> World
-                Vector3d cameraT(camera->transformation.template topRightCorner<3, 1>());     // Image -> Camera
-                Vector3d imageT(info.image->transformation.template topRightCorner<3, 1>());  // Image -> World
-
-                // Calculate Image -> World transform
-                Vector3d translationI2W = positionR * imageT + positionT;
-                Quaterniond rotationI2W = positionR * imageR;
-                // Calculate Image -> Camera transform
-                Vector3d translationI2C = cameraT;
-                Quaterniond rotationI2C = cameraR;
-
-                info.ImageToWorldRotation = rotationI2W.normalized().cast<float>();
-                info.ImageToWorldTranslation = translationI2W.cast<float>();
-                info.ImageToCameraRotation = rotationI2C.normalized().cast<float>();
-                info.ImageToCameraTranslation = translationI2C.cast<float>();
-
-                // Precalculate inverse Rotations because those are extremely expensive
-                info.ImageToWorldRotationInverse = rotationI2W.normalized().inverse().cast<float>();
-                info.ImageToCameraRotationInverse = rotationI2C.normalized().inverse().cast<float>();
-
                 // Total transform from image to world
                 Eigen::Isometry3d total(position->transformation * info.image->transformation * camera->transformation.inverse());
+                info.transform = total.cast<float>();
+                info.inverse_transform = total.inverse().cast<float>();
 
                 // Calculate camera origin in World space
                 Vector3d origin_world = total * Vector3d::Zero();
@@ -610,8 +586,7 @@ template <typename BaseVecT>
 bool RaycastingTexturizer<BaseVecT>::calcPointColor(Vector3f point, const ImageInfo& img, cv::Vec3b& color) const
 {
     // Transform the point to camera space
-    Vector3f imgPoint = img.ImageToWorldRotationInverse * (point - img.ImageToWorldTranslation); // World -> Image
-    Vector3f camPoint = img.ImageToCameraRotation * imgPoint + img.ImageToCameraTranslation;
+    Vector3f camPoint = img.inverse_transform * point;
     // If the point is behind the camera no color will be extracted
     if (camPoint.z() <= 0) return false;
 
