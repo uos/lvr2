@@ -116,8 +116,6 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                 // Pop the element to be processed
                 processList.pop();
 
-                // Add the transform, the image and the camera model to the list
-
                 // Set the image
                 info.image = imagePtr;
 
@@ -161,8 +159,8 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
 
                 //=== The Camera Matrix is stored adjusted for image resolution -> the values have to be scaled ===//
                 info.image->load();
-                auto width = info.image->image.cols;
-                auto height = info.image->image.rows;
+                auto height = info.image->image.cols;
+                auto width = info.image->image.rows;
                 info.model.fx *= width;
                 info.model.fy *= height;
                 info.model.cx = width / 2 + info.model.cx * width;
@@ -517,8 +515,7 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
         [normal, center](ImageInfo img)
         {
             // View vector in world coordinates
-            Vector3f view = img.ImageToCameraRotationInverse * Vector3f::UnitZ(); // Camera -> Image
-            view = img.ImageToWorldRotation * view; // Image -> World
+            Vector3f view = img.viewDirectionWorld;
             // Check if triangle is seen from the back // Currently not working because the normals are not always correct
             // if (normal.dot(view) < 0)
             // {
