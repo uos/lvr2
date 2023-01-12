@@ -2,7 +2,30 @@
 
 #include <iostream>
 
-#define NUM 1000000
+#define NUM 5000000
+
+// TODO Only for testing
+#include <cmath>
+#include <vector>
+
+std::vector<float> sphere_point_cloud(size_t num_points) {
+    std::vector<float> point_cloud;
+
+    // Generate points on a sphere
+    for (size_t i = 0; i < num_points; i++) {
+        float theta = 2 * M_PI * (i / static_cast<float>(num_points));
+        float phi = M_PI * (i / static_cast<float>(num_points));
+        float x = std::cos(theta) * std::sin(phi);
+        float y = std::sin(theta) * std::sin(phi);
+        float z = std::cos(phi);
+        point_cloud.emplace_back(x);
+        point_cloud.emplace_back(y);
+        point_cloud.emplace_back(z);
+    }
+
+    return point_cloud;
+}
+
 namespace lvr2
 {
 
@@ -21,19 +44,19 @@ CudaKSearchSurface<BaseVecT>::CudaKSearchSurface(
 {
     this->setKn(k);
 
-    // floatArr points = this->m_pointBuffer->getPointArray();
-    // float* points_raw = &points[0];
-    // int num_points = this->m_pointBuffer->numPoints();
-    int num_points = NUM;
+    floatArr points = this->m_pointBuffer->getPointArray();
+    float* points_raw = &points[0];
+    int num_points = this->m_pointBuffer->numPoints();
+    // size_t num_points = NUM;
+    // std::vector<float> pc = sphere_point_cloud(num_points);
+    // float* points_raw = (float*) malloc(sizeof(float) * 3 * num_points);
 
-    float* points_raw = (float*) malloc(sizeof(float) * num_points);
-
-    for(int i = 0; i < num_points; i++)
-    {
-        int n = i % 100;
-        float j = (float) n;
-        points_raw[i] = j + 0.001 * j;
-    }
+    // for(int i = 0; i < num_points; i++)
+    // {
+    //     points_raw[3 * i + 0] = pc[3 * i + 0];
+    //     points_raw[3 * i + 1] = pc[3 * i + 1];
+    //     points_raw[3 * i + 2] = pc[3 * i + 2];
+    // }
     std::cout << "Building Tree..." << std::endl;
     this->m_tree.build(points_raw, num_points);
     std::cout << "Tree Done!" << std::endl;
@@ -52,22 +75,19 @@ std::pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 template<typename BaseVecT>
 void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 {
-    // floatArr points = this->m_pointBuffer->getPointArray();
+    floatArr points = this->m_pointBuffer->getPointArray();
     
-    // float* points_raw = &points[0];
-    int num_points = NUM;
-    // int num_points = this->m_pointBuffer->numPoints();
-    float* points_raw = (float*) malloc(sizeof(float) * num_points);
+    float* points_raw = &points[0];
+    int num_points = this->m_pointBuffer->numPoints();
+    // int num_points = NUM;
+    // float* points_raw = (float*) malloc(sizeof(float) * 3 * num_points);
 
-    for(int i = 0; i < num_points; i++)
-    {
-        int n = i % 100;
-        float j = (float) n;
-        points_raw[i] = j + 0.001 * j;
-    }
+    // for(int i = 0; i < num_points; i++)
+    // {
+    //     points_raw[i] = (float) i;
+    // }
     // TODO Check if 3 floats long
     BaseVecT* query = reinterpret_cast<BaseVecT*>(points_raw);
-
 
     int K = this->m_kn;
 
@@ -81,7 +101,7 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     // Create the normal array
     float* normals = (float*) malloc(sizeof(float) * num_queries * 3);
 
-    int mode = 0;
+    int mode = 1;
     // #########################################################################################
     if(mode == 0)
     {

@@ -118,16 +118,37 @@ LBVHIndex::LBVHIndex(
     
 }
 
+LBVHIndex::~LBVHIndex()
+{
+    // CPU
+    free(this->m_extent);
+    free(this->m_nodes);
+
+    // GPU
+    cudaFree(this->m_d_points);
+    cudaFree(this->m_d_sorted_indices);
+
+}
+
 void LBVHIndex::build(float* points, size_t num_points)
 {
-
-
+    // int deviceCount;
+    // cudaGetDeviceCount(&deviceCount);
+    // for(int i=0;i<deviceCount;i++){
+    //     cudaDeviceProp deviceProp;
+    //     cudaGetDeviceProperties(&deviceProp, i);
+    //     printf("Device %d: %s\n", i, deviceProp.name);
+    //     // Calculate the theoretical peak memory transfer rate
+    //     double theoreticalPeak = (double)(deviceProp.memoryClockRate * deviceProp.memoryBusWidth) / 8 / 1e9;
+    //     printf("Theoretical Peak Memory Transfer Rate: %.2f GB/s\n", theoreticalPeak);
+    // }
+    
     // Upload points to GPU
-    cudaMalloc(&this->m_d_points,
-        sizeof(float) * 3 * num_points);
-    cudaMemcpy(this->m_d_points, points,
+    gpuErrchk( cudaMalloc(&this->m_d_points,
+        sizeof(float) * 3 * num_points) );
+    gpuErrchk( cudaMemcpy(this->m_d_points, points,
         sizeof(float) * 3 * num_points,
-        cudaMemcpyHostToDevice);
+        cudaMemcpyHostToDevice) );
 
     this->m_num_objects = num_points;
     this->m_num_nodes = 2 * m_num_objects - 1;
@@ -230,7 +251,6 @@ void LBVHIndex::build(float* points, size_t num_points)
 
     gpuErrchk(cudaMemcpy(d_sorted_aabbs, sorted_aabbs, 
             sizeof(struct AABB) * num_points, cudaMemcpyHostToDevice));
-
     // Initialize the tree
     initialize_tree_kernel<<<blocksPerGrid, threadsPerBlock>>>
         (d_nodes, d_sorted_aabbs, num_points);
@@ -376,16 +396,16 @@ void LBVHIndex::build(float* points, size_t num_points)
     this->m_root_node = root_node[0];
     printf("Root: %u \n", this->m_root_node);
 
-    gpuErrchk(cudaFree(d_root_node));
-    gpuErrchk(cudaFree(d_sorted_aabbs));
-    gpuErrchk(cudaFree(d_sorted_morton_codes));
-    gpuErrchk(cudaFree(d_nodes));
+    // gpuErrchk(cudaFree(d_root_node));
+    // gpuErrchk(cudaFree(d_sorted_aabbs));
+    // gpuErrchk(cudaFree(d_sorted_morton_codes));
+    // gpuErrchk(cudaFree(d_nodes));
     
-    // free(root_node);
-    // free(nodes);
-    // free(aabbs);
-    // free(extent);
-    // free(h_morton_codes);
+    // // free(root_node);
+    // // free(nodes);
+    // // free(aabbs);
+    // // free(extent);
+    // // free(h_morton_codes);
 
     return;
 }
@@ -661,8 +681,8 @@ void LBVHIndex::process_queries_dev_ptr(
     float* queries, 
     size_t num_queries,
     int K,
-    unsigned int* n_neighbors_out, 
-    unsigned int* indices_out
+    const unsigned int* n_neighbors_in, 
+    const unsigned int* indices_in
 )   const
 {
     int threadsPerBlock = 256;
@@ -695,24 +715,24 @@ void LBVHIndex::process_queries_dev_ptr(
     //     sizeof(float) * 3 * num_normals,
     //     cudaMemcpyHostToDevice) );
 
-    unsigned int* d_n_neighbors_out;
-    unsigned int* d_indices_out;
+    unsigned int* d_n_neighbors_in;
+    unsigned int* d_indices_in;
 
-    gpuErrchk( cudaMalloc(&d_n_neighbors_out, 
+    gpuErrchk( cudaMalloc(&d_n_neighbors_in, 
         sizeof(unsigned int) * num_queries) );
-    gpuErrchk( cudaMalloc(&d_indices_out, 
+    gpuErrchk( cudaMalloc(&d_indices_in, 
         sizeof(unsigned int) * K * num_queries) );
 
-    gpuErrchk( cudaMemcpy(d_n_neighbors_out, n_neighbors_out,
+    gpuErrchk( cudaMemcpy(d_n_neighbors_in, n_neighbors_in,
         sizeof(unsigned int) * num_queries, 
         cudaMemcpyHostToDevice) );
-    gpuErrchk( cudaMemcpy(d_indices_out, indices_out,
+    gpuErrchk( cudaMemcpy(d_indices_in, indices_in,
         sizeof(unsigned int) * K * num_queries, 
         cudaMemcpyHostToDevice) );
     
     // Call the normals kernel
     calculate_normals_kernel<<<blocksPerGrid, threadsPerBlock>>>
-        (this->m_d_points, d_queries, num_queries, K, d_n_neighbors_out, d_indices_out,
+        (this->m_d_points, d_queries, num_queries, K, d_n_neighbors_in, d_indices_in,
         d_normals, this->m_flip_x, this->m_flip_y, this->m_flip_z);
 
     cudaDeviceSynchronize();

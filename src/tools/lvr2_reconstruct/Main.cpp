@@ -92,6 +92,9 @@
 
 #include "lvr2/reconstruction/DMCReconstruction.hpp"
 
+// TODO
+#include "lvr2/util/Synthetic.hpp"
+
 #include "Options.hpp"
 
 #if defined LVR2_USE_CUDA
@@ -365,6 +368,9 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     else 
     {
         buffer = model->m_pointCloud;
+        // TODO 
+        // std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
+        // buffer = synthetic::genSpherePoints(1000,1000);
     }
 
     // Create a point cloud manager

@@ -25,7 +25,6 @@ public:
     // float* m_points;   
     // unsigned int* m_sorted_indices;
 
-    char* m_mode;
     AABB* m_extent;
     BVHNode* m_nodes;
     unsigned int m_root_node;
@@ -45,6 +44,8 @@ public:
         int leaf_size, bool sort_queries, bool compact,
         float flip_x=1000000.0f, float flip_y=1000000.0f, float flip_z=1000000.0f
     );
+
+    ~LBVHIndex();
 
     void build(
         float* points, size_t num_points
@@ -113,12 +114,10 @@ public:
         float* queries, 
         size_t num_queries,
         int K,
-        unsigned int* n_neighbors_out, 
-        unsigned int* indices_out
+        const unsigned int* n_neighbors_in, 
+        const unsigned int* indices_in
     ) const;
 
-    // TODO Neue Funktion, die im Kernel Nachbarn findet und gleichzeitig (im Anschluss) Normalen berechnet
-    //      Rückgabe nur die Normalen
     void knn_normals(
         float* query_points, 
         size_t num_queries,
