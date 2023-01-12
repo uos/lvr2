@@ -358,7 +358,7 @@ public:
 
     bool hasScanPositionIndex() const;
 
-    std::vector<int> getScanPositionIndex() const;
+    std::vector<size_t> getScanPositionIndex() const;
 
     int getMinSpectralChannel() const;
     
@@ -373,6 +373,8 @@ public:
     size_t getOctreeMinPoints() const;
 
     bool useRaycastingTexturizer() const;
+
+    const std::string& getInputSchema() const;
 
 private:
 
@@ -452,7 +454,7 @@ private:
     float                           m_edgeCollapseReductionRatio;
 
     // h5 scan position used for reconstruction
-    vector<int> m_scanPositionIndex;
+    vector<size_t> m_scanPositionIndex;
     // defines which spectralChannels should be used for hyperspectral texture generation
     int m_minSpectralChannel;
     int m_maxSpectralChannel;
@@ -516,6 +518,9 @@ private:
 
     /// Octree min points
     size_t m_octreeMinPoints;
+
+    /// Input ScanProjectSchema
+    std::string m_inputSchema;
 
 };
 

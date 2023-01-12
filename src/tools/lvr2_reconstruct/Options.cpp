@@ -63,6 +63,7 @@ Options::Options(int argc, char** argv)
     m_descr.add_options()
         ("help", "Produce help message")
         ("inputFile", value< vector<string> >(), "Input file name. Supported formats are ASCII (.pts, .xyz), .ply and .h5")
+        ("inputSchema", value<string>(&m_inputSchema),"The ScanProjectSchema to use with the input file. Options are HDF5, HDF5V2, RAW, HYPERLIB, EUROC, RAWPLY, SLAM6D")
         ("outputDirectory", value<string>()->default_value("./"), "Directory where the output files are placed")
         ("outputFile", value< vector<string> >()->multitoken()->default_value(vector<string>{"triangle_mesh.ply", "triangle_mesh.obj"}), "Output file name. Supported formats are ASCII (.pts, .xyz) and .ply")
         ("voxelsize,v", value<float>(&m_voxelsize)->default_value(10), "Voxelsize of grid used for reconstruction.")
@@ -116,7 +117,7 @@ Options::Options(int argc, char** argv)
         ("useGPU", "GPU normal estimation")
         ("flipPoint", value< vector<float> >()->multitoken(), "Flippoint --flipPoint x y z" )
         ("texFromImages,q", "Foo Bar ............")
-        ("scanPositionIndex",  value<std::vector<int>>(&m_scanPositionIndex)->multitoken(), "List of scan positions to load from a scan project")
+        ("scanPositionIndex",  value<std::vector<size_t>>(&m_scanPositionIndex)->multitoken(), "List of scan positions to load from a scan project")
         ("minSpectralChannel", value<int>(&m_minSpectralChannel)->default_value(0), "Minimum Spectral Channel Index for Ranged Texture Generation")
         ("maxSpectralChannel", value<int>(&m_maxSpectralChannel)->default_value(0), "Maximum Spectral Channel Index for Ranged Texture Generation")
         ("projectDir,a", value<string>()->default_value(""), "Foo Bar ............")
@@ -487,7 +488,7 @@ bool Options::hasScanPositionIndex() const
     return m_variables.count("scanPositionIndex");
 }
 
-vector<int> Options::getScanPositionIndex() const
+vector<size_t> Options::getScanPositionIndex() const
 {
     return m_scanPositionIndex;
 }
@@ -545,6 +546,11 @@ size_t Options::getOctreeMinPoints() const
 bool Options::useRaycastingTexturizer() const
 {
     return m_variables.count("useRaycastingTexturizer");
+}
+
+const std::string& Options::getInputSchema() const
+{
+    return m_inputSchema;
 }
 
 Options::~Options() {

@@ -80,14 +80,8 @@
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
 #include "lvr2/algorithm/KDTree.hpp"
-#include "lvr2/io/kernels/HDF5Kernel.hpp"
-#include "lvr2/io/scanio/HDF5IO.hpp"
-#include "lvr2/io/scanio/DirectoryIO.hpp"
-#include "lvr2/io/scanio/ScanProjectIO.hpp"
-#include "lvr2/io/schema/ScanProjectSchema.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 #include "lvr2/util/Logging.hpp"
+#include "lvr2/util/ScanProjectUtils.hpp"
 
 #include "lvr2/geometry/BVH.hpp"
 
@@ -116,42 +110,6 @@ using namespace lvr2;
 
 using Vec = BaseVector<float>;
 using PsSurface = lvr2::PointsetSurface<Vec>;
-
-
-using ScanProjectIOBasePtr = std::shared_ptr<lvr2::baseio::FeatureBuild<lvr2::scanio::ScanProjectIO>>;
-inline auto getScanProjectIO(const reconstruct::Options& options) -> ScanProjectIOBasePtr
-{
-    boost::filesystem::path selectedFile( options.getInputFileName());
-    std::string extension = selectedFile.extension().string();
-    std::string filePath = selectedFile.generic_path().string();
-
-    // Open HDF file
-    if (selectedFile.extension().string() == ".h5")
-    {
-        lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Loading h5 scanproject from " << filePath << lvr2::endl;
-
-        // create hdf5 kernel and schema 
-        auto kernel = std::make_shared<lvr2::HDF5Kernel>(filePath);
-        auto schema = std::make_shared<lvr2::ScanProjectSchemaHDF5>();
-        
-        // create io object for hdf5 files
-       return std::make_shared<scanio::HDF5IO>(kernel, schema);
-    }
-    else if (selectedFile.extension().string() == "")
-    // Open Directory
-    {
-        lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Loading directory scanproject from " << filePath << lvr2::endl;
-
-        // create hdf5 kernel and schema 
-        auto kernel = std::make_shared<lvr2::DirectoryKernel>(filePath);
-        auto schema = std::make_shared<lvr2::ScanProjectSchemaRaw>(filePath);
-        
-        // create io object for hdf5 files
-        return std::make_shared<scanio::DirectoryIO>(kernel, schema);
-    }
-
-    return nullptr;
-}
 
 auto buildCombinedPointCloud(std::vector<lvr2::ScanPositionPtr>& positions, lvr2::ReductionAlgorithmPtr reduction_algorithm) -> lvr2::PointBufferPtr
 {
@@ -285,13 +243,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Parse loaded data
     if (!model)
     {
-        auto io = getScanProjectIO(options);
-        if (!io)
-        {
-            lvr2::logout::get() << lvr2::error << "[LVR2 Reconstruct] IO Error: Unable to parse " << options.getInputFileName() << lvr2::endl;
-            return nullptr;
-        }
-
         ReductionAlgorithmPtr reduction_algorithm;
         // If the user supplied valid octree reduction parameters use octree reduction otherwise use no reduction
         if (options.getOctreeVoxelSize() > 0.0f)
@@ -303,28 +254,22 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             reduction_algorithm = std::make_shared<NoReductionAlgorithm>();
         }
         
+        lvr2::ScanProjectPtr project;
         // Vector of the ScanPositions to load
         std::vector<lvr2::ScanPositionPtr> positions;
         if (options.hasScanPositionIndex())
         {
-            lvr2::logout::get() << "[LVR2 Reconstruct] Loading scan positions ";
-            // Load all given scan positions
-            vector<int> scanPositionIndices = options.getScanPositionIndex();
-            for(int positionIndex : scanPositionIndices)
-            {
-                lvr2::logout::get() << positionIndex << " ";
-                auto pos = io->loadScanPosition(positionIndex);
-                positions.push_back(pos);
-            }
-            lvr2::logout::get() << lvr2::endl;
+            project = lvr2::loadScanPositionsExplicitly(
+                options.getInputSchema(),
+                options.getInputFileName(),
+                options.getScanPositionIndex());
         }
         else
         {    
-            auto project = io->loadScanProject();
-            positions = project->positions;
+            project = lvr2::loadScanProject(options.getInputSchema(), options.getInputFileName());
         }
         
-        buffer = buildCombinedPointCloud(positions, reduction_algorithm);
+        buffer = buildCombinedPointCloud(project->positions, reduction_algorithm);
     }
     else 
     {
@@ -531,9 +476,6 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
     {
         return;
     }
-    
-    // create io object for hdf5 files
-    auto hdf5IO = getScanProjectIO(options);
 
     if(options.getScanPositionIndex().size() > 1)
     {
@@ -543,13 +485,20 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
     }
 
     // load panorama from hdf5 file
-    auto panorama = hdf5IO->HyperspectralPanoramaIO::load(options.getScanPositionIndex()[0], 0, 0);
+    auto project = lvr2::loadScanPositionsExplicitly(
+        options.getInputSchema(),
+        options.getInputFileName(),
+        options.getScanPositionIndex()
+    );
 
     // If there is no spectral data
-    if (!panorama)
+    if (project->positions[0]->hyperspectral_cameras.empty()
+     || project->positions[0]->hyperspectral_cameras[0]->panoramas.empty())
     {
         return;
     }
+
+    auto panorama = project->positions[0]->hyperspectral_cameras[0]->panoramas[0];
 
     int texturizer_count = options.getMaxSpectralChannel() - options.getMinSpectralChannel();
     texturizer_count = std::max(texturizer_count, 0);
@@ -581,36 +530,20 @@ void addRaycastingTexturizer(const reconstruct::Options& options, lvr2::Material
 {
 #ifdef LVR2_USE_EMBREE
 
-    auto io = getScanProjectIO(options);
-    if (!io)
-    {
-        lvr2::logout::get() << lvr2::error << "Cannot add RGB Texturizer! Could not parse " << options.getInputFileName() << " as a ScanProject" << lvr2::endl;
-        return;
-    }
-
-    ScanProjectPtr project = io->loadScanProject();
-
-    // If only one scan position is used for reconstruction use only the images associated with that position
+    ScanProjectPtr project;
     if (options.hasScanPositionIndex())
     {
-        project->positions.clear();
-        auto scanPositions = options.getScanPositionIndex();
-        for (int positionIndex : scanPositions)
-        {
-            ScanPositionPtr pos = io->loadScanPosition(positionIndex);
-            // Check if position exists
-            if (!pos)
-            {
-                lvr2::logout::get() << lvr2::warning << "[LVR2 Reconstruct] Cannot load ScanPosition " << positionIndex << lvr2::endl;
-                return;
-            }
-
-            project->positions.push_back(pos);
-        }
+        project = lvr2::loadScanPositionsExplicitly(
+            options.getInputSchema(),
+            options.getInputFileName(),
+            options.getScanPositionIndex());
     }
-
-    // This needs to be cleard because it is not used when loading pointclouds and creating meshes
-    project->transformation = Transformd::Identity(); // Project -> GPS
+    else
+    {
+        project = lvr2::loadScanProject(
+            options.getInputSchema(),
+            options.getInputFileName());
+    }
 
     auto texturizer = std::make_shared<RaycastingTexturizer<Vec>>(
         options.getTexelSize(),
