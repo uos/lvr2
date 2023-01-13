@@ -69,6 +69,34 @@ namespace lvr2
             // TODO: distort or not?
             return Eigen::Vector2f(proj.x() / proj.z(), proj.y() / proj.z());
         };
+
+        template <typename Scalar>
+        Vector2<Scalar> distortPoint(const Vector2<Scalar>& p) const
+        {
+            /**
+             * @brief RIEGL distortion model copied from
+             * https://gitlab.informatik.uni-osnabrueck.de/Las_Vegas_Reconstruction/Develop/-/blob/feature/cloud_colorizer/src/tools/lvr2_cloud_colorizer/Main.cpp
+             */
+            const double& k1 = distortionCoefficients[0];
+            const double& k2 = distortionCoefficients[1];
+            const double& p1 = distortionCoefficients[2];
+            const double& p2 = distortionCoefficients[3];
+            const double& k3 = distortionCoefficients[4];
+            const double& k4 = distortionCoefficients[5];
+            
+            const double x = (p.x() - cx)/fx;
+            const double y = (p.y() - cy)/fy;
+
+            const double r_2 = std::pow(std::atan(std::sqrt(std::pow(x, 2) + std::pow(y, 2))), 2);
+            const double r_4 = std::pow(r_2, 2);
+            const double r_6 = std::pow(r_2, 3);
+            const double r_8 = std::pow(r_2, 4);
+
+            const double ud = p.x() + x*fx*(k1*r_2 + k2*r_4 + k3*r_6 + k4*r_8) + 2*fx*x*y*p1 + p2*fx*(r_2 + 2*std::pow(x, 2));
+            const double vd = p.y() + y*fy*(k1*r_2 + k2*r_4 + k3*r_6 + k4*r_8) + 2*fy*x*y*p2 + p1*fy*(r_2 + 2*std::pow(y, 2));
+
+            return Vector2<Scalar>(ud, vd);
+        }
     };
 
     using PinholeModelPtr = std::shared_ptr<PinholeModel>;

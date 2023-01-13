@@ -120,7 +120,7 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                 info.image = imagePtr;
 
                 // Total transform from image to world
-                Eigen::Isometry3d total(position->transformation * info.image->transformation * camera->transformation.inverse());
+                Eigen::Isometry3d total(position->transformation * camera->transformation * info.image->transformation);
                 info.transform = total.cast<float>();
                 info.inverse_transform = total.inverse().cast<float>();
 
@@ -210,45 +210,6 @@ inline void setPixel(TexCoords uv, Texture& tex, cv::Vec3b color)
     auto p = texelFromUV(uv, tex);
     setPixel(p.x(), p.y(), tex, color);
 }
-
-// TODO: Properly integrate this somewhere
-/**
- * @brief Copied from 
- * https://gitlab.informatik.uni-osnabrueck.de/Las_Vegas_Reconstruction/Develop/-/blob/feature/cloud_colorizer/src/tools/lvr2_cloud_colorizer/Main.cpp
- */
-inline void undistorted_to_distorted_uv(
-    double &u,
-    double &v,
-    PinholeModel model)
-{
-    double x, y, ud, vd, r_2, r_4, r_6, r_8, fx, fy, Cx, Cy, k1, k2, k3, k4, p1, p2;
-    fx = model.fx;
-    fy = model.fy;
-    Cx = model.cx;
-    Cy = model.cy;
-
-    k1 = model.distortionCoefficients[0];
-    k2 = model.distortionCoefficients[1];
-    p1 = model.distortionCoefficients[2];
-    p2 = model.distortionCoefficients[3];
-    k3 = model.distortionCoefficients[4];
-    k4 = model.distortionCoefficients[5];
-    
-    x = (u - Cx)/fx;
-    y = (v - Cy)/fy;
-
-    r_2 = std::pow(std::atan(std::sqrt(std::pow(x, 2) + std::pow(y, 2))), 2);
-    r_4 = std::pow(r_2, 2);
-    r_6 = std::pow(r_2, 3);
-    r_8 = std::pow(r_2, 4);
-
-    ud = u + x*fx*(k1*r_2 + k2*r_4 + k3*r_6 + k4*r_8) + 2*fx*x*y*p1 + p2*fx*(r_2 + 2*std::pow(x, 2));
-    vd = v + y*fy*(k1*r_2 + k2*r_4 + k3*r_6 + k4*r_8) + 2*fy*x*y*p2 + p1*fy*(r_2 + 2*std::pow(y, 2));
-
-    u = ud;
-    v = vd;
-}
-
 
 template <typename BaseVecT>
 TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
@@ -499,11 +460,7 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
 
             // Cosine of the angle between the view vector of the image and the cluster normal
             float angle = view.dot(normal);
-            // Preload the image if its not already loaded
-            if(!img.image->loaded())
-            {
-                img.image->load();
-            }
+
             return std::make_pair(img, std::abs(angle)); // Use abs because values can be negative if the normal points the wrong direction
         });
 
@@ -592,12 +549,10 @@ bool RaycastingTexturizer<BaseVecT>::calcPointColor(Vector3f point, const ImageI
 
     // Project the point to the camera image
     Vector2f uv = img.model.projectPoint(camPoint);
-    double imgU = uv.x();
-    double imgV = uv.y();
     // Distort the uv coordinates
-    undistorted_to_distorted_uv(imgU, imgV, img.model);
-    size_t imgX = std::floor(imgU);
-    size_t imgY = std::floor(imgV);
+    auto distorted = img.model.distortPoint(uv);
+    size_t imgX = std::floor(distorted.x());
+    size_t imgY = std::floor(distorted.y());
 
     // Skip if the projected pixel is outside the camera image
     if (imgX < 0 || imgY < 0 || imgX >= img.image->image.cols || imgY >= img.image->image.rows) return false;
