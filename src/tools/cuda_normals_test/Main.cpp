@@ -14,13 +14,13 @@ int main()
     lvr2::lbvh::LBVHIndex tree = lvr2::lbvh::LBVHIndex(1, true, true);
 
     size_t n_s[] = {
-        100, 
-        1000, 
-        10000, 
-        100000, 
-        500000, 
-        1000000, 
-        5000000, 
+        // 100, 
+        // 1000, 
+        // 10000, 
+        // 100000, 
+        // 500000, 
+        // 1000000, 
+        // 5000000, 
         10000000, 
         20000000, 
         30000000
@@ -39,6 +39,7 @@ int main()
     myfile.open("runtime_test.txt");
 
     // Worked with n = 5000000, k = 200
+    // Failed for n = 10000000 K = 10
 
     // Generates 36.000.000 points
     lvr2::PointBufferPtr pbuffer;

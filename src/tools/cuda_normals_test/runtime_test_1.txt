@@ -1,0 +1,97 @@
+Building LBVH with n = 100
+Time Building Tree: 85[ms]
+Testing with k = 10
+Time Calculating Normals: 217[ms]
+Testing with k = 25
+Time Calculating Normals: 277[ms]
+Testing with k = 50
+Time Calculating Normals: 531[ms]
+Testing with k = 100
+Time Calculating Normals: 1684[ms]
+Testing with k = 200
+Time Calculating Normals: 5449[ms]
+
+Building LBVH with n = 1000
+Time Building Tree: 0[ms]
+Testing with k = 10
+Time Calculating Normals: 208[ms]
+Testing with k = 25
+Time Calculating Normals: 278[ms]
+Testing with k = 50
+Time Calculating Normals: 534[ms]
+Testing with k = 100
+Time Calculating Normals: 1688[ms]
+Testing with k = 200
+Time Calculating Normals: 5617[ms]
+
+Building LBVH with n = 10000
+Time Building Tree: 1[ms]
+Testing with k = 10
+Time Calculating Normals: 224[ms]
+Testing with k = 25
+Time Calculating Normals: 292[ms]
+Testing with k = 50
+Time Calculating Normals: 548[ms]
+Testing with k = 100
+Time Calculating Normals: 1721[ms]
+Testing with k = 200
+Time Calculating Normals: 5694[ms]
+
+Building LBVH with n = 100000
+Time Building Tree: 9[ms]
+Testing with k = 10
+Time Calculating Normals: 244[ms]
+Testing with k = 25
+Time Calculating Normals: 333[ms]
+Testing with k = 50
+Time Calculating Normals: 701[ms]
+Testing with k = 100
+Time Calculating Normals: 2058[ms]
+Testing with k = 200
+Time Calculating Normals: 9861[ms]
+
+Building LBVH with n = 500000
+Time Building Tree: 57[ms]
+Testing with k = 10
+Time Calculating Normals: 433[ms]
+Testing with k = 25
+Time Calculating Normals: 764[ms]
+Testing with k = 50
+Time Calculating Normals: 1948[ms]
+Testing with k = 100
+Time Calculating Normals: 4572[ms]
+Testing with k = 200
+Time Calculating Normals: 41793[ms]
+
+Building LBVH with n = 1000000
+Time Building Tree: 116[ms]
+Testing with k = 10
+Time Calculating Normals: 795[ms]
+Testing with k = 25
+Time Calculating Normals: 1578[ms]
+Testing with k = 50
+Time Calculating Normals: 4281[ms]
+Testing with k = 100
+Time Calculating Normals: 9375[ms]
+Testing with k = 200
+Time Calculating Normals: 106732[ms]
+
+Building LBVH with n = 5000000
+Time Building Tree: 738[ms]
+Testing with k = 10
+Time Calculating Normals: 5105[ms]
+Testing with k = 25
+Time Calculating Normals: 10860[ms]
+Testing with k = 50
+Time Calculating Normals: 29596[ms]
+Testing with k = 100
+Time Calculating Normals: 60472[ms]
+Testing with k = 200
+Time Calculating Normals: 828061[ms]
+
+Building LBVH with n = 10000000
+Time Building Tree: 510[ms]
+Testing with k = 10
+
+error: cuModuleLoadDataEx(&module, ptx_src.c_str(), 0, 0, 0) failed with error CUDA_ERROR_ILLEGAL_ADDRESS
+
