@@ -1,4 +1,7 @@
 #include <iostream>
+#include <chrono>
+#include <iostream>
+#include <fstream>
 
 #include "lvr2/types/PointBuffer.hpp"
 
@@ -11,16 +14,16 @@ int main()
     lvr2::lbvh::LBVHIndex tree = lvr2::lbvh::LBVHIndex(1, true, true);
 
     size_t n_s[] = {
-        // 100, 
-        // 1000, 
-        // 10000, 
-        // 100000, 
-        // 500000, 
-        // 1000000, 
+        100, 
+        1000, 
+        10000, 
+        100000, 
+        500000, 
+        1000000, 
         5000000, 
-        // 10000000, 
-        // 20000000, 
-        // 30000000
+        10000000, 
+        20000000, 
+        30000000
     };
 
     int k_s[] = {
@@ -31,7 +34,11 @@ int main()
         200
     };
 
-    // Worked with n = 1000000, k = 200
+    const char *path = "../src/tools/cuda_normals_test";
+    std::ofstream myfile(path);
+    myfile.open("runtime_test.txt");
+
+    // Worked with n = 5000000, k = 200
 
     // Generates 36.000.000 points
     lvr2::PointBufferPtr pbuffer;
@@ -57,11 +64,21 @@ int main()
 
         }
         std::cout << "Building LBVH with n = " << n << std::endl;
+        myfile << "Building LBVH with n = " << n << std::endl;
+        std::chrono::steady_clock::time_point begin_build = std::chrono::steady_clock::now();
         tree.build(pts, n);
+        
+        std::chrono::steady_clock::time_point end_build = std::chrono::steady_clock::now();
+
+        std::cout << "Time Building Tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end_build - begin_build).count() << "[ms]" << std::endl;
+        myfile << "Time Building Tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end_build - begin_build).count() << "[ms]" << std::endl;
 
         for(int k : k_s)
-        {
+        {   
+            std::chrono::steady_clock::time_point begin_knn = std::chrono::steady_clock::now();
+            
             std::cout << "Testing with k = " << k << std::endl;
+            myfile << "Testing with k = " << k << std::endl;
             tree.knn_normals(
                 pts,
                 n,
@@ -69,6 +86,13 @@ int main()
                 normals,
                 n
             );
+            std::chrono::steady_clock::time_point end_knn = std::chrono::steady_clock::now();
+            std::cout << "Time Calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end_knn - begin_knn).count() << "[ms]" << std::endl;
+            myfile << "Time Calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end_knn - begin_knn).count() << "[ms]" << std::endl;
         }
+        myfile << std::endl;
     }
+
+    myfile.close();
+    return 0;
 }
