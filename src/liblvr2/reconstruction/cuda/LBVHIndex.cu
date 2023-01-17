@@ -277,12 +277,12 @@ void LBVHIndex::build(float* points, size_t num_points)
     construct_tree_kernel<<<blocksPerGrid, threadsPerBlock>>>
         (d_nodes, d_root_node, d_sorted_morton_codes, num_points);
 
-    std::cout << "Old nodes number: " << this->m_num_nodes << std::endl;
+    // std::cout << "Old nodes number: " << this->m_num_nodes << std::endl;
 
     // Optimize the tree
     if(this->m_leaf_size > 1)
     {
-        std::cout << "Optimizing Tree" << std::endl;
+        // std::cout << "Optimizing Tree" << std::endl;
         unsigned int* valid = (unsigned int*)
             malloc(sizeof(unsigned int) * this->m_num_nodes);
 
@@ -308,7 +308,7 @@ void LBVHIndex::build(float* points, size_t num_points)
         // Compact tree to increase bandwidth
         if(this->m_compact)
         {
-            std::cout << "Compacting Tree" << std::endl;
+            // std::cout << "Compacting Tree" << std::endl;
             // Get the cumulative sum of valid, but start with 0
             unsigned int* valid_sums = (unsigned int*)
                 malloc(sizeof(unsigned int) * this->m_num_nodes + 1);
@@ -382,8 +382,8 @@ void LBVHIndex::build(float* points, size_t num_points)
         }
 
     }
-    std::cout << "Done!" << std::endl;
-    std::cout << "New nodes number: " << this->m_num_nodes << std::endl;
+    // std::cout << "Done!" << std::endl;
+    // std::cout << "New nodes number: " << this->m_num_nodes << std::endl;
 
     cudaMemcpy(nodes, d_nodes, m_num_nodes * sizeof(BVHNode), 
                 cudaMemcpyDeviceToHost);
@@ -394,7 +394,7 @@ void LBVHIndex::build(float* points, size_t num_points)
             sizeof(unsigned int), cudaMemcpyDeviceToHost));
     
     this->m_root_node = root_node[0];
-    printf("Root: %u \n", this->m_root_node);
+    // printf("Root: %u \n", this->m_root_node);
 
     // gpuErrchk(cudaFree(d_root_node));
     // gpuErrchk(cudaFree(d_sorted_aabbs));

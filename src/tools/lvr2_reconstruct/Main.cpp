@@ -34,6 +34,8 @@
 #include <boost/optional.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/smart_ptr/make_shared_array.hpp>
+// TODO Delete
+#include <chrono>
 
 #include "lvr2/config/lvropenmp.hpp"
 
@@ -397,7 +399,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         // - 0: PCA
         // - 1: RANSAC
         // - 2: Iterative
-
+        // TODO Delete Chrono stuff
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
             buffer,
             pcm_name,
@@ -407,14 +410,21 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             plane_fit_method,
             options.getScanPoseFile()
         );
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+        std::cout << "Time Building tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
 
     }
     else if(pcm_name == "LBVH_CUDA")
     {
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         surface = make_shared<CudaKSearchSurface<BaseVecT>>(
             buffer,
             options.getKn()
         );
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+        std::cout << "Time Building tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
     }
     else
     {
@@ -454,12 +464,21 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 gpu_surface.freeGPU();
             #else
                 std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
+                std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
                 surface->calculateSurfaceNormals();
+                std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+                std::cout << "Time calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
             #endif
         }
         else
         {
+            std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
             surface->calculateSurfaceNormals();
+            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+            std::cout << "Time calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+            
         }
     }
     else

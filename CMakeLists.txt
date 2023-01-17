@@ -709,6 +709,7 @@ add_subdirectory(src/tools/lvr2_largescale_reconstruct)
 endif(NOT MSVC)
 
 add_subdirectory(src/tools/lvr2_reconstruct)
+add_subdirectory(src/tools/cuda_normals_test)
 # add_subdirectory(src/tools/lvr2_dmc_reconstruction)
 # add_subdirectory(src/tools/lvr2_gs_reconstruction)
 # add_subdirectory(src/tools/lvr2_asciiconverter)

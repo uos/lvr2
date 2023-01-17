@@ -114,7 +114,7 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             normals,
             num_queries
         );
-        std::cout << "Done..." << std::endl;
+        std::cout << "Done!" << std::endl;
     }
 
     //##########################################################################################
@@ -144,7 +144,7 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
                     queries, num_queries, K,
                     n_neighbors_out, indices_out);
 
-        std::cout << "Done..." << std::endl;
+        std::cout << "Done!" << std::endl;
 
     }
 
