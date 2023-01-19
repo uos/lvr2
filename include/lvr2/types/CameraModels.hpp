@@ -73,36 +73,48 @@ namespace lvr2
         template <typename Scalar>
         Vector2<Scalar> distortPoint(const Vector2<Scalar>& p) const
         {
-            if (distortionModel != "riegl")
+            if (distortionModel != "opencv")
             {
                 std::stringstream sstr;
                 sstr << "[PinholeModel] distortPoints is not yet implemented for the '" << distortionModel << "' distortion model!";
                 panic_unimplemented(sstr.str());
             }
 
-            /**
-             * @brief RIEGL distortion model copied from
-             * https://gitlab.informatik.uni-osnabrueck.de/Las_Vegas_Reconstruction/Develop/-/blob/feature/cloud_colorizer/src/tools/lvr2_cloud_colorizer/Main.cpp
-             */
+            // https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html
+            // Distort points for the OpenCV Model
             const double& k1 = distortionCoefficients[0];
             const double& k2 = distortionCoefficients[1];
             const double& p1 = distortionCoefficients[2];
             const double& p2 = distortionCoefficients[3];
             const double& k3 = distortionCoefficients[4];
-            const double& k4 = distortionCoefficients[5];
             
             const double x = (p.x() - cx)/fx;
             const double y = (p.y() - cy)/fy;
 
-            const double r_2 = std::pow(std::atan(std::sqrt(std::pow(x, 2) + std::pow(y, 2))), 2);
-            const double r_4 = std::pow(r_2, 2);
-            const double r_6 = std::pow(r_2, 3);
-            const double r_8 = std::pow(r_2, 4);
+            const double r2 = std::pow(x, 2) + std::pow(y, 2);
+            const double r4 = std::pow(r2, 2);
+            const double r6 = std::pow(r2, 3);
 
-            const double ud = p.x() + x*fx*(k1*r_2 + k2*r_4 + k3*r_6 + k4*r_8) + 2*fx*x*y*p1 + p2*fx*(r_2 + 2*std::pow(x, 2));
-            const double vd = p.y() + y*fy*(k1*r_2 + k2*r_4 + k3*r_6 + k4*r_8) + 2*fy*x*y*p2 + p1*fy*(r_2 + 2*std::pow(y, 2));
+            // Tangential distortion
+            const double tangential_x = (2 * p1 * x * y + p2 * (r2 + 2 * x*x));
+            const double tangential_y = (p1 * (r2 + 2 * y * y) + 2 * p2 * x * y);
 
-            return Vector2<Scalar>(ud, vd);
+            // Radial distortion
+            double radial = (1 + k1 * r2 + k2 * r4 + k3 * r6);
+            // Add radial distortion for k4 up to kn
+            if (distortionCoefficients.size() > 5)
+            {
+                for (auto i = 5u; i < distortionCoefficients.size(); i++)
+                {
+                    const double& k = distortionCoefficients[i];
+                    radial += k * std::pow(r2, (i - 1));
+                }
+            }
+
+            const double x_dist = x * radial + tangential_x;
+            const double y_dist = y * radial + tangential_y;
+
+            return Vector2<Scalar>(x_dist * fx + cx, y_dist * fy + cy);
         }
     };
 
