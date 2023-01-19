@@ -1,0 +1,14 @@
+Building LBVH with n = 10000000
+Time Building Tree: 2032[ms]
+Testing with k = 10
+Time Calculating Normals: 13728[ms]
+Testing with k = 25
+Time Calculating Normals: 27139[ms]
+Testing with k = 50
+Time Calculating Normals: 74747[ms]
+Testing with k = 100
+Time Calculating Normals: 2533[ms]
+Testing with k = 200
+
+
+error: cuModuleLoadDataEx(&module, ptx_src.c_str(), 0, 0, 0) failed with error CUDA_ERROR_ILLEGAL_ADDRESS

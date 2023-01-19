@@ -396,10 +396,10 @@ void LBVHIndex::build(float* points, size_t num_points)
     this->m_root_node = root_node[0];
     // printf("Root: %u \n", this->m_root_node);
 
-    // gpuErrchk(cudaFree(d_root_node));
-    // gpuErrchk(cudaFree(d_sorted_aabbs));
-    // gpuErrchk(cudaFree(d_sorted_morton_codes));
-    // gpuErrchk(cudaFree(d_nodes));
+    gpuErrchk(cudaFree(d_root_node));
+    gpuErrchk(cudaFree(d_sorted_aabbs));
+    gpuErrchk(cudaFree(d_sorted_morton_codes));
+    gpuErrchk(cudaFree(d_nodes));
     
     // // free(root_node);
     // // free(nodes);
@@ -672,6 +672,11 @@ void LBVHIndex::process_queries_dev_ptr(
     ) );      
     
     // findKNN(K, points_raw, num_points, queries_raw, num_queries);
+
+    // cudaFree(d_points);
+    cudaFree(d_query_points);
+    cudaFree(d_sorted_queries);
+    
     return;
 }
 
@@ -741,6 +746,8 @@ void LBVHIndex::process_queries_dev_ptr(
     gpuErrchk( cudaMemcpy(normals, d_normals,
         sizeof(float) * 3 * num_normals,
         cudaMemcpyDeviceToHost) );
+
+    cudaFree(d_queries);
 
 }
 
@@ -892,6 +899,10 @@ void LBVHIndex::knn_normals(
     gpuErrchk( cudaMemcpy(normals, d_normals,
         sizeof(float) * 3 * num_normals,
         cudaMemcpyDeviceToHost) );  
+
+    cudaFree(d_query_points);
+    cudaFree(d_sorted_queries);
+    cudaFree(d_normals);
     
 }
 

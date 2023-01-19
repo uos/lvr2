@@ -21,8 +21,8 @@ int main()
         // 500000, 
         // 1000000, 
         // 5000000, 
-        10000000, 
-        20000000, 
+        // 10000000, 
+        // 20000000, 
         30000000
     };
 
@@ -39,6 +39,9 @@ int main()
     myfile.open("runtime_test.txt");
 
     // Worked with n = 5000000, k = 200
+    // Worked with n = 10000000, k = 100
+    // Worked with n = 20000000, k = 25
+    // Worked with n= 30000000, k = 10
     // Failed for n = 10000000 K = 10
 
     // Generates 36.000.000 points
