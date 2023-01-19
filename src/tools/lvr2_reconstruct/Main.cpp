@@ -111,14 +111,14 @@ using namespace lvr2;
 using Vec = BaseVector<float>;
 using PsSurface = lvr2::PointsetSurface<Vec>;
 
-auto buildCombinedPointCloud(std::vector<lvr2::ScanPositionPtr>& positions, lvr2::ReductionAlgorithmPtr reduction_algorithm) -> lvr2::PointBufferPtr
+auto buildCombinedPointCloud(lvr2::ScanProjectPtr& project, lvr2::ReductionAlgorithmPtr reduction_algorithm) -> lvr2::PointBufferPtr
 {
     // === Build the PointCloud ===
-    lvr2::Monitor mon(lvr2::LogLevel::info, "[LVR2 Reconstruct] Loading scan positions", positions.size());
+    lvr2::Monitor mon(lvr2::LogLevel::info, "[LVR2 Reconstruct] Loading scan positions", project->positions.size());
 
     size_t npoints_total = 0;
     // Count total number of points
-    for (auto pos: positions)
+    for (auto pos: project->positions)
     {
         for (auto lidar: pos->lidars)
         {
@@ -143,7 +143,7 @@ auto buildCombinedPointCloud(std::vector<lvr2::ScanPositionPtr>& positions, lvr2
 
     lvr2::logout::get() << "[LVR2 Reconstruct] Total number of points: " << npoints_total << lvr2::endl;
 
-    for (ScanPositionPtr pos: positions)
+    for (ScanPositionPtr pos: project->positions)
     {
         ++mon;
         for (LIDARPtr lidar: pos->lidars)
@@ -269,7 +269,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             project = lvr2::loadScanProject(options.getInputSchema(), options.getInputFileName());
         }
         
-        buffer = buildCombinedPointCloud(project->positions, reduction_algorithm);
+        buffer = buildCombinedPointCloud(project, reduction_algorithm);
     }
     else 
     {

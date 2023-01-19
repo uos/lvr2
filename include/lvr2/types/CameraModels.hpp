@@ -73,6 +73,13 @@ namespace lvr2
         template <typename Scalar>
         Vector2<Scalar> distortPoint(const Vector2<Scalar>& p) const
         {
+            if (distortionModel != "riegl")
+            {
+                std::stringstream sstr;
+                sstr << "[PinholeModel] distortPoints is not yet implemented for the '" << distortionModel << "' distortion model!";
+                panic_unimplemented(sstr.str());
+            }
+
             /**
              * @brief RIEGL distortion model copied from
              * https://gitlab.informatik.uni-osnabrueck.de/Las_Vegas_Reconstruction/Develop/-/blob/feature/cloud_colorizer/src/tools/lvr2_cloud_colorizer/Main.cpp
