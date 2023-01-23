@@ -74,67 +74,7 @@ namespace lvr2
         template <typename Scalar>
         Vector2<Scalar> distortPoint(const Vector2<Scalar>& p) const
         {
-            if (distortionModel == "opencv")
-            {
-                // https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html
-                // Distort points for the default OpenCV Model
-                const double& k1 = distortionCoefficients[0];
-                const double& k2 = distortionCoefficients[1];
-                const double& p1 = distortionCoefficients[2];
-                const double& p2 = distortionCoefficients[3];
-                const double k3 = distortionCoefficients.size() >= 5 ? distortionCoefficients[4] : 0; // K3 is allowed to be zero
-                
-                const double x = (p.x() - cx)/fx;
-                const double y = (p.y() - cy)/fy;
-
-                const double r2 = std::pow(x, 2) + std::pow(y, 2);
-                const double r4 = std::pow(r2, 2);
-                const double r6 = std::pow(r2, 3);
-
-                // Tangential distortion
-                const double tangential_x = (2 * p1 * x * y + p2 * (r2 + 2 * x*x));
-                const double tangential_y = (p1 * (r2 + 2 * y * y) + 2 * p2 * x * y);
-
-                // Radial distortion
-                double radial = (1 + k1*r2 + k2*r4 + k3*r6);
-
-                // thin prisim distortion
-                double prisim_x = 0;
-                double prisim_y = 0;
-
-                // If the calibration has k4, k5, k6
-                if (distortionCoefficients.size() >= 8)
-                {
-                    const double& k4 = distortionCoefficients[5];
-                    const double& k5 = distortionCoefficients[6];
-                    const double& k6 = distortionCoefficients[7];
-
-                    radial = radial / (1 + k4*r2 + k5*r4 + k6*r6);
-
-                    // If the calibration has s1, s2, s3, s4 (thin prisim distortion)
-                    if (distortionCoefficients.size() >= 12)
-                    {
-                        const double& s1 = distortionCoefficients[8];
-                        const double& s2 = distortionCoefficients[9];
-                        const double& s3 = distortionCoefficients[10];
-                        const double& s4 = distortionCoefficients[11];
-
-                        prisim_x = s1*r2 + s2*r4;
-                        prisim_y = s3*r2 + s4*r4;
-
-                        if (distortionCoefficients.size() == 14)
-                        {
-                            lvr2::panic_unimplemented("[PinholeModel] distortPoints - opencv model: Support for distortion coefficients 13 and 14 is not implemented!");
-                        }
-                    }
-                }
-
-                const double x_dist = x * radial + tangential_x + prisim_x;
-                const double y_dist = y * radial + tangential_y + prisim_y;
-
-                return Vector2<Scalar>(x_dist * fx + cx, y_dist * fy + cy);
-            }
-            else if ("riegl")
+            // if ("riegl")
             {
                 // The riegl model combines the opencv fisheye distortion (k1, k2, k3, k4) with the translation component from the "normal" opencv distortion
                 const double& k1 = distortionCoefficients[0];
@@ -157,13 +97,73 @@ namespace lvr2
 
                 return Vector2<Scalar>(ud, vd);
             }
-            else
-            {
-                std::stringstream sstr;
-                sstr << "[PinholeModel] distortPoints is not yet implemented for the '" << distortionModel << "' distortion model!";
-                panic_unimplemented(sstr.str());
-                return p;
-            }
+            // else if (distortionModel == "opencv")
+            // {
+            //     // https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html
+            //     // Distort points for the default OpenCV Model
+            //     const double& k1 = distortionCoefficients[0];
+            //     const double& k2 = distortionCoefficients[1];
+            //     const double& p1 = distortionCoefficients[2];
+            //     const double& p2 = distortionCoefficients[3];
+            //     const double k3 = distortionCoefficients.size() >= 5 ? distortionCoefficients[4] : 0; // K3 is allowed to be zero
+                
+            //     const double x = (p.x() - cx)/fx;
+            //     const double y = (p.y() - cy)/fy;
+
+            //     const double r2 = std::pow(x, 2) + std::pow(y, 2);
+            //     const double r4 = std::pow(r2, 2);
+            //     const double r6 = std::pow(r2, 3);
+
+            //     // Tangential distortion
+            //     const double tangential_x = (2 * p1 * x * y + p2 * (r2 + 2 * x*x));
+            //     const double tangential_y = (p1 * (r2 + 2 * y * y) + 2 * p2 * x * y);
+
+            //     // Radial distortion
+            //     double radial = (1 + k1*r2 + k2*r4 + k3*r6);
+
+            //     // thin prisim distortion
+            //     double prisim_x = 0;
+            //     double prisim_y = 0;
+
+            //     // If the calibration has k4, k5, k6
+            //     if (distortionCoefficients.size() >= 8)
+            //     {
+            //         const double& k4 = distortionCoefficients[5];
+            //         const double& k5 = distortionCoefficients[6];
+            //         const double& k6 = distortionCoefficients[7];
+
+            //         radial = radial / (1 + k4*r2 + k5*r4 + k6*r6);
+
+            //         // If the calibration has s1, s2, s3, s4 (thin prisim distortion)
+            //         if (distortionCoefficients.size() >= 12)
+            //         {
+            //             const double& s1 = distortionCoefficients[8];
+            //             const double& s2 = distortionCoefficients[9];
+            //             const double& s3 = distortionCoefficients[10];
+            //             const double& s4 = distortionCoefficients[11];
+
+            //             prisim_x = s1*r2 + s2*r4;
+            //             prisim_y = s3*r2 + s4*r4;
+
+            //             if (distortionCoefficients.size() == 14)
+            //             {
+            //                 lvr2::panic_unimplemented("[PinholeModel] distortPoints - opencv model: Support for distortion coefficients 13 and 14 is not implemented!");
+            //             }
+            //         }
+            //     }
+
+            //     const double x_dist = x * radial + tangential_x + prisim_x;
+            //     const double y_dist = y * radial + tangential_y + prisim_y;
+
+            //     return Vector2<Scalar>(x_dist * fx + cx, y_dist * fy + cy);
+            // }
+            // else
+            // {
+            //     std::stringstream sstr;
+            //     sstr << "[PinholeModel] distortPoints is not yet implemented for the '" << distortionModel << "' distortion model!";
+            //     panic_unimplemented(sstr.str());
+            //     return p;
+            // }
         }
     };
 
