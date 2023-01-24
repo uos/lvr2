@@ -56,13 +56,13 @@ void LVRCameraModelItem::setModel(PinholeModel& model)
 
     m_distortionItem->setText(0, "Distortion Model:");
 
-    m_distortionItem->setText(1, QString::fromStdString(m_model.distortionModel));
+    m_distortionItem->setText(1, QString::fromStdString(m_model.distortionModel.name()));
 
     for (int i = 0; i < 4; i++)
     {
         num = QString("k") + QString::number(i);
         m_distortionCoef[i]->setText(0, num);
-        m_distortionCoef[i]->setText(1, num.setNum(m_model.distortionCoefficients[i]));
+        m_distortionCoef[i]->setText(1, num.setNum(m_model.distortionModel.coefficients()[i]));
     }
 }
 

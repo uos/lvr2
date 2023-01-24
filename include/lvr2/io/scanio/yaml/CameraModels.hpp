@@ -49,13 +49,10 @@ struct convert<lvr2::PinholeModel>
         node["resolution"].push_back(model.height);
 
         // Distortion
-        node["distortion_model"] = model.distortionModel;
+        node["distortion_model"] = model.distortionModel.name();
 
         node["distortion_coefficients"] = Load("[]");
-        for(size_t i = 0; i < model.distortionCoefficients.size(); i++)
-        {
-            node["distortion_coefficients"].push_back(model.distortionCoefficients[i]);
-        }
+        node["distortion_coefficients"] = model.distortionModel.coefficients();
 
         return node;
     }
@@ -113,11 +110,12 @@ struct convert<lvr2::PinholeModel>
             }
         }
 
-        if(node["distortion_model"])
+        if(node["distortion_model"] && node["distortion_coefficients"])
         {
+            std::string model_name;
             try 
             {
-                model.distortionModel = node["distortion_model"].as<std::string>();
+                model_name = node["distortion_model"].as<std::string>();
             } 
             catch(const YAML::TypedBadConversion<std::string>& ex) 
             {
@@ -125,30 +123,37 @@ struct convert<lvr2::PinholeModel>
                     << node["distortion_model"] << " as string" << std::endl; 
                 return false;
             }
-        }
 
-        if(node["distortion_coefficients"])
-        {
+            std::vector<double> coeffs;
+
             Node distortionNode = node["distortion_coefficients"];
-            model.distortionCoefficients.clear();
-            if(distortionNode)
-            {
-                YAML::const_iterator it = distortionNode.begin();
-                YAML::const_iterator it_end = distortionNode.end();
+            coeffs.clear();
+    
+            YAML::const_iterator it = distortionNode.begin();
+            YAML::const_iterator it_end = distortionNode.end();
 
-                for(; it != it_end; it++)
+            for(; it != it_end; it++)
+            {
+                try 
                 {
-                    try 
-                    {
-                        model.distortionCoefficients.push_back(it->as<double>());
-                    } 
-                    catch(const YAML::TypedBadConversion<double>& ex) 
-                    {
-                        std::cout <<  timestamp <<  "[YAML - PinholeModel - decode] ERROR: Could not decode 'distortion_coefficients' entry: "
-                            << *it << " as double" << std::endl;
-                        return false;
-                    }
+                    coeffs.push_back(it->as<double>());
+                } 
+                catch(const YAML::TypedBadConversion<double>& ex) 
+                {
+                    std::cout <<  timestamp <<  "[YAML - PinholeModel - decode] ERROR: Could not decode 'distortion_coefficients' entry: "
+                        << *it << " as double" << std::endl;
+                    return false;
                 }
+            }
+
+            try
+            {
+                model.distortionModel = lvr2::DistortionModel::fromName(model_name, coeffs);
+            }
+            catch(const std::invalid_argument& ex)
+            {
+                lvr2::logout::get() << lvr2::error << "[YAML - PinholeModel - decode] Could not create DistortionModel '" << model_name << "'" << lvr2::endl;
+                return false;
             }
         }
 

@@ -94,6 +94,7 @@ set(LVR2_SOURCES
     types/MeshBuffer.cpp
     types/PolygonBuffer.cpp
     types/PointBuffer.cpp
+    types/DistortionModels.cpp
     texture/Texture.cpp
     texture/TextureFactory.cpp
     util/ColorGradient.cpp

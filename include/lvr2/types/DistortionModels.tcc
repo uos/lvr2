@@ -1,5 +1,6 @@
 #pragma once
 #include "DistortionModels.hpp"
+#include "lvr2/util/Panic.hpp"
 
 namespace lvr2
 {
@@ -13,30 +14,6 @@ template <typename ModelT>
 DistortionModel::DistortionModel(std::remove_reference_t<ModelT>&& model)
 : impl_(std::make_unique<Model<ModelT>>(std::move(model)))
 {}
-
-DistortionModel::DistortionModel()
-: DistortionModel(UnknownDistortion())
-{}
-
-DistortionModel::DistortionModel(const DistortionModel& other)
-: impl_(other.impl_->clone())
-{}
-
-DistortionModel::DistortionModel(DistortionModel&& other)
-: impl_(std::move(other.impl_))
-{}
-
-DistortionModel& DistortionModel::operator=(const DistortionModel& other)
-{
-    this->impl_ = std::move(other.impl_->clone());
-    return *this;
-}
-
-DistortionModel& DistortionModel::operator=(DistortionModel&& other)
-{
-    this->impl_ = std::move(other.impl_);
-    return *this;
-}
 
 Vector2d DistortionModel::distortPoint(const Vector2d& p) const
 {
@@ -85,9 +62,6 @@ std::string DistortionModel::Model<Impl>::name() const
     return obj_.name();
 }
 
-RieglDistortion::RieglDistortion(const std::vector<double>& coeffs)
-: coefficients_(coeffs)
-{}
 
 Vector2d RieglDistortion::distortPoint(const Vector2d& p) const
 {
@@ -121,10 +95,6 @@ const std::vector<double>& RieglDistortion::coefficients() const
 {
     return coefficients_;
 }
-
-OpenCVDistortion::OpenCVDistortion(const std::vector<double>& coeffs)
-: coefficients_(coeffs)
-{}
 
 Vector2d OpenCVDistortion::distortPoint(const Vector2d& p) const
 {
@@ -199,7 +169,6 @@ const std::vector<double>& OpenCVDistortion::coefficients() const
 
 Vector2d UnknownDistortion::distortPoint(const Vector2d& p) const
 {
-    
     return p;
 }
 
