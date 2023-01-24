@@ -1,0 +1,42 @@
+Building LBVH with n = 500000
+Time Building Tree: 124[ms]
+MODE 1
+Testing with k = 10
+Upload Time: 3.59146
+KNN Kernel Time: 217.254
+Download Time: 18.6516
+Upload Time: 9.91043
+Normals Kernel Time: 1.04976
+Download Time: 2.89062
+Time Calculating Normals: 491[ms]
+
+Testing with k = 25
+Upload Time: 2.49654
+KNN Kernel Time: 442.322
+Download Time: 43.1804
+Upload Time: 19.8729
+Normals Kernel Time: 2.95552
+Download Time: 1.95069
+Time Calculating Normals: 823[ms]
+
+Testing with k = 50
+Upload Time: 2.51635
+KNN Kernel Time: 1386.7
+Download Time: 84.7211
+Upload Time: 36.7532
+Normals Kernel Time: 7.25312
+Download Time: 1.91453
+Time Calculating Normals: 2101[ms]
+
+Testing with k = 100
+Upload Time: 2.64624
+KNN Kernel Time: 2868.05
+Download Time: 166.733
+Upload Time: 70.0944
+Normals Kernel Time: 15.096
+Download Time: 1.91606
+Time Calculating Normals: 4880[ms]
+
+Testing with k = 200
+Upload Time: 3.00733
+^C

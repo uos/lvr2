@@ -17,21 +17,26 @@ int main()
         // 100, 
         // 1000, 
         // 10000, 
-        // 100000, 
+        // 100000,
         // 500000, 
         // 1000000, 
         // 5000000, 
-        // 10000000, 
+        10000000, 
         // 20000000, 
-        30000000
+        // 30000000
     };
 
     int k_s[] = {
-        10, 
-        25, 
-        50, 
-        100, 
-        200
+        // 10, 
+        // 25, 
+        // 50, 
+        // 100, 
+        200,
+        // 500,
+        // 1000,
+        // 2000,
+        // 5000,
+        // 10000
     };
 
     const char *path = "../src/tools/cuda_normals_test";
@@ -77,22 +82,69 @@ int main()
         std::cout << "Time Building Tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end_build - begin_build).count() << "[ms]" << std::endl;
         myfile << "Time Building Tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end_build - begin_build).count() << "[ms]" << std::endl;
 
+        int mode = 0;
+        std::cout << "MODE " << mode << std::endl;
+        myfile << "MODE " << mode << std::endl;
+
         for(int k : k_s)
         {   
-            std::chrono::steady_clock::time_point begin_knn = std::chrono::steady_clock::now();
-            
             std::cout << "Testing with k = " << k << std::endl;
             myfile << "Testing with k = " << k << std::endl;
-            tree.knn_normals(
-                pts,
-                n,
-                k,
-                normals,
-                n
-            );
+
+            std::chrono::steady_clock::time_point begin_knn = std::chrono::steady_clock::now();
+            
+            if(mode == 0)
+            {
+                
+                tree.knn_normals(
+                    pts,
+                    n,
+                    k,
+                    normals,
+                    n
+                );
+
+            }
+
+            if(mode == 1)
+            {
+
+                // Create the return arrays
+                unsigned int* n_neighbors_out;
+                unsigned int* indices_out;
+                float* distances_out;
+
+                // Malloc the output arrays here
+                n_neighbors_out = (unsigned int*) malloc(sizeof(unsigned int) * n);
+                indices_out = (unsigned int*) malloc(sizeof(unsigned int) * n * k);
+                distances_out = (float*) malloc(sizeof(float) * n * k);
+
+                // Process the queries 
+                tree.kSearch(
+                    pts, 
+                    n,
+                    k,
+                    n_neighbors_out, 
+                    indices_out, 
+                    distances_out);
+            
+               
+                // Calculate the normals
+                tree.calculate_normals(
+                    normals, 
+                    n,
+                    pts, 
+                    n,
+                    k,
+                    n_neighbors_out, 
+                    indices_out);
+            }
+        
             std::chrono::steady_clock::time_point end_knn = std::chrono::steady_clock::now();
             std::cout << "Time Calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end_knn - begin_knn).count() << "[ms]" << std::endl;
             myfile << "Time Calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end_knn - begin_knn).count() << "[ms]" << std::endl;
+            std::cout << std::endl;
+            myfile << std::endl;
         }
         myfile << std::endl;
     }

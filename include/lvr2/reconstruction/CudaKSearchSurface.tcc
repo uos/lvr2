@@ -7,6 +7,7 @@
 // TODO Only for testing
 #include <cmath>
 #include <vector>
+#include <chrono>
 
 std::vector<float> sphere_point_cloud(size_t num_points) {
     std::vector<float> point_cloud;
@@ -40,7 +41,7 @@ template<typename BaseVecT>
 CudaKSearchSurface<BaseVecT>::CudaKSearchSurface(
     PointBufferPtr pbuffer,
     size_t k
-) : PointsetSurface<BaseVecT>(pbuffer), m_tree(1, true, true)
+) : PointsetSurface<BaseVecT>(pbuffer), m_tree(1, true, true)  //TODO leaf_size??
 {
     this->setKn(k);
 
@@ -101,7 +102,7 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     // Create the normal array
     float* normals = (float*) malloc(sizeof(float) * num_queries * 3);
 
-    int mode = 1;
+    int mode = 0;
     // #########################################################################################
     if(mode == 0)
     {
@@ -120,6 +121,7 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     //##########################################################################################
     if(mode == 1)
     {
+
         // Create the return arrays
         unsigned int* n_neighbors_out;
         unsigned int* indices_out;
@@ -130,14 +132,12 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         indices_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries * K);
         distances_out = (float*) malloc(sizeof(float) * num_queries * K);
 
-
         std::cout << "KNN Search..." << std::endl;
         // Process the queries 
         this->m_tree.kSearch(queries, num_queries,
                     K,
                     n_neighbors_out, indices_out, distances_out);
-
-
+       
         std::cout << "Normals..." << std::endl;
         // Calculate the normals
         this->m_tree.calculate_normals(normals, num_queries,
