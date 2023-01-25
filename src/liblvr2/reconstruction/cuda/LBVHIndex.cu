@@ -836,7 +836,7 @@ void LBVHIndex::process_queries_dev_ptr(
     cudaFree(d_queries);
 
 }
-
+// TODO only take parameters K, normals, num_normals
 // TODO Make this const?
 void LBVHIndex::knn_normals(
     float* query_points, 
@@ -846,6 +846,8 @@ void LBVHIndex::knn_normals(
     size_t num_normals
 )
 {
+    query_points = m_d_points;
+
     cudaEvent_t start, stop;
     float elapsedTime;
 
@@ -892,13 +894,14 @@ void LBVHIndex::knn_normals(
     cudaEventCreate(&start);
     cudaEventRecord(start,0);
 
-
+    // TODO nodes können in der gpu bleiben, dann müssen sie nicht wieder hochgeladen werden
+    // TODO Als Member in die build-Funktion
     // Prepare kernel launch
     BVHNode* d_nodes;
     gpuErrchk( cudaMalloc(&d_nodes, sizeof(BVHNode) * this->m_num_nodes) );
     gpuErrchk( cudaMemcpy(d_nodes, this->m_nodes, 
         sizeof(BVHNode) * this->m_num_nodes,
-        cudaMemcpyHostToDevice) );
+        cudaMemcpyHostToDevice));
     
     // float* d_points;
     // cudaMalloc(&d_points, sizeof(float) * 3 * this->m_num_objects);
@@ -912,12 +915,7 @@ void LBVHIndex::knn_normals(
     //     sizeof(unsigned int) * this->m_num_objects,
     //     cudaMemcpyHostToDevice) );
 
-    float* d_query_points;
-    cudaMalloc(&d_query_points, sizeof(float) * 3 * num_queries);
-    cudaMemcpy(d_query_points, query_points,
-        sizeof(float) * 3 * num_queries,
-        cudaMemcpyHostToDevice);
-
+    // TODO Als member
     unsigned int* sorted_queries = (unsigned int*) 
                 malloc(sizeof(unsigned int) * num_queries);
 
@@ -926,37 +924,38 @@ void LBVHIndex::knn_normals(
         sorted_queries[i] = i;
     }
 
+    // TODO Comment in
     // Only for large queries: Sort them in morton order to prevent too much warp divergence on tree traversal
-    if(this->m_sort_queries)
-    {
-        AABB* d_extent;
-        gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
-        gpuErrchk(cudaMemcpy(d_extent, this->m_extent, 
-            sizeof(struct AABB), 
-            cudaMemcpyHostToDevice));
+    // if(this->m_sort_queries)
+    // {
+    //     AABB* d_extent;
+    //     gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
+    //     gpuErrchk(cudaMemcpy(d_extent, this->m_extent, 
+    //         sizeof(struct AABB), 
+    //         cudaMemcpyHostToDevice));
 
-        unsigned long long int* morton_codes_query =
-            (unsigned long long int*)
-            malloc(sizeof(unsigned long long int) * num_queries);
+    //     unsigned long long int* morton_codes_query =
+    //         (unsigned long long int*)
+    //         malloc(sizeof(unsigned long long int) * num_queries);
 
-        unsigned long long int* d_morton_codes_query;
-        cudaMalloc(&d_morton_codes_query, 
-            sizeof(unsigned long long int) * num_queries);
+    //     unsigned long long int* d_morton_codes_query;
+    //     cudaMalloc(&d_morton_codes_query, 
+    //         sizeof(unsigned long long int) * num_queries);
 
-        int threadsPerBlock = 256;
-        int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
-                        / threadsPerBlock;
+    //     int threadsPerBlock = 256;
+    //     int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
+    //                     / threadsPerBlock;
 
-        compute_morton_points_kernel<<<blocksPerGrid, threadsPerBlock>>>
-            (d_query_points, d_extent, d_morton_codes_query, num_queries);
+    //     compute_morton_points_kernel<<<blocksPerGrid, threadsPerBlock>>>
+    //         (d_query_points, d_extent, d_morton_codes_query, num_queries);
 
-        cudaMemcpy(morton_codes_query, d_morton_codes_query,
-            sizeof(unsigned long long int) * num_queries,
-            cudaMemcpyDeviceToHost);
-        
-        thrust::sort_by_key(morton_codes_query, morton_codes_query + num_queries, 
-                        sorted_queries);
-    }
+    //     cudaMemcpy(morton_codes_query, d_morton_codes_query,
+    //         sizeof(unsigned long long int) * num_queries,
+    //         cudaMemcpyDeviceToHost);
+
+    //     thrust::sort_by_key(morton_codes_query, morton_codes_query + num_queries, 
+    //                     sorted_queries);
+    // }
 
     unsigned int* d_sorted_queries;
     gpuErrchk( cudaMalloc(&d_sorted_queries, sizeof(unsigned int) * num_queries) );
@@ -1018,7 +1017,7 @@ void LBVHIndex::knn_normals(
     
     std::cout << "KNN Normals Kernel Time: " << elapsedTime << std::endl;
     
-   std::cout << "Downloading..." << std::endl;
+    std::cout << "Downloading..." << std::endl;
     
     cudaEventCreate(&start);
     cudaEventRecord(start,0);
