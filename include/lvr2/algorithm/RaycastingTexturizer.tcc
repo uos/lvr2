@@ -134,11 +134,6 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
 
                 //=== The Camera Matrix is stored adjusted for image resolution -> the values have to be scaled ===//
                 info.image->load();
-                info.model.fx *= info.model.width;
-                info.model.fy *= info.model.height;
-                info.model.cx = info.model.width / 2 + info.model.cx * info.model.width;
-                info.model.cy = info.model.height / 2 + info.model.cy * info.model.height;
-
                 this->equalizeHistogram(info.image->image);
 
                 m_images.push_back(info);
