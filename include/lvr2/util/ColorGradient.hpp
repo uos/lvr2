@@ -63,7 +63,8 @@ public:
         SHSV,
         SIMPSONS,
         WHITE,
-        BLACK
+        BLACK,
+        DEFAULT
     };
 
     /**

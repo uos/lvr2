@@ -71,12 +71,14 @@ public:
 
     /// Reads the mesh from a group. group must be written to with write(group)
     void read(const HighFive::Group& group);
+    
     /// Writes the mesh into the given group
     void write(HighFive::Group& group)
     {
         collectGarbage();
         write_const(group);
     }
+    
     /// const version of write(group). Requires that the mesh has no garbage (see collectGarbage())
     void write_const(HighFive::Group& group) const;
 
@@ -94,12 +96,22 @@ public:
     // ========================================================================
 
     VertexHandle addVertex(BaseVecT pos) override
-    { return m_mesh.add_vertex(b2p(pos)); }
+    { 
+        return m_mesh.add_vertex(b2p(pos)); 
+    }
+    
     FaceHandle addFace(VertexHandle v1H, VertexHandle v2H, VertexHandle v3H) override
-    { return m_mesh.add_triangle(v1H, v2H, v3H); }
+    { 
+        return m_mesh.add_triangle(v1H, v2H, v3H); 
+    }
+    
     void removeFace(FaceHandle handle) override
-    { m_mesh.delete_face(handle); }
+    { 
+        m_mesh.delete_face(handle); 
+    }
+    
     EdgeCollapseResult collapseEdge(EdgeHandle edgeH) override;
+    
     void flipEdge(EdgeHandle edgeH) override
     {
         if (!m_mesh.is_flip_ok(edgeH))
@@ -110,39 +122,65 @@ public:
     }
 
     size_t numVertices() const override
-    { return m_mesh.n_vertices(); }
+    { 
+        return m_mesh.n_vertices(); 
+    }
+    
     size_t numFaces() const override
-    { return m_mesh.n_faces(); }
+    { 
+        return m_mesh.n_faces(); 
+    }
+    
     size_t numEdges() const override
-    { return m_mesh.n_edges(); }
+    { 
+        return m_mesh.n_edges(); 
+    }
 
     bool containsVertex(VertexHandle vH) const override
     {
         return m_mesh.is_valid(vH) && !m_mesh.is_deleted(vH);
     }
+
     bool containsFace(FaceHandle fH) const override
     {
         return m_mesh.is_valid(fH) && !m_mesh.is_deleted(fH);
     }
+    
     bool containsEdge(EdgeHandle eH) const override
     {
         return m_mesh.is_valid(eH) && !m_mesh.is_deleted(eH);
     }
 
     bool isBorderEdge(EdgeHandle handle) const override
-    { return m_mesh.is_boundary(handle); }
+    { 
+        return m_mesh.is_boundary(handle); 
+    }
+    
     bool isFlippable(EdgeHandle handle) const override
-    { return m_mesh.is_flip_ok(handle); }
+    { 
+        return m_mesh.is_flip_ok(handle); 
+    }
 
     Index nextVertexIndex() const override
-    { return m_mesh.vertices_size(); }
+    { 
+        return m_mesh.vertices_size(); 
+    }
+
     Index nextFaceIndex() const override
-    { return m_mesh.faces_size(); }
+    { 
+        return m_mesh.faces_size(); 
+    }
+    
     Index nextEdgeIndex() const override
-    { return m_mesh.edges_size(); }
+    { 
+        return m_mesh.edges_size(); 
+    }
 
     BaseVecT getVertexPosition(VertexHandle handle) const override
-    { return p2b(m_mesh.position(handle)); }
+    { 
+        return p2b(m_mesh.position(handle)); 
+    }
+    
     BaseVecT& getVertexPosition(VertexHandle handle) override
     {
         // The returned reference might be modified by the caller, and those modifications must

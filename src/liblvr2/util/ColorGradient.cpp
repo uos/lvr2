@@ -33,7 +33,7 @@
  */
 
 #include "lvr2/util/ColorGradient.hpp"
-#include "lvr2/util/Timestamp.hpp"
+#include "lvr2/util/Logging.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -68,13 +68,17 @@ void ColorGradient::getColor(RGBFColor& color, size_t bucket, ColorGradient::Gra
         color[1] = 0.0;
         color[2] = 0.0;
         break;
+    case DEFAULT:
+        color[0] = 0.5;
+        color[1] = 0.5;
+        color[2] = 0.5;
+        break;
     case WHITE:
     default:
         color[0] = 1.0;
         color[1] = 1.0;
         color[2] = 1.0;
         break;
-
     }
 }
 
@@ -232,9 +236,13 @@ ColorGradient::GradientType ColorGradient::gradientFromString(const std::string&
     {
         return WHITE;
     }
+     else if(s == "Default" || s == "DEFAULT" || s =="default")
+    {
+        return DEFAULT;
+    }
     else
     {
-        std::cout << timestamp << "Warning: Unknown color graditent type: '" << s << "'" << std::endl;
+        lvr2::logout::get() << lvr2::warning << "Unknown color graditent type: '" << s << "'" << lvr2::endl;
         return GREY;
     }
 }

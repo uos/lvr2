@@ -33,8 +33,7 @@
 *  @author Kristin Schmidt <krschmidt@uni-osnabrueck.de>
 */
 
-#include "lvr2/util/Progress.hpp"
-#include "lvr2/util/Timestamp.hpp"
+#include "lvr2/util/Logging.hpp"
 #include "lvr2/algorithm/ColorAlgorithms.hpp"
 
 #include <opencv2/highgui.hpp>
@@ -80,13 +79,13 @@ template<typename BaseVecT>
 void Texturizer<BaseVecT>::saveTextures()
 {
     string comment = timestamp.getElapsedTime() + "Saving textures ";
-    ProgressBar progress(m_textures.numUsed(), comment);
+    //ProgressBar progress(m_textures.numUsed(), comment);
     for (auto h : m_textures)
     {
         m_textures[h].save();
-        ++progress;
+        //++progress;
     }
-    std::cout << std::endl;
+    //std::cout << std::endl;
 }
 
 template<typename BaseVecT>
@@ -105,6 +104,8 @@ TexCoords Texturizer<BaseVecT>::calculateTexCoords(
             + br.m_supportVector);
     float u = (br.m_vec1 * (w.dot(br.m_vec1))).length() / texelSize / width;
     float v = (br.m_vec2 * (w.dot(br.m_vec2))).length() / texelSize / height;
+
+    //std::cout << u << " " << v << std::endl;
 
     return TexCoords(u,v);
 }
@@ -132,16 +133,14 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
     ClusterHandle cluster
 )
 {
-    std::cout << "Wrong" << std::endl;
     // Calculate the texture size
-    unsigned short int sizeX = ceil((boundingRect.m_maxDistA - boundingRect.m_minDistA) / m_texelSize);
-    unsigned short int sizeY = ceil((boundingRect.m_maxDistB - boundingRect.m_minDistB) / m_texelSize);
+    unsigned int sizeX = ceil((boundingRect.m_maxDistA - boundingRect.m_minDistA) / m_texelSize);
+    unsigned int sizeY = ceil((boundingRect.m_maxDistB - boundingRect.m_minDistB) / m_texelSize);
+
+    lvr2::Monitor monitor(lvr2::LogLevel::info, "Computing texture pixels", sizeX * sizeY);
 
     // Create texture
     Texture texture(index, sizeX, sizeY, 3, 1, m_texelSize);
-
-    string comment = timestamp.getElapsedTime() + "Computing texture pixels ";
-    ProgressBar progress(sizeX * sizeY, comment);
 
     if (surface.pointBuffer()->hasColors())
     {
@@ -181,11 +180,9 @@ TextureHandle Texturizer<BaseVecT>::generateTexture(
                 texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 0] = r;
                 texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 1] = g;
                 texture.m_data[(sizeY - y - 1) * (sizeX * 3) + 3 * x + 2] = b;
-
-                ++progress;
+                ++monitor;
             }
         }
-        std::cout << std::endl;
     }
     else
     {

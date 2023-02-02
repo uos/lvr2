@@ -230,7 +230,8 @@ public:
     virtual Index nextEdgeIndex() const = 0;
 
     /**
-     * @brief Get the position of the given vertex.
+     * @brief Get the position of th
+#include "List.tcc"e given vertex.
      */
     virtual BaseVecT getVertexPosition(VertexHandle handle) const = 0;
 

@@ -206,7 +206,16 @@ ScanProjectPtr loadScanPositionsExplicitly(
  */
 void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, bool firstScanOnly = true, OctreeReductionAlgorithmPtr red = nullptr);
 
-
+/**
+ * @brief Counts all points in scan project
+ * 
+ * @param project           A scan project
+ * @param firstScanOnly     If true, only the first scan of each lidar will be 
+ *                          considered
+ * 
+ * @return Number of counted points
+ */
+size_t countPointsInScanProject(ScanProjectPtr project, bool firstScanOnly = true);
 
 } // namespace LVR2
 

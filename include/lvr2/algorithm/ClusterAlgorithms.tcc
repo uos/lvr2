@@ -258,33 +258,41 @@ BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
     float texelSize,
     ClusterHandle clusterH
 )
-{
-
-    // TODO error handling for texelSize = 0
-    // TODO reasonable error handling necessary for empty contour vector
-    if (contour.size() == 0)
-    {
-        std::cout << "Empty contour array." << std::endl;
-    }
-    int minArea = std::numeric_limits<int>::max();
-
-    float bestMinA, bestMaxA, bestMinB, bestMaxB;
-    BaseVecT bestBoundingAxisA, bestBoundingAxisB;
-
-    // calculate regression plane for the cluster
-    Plane<BaseVecT> regressionPlane = calcRegressionPlane(mesh, cluster, normals);
+{   
+    auto regressionPlane = calcRegressionPlane(mesh, cluster, normals);
 
     // support vector for the plane
     BaseVecT supportVector = regressionPlane.project(mesh.getVertexPosition(contour[0]));
 
     // calculate two orthogonal vectors in the plane
     auto normal = regressionPlane.normal;
-    auto pointInPlane = regressionPlane.project(mesh.getVertexPosition(contour[1]));
-    auto boudningAxis1 = (pointInPlane - supportVector).cross(normal);
-    boudningAxis1.normalize();
+    normal.normalize();
 
-    BaseVecT boundingAxis2 = boudningAxis1.cross(normal);
+    auto pointInPlane = regressionPlane.project(mesh.getVertexPosition(contour[1]));
+    auto boundingAxis1 = (pointInPlane - supportVector).cross(normal);
+    boundingAxis1.normalize();
+
+    if(boundingAxis1.x < 0)
+    {
+        boundingAxis1.x *= -1;
+    }
+
+    if(boundingAxis1.y < 0)
+    {
+        boundingAxis1.y *= -1;
+    }
+
+
+
+    BaseVecT boundingAxis2 = boundingAxis1.cross(normal);
     boundingAxis2.normalize();
+
+    // if(boundingAxis2.y < 0)
+    // {
+    //     boundingAxis2 *= -1;
+    // }
+
+
 
     // const float pi = boost::math::constants::pi<float>(); // FIXME: doesnt seem to work with c++11
     const float pi = std::atan(1) * 4; // reasonable approximation for pi
@@ -292,12 +300,17 @@ BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
     // resolution of iterative improvement steps for a fourth rotation
     const float delta = (pi / 2) / 90;
 
+    float bestMinA, bestMaxA, bestMinB, bestMaxB;
+    BaseVecT bestBoundingAxisA, bestBoundingAxisB;
+
+
+
     for(float theta = 0; theta < M_PI / 2; theta += delta)
     {
         // rotate the bounding box
-        boudningAxis1 = boudningAxis1 * cos(theta) + boundingAxis2 * sin(theta);
-        boudningAxis1.normalize();
-        boundingAxis2 = boudningAxis1.cross(normal);
+        boundingAxis1 = boundingAxis1 * cos(theta) + boundingAxis2 * sin(theta);
+        boundingAxis1.normalize();
+        boundingAxis2 = boundingAxis1.cross(normal);
         boundingAxis2.normalize();
 
         // FIXME
@@ -308,17 +321,17 @@ BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
         // distance to the plane given by the axis (n * sv = -p)
         // Note that in contrast to the usual plane equations, the plane
         // distance is missing the negative sign
-        const float planeDist1 = boudningAxis1.dot(supportVector);
+        const float planeDist1 = boundingAxis1.dot(supportVector);
         const float planeDist2 = boundingAxis2.dot(supportVector);
 
-
-        float minDistA = std::numeric_limits<float>::max();
-        float maxDistA = std::numeric_limits<float>::lowest();
-        float minDistB = std::numeric_limits<float>::max();
-        float maxDistB = std::numeric_limits<float>::lowest();
-
-
         // calculate the bounding box
+
+        float maxDistA = std::numeric_limits<float>::min();
+        float maxDistB = std::numeric_limits<float>::min();
+        float minDistA = std::numeric_limits<float>::max();
+        float minDistB = std::numeric_limits<float>::max();
+
+        float minArea = std::numeric_limits<float>::max();
 
         for(const auto contourVertexH : contour)
         {
@@ -329,7 +342,7 @@ BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
             // note the negative sign of planeDist*, since the calculation above
             // actually computes the negative distance
             // calculate distance to plane1
-            float distA = boudningAxis1.dot(contourPoint) - planeDist1;
+            float distA = boundingAxis1.dot(contourPoint) - planeDist1;
             // calculate distance to plane2
             float distB = boundingAxis2.dot(contourPoint) - planeDist2;
 
@@ -364,7 +377,7 @@ BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
             bestMaxA          = maxDistA;
             bestMinB          = minDistB;
             bestMaxB          = maxDistB;
-            bestBoundingAxisA = boudningAxis1;
+            bestBoundingAxisA = boundingAxis1;
             bestBoundingAxisB = boundingAxis2;
         }
     }
@@ -373,13 +386,11 @@ BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
         supportVector,
         bestBoundingAxisA,
         bestBoundingAxisB,
-        normal,
+        Normal<typename BaseVecT::CoordType>(normal),
         bestMinA,
         bestMaxA,
         bestMinB,
-        bestMaxB
-    );
-
+        bestMaxB);
 }
 
 
