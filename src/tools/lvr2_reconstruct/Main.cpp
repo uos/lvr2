@@ -80,12 +80,8 @@
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
 #include "lvr2/algorithm/KDTree.hpp"
-#include "lvr2/io/kernels/HDF5Kernel.hpp"
-#include "lvr2/io/scanio/HDF5IO.hpp"
-#include "lvr2/io/scanio/ScanProjectIO.hpp"
-#include "lvr2/io/schema/ScanProjectSchema.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
 #include "lvr2/util/Logging.hpp"
+#include "lvr2/util/ScanProjectUtils.hpp"
 
 #include "lvr2/geometry/BVH.hpp"
 
@@ -115,106 +111,126 @@ using namespace lvr2;
 using Vec = BaseVector<float>;
 using PsSurface = lvr2::PointsetSurface<Vec>;
 
-
-template <typename IteratorType>
-IteratorType concatenate(
-    IteratorType output_,
-    IteratorType begin0,
-    IteratorType end0,
-    IteratorType begin1,
-    IteratorType end1)
+auto buildCombinedPointCloud(lvr2::ScanProjectPtr& project, lvr2::ReductionAlgorithmPtr reduction_algorithm) -> lvr2::PointBufferPtr
 {
-    output_ = std::copy(
-        begin0,
-        end0,
-        output_);
-    output_ = std::copy(
-        begin1,
-        end1,
-        output_);
+    // === Build the PointCloud ===
+    lvr2::Monitor mon(lvr2::LogLevel::info, "[LVR2 Reconstruct] Loading scan positions", project->positions.size());
 
-    return output_;
-}
-
-
-/**
- * @brief Merges two PointBuffers by copying the data into a new PointBuffer
- * 
- * The function does not modify its arguments, but its not possible to access the PointBuffers data
- * 
- * @param b0 A buffer to copy points from
- * @param b1 A buffer to copy points from
- * @return PointBuffer the merged result of b0 and b1
- */
-PointBuffer mergePointBuffers(PointBuffer& b0, PointBuffer& b1)
-{
-    // number of points in new buffer
-    PointBuffer::size_type npoints_total = b0.numPoints() + b1.numPoints();
-    // new point array
-    floatArr merged_points = floatArr(new float[npoints_total * 3]);
-
-    auto output_it = merged_points.get();
-    
-    // Copy the points to the new array
-    output_it = concatenate(
-        output_it,
-        b0.getPointArray().get(),
-        b0.getPointArray().get() + (b0.numPoints() * 3),
-        b1.getPointArray().get(),
-        b1.getPointArray().get() + (b1.numPoints() * 3));
-
-    // output iterator should be at the end of the array
-    assert(output_it == merged_points.get() + (npoints_total * 3));
-
-    PointBuffer ret(merged_points, npoints_total);
-
-    // Copy colors 
-    if (b0.hasColors() && b1.hasColors())
+    size_t npoints_total = 0;
+    // Count total number of points
+    for (auto pos: project->positions)
     {
-        // nbytes of a color
-        size_t w0, w1;
-        b0.getColorArray(w0);
-        b1.getColorArray(w1);
-        if (w0 != w1)
+        for (auto lidar: pos->lidars)
         {
-            panic("PointBuffer colors must have the same width!");
+            for (auto scan: lidar->scans)
+            {
+                npoints_total += scan->numPoints;
+            }
         }
-        // Number of bytes needed for the colors. Assumes that both color widths are the same
-        size_t nbytes = npoints_total * w0;
-        ucharArr colors_total = ucharArr(new unsigned char[nbytes]);
-        auto output_it = colors_total.get();
-
-        output_it = concatenate(
-            output_it,
-            b0.getColorArray(w0).get(),
-            b0.getColorArray(w0).get() + (b0.numPoints() * w0),
-            b1.getColorArray(w1).get(),
-            b1.getColorArray(w1).get() + (b1.numPoints() * w1)
-        );
-        
-        ret.setColorArray(colors_total, npoints_total, w0);
     }
 
-    // Copy normals
-     if (b0.hasNormals() && b1.hasNormals())
+    // Allocate buffers for coordinates, colors and normals
+    lvr2::floatArr coords(new float[npoints_total * 3]);
+    lvr2::floatArr normals(new float[npoints_total * 3]);
+    lvr2::ucharArr colors(new uchar[npoints_total * 3]);
+    auto coord_output = coords.get();
+    auto normal_output = normals.get();
+    auto color_output = colors.get();
+
+    bool has_normals = true;
+    bool has_colors = true;
+    int color_width = -1;
+
+    lvr2::logout::get() << "[LVR2 Reconstruct] Total number of points: " << npoints_total << lvr2::endl;
+
+    for (ScanPositionPtr pos: project->positions)
     {
-        // Number of bytes needed for the normals
-        size_t nbytes = npoints_total * 3;
-        floatArr normals_total = floatArr(new float[nbytes]);
-        auto output_it = normals_total.get();
+        ++mon;
+        for (LIDARPtr lidar: pos->lidars)
+        {
+            for (ScanPtr scan: lidar->scans)
+            {
+                // Load scan
+                bool was_loaded = scan->loaded();
+                if (!scan->loaded())
+                {
+                    scan->load(reduction_algorithm);
+                }
 
-        output_it = concatenate(
-            output_it,
-            b0.getNormalArray().get(),
-            b0.getNormalArray().get() + (b0.numPoints() * 3),
-            b1.getNormalArray().get(),
-            b1.getNormalArray().get() + (b1.numPoints() * 3)
-        );
-        
-        ret.setNormalArray(normals_total,npoints_total);
+                // Transform the new pointcloud
+                transformPointCloud<float>(
+                    std::make_shared<Model>(scan->points),
+                    (pos->transformation * lidar->transformation * scan->transformation).cast<float>());
+                
+                // Copy coordinates
+                coord_output = std::copy(
+                    scan->points->getPointArray().get(),
+                    scan->points->getPointArray().get() + (scan->points->numPoints() * 3),
+                    coord_output
+                );
+
+                // Copy normals
+                if (scan->points->hasNormals() && has_normals)
+                {
+                    normal_output = std::copy(
+                        scan->points->getNormalArray().get(),
+                        scan->points->getNormalArray().get() + (scan->points->numPoints() * 3),
+                        normal_output
+                    );
+                }
+                else
+                {
+                    has_normals = false;
+                }
+
+                // Copy colors
+                if (scan->points->hasColors() && has_colors)
+                {
+                    size_t width;
+                    scan->points->getColorArray(width);
+                    if (width == color_width || color_width == -1)
+                    {
+                        color_width = width;
+                        color_output = std::copy(
+                            scan->points->getColorArray(width).get(),
+                            scan->points->getColorArray(width).get() + (scan->points->numPoints() * width),
+                            color_output
+                        );
+                    }
+                    else
+                    {
+                        has_colors = false;
+                    }
+
+                }
+                else
+                {
+                    has_colors = false;
+                }
+                
+                // If not previously loaded unload
+                if (!was_loaded)
+                {
+                    scan->release();
+                }
+            }
+        }
     }
 
-    return std::move(ret);
+    // Create new point buffer
+    auto retval = std::make_shared<PointBuffer>(coords, npoints_total);
+    // Add normals
+    if (has_normals)
+    {
+        retval->setNormalArray(normals, npoints_total);
+    }
+    // Add colors
+    if (has_colors)
+    {
+        retval->setColorArray(colors, npoints_total, color_width);
+    }
+
+    return retval;
 }
 
 template <typename BaseVecT>
@@ -227,26 +243,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Parse loaded data
     if (!model)
     {
-        boost::filesystem::path selectedFile( options.getInputFileName());
-        std::string extension = selectedFile.extension().string();
-        std::string filePath = selectedFile.generic_path().string();
-
-        if(selectedFile.extension().string() != ".h5") {
-            lvr2::logout::get() << lvr2::error << "[LVR2 Reconstruct] IO Error: Unable to parse " << options.getInputFileName() << lvr2::endl;
-            return nullptr;
-        }
-        lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Loading h5 scanproject from " << filePath << lvr2::endl;
-
-        // create hdf5 kernel and schema 
-        FileKernelPtr kernel = FileKernelPtr(new HDF5Kernel(filePath));
-        ScanProjectSchemaPtr schema = ScanProjectSchemaPtr(new ScanProjectSchemaHDF5());
-        
-        HDF5KernelPtr hdfKernel = std::dynamic_pointer_cast<HDF5Kernel>(kernel);
-        HDF5SchemaPtr hdfSchema = std::dynamic_pointer_cast<HDF5Schema>(schema);
-        
-        // create io object for hdf5 files
-        auto scanProjectIO = std::shared_ptr<scanio::HDF5IO>(new scanio::HDF5IO(hdfKernel, hdfSchema));
-
         ReductionAlgorithmPtr reduction_algorithm;
         // If the user supplied valid octree reduction parameters use octree reduction otherwise use no reduction
         if (options.getOctreeVoxelSize() > 0.0f)
@@ -258,106 +254,22 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             reduction_algorithm = std::make_shared<NoReductionAlgorithm>();
         }
         
-
+        lvr2::ScanProjectPtr project;
+        // Vector of the ScanPositions to load
+        std::vector<lvr2::ScanPositionPtr> positions;
         if (options.hasScanPositionIndex())
         {
-            auto project = scanProjectIO->loadScanProject();
-            ModelPtr model = std::make_shared<Model>();
-
-            // Load all given scan positions
-            vector<int> scanPositionIndices = options.getScanPositionIndex();
-            for(int positionIndex : scanPositionIndices)
-            {
-                auto pos = scanProjectIO->loadScanPosition(positionIndex);
-                auto lidar = pos->lidars.at(0);
-                auto scan = lidar->scans.at(0);
-
-                lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Loading scan position " << positionIndex << lvr2::endl;
-
-                // Load scan
-                scan->load(reduction_algorithm);
-
-                lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Scan loaded scan has " << scan->numPoints << " points" << lvr2::endl;
-                lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Transforming scan: " << lvr2::endl 
-                          <<  (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>() << lvr2::endl;
-
-                // Transform the new pointcloud
-                transformPointCloud<float>(
-                    std::make_shared<Model>(scan->points),
-                    (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>());
-
-                // Merge pointcloud and new scan
-                // TODO: Maybe merge by allocation all needed memory first instead of constant allocations
-                if (model->m_pointCloud)
-                {
-                    *model->m_pointCloud = mergePointBuffers(*model->m_pointCloud, *scan->points);
-                }
-                else
-                {
-                    model->m_pointCloud = std::make_shared<PointBuffer>();
-                    *model->m_pointCloud = *scan->points; // Copy the first scan
-                }
-                scan->release();
-            }
-            buffer = model->m_pointCloud;
-            lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Loaded " << buffer->numPoints() << " points" << lvr2::endl;
+            project = lvr2::loadScanPositionsExplicitly(
+                options.getInputSchema(),
+                options.getInputFileName(),
+                options.getScanPositionIndex());
         }
         else
         {    
-            // === Build the PointCloud ===
-            lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Loading scan project" << lvr2::endl;
-            ScanProjectPtr project = scanProjectIO->loadScanProject();
-            
-            // The aggregated scans
-            ModelPtr model = std::make_shared<Model>();
-            model->m_pointCloud = nullptr;
-            unsigned ctr = 0;
-            for (ScanPositionPtr pos: project->positions)
-            {
-                lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Loading scan position " << ctr << " / " << project->positions.size() << lvr2::endl;
-                for (LIDARPtr lidar: pos->lidars)
-                {
-                    for (ScanPtr scan: lidar->scans)
-                    {
-                        // Load scan
-                        bool was_loaded = scan->loaded();
-                        if (!scan->loaded())
-                        {
-                            scan->load();
-                        }
-
-                        // Transform the new pointcloud
-                        transformPointCloud<float>(
-                            std::make_shared<Model>(scan->points),
-                            (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>());
-                        
-                        // Merge pointcloud and new scan 
-                        // TODO: Maybe merge by allocation all needed memory first instead of constant allocations
-                        if (model->m_pointCloud)
-                        {
-                            *model->m_pointCloud = mergePointBuffers(*model->m_pointCloud, *scan->points);
-                        }
-                        else
-                        {
-                            model->m_pointCloud = std::make_shared<PointBuffer>();
-                            *model->m_pointCloud = *scan->points; // Copy the first scan
-                        }
-                        
-                        
-                        
-                        // If not previously loaded unload
-                        if (!was_loaded)
-                        {
-                            scan->release();
-                        }
-                    }
-                }
-            }
-
-            reduction_algorithm->setPointBuffer(model->m_pointCloud);
-            buffer = reduction_algorithm->getReducedPoints();
+            project = lvr2::loadScanProject(options.getInputSchema(), options.getInputFileName());
         }
-
+        
+        buffer = buildCombinedPointCloud(project, reduction_algorithm);
     }
     else 
     {
@@ -565,17 +477,6 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
         return;
     }
 
-    // TODO: Check if the scanproject has spectral data
-    boost::filesystem::path selectedFile( options.getInputFileName());
-    std::string filePath = selectedFile.generic_path().string();
-
-    // create hdf5 kernel and schema 
-    HDF5KernelPtr hdfKernel = std::make_shared<HDF5Kernel>(filePath);
-    HDF5SchemaPtr hdfSchema = std::make_shared<ScanProjectSchemaHDF5>();
-    
-    // create io object for hdf5 files
-    auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
-
     if(options.getScanPositionIndex().size() > 1)
     {
         lvr2::logout::get() << lvr2::warning 
@@ -584,15 +485,20 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
     }
 
     // load panorama from hdf5 file
-    auto panorama = hdf5IO.HyperspectralPanoramaIO::load(options.getScanPositionIndex()[0], 0, 0);
-
-    
+    auto project = lvr2::loadScanPositionsExplicitly(
+        options.getInputSchema(),
+        options.getInputFileName(),
+        options.getScanPositionIndex()
+    );
 
     // If there is no spectral data
-    if (!panorama)
+    if (project->positions[0]->hyperspectral_cameras.empty()
+     || project->positions[0]->hyperspectral_cameras[0]->panoramas.empty())
     {
         return;
     }
+
+    auto panorama = project->positions[0]->hyperspectral_cameras[0]->panoramas[0];
 
     int texturizer_count = options.getMaxSpectralChannel() - options.getMinSpectralChannel();
     texturizer_count = std::max(texturizer_count, 0);
@@ -623,49 +529,20 @@ template <typename MeshVec, typename ClusterVec>
 void addRaycastingTexturizer(const reconstruct::Options& options, lvr2::Materializer<Vec>& materializer, const BaseMesh<MeshVec>& mesh, const ClusterBiMap<ClusterVec> clusters)
 {
 #ifdef LVR2_USE_EMBREE
-    boost::filesystem::path selectedFile( options.getInputFileName());
-    std::string extension = selectedFile.extension().string();
-    std::string filePath = selectedFile.generic_path().string();
 
-    if (extension != ".h5")
-    {
-        lvr2::logout::get() << lvr2::error << "Cannot add RGB Texturizer because the scanproject is not a HDF5 file" << lvr2::endl;
-        return;
-    }
-
-    HDF5KernelPtr kernel = std::make_shared<HDF5Kernel>(filePath);
-    HDF5SchemaPtr schema = std::make_shared<ScanProjectSchemaHDF5>();
-    
-    // create io object for hdf5 files
-    auto hdf5IO = scanio::HDF5IO(kernel, schema);
-
-    ScanProjectPtr project = hdf5IO.loadScanProject();
-
-    // If only one scan position is used for reconstruction use only the images associated with that position
+    ScanProjectPtr project;
     if (options.hasScanPositionIndex())
     {
-        project->positions.clear();
-        auto scanPositions = options.getScanPositionIndex();
-        for (int positionIndex : scanPositions)
-        {
-            ScanPositionPtr pos = hdf5IO.loadScanPosition(positionIndex);
-            // Check if position exists
-            if (!pos)
-            {
-                lvr2::logout::get() << lvr2::warning << "[LVR2 Reconstruct] Cannot add ScanPosition " << positionIndex << " to scan project." << lvr2::endl;
-                return;
-            }
-
-            // If the single scan position was not transformed from position to world space
-            // remove the transformation from the project and position
-            if (!options.transformScanPosition())
-            {
-                project->transformation = Transformd::Identity(); // Project -> GPS
-                pos->transformation = Transformd::Identity();     // Position -> Project
-            }
-
-            project->positions.push_back(pos);
-        }
+        project = lvr2::loadScanPositionsExplicitly(
+            options.getInputSchema(),
+            options.getInputFileName(),
+            options.getScanPositionIndex());
+    }
+    else
+    {
+        project = lvr2::loadScanProject(
+            options.getInputSchema(),
+            options.getInputFileName());
     }
 
     auto texturizer = std::make_shared<RaycastingTexturizer<Vec>>(
@@ -1006,31 +883,21 @@ int main(int argc, char** argv)
     // When using textures ...
     if (options.generateTextures())
     {
-
-        boost::filesystem::path selectedFile( options.getInputFileName());
-        std::string filePath = selectedFile.generic_path().string();
-
-        if(selectedFile.extension().string() != ".h5") {
-            materializer.setTexturizer(texturizer);
-        } 
-        else 
-        {
-            addSpectralTexturizers(options, materializer);
+        addSpectralTexturizers(options, materializer);
 
 #ifdef LVR2_USE_EMBREE
-            if (options.useRaycastingTexturizer())
-            {
-                addRaycastingTexturizer(options, materializer, mesh, clusterBiMap);
-            }
-            else
-            {
-                materializer.addTexturizer(texturizer);
-            }
-#else
+        if (options.useRaycastingTexturizer())
+        {
+            addRaycastingTexturizer(options, materializer, mesh, clusterBiMap);
+        }
+        else
+        {
             materializer.addTexturizer(texturizer);
+        }
+#else
+        materializer.addTexturizer(texturizer);
 #endif
             
-        }
     }
 
     // Generate materials

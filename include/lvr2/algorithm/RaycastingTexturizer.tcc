@@ -116,82 +116,57 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
                 // Pop the element to be processed
                 processList.pop();
 
-                // Add the transform, the image and the camera model to the list
-
                 // Set the image
                 info.image = imagePtr;
 
-                // Rotation parts of transformations
-                Quaterniond positionR(position->transformation.template topLeftCorner<3, 3>()); // Position -> World
-                Quaterniond cameraR(camera->transformation.template topLeftCorner<3, 3>());     // Image -> Camera
-                Quaterniond imageR(info.image->transformation.template topLeftCorner<3, 3>());  // Image -> World
-
-                // Translation parts of transformations
-                Vector3d positionT(position->transformation.template topRightCorner<3, 1>()); // Position -> World
-                Vector3d cameraT(camera->transformation.template topRightCorner<3, 1>());     // Image -> Camera
-                Vector3d imageT(info.image->transformation.template topRightCorner<3, 1>());  // Image -> World
-
-                // Calculate Image -> World transform
-                Vector3d translationI2W = positionR * imageT + positionT;
-                Quaterniond rotationI2W = positionR * imageR;
-                // Calculate Image -> Camera transform
-                Vector3d translationI2C = cameraT;
-                Quaterniond rotationI2C = cameraR;
-
-                info.ImageToWorldRotation = rotationI2W.normalized().cast<float>();
-                info.ImageToWorldTranslation = translationI2W.cast<float>();
-                info.ImageToCameraRotation = rotationI2C.normalized().cast<float>();
-                info.ImageToCameraTranslation = translationI2C.cast<float>();
-
-                // Precalculate inverse Rotations because those are extremely expensive
-                info.ImageToWorldRotationInverse = rotationI2W.normalized().inverse().cast<float>();
-                info.ImageToCameraRotationInverse = rotationI2C.normalized().inverse().cast<float>();
+                // Total transform from image to world
+                Eigen::Isometry3d total(position->transformation * camera->transformation * info.image->transformation);
+                info.transform = total.cast<float>();
+                info.inverse_transform = total.inverse().cast<float>();
 
                 // Calculate camera origin in World space
-                Vector3d origin(0, 0, 0);                                   // Camera frame
-                origin = rotationI2C.inverse() * (origin - translationI2C); // From Camera -> Image
-                origin = rotationI2W * origin + translationI2W;             // From Image -> World
-                info.cameraOrigin = origin.cast<float>();
+                Vector3d origin_world = total * Vector3d::Zero();
+                info.cameraOrigin = origin_world.cast<float>();
 
                 // Precalculate the view direction vector in world space (only needs rotation no translation)
-                Vector3d view_vec_world = rotationI2C.inverse() * Vector3d::UnitZ();
-                view_vec_world = rotationI2W * view_vec_world;
+                Vector3d view_vec_world = total.rotation().inverse().transpose() * Vector3d::UnitZ();
                 info.viewDirectionWorld = view_vec_world.normalized().cast<float>();
 
-                // === The camera intrinsics in the ringlok ScanProject are wrong === //
-                // === These are the correct values for the Riegl camera === //
-                info.model.fx = 2395.4336550315002;
-                info.model.fy = 2393.3126174899603;
-                info.model.cx = 3027.8728609530291;
-                info.model.cy = 2031.02743729632;
-
-                // Apply histogram equalization (works only on one channel matrices)
-                // Convert to LAB color format
+                //=== The Camera Matrix is stored adjusted for image resolution -> the values have to be scaled ===//
                 info.image->load();
-                cv::Mat lab;
-                cv::cvtColor(info.image->image, lab, cv::COLOR_BGR2Lab);
-
-                // Extract L channel
-                std::vector<cv::Mat> channels(3);
-                cv::split(lab, channels);
-                cv::Mat LChannel = channels[0];
-
-                // Apply clahe algorithm
-                cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(); // Create algorithm
-                clahe->apply(LChannel, LChannel);
-
-                // Write the result back to the texture
-                channels[0] = LChannel;
-                cv::merge(channels, lab);
-                cv::cvtColor(lab, info.image->image, cv::COLOR_Lab2BGR);
+                this->equalizeHistogram(info.image->image);
 
                 m_images.push_back(info);
             }
         }
     }
 
-    std::cout << timestamp << "[RaycastingTexturizer] Loaded " << m_images.size() << " images" << std::endl;
+    lvr2::logout::get() << "[RaycastingTexturizer] Loaded " << m_images.size() << " images" << lvr2::endl;
 }
+
+template <typename BaseVecT>
+void RaycastingTexturizer<BaseVecT>::equalizeHistogram(cv::Mat& img) const
+{
+    // Apply histogram equalization (works only on one channel matrices)
+    // Convert to LAB color format
+    cv::Mat lab;
+    cv::cvtColor(img, lab, cv::COLOR_BGR2Lab);
+
+    // Extract L channel
+    std::vector<cv::Mat> channels(3);
+    cv::split(lab, channels);
+    cv::Mat LChannel = channels[0];
+
+    // Apply clahe algorithm
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(); // Create algorithm
+    clahe->apply(LChannel, LChannel);
+
+    // Write the result back to the image
+    channels[0] = LChannel;
+    cv::merge(channels, lab);
+    cv::cvtColor(lab, img, cv::COLOR_Lab2BGR);
+}
+
 
 inline Vector2i texelFromUV(const TexCoords& uv, const Texture& tex)
 {
@@ -228,45 +203,6 @@ inline void setPixel(TexCoords uv, Texture& tex, cv::Vec3b color)
     auto p = texelFromUV(uv, tex);
     setPixel(p.x(), p.y(), tex, color);
 }
-
-// TODO: Properly integrate this somewhere
-/**
- * @brief Copied from 
- * https://gitlab.informatik.uni-osnabrueck.de/Las_Vegas_Reconstruction/Develop/-/blob/feature/cloud_colorizer/src/tools/lvr2_cloud_colorizer/Main.cpp
- */
-inline void undistorted_to_distorted_uv(
-    double &u,
-    double &v,
-    PinholeModel model)
-{
-    double x, y, ud, vd, r_2, r_4, r_6, r_8, fx, fy, Cx, Cy, k1, k2, k3, k4, p1, p2;
-    fx = model.fx;
-    fy = model.fy;
-    Cx = model.cx;
-    Cy = model.cy;
-
-    k1 = model.distortionCoefficients[0];
-    k2 = model.distortionCoefficients[1];
-    p1 = model.distortionCoefficients[2];
-    p2 = model.distortionCoefficients[3];
-    k3 = model.distortionCoefficients[4];
-    k4 = model.distortionCoefficients[5];
-    
-    x = (u - Cx)/fx;
-    y = (v - Cy)/fy;
-
-    r_2 = std::pow(std::atan(std::sqrt(std::pow(x, 2) + std::pow(y, 2))), 2);
-    r_4 = std::pow(r_2, 2);
-    r_6 = std::pow(r_2, 3);
-    r_8 = std::pow(r_2, 4);
-
-    ud = u + x*fx*(k1*r_2 + k2*r_4 + k3*r_6 + k4*r_8) + 2*fx*x*y*p1 + p2*fx*(r_2 + 2*std::pow(x, 2));
-    vd = v + y*fy*(k1*r_2 + k2*r_4 + k3*r_6 + k4*r_8) + 2*fy*x*y*p2 + p1*fy*(r_2 + 2*std::pow(y, 2));
-
-    u = ud;
-    v = vd;
-}
-
 
 template <typename BaseVecT>
 TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
@@ -508,8 +444,7 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
         [normal, center](ImageInfo img)
         {
             // View vector in world coordinates
-            Vector3f view = img.ImageToCameraRotationInverse * Vector3f::UnitZ(); // Camera -> Image
-            view = img.ImageToWorldRotation * view; // Image -> World
+            Vector3f view = img.viewDirectionWorld;
             // Check if triangle is seen from the back // Currently not working because the normals are not always correct
             // if (normal.dot(view) < 0)
             // {
@@ -518,11 +453,7 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
 
             // Cosine of the angle between the view vector of the image and the cluster normal
             float angle = view.dot(normal);
-            // Preload the image if its not already loaded
-            if(!img.image->loaded())
-            {
-                img.image->load();
-            }
+
             return std::make_pair(img, std::abs(angle)); // Use abs because values can be negative if the normal points the wrong direction
         });
 
@@ -605,19 +536,16 @@ template <typename BaseVecT>
 bool RaycastingTexturizer<BaseVecT>::calcPointColor(Vector3f point, const ImageInfo& img, cv::Vec3b& color) const
 {
     // Transform the point to camera space
-    Vector3f imgPoint = img.ImageToWorldRotationInverse * (point - img.ImageToWorldTranslation); // World -> Image
-    Vector3f camPoint = img.ImageToCameraRotation * imgPoint + img.ImageToCameraTranslation;
+    Vector3f camPoint = img.inverse_transform * point;
     // If the point is behind the camera no color will be extracted
     if (camPoint.z() <= 0) return false;
 
     // Project the point to the camera image
     Vector2f uv = img.model.projectPoint(camPoint);
-    double imgU = uv.x();
-    double imgV = uv.y();
     // Distort the uv coordinates
-    undistorted_to_distorted_uv(imgU, imgV, img.model);
-    size_t imgX = std::floor(imgU);
-    size_t imgY = std::floor(imgV);
+    auto distorted = img.model.distortPoint(uv);
+    size_t imgX = std::floor(distorted.x());
+    size_t imgY = std::floor(distorted.y());
 
     // Skip if the projected pixel is outside the camera image
     if (imgX < 0 || imgY < 0 || imgX >= img.image->image.cols || imgY >= img.image->image.rows) return false;

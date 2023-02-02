@@ -4,9 +4,13 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <opencv2/calib3d.hpp>
+#include <boost/optional.hpp>
 #include "MatrixTypes.hpp"
 #include "lvr2/util/Panic.hpp"
 #include "lvr2/util/Logging.hpp"
+#include "lvr2/util/Timestamp.hpp"
+#include "DistortionModels.hpp"
 
 namespace lvr2
 {
@@ -49,8 +53,9 @@ namespace lvr2
         unsigned height = 0;
 
         /// Distortion
-        std::vector<double> distortionCoefficients;
-        std::string distortionModel = "opencv";
+        DistortionModel distortionModel;
+        // std::vector<double> distortionCoefficients;
+        // std::string distortionModel = "opencv";
 
         Eigen::Vector2f projectPoint(const Eigen::Vector3f& p) const override
         {
@@ -69,6 +74,17 @@ namespace lvr2
             // TODO: distort or not?
             return Eigen::Vector2f(proj.x() / proj.z(), proj.y() / proj.z());
         };
+
+        template <typename Scalar>
+        Vector2<Scalar> distortPoint(const Vector2<Scalar>& p) const
+        {
+            const double x = (p.x() - cx)/fx;
+            const double y = (p.y() - cy)/fy;
+
+            auto uv = distortionModel.distortPoint(Vector2d(x, y));
+
+            return Vector2<Scalar>(uv.x() * fx + cx, uv.y() * fy + cy);
+        }
     };
 
     using PinholeModelPtr = std::shared_ptr<PinholeModel>;
@@ -82,14 +98,14 @@ namespace lvr2
         os << timestamp << "-------------" << std::endl;
         os << timestamp << "Fx: " << m.fx << std::endl;
         os << timestamp << "Fy: " << m.fy << std::endl;
-        os << timestamp << "Cx: " << m.fx << std::endl;
-        os << timestamp << "Cy: " << m.fy << std::endl;
+        os << timestamp << "Cx: " << m.cx << std::endl;
+        os << timestamp << "Cy: " << m.cy << std::endl;
         os << timestamp << "Width: " << m.width << std::endl;
         os << timestamp << "Height: " << m.height << std::endl;
-        os << timestamp << "Distortion Model: " << m.distortionModel << std::endl;
-        for(size_t i = 0; i < m.distortionCoefficients.size(); i++)
+        os << timestamp << "Distortion Model: " << m.distortionModel.name() << std::endl;
+        for(size_t i = 0; i < m.distortionModel.coefficients().size(); i++)
         {
-            os << timestamp << "Coeff  " << i << ": " << m.distortionCoefficients[i] << std::endl;
+            os << timestamp << "Coeff  " << i << ": " << m.distortionModel.coefficients()[i] << std::endl;
         }
         
         return os;
@@ -100,15 +116,15 @@ namespace lvr2
 
         log << lvr2::info << "[Pinhole Model] Fx: " << m.fx << lvr2::endl;
         log << "[Pinhole Model] Fy: " << m.fy << lvr2::endl;
-        log << "[Pinhole Model] Cx: " << m.fx << lvr2::endl;
-        log << "[Pinhole Model] Cy: " << m.fy << lvr2::endl;
+        log << "[Pinhole Model] Cx: " << m.cx << lvr2::endl;
+        log << "[Pinhole Model] Cy: " << m.cy << lvr2::endl;
         log << "[Pinhole Model] Width: " << m.width << lvr2::endl;
         log << "[Pinhole Model] Height: " << m.height << lvr2::endl;
-        log << "[Pinhole Model] Distortion Model: " << m.distortionModel << lvr2::endl;
+        log << "[Pinhole Model] Distortion Model: " << m.distortionModel.name() << lvr2::endl;
 
-        for(size_t i = 0; i < m.distortionCoefficients.size(); i++)
+        for(size_t i = 0; i < m.distortionModel.coefficients().size(); i++)
         {
-            log << "[Pinhole Model] Coeff  " << i << ": " << m.distortionCoefficients[i] << lvr2::endl;
+            log << "[Pinhole Model] Coeff  " << i << ": " << m.distortionModel.coefficients()[i] << lvr2::endl;
         }
         
         return log;
