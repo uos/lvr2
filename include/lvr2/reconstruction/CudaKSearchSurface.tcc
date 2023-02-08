@@ -94,7 +94,7 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
     size_t size =  3 * num_points;
 
-    // Get the queries
+    // // Get the queries
     size_t num_queries = num_points;
 
     float* queries = points_raw;
@@ -109,8 +109,8 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
         std::cout << "KNN & Normals..." << std::endl;
         this->m_tree.knn_normals(
-            queries, 
-            num_queries, 
+            // queries, 
+            // num_queries, 
             K,
             normals,
             num_queries
@@ -149,10 +149,41 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     }
 
     // ########################################################################################
-    // Set the normals in the point buffer
-    floatArr new_normals = floatArr(&normals[0]);
 
-    this->m_pointBuffer->setNormalArray(new_normals, num_points);
+    if(mode == 2)
+    {
+        // Create the return arrays
+        unsigned int* n_neighbors_out;
+        unsigned int* indices_out;
+        float* distances_out;
+
+        // Malloc the output arrays here
+        n_neighbors_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
+        indices_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries * K);
+        distances_out = (float*) malloc(sizeof(float) * num_queries * K);
+
+        float r = 15.0f;
+
+        std::cout << "Radius Search..." << std::endl;
+        // Process the queries 
+        this->m_tree.radiusSearch(queries, num_queries,
+                    K, r,
+                    n_neighbors_out, indices_out, distances_out);
+       
+        std::cout << "Normals..." << std::endl;
+        // Calculate the normals
+        this->m_tree.calculate_normals(normals, num_queries,
+                    queries, num_queries, K,
+                    n_neighbors_out, indices_out);
+
+        std::cout << "Done!" << std::endl;
+    }
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Set the normals in the point buffer
+    // floatArr new_normals = floatArr(&normals[0]);
+
+    // this->m_pointBuffer->setNormalArray(new_normals, num_points);
+    this->m_pointBuffer->setNormalArray(floatArr(&normals[0]), num_points);
 
 }
 

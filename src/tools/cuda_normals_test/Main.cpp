@@ -21,17 +21,18 @@ int main()
         // 500000, 
         // 1000000, 
         // 5000000, 
-        10000000, 
+        // 10000000, 
         // 20000000, 
         // 30000000
+        40000000
     };
 
     int k_s[] = {
-        // 10, 
+        10, 
         // 25, 
         // 50, 
         // 100, 
-        200,
+        // 200,
         // 500,
         // 1000,
         // 2000,
@@ -51,7 +52,7 @@ int main()
 
     // Generates 36.000.000 points
     lvr2::PointBufferPtr pbuffer;
-    pbuffer = lvr2::synthetic::genSpherePoints(6000,6000);
+    pbuffer = lvr2::synthetic::genSpherePoints(8000,8000);
 
     size_t num_points = pbuffer->numPoints();
 
@@ -97,8 +98,8 @@ int main()
             {
                 
                 tree.knn_normals(
-                    pts,
-                    n,
+                    // pts,
+                    // n,
                     k,
                     normals,
                     n

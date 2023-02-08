@@ -26,8 +26,9 @@ public:
     // unsigned int* m_sorted_indices;
 
     AABB* m_extent;
-    BVHNode* m_nodes;
-    unsigned int m_root_node;
+    // BVHNode* m_nodes;
+    // TODO Pointer?
+    unsigned int* m_root_node;
 
     // TODO Do we need this here?
     float m_flip_x;
@@ -37,6 +38,7 @@ public:
     // GPU
     float* m_d_points;
     unsigned int* m_d_sorted_indices;
+    BVHNode* m_d_nodes;
 
     LBVHIndex();
 
@@ -119,8 +121,8 @@ public:
     ) const;
 
     void knn_normals(
-        float* query_points, 
-        size_t num_queries,
+        // float* query_points, 
+        // size_t num_queries,
         int K,
         float* normals, 
         size_t num_normals
@@ -132,7 +134,7 @@ public:
         size_t num_points
     ) const;
 
-    std::string getSampleDir() const;
+    // std::string getSampleDir() const;
 
     void getPtxFromCuString( 
         std::string& ptx, 
