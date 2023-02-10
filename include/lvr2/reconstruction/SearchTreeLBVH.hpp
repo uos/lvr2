@@ -10,6 +10,10 @@
 namespace lvr2
 {
 
+/**
+ * @brief SearchClass for point data.
+ */
+
 template<typename BaseVecT>
 class SearchTreeLBVH : public SearchTree<BaseVecT>
 {
@@ -17,6 +21,12 @@ private:
     using CoordT = typename BaseVecT::CoordType;
 
 public:
+
+    /**
+     *  @brief Takes the point-data and initializes the underlying searchtree.
+     *
+     *  @param buffer  A PointBuffer point that holds the data.
+     */
     SearchTreeLBVH(PointBufferPtr buffer);
 
     /// See interface documentation.
@@ -36,6 +46,15 @@ public:
         vector<CoordT>& distances
     ) const override;
 
+    /**
+     * @brief Performs a parallel kNN Search on the GPU
+     * 
+     * @param query     Query points for which the neighbors are searched
+     * @param n         Number of queries
+     * @param k         Max Number of neighbors per query
+     * @param indices   Indices of the found neighbors
+     * @param distances Distances of the found neighbors
+     */
     void kSearchParallel(
         const BaseVecT* query,
         int n,
@@ -44,6 +63,17 @@ public:
         vector<CoordT>& distances
     ) const;
     
+    /**
+     * @brief Performs a parallel radius Search on the GPU
+     * 
+     * @param query     Query points for which the neighbors are searched
+     * @param n         Number of queries
+     * @param k         Max Number of neighbors per query
+     * @param r         The max radius
+     * @param indices   Indices of the found neighbors
+     * @param distances Distances of the found neighbors
+     * @param neighbors Number of found neighbors for each query
+     */
     void radiusSearchParallel(
         const BaseVecT* query,
         int n,

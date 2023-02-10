@@ -204,8 +204,8 @@ __global__ void lbvh::calculate_normals_kernel(
     float* queries, 
     size_t num_queries, 
     int K,
-    unsigned int* n_neighbors_out, 
-    unsigned int* indices_out, 
+    unsigned int* n_neighbors_in, 
+    unsigned int* indices_in, 
     float* normals,
     float flip_x, 
     float flip_y, 
@@ -220,7 +220,7 @@ __global__ void lbvh::calculate_normals_kernel(
    
     // http://www.ilikebigbits.com/2017_09_25_plane_from_points_2.html
 
-    unsigned int n = n_neighbors_out[tid];
+    unsigned int n = n_neighbors_in[tid];
     const double nf = (double) n - 1;
 
     if(n < 3)
@@ -237,9 +237,9 @@ __global__ void lbvh::calculate_normals_kernel(
     for(int i = 1; i < n; i++)
     {
         // Coordinates of point which is the i-th neighbor
-        sum.x += (double) points[ 3 * indices_out[K * tid + i] + 0] / nf;
-        sum.y += (double) points[ 3 * indices_out[K * tid + i] + 1] / nf;
-        sum.z += (double) points[ 3 * indices_out[K * tid + i] + 2] / nf;
+        sum.x += (double) points[ 3 * indices_in[K * tid + i] + 0] / nf;
+        sum.y += (double) points[ 3 * indices_in[K * tid + i] + 1] / nf;
+        sum.z += (double) points[ 3 * indices_in[K * tid + i] + 2] / nf;
     }
 
     // Doing this in the for loop above leads to less uninitialised normals
@@ -256,9 +256,9 @@ __global__ void lbvh::calculate_normals_kernel(
     {
         double3 r =
         {
-            (double) points[ 3 * indices_out[K * tid + i] + 0] - sum.x,
-            (double) points[ 3 * indices_out[K * tid + i] + 1] - sum.y,
-            (double) points[ 3 * indices_out[K * tid + i] + 2] - sum.z
+            (double) points[ 3 * indices_in[K * tid + i] + 0] - sum.x,
+            (double) points[ 3 * indices_in[K * tid + i] + 1] - sum.y,
+            (double) points[ 3 * indices_in[K * tid + i] + 2] - sum.z
         };
        
         xx += r.x * r.x / nf;

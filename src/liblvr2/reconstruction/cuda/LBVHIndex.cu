@@ -3,7 +3,6 @@
 #include "lvr2/reconstruction/cuda/lbvh/lbvh.cuh"
 #include "lvr2/reconstruction/cuda/lbvh/normals_kernel.cuh"
 #include "lvr2/reconstruction/cuda/lbvh/aabb.cuh"
-// #include "knn_normals_kernel.cuh"
 
 #include <stdio.h>
 #include <vector>

@@ -224,7 +224,21 @@ using namespace lbvh;
 
 namespace lvr2
 {
-
+/**
+ * @brief   A Cuda kernel that performs a kNN search on the LBVH and
+ *          calculates the surface normals by doing an approximated
+ *          iterative PCA
+ * 
+ * @param nodes             Nodes of the LBVH
+ * @param points            Points of the dataset
+ * @param sorted_indices    Sorted indices of the points
+ * @param root_index        Index of the LBVH root node
+ * @param max_radius        Maximum radius for radius search
+ * @param query_points      Query points for which the normals are calculated
+ * @param sorted_queries    Sorted indices of the query points
+ * @param num_queries       Number of queries
+ * @param normals           Stores the calculated normals
+ */
 extern "C" __global__ void knn_normals_kernel(
     const BVHNode *nodes,
     const float* __restrict__ points,         
