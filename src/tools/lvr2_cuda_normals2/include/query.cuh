@@ -3,10 +3,10 @@
 #include "static_priorityqueue.cuh"
 #include "vec_math.h"
 
-// default is one nearest neighbor
-#ifndef K
-#define K 50
-#endif
+// // default is one nearest neighbor
+// #ifndef K
+// #define K 50
+// #endif
 
 namespace lbvh {
 

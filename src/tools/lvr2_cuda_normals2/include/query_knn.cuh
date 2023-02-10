@@ -2,10 +2,10 @@
 #include "query.cuh"
 #include "static_priorityqueue.cuh"
 
-// default is one nearest neighbor
-#ifndef K
-#define K 50
-#endif
+// // default is one nearest neighbor
+// #ifndef K
+// #define K 50
+// #endif
 
 namespace lbvh {
     __forceinline__ __device__ void query_knn(

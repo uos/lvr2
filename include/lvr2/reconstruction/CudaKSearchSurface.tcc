@@ -41,7 +41,7 @@ template<typename BaseVecT>
 CudaKSearchSurface<BaseVecT>::CudaKSearchSurface(
     PointBufferPtr pbuffer,
     size_t k
-) : PointsetSurface<BaseVecT>(pbuffer), m_tree(1, true, true)  //TODO leaf_size??
+) : PointsetSurface<BaseVecT>(pbuffer), m_tree(32, true, true)  //TODO leaf_size??
 {
     this->setKn(k);
 
@@ -102,7 +102,7 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     // Create the normal array
     float* normals = (float*) malloc(sizeof(float) * num_queries * 3);
 
-    int mode = 0;
+    int mode = 1;
     // #########################################################################################
     if(mode == 0)
     {
@@ -180,9 +180,7 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     }
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Set the normals in the point buffer
-    // floatArr new_normals = floatArr(&normals[0]);
-
-    // this->m_pointBuffer->setNormalArray(new_normals, num_points);
+   
     this->m_pointBuffer->setNormalArray(floatArr(&normals[0]), num_points);
 
 }

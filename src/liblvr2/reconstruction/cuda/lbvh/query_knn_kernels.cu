@@ -35,7 +35,7 @@ extern "C" __global__ void query_knn_kernel(
     }
 
     // added this
-    float3 query_point =       
+    float3 query_point =
     {
         query_points[3 * query_idx + 0],
         query_points[3 * query_idx + 1],

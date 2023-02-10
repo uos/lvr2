@@ -24,13 +24,9 @@ __global__ void lbvh::compute_morton_kernel(const AABB* __restrict__ aabbs,
 
     const AABB& box = aabbs[idx];
     morton_codes[idx] = morton_code(box, *extent);
-    
-    
-    //printf("%d: %llu \n", idx, morton_codes[idx]);
-    
 }
 
-__global__ void lbvh::compute_morton_points_kernel(float* __restrict__ const points,    // Changed from float3* to float*
+__global__ void lbvh::compute_morton_points_kernel(float* __restrict__ const points,  
                                              AABB* __restrict__ const extent,
                                              unsigned long long int* morton_codes,
                                              unsigned int N) {
@@ -38,7 +34,6 @@ __global__ void lbvh::compute_morton_points_kernel(float* __restrict__ const poi
     if(idx >= N)
         return;
 
-    //const float3& point = points[idx];
     const float3& point = 
     { 
         points[3 * idx + 0],
