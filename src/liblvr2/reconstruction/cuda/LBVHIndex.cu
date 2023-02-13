@@ -24,8 +24,7 @@ using namespace lbvh;
 /*  TODO
     - Extent device Member?
     - m_d_sorted_indices weg?
-    - sorted_queries oder d_sorted_queries member?
-    - Delete or change flip_x,...
+    - Delete or change flip_x,... (or add to knn_normals_kernel?)
 */ 
 
 
@@ -129,13 +128,14 @@ LBVHIndex::LBVHIndex(
 LBVHIndex::~LBVHIndex()
 {
     // CPU
-    free(this->m_extent);
+    // free(this->m_extent);
     free(this->m_root_node);
 
     // GPU
     cudaFree(this->m_d_points);
     cudaFree(this->m_d_sorted_indices);
     cudaFree(this->m_d_nodes);
+    cudaFree(this->m_d_extent);
 
 }
 
@@ -165,13 +165,18 @@ void LBVHIndex::build(float* points, size_t num_points)
         aabbs[i].max.z = points[3 * i + 2];
     }
     // Get the extent
-    this->m_extent = (struct AABB*) malloc(sizeof(struct AABB));
-    getExtent(this->m_extent, points, m_num_objects);
+    // this->m_extent = (struct AABB*) malloc(sizeof(struct AABB));
+    // getExtent(this->m_extent, points, m_num_objects);
+    AABB* extent = (struct AABB*) malloc(sizeof(struct AABB));
+    getExtent(extent, points, m_num_objects);
 
-    AABB* d_extent;
-    gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
-    gpuErrchk(cudaMemcpy(d_extent, m_extent, sizeof(struct AABB), cudaMemcpyHostToDevice));
+    // AABB* d_extent;
+    // gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
+    // gpuErrchk(cudaMemcpy(d_extent, m_extent, sizeof(struct AABB), cudaMemcpyHostToDevice));
     
+    gpuErrchk(cudaMalloc(&this->m_d_extent, sizeof(struct AABB)));
+    gpuErrchk(cudaMemcpy(this->m_d_extent, extent, sizeof(struct AABB), cudaMemcpyHostToDevice));
+
     AABB* d_aabbs;
     gpuErrchk(cudaMalloc(&d_aabbs, sizeof(struct AABB) * num_points));
     gpuErrchk(cudaMemcpy(d_aabbs, aabbs, sizeof(struct AABB) * num_points, cudaMemcpyHostToDevice));
@@ -187,11 +192,11 @@ void LBVHIndex::build(float* points, size_t num_points)
     gpuErrchk(cudaMalloc(&d_morton_codes, size_morton));
 
     compute_morton_kernel<<<blocksPerGrid, threadsPerBlock>>>
-            (d_aabbs, d_extent, d_morton_codes, num_points);
+            (d_aabbs, this->m_d_extent, d_morton_codes, num_points);
     
     gpuErrchk(cudaPeekAtLastError());
     
-    cudaFree(d_extent);
+    // cudaFree(d_extent);
     cudaFree(d_aabbs);
 
     // gpuErrchk(cudaDeviceSynchronize());
@@ -625,9 +630,9 @@ void LBVHIndex::process_queries_dev_ptr(
     // Sort the queries according to their morton codes
     if(this->m_sort_queries)
     {
-        AABB* d_extent;
-        gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
-        gpuErrchk(cudaMemcpy(d_extent, this->m_extent, sizeof(struct AABB), cudaMemcpyHostToDevice));
+        // AABB* d_extent;
+        // gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
+        // gpuErrchk(cudaMemcpy(d_extent, this->m_extent, sizeof(struct AABB), cudaMemcpyHostToDevice));
 
         unsigned long long int* morton_codes_query =
             (unsigned long long int*)
@@ -642,7 +647,7 @@ void LBVHIndex::process_queries_dev_ptr(
                         / threadsPerBlock;
 
         compute_morton_points_kernel<<<blocksPerGrid, threadsPerBlock>>>
-            (d_query_points, d_extent, d_morton_codes_query, num_queries);
+            (d_query_points, this->m_d_extent, d_morton_codes_query, num_queries);
 
         cudaMemcpy(morton_codes_query, d_morton_codes_query,
             sizeof(unsigned long long int) * num_queries,
@@ -651,7 +656,7 @@ void LBVHIndex::process_queries_dev_ptr(
         thrust::sort_by_key(morton_codes_query, morton_codes_query + num_queries, 
                         sorted_queries);
     
-        cudaFree(d_extent);
+        // cudaFree(d_extent);
     }
 
     // Upload
@@ -687,7 +692,6 @@ void LBVHIndex::process_queries_dev_ptr(
     int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
                         / threadsPerBlock;
    
-    std::cout << "HERE" << std::endl;
     cudaEventCreate(&stop);
     cudaEventRecord(stop,0);
     cudaEventSynchronize(stop);
@@ -715,9 +719,7 @@ void LBVHIndex::process_queries_dev_ptr(
     cudaEventElapsedTime(&elapsedTime, start,stop);
     
     std::cout << "KNN Kernel Time: " << elapsedTime << std::endl;
-    findKNN(K, points_raw, num_points, queries_raw, num_queries);
 
-    // cudaFree(d_points);
     cudaFree(d_query_points);
     cudaFree(d_sorted_queries);
     
@@ -907,11 +909,11 @@ void LBVHIndex::knn_normals(
     // Only for large queries: Sort them in morton order to prevent too much warp divergence on tree traversal
     if(this->m_sort_queries)
     {
-        AABB* d_extent;
-        gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
-        gpuErrchk(cudaMemcpy(d_extent, this->m_extent, 
-            sizeof(struct AABB), 
-            cudaMemcpyHostToDevice));
+        // AABB* d_extent;
+        // gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
+        // gpuErrchk(cudaMemcpy(d_extent, this->m_extent, 
+        //     sizeof(struct AABB), 
+        //     cudaMemcpyHostToDevice));
 
         unsigned long long int* morton_codes_query =
             (unsigned long long int*)
@@ -926,7 +928,7 @@ void LBVHIndex::knn_normals(
                         / threadsPerBlock;
 
         compute_morton_points_kernel<<<blocksPerGrid, threadsPerBlock>>>
-            (d_query_points, d_extent, d_morton_codes_query, num_queries);
+            (d_query_points, this->m_d_extent, d_morton_codes_query, num_queries);
 
         cudaMemcpy(morton_codes_query, d_morton_codes_query,
             sizeof(unsigned long long int) * num_queries,
@@ -935,7 +937,7 @@ void LBVHIndex::knn_normals(
         thrust::sort_by_key(morton_codes_query, morton_codes_query + num_queries, 
                         sorted_queries);
 
-        cudaFree(d_extent);
+        // cudaFree(d_extent);
         cudaFree(d_morton_codes_query);
     }
 

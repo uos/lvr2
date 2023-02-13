@@ -27,7 +27,7 @@ public:
     bool m_sort_queries;        // True, if queries should be sorted by their morton codes
     bool m_compact;             // True, if the tree should be compacted after the optimization step
 
-    AABB* m_extent;             // Extent of the dataset (min and max value in each dimension)
+    // AABB* m_extent;             // Extent of the dataset (min and max value in each dimension)
 
     unsigned int* m_root_node;  // The root node of the LBVH 
 
@@ -39,6 +39,7 @@ public:
     float* m_d_points;                  // Points in the dataset, stored as device pointer
     unsigned int* m_d_sorted_indices;   // Sorted indices of the points, stored as device pointer 
     BVHNode* m_d_nodes;                 // Nodes of the LBVH, stored as device pointer
+    AABB* m_d_extent;                   // Extent of the dataset (min and max value in each dimension)
 
     /**
      * @brief Default constructor

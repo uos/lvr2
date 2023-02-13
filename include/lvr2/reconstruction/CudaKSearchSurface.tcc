@@ -102,15 +102,13 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     // Create the normal array
     float* normals = (float*) malloc(sizeof(float) * num_queries * 3);
 
-    int mode = 1;
+    int mode = 0;
     // #########################################################################################
     if(mode == 0)
     {
 
         std::cout << "KNN & Normals..." << std::endl;
         this->m_tree.knn_normals(
-            // queries, 
-            // num_queries, 
             K,
             normals,
             num_queries
@@ -134,15 +132,26 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
         std::cout << "KNN Search..." << std::endl;
         // Process the queries 
-        this->m_tree.kSearch(queries, num_queries,
-                    K,
-                    n_neighbors_out, indices_out, distances_out);
+        this->m_tree.kSearch(
+            queries, 
+            num_queries,
+            K,
+            n_neighbors_out, 
+            indices_out, 
+            distances_out
+        );
        
         std::cout << "Normals..." << std::endl;
         // Calculate the normals
-        this->m_tree.calculate_normals(normals, num_queries,
-                    queries, num_queries, K,
-                    n_neighbors_out, indices_out);
+        this->m_tree.calculate_normals(
+            normals, 
+            num_queries,        
+            queries, 
+            num_queries, 
+            K,
+            n_neighbors_out, 
+            indices_out
+        );
 
         std::cout << "Done!" << std::endl;
 
@@ -166,15 +175,27 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
         std::cout << "Radius Search..." << std::endl;
         // Process the queries 
-        this->m_tree.radiusSearch(queries, num_queries,
-                    K, r,
-                    n_neighbors_out, indices_out, distances_out);
+        this->m_tree.radiusSearch(
+            queries, 
+            num_queries,
+            K, 
+            r,
+            n_neighbors_out, 
+            indices_out, 
+            distances_out
+        );
        
         std::cout << "Normals..." << std::endl;
         // Calculate the normals
-        this->m_tree.calculate_normals(normals, num_queries,
-                    queries, num_queries, K,
-                    n_neighbors_out, indices_out);
+        this->m_tree.calculate_normals(
+            normals, 
+            num_queries,
+            queries, 
+            num_queries, 
+            K,
+            n_neighbors_out, 
+            indices_out
+        );
 
         std::cout << "Done!" << std::endl;
     }
