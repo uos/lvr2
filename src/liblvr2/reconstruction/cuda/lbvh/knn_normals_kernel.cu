@@ -253,6 +253,7 @@ extern "C" __global__ void knn_normals_kernel(
 {
     unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
     
+
     if (tid >= num_queries)
     {
         return;
@@ -265,9 +266,15 @@ extern "C" __global__ void knn_normals_kernel(
     StaticPriorityQueue<float, K> queue(max_radius);
     unsigned int query_idx = sorted_queries[tid];
 
-    normals[3 * query_idx + 0] = 0.0f;
-    normals[3 * query_idx + 1] = 0.0f;
-    normals[3 * query_idx + 2] = 0.0f;
+    // TODO Just for testing
+    // if(query_idx != 0) 
+    // {
+    //     return;
+    // }
+
+    // normals[3 * query_idx + 0] = 0.0f;
+    // normals[3 * query_idx + 1] = 0.0f;
+    // normals[3 * query_idx + 2] = 0.0f;
 
     float3 query_point =       
     {
@@ -287,7 +294,6 @@ extern "C" __global__ void knn_normals_kernel(
     // is the query point itself
     unsigned int n = queue.size();      // only used in for loops
     const double nf = (double) n - 1;   // used for calculation, therefore -1
-
 
     if(n < 3)
     {
@@ -309,7 +315,15 @@ extern "C" __global__ void knn_normals_kernel(
         sum.x += (double) points[ 3 * k.id + 0] / nf;
         sum.y += (double) points[ 3 * k.id + 1] / nf;
         sum.z += (double) points[ 3 * k.id + 2] / nf;
+        // TODO
+        // normals[3 * query_idx + 0 + 3 * (i)] = points[ 3 * k.id + 0];
+        // normals[3 * query_idx + 1 + 3 * (i)] = points[ 3 * k.id + 1];
+        // normals[3 * query_idx + 2 + 3 * (i)] = points[ 3 * k.id + 2];
+
+        // printf("Point %d: (%f %f %f)\n", k.id, points[ 3 * k.id + 0], points[ 3 * k.id + 1], points[ 3 * k.id + 2]);
     }
+    // TODO
+    // return;
 
     // Doing this in the for loop above leads to less uninitialised normals
     // sum.x /= nf; // x,y,z coordinates of centroid
@@ -326,18 +340,16 @@ extern "C" __global__ void knn_normals_kernel(
         auto k = queue[i];
         double3 r =
         {
-            (double) points[ 3 * k.id + 0] - sum.x,
-            (double) points[ 3 * k.id + 1] - sum.y,
-            (double) points[ 3 * k.id + 2] - sum.z
+            (double) points[ 3 * k.id + 0] - sum.x,     //+++++++++++++++++++++++++
+            (double) points[ 3 * k.id + 1] - sum.y,     // These operations sometimes become = 0
+            (double) points[ 3 * k.id + 2] - sum.z      //+++++++++++++++++++++++++
         };
-
-        xx += r.x * r.x / nf;
-        xy += r.x * r.y / nf;
-        xz += r.x * r.z / nf;
-        yy += r.y * r.y / nf;
-        yz += r.y * r.z / nf;
-        zz += r.z * r.z / nf;
-        
+        xx += r.x * r.x / nf;   // 1.97215e-31
+        xy += r.x * r.y / nf;   // 0
+        xz += r.x * r.z / nf;   // 0
+        yy += r.y * r.y / nf;   // 0
+        yz += r.y * r.z / nf;   // 0
+        zz += r.z * r.z / nf;   // 0
     }
 
     // Doing this in the for loop above leads to less uninitialised normals
@@ -352,7 +364,7 @@ extern "C" __global__ void knn_normals_kernel(
     double3 axis_dir;
 
     // For x
-    double det_x = yy*zz - yz*yz;
+    double det_x = yy*zz - yz*yz;   // 0
 
     axis_dir.x = det_x;
     axis_dir.y = xz*yz - xy*zz;
@@ -371,7 +383,7 @@ extern "C" __global__ void knn_normals_kernel(
 
 
     // For y
-    double det_y = xx*zz - xz*xz;
+    double det_y = xx*zz - xz*xz;   // 0
 
     axis_dir.x = xz*yz - xy*zz;
     axis_dir.y = det_y;
@@ -390,7 +402,7 @@ extern "C" __global__ void knn_normals_kernel(
 
 
     // For z
-    double det_z = xx*yy - xy*xy;
+    double det_z = xx*yy - xy*xy;   // 0
 
     axis_dir.x = xy*yz - xz*yy;
     axis_dir.y = xy*xz - yz*xx;
@@ -408,10 +420,10 @@ extern "C" __global__ void knn_normals_kernel(
     weighted_dir.z += axis_dir.z * weight;
 
     // Create the normal
-    double3 normal = weighted_dir;
+    double3 normal = weighted_dir;  // (0,0,0)
 
     // Normalize normal
-    double mag = sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));
+    double mag = sqrt((normal.x * normal.x) + (normal.y * normal.y) + (normal.z * normal.z));   // 0
    
     normal.x /= mag;
     normal.y /= mag;
@@ -423,11 +435,11 @@ extern "C" __global__ void knn_normals_kernel(
     double vertex_z = query_points[3 * query_idx + 2];
 
     // flip the normals
-    double x_dir = flip_x - vertex_x;
-    double y_dir = flip_y - vertex_y;
-    double z_dir = flip_z - vertex_z;
+    double x_dir = flip_x - vertex_x;   // 1e+06
+    double y_dir = flip_y - vertex_y;   // 1.00001e+06
+    double z_dir = flip_z - vertex_z;   // 999997
 
-    double scalar = x_dir * normal.x + y_dir * normal.y + z_dir * normal.z;
+    double scalar = x_dir * normal.x + y_dir * normal.y + z_dir * normal.z; // -nan
 
     // Set normals to zero if nan or inf values occur
     if(!(scalar <= 0 || scalar >= 0) || isinf(scalar))
@@ -444,7 +456,6 @@ extern "C" __global__ void knn_normals_kernel(
         normal.z = -normal.z;
     }
 
-   
     // Set the normal in the normal array
     normals[3 * query_idx + 0] = (float) normal.x;
     normals[3 * query_idx + 1] = (float) normal.y;

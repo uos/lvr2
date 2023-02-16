@@ -148,6 +148,13 @@ void LBVHIndex::build(float* points, size_t num_points)
         sizeof(float) * 3 * num_points,
         cudaMemcpyHostToDevice) );
 
+    std::cout << "First Point: " << points[0] << std::endl;
+    std::cout << "First Point: " << points[1] << std::endl;
+    std::cout << "First Point: " << points[2] << std::endl;
+    std::cout << "First Point: " << points[3 * 1000 + 0] << std::endl;
+    std::cout << "First Point: " << points[3 * 1000 + 1] << std::endl;
+    std::cout << "First Point: " << points[3 * 1000 + 2] << std::endl;
+
     this->m_num_objects = num_points;
     this->m_num_nodes = 2 * m_num_objects - 1;
 
@@ -165,14 +172,8 @@ void LBVHIndex::build(float* points, size_t num_points)
         aabbs[i].max.z = points[3 * i + 2];
     }
     // Get the extent
-    // this->m_extent = (struct AABB*) malloc(sizeof(struct AABB));
-    // getExtent(this->m_extent, points, m_num_objects);
     AABB* extent = (struct AABB*) malloc(sizeof(struct AABB));
     getExtent(extent, points, m_num_objects);
-
-    // AABB* d_extent;
-    // gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
-    // gpuErrchk(cudaMemcpy(d_extent, m_extent, sizeof(struct AABB), cudaMemcpyHostToDevice));
     
     gpuErrchk(cudaMalloc(&this->m_d_extent, sizeof(struct AABB)));
     gpuErrchk(cudaMemcpy(this->m_d_extent, extent, sizeof(struct AABB), cudaMemcpyHostToDevice));
@@ -401,11 +402,6 @@ void LBVHIndex::build(float* points, size_t num_points)
     free(morton_codes);
     free(indices);
     free(sorted_aabbs);
-    // // free(root_node);
-    // // free(nodes);
-    // // free(aabbs);
-    // // free(extent);
-    // // free(h_morton_codes);
 
     return;
 }
@@ -722,6 +718,8 @@ void LBVHIndex::process_queries_dev_ptr(
 
     cudaFree(d_query_points);
     cudaFree(d_sorted_queries);
+
+    free(sorted_queries);
     
     return;
 }
@@ -820,6 +818,7 @@ void LBVHIndex::process_queries_dev_ptr(
     cudaFree(d_indices_in);
     cudaFree(d_n_neighbors_in);
 
+    bool first = true;
     size_t count = 0;
     for(int i = 0; i < 3 * num_normals; i+=3)
     {
@@ -827,6 +826,11 @@ void LBVHIndex::process_queries_dev_ptr(
             normals[i + 1] == 0.0f && 
             normals[i + 2] == 0.0f)
             {
+                if(first)
+                {
+                    first = false;
+                    std::cout << "First uninit normal: " << i << std::endl;
+                }
                 count++;
             }
     }
@@ -951,7 +955,7 @@ void LBVHIndex::knn_normals(
     gpuErrchk( cudaMalloc(&d_normals, 
         sizeof(float) * 3 * num_normals) );
 
-    float radius = FLT_MAX;
+    float radius = 30.0f;
 
     cudaEventCreate(&stop);
     cudaEventRecord(stop,0);
@@ -1020,6 +1024,7 @@ void LBVHIndex::knn_normals(
     cudaFree(d_sorted_queries);
     cudaFree(d_normals);
 
+    bool first = true;
     size_t count = 0;
     for(int i = 0; i < 3 * num_normals; i+=3)
     {
@@ -1027,9 +1032,32 @@ void LBVHIndex::knn_normals(
             normals[i + 1] == 0.0f && 
             normals[i + 2] == 0.0f)
             {
+                if(first)
+                {
+                    first = false;
+                    std::cout << "First uninit normal: " << i << std::endl;
+                }
                 count++;
             }
     }
+
+    // int idx = 0;
+    // std::cout << "Normal: " << std::endl;
+    // for(int i = 1; i < 10; i++)
+    // {
+    //     std::cout << "x: " << normals[3 * idx + 0 + 3*i] << std::endl;
+    //     std::cout << "y: " << normals[3 * idx + 1 + 3*i] << std::endl;
+    //     std::cout << "z: " << normals[3 * idx + 2 + 3*i] << std::endl;
+    // //     std::cout << "Neigh idx: " << normals[i] << std::endl;
+
+    // }
+
+    // std::cout << "xx: " << normals[3 * idx + 0] << std::endl;
+    // std::cout << "xy: " << normals[3 * idx + 1] << std::endl;
+    // std::cout << "xz: " << normals[3 * idx + 2] << std::endl;
+    // std::cout << "yy: " << normals[3 * idx + 3] << std::endl;
+    // std::cout << "yz: " << normals[3 * idx + 4] << std::endl;
+    // std::cout << "zz: " << normals[3 * idx + 5] << std::endl;
 
     std::cout << "Uninitialised normals: " << count << std::endl;
 }

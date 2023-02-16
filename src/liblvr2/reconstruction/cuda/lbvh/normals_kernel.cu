@@ -209,7 +209,8 @@ __global__ void lbvh::calculate_normals_kernel(
     float* normals,
     float flip_x, 
     float flip_y, 
-    float flip_z)
+    float flip_z
+)
 {
     unsigned int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -367,7 +368,6 @@ __global__ void lbvh::calculate_normals_kernel(
         normal.z = 0.0f;
     }
 
-    // TODO < or > ?
     if(scalar < 0)
     {
         normal.x = -normal.x;

@@ -9,6 +9,8 @@
 
 #include "lvr2/util/Synthetic.hpp"
 
+#include "lvr2/reconstruction/SearchTreeLBVH.hpp"
+
 int main() 
 {
     lvr2::lbvh::LBVHIndex tree = lvr2::lbvh::LBVHIndex(1, true, true);

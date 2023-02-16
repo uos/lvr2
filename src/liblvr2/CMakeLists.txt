@@ -242,8 +242,6 @@ if(CUDA_FOUND)
     set(CUDA_SEPARABLE_COMPILATION ON)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
-    message(WARNING "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!${LBVH_KERNEL_INCLUDES}")
-
     # List of CUDA kernel code sources
     set(LVR2_CUDA_SRC
         reconstruction/cuda/CudaSurface.cu

@@ -2,31 +2,6 @@
 
 #include <iostream>
 
-#define NUM 5000000
-
-// TODO Only for testing
-#include <cmath>
-#include <vector>
-#include <chrono>
-
-std::vector<float> sphere_point_cloud(size_t num_points) {
-    std::vector<float> point_cloud;
-
-    // Generate points on a sphere
-    for (size_t i = 0; i < num_points; i++) {
-        float theta = 2 * M_PI * (i / static_cast<float>(num_points));
-        float phi = M_PI * (i / static_cast<float>(num_points));
-        float x = std::cos(theta) * std::sin(phi);
-        float y = std::sin(theta) * std::sin(phi);
-        float z = std::cos(phi);
-        point_cloud.emplace_back(x);
-        point_cloud.emplace_back(y);
-        point_cloud.emplace_back(z);
-    }
-
-    return point_cloud;
-}
-
 namespace lvr2
 {
 
@@ -41,23 +16,14 @@ template<typename BaseVecT>
 CudaKSearchSurface<BaseVecT>::CudaKSearchSurface(
     PointBufferPtr pbuffer,
     size_t k
-) : PointsetSurface<BaseVecT>(pbuffer), m_tree(32, true, true)  //TODO leaf_size??
+) : PointsetSurface<BaseVecT>(pbuffer), m_tree(32, true, true)
 {
     this->setKn(k);
 
     floatArr points = this->m_pointBuffer->getPointArray();
     float* points_raw = &points[0];
     int num_points = this->m_pointBuffer->numPoints();
-    // size_t num_points = NUM;
-    // std::vector<float> pc = sphere_point_cloud(num_points);
-    // float* points_raw = (float*) malloc(sizeof(float) * 3 * num_points);
-
-    // for(int i = 0; i < num_points; i++)
-    // {
-    //     points_raw[3 * i + 0] = pc[3 * i + 0];
-    //     points_raw[3 * i + 1] = pc[3 * i + 1];
-    //     points_raw[3 * i + 2] = pc[3 * i + 2];
-    // }
+    
     std::cout << "Building Tree..." << std::endl;
     this->m_tree.build(points_raw, num_points);
     std::cout << "Tree Done!" << std::endl;
@@ -80,14 +46,7 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     
     float* points_raw = &points[0];
     int num_points = this->m_pointBuffer->numPoints();
-    // int num_points = NUM;
-    // float* points_raw = (float*) malloc(sizeof(float) * 3 * num_points);
-
-    // for(int i = 0; i < num_points; i++)
-    // {
-    //     points_raw[i] = (float) i;
-    // }
-    // TODO Check if 3 floats long
+    
     BaseVecT* query = reinterpret_cast<BaseVecT*>(points_raw);
 
     int K = this->m_kn;
@@ -106,7 +65,6 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     // #########################################################################################
     if(mode == 0)
     {
-
         std::cout << "KNN & Normals..." << std::endl;
         this->m_tree.knn_normals(
             K,

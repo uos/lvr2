@@ -369,7 +369,9 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     }
     else 
     {
+        std::cout << "1" << std::endl;
         buffer = model->m_pointCloud;
+        std::cout << "NUM: " << buffer->numPoints() << std::endl;
         // TODO 
         // std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
         // buffer = synthetic::genSpherePoints(1000,1000);

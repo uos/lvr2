@@ -34,7 +34,8 @@ void calculate_normals_kernel
     float* normals,
     float flip_x, 
     float flip_y, 
-    float flip_z);
+    float flip_z
+);
 
 } // namespace lbvh
 
