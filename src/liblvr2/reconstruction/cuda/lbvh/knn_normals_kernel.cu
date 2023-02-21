@@ -267,14 +267,10 @@ extern "C" __global__ void knn_normals_kernel(
     unsigned int query_idx = sorted_queries[tid];
 
     // TODO Just for testing
-    // if(query_idx != 0) 
+    // if(query_idx != 59394) 
     // {
     //     return;
     // }
-
-    // normals[3 * query_idx + 0] = 0.0f;
-    // normals[3 * query_idx + 1] = 0.0f;
-    // normals[3 * query_idx + 2] = 0.0f;
 
     float3 query_point =       
     {
@@ -441,6 +437,8 @@ extern "C" __global__ void knn_normals_kernel(
 
     double scalar = x_dir * normal.x + y_dir * normal.y + z_dir * normal.z; // -nan
 
+    // printf("Scalar: %f\n", scalar);
+
     // Set normals to zero if nan or inf values occur
     if(!(scalar <= 0 || scalar >= 0) || isinf(scalar))
     {
@@ -455,6 +453,8 @@ extern "C" __global__ void knn_normals_kernel(
         normal.y = -normal.y;
         normal.z = -normal.z;
     }
+
+    // printf("Normal: (%f, %f, %f) \n", normal.x, normal.y, normal.z);
 
     // Set the normal in the normal array
     normals[3 * query_idx + 0] = (float) normal.x;

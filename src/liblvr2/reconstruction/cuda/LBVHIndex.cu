@@ -836,6 +836,9 @@ void LBVHIndex::process_queries_dev_ptr(
     }
 
     std::cout << "Uninitialised normals: " << count << std::endl;
+    std::cout << "x: " << normals[0] << std::endl;
+    std::cout << "y: " << normals[1] << std::endl;
+    std::cout << "z: " << normals[2] << std::endl;
 
 }
 // TODO Make this const?
@@ -955,7 +958,7 @@ void LBVHIndex::knn_normals(
     gpuErrchk( cudaMalloc(&d_normals, 
         sizeof(float) * 3 * num_normals) );
 
-    float radius = 30.0f;
+    float radius = FLT_MAX;
 
     cudaEventCreate(&stop);
     cudaEventRecord(stop,0);
@@ -1026,11 +1029,11 @@ void LBVHIndex::knn_normals(
 
     bool first = true;
     size_t count = 0;
-    for(int i = 0; i < 3 * num_normals; i+=3)
+    for(int i = 0; i < num_normals; i++)
     {
-        if( normals[i + 0] == 0.0f && 
-            normals[i + 1] == 0.0f && 
-            normals[i + 2] == 0.0f)
+        if( normals[3 * i + 0] == 0.0f && 
+            normals[3 * i + 1] == 0.0f && 
+            normals[3 * i + 2] == 0.0f)
             {
                 if(first)
                 {
@@ -1051,10 +1054,10 @@ void LBVHIndex::knn_normals(
     // //     std::cout << "Neigh idx: " << normals[i] << std::endl;
 
     // }
-
-    // std::cout << "xx: " << normals[3 * idx + 0] << std::endl;
-    // std::cout << "xy: " << normals[3 * idx + 1] << std::endl;
-    // std::cout << "xz: " << normals[3 * idx + 2] << std::endl;
+    int idx = 59394;
+    std::cout << "x: " << normals[3 * idx + 0] << std::endl;
+    std::cout << "y: " << normals[3 * idx + 1] << std::endl;
+    std::cout << "z: " << normals[3 * idx + 2] << std::endl;
     // std::cout << "yy: " << normals[3 * idx + 3] << std::endl;
     // std::cout << "yz: " << normals[3 * idx + 4] << std::endl;
     // std::cout << "zz: " << normals[3 * idx + 5] << std::endl;
