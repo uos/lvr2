@@ -141,22 +141,15 @@ LBVHIndex::~LBVHIndex()
 
 void LBVHIndex::build(float* points, size_t num_points)
 {
-     // Upload points to GPU
+    this->m_num_objects = num_points;
+    this->m_num_nodes = 2 * m_num_objects - 1;
+
+    // Upload points to GPU
     gpuErrchk( cudaMalloc(&this->m_d_points,
         sizeof(float) * 3 * num_points) );
     gpuErrchk( cudaMemcpy(this->m_d_points, points,
         sizeof(float) * 3 * num_points,
         cudaMemcpyHostToDevice) );
-
-    std::cout << "First Point: " << points[0] << std::endl;
-    std::cout << "First Point: " << points[1] << std::endl;
-    std::cout << "First Point: " << points[2] << std::endl;
-    std::cout << "First Point: " << points[3 * 1000 + 0] << std::endl;
-    std::cout << "First Point: " << points[3 * 1000 + 1] << std::endl;
-    std::cout << "First Point: " << points[3 * 1000 + 2] << std::endl;
-
-    this->m_num_objects = num_points;
-    this->m_num_nodes = 2 * m_num_objects - 1;
 
     // initialize AABBs
     AABB* aabbs = (struct AABB*) malloc(sizeof(struct AABB) * num_points);
@@ -244,10 +237,10 @@ void LBVHIndex::build(float* points, size_t num_points)
 
     AABB* d_sorted_aabbs;
     gpuErrchk(cudaMalloc(&d_sorted_aabbs, 
-            sizeof(struct AABB) * num_points));
+        sizeof(struct AABB) * num_points));
 
     gpuErrchk(cudaMemcpy(d_sorted_aabbs, sorted_aabbs, 
-            sizeof(struct AABB) * num_points, cudaMemcpyHostToDevice));
+        sizeof(struct AABB) * num_points, cudaMemcpyHostToDevice));
 
     // Initialize the tree
     initialize_tree_kernel<<<blocksPerGrid, threadsPerBlock>>>
