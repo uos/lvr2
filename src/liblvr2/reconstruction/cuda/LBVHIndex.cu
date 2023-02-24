@@ -496,8 +496,8 @@ void LBVHIndex::process_queries(
     unsigned int* d_indices_out; 
     float* d_distances_out;
 
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
     
     // Allocate output buffer
     gpuErrchk( cudaMalloc(&d_indices_out, sizeof(unsigned int) * num_queries * K) );
@@ -511,13 +511,13 @@ void LBVHIndex::process_queries(
         sizeof(float) * 3 * num_queries,
         cudaMemcpyHostToDevice);
     
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "Upload Time: " << elapsedTime << std::endl;
+    // std::cout << "Upload Time: " << elapsedTime << std::endl;
     
     // Compute on GPU
     this->process_queries_dev_ptr(
@@ -530,34 +530,34 @@ void LBVHIndex::process_queries(
         d_distances_out
     );
 
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
     
-    // Download
-    gpuErrchk( cudaMemcpy(indices_out, d_indices_out,
-            sizeof(unsigned int) * num_queries * K,
-            cudaMemcpyDeviceToHost) );
+    // // Download
+    // gpuErrchk( cudaMemcpy(indices_out, d_indices_out,
+    //         sizeof(unsigned int) * num_queries * K,
+    //         cudaMemcpyDeviceToHost) );
 
-    gpuErrchk( cudaMemcpy(distances_out, d_distances_out,
-            sizeof(float) * num_queries * K,
-            cudaMemcpyDeviceToHost) );
+    // gpuErrchk( cudaMemcpy(distances_out, d_distances_out,
+    //         sizeof(float) * num_queries * K,
+    //         cudaMemcpyDeviceToHost) );
 
-    gpuErrchk( cudaMemcpy(n_neighbors_out, d_n_neighbors_out,
-            sizeof(unsigned int) * num_queries,
-            cudaMemcpyDeviceToHost) );
+    // gpuErrchk( cudaMemcpy(n_neighbors_out, d_n_neighbors_out,
+    //         sizeof(unsigned int) * num_queries,
+    //         cudaMemcpyDeviceToHost) );
 
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "Download Time: " << elapsedTime << std::endl;
+    // std::cout << "Download Time: " << elapsedTime << std::endl;
 
-    cudaFree(d_indices_out);
-    cudaFree(d_distances_out);
-    cudaFree(d_n_neighbors_out);
-    cudaFree(d_query_points);
+    // cudaFree(d_indices_out);
+    // cudaFree(d_distances_out);
+    // cudaFree(d_n_neighbors_out);
+    // cudaFree(d_query_points);
 }
 
 void LBVHIndex::process_queries_dev_ptr(
@@ -602,6 +602,8 @@ void LBVHIndex::process_queries_dev_ptr(
     // Get cuda module and function
     CUmodule module;
     CUfunction kernel;
+
+    std::cout << "HIIIIIIEEEEEEERRRRRRRRRR" << std::endl;
 
     CUDA_SAFE_CALL(cuModuleLoadDataEx(&module, ptx_src.c_str(), 0, 0, 0));
     CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, kernel_name.c_str()));
@@ -700,6 +702,7 @@ void LBVHIndex::process_queries_dev_ptr(
         params,       // arguments
         0
     ) );      
+
     
     cudaEventCreate(&stop);
     cudaEventRecord(stop,0);

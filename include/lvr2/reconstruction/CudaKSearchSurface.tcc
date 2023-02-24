@@ -61,7 +61,7 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     // Create the normal array
     float* normals = (float*) malloc(sizeof(float) * num_queries * 3);
 
-    int mode = 0;
+    int mode = 1;
     // #########################################################################################
     if(mode == 0)
     {
