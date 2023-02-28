@@ -25,6 +25,11 @@ using namespace lbvh;
     - Extent device Member?
     - m_d_sorted_indices weg?
     - Delete or change flip_x,... (or add to knn_normals_kernel?)
+
+    * Stand der Technik (ikd-tree evtl mit rein nehmen)
+    * Uni PC aufsetzen für Experimente python und C++
+    * Queue in Register?
+    * (Speicher-Optimierung)
 */ 
 
 
@@ -143,7 +148,6 @@ void LBVHIndex::build(float* points, size_t num_points)
 {
     this->m_num_objects = num_points;
     this->m_num_nodes = 2 * m_num_objects - 1;
-
 
     // initialize AABBs
     AABB* aabbs = (struct AABB*) malloc(sizeof(struct AABB) * num_points);
@@ -385,8 +389,7 @@ void LBVHIndex::build(float* points, size_t num_points)
     gpuErrchk( cudaMemcpy(this->m_d_points, points,
         sizeof(float) * 3 * num_points,
         cudaMemcpyHostToDevice) );
-    // TODO Moved this to the end of build()
-    // TODO nicht 
+    // TODO Moved this to the end of build() 
     gpuErrchk( cudaMalloc(&this->m_d_sorted_indices,
         sizeof(unsigned int) * num_points) );
     gpuErrchk( cudaMemcpy(this->m_d_sorted_indices, indices,
