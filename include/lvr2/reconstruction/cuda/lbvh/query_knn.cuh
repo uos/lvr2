@@ -34,7 +34,8 @@ namespace lbvh
     {
         StaticPriorityQueue<float, K> queue(max_radius);
         query_knn(nodes, points, sorted_indices, root_index, query_point, queue);
-        return queue; //std::move(queue);
+        return queue;
+        // std::move(queue);
     }
 } // namespace lbvh
 
