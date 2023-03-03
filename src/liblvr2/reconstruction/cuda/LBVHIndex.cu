@@ -405,26 +405,26 @@ void LBVHIndex::build(float* points, size_t num_points)
 }
 
 #define CUDA_SAFE_CALL(x) \
- do { \
- CUresult result = x; \
- if (result != CUDA_SUCCESS) { \
- const char *msg; \
- cuGetErrorName(result, &msg); \
- std::cerr << "\nerror: " #x " failed with error " \
- << msg << '\n'; \
- exit(1); \
- } \
- } while(0)
+    do { \
+        CUresult result = x; \
+        if (result != CUDA_SUCCESS) { \
+            const char *msg; \
+            cuGetErrorName(result, &msg); \
+            std::cerr << "\nerror: " #x " failed with error " \
+            << msg << '\n'; \
+            exit(1); \
+        } \
+    } while(0)
 
 #define NVRTC_SAFE_CALL(x)                                        \
-  do {                                                            \
-    nvrtcResult result = x;                                       \
-    if (result != NVRTC_SUCCESS) {                                \
-      std::cerr << "\nerror: " #x " failed with error "           \
-                << nvrtcGetErrorString(result) << '\n';           \
-      exit(1);                                                    \
-    }                                                             \
-  } while(0)
+    do {                                                            \
+        nvrtcResult result = x;                                       \
+        if (result != NVRTC_SUCCESS) {                                \
+            std::cerr << "\nerror: " #x " failed with error "           \
+                        << nvrtcGetErrorString(result) << '\n';           \
+            exit(1);                                                    \
+        }                                                             \
+    } while(0)
 
 void LBVHIndex::kSearch(
     float* query_points, 
@@ -1177,6 +1177,15 @@ void LBVHIndex::getPtxFromCuString(
     ptx.resize( ptx_size );
     NVRTC_SAFE_CALL( nvrtcGetPTX( prog, &ptx[0] ) );
 
+    // TODO Delete this
+    // #################################
+    // const char* path = "~/Develop/dat/";
+    // std::ofstream ptxfile(path);
+    // ptxfile.open("kernel_ptx.txt");
+    // ptxfile << ptx;
+    // ptxfile.close();
+
+    //##################################
     // Cleanup
     NVRTC_SAFE_CALL( nvrtcDestroyProgram( &prog ) );
 }
