@@ -246,7 +246,6 @@ void LBVHIndex::build(float* points, size_t num_points)
         malloc(sizeof(unsigned int));
     this->m_root_node[0] = UINT_MAX;
 
-
     unsigned int* d_root_node;
     gpuErrchk(cudaMalloc(&d_root_node, sizeof(unsigned int)));
 
@@ -612,7 +611,6 @@ void LBVHIndex::process_queries_dev_ptr(
     CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, kernel_name.c_str()));
 
     // Prepare kernel launch
-    // TODO Als member? Sonst free()
     unsigned int* sorted_queries = (unsigned int*) 
                 malloc(sizeof(unsigned int) * num_queries);
 
@@ -902,7 +900,6 @@ void LBVHIndex::knn_normals(
     // cudaEventRecord(start,0);
 
     // Prepare kernel launch
-    // TODO Als member
     unsigned int* sorted_queries = (unsigned int*) 
                 malloc(sizeof(unsigned int) * num_queries);
 
@@ -911,7 +908,6 @@ void LBVHIndex::knn_normals(
         sorted_queries[i] = i;
     }
 
-    // TODO Comment in
     // Only for large queries: Sort them in morton order to prevent too much warp divergence on tree traversal
     if(this->m_sort_queries)
     {
