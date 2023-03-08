@@ -745,6 +745,7 @@ endif()
 if(CUDA_FOUND)
 #    cuda_include_directories(ext/CTPL)
     add_subdirectory(src/tools/lvr2_cuda_normals)
+    add_subdirectory(src/tools/benchmark_knn_normals)
 #    add_subdirectory(src/tools/lvr2_cuda_normals2)
 endif()
 

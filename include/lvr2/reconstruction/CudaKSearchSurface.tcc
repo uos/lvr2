@@ -24,8 +24,8 @@ CudaKSearchSurface<BaseVecT>::CudaKSearchSurface(
     float* points_raw = &points[0];
     int num_points = this->m_pointBuffer->numPoints();
 
-    // TODO 
-    num_points = 10000000;
+    // // TODO 
+    // num_points = 10000000;
     
     std::cout << "Building Tree..." << std::endl;
     this->m_tree.build(points_raw, num_points);
@@ -49,8 +49,8 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     
     float* points_raw = &points[0];
     int num_points = this->m_pointBuffer->numPoints();
-    // TODO
-    num_points = 10000000;
+    // // TODO
+    // num_points = 10000000;
     
     BaseVecT* query = reinterpret_cast<BaseVecT*>(points_raw);
 
