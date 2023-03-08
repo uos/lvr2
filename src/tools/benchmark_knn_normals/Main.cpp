@@ -541,7 +541,7 @@ int main(int argc, char** argv)
 
     char *pcm[] = {"LBVH_CUDA", "FLANN", "--useGPU"};                   // The tested point cloud manager
     char *k_s[] = {"5", "10"};                                          // The tested values for k
-    char *data[] = {"/home/till/datasets/polizei/polizei30M_cut.ply"};  // The tested datasets
+    char *data[] = {"/home/tstueckemann/datasets/polizei/polizei30M_cut.ply"};  // The tested datasets
 
     for(int p_ = 0; p_ < num_pcm; p_++)
     {
