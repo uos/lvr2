@@ -371,7 +371,7 @@ void LBVHIndex::build(float* points, size_t num_points)
         }
         gpuErrchk( cudaFree(d_valid) );
 
-        std::cout << "Done with Optimization" << std::endl;
+        // std::cout << "Done with Optimization" << std::endl;
         free(valid);
     }
     
@@ -826,16 +826,16 @@ void LBVHIndex::process_queries_dev_ptr(
                 if(first)
                 {
                     first = false;
-                    std::cout << "First uninit normal: " << i << std::endl;
+                    // std::cout << "First uninit normal: " << i << std::endl;
                 }
                 count++;
             }
     }
 
-    std::cout << "Uninitialised normals: " << count << std::endl;
-    std::cout << "x: " << normals[0] << std::endl;
-    std::cout << "y: " << normals[1] << std::endl;
-    std::cout << "z: " << normals[2] << std::endl;
+    // std::cout << "Uninitialised normals: " << count << std::endl;
+    // std::cout << "x: " << normals[0] << std::endl;
+    // std::cout << "y: " << normals[1] << std::endl;
+    // std::cout << "z: " << normals[2] << std::endl;
 
 }
 // TODO Make this const?
@@ -851,7 +851,7 @@ void LBVHIndex::knn_normals(
     // cudaEvent_t start, stop;
     // float elapsedTime;
 
-    std::cout << "Loading Kernel..." << std::endl;
+    // std::cout << "Loading Kernel..." << std::endl;
 
     // cudaEventCreate(&start);
     // cudaEventRecord(start,0);
@@ -895,7 +895,7 @@ void LBVHIndex::knn_normals(
     
     // std::cout << "Loading Kernel Time: " << elapsedTime << std::endl;
 
-    std::cout << "Uploading..." << std::endl;
+    // std::cout << "Uploading..." << std::endl;
     // cudaEventCreate(&start);
     // cudaEventRecord(start,0);
 
@@ -981,7 +981,7 @@ void LBVHIndex::knn_normals(
     int threadsPerBlock = 256;
     int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
                         / threadsPerBlock;
-    std::cout << "Launching Kernel..." << std::endl;
+    // std::cout << "Launching Kernel..." << std::endl;
 
     // cudaEventCreate(&start);
     // cudaEventRecord(start,0);
@@ -1003,7 +1003,7 @@ void LBVHIndex::knn_normals(
     
     // std::cout << "KNN Normals Kernel Time: " << elapsedTime << std::endl;
     
-    std::cout << "Downloading..." << std::endl;
+    // std::cout << "Downloading..." << std::endl;
     
     // cudaEventCreate(&start);
     // cudaEventRecord(start,0);
@@ -1034,7 +1034,7 @@ void LBVHIndex::knn_normals(
                 if(first)
                 {
                     first = false;
-                    std::cout << "First uninit normal: " << i << std::endl;
+                    // std::cout << "First uninit normal: " << i << std::endl;
                 }
                 count++;
             }
@@ -1058,7 +1058,7 @@ void LBVHIndex::knn_normals(
     // std::cout << "yz: " << normals[3 * idx + 4] << std::endl;
     // std::cout << "zz: " << normals[3 * idx + 5] << std::endl;
 
-    std::cout << "Uninitialised normals: " << count << std::endl;
+    // std::cout << "Uninitialised normals: " << count << std::endl;
 }
 
 // Get the extent of the points 

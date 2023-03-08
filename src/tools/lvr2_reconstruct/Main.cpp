@@ -370,7 +370,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     else 
     {
         buffer = model->m_pointCloud;
-        std::cout << "NUM: " << buffer->numPoints() << std::endl;
     }
 
     // Create a point cloud manager

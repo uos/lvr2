@@ -30,6 +30,7 @@
 #include <memory>
 #include <tuple>
 #include <stdlib.h>
+#include <fstream>
 
 #include <boost/optional.hpp>
 #include <boost/shared_array.hpp>
@@ -120,6 +121,10 @@ using namespace lvr2;
 
 using Vec = BaseVector<float>;
 using PsSurface = lvr2::PointsetSurface<Vec>;
+
+
+const char *path = "/home/tests/runtime_tests/";
+std::ofstream myfile(path);
 
 
 template <typename IteratorType>
@@ -278,15 +283,15 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 auto lidar = pos->lidars.at(0);
                 auto scan = lidar->scans.at(0);
 
-                std::cout << timestamp << "Loading scan position " << positionIndex << std::endl;
+                // std::cout << timestamp << "Loading scan position " << positionIndex << std::endl;
 
                 // Load scan
                 scan->load(reduction_algorithm);
 
-                std::cout << timestamp << "Scan loaded scan has " << scan->numPoints << " points" << std::endl;
-                std::cout << timestamp 
-                          << "Transforming scan: " << std::endl 
-                          <<  (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>() << std::endl;
+                // std::cout << timestamp << "Scan loaded scan has " << scan->numPoints << " points" << std::endl;
+                // std::cout << timestamp 
+                //           << "Transforming scan: " << std::endl 
+                //           <<  (project->transformation * pos->transformation * lidar->transformation * scan->transformation).cast<float>() << std::endl;
 
                 // Transform the new pointcloud
                 transformPointCloud<float>(
@@ -307,22 +312,22 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 scan->release();
             }
             buffer = model->m_pointCloud;
-            std::cout << timestamp << "Loaded " << buffer->numPoints() << " points" << std::endl;
+            // std::cout << timestamp << "Loaded " << buffer->numPoints() << " points" << std::endl;
         }
         else
         {    
             // === Build the PointCloud ===
-            std::cout << timestamp << "Loading scan project" << std::endl;
+            // std::cout << timestamp << "Loading scan project" << std::endl;
             ScanProjectPtr project = scanProjectIO->loadScanProject();
             
-            std::cout << project->positions.size() << std::endl;
+            // std::cout << project->positions.size() << std::endl;
             // The aggregated scans
             ModelPtr model = std::make_shared<Model>();
             model->m_pointCloud = nullptr;
             unsigned ctr = 0;
             for (ScanPositionPtr pos: project->positions)
             {
-                std::cout << "Loading scan position " << ctr << " / " << project->positions.size() << std::endl;
+                // std::cout << "Loading scan position " << ctr << " / " << project->positions.size() << std::endl;
                 for (LIDARPtr lidar: pos->lidars)
                 {
                     for (ScanPtr scan: lidar->scans)
@@ -370,7 +375,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     else 
     {
         buffer = model->m_pointCloud;
-        std::cout << "NUM: " << buffer->numPoints() << std::endl;
+        std::cout << "Num Points: " << buffer->numPoints() << std::endl;
+        myfile << buffer->numPoints() << ", ";
     }
 
     // Create a point cloud manager
@@ -410,8 +416,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         );
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-        std::cout << "Time Building tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
-
+        // std::cout << "Time Building tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+        myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", "; 
     }
     else if(pcm_name == "LBVH_CUDA")
     {
@@ -423,6 +429,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
         std::cout << "Time Building tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+        myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
     }
     else
     {
@@ -442,11 +449,12 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         if(options.useGPU())
         {
             #ifdef GPU_FOUND
+                std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
                 std::vector<float> flipPoint = options.getFlippoint();
                 size_t num_points = buffer->numPoints();
                 floatArr points = buffer->getPointArray();
                 floatArr normals = floatArr(new float[ num_points * 3 ]);
-                std::cout << timestamp << "Generating GPU kd-tree" << std::endl;
+                // std::cout << timestamp << "Generating GPU kd-tree" << std::endl;
                 GpuSurface gpu_surface(points, num_points);
                 
 
@@ -454,19 +462,22 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 gpu_surface.setKi(options.getKi());
                 gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
 
-                std::cout << timestamp << "Estimating Normals GPU" << std::endl;
+                // std::cout << timestamp << "Estimating Normals GPU" << std::endl;
                 gpu_surface.calculateNormals();
                 gpu_surface.getNormals(normals);
 
                 buffer->setNormalArray(normals, num_points);
                 gpu_surface.freeGPU();
+                std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+                myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
             #else
-                std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
+                // std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
                 std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
                 surface->calculateSurfaceNormals();
                 std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
                 std::cout << "Time calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
+                myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
             #endif
         }
         else
@@ -476,7 +487,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
             std::cout << "Time calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
-            
+            myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
         }
     }
     else
@@ -485,7 +496,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     }
     if(pcm_name == "LBVH_CUDA")
     {
-        std::cout << *buffer << std::endl;
+        // std::cout << *buffer << std::endl;
         surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
             buffer,
             "FLANN",
@@ -499,660 +510,112 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     return surface;
 }
 
-// std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
-//     createGridAndReconstruction(
-//         const reconstruct::Options& options,
-//         PointsetSurfacePtr<Vec> surface
-//     )
-// {
-//     // Determine whether to use intersections or voxelsize
-//     bool useVoxelsize = options.getIntersections() <= 0;
-//     float resolution = useVoxelsize ? options.getVoxelsize() : options.getIntersections();
-
-//     // Create a point set grid for reconstruction
-//     string decompositionType = options.getDecomposition();
-
-//     // Fail safe check
-//     if(decompositionType != "MT" && decompositionType != "MC" && decompositionType != "DMC" && decompositionType != "PMC" && decompositionType != "SF" )
-//     {
-//         cout << "Unsupported decomposition type " << decompositionType << ". Defaulting to PMC." << endl;
-//         decompositionType = "PMC";
-//     }
-
-//     if(decompositionType == "MC")
-//     {
-//         auto grid = std::make_shared<PointsetGrid<Vec, FastBox<Vec>>>(
-//             resolution,
-//             surface,
-//             surface->getBoundingBox(),
-//             useVoxelsize,
-//             options.extrude()
-//         );
-//         grid->calcDistanceValues();
-//         auto reconstruction = make_unique<FastReconstruction<Vec, FastBox<Vec>>>(grid);
-//         return make_pair(grid, std::move(reconstruction));
-//     }
-//     else if(decompositionType == "PMC")
-//     {
-//         BilinearFastBox<Vec>::m_surface = surface;
-//         auto grid = std::make_shared<PointsetGrid<Vec, BilinearFastBox<Vec>>>(
-//             resolution,
-//             surface,
-//             surface->getBoundingBox(),
-//             useVoxelsize,
-//             options.extrude()
-//         );
-//         grid->calcDistanceValues();
-//         auto reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
-//         return make_pair(grid, std::move(reconstruction));
-//     }
-//     // else if(decompositionType == "DMC")
-//     // {
-//     //     auto reconstruction = make_unique<DMCReconstruction<Vec, FastBox<Vec>>>(
-//     //         surface,
-//     //         surface->getBoundingBox(),
-//     //         options.extrude()
-//     //     );
-//     //     return make_pair(nullptr, std::move(reconstruction));
-//     // }
-//     else if(decompositionType == "MT")
-//     {
-//         auto grid = std::make_shared<PointsetGrid<Vec, TetraederBox<Vec>>>(
-//             resolution,
-//             surface,
-//             surface->getBoundingBox(),
-//             useVoxelsize,
-//             options.extrude()
-//         );
-//         grid->calcDistanceValues();
-//         auto reconstruction = make_unique<FastReconstruction<Vec, TetraederBox<Vec>>>(grid);
-//         return make_pair(grid, std::move(reconstruction));
-//     }
-//     else if(decompositionType == "SF")
-//     {
-//         SharpBox<Vec>::m_surface = surface;
-//         auto grid = std::make_shared<PointsetGrid<Vec, SharpBox<Vec>>>(
-//             resolution,
-//             surface,
-//             surface->getBoundingBox(),
-//             useVoxelsize,
-//             options.extrude()
-//         );
-//         grid->calcDistanceValues();
-//         auto reconstruction = make_unique<FastReconstruction<Vec, SharpBox<Vec>>>(grid);
-//         return make_pair(grid, std::move(reconstruction));
-//     }
-
-//     return make_pair(nullptr, nullptr);
-// }
-
-// template <typename Vec>
-// void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materializer<Vec>& materializer)
-// {
-//     if (!options.hasScanPositionIndex())
-//     {
-//         return;
-//     }
-
-//     // TODO: Check if the scanproject has spectral data
-//     boost::filesystem::path selectedFile( options.getInputFileName());
-//     std::string filePath = selectedFile.generic_path().string();
-
-//     // create hdf5 kernel and schema 
-//     HDF5KernelPtr hdfKernel = std::make_shared<HDF5Kernel>(filePath);
-//     HDF5SchemaPtr hdfSchema = std::make_shared<ScanProjectSchemaHDF5>();
-    
-//     // create io object for hdf5 files
-//     auto hdf5IO = scanio::HDF5IO(hdfKernel, hdfSchema);
-
-//     if(options.getScanPositionIndex().size() > 1)
-//     {
-//         std::cout 
-//             << timestamp 
-//             << "Warning: Spectral texturizing only supports one scan position. Ignoring all but the first." 
-//             << std::endl;
-//     }
-
-//     // load panorama from hdf5 file
-//     auto panorama = hdf5IO.HyperspectralPanoramaIO::load(options.getScanPositionIndex()[0], 0, 0);
-
-    
-
-//     // If there is no spectral data
-//     if (!panorama)
-//     {
-//         return;
-//     }
-
-//     int texturizer_count = options.getMaxSpectralChannel() - options.getMinSpectralChannel();
-//     texturizer_count = std::max(texturizer_count, 0);
-
-//     // go through all spectralTexturizers of the vector
-//     for(int i = 0; i < texturizer_count; i++)
-//     {
-//         // if the spectralChannel doesnt exist, skip it
-//         if(panorama->num_channels < options.getMinSpectralChannel() + i)
-//         {
-//             continue;
-//         }
-
-//         auto spec_text = std::make_shared<SpectralTexturizer<Vec>>(
-//             options.getTexelSize(),
-//             options.getTexMinClusterSize(),
-//             options.getTexMaxClusterSize()
-//         );
-
-//         // set the spectral texturizer with the current spectral channel
-//         spec_text->init_image_data(panorama, std::max(options.getMinSpectralChannel(), 0) + i);
-//         // set the texturizer for the current spectral channel
-//         materializer.addTexturizer(spec_text);
-//     }
-// }
-
-// template <typename MeshVec, typename ClusterVec>
-// void addRaycastingTexturizer(const reconstruct::Options& options, lvr2::Materializer<Vec>& materializer, const BaseMesh<MeshVec>& mesh, const ClusterBiMap<ClusterVec> clusters)
-// {
-// #ifdef LVR2_USE_EMBREE
-//     boost::filesystem::path selectedFile( options.getInputFileName());
-//     std::string extension = selectedFile.extension().string();
-//     std::string filePath = selectedFile.generic_path().string();
-
-//     if (extension != ".h5")
-//     {
-//         std::cout << timestamp << "Cannot add RGB Texturizer because the scanproject is not a HDF5 file" << std::endl;
-//         return;
-//     }
-
-//     HDF5KernelPtr kernel = std::make_shared<HDF5Kernel>(filePath);
-//     HDF5SchemaPtr schema = std::make_shared<ScanProjectSchemaHDF5>();
-    
-//     // create io object for hdf5 files
-//     auto hdf5IO = scanio::HDF5IO(kernel, schema);
-
-//     ScanProjectPtr project = hdf5IO.loadScanProject();
-
-//     // If only one scan position is used for reconstruction use only the images associated with that position
-//     if (options.hasScanPositionIndex())
-//     {
-//         project->positions.clear();
-//         auto scanPositions = options.getScanPositionIndex();
-//         for (int positionIndex : scanPositions)
-//         {
-//             ScanPositionPtr pos = hdf5IO.loadScanPosition(positionIndex);
-//             // Check if position exists
-//             if (!pos)
-//             {
-//                 std::cout << timestamp << "Cannot add ScanPosition " << positionIndex << " to scan project." << std::endl;
-//                 return;
-//             }
-
-//             // If the single scan position was not transformed from position to world space
-//             // remove the transformation from the project and position
-//             if (!options.transformScanPosition())
-//             {
-//                 project->transformation = Transformd::Identity(); // Project -> GPS
-//                 pos->transformation = Transformd::Identity();     // Position -> Project
-//             }
-
-//             project->positions.push_back(pos);
-//         }
-//     }
-
-//     auto texturizer = std::make_shared<RaycastingTexturizer<Vec>>(
-//         options.getTexelSize(),
-//         options.getTexMinClusterSize(),
-//         options.getTexMaxClusterSize(),
-//         mesh,
-//         clusters,
-//         project
-//     );
-
-//     materializer.addTexturizer(texturizer);
-// #else
-//     std::cout << timestamp << "This software was compiled without support for Embree!\n";
-//     std::cout << timestamp << "The RaycastingTexturizer needs the Embree library." << std::endl;
-// #endif
-// }
-
-// template <typename BaseMeshT, typename BaseVecT>
-// BaseMeshT reconstructMesh(reconstruct::Options options, PointsetSurfacePtr<BaseVecT> surface)
-// {
-//     // =======================================================================
-//     // Reconstruct mesh from point cloud data
-//     // =======================================================================
-//     // Create an empty mesh
-//     BaseMeshT mesh;
-
-//     shared_ptr<GridBase> grid;
-//     unique_ptr<FastReconstructionBase<Vec>> reconstruction;
-//     std::tie(grid, reconstruction) = createGridAndReconstruction(options, surface);
-
-//     // Reconstruct mesh
-//     reconstruction->getMesh(mesh);
-
-//     // Save grid to file
-//     if(options.saveGrid() && grid)
-//     {
-//         grid->saveGrid("fastgrid.grid");
-//     }
-
-//     return std::move(mesh);
-// }
-
-// template <typename BaseMeshT>
-// void optimizeMesh(reconstruct::Options options, BaseMeshT& mesh)
-// {
-//     // =======================================================================
-//     // Optimize mesh
-//     // =======================================================================
-//     if(options.getDanglingArtifacts())
-//     {
-//         cout << timestamp << "Removing dangling artifacts" << endl;
-//         removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
-//     }
-
-//     cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
-
-//     if(options.getFillHoles())
-//     {
-//         mesh.fillHoles(options.getFillHoles());
-//     }
-
-//     // Reduce mesh complexity
-//     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
-//     if (reductionRatio > 0.0)
-//     {
-//         if (reductionRatio > 1.0)
-//         {
-//             throw "The reduction ratio needs to be between 0 and 1!";
-//         }
-
-//         size_t old = mesh.numVertices();
-//         size_t target = old * (1.0 - reductionRatio);
-//         std::cout << timestamp << "Trying to remove " << old - target << " / " << old << " vertices." << std::endl;
-//         mesh.simplify(target);
-//         std::cout << timestamp << "Removed " << old - mesh.numVertices() << " vertices." << std::endl;
-//     }
-
-//     auto faceNormals = calcFaceNormals(mesh);
-
-
-//     if (options.optimizePlanes())
-//     {
-//         ClusterBiMap<FaceHandle> clusterBiMap = iterativePlanarClusterGrowingRANSAC(
-//             mesh,
-//             faceNormals,
-//             options.getNormalThreshold(),
-//             options.getPlaneIterations(),
-//             options.getMinPlaneSize()
-//         );
-
-//         if(options.getSmallRegionThreshold() > 0)
-//         {
-//             deleteSmallPlanarCluster(mesh, clusterBiMap, static_cast<size_t>(options.getSmallRegionThreshold()));
-//         }
-
-//         cleanContours(mesh, options.getCleanContourIterations(), 0.0001);
-
-//         if(options.getFillHoles())
-//         {
-//             mesh.fillHoles(options.getFillHoles());
-//         }
-    
-//         // Recalculate the face normals because the faces were modified previously
-//         faceNormals = calcFaceNormals(mesh);
-//         // Regrow clusters after hole filling and small region removal
-//         clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
-
-//         if (options.retesselate())
-//         {
-//             Tesselator<Vec>::apply(mesh, clusterBiMap, faceNormals, options.getLineFusionThreshold());
-//         }
-//     }
-
-// }
-
-// template <typename BaseVecT>
-// struct cmpBaseVecT
-// {
-//     bool operator()(const BaseVecT& lhs, const BaseVecT& rhs) const
-//     {
-//         return (lhs[0] < rhs[0])
-//             || (lhs[0] == rhs[0] && lhs[1] < rhs[1])
-//             || (lhs[0] == rhs[0] && lhs[1] == rhs[1] && lhs[2] < rhs[2]);
-
-//     }
-// };
-
-// template <typename BaseMeshT, typename BaseVecT>
-// auto loadExistingMesh(reconstruct::Options options)
-// {
-//     meshio::HDF5IO io(
-//         std::make_shared<HDF5Kernel>(options.getInputMeshFile()),
-//         std::make_shared<MeshSchemaHDF5>()
-//     );
-//     MeshBufferPtr mesh_buffer = io.loadMesh(options.getInputMeshName());
-
-
-//     // Handle Maps needed during mesh construction
-//     std::map<size_t, VertexHandle> indexToVertexHandle;
-//     std::map<BaseVecT, VertexHandle, cmpBaseVecT<BaseVecT>> positionToVertexHandle;
-//     std::map<size_t, FaceHandle> indexToFaceHandle;
-//     // Create all this stuff manually instead of using the constructors to
-//     // ensure the Handles are correct.
-//     BaseMeshT mesh;
-//     DenseFaceMap<Normal<float>> faceNormalMap;
-//     ClusterBiMap<FaceHandle> clusterBiMap;
-
-//     // Add vertices
-//     floatArr vertices = mesh_buffer->getVertices();
-//     for (size_t i = 0; i < mesh_buffer->numVertices(); i++)
-//     {
-//         BaseVecT vertex_pos(
-//             vertices[i * 3 + 0],
-//             vertices[i * 3 + 1],
-//             vertices[i * 3 + 2]);
-
-//         // If the vertex position already exists do not add new vertex
-//         if (positionToVertexHandle.count(vertex_pos))
-//         {
-//             VertexHandle vertexH = positionToVertexHandle.at(vertex_pos);
-//             indexToVertexHandle.insert(std::pair(i, vertexH));
-//         }
-//         else
-//         {
-//             VertexHandle vertexH = mesh.addVertex(vertex_pos);
-//             indexToVertexHandle.insert(std::pair(i, vertexH));
-//         }
-        
-        
-//     }
-
-//     // Add faces
-//     indexArray faces = mesh_buffer->getFaceIndices();
-//     floatArr faceNormals = mesh_buffer->getFaceNormals();
-//     for (size_t i = 0; i < mesh_buffer->numFaces(); i++)
-//     {
-//         VertexHandle v0 = indexToVertexHandle.at(faces[i * 3 + 0]);
-//         VertexHandle v1 = indexToVertexHandle.at(faces[i * 3 + 1]);
-//         VertexHandle v2 = indexToVertexHandle.at(faces[i * 3 + 2]);
-//         // Add face
-//         FaceHandle faceH = mesh.addFace(v0, v1, v2);
-//         indexToFaceHandle.insert(std::pair(i, faceH));
-
-//         if (faceNormals)
-//         {
-//             // Add normal
-//             Normal<float> normal(
-//                 faceNormals[i * 3 + 0],
-//                 faceNormals[i * 3 + 1],
-//                 faceNormals[i * 3 + 2]
-//             );
-            
-//             faceNormalMap.insert(faceH, normal);
-//         }
-        
-//     }
-
-//     if (!faceNormals)
-//     {
-//         std::cout << timestamp << "Calculating face normals" << std::endl;
-//         faceNormalMap = calcFaceNormals(mesh);
-//     }
-
-//     // Add clusters
-//     for (size_t i = 0;; i++)
-//     {
-//         std::string clusterString =  "cluster" + std::to_string(i) + "_face_indices";
-//         auto clusterIndicesOptional = mesh_buffer->getIndexChannel(clusterString);
-//         // If the cluster does not exist break
-//         if (!clusterIndicesOptional) break;
-
-//         ClusterHandle clusterH = clusterBiMap.createCluster();
-//         for (size_t j = 0; j < clusterIndicesOptional->numElements(); j++)
-//         {
-//             FaceHandle faceH = indexToFaceHandle.at(j);
-//             clusterBiMap.addToCluster(clusterH, faceH);
-//         }
-//     }
-
-//     // Load the pointcloud
-//     PointsetSurfacePtr<Vec> surface = loadPointCloud<BaseVecT>(options);
-
-//     return std::make_tuple(std::move(mesh), std::move(surface), std::move(faceNormalMap), std::move(clusterBiMap));
-// }
-
 int main(int argc, char** argv)
 {
     // =======================================================================
     // Parse and print command line parameters
     // =======================================================================
     // Parse command line arguments
-    reconstruct::Options options(argc, argv);
 
-    options.printLogo();
+    // // Generates 64.000.000 points
+    // lvr2::PointBufferPtr pbuffer;
+    // pbuffer = lvr2::synthetic::genSpherePoints(8000,8000);
 
-    // Exit if options had to generate a usage message
-    // (this means required parameters are missing)
-    if (options.printUsage())
-    {
-        return EXIT_SUCCESS;
-    }
+    // size_t num_points = pbuffer->numPoints();
 
-    std::cout << options << std::endl;
-
-    // =======================================================================
-    // Load (and potentially store) point cloud
-    // =======================================================================
-    OpenMPConfig::setNumThreads(options.getNumThreads());
-
-    // lvr2::PMPMesh<Vec> mesh;
-    PointsetSurfacePtr<Vec> surface;
-    // DenseFaceMap<Normal<float>> faceNormals;
-    // ClusterBiMap<FaceHandle> clusterBiMap;
-
-    // Load PointCloud
-    surface = loadPointCloud<Vec>(options);
-    if (!surface)
-    {
-        cout << "Failed to create pointcloud. Exiting." << endl;
-        exit(EXIT_FAILURE);
-    }
-    ModelPtr pn(new Model(surface->pointBuffer()));
-    ModelFactory::saveModel(pn, "pointnormals.ply");
-
-    // if (options.useExistingMesh())
-    // {
-    //     std::cout << timestamp << "Loading existing mesh '" << options.getInputMeshName() << "' from file '" << options.getInputMeshFile() << "'" << std::endl;
-    //     std::tie(mesh, surface, faceNormals, clusterBiMap) = loadExistingMesh<lvr2::PMPMesh<Vec>, Vec>(options);
-    // }
-    // else
-    // {
-    //     // Load PointCloud
-    //     surface = loadPointCloud<Vec>(options);
-    //     if (!surface)
-    //     {
-    //         cout << "Failed to create pointcloud. Exiting." << endl;
-    //         exit(EXIT_FAILURE);
-    //     }
-        
-    //     // Reconstruct simple mesh
-    //     mesh = reconstructMesh<lvr2::PMPMesh<Vec>>(options, surface);
-    // }
-
-    // // Save points and normals only
-    // if(options.savePointNormals())
-    // {
-    //     ModelPtr pn(new Model(surface->pointBuffer()));
-    //     ModelFactory::saveModel(pn, "pointnormals.ply");
-    // }
-
-    // // Optimize the mesh if requested
-    // optimizeMesh(options, mesh);
+    // lvr2::floatArr points = pbuffer->getPointArray();
+    // float* points_raw = &points[0];
     
+    /* 
+     * argv looks like this:
+     * bin/benchmark_knn_normals,
+     * -p,
+     * LBVH_CUDA,
+     * ~/datasets/polizei/polizei30M_cut.ply
+     */
+    myfile.open("runtime_test.txt");
+
+    int num_pcm = 3;
+    int num_k = 2;
+    int num_data = 1;
+
+    char *pcm[] = {"LBVH_CUDA", "FLANN", "--useGPU"};                   // The tested point cloud manager
+    char *k_s[] = {"5", "10"};                                          // The tested values for k
+    char *data[] = {"/home/till/datasets/polizei/polizei30M_cut.ply"};  // The tested datasets
+
+    for(int p_ = 0; p_ < num_pcm; p_++)
+    {
+        for(int k_ = 0; k_ < num_k; k_++)
+        {
+            for(int d_ = 0; d_ < num_data; d_++)
+            {
+                std::cout << "Testing on: " << data[d_] << std::endl;
+                std::cout << "PCM: " << pcm[p_] << std::endl;
+                std::cout << "K: " << k_s[k_] << std::endl;
+
+                myfile << data[d_] << ", ";
+                myfile << pcm[p_] << ", ";
+                myfile << k_s[k_] << ", ";
+
+                std::vector<char*> vec;
 
 
-    // // Calc normals and clusters
-    // faceNormals = calcFaceNormals(mesh);
-    // clusterBiMap = planarClusterGrowing(mesh, faceNormals, options.getNormalThreshold());
+                int paramc = 5;
 
-    // // =======================================================================
-    // // Finalize mesh
-    // // =======================================================================
-    // // Prepare color data for finalizing
+                vec.push_back("bin/benchmark_knn_normals");
+                if(p_ != num_pcm - 1)
+                {
+                    paramc = 6;
+                    vec.push_back("-p");
+                }
+                vec.push_back(pcm[p_]);
+                vec.push_back("--kn");
+                vec.push_back(k_s[k_]);
+                vec.push_back(data[d_]);
 
-//     ColorGradient::GradientType t = ColorGradient::gradientFromString(options.getClassifier());
+                char** paramv = reinterpret_cast<char**>(&vec[0]);
 
-//     ClusterPainter painter(clusterBiMap);
-//     auto clusterColors = boost::optional<DenseClusterMap<RGB8Color>>(painter.colorize(mesh, t));
-//     auto vertexColors = calcColorFromPointCloud(mesh, surface);
-
-//     // Calc normals for vertices
-//     auto vertexNormals = calcVertexNormals(mesh, faceNormals, *surface);
-
-//     // Prepare finalize algorithm
-//     TextureFinalizer<Vec> finalize(clusterBiMap);
-//     finalize.setVertexNormals(vertexNormals);
-
-//     // Vertex colors:
-//     // If vertex colors should be generated from pointcloud:
-//     if (options.vertexColorsFromPointcloud())
-//     {
-//         // set vertex color data from pointcloud
-//         finalize.setVertexColors(*vertexColors);
-//     }
-//     else if (clusterColors)
-//     {
-//         // else: use simpsons painter for vertex coloring
-//         finalize.setClusterColors(*clusterColors);
-//     }
-
-//     // Materializer for face materials (colors and/or textures)
-//     Materializer<Vec> materializer(
-//         mesh,
-//         clusterBiMap,
-//         faceNormals,
-//         *surface
-//     );
-
-//     auto texturizer = std::make_shared<Texturizer<Vec>>(
-//         options.getTexelSize(),
-//         options.getTexMinClusterSize(),
-//         options.getTexMaxClusterSize()
-//     );
+                reconstruct::Options options(paramc, paramv);
 
 
+                // options.printLogo();
 
+                // Exit if options had to generate a usage message
+                // (this means required parameters are missing)
+                if (options.printUsage())
+                {
+                    return EXIT_SUCCESS;
+                }
 
-//     // When using textures ...
-//     if (options.generateTextures())
-//     {
+                // std::cout << options << std::endl;
 
-//         boost::filesystem::path selectedFile( options.getInputFileName());
-//         std::string filePath = selectedFile.generic_path().string();
+                // =======================================================================
+                // Load (and potentially store) point cloud
+                // =======================================================================
+                OpenMPConfig::setNumThreads(options.getNumThreads());
 
-//         if(selectedFile.extension().string() != ".h5") {
-//             materializer.setTexturizer(texturizer);
-//         } 
-//         else 
-//         {
-//             addSpectralTexturizers(options, materializer);
+                PointsetSurfacePtr<Vec> surface;
 
-// #ifdef LVR2_USE_EMBREE
-//             if (options.useRaycastingTexturizer())
-//             {
-//                 addRaycastingTexturizer(options, materializer, mesh, clusterBiMap);
-//             }
-//             else
-//             {
-//                 materializer.addTexturizer(texturizer);
-//             }
-// #else
-//             materializer.addTexturizer(texturizer);
-// #endif
-            
-//         }
-//     }
+                // Load PointCloud
+                surface = loadPointCloud<Vec>(options);
+                if (!surface)
+                {
+                    cout << "Failed to create pointcloud. Exiting." << endl;
+                    exit(EXIT_FAILURE);
+                }
+                // ModelPtr pn(new Model(surface->pointBuffer()));
+                // ModelFactory::saveModel(pn, "pointnormals.ply");
 
-//     // Generate materials
-//     MaterializerResult<Vec> matResult = materializer.generateMaterials();
+                // cout << timestamp << "Program end." << endl;
 
-//     // Add material data to finalize algorithm
-//     finalize.setMaterializerResult(matResult);
-//     // Run finalize algorithm
-//     auto buffer = finalize.apply(mesh);
+                std::cout << std::endl;
+                std::cout << std::endl;
+                myfile << std::endl;
+            }
+        }
+    }
 
-//     // When using textures ...
-//     if (options.generateTextures())
-//     {
-//         // Set optioins to save them to disk
-//         //materializer.saveTextures();
-//         buffer->addIntAtomic(1, "mesh_save_textures");
-//         buffer->addIntAtomic(1, "mesh_texture_image_extension");
-//     }
-
-//     // =======================================================================
-//     // Write all results (including the mesh) to file
-//     // =======================================================================
-//     // Create output model and save to file
-//     auto m = ModelPtr( new Model(buffer));
-
-//     if(options.saveOriginalData())
-//     {
-//         m->m_pointCloud = surface->pointBuffer();
-
-//         cout << "REPAIR SAVING" << endl;
-//     }
-
-//     for(const std::string& output_filename : options.getOutputFileNames())
-//     {
-//         boost::filesystem::path outputDir(options.getOutputDirectory());
-//         boost::filesystem::path selectedFile( output_filename );
-//         boost::filesystem::path outputFile = outputDir/selectedFile;
-//         std::string extension = selectedFile.extension().string();
-
-//         cout << timestamp << "Saving mesh to "<< output_filename << "." << endl;
-
-//         if (extension == ".h5")
-//         {
-
-//             HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(outputFile.string()));
-//             MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
-//             auto mesh_io = meshio::HDF5IO(kernel, schema);
-
-//             mesh_io.saveMesh(
-//                 options.getMeshName(),
-//                 buffer
-//                 );
-
-//             continue;
-//         }
-
-//         if (extension == "")
-//         {
-//             DirectoryKernelPtr kernel = DirectoryKernelPtr(new DirectoryKernel(outputFile.string()));
-//             MeshSchemaDirectoryPtr schema = MeshSchemaDirectoryPtr(new MeshSchemaDirectory());
-//             auto mesh_io = meshio::DirectoryIO(kernel, schema);
-
-//             mesh_io.saveMesh(
-//                 options.getMeshName(),
-//                 buffer
-//                 );
-
-//             continue;
-//         }
-
-//         ModelFactory::saveModel(m, outputFile.string());
-//     }
-
-//     if (matResult.m_keypoints)
-//     {
-//         // save materializer keypoints to hdf5 which is not possible with ModelFactory
-//         //PlutoMapIO map_io("triangle_mesh.h5");
-//         //map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
-//     }
-
-    cout << timestamp << "Program end." << endl;
+    myfile.close();
 
     return 0;
 }
