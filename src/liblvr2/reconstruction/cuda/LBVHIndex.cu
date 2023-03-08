@@ -25,6 +25,11 @@ using namespace lbvh;
     - Extent device Member?
     - m_d_sorted_indices weg?
     - Delete or change flip_x,... (or add to knn_normals_kernel?)
+
+    * Stand der Technik (ikd-tree evtl mit rein nehmen)
+    * Uni PC aufsetzen für Experimente python und C++
+    * Queue in Register?
+    * (Speicher-Optimierung)
 */ 
 
 
@@ -144,13 +149,6 @@ void LBVHIndex::build(float* points, size_t num_points)
     this->m_num_objects = num_points;
     this->m_num_nodes = 2 * m_num_objects - 1;
 
-    // Upload points to GPU
-    gpuErrchk( cudaMalloc(&this->m_d_points,
-        sizeof(float) * 3 * num_points) );
-    gpuErrchk( cudaMemcpy(this->m_d_points, points,
-        sizeof(float) * 3 * num_points,
-        cudaMemcpyHostToDevice) );
-
     // initialize AABBs
     AABB* aabbs = (struct AABB*) malloc(sizeof(struct AABB) * num_points);
 
@@ -186,21 +184,21 @@ void LBVHIndex::build(float* points, size_t num_points)
     gpuErrchk(cudaMalloc(&d_morton_codes, size_morton));
 
     compute_morton_kernel<<<blocksPerGrid, threadsPerBlock>>>
-            (d_aabbs, this->m_d_extent, d_morton_codes, num_points);
+        (d_aabbs, this->m_d_extent, d_morton_codes, num_points);
     
     gpuErrchk(cudaPeekAtLastError());
     
     // cudaFree(d_extent);
-    cudaFree(d_aabbs);
+    gpuErrchk( cudaFree(d_aabbs) );
 
     // gpuErrchk(cudaDeviceSynchronize());
     
     unsigned long long int* morton_codes = (unsigned long long int*)
                     malloc(sizeof(unsigned long long int) * num_points);
 
-    cudaMemcpy(morton_codes, d_morton_codes, size_morton, cudaMemcpyDeviceToHost);
+    gpuErrchk( cudaMemcpy(morton_codes, d_morton_codes, size_morton, cudaMemcpyDeviceToHost) );
     
-    cudaFree(d_morton_codes);
+    gpuErrchk( cudaFree(d_morton_codes) );
 
     // Create array of indices with an index for each point
     unsigned int* indices = (unsigned int*)
@@ -225,19 +223,13 @@ void LBVHIndex::build(float* points, size_t num_points)
 
     gpuErrchk(cudaPeekAtLastError());
 
-    // TODO nicht 
-    cudaMalloc(&this->m_d_sorted_indices,
-        sizeof(unsigned int) * num_points);
-    cudaMemcpy(this->m_d_sorted_indices, indices,
-        sizeof(unsigned int) * num_points,
-        cudaMemcpyHostToDevice);
     
     // Create the nodes
     gpuErrchk(cudaMalloc(&this->m_d_nodes, sizeof(struct BVHNode) * m_num_nodes));
 
     AABB* d_sorted_aabbs;
     gpuErrchk(cudaMalloc(&d_sorted_aabbs, 
-        sizeof(struct AABB) * num_points));
+        sizeof(struct AABB) * num_points)); // Here out of memory ###############################
 
     gpuErrchk(cudaMemcpy(d_sorted_aabbs, sorted_aabbs, 
         sizeof(struct AABB) * num_points, cudaMemcpyHostToDevice));
@@ -247,12 +239,12 @@ void LBVHIndex::build(float* points, size_t num_points)
         (this->m_d_nodes, d_sorted_aabbs, num_points);
 
     gpuErrchk(cudaPeekAtLastError());
+    gpuErrchk(cudaFree(d_sorted_aabbs));
 
     // Construct the tree
     this->m_root_node = (unsigned int*)
         malloc(sizeof(unsigned int));
     this->m_root_node[0] = UINT_MAX;
-
 
     unsigned int* d_root_node;
     gpuErrchk(cudaMalloc(&d_root_node, sizeof(unsigned int)));
@@ -373,11 +365,11 @@ void LBVHIndex::build(float* points, size_t num_points)
             free(isum);
             // free(free_indices);
 
-            cudaFree(d_valid_sums);
-            cudaFree(d_isum);
-            cudaFree(d_free_indices);
+            gpuErrchk( cudaFree(d_valid_sums) );
+            gpuErrchk( cudaFree(d_isum) );
+            gpuErrchk( cudaFree(d_free_indices) );
         }
-        cudaFree(d_valid);
+        gpuErrchk( cudaFree(d_valid) );
 
         std::cout << "Done with Optimization" << std::endl;
         free(valid);
@@ -387,9 +379,21 @@ void LBVHIndex::build(float* points, size_t num_points)
             sizeof(unsigned int), cudaMemcpyDeviceToHost));
 
     gpuErrchk(cudaFree(d_root_node));
-    gpuErrchk(cudaFree(d_sorted_aabbs));
     gpuErrchk(cudaFree(d_sorted_morton_codes));
-    
+
+    // TODO Moved this to the end of build()
+    // Upload points to GPU
+    gpuErrchk( cudaMalloc(&this->m_d_points,
+        sizeof(float) * 3 * num_points) );
+    gpuErrchk( cudaMemcpy(this->m_d_points, points,
+        sizeof(float) * 3 * num_points,
+        cudaMemcpyHostToDevice) );
+    // TODO Moved this to the end of build() 
+    gpuErrchk( cudaMalloc(&this->m_d_sorted_indices,
+        sizeof(unsigned int) * num_points) );
+    gpuErrchk( cudaMemcpy(this->m_d_sorted_indices, indices,
+        sizeof(unsigned int) * num_points,
+        cudaMemcpyHostToDevice) );
 
     free(aabbs);
     free(morton_codes);
@@ -400,26 +404,26 @@ void LBVHIndex::build(float* points, size_t num_points)
 }
 
 #define CUDA_SAFE_CALL(x) \
- do { \
- CUresult result = x; \
- if (result != CUDA_SUCCESS) { \
- const char *msg; \
- cuGetErrorName(result, &msg); \
- std::cerr << "\nerror: " #x " failed with error " \
- << msg << '\n'; \
- exit(1); \
- } \
- } while(0)
+    do { \
+        CUresult result = x; \
+        if (result != CUDA_SUCCESS) { \
+            const char *msg; \
+            cuGetErrorName(result, &msg); \
+            std::cerr << "\nerror: " #x " failed with error " \
+            << msg << '\n'; \
+            exit(1); \
+        } \
+    } while(0)
 
 #define NVRTC_SAFE_CALL(x)                                        \
-  do {                                                            \
-    nvrtcResult result = x;                                       \
-    if (result != NVRTC_SUCCESS) {                                \
-      std::cerr << "\nerror: " #x " failed with error "           \
-                << nvrtcGetErrorString(result) << '\n';           \
-      exit(1);                                                    \
-    }                                                             \
-  } while(0)
+    do {                                                            \
+        nvrtcResult result = x;                                       \
+        if (result != NVRTC_SUCCESS) {                                \
+            std::cerr << "\nerror: " #x " failed with error "           \
+                        << nvrtcGetErrorString(result) << '\n';           \
+            exit(1);                                                    \
+        }                                                             \
+    } while(0)
 
 void LBVHIndex::kSearch(
     float* query_points, 
@@ -489,35 +493,35 @@ void LBVHIndex::process_queries(
     float* distances_out
 ) const
 {
-    cudaEvent_t start, stop;
-    float elapsedTime;
+    // cudaEvent_t start, stop;
+    // float elapsedTime;
 
     unsigned int* d_n_neighbors_out; 
     unsigned int* d_indices_out; 
     float* d_distances_out;
 
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
     
     // Allocate output buffer
-    gpuErrchk( cudaMalloc(&d_indices_out, sizeof(unsigned int) * num_queries * K) );
+    gpuErrchk( cudaMalloc(&d_indices_out, sizeof(unsigned int) * num_queries * K) ); // Now here out of memory#########################
     gpuErrchk( cudaMalloc(&d_distances_out, sizeof(float) * num_queries * K) );
     gpuErrchk( cudaMalloc(&d_n_neighbors_out, sizeof(unsigned int) * num_queries) );
 
     // Upload
     float* d_query_points;
-    cudaMalloc(&d_query_points, sizeof(float) * 3 * num_queries);
-    cudaMemcpy(d_query_points, queries_raw,
+    gpuErrchk( cudaMalloc(&d_query_points, sizeof(float) * 3 * num_queries) );
+    gpuErrchk( cudaMemcpy(d_query_points, queries_raw,
         sizeof(float) * 3 * num_queries,
-        cudaMemcpyHostToDevice);
+        cudaMemcpyHostToDevice) );
     
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "Upload Time: " << elapsedTime << std::endl;
+    // std::cout << "Upload Time: " << elapsedTime << std::endl;
     
     // Compute on GPU
     this->process_queries_dev_ptr(
@@ -530,8 +534,8 @@ void LBVHIndex::process_queries(
         d_distances_out
     );
 
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
     
     // Download
     gpuErrchk( cudaMemcpy(indices_out, d_indices_out,
@@ -546,13 +550,13 @@ void LBVHIndex::process_queries(
             sizeof(unsigned int) * num_queries,
             cudaMemcpyDeviceToHost) );
 
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "Download Time: " << elapsedTime << std::endl;
+    // std::cout << "Download Time: " << elapsedTime << std::endl;
 
     cudaFree(d_indices_out);
     cudaFree(d_distances_out);
@@ -570,11 +574,11 @@ void LBVHIndex::process_queries_dev_ptr(
     float* d_distances_out
 ) const
 {
-    cudaEvent_t start, stop;
-    float elapsedTime;
+    // cudaEvent_t start, stop;
+    // float elapsedTime;
 
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
     
     // Get the Query Kernel
     std::string kernel_file = "query_knn_kernels.cu";
@@ -597,17 +601,16 @@ void LBVHIndex::process_queries_dev_ptr(
         K
     );
     // Init cuda
-    cudaFree(0);
+    //cudaFree(0);
     
     // Get cuda module and function
     CUmodule module;
     CUfunction kernel;
-
+    CUDA_SAFE_CALL(cuInit(0));
     CUDA_SAFE_CALL(cuModuleLoadDataEx(&module, ptx_src.c_str(), 0, 0, 0));
     CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, kernel_name.c_str()));
 
     // Prepare kernel launch
-    // TODO Als member? Sonst free()
     unsigned int* sorted_queries = (unsigned int*) 
                 malloc(sizeof(unsigned int) * num_queries);
 
@@ -681,16 +684,16 @@ void LBVHIndex::process_queries_dev_ptr(
     int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
                         / threadsPerBlock;
    
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "Upload 2 Time: " << elapsedTime << std::endl;
+    // std::cout << "Upload 2 Time: " << elapsedTime << std::endl;
 
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
 
     // Launch the kernel
     CUDA_SAFE_CALL( cuLaunchKernel(kernel, 
@@ -700,14 +703,15 @@ void LBVHIndex::process_queries_dev_ptr(
         params,       // arguments
         0
     ) );      
-    
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "KNN Kernel Time: " << elapsedTime << std::endl;
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
+
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
+    
+    // std::cout << "KNN Kernel Time: " << elapsedTime << std::endl;
 
     cudaFree(d_query_points);
     cudaFree(d_sorted_queries);
@@ -727,15 +731,15 @@ void LBVHIndex::process_queries_dev_ptr(
     const unsigned int* indices_in
 )   const
 {
-    cudaEvent_t start, stop;
-    float elapsedTime;
+    // cudaEvent_t start, stop;
+    // float elapsedTime;
 
     int threadsPerBlock = 256;
     int blocksPerGrid = (num_normals + threadsPerBlock - 1) 
                         / threadsPerBlock;
 
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
     
 
     // Create device memory
@@ -765,46 +769,46 @@ void LBVHIndex::process_queries_dev_ptr(
     gpuErrchk( cudaMemcpy(d_indices_in, indices_in,
         sizeof(unsigned int) * K * num_queries, 
         cudaMemcpyHostToDevice) );
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "Upload Time: " << elapsedTime << std::endl;
+    // std::cout << "Upload Time: " << elapsedTime << std::endl;
 
 
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
     
     // Call the normals kernel
     calculate_normals_kernel<<<blocksPerGrid, threadsPerBlock>>>
         (this->m_d_points, d_queries, num_queries, K, d_n_neighbors_in, d_indices_in,
         d_normals, this->m_flip_x, this->m_flip_y, this->m_flip_z);
     
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "Normals Kernel Time: " << elapsedTime << std::endl;    
+    // std::cout << "Normals Kernel Time: " << elapsedTime << std::endl;    
+    
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
     
     // Download the normals
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
-    
     gpuErrchk( cudaMemcpy(normals, d_normals,
         sizeof(float) * 3 * num_normals,
         cudaMemcpyDeviceToHost) );
 
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "Download Time: " << elapsedTime << std::endl;
+    // std::cout << "Download Time: " << elapsedTime << std::endl;
     
     cudaFree(d_queries);
     cudaFree(d_normals);
@@ -844,13 +848,13 @@ void LBVHIndex::knn_normals(
     float* d_query_points = this->m_d_points;
     size_t num_queries = num_normals;
     
-    cudaEvent_t start, stop;
-    float elapsedTime;
+    // cudaEvent_t start, stop;
+    // float elapsedTime;
 
     std::cout << "Loading Kernel..." << std::endl;
 
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
 
     // Get the KNN Normals Kernel
     std::string kernel_file = "knn_normals_kernel.cu";
@@ -883,20 +887,19 @@ void LBVHIndex::knn_normals(
     CUDA_SAFE_CALL(cuModuleLoadDataEx(&module, ptx_src.c_str(), 0, 0, 0));
     CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, kernel_name.c_str()));
 
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "Loading Kernel Time: " << elapsedTime << std::endl;
+    // std::cout << "Loading Kernel Time: " << elapsedTime << std::endl;
 
     std::cout << "Uploading..." << std::endl;
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
 
     // Prepare kernel launch
-    // TODO Als member
     unsigned int* sorted_queries = (unsigned int*) 
                 malloc(sizeof(unsigned int) * num_queries);
 
@@ -905,7 +908,6 @@ void LBVHIndex::knn_normals(
         sorted_queries[i] = i;
     }
 
-    // TODO Comment in
     // Only for large queries: Sort them in morton order to prevent too much warp divergence on tree traversal
     if(this->m_sort_queries)
     {
@@ -951,15 +953,16 @@ void LBVHIndex::knn_normals(
     gpuErrchk( cudaMalloc(&d_normals, 
         sizeof(float) * 3 * num_normals) );
 
+    // TODO Set radius?
     float radius = FLT_MAX;
 
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "Upload Time: " << elapsedTime << std::endl;
+    // std::cout << "Upload Time: " << elapsedTime << std::endl;
     
     // Gather the arguments
     void *params[] = 
@@ -980,8 +983,8 @@ void LBVHIndex::knn_normals(
                         / threadsPerBlock;
     std::cout << "Launching Kernel..." << std::endl;
 
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
     
     // Launch the kernel
     CUDA_SAFE_CALL( cuLaunchKernel(kernel, 
@@ -992,30 +995,30 @@ void LBVHIndex::knn_normals(
         0
     ) );    
 
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
     
-    std::cout << "KNN Normals Kernel Time: " << elapsedTime << std::endl;
+    // std::cout << "KNN Normals Kernel Time: " << elapsedTime << std::endl;
     
     std::cout << "Downloading..." << std::endl;
     
-    cudaEventCreate(&start);
-    cudaEventRecord(start,0);
+    // cudaEventCreate(&start);
+    // cudaEventRecord(start,0);
     
 
     gpuErrchk( cudaMemcpy(normals, d_normals,
         sizeof(float) * 3 * num_normals,
         cudaMemcpyDeviceToHost) );  
 
-    cudaEventCreate(&stop);
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
+    // cudaEventCreate(&stop);
+    // cudaEventRecord(stop,0);
+    // cudaEventSynchronize(stop);
 
-    cudaEventElapsedTime(&elapsedTime, start,stop);
-    std::cout << "Download Time: " << elapsedTime << std::endl;
+    // cudaEventElapsedTime(&elapsedTime, start,stop);
+    // std::cout << "Download Time: " << elapsedTime << std::endl;
     
     cudaFree(d_sorted_queries);
     cudaFree(d_normals);
@@ -1047,10 +1050,10 @@ void LBVHIndex::knn_normals(
     // //     std::cout << "Neigh idx: " << normals[i] << std::endl;
 
     // }
-    int idx = 59394;
-    std::cout << "x: " << normals[3 * idx + 0] << std::endl;
-    std::cout << "y: " << normals[3 * idx + 1] << std::endl;
-    std::cout << "z: " << normals[3 * idx + 2] << std::endl;
+    // int idx = 59394;
+    // std::cout << "x: " << normals[3 * idx + 0] << std::endl;
+    // std::cout << "y: " << normals[3 * idx + 1] << std::endl;
+    // std::cout << "z: " << normals[3 * idx + 2] << std::endl;
     // std::cout << "yy: " << normals[3 * idx + 3] << std::endl;
     // std::cout << "yz: " << normals[3 * idx + 4] << std::endl;
     // std::cout << "zz: " << normals[3 * idx + 5] << std::endl;
@@ -1170,6 +1173,15 @@ void LBVHIndex::getPtxFromCuString(
     ptx.resize( ptx_size );
     NVRTC_SAFE_CALL( nvrtcGetPTX( prog, &ptx[0] ) );
 
+    // TODO Delete this
+    // #################################
+    // const char* path = "~/Develop/dat/";
+    // std::ofstream ptxfile(path);
+    // ptxfile.open("kernel_ptx.txt");
+    // ptxfile << ptx;
+    // ptxfile.close();
+
+    //##################################
     // Cleanup
     NVRTC_SAFE_CALL( nvrtcDestroyProgram( &prog ) );
 }

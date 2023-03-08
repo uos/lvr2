@@ -318,13 +318,6 @@ extern "C" __global__ void knn_normals_kernel(
 
         // printf("Point %d: (%f %f %f)\n", k.id, points[ 3 * k.id + 0], points[ 3 * k.id + 1], points[ 3 * k.id + 2]);
     }
-    // TODO
-    // return;
-
-    // Doing this in the for loop above leads to less uninitialised normals
-    // sum.x /= nf; // x,y,z coordinates of centroid
-    // sum.y /= nf;
-    // sum.z /= nf;
 
     // Calculate the covariance matrix
     double xx = 0.0f; double xy = 0.0f; double xz = 0.0f;
@@ -336,25 +329,17 @@ extern "C" __global__ void knn_normals_kernel(
         auto k = queue[i];
         double3 r =
         {
-            (double) points[ 3 * k.id + 0] - sum.x,     //+++++++++++++++++++++++++
-            (double) points[ 3 * k.id + 1] - sum.y,     // These operations sometimes become = 0
-            (double) points[ 3 * k.id + 2] - sum.z      //+++++++++++++++++++++++++
+            (double) points[ 3 * k.id + 0] - sum.x,     
+            (double) points[ 3 * k.id + 1] - sum.y,    
+            (double) points[ 3 * k.id + 2] - sum.z      
         };
-        xx += r.x * r.x / nf;   // 1.97215e-31
-        xy += r.x * r.y / nf;   // 0
-        xz += r.x * r.z / nf;   // 0
-        yy += r.y * r.y / nf;   // 0
-        yz += r.y * r.z / nf;   // 0
-        zz += r.z * r.z / nf;   // 0
+        xx += r.x * r.x / nf;  
+        xy += r.x * r.y / nf;   
+        xz += r.x * r.z / nf;   
+        yy += r.y * r.y / nf;   
+        yz += r.y * r.z / nf;   
+        zz += r.z * r.z / nf;   
     }
-
-    // Doing this in the for loop above leads to less uninitialised normals
-    // xx /= nf;
-    // xy /= nf;
-    // xz /= nf;
-    // yy /= nf;
-    // yz /= nf;
-    // zz /= nf;
     
     double3 weighted_dir = {0.0, 0.0, 0.0};
     double3 axis_dir;

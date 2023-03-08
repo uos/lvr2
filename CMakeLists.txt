@@ -705,7 +705,7 @@ add_subdirectory(src/liblvr2)
 ###############################################################################
 
 if(NOT MSVC)
-add_subdirectory(src/tools/lvr2_largescale_reconstruct)
+# add_subdirectory(src/tools/lvr2_largescale_reconstruct)
 endif(NOT MSVC)
 
 add_subdirectory(src/tools/lvr2_reconstruct)
@@ -750,7 +750,7 @@ endif()
 
 if(OPENCL_FOUND)
     add_subdirectory(src/tools/lvr2_cl_normals)
-    add_subdirectory(src/tools/lvr2_cl_sor)
+    # add_subdirectory(src/tools/lvr2_cl_sor)
 endif()
 
 if(BUILD_EXAMPLES)
