@@ -50,7 +50,7 @@ namespace std
   }
 } 
 
-namespace reconstruct{
+namespace benchmark{
 
 using namespace boost::program_options;
 
@@ -556,4 +556,4 @@ Options::~Options() {
     // TODO Auto-generated destructor stub
 }
 
-} // namespace reconstruct
+} // namespace benchmark

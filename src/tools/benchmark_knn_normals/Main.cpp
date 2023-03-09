@@ -61,6 +61,8 @@
 #include "lvr2/reconstruction/CudaKSearchSurface.hpp"
 #include "lvr2/algorithm/SpectralTexturizer.hpp"
 
+#include "lvr2/registration/ReductionAlgorithm.hpp"
+
 #ifdef LVR2_USE_EMBREE
     #include "lvr2/algorithm/RaycastingTexturizer.hpp"
 #endif
@@ -122,10 +124,13 @@ using namespace lvr2;
 using Vec = BaseVector<float>;
 using PsSurface = lvr2::PointsetSurface<Vec>;
 
-
+// Globals
 const char *path = "/home/tests/runtime_tests/";
 std::ofstream myfile(path);
 
+long int g_build_time = 0;
+long int g_knn_time = 0;
+size_t g_num_points;
 
 template <typename IteratorType>
 IteratorType concatenate(
@@ -229,7 +234,7 @@ PointBuffer mergePointBuffers(PointBuffer& b0, PointBuffer& b1)
 }
 
 template <typename BaseVecT>
-PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
+PointsetSurfacePtr<BaseVecT> loadPointCloud(const benchmark::Options& options)
 {   
 
     // Create a point loader object
@@ -376,7 +381,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     {
         buffer = model->m_pointCloud;
         std::cout << "Num Points: " << buffer->numPoints() << std::endl;
-        myfile << buffer->numPoints() << ", ";
+        // myfile << buffer->numPoints() << ", ";
+        g_num_points = buffer->numPoints();
     }
 
     // Create a point cloud manager
@@ -417,7 +423,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
         // std::cout << "Time Building tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
-        myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", "; 
+        // myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", "; 
+        g_build_time = std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
     }
     else if(pcm_name == "LBVH_CUDA")
     {
@@ -429,7 +436,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
         std::cout << "Time Building tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
-        myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
+        // myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
+        g_build_time = std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
     }
     else
     {
@@ -469,7 +477,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 buffer->setNormalArray(normals, num_points);
                 gpu_surface.freeGPU();
                 std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-                myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
+                // myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
+                g_knn_time = std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
             #else
                 // std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
                 std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -477,7 +486,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
                 std::cout << "Time calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
-                myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
+                // myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
+                g_knn_time = std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
             #endif
         }
         else
@@ -487,7 +497,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
             std::cout << "Time calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
-            myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
+            // myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
+            g_knn_time = std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
         }
     }
     else
@@ -533,6 +544,41 @@ int main(int argc, char** argv)
      * LBVH_CUDA,
      * ~/datasets/polizei/polizei30M_cut.ply
      */
+    // #####################################################################################
+    // USE THIS TO SUBSAMPLE PLY FILES
+    // #####################################################################################
+    // benchmark::Options opt(argc, argv);
+    // ModelPtr model = ModelFactory::readModel(opt.getInputFileName());
+
+    // // Get the points
+    // PointBufferPtr pbuffer = model->m_pointCloud;
+    // size_t num_points = model->m_pointCloud->numPoints();
+
+    // std::cout << "Before: " << num_points << std::endl;
+
+    // float voxelSize = 0.03f;
+    // size_t maxPointsperVoxel = 2;
+
+    // OctreeReduction ocRed(pbuffer, voxelSize, maxPointsperVoxel);
+    // PointBufferPtr redPBuffer;
+
+    // redPBuffer = ocRed.getReducedPoints();
+    // // floatArr arr = redPBuffer->getFloatArray();
+
+    // ModelPtr redModel(new Model(redPBuffer));
+    // // model->m_mesh.reset();
+    // // model->m_pointCloud.reset();
+
+    // // model->m_pointCloud->setNormalArray(*redPBuffer);
+
+    // std::cout << "After: " << redModel->m_pointCloud->numPoints() << std::endl;
+   
+    // // Save the new model as test.ply
+    // ModelFactory::saveModel(redModel, "test.ply");
+
+
+    // exit(0);
+    // ############################################################################################
     myfile.open("runtime_test.txt");
 
     int num_pcm = 3;
@@ -541,7 +587,14 @@ int main(int argc, char** argv)
 
     char *pcm[] = {"LBVH_CUDA", "FLANN", "--useGPU"};                   // The tested point cloud manager
     char *k_s[] = {"5", "10"};                                          // The tested values for k
-    char *data[] = {"/home/tstueckemann/datasets/polizei/polizei30M_cut.ply"};  // The tested datasets
+    char *data[] = {                                                    // The tested datasets
+        "/home/till/datasets/polizei/polizei1M.ply"
+        "/home/till/datasets/polizei/polizei2M.ply"
+        "/home/till/datasets/polizei/polizei5M.ply"
+        "/home/till/datasets/polizei/polizei10M.ply"
+        "/home/till/datasets/polizei/polizei20M.ply"
+        "/home/till/datasets/polizei/polizei30M.ply"
+    };                                                                  
 
     for(int p_ = 0; p_ < num_pcm; p_++)
     {
@@ -553,9 +606,6 @@ int main(int argc, char** argv)
                 std::cout << "PCM: " << pcm[p_] << std::endl;
                 std::cout << "K: " << k_s[k_] << std::endl;
 
-                myfile << data[d_] << ", ";
-                myfile << pcm[p_] << ", ";
-                myfile << k_s[k_] << ", ";
 
                 std::vector<char*> vec;
 
@@ -575,7 +625,7 @@ int main(int argc, char** argv)
 
                 char** paramv = reinterpret_cast<char**>(&vec[0]);
 
-                reconstruct::Options options(paramc, paramv);
+                benchmark::Options options(paramc, paramv);
 
 
                 // options.printLogo();
@@ -608,9 +658,21 @@ int main(int argc, char** argv)
 
                 // cout << timestamp << "Program end." << endl;
 
-                std::cout << std::endl;
-                std::cout << std::endl;
+                // Output file:
+                // dataset, numPoints, PCM, K, buildTime, knnTime
+                myfile << data[d_] << ", ";
+                myfile << g_num_points << ", ";
+                myfile << pcm[p_] << ", ";
+                myfile << k_s[k_] << ", ";
+                myfile << g_build_time << ", ";
+                myfile << g_knn_time << ", ";
                 myfile << std::endl;
+
+                g_build_time = 0;
+                g_knn_time = 0;
+
+                std::cout << std::endl;
+                std::cout << std::endl;
             }
         }
     }

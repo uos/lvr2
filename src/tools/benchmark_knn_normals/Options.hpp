@@ -49,7 +49,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-namespace reconstruct
+namespace benchmark
 {
 
 /**
@@ -657,7 +657,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
     return os;
 }
 
-} // namespace reconstruct
+} // namespace benchmark
 
 
 #endif /* OPTIONS_H_ */
