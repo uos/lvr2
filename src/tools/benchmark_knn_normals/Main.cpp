@@ -588,12 +588,12 @@ int main(int argc, char** argv)
     char *pcm[] = {"LBVH_CUDA", "FLANN", "--useGPU"};                   // The tested point cloud manager
     char *k_s[] = {"5", "10"};                                          // The tested values for k
     char *data[] = {                                                    // The tested datasets
-        "/home/till/datasets/polizei/polizei1M.ply"
-        "/home/till/datasets/polizei/polizei2M.ply"
-        "/home/till/datasets/polizei/polizei5M.ply"
-        "/home/till/datasets/polizei/polizei10M.ply"
-        "/home/till/datasets/polizei/polizei20M.ply"
-        "/home/till/datasets/polizei/polizei30M.ply"
+        "/home/tstueckemann/datasets/polizei/polizei1M.ply"
+        "/home/tstueckemann/datasets/polizei/polizei2M.ply"
+        "/home/tstueckemann/datasets/polizei/polizei5M.ply"
+        "/home/tstueckemann/datasets/polizei/polizei10M.ply"
+        "/home/tstueckemann/datasets/polizei/polizei20M.ply"
+        "/home/tstueckemann/datasets/polizei/polizei30M.ply"
     };                                                                  
 
     for(int p_ = 0; p_ < num_pcm; p_++)
