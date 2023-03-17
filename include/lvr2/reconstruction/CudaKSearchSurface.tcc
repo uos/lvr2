@@ -9,7 +9,6 @@ template<typename BaseVecT>
 CudaKSearchSurface<BaseVecT>::CudaKSearchSurface()
 {
     this->setKn(50);
-
 }
 
 template<typename BaseVecT>
@@ -49,8 +48,6 @@ void CudaKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     
     float* points_raw = &points[0];
     int num_points = this->m_pointBuffer->numPoints();
-    // // TODO
-    // num_points = 10000000;
     
     BaseVecT* query = reinterpret_cast<BaseVecT*>(points_raw);
 

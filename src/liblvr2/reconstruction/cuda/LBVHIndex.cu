@@ -21,18 +21,6 @@
 using namespace lvr2;
 using namespace lbvh;
 
-/*  TODO
-    - Extent device Member?
-    - m_d_sorted_indices weg?
-    - Delete or change flip_x,... (or add to knn_normals_kernel?)
-
-    * Stand der Technik (ikd-tree evtl mit rein nehmen)
-    * Uni PC aufsetzen für Experimente python und C++
-    * Queue in Register?
-    * (Speicher-Optimierung)
-*/ 
-
-
 // // Only for testing
 // float quadratic_distance(float p1, float p2, float p3, float q1, float q2, float q3)
 // {
@@ -855,7 +843,7 @@ void LBVHIndex::knn_normals(
 
     // cudaEventCreate(&start);
     // cudaEventRecord(start,0);
-
+//#############################################################
     // Get the KNN Normals Kernel
     std::string kernel_file = "knn_normals_kernel.cu";
     std::string kernel_name = "knn_normals_kernel";
@@ -886,7 +874,7 @@ void LBVHIndex::knn_normals(
 
     CUDA_SAFE_CALL(cuModuleLoadDataEx(&module, ptx_src.c_str(), 0, 0, 0));
     CUDA_SAFE_CALL(cuModuleGetFunction(&kernel, module, kernel_name.c_str()));
-
+ // ##################################################################
     // cudaEventCreate(&stop);
     // cudaEventRecord(stop,0);
     // cudaEventSynchronize(stop);
@@ -963,7 +951,7 @@ void LBVHIndex::knn_normals(
     // cudaEventElapsedTime(&elapsedTime, start,stop);
     
     // std::cout << "Upload Time: " << elapsedTime << std::endl;
-    
+// ################################################################
     // Gather the arguments
     void *params[] = 
     {
@@ -977,7 +965,7 @@ void LBVHIndex::knn_normals(
         &num_queries,
         &d_normals
     };
-
+// ##################################################################
     int threadsPerBlock = 256;
     int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
                         / threadsPerBlock;
@@ -985,7 +973,7 @@ void LBVHIndex::knn_normals(
 
     // cudaEventCreate(&start);
     // cudaEventRecord(start,0);
-    
+// ##################################################################
     // Launch the kernel
     CUDA_SAFE_CALL( cuLaunchKernel(kernel, 
         blocksPerGrid, 1, 1,  // grid dim
@@ -994,7 +982,7 @@ void LBVHIndex::knn_normals(
         params,       // arguments
         0
     ) );    
-
+// #################################################################
     // cudaEventCreate(&stop);
     // cudaEventRecord(stop,0);
     // cudaEventSynchronize(stop);

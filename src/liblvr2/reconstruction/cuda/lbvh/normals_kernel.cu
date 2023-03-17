@@ -291,7 +291,7 @@ __global__ void lbvh::calculate_normals_kernel(
 
     double weight = det_x * det_x;
 
-    if(weighted_dir.x * axis_dir.x + weighted_dir.y * weighted_dir.y + weighted_dir.z * weighted_dir.z < 0.0f)
+    if(weighted_dir.x * axis_dir.x + weighted_dir.y * axis_dir.y + weighted_dir.z * axis_dir.z < 0.0f)
     {
         weight *= -1;
     }
@@ -310,7 +310,7 @@ __global__ void lbvh::calculate_normals_kernel(
 
     weight = det_y * det_y;
 
-    if(weighted_dir.x * axis_dir.x + weighted_dir.y * weighted_dir.y + weighted_dir.z * weighted_dir.z < 0.0f)
+    if(weighted_dir.x * axis_dir.x + weighted_dir.y * axis_dir.y + weighted_dir.z * axis_dir.z < 0.0f)
     {
         weight *= -1;
     }
@@ -329,7 +329,7 @@ __global__ void lbvh::calculate_normals_kernel(
 
     weight = det_z * det_z;
 
-    if(weighted_dir.x * axis_dir.x + weighted_dir.y * weighted_dir.y + weighted_dir.z * weighted_dir.z < 0.0f)
+    if(weighted_dir.x * axis_dir.x + weighted_dir.y * axis_dir.y + weighted_dir.z * axis_dir.z < 0.0f)
     {
         weight *= -1;
     }
@@ -353,7 +353,6 @@ __global__ void lbvh::calculate_normals_kernel(
     double vertex_y = queries[3 * tid + 1];
     double vertex_z = queries[3 * tid + 2];
 
-    // flip the normals
     double x_dir = flip_x - vertex_x;
     double y_dir = flip_y - vertex_y;
     double z_dir = flip_z - vertex_z;
@@ -368,6 +367,7 @@ __global__ void lbvh::calculate_normals_kernel(
         normal.z = 0.0f;
     }
 
+    // flip the normals
     if(scalar < 0)
     {
         normal.x = -normal.x;

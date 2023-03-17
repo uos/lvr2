@@ -31,6 +31,7 @@
 #include <tuple>
 #include <stdlib.h>
 #include <fstream>
+#include <math.h>
 
 #include <boost/optional.hpp>
 #include <boost/shared_array.hpp>
@@ -99,6 +100,7 @@
 
 // TODO
 #include "lvr2/util/Synthetic.hpp"
+#include "lvr2/reconstruction/cuda/LBVHIndex.hpp"
 
 #include "Options.hpp"
 
@@ -424,7 +426,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const benchmark::Options& options)
 
         // std::cout << "Time Building tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
         // myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", "; 
-        g_build_time = std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
+        g_build_time += std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
     }
     else if(pcm_name == "LBVH_CUDA")
     {
@@ -437,7 +439,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const benchmark::Options& options)
 
         std::cout << "Time Building tree: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
         // myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
-        g_build_time = std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
+        g_build_time += std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
     }
     else
     {
@@ -478,7 +480,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const benchmark::Options& options)
                 gpu_surface.freeGPU();
                 std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
                 // myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
-                g_knn_time = std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
+                g_knn_time += std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
             #else
                 // std::cout << timestamp << "ERROR: GPU Driver not installed" << std::endl;
                 std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -487,7 +489,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const benchmark::Options& options)
 
                 std::cout << "Time calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
                 // myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
-                g_knn_time = std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
+                g_knn_time += std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
             #endif
         }
         else
@@ -498,7 +500,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const benchmark::Options& options)
 
             std::cout << "Time calculating Normals: " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
             // myfile << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << ", ";
-            g_knn_time = std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
+            g_knn_time += std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count();
         }
     }
     else
@@ -521,80 +523,171 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const benchmark::Options& options)
     return surface;
 }
 
+float getVectorAngle(const float* normals, const float* true_normals, int idx_1, int idx_2)
+{
+    // get scalar
+    float scalar =  normals[3 * idx_1 + 0] * true_normals[3 * idx_2 + 0] +
+                    normals[3 * idx_1 + 1] * true_normals[3 * idx_2 + 1] +
+                    normals[3 * idx_1 + 2] * true_normals[3 * idx_2 + 2];
+
+    // get the magnitudes
+    float mag_1 = sqrt( normals[3 * idx_1 + 0] * normals[3 * idx_1 + 0] +
+                        normals[3 * idx_1 + 1] * normals[3 * idx_1 + 1] +
+                        normals[3 * idx_1 + 2] * normals[3 * idx_1 + 2]);
+
+    float mag_2 = sqrt( true_normals[3 * idx_2 + 0] * true_normals[3 * idx_2 + 0] +
+                        true_normals[3 * idx_2 + 1] * true_normals[3 * idx_2 + 1] +
+                        true_normals[3 * idx_2 + 2] * true_normals[3 * idx_2 + 2]);
+
+    // Ignore uninitialised normals
+    if(mag_1 == 0.0f || mag_2 == 0.0f)
+    {
+        return 0.0f;
+    }
+
+    // Get the angle in radian
+    float value = scalar / (mag_1 * mag_2);
+    float angle_rad;
+
+    // Make acos() safe - somehow acos() has a problem with normalized vectors
+    if (value <= -1.0f) 
+    {
+        angle_rad = M_PI;
+    } 
+    else if (value>=1.0) 
+    {
+        angle_rad = 0;
+    } 
+    else 
+    {
+        angle_rad = acos(value);
+    }
+    
+    // Convert angle to degrees
+    float angle = angle_rad * 180 / M_PI;
+
+    return angle;
+}
+
+void saveSphereCloud(int num_long, int num_lat, std::string filename)
+{
+    lvr2::PointBufferPtr pbuffer;
+    pbuffer = lvr2::synthetic::genSpherePoints(num_long, num_lat);
+
+    size_t num_points = pbuffer->numPoints();
+
+    lvr2::floatArr points = pbuffer->getPointArray();
+    float* points_raw = &points[0];
+
+    ModelPtr sphereModel(new Model(pbuffer));
+   
+    ModelFactory::saveModel(sphereModel, filename);
+}
+
+void calculateNormalsSphere(std::string filename, float* normals, bool save_model=false)
+{
+    ModelPtr model = ModelFactory::readModel(filename);
+
+    // Get the points
+    PointBufferPtr pbuffer = model->m_pointCloud;
+    size_t num_points = model->m_pointCloud->numPoints();
+
+    lvr2::floatArr points = pbuffer->getPointArray();
+    float* points_raw = &points[0];
+
+    float mag;
+
+    for(int i = 0; i < num_points; i++)
+    {
+        mag = sqrt( points_raw[3 * i + 0] * points_raw[3 * i + 0] +
+                    points_raw[3 * i + 1] * points_raw[3 * i + 1] +
+                    points_raw[3 * i + 2] * points_raw[3 * i + 2]);
+
+        normals[3 * i + 0] = points_raw[3 * i + 0] / mag;
+        normals[3 * i + 1] = points_raw[3 * i + 1] / mag;
+        normals[3 * i + 2] = points_raw[3 * i + 2] / mag;
+
+        // Flip normals if necessary
+        float flip_x = 10000000.0f;
+        float flip_y = 10000000.0f;
+        float flip_z = 10000000.0f;
+
+        float vertex_x = points_raw[3 * i + 0];
+        float vertex_y = points_raw[3 * i + 1];
+        float vertex_z = points_raw[3 * i + 2];
+
+        float x_dir = flip_x - vertex_x;
+        float y_dir = flip_y - vertex_y;
+        float z_dir = flip_z - vertex_z;
+
+        float scalar =  x_dir * normals[3 * i + 0] + 
+                        y_dir * normals[3 * i + 1] + 
+                        z_dir * normals[3 * i + 2];
+
+        if(scalar < 0)
+        {
+            normals[3 * i + 0] = -normals[3 * i + 0];
+            normals[3 * i + 1] = -normals[3 * i + 1];
+            normals[3 * i + 2] = -normals[3 * i + 2];
+        }
+    }
+
+    if(save_model) 
+    {
+        pbuffer->setNormalArray(floatArr(&normals[0]), num_points);
+        ModelPtr sphereModel(new Model(pbuffer));
+
+        ModelFactory::saveModel(sphereModel, "sphereNormals.ply");
+    }
+}
+
+void getNormalDifference(float* normals, float* true_normals, size_t num_normals, float* diff, float* avg, float* max, float* min, int* num_180)
+{
+    
+    for(int i = 0; i < num_normals; i++)
+    {
+        float d = getVectorAngle(normals, true_normals, i, i);
+        if(d > *max)
+        {
+            *max = d;
+        }
+        if(d < *min)
+        {
+            *min = d;
+        }
+
+        diff[i] = d;
+        *avg += d / num_normals;
+
+        if(d >= 180.0f)
+        {
+            *num_180 += 1;
+        }
+    }
+
+    return;
+}
+
 int main(int argc, char** argv)
 {
-    // =======================================================================
-    // Parse and print command line parameters
-    // =======================================================================
-    // Parse command line arguments
+    // saveSphereCloud(200, 200, "sphere40K.ply");
+    // ################ Test Normal Quality #######################################################
+    // int num_points = 200 * 200 + 2;
+    // float* sphere_normals = (float*) malloc(sizeof(float) * 3 * num_points);
+    // calculateNormalsSphere("sphere4M.ply", sphere_normals, true);
 
-    // // Generates 64.000.000 points
-    // lvr2::PointBufferPtr pbuffer;
-    // pbuffer = lvr2::synthetic::genSpherePoints(8000,8000);
-
-    // size_t num_points = pbuffer->numPoints();
-
-    // lvr2::floatArr points = pbuffer->getPointArray();
-    // float* points_raw = &points[0];
-    
-    /* 
-     * argv looks like this:
-     * bin/benchmark_knn_normals,
-     * -p,
-     * LBVH_CUDA,
-     * ~/datasets/polizei/polizei30M_cut.ply
-     */
-    // #####################################################################################
-    // USE THIS TO SUBSAMPLE PLY FILES
-    // #####################################################################################
-    // benchmark::Options opt(argc, argv);
-    // ModelPtr model = ModelFactory::readModel(opt.getInputFileName());
-
-    // // Get the points
-    // PointBufferPtr pbuffer = model->m_pointCloud;
-    // size_t num_points = model->m_pointCloud->numPoints();
-
-    // std::cout << "Before: " << num_points << std::endl;
-
-    // float voxelSize = 0.03f;
-    // size_t maxPointsperVoxel = 2;
-
-    // OctreeReduction ocRed(pbuffer, voxelSize, maxPointsperVoxel);
-    // PointBufferPtr redPBuffer;
-
-    // redPBuffer = ocRed.getReducedPoints();
-    // // floatArr arr = redPBuffer->getFloatArray();
-
-    // ModelPtr redModel(new Model(redPBuffer));
-    // // model->m_mesh.reset();
-    // // model->m_pointCloud.reset();
-
-    // // model->m_pointCloud->setNormalArray(*redPBuffer);
-
-    // std::cout << "After: " << redModel->m_pointCloud->numPoints() << std::endl;
-   
-    // // Save the new model as test.ply
-    // ModelFactory::saveModel(redModel, "test.ply");
-
-
-    // exit(0);
-    // ############################################################################################
-    myfile.open("runtime_test.txt");
+    myfile.open("normal_quality_test.csv");
 
     int num_pcm = 3;
-    int num_k = 2;
+    int num_k = 4;
     int num_data = 1;
 
-    char *pcm[] = {"LBVH_CUDA", "FLANN", "--useGPU"};                   // The tested point cloud manager
-    char *k_s[] = {"5", "10"};                                          // The tested values for k
+    char *pcm[] = {"LBVH_CUDA", "FLANN", "--useGPU"};                   // The tested point cloud manager                     
+    char *k_s[] = {"10", "25", "50", "100"};                            // The tested values for k  
     char *data[] = {                                                    // The tested datasets
-        "/home/tstueckemann/datasets/polizei/polizei1M.ply"
-        "/home/tstueckemann/datasets/polizei/polizei2M.ply"
-        "/home/tstueckemann/datasets/polizei/polizei5M.ply"
-        "/home/tstueckemann/datasets/polizei/polizei10M.ply"
-        "/home/tstueckemann/datasets/polizei/polizei20M.ply"
-        "/home/tstueckemann/datasets/polizei/polizei30M.ply"
-    };                                                                  
+        "/home/tstueckemann/datasets/synthetic/sphere4M.ply"
+    };    
+    myfile << "n,pcm,k,avg,max,min,num180" << std::endl;                                                    
 
     for(int p_ = 0; p_ < num_pcm; p_++)
     {
@@ -606,29 +699,32 @@ int main(int argc, char** argv)
                 std::cout << "PCM: " << pcm[p_] << std::endl;
                 std::cout << "K: " << k_s[k_] << std::endl;
 
-
                 std::vector<char*> vec;
 
-
-                int paramc = 5;
+                int paramc = 9;
 
                 vec.push_back("bin/benchmark_knn_normals");
+                // TODO Comment in when using --GPU
                 if(p_ != num_pcm - 1)
                 {
-                    paramc = 6;
+                    paramc = 10;
                     vec.push_back("-p");
                 }
+                // paramc = 6;
+                // vec.push_back("-p");
                 vec.push_back(pcm[p_]);
                 vec.push_back("--kn");
                 vec.push_back(k_s[k_]);
+                // --flipPoint x y z
+                vec.push_back("--flipPoint");
+                vec.push_back("10000000");
+                vec.push_back("10000000");
+                vec.push_back("10000000");
                 vec.push_back(data[d_]);
 
                 char** paramv = reinterpret_cast<char**>(&vec[0]);
 
                 benchmark::Options options(paramc, paramv);
-
-
-                // options.printLogo();
 
                 // Exit if options had to generate a usage message
                 // (this means required parameters are missing)
@@ -653,31 +749,339 @@ int main(int argc, char** argv)
                     cout << "Failed to create pointcloud. Exiting." << endl;
                     exit(EXIT_FAILURE);
                 }
-                // ModelPtr pn(new Model(surface->pointBuffer()));
-                // ModelFactory::saveModel(pn, "pointnormals.ply");
 
-                // cout << timestamp << "Program end." << endl;
+                // Get the calculated normals
+                PointBufferPtr pb = surface->pointBuffer();
+                size_t num_normals = pb->numPoints();
+                floatArr normalArr = pb->getNormalArray();
+                float* normals = &normalArr[0];
 
-                // Output file:
-                // dataset, numPoints, PCM, K, buildTime, knnTime
-                myfile << data[d_] << ", ";
-                myfile << g_num_points << ", ";
-                myfile << pcm[p_] << ", ";
-                myfile << k_s[k_] << ", ";
-                myfile << g_build_time << ", ";
-                myfile << g_knn_time << ", ";
-                myfile << std::endl;
+                // Get the true normals
+                float* true_normals = (float*) malloc(sizeof(float) * 3 * num_normals);
+                calculateNormalsSphere(data[d_], true_normals);
 
-                g_build_time = 0;
-                g_knn_time = 0;
+                float* diff = (float*) malloc(sizeof(float) * num_normals);
 
-                std::cout << std::endl;
-                std::cout << std::endl;
+                float avg = 0.0f;
+                float max = 0.0f;
+                float min = FLT_MAX;
+                int num_180 = 0;
+                getNormalDifference(normals, true_normals, num_normals, diff, &avg, &max, &min, &num_180);
+
+                std::cout << "Average normal difference: " << avg << "degree" << std::endl;
+
+                myfile  << num_normals << "," << pcm[p_] << "," << k_s[k_] << "," 
+                        << avg << "," << max << "," << min << "," << num_180 << "," << std::endl;
+                
             }
         }
     }
-
     myfile.close();
+    
 
+    // ############################################################################################
+    // ################ Create Sphere Point Cloud #################################################
+    //
+
+    // // Generates 64.000.000 points
+    // lvr2::PointBufferPtr pbuffer;
+    // pbuffer = lvr2::synthetic::genSpherePoints(3000,3000);
+
+    // size_t num_points = pbuffer->numPoints();
+
+    // lvr2::floatArr points = pbuffer->getPointArray();
+    // float* points_raw = &points[0];
+
+    // ModelPtr sphereModel(new Model(pbuffer));
+
+    // std::cout << "Sphere points: " << sphereModel->m_pointCloud->numPoints() << std::endl;
+   
+    // // Save the new model as test.ply
+    // ModelFactory::saveModel(sphereModel, "sphere.ply");
+
+    
+
+
+    // ######################################################################################
+    /* 
+     * argv looks like this:
+     * bin/benchmark_knn_normals,
+     * -p,
+     * LBVH_CUDA,
+     * ~/datasets/polizei/polizei30M_cut.ply
+     */
+    // #####################################################################################
+    // USE THIS TO SUBSAMPLE PLY FILES
+    // #####################################################################################
+    // benchmark::Options opt(argc, argv);
+    // ModelPtr model = ModelFactory::readModel(opt.getInputFileName());
+
+    // // Get the points
+    // PointBufferPtr pbuffer = model->m_pointCloud;
+    // size_t num_points = model->m_pointCloud->numPoints();
+
+    // std::cout << "Before: " << num_points << std::endl;
+
+    // float voxelSize = 0.03f;
+    // size_t maxPointsperVoxel = 240;
+
+    // OctreeReduction ocRed(pbuffer, voxelSize, maxPointsperVoxel);
+    // PointBufferPtr redPBuffer;
+
+    // redPBuffer = ocRed.getReducedPoints();
+    // // floatArr arr = redPBuffer->getFloatArray();
+
+    // ModelPtr redModel(new Model(redPBuffer));
+    // // model->m_mesh.reset();
+    // // model->m_pointCloud.reset();
+
+    // // model->m_pointCloud->setNormalArray(*redPBuffer);
+
+    // std::cout << "After: " << redModel->m_pointCloud->numPoints() << std::endl;
+   
+    // // Save the new model as test.ply
+    // ModelFactory::saveModel(redModel, "test.ply");
+
+
+    // exit(0);
+    // ############################################################################################
+    // ################### Test combined kernel ########################################################
+    // myfile.open("max_k_test_10M.csv");
+
+    // int epochs = 1;
+    // int num_pcm = 1;
+    // int num_k = 3;
+    // int num_data = 1;
+
+    // // char *pcm[] = {"LBVH_CUDA", "FLANN", "--useGPU"};                   // The tested point cloud manager
+    // char *pcm[] = {"LBVH_CUDA"};
+    // // char *k_s[] = {"4", "8", "16", "32", "64", "96", "128"};                  // The tested values for k     
+    // char *k_s[] = {"200", "500", "1000"};                                              
+    // char *data[] = {                                                    // The tested datasets
+    //     // "/home/tstueckemann/datasets/polizei/polizei1M.ply",
+    //     // "/home/tstueckemann/datasets/polizei/polizei2M.ply",
+    //     // "/home/tstueckemann/datasets/polizei/polizei5M.ply",
+    //     "/home/tstueckemann/datasets/polizei/polizei10M.ply"
+    //     // "/home/tstueckemann/datasets/polizei/polizei20M.ply",
+    //     // "/home/tstueckemann/datasets/polizei/polizei30M.ply"
+    //     // "/home/tstueckemann/datasets/polizei/polizei15M.ply",
+    //     // "/home/tstueckemann/datasets/polizei/polizei25M.ply"
+    // };                                                                  
+
+    // for(int p_ = 0; p_ < num_pcm; p_++)
+    // {
+    //     for(int k_ = 0; k_ < num_k; k_++)
+    //     {
+    //         for(int d_ = 0; d_ < num_data; d_++)
+    //         {
+    //             std::cout << "Testing on: " << data[d_] << std::endl;
+    //             std::cout << "PCM: " << pcm[p_] << std::endl;
+    //             std::cout << "K: " << k_s[k_] << std::endl;
+
+    //             std::vector<char*> vec;
+
+    //             int paramc = 5;
+
+    //             vec.push_back("bin/benchmark_knn_normals");
+    //             // TODO Comment in when using --GPU
+    //             // if(p_ != num_pcm - 1)
+    //             // {
+    //             //     paramc = 6;
+    //             //     vec.push_back("-p");
+    //             // }
+    //             paramc = 6;
+    //             vec.push_back("-p");
+    //             vec.push_back(pcm[p_]);
+    //             vec.push_back("--kn");
+    //             vec.push_back(k_s[k_]);
+    //             vec.push_back(data[d_]);
+
+    //             char** paramv = reinterpret_cast<char**>(&vec[0]);
+
+    //             benchmark::Options options(paramc, paramv);
+
+
+    //             // options.printLogo();
+
+    //             // Exit if options had to generate a usage message
+    //             // (this means required parameters are missing)
+    //             if (options.printUsage())
+    //             {
+    //                 return EXIT_SUCCESS;
+    //             }
+
+    //             // std::cout << options << std::endl;
+
+    //             // =======================================================================
+    //             // Load (and potentially store) point cloud
+    //             // =======================================================================
+    //             OpenMPConfig::setNumThreads(options.getNumThreads());
+
+    //             // TODO Do more than one epoch?
+    //             for(int e_ = 0; e_ < epochs; e_++)
+    //             {
+    //                 PointsetSurfacePtr<Vec> surface;
+
+    //                 // Load PointCloud
+    //                 surface = loadPointCloud<Vec>(options);
+    //                 if (!surface)
+    //                 {
+    //                     cout << "Failed to create pointcloud. Exiting." << endl;
+    //                     exit(EXIT_FAILURE);
+    //                 }
+
+    //             }
+    //             // ModelPtr pn(new Model(surface->pointBuffer()));
+    //             // ModelFactory::saveModel(pn, "pointnormals.ply");
+
+    //             // cout << timestamp << "Program end." << endl;
+
+    //             // Output file:
+    //             // (dataset,) numPoints, PCM, K, buildTime, knnTime
+    //             // myfile << data[d_] << ", ";
+    //             myfile << g_num_points << ", ";
+    //             myfile << pcm[p_] << ", ";
+    //             myfile << k_s[k_] << ", ";
+    //             myfile << g_build_time / epochs << ", ";
+    //             myfile << g_knn_time / epochs << ", ";
+    //             myfile << std::endl;
+
+    //             g_build_time = 0;
+    //             g_knn_time = 0;
+
+    //             std::cout << std::endl;
+    //             std::cout << std::endl;
+    //         }
+    //     }
+    // }
+
+    // myfile.close();
+    // ############################################################
+
+    // #################### Test separate kernels #########################
+
+    // long int build_time = 0;
+    // long int knn_time = 0;
+    // long int normals_time = 0;
+
+    // myfile.open("runtime_test.txt");
+    // myfile << "n,pcm,k,build,knn,normals," << std::endl;
+
+    // int k_s[] = {4, 8, 16, 32, 64, 96, 128};
+    // char *data[] = {                                                    // The tested datasets
+    //     // "/home/tstueckemann/datasets/polizei/polizei1M.ply"
+    //     // "/home/tstueckemann/datasets/polizei/polizei2M.ply"
+    //     // "/home/tstueckemann/datasets/polizei/polizei5M.ply"
+    //     "/home/tstueckemann/datasets/polizei/polizei10M.ply"
+    //     // "/home/tstueckemann/datasets/polizei/polizei20M.ply"
+    //     // "/home/tstueckemann/datasets/polizei/polizei30M.ply"
+    //     // "/home/tstueckemann/datasets/polizei/polizei15M.ply",
+    //     // "/home/tstueckemann/datasets/polizei/polizei25M.ply"
+    // };   
+
+    // for(int k_ = 0; k_ < 7; k_++)
+    // {
+    //     for(int d_ = 0; d_ < 1; d_++)
+    //     {            
+             
+    //         int paramc = 2;
+    //         std::vector<char*> vec;
+    //         vec.push_back("bin/benchmark_knn_normals");
+    //         vec.push_back(data[d_]);
+
+    //         char** paramv = reinterpret_cast<char**>(&vec[0]);    
+
+    //         benchmark::Options opt(paramc, paramv);
+
+    //         ModelPtr model = ModelFactory::readModel(opt.getInputFileName());
+
+    //         // Get the points
+    //         PointBufferPtr pbuffer = model->m_pointCloud;
+    //         size_t num_points = model->m_pointCloud->numPoints();
+    //         floatArr points = pbuffer->getPointArray();
+    //         float* points_raw = &points[0];
+    //         int K = k_s[k_];
+
+    //         myfile << num_points << ",";
+    //         myfile << "SEPARATE" << ",";
+    //         myfile << K << ",";
+
+            
+    //         std::cout << "Testing on n=" << num_points << ", k=" << K << std::endl;
+
+    //         lvr2::lbvh::LBVHIndex lbvh(32, true, true);
+
+    //         std::chrono::steady_clock::time_point begin_build = std::chrono::steady_clock::now();
+    //         lbvh.build(points_raw, num_points);
+    //         std::chrono::steady_clock::time_point end_build = std::chrono::steady_clock::now();
+
+    //         build_time = std::chrono::duration_cast<std::chrono::milliseconds> (end_build - begin_build).count();
+    //         std::cout << "Time building LBVH: " << build_time << "[ms]" << std::endl;
+    //         myfile << build_time << ",";
+
+
+    //         size_t size =  3 * num_points;
+
+    //         // Get the queries
+    //         size_t num_queries = num_points;
+
+    //         float* queries = points_raw;
+
+    //         // Create the normal array
+    //         float* normals = (float*) malloc(sizeof(float) * num_queries * 3);
+
+    //         // Create the return arrays
+    //         unsigned int* n_neighbors_out;
+    //         unsigned int* indices_out;
+    //         float* distances_out;
+
+    //         // Malloc the output arrays here
+    //         n_neighbors_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries);
+    //         indices_out = (unsigned int*) malloc(sizeof(unsigned int) * num_queries * K);
+    //         distances_out = (float*) malloc(sizeof(float) * num_queries * K);
+
+    //         std::cout << "KNN Search..." << std::endl;
+    //         // Process the queries 
+
+
+    //         std::chrono::steady_clock::time_point begin_knn = std::chrono::steady_clock::now();
+    //         lbvh.kSearch(
+    //             queries, 
+    //             num_queries,
+    //             K,
+    //             n_neighbors_out, 
+    //             indices_out, 
+    //             distances_out
+    //         );
+    //         std::chrono::steady_clock::time_point end_knn = std::chrono::steady_clock::now();
+            
+    //         knn_time = std::chrono::duration_cast<std::chrono::milliseconds> (end_knn - begin_knn).count();
+    //         std::cout << "Time kNN Search: " << knn_time << "[ms]" << std::endl;
+    //         myfile << knn_time << ",";
+
+            
+    //         std::cout << "Normals..." << std::endl;
+    //         // Calculate the normals
+
+    //         std::chrono::steady_clock::time_point begin_normals = std::chrono::steady_clock::now();
+    //         lbvh.calculate_normals(
+    //             normals, 
+    //             num_queries,        
+    //             queries, 
+    //             num_queries, 
+    //             K,
+    //             n_neighbors_out, 
+    //             indices_out
+    //         );
+    //         std::chrono::steady_clock::time_point end_normals = std::chrono::steady_clock::now();
+
+    //         normals_time = std::chrono::duration_cast<std::chrono::milliseconds> (end_normals - begin_normals).count();
+    //         std::cout << "Time Normal Calculation: " << normals_time << "[ms]" << std::endl;
+    //         myfile << normals_time << "," << std::endl;
+
+    //         std::cout << "Done!" << std::endl;
+    //     }
+    // }
+    // ##########################################################################################
     return 0;
 }

@@ -26,29 +26,31 @@ int main()
         // 10000000, 
         // 20000000,
         // 25000000 
-        // 30000000
-        // 30000000
-        30000000
+        // 30000000             // Works with k=10,20,25,50,75,100,150,200,500,...
+        32500000                
+        // 35000000             // Fails in build()
         // 40000000
     };
 
     int k_s[] = {
         10, 
         20,
-        25 
-        // 50, 
-        // 100, 
-        // 200,
-        // 500,
-        // 1000,
-        // 2000,
-        // 5000,
-        // 10000
+        25, 
+        50, 
+        75, 
+        100,
+        150,
+        200,
+        500,
+        1000,
+        2000,
+        5000,
+        10000
     };
 
     const char *path = "../src/tools/cuda_normals_test";
     std::ofstream myfile(path);
-    myfile.open("runtime_test.txt");
+    myfile.open("memory_test.txt");
 
     // Worked with n = 5000000, k = 200
     // Worked with n = 10000000, k = 100

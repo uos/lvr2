@@ -22,7 +22,7 @@ namespace lbvh
     {
         query<StaticPriorityQueue<float, K>>(nodes, points, sorted_indices, root_index, query_point, queue);
     }
-
+    
     __forceinline__ __device__ StaticPriorityQueue<float, K> query_knn(
         const BVHNode* __restrict__ nodes,
         const float* __restrict__ points,          // Changed from float3* to float*

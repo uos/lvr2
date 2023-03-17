@@ -1,5 +1,5 @@
-#ifndef LBVHINDEX_HPP
-#define LBVHINDEX_HPP
+#ifndef LVR2_LBVHINDEX_HPP
+#define LVR2_LBVHINDEX_HPP
 
 #include <string>
 
@@ -302,4 +302,4 @@ public:
 
 } // namespace lvr2
 
-#endif // LBVHINDEX_HPP
+#endif // LVR2_LBVHINDEX_HPP
