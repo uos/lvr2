@@ -523,50 +523,247 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const benchmark::Options& options)
     return surface;
 }
 
-float getVectorAngle(const float* normals, const float* true_normals, int idx_1, int idx_2)
+void saveCubeCloud(int num_1, int num_2, std::string filename)
 {
-    // get scalar
-    float scalar =  normals[3 * idx_1 + 0] * true_normals[3 * idx_2 + 0] +
-                    normals[3 * idx_1 + 1] * true_normals[3 * idx_2 + 1] +
-                    normals[3 * idx_1 + 2] * true_normals[3 * idx_2 + 2];
+    size_t num_points = num_1 * num_2 * 6;
 
-    // get the magnitudes
-    float mag_1 = sqrt( normals[3 * idx_1 + 0] * normals[3 * idx_1 + 0] +
-                        normals[3 * idx_1 + 1] * normals[3 * idx_1 + 1] +
-                        normals[3 * idx_1 + 2] * normals[3 * idx_1 + 2]);
+    float* points = (float*) malloc(sizeof(float) * num_points * 3);
 
-    float mag_2 = sqrt( true_normals[3 * idx_2 + 0] * true_normals[3 * idx_2 + 0] +
-                        true_normals[3 * idx_2 + 1] * true_normals[3 * idx_2 + 1] +
-                        true_normals[3 * idx_2 + 2] * true_normals[3 * idx_2 + 2]);
+    // Set Bounding Box of the cube
+    float min_x = 0.0f;
+    float min_y = 0.0f;
+    float min_z = 0.0f;
 
-    // Ignore uninitialised normals
-    if(mag_1 == 0.0f || mag_2 == 0.0f)
+    float max_x = 1.0f;
+    float max_y = 1.0f;
+    float max_z = 1.0f;
+
+    // Create faces of the cube
+
+    // First face at max x value
+    int offset = 0;
+
+    for(int first = 0; first < num_1; first++)
     {
-        return 0.0f;
+        for(int second = 0; second < num_2; second++)
+        {
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 0] = max_x - (max_x / num_1);             // x coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 1] = (min_y + first) / num_1;     // y coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 2] = (min_z + second) / num_2;    // z coord
+        }
     }
 
-    // Get the angle in radian
-    float value = scalar / (mag_1 * mag_2);
-    float angle_rad;
+    // Second face at min x value
+    offset = 1;
 
-    // Make acos() safe - somehow acos() has a problem with normalized vectors
-    if (value <= -1.0f) 
+    for(int first = 0; first < num_1; first++)
     {
-        angle_rad = M_PI;
-    } 
-    else if (value>=1.0) 
-    {
-        angle_rad = 0;
-    } 
-    else 
-    {
-        angle_rad = acos(value);
+        for(int second = 0; second < num_2; second++)
+        {
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 0] = min_x;     // x coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 1] = (min_y + first) / num_1; // y coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 2] = (min_z + second) / num_2; // z coord
+        }
     }
-    
-    // Convert angle to degrees
-    float angle = angle_rad * 180 / M_PI;
 
-    return angle;
+    // third face at max y value
+    offset = 2;
+
+    for(int first = 0; first < num_1; first++)
+    {
+        for(int second = 0; second < num_2; second++)
+        {
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 0] = (min_x + first) / num_1;     // x coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 1] = max_y - (max_y / num_1); // y coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 2] = (min_z + second) / num_2; // z coord
+        }
+    }
+
+    // fourth face at min y value
+    offset = 3;
+
+    for(int first = 0; first < num_1; first++)
+    {
+        for(int second = 0; second < num_2; second++)
+        {
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 0] = (min_x + first) / num_1;     // x coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 1] = min_y; // y coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 2] = (min_z + second) / num_2; // z coord
+        }
+    }
+
+    // fifth face at max z value
+    offset = 4;
+
+    for(int first = 0; first < num_1; first++)
+    {
+        for(int second = 0; second < num_2; second++)
+        {
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 0] = (min_x + first) / num_1;     // x coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 1] = (min_y + second) / num_2; // y coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 2] = max_z - (max_z / num_1); // z coord
+        }
+    }
+
+    // sixth face at min z value
+    offset = 5;
+
+    for(int first = 0; first < num_1; first++)
+    {
+        for(int second = 0; second < num_2; second++)
+        {
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 0] = (min_x + first) / num_1;     // x coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 1] = (min_y + second) / num_2; // y coord
+            points[3 * num_1 * num_2 * offset + 3 * first * num_2 + 3 * second + 2] = min_z; // z coord
+        }
+    }
+
+    PointBufferPtr pbuffer(new PointBuffer());
+
+    pbuffer->setPointArray(floatArr(&points[0]), num_points);
+
+    ModelPtr cubeModel(new Model(pbuffer));
+
+    ModelFactory::saveModel(cubeModel, filename);
+}
+
+void calculateNormalsCube(std::string filename, float* normals, bool save_model=false)
+{
+    ModelPtr model = ModelFactory::readModel(filename);
+
+    // Get the points
+    PointBufferPtr pbuffer = model->m_pointCloud;
+    size_t num_points = model->m_pointCloud->numPoints();
+
+    lvr2::floatArr points = pbuffer->getPointArray();
+    float* points_raw = &points[0];
+
+    // Get the Bounding Box of the cube
+    float max_x = 0;
+    float max_y = 0;
+    float max_z = 0;
+    float min_x = FLT_MAX;
+    float min_y = FLT_MAX;
+    float min_z = FLT_MAX;
+
+    for(int i = 0; i < num_points; i++)
+    {
+        float x = points_raw[3 * i + 0];
+        if(x > max_x)
+        {
+            max_x = x; 
+        }
+        if(x < min_x)
+        {
+            min_x = x;
+        }
+        float y = points_raw[3 * i + 1];
+        if(y > max_y)
+        {
+            max_y = y; 
+        }
+        if(y < min_y)
+        {
+            min_y = y;
+        }
+        float z = points_raw[3 * i + 2];
+        if(z > max_z)
+        {
+            max_z = z; 
+        }
+        if(z < min_z)
+        {
+            min_z = z;
+        }
+    }
+
+    // Reset normals
+    for(int i = 0; i < num_points; i++)
+    {
+        normals[3 * i + 0] = 0.0f;
+        normals[3 * i + 1] = 0.0f;
+        normals[3 * i + 2] = 0.0f;
+    }
+
+    for(int i = 0; i < num_points; i++)
+    {
+        // Set normals on the faces
+        float x = points_raw[3 * i + 0];
+        float y = points_raw[3 * i + 1];
+        float z = points_raw[3 * i + 2];
+
+        if(x == max_x)
+        {
+            normals[3 * i + 0] = 1.0f;
+        }
+        if(y == max_y)
+        {
+            normals[3 * i + 1] = 1.0f;
+        }
+        if(z == max_z)
+        {
+            normals[3 * i + 2] = 1.0f;
+        }
+
+        if(x == min_x)
+        {
+            normals[3 * i + 0] = -1.0f;
+        }
+        if(y == min_y)
+        {
+            normals[3 * i + 1] = -1.0f;
+        }
+        if(z == min_z)
+        {
+            normals[3 * i + 2] = -1.0f;
+        }
+    }
+
+    float mag;
+   
+    for(int i = 0; i < num_points; i++)
+    {
+        // Normalize the normals
+        mag = sqrt( normals[3 * i + 0] * normals[3 * i + 0] +
+                    normals[3 * i + 1] * normals[3 * i + 1] +
+                    normals[3 * i + 2] * normals[3 * i + 2]);
+
+        normals[3 * i + 0] = normals[3 * i + 0] / mag;
+        normals[3 * i + 1] = normals[3 * i + 1] / mag;
+        normals[3 * i + 2] = normals[3 * i + 2] / mag;
+
+        // Flip normals if necessary
+        float flip_x = 10000000.0f;
+        float flip_y = 10000000.0f;
+        float flip_z = 10000000.0f;
+
+        float vertex_x = points_raw[3 * i + 0];
+        float vertex_y = points_raw[3 * i + 1];
+        float vertex_z = points_raw[3 * i + 2];
+
+        float x_dir = flip_x - vertex_x;
+        float y_dir = flip_y - vertex_y;
+        float z_dir = flip_z - vertex_z;
+
+        float scalar =  x_dir * normals[3 * i + 0] + 
+                        y_dir * normals[3 * i + 1] + 
+                        z_dir * normals[3 * i + 2];
+
+        if(scalar < 0)
+        {
+            normals[3 * i + 0] = -normals[3 * i + 0];
+            normals[3 * i + 1] = -normals[3 * i + 1];
+            normals[3 * i + 2] = -normals[3 * i + 2];
+        }
+    }
+
+    if(save_model) 
+    {
+        pbuffer->setNormalArray(floatArr(&normals[0]), num_points);
+        ModelPtr sphereModel(new Model(pbuffer));
+
+        ModelFactory::saveModel(sphereModel, "cubeNormals.ply");
+    }
 }
 
 void saveSphereCloud(int num_long, int num_lat, std::string filename)
@@ -596,7 +793,7 @@ void calculateNormalsSphere(std::string filename, float* normals, bool save_mode
     float* points_raw = &points[0];
 
     float mag;
-
+   
     for(int i = 0; i < num_points; i++)
     {
         mag = sqrt( points_raw[3 * i + 0] * points_raw[3 * i + 0] +
@@ -641,6 +838,77 @@ void calculateNormalsSphere(std::string filename, float* normals, bool save_mode
     }
 }
 
+float getVectorAngle(const float* normals, const float* true_normals, int idx_1, int idx_2)
+{
+    // get scalar
+    float scalar =  normals[3 * idx_1 + 0] * true_normals[3 * idx_2 + 0] +
+                    normals[3 * idx_1 + 1] * true_normals[3 * idx_2 + 1] +
+                    normals[3 * idx_1 + 2] * true_normals[3 * idx_2 + 2];
+
+    // get the magnitudes
+    float mag_1 = sqrt( normals[3 * idx_1 + 0] * normals[3 * idx_1 + 0] +
+                        normals[3 * idx_1 + 1] * normals[3 * idx_1 + 1] +
+                        normals[3 * idx_1 + 2] * normals[3 * idx_1 + 2]);
+
+    float mag_2 = sqrt( true_normals[3 * idx_2 + 0] * true_normals[3 * idx_2 + 0] +
+                        true_normals[3 * idx_2 + 1] * true_normals[3 * idx_2 + 1] +
+                        true_normals[3 * idx_2 + 2] * true_normals[3 * idx_2 + 2]);
+
+    // Ignore uninitialised normals
+    if(mag_1 == 0.0f || mag_2 == 0.0f)
+    {
+        return 0.0f;
+    }
+
+    // --useGPU produces nan values in some normals. These normals will be skipped.
+    if(!(mag_1 < 0 || mag_1 >= 0))
+    {
+        return 0.0f;
+    }
+    if(!(mag_2 < 0 || mag_2 >= 0))
+    {
+        return 0.0f;
+    }
+
+    // Get the angle in radian
+    float value = scalar / (mag_1 * mag_2);
+    float angle_rad;
+
+    // Make acos() safe - somehow acos() has a problem with normalized vectors
+    if (value <= -1.0f) 
+    {
+        angle_rad = M_PI;
+    } 
+    else if (value>=1.0) 
+    {
+        angle_rad = 0;
+    } 
+    else 
+    {
+        angle_rad = acos(value);
+    }
+    
+    // Convert angle to degrees
+    float angle = angle_rad * 180 / M_PI;
+
+    // Check if angle is nan
+    if(!(angle > 0 || angle <= 0))
+    {
+        std::cout << "Index: " << idx_1 << std::endl;
+        std::cout << "Normal: (" << normals[3 * idx_1 + 0] << ", " << normals[3 * idx_1 + 1] << "," << normals[3 * idx_1 + 2]  << ")" << std::endl;
+        std::cout << "True normal: (" << true_normals[3 * idx_2 + 0] << ", " << true_normals[3 * idx_2 + 1] << "," << true_normals[3 * idx_2 + 2]  << ")" << std::endl;
+        std::cout << "Mag 1: " << mag_1 << std::endl;
+        std::cout << "Mag 2: " << mag_2 << std::endl;
+        std::cout << "Val: " << value << std::endl;
+        std::cout << "Radian: " << angle_rad << std::endl;
+        std::cout << "Angle: " << angle << std::endl;
+        exit(0);
+
+    }
+
+    return angle;
+}
+
 void getNormalDifference(float* normals, float* true_normals, size_t num_normals, float* diff, float* avg, float* max, float* min, int* num_180)
 {
     
@@ -670,22 +938,31 @@ void getNormalDifference(float* normals, float* true_normals, size_t num_normals
 
 int main(int argc, char** argv)
 {
+    // saveCubeCloud(1000, 1000, "cube6M.ply");
+    // float* normals = (float*) malloc(sizeof(float) * 1000 * 1000 * 6 * 3);
+    // calculateNormalsCube("cube6M.ply", normals, true);
+    // exit(0);
     // saveSphereCloud(200, 200, "sphere40K.ply");
     // ################ Test Normal Quality #######################################################
     // int num_points = 200 * 200 + 2;
     // float* sphere_normals = (float*) malloc(sizeof(float) * 3 * num_points);
     // calculateNormalsSphere("sphere4M.ply", sphere_normals, true);
 
-    myfile.open("normal_quality_test.csv");
+    myfile.open("normal_quality_test_2.csv");
 
     int num_pcm = 3;
     int num_k = 4;
-    int num_data = 1;
+    int num_data = 4;
 
     char *pcm[] = {"LBVH_CUDA", "FLANN", "--useGPU"};                   // The tested point cloud manager                     
+    // char *pcm[] = {"--useGPU"};
+    // char *pcm[] = {"FLANN"};
     char *k_s[] = {"10", "25", "50", "100"};                            // The tested values for k  
     char *data[] = {                                                    // The tested datasets
-        "/home/tstueckemann/datasets/synthetic/sphere4M.ply"
+        "/home/tstueckemann/datasets/synthetic/sphere40K.ply",
+        "/home/tstueckemann/datasets/synthetic/sphere4M.ply",           // ###########################################
+        "/home/tstueckemann/datasets/synthetic/cube60K.ply",            // Different calc method for cube and sphere
+        "/home/tstueckemann/datasets/synthetic/cube6M.ply"              // ###########################################
     };    
     myfile << "n,pcm,k,avg,max,min,num180" << std::endl;                                                    
 
@@ -701,13 +978,13 @@ int main(int argc, char** argv)
 
                 std::vector<char*> vec;
 
-                int paramc = 9;
+                int paramc = 5;
 
                 vec.push_back("bin/benchmark_knn_normals");
                 // TODO Comment in when using --GPU
                 if(p_ != num_pcm - 1)
                 {
-                    paramc = 10;
+                    paramc = 6;
                     vec.push_back("-p");
                 }
                 // paramc = 6;
@@ -715,11 +992,6 @@ int main(int argc, char** argv)
                 vec.push_back(pcm[p_]);
                 vec.push_back("--kn");
                 vec.push_back(k_s[k_]);
-                // --flipPoint x y z
-                vec.push_back("--flipPoint");
-                vec.push_back("10000000");
-                vec.push_back("10000000");
-                vec.push_back("10000000");
                 vec.push_back(data[d_]);
 
                 char** paramv = reinterpret_cast<char**>(&vec[0]);
@@ -755,10 +1027,52 @@ int main(int argc, char** argv)
                 size_t num_normals = pb->numPoints();
                 floatArr normalArr = pb->getNormalArray();
                 float* normals = &normalArr[0];
+                
+                // FLANN doesnt seem to flip the normals. So do that here again
+                bool equal = (pcm[p_] == "FLANN");
+
+                if(equal)
+                {
+                    floatArr pointArr = pb->getPointArray();
+
+                    for(int i = 0; i < num_normals; i++)
+                    {
+                        // Flip normals if necessary
+                        float flip_x = 10000000.0f;
+                        float flip_y = 10000000.0f;
+                        float flip_z = 10000000.0f;
+
+                        float vertex_x = pointArr[3 * i + 0];
+                        float vertex_y = pointArr[3 * i + 1];
+                        float vertex_z = pointArr[3 * i + 2];
+
+                        float x_dir = flip_x - vertex_x;
+                        float y_dir = flip_y - vertex_y;
+                        float z_dir = flip_z - vertex_z;
+
+                        float scalar =  x_dir * normals[3 * i + 0] + 
+                                        y_dir * normals[3 * i + 1] + 
+                                        z_dir * normals[3 * i + 2];
+
+                        if(scalar < 0)
+                        {
+                            normals[3 * i + 0] = -normals[3 * i + 0];
+                            normals[3 * i + 1] = -normals[3 * i + 1];
+                            normals[3 * i + 2] = -normals[3 * i + 2];
+                        }
+                    }
+                }
 
                 // Get the true normals
                 float* true_normals = (float*) malloc(sizeof(float) * 3 * num_normals);
-                calculateNormalsSphere(data[d_], true_normals);
+                // TODO
+                if(d_ < 2)
+                {
+                    calculateNormalsSphere(data[d_], true_normals);
+                }
+                else{
+                    calculateNormalsCube(data[d_], true_normals);
+                }
 
                 float* diff = (float*) malloc(sizeof(float) * num_normals);
 
@@ -768,7 +1082,7 @@ int main(int argc, char** argv)
                 int num_180 = 0;
                 getNormalDifference(normals, true_normals, num_normals, diff, &avg, &max, &min, &num_180);
 
-                std::cout << "Average normal difference: " << avg << "degree" << std::endl;
+                std::cout << "Average normal difference: " << avg << " degree" << std::endl;
 
                 myfile  << num_normals << "," << pcm[p_] << "," << k_s[k_] << "," 
                         << avg << "," << max << "," << min << "," << num_180 << "," << std::endl;
