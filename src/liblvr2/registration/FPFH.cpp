@@ -55,7 +55,7 @@ FPFHFeaturePtr computeInitialFeatures(const PointBufferPtr pointBuffer, SearchTr
     if(points_opt && normals_opt)
     {
         auto points = *points_opt;
-        auto normals = *points_opt;
+        auto normals = *normals_opt;
 #pragma omp parallel for schedule(static)
         for (int i = 0; i < pointBuffer->numPoints(); i++)
         {
