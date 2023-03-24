@@ -211,13 +211,12 @@ void LBVHIndex::build(float* points, size_t num_points)
 
     gpuErrchk(cudaPeekAtLastError());
 
-    
     // Create the nodes
     gpuErrchk(cudaMalloc(&this->m_d_nodes, sizeof(struct BVHNode) * m_num_nodes));
 
     AABB* d_sorted_aabbs;
     gpuErrchk(cudaMalloc(&d_sorted_aabbs, 
-        sizeof(struct AABB) * num_points)); // Here out of memory ###############################
+        sizeof(struct AABB) * num_points));
 
     gpuErrchk(cudaMemcpy(d_sorted_aabbs, sorted_aabbs, 
         sizeof(struct AABB) * num_points, cudaMemcpyHostToDevice));
@@ -299,12 +298,14 @@ void LBVHIndex::build(float* points, size_t num_points)
             {
                 isum[i] = i - valid_sums[i];
             }
-            // Reuse valid space, since its not needed anymore
             unsigned int free_indices_size = isum[new_node_count];
 
-            unsigned int* free_indices = (unsigned int*)
-                malloc(sizeof(unsigned int) * free_indices_size);
+            // TODO Does this need to be malloc'd?
+            // unsigned int* free_indices = (unsigned int*)
+            //     malloc(sizeof(unsigned int) * free_indices_size);
+            unsigned int* free_indices;
 
+            // Reuse valid space, since its not needed anymore
             free_indices = &valid[0];
 
             // Upload
@@ -369,14 +370,14 @@ void LBVHIndex::build(float* points, size_t num_points)
     gpuErrchk(cudaFree(d_root_node));
     gpuErrchk(cudaFree(d_sorted_morton_codes));
 
-    // TODO Moved this to the end of build()
+    
     // Upload points to GPU
     gpuErrchk( cudaMalloc(&this->m_d_points,
         sizeof(float) * 3 * num_points) );
     gpuErrchk( cudaMemcpy(this->m_d_points, points,
         sizeof(float) * 3 * num_points,
         cudaMemcpyHostToDevice) );
-    // TODO Moved this to the end of build() 
+    // Upload sorted indices to GPU
     gpuErrchk( cudaMalloc(&this->m_d_sorted_indices,
         sizeof(unsigned int) * num_points) );
     gpuErrchk( cudaMemcpy(this->m_d_sorted_indices, indices,
@@ -826,7 +827,8 @@ void LBVHIndex::process_queries_dev_ptr(
     // std::cout << "z: " << normals[2] << std::endl;
 
 }
-// TODO Make this const?
+// TODO Uploading the queries here is not necessary. The points are the 
+// Queries and they are already stored on the gpu. They are also sorted
 void LBVHIndex::knn_normals(
     int K,
     float* normals, 
@@ -834,6 +836,7 @@ void LBVHIndex::knn_normals(
 )
 {
     float* d_query_points = this->m_d_points;
+    unsigned int* d_sorted_queries = this->m_d_sorted_indices;
     size_t num_queries = num_normals;
     
     // cudaEvent_t start, stop;
@@ -887,55 +890,58 @@ void LBVHIndex::knn_normals(
     // cudaEventCreate(&start);
     // cudaEventRecord(start,0);
 
-    // Prepare kernel launch
-    unsigned int* sorted_queries = (unsigned int*) 
-                malloc(sizeof(unsigned int) * num_queries);
+    // TODO #####################################################################
+    // // Prepare kernel launch
+    // unsigned int* sorted_queries = (unsigned int*) 
+    //             malloc(sizeof(unsigned int) * num_queries);
 
-    for(int i = 0; i < num_queries; i++)
-    {
-        sorted_queries[i] = i;
-    }
+    // for(int i = 0; i < num_queries; i++)
+    // {
+    //     sorted_queries[i] = i;
+    // }
 
-    // Only for large queries: Sort them in morton order to prevent too much warp divergence on tree traversal
-    if(this->m_sort_queries)
-    {
-        // AABB* d_extent;
-        // gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
-        // gpuErrchk(cudaMemcpy(d_extent, this->m_extent, 
-        //     sizeof(struct AABB), 
-        //     cudaMemcpyHostToDevice));
+    // // Only for large queries: Sort them in morton order to prevent too much warp divergence on tree traversal
+    // if(this->m_sort_queries)
+    // {
+    //     // AABB* d_extent;
+    //     // gpuErrchk(cudaMalloc(&d_extent, sizeof(struct AABB)));
+    //     // gpuErrchk(cudaMemcpy(d_extent, this->m_extent, 
+    //     //     sizeof(struct AABB), 
+    //     //     cudaMemcpyHostToDevice));
 
-        unsigned long long int* morton_codes_query =
-            (unsigned long long int*)
-            malloc(sizeof(unsigned long long int) * num_queries);
+    //     unsigned long long int* morton_codes_query =
+    //         (unsigned long long int*)
+    //         malloc(sizeof(unsigned long long int) * num_queries);
 
-        unsigned long long int* d_morton_codes_query;
-        cudaMalloc(&d_morton_codes_query, 
-            sizeof(unsigned long long int) * num_queries);
+    //     unsigned long long int* d_morton_codes_query;
+    //     cudaMalloc(&d_morton_codes_query, 
+    //         sizeof(unsigned long long int) * num_queries);
 
-        int threadsPerBlock = 256;
-        int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
-                        / threadsPerBlock;
+    //     int threadsPerBlock = 256;
+    //     int blocksPerGrid = (num_queries + threadsPerBlock - 1) 
+    //                     / threadsPerBlock;
 
-        compute_morton_points_kernel<<<blocksPerGrid, threadsPerBlock>>>
-            (d_query_points, this->m_d_extent, d_morton_codes_query, num_queries);
+    //     compute_morton_points_kernel<<<blocksPerGrid, threadsPerBlock>>>
+    //         (d_query_points, this->m_d_extent, d_morton_codes_query, num_queries);
 
-        cudaMemcpy(morton_codes_query, d_morton_codes_query,
-            sizeof(unsigned long long int) * num_queries,
-            cudaMemcpyDeviceToHost);
+    //     cudaMemcpy(morton_codes_query, d_morton_codes_query,
+    //         sizeof(unsigned long long int) * num_queries,
+    //         cudaMemcpyDeviceToHost);
 
-        thrust::sort_by_key(morton_codes_query, morton_codes_query + num_queries, 
-                        sorted_queries);
+    //     thrust::sort_by_key(morton_codes_query, morton_codes_query + num_queries, 
+    //                     sorted_queries);
 
-        // cudaFree(d_extent);
-        cudaFree(d_morton_codes_query);
-    }
+    //     // cudaFree(d_extent);
+    //     cudaFree(d_morton_codes_query);
+    // }
 
-    unsigned int* d_sorted_queries;
-    gpuErrchk( cudaMalloc(&d_sorted_queries, sizeof(unsigned int) * num_queries) );
-    gpuErrchk( cudaMemcpy(d_sorted_queries, sorted_queries,
-            sizeof(unsigned int) * num_queries,
-            cudaMemcpyHostToDevice) );
+    // unsigned int* d_sorted_queries;
+    // gpuErrchk( cudaMalloc(&d_sorted_queries, sizeof(unsigned int) * num_queries) );
+    // gpuErrchk( cudaMemcpy(d_sorted_queries, sorted_queries,
+    //         sizeof(unsigned int) * num_queries,
+    //         cudaMemcpyHostToDevice) );
+    // ##########################################################
+
 
     float* d_normals;
     gpuErrchk( cudaMalloc(&d_normals, 

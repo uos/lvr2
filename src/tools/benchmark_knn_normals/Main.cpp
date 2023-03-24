@@ -906,12 +906,13 @@ float getVectorAngle(const float* normals, const float* true_normals, int idx_1,
 
     }
 
-    return angle;
+    return abs(angle);
 }
 
-void getNormalDifference(float* normals, float* true_normals, size_t num_normals, float* diff, float* avg, float* max, float* min, int* num_180)
+void getNormalDifference(float* normals, float* true_normals, size_t num_normals, float* diff, float* avg, float* max, float* min, int* num_180, float* variance)
 {
     
+
     for(int i = 0; i < num_normals; i++)
     {
         float d = getVectorAngle(normals, true_normals, i, i);
@@ -933,38 +934,215 @@ void getNormalDifference(float* normals, float* true_normals, size_t num_normals
         }
     }
 
+    // Calculate variance
+    float var = 0.0f;
+    for(int i = 0; i < num_normals; i++)
+    {
+        var += ((diff[i] - *avg) * (diff[i] - *avg)) / num_normals;
+    }
+    *variance = var;
+
     return;
 }
 
 int main(int argc, char** argv)
 {
+
+    // float normals[] = {0.0, 1.0, 0.0};
+    // float true_normals[] = {1.0,1.0,0.0};
+
+    // std::cout << "Angle: " << getVectorAngle(normals, true_normals, 0, 0) << std::endl;
+    // exit(0);
+
     // saveCubeCloud(1000, 1000, "cube6M.ply");
     // float* normals = (float*) malloc(sizeof(float) * 1000 * 1000 * 6 * 3);
     // calculateNormalsCube("cube6M.ply", normals, true);
     // exit(0);
     // saveSphereCloud(200, 200, "sphere40K.ply");
-    // ################ Test Normal Quality #######################################################
-    // int num_points = 200 * 200 + 2;
-    // float* sphere_normals = (float*) malloc(sizeof(float) * 3 * num_points);
-    // calculateNormalsSphere("sphere4M.ply", sphere_normals, true);
 
-    myfile.open("normal_quality_test_2.csv");
+
+    // // ################ Test Normal Quality #######################################################
+    // myfile.open("normal_quality_test_2.csv");
+
+    // int num_pcm = 3;
+    // int num_k = 5;
+    // int num_data = 4;
+
+    // char *pcm[] = {"LBVH_CUDA", "FLANN", "--useGPU"};                   // The tested point cloud manager                     
+    // // char *pcm[] = {"--useGPU"};
+    // // char *pcm[] = {"FLANN"};
+    // char *k_s[] = {"10", "25", "50", "75", "100"};                            // The tested values for k  
+    // // char *k_s[] = {"75"}; 
+    // char *data[] = {                                                    // The tested datasets
+    //     "/home/tstueckemann/datasets/synthetic/sphere40K.ply",
+    //     "/home/tstueckemann/datasets/synthetic/sphere4M.ply",           // ###########################################
+    //     "/home/tstueckemann/datasets/synthetic/cube60K.ply",            // Different calc method for cube and sphere
+    //     "/home/tstueckemann/datasets/synthetic/cube6M.ply"              // ###########################################
+    // };    
+    // myfile << "n,pcm,k,avg,max,min,num180" << std::endl;                                                    
+
+    // for(int p_ = 0; p_ < num_pcm; p_++)
+    // {
+    //     for(int k_ = 0; k_ < num_k; k_++)
+    //     {
+    //         for(int d_ = 0; d_ < num_data; d_++)
+    //         {
+    //             std::cout << "Testing on: " << data[d_] << std::endl;
+    //             std::cout << "PCM: " << pcm[p_] << std::endl;
+    //             std::cout << "K: " << k_s[k_] << std::endl;
+
+    //             std::vector<char*> vec;
+
+    //             int paramc = 5;
+
+    //             vec.push_back("bin/benchmark_knn_normals");
+    //             // TODO Comment in when using --GPU
+    //             if(p_ != num_pcm - 1)
+    //             {
+    //                 paramc = 6;
+    //                 vec.push_back("-p");
+    //             }
+    //             // paramc = 6;
+    //             // vec.push_back("-p");
+    //             vec.push_back(pcm[p_]);
+    //             vec.push_back("--kn");
+    //             vec.push_back(k_s[k_]);
+    //             vec.push_back(data[d_]);
+
+    //             char** paramv = reinterpret_cast<char**>(&vec[0]);
+
+    //             benchmark::Options options(paramc, paramv);
+
+    //             // Exit if options had to generate a usage message
+    //             // (this means required parameters are missing)
+    //             if (options.printUsage())
+    //             {
+    //                 return EXIT_SUCCESS;
+    //             }
+
+    //             // std::cout << options << std::endl;
+
+    //             // =======================================================================
+    //             // Load (and potentially store) point cloud
+    //             // =======================================================================
+    //             OpenMPConfig::setNumThreads(options.getNumThreads());
+
+    //             PointsetSurfacePtr<Vec> surface;
+
+    //             // Load PointCloud
+    //             surface = loadPointCloud<Vec>(options);
+    //             if (!surface)
+    //             {
+    //                 cout << "Failed to create pointcloud. Exiting." << endl;
+    //                 exit(EXIT_FAILURE);
+    //             }
+
+    //             // Get the calculated normals
+    //             PointBufferPtr pb = surface->pointBuffer();
+    //             size_t num_normals = pb->numPoints();
+    //             floatArr normalArr = pb->getNormalArray();
+    //             float* normals = &normalArr[0];
+                
+    //             // FLANN doesnt seem to flip the normals. So do that here again
+    //             bool equal = (pcm[p_] == "FLANN");
+
+    //             if(equal)
+    //             {
+    //                 std::cout << "FLipping normals for FLANN" << std::endl;
+    //                 floatArr pointArr = pb->getPointArray();
+
+    //                 for(int i = 0; i < num_normals; i++)
+    //                 {
+    //                     // Flip normals if necessary
+    //                     float flip_x = 10000000.0f;
+    //                     float flip_y = 10000000.0f;
+    //                     float flip_z = 10000000.0f;
+
+    //                     float vertex_x = pointArr[3 * i + 0];
+    //                     float vertex_y = pointArr[3 * i + 1];
+    //                     float vertex_z = pointArr[3 * i + 2];
+
+    //                     float x_dir = flip_x - vertex_x;
+    //                     float y_dir = flip_y - vertex_y;
+    //                     float z_dir = flip_z - vertex_z;
+
+    //                     float scalar =  x_dir * normals[3 * i + 0] + 
+    //                                     y_dir * normals[3 * i + 1] + 
+    //                                     z_dir * normals[3 * i + 2];
+
+    //                     if(scalar < 0)
+    //                     {
+    //                         normals[3 * i + 0] = -normals[3 * i + 0];
+    //                         normals[3 * i + 1] = -normals[3 * i + 1];
+    //                         normals[3 * i + 2] = -normals[3 * i + 2];
+    //                     }
+    //                 }
+    //             }
+
+    //             // Get the true normals
+    //             float* true_normals = (float*) malloc(sizeof(float) * 3 * num_normals);
+    //             // TODO
+    //             if(d_ < 2)
+    //             {
+    //                 calculateNormalsSphere(data[d_], true_normals);
+    //             }
+    //             else{
+    //                 calculateNormalsCube(data[d_], true_normals);
+    //             }
+
+    //             float* diff = (float*) malloc(sizeof(float) * num_normals);
+
+    //             float avg = 0.0f;
+    //             float max = 0.0f;
+    //             float min = FLT_MAX;
+    //             int num_180 = 0;
+    //             getNormalDifference(normals, true_normals, num_normals, diff, &avg, &max, &min, &num_180);
+
+    //             std::cout << "Average normal difference: " << avg << " degree" << std::endl;
+
+    //             myfile  << num_normals << "," << pcm[p_] << "," << k_s[k_] << "," 
+    //                     << avg << "," << max << "," << min << "," << num_180 << ",";
+                
+    //         }
+    //     }
+    // }
+    // myfile.close();
+
+    // ############################################################################################
+    //                  TESTING SMTH
+    unsigned int* valid = (unsigned int*)
+        malloc(sizeof(unsigned int) * 10);
+
+    for(int i = 0; i < 10; i++)
+    {
+        valid[i] = i;
+    }
+    
+    unsigned int* free_indices;
+    std::cout << "Before: " << free_indices << std::endl;
+    free_indices = &valid[0];
+    std::cout << "After: " << free_indices << std::endl;
+    
+    exit(0);
+    // #################### Create Normal Histogram CSV ###########################################
+    myfile.open("normal_quality_perc_5bin.csv");
 
     int num_pcm = 3;
-    int num_k = 4;
+    int num_k = 5;
     int num_data = 4;
 
     char *pcm[] = {"LBVH_CUDA", "FLANN", "--useGPU"};                   // The tested point cloud manager                     
     // char *pcm[] = {"--useGPU"};
     // char *pcm[] = {"FLANN"};
-    char *k_s[] = {"10", "25", "50", "100"};                            // The tested values for k  
+    char *k_s[] = {"10", "25", "50", "75", "100"};                            // The tested values for k  
+    // char *k_s[] = {"75"}; 
     char *data[] = {                                                    // The tested datasets
         "/home/tstueckemann/datasets/synthetic/sphere40K.ply",
         "/home/tstueckemann/datasets/synthetic/sphere4M.ply",           // ###########################################
         "/home/tstueckemann/datasets/synthetic/cube60K.ply",            // Different calc method for cube and sphere
         "/home/tstueckemann/datasets/synthetic/cube6M.ply"              // ###########################################
     };    
-    myfile << "n,pcm,k,avg,max,min,num180" << std::endl;                                                    
+    myfile << "n,pcm,k,avg,bin,num_norm,perc_norm,var," << std::endl;                                                 
 
     for(int p_ = 0; p_ < num_pcm; p_++)
     {
@@ -1031,37 +1209,37 @@ int main(int argc, char** argv)
                 // FLANN doesnt seem to flip the normals. So do that here again
                 bool equal = (pcm[p_] == "FLANN");
 
-                if(equal)
+                
+                std::cout << "FLipping normals again for all PCMs" << std::endl;
+                floatArr pointArr = pb->getPointArray();
+
+                for(int i = 0; i < num_normals; i++)
                 {
-                    floatArr pointArr = pb->getPointArray();
+                    // Flip normals if necessary
+                    float flip_x = 10000000.0f;
+                    float flip_y = 10000000.0f;
+                    float flip_z = 10000000.0f;
 
-                    for(int i = 0; i < num_normals; i++)
+                    float vertex_x = pointArr[3 * i + 0];
+                    float vertex_y = pointArr[3 * i + 1];
+                    float vertex_z = pointArr[3 * i + 2];
+
+                    float x_dir = flip_x - vertex_x;
+                    float y_dir = flip_y - vertex_y;
+                    float z_dir = flip_z - vertex_z;
+
+                    float scalar =  x_dir * normals[3 * i + 0] + 
+                                    y_dir * normals[3 * i + 1] + 
+                                    z_dir * normals[3 * i + 2];
+
+                    if(scalar < 0)
                     {
-                        // Flip normals if necessary
-                        float flip_x = 10000000.0f;
-                        float flip_y = 10000000.0f;
-                        float flip_z = 10000000.0f;
-
-                        float vertex_x = pointArr[3 * i + 0];
-                        float vertex_y = pointArr[3 * i + 1];
-                        float vertex_z = pointArr[3 * i + 2];
-
-                        float x_dir = flip_x - vertex_x;
-                        float y_dir = flip_y - vertex_y;
-                        float z_dir = flip_z - vertex_z;
-
-                        float scalar =  x_dir * normals[3 * i + 0] + 
-                                        y_dir * normals[3 * i + 1] + 
-                                        z_dir * normals[3 * i + 2];
-
-                        if(scalar < 0)
-                        {
-                            normals[3 * i + 0] = -normals[3 * i + 0];
-                            normals[3 * i + 1] = -normals[3 * i + 1];
-                            normals[3 * i + 2] = -normals[3 * i + 2];
-                        }
+                        normals[3 * i + 0] = -normals[3 * i + 0];
+                        normals[3 * i + 1] = -normals[3 * i + 1];
+                        normals[3 * i + 2] = -normals[3 * i + 2];
                     }
                 }
+                
 
                 // Get the true normals
                 float* true_normals = (float*) malloc(sizeof(float) * 3 * num_normals);
@@ -1080,12 +1258,32 @@ int main(int argc, char** argv)
                 float max = 0.0f;
                 float min = FLT_MAX;
                 int num_180 = 0;
-                getNormalDifference(normals, true_normals, num_normals, diff, &avg, &max, &min, &num_180);
+                float variance = 0.0f;
+
+                getNormalDifference(normals, true_normals, num_normals, diff, &avg, &max, &min, &num_180, &variance);
 
                 std::cout << "Average normal difference: " << avg << " degree" << std::endl;
 
-                myfile  << num_normals << "," << pcm[p_] << "," << k_s[k_] << "," 
-                        << avg << "," << max << "," << min << "," << num_180 << "," << std::endl;
+                int step_size = 5;
+                // "n,pcm,k,avg,bin,num_norm,perc_nom,"
+                for(int i = 0; i < 181; i += step_size)
+                {
+                    myfile  << num_normals << "," << pcm[p_] << "," << k_s[k_] << "," 
+                            << avg << ",";
+                    myfile << i << ",";
+                    
+                    int c = 0;
+                    for(int j = 0; j < num_normals; j++) {
+                        if(diff[j] >= i && diff[j] < i+step_size)
+                        {
+                            c++; 
+                        }
+                    }
+                    myfile << c << ",";
+
+                    float perc = (float) c / (float) num_normals;
+                    myfile << perc << "," << variance << "," << std::endl;
+                }
                 
             }
         }
@@ -1397,5 +1595,6 @@ int main(int argc, char** argv)
     //     }
     // }
     // ##########################################################################################
+    
     return 0;
 }

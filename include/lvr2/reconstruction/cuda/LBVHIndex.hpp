@@ -21,8 +21,8 @@ class LBVHIndex
 {
 public:
     // CPU
-    unsigned int m_num_objects; // Number of points in the dataset
-    unsigned int m_num_nodes;   // Number of nodes in the LBVH
+    unsigned int m_num_objects; // Number of points in the dataset (= n)
+    unsigned int m_num_nodes;   // Number of nodes in the LBVH (2n-1)
     unsigned int m_leaf_size;   // Max number of points covered by a leaf node
     bool m_sort_queries;        // True, if queries should be sorted by their morton codes
     bool m_compact;             // True, if the tree should be compacted after the optimization step
