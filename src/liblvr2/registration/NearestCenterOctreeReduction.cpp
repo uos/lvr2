@@ -43,8 +43,8 @@
 namespace lvr2
 {
 
-NearestCenterOctreeReduction::NearestCenterOctreeReduction(PointBufferPtr pointBuffer, float voxelSize, size_t maxPointsPerVoxel)
-    : OctreeReductionBase(pointBuffer, voxelSize, maxPointsPerVoxel)
+NearestCenterOctreeReduction::NearestCenterOctreeReduction(PointBufferPtr pointBuffer, float voxelSize, size_t minPointsPerVoxel)
+    : OctreeReductionBase(pointBuffer, voxelSize, minPointsPerVoxel)
 {
     if (m_numPoints == 0)
     {
@@ -98,7 +98,7 @@ PointBufferPtr NearestCenterOctreeReduction::getReducedPoints()
 void NearestCenterOctreeReduction::createOctree(size_t* start, size_t* end, const Vector3f& min, const Vector3f& max, unsigned int level)
 {
     // Stop recursion - not enough points in voxel
-    if (end - start <= m_maxPointsPerVoxel)
+    if (end - start <= m_minPointsPerVoxel)
     {
         for (size_t* it = start; it != end; ++it)
         {

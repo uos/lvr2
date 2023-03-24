@@ -43,8 +43,8 @@
 namespace lvr2
 {
 
-RandomSampleOctreeReduction::RandomSampleOctreeReduction(PointBufferPtr pointBuffer, float voxelSize, size_t maxPointsPerVoxel)
-    : OctreeReductionBase(pointBuffer, voxelSize, maxPointsPerVoxel)
+RandomSampleOctreeReduction::RandomSampleOctreeReduction(PointBufferPtr pointBuffer, float voxelSize, size_t minPointsPerVoxel)
+    : OctreeReductionBase(pointBuffer, voxelSize, minPointsPerVoxel)
 {
     if (m_numPoints == 0)
     {
@@ -73,8 +73,8 @@ RandomSampleOctreeReduction::RandomSampleOctreeReduction(PointBufferPtr pointBuf
     }
 }
 
-RandomSampleOctreeReduction::RandomSampleOctreeReduction(Vector3f* points, size_t& n, float voxelSize, size_t maxPointsPerVoxel)
-    :  OctreeReductionBase(n, voxelSize, maxPointsPerVoxel), m_points(points)
+RandomSampleOctreeReduction::RandomSampleOctreeReduction(Vector3f* points, size_t& n, float voxelSize, size_t minPointsPerVoxel)
+    : OctreeReductionBase(n, voxelSize, minPointsPerVoxel), m_points(points)
 {
     if (m_numPoints == 0)
     {
@@ -153,7 +153,7 @@ PointBufferPtr RandomSampleOctreeReduction::getReducedPoints()
 void RandomSampleOctreeReduction::createOctree(size_t start, size_t n, const Vector3f& min, const Vector3f& max, unsigned int level)
 {
     // Stop recursion - not enough points in voxel
-    if (n <= m_maxPointsPerVoxel)
+    if (n <= m_minPointsPerVoxel)
     {
         return;
     }
@@ -177,7 +177,7 @@ void RandomSampleOctreeReduction::createOctree(size_t start, size_t n, const Vec
         }
 
         std::uniform_int_distribution<int> dist(start, start + n - 1);
-        for (size_t i = 0; i < m_maxPointsPerVoxel; i++)
+        for (size_t i = 0; i < m_minPointsPerVoxel; i++)
         {
             // Randomly select points to keep. This may select the same point multiple times, but that's fine.
             m_flags[dist(randomEngine)] = false;
@@ -196,8 +196,8 @@ void RandomSampleOctreeReduction::createOctree(size_t start, size_t n, const Vec
 
     size_t numPointsLeft = startRight - start;
     size_t numPointsRight = (start + n) - startRight;
-    bool leftSplit = numPointsLeft > m_maxPointsPerVoxel;
-    bool rightSplit = numPointsRight > m_maxPointsPerVoxel;
+    bool leftSplit = numPointsLeft > m_minPointsPerVoxel;
+    bool rightSplit = numPointsRight > m_minPointsPerVoxel;
 
     if (leftSplit && rightSplit)
     {
