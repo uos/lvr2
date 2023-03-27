@@ -1110,20 +1110,6 @@ int main(int argc, char** argv)
 
     // ############################################################################################
     //                  TESTING SMTH
-    unsigned int* valid = (unsigned int*)
-        malloc(sizeof(unsigned int) * 10);
-
-    for(int i = 0; i < 10; i++)
-    {
-        valid[i] = i;
-    }
-    
-    unsigned int* free_indices;
-    std::cout << "Before: " << free_indices << std::endl;
-    free_indices = &valid[0];
-    std::cout << "After: " << free_indices << std::endl;
-    
-    exit(0);
     // #################### Create Normal Histogram CSV ###########################################
     myfile.open("normal_quality_perc_5bin.csv");
 
