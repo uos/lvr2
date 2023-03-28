@@ -55,7 +55,6 @@
 #include "lvr2/algorithm/Materializer.hpp"
 #include "lvr2/algorithm/Texturizer.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp" // Has to be included before anything includes opencv stuff, see https://github.com/flann-lib/flann/issues/214 
-#include "lvr2/reconstruction/CudaKSearchSurface.hpp"
 #include "lvr2/algorithm/SpectralTexturizer.hpp"
 
 #ifdef LVR2_USE_EMBREE
@@ -97,6 +96,7 @@
 #if defined LVR2_USE_CUDA
     #define GPU_FOUND
 
+    #include "lvr2/reconstruction/CudaKSearchSurface.hpp"
     #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
 
     typedef lvr2::CudaSurface GpuSurface;
@@ -403,10 +403,15 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     }
     else if(pcm_name == "LBVH_CUDA")
     {
-        surface = make_shared<CudaKSearchSurface<BaseVecT>>(
-            buffer,
-            options.getKn()
-        );
+        #ifdef LVR2_USE_CUDA
+            surface = make_shared<CudaKSearchSurface<BaseVecT>>(
+                buffer,
+                options.getKn()
+            );
+        #else
+        cout << timestamp << "ERROR: Cuda not found." << endl;
+        return nullptr;
+        #endif
     }
     else
     {
