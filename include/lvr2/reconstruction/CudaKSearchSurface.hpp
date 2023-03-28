@@ -25,7 +25,7 @@ public:
 
     virtual ~CudaKSearchSurface() {};
 
-    // TODO This function is not suited for GPU
+    // This function is not suited for GPU
     virtual std::pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
         distance(BaseVecT v) const;
 

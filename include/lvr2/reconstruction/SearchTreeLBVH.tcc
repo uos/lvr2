@@ -115,9 +115,6 @@ void SearchTreeLBVH<BaseVecT>::kSearchParallel(
     vector<CoordT>& distances
 ) const
 {
-    // float* query_points = &queries[0];
-
-    // TODO Do this in a different way
     float* query_points = 
         (float*) malloc(sizeof(float) * 3 * num_queries);
 

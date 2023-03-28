@@ -246,7 +246,6 @@ if(CUDA_FOUND)
     set(LVR2_CUDA_SRC
         reconstruction/cuda/CudaSurface.cu
         reconstruction/cuda/LBVHIndex.cu
-        # TODO Eigentlich andere Bibliothek
         reconstruction/cuda/lbvh/lbvh_kernels.cu
         reconstruction/cuda/lbvh/morton_code.cu
         reconstruction/cuda/lbvh/normals_kernel.cu

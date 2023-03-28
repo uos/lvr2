@@ -1,7 +1,0 @@
-Building LBVH with n = 20000000
-Time Building Tree: 3145[ms]
-Testing with k = 10
-Time Calculating Normals: 23452[ms]
-Testing with k = 25
-
-error: cuLaunchKernel(kernel, blocksPerGrid, 1, 1, threadsPerBlock, 1, 1, 0, NULL, params, 0 ) failed with error CUDA_ERROR_ILLEGAL_ADDRESS

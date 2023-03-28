@@ -6,8 +6,6 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-// Build with: cmake -DCMAKE_BUILD_TYPE=Debug ..
-
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, char *file, int line, bool abort=true)
 {

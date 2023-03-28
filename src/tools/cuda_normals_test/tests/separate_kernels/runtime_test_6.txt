@@ -1,7 +1,0 @@
-Building LBVH with n = 30000000
-Time Building Tree: 5014[ms]
-Testing with k = 10
-Time Calculating Normals: 37666[ms]
-Testing with k = 25
-Time Calculating Normals: 2347[ms]
-Testing with k = 50

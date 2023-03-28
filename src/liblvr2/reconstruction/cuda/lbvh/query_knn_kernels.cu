@@ -8,11 +8,11 @@ namespace lvr2
 
 extern "C" __global__ void query_knn_kernel(
     const BVHNode *nodes,
-    const float* __restrict__ points,          // Changed from float3* to float*
+    const float* __restrict__ points,          
     const unsigned int* __restrict__ sorted_indices,
     const unsigned int root_index,
     const float max_radius,
-    const float* __restrict__ query_points,    // Changed from float3* to float*
+    const float* __restrict__ query_points,    
     const unsigned int* __restrict__ sorted_queries,
     const unsigned int N,
     // custom parameters
@@ -27,21 +27,20 @@ extern "C" __global__ void query_knn_kernel(
     StaticPriorityQueue<float, K> queue(max_radius);
     unsigned int query_idx = sorted_queries[idx];
 
-    // added this
+    // Initialize arrays here
     for(int i = 0; i < K; i++)
     {
         indices_out[K * query_idx + i] = UINT_MAX;
         distances_out[K * query_idx + i] = FLT_MAX;
     }
 
-    // added this
     float3 query_point =
     {
         query_points[3 * query_idx + 0],
         query_points[3 * query_idx + 1],
         query_points[3 * query_idx + 2]
     };
-    // query_knn(nodes, points, sorted_indices, root_index, &query_points[query_idx], queue);
+
     query_knn(nodes, points, sorted_indices, root_index, &query_point, queue);
     __syncwarp(); // synchronize the warp before the write operation
     // write back the results at the correct position
