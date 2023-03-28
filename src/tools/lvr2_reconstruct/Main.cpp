@@ -409,8 +409,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 options.getKn()
             );
         #else
-        cout << timestamp << "ERROR: Cuda not found." << endl;
-        return nullptr;
+            cout << timestamp << "ERROR: Cuda not found. Do not use LBVH_CUDA." << endl;
+            return nullptr;
         #endif
     }
     else
