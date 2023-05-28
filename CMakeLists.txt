@@ -54,9 +54,6 @@ if(MSVC)
   list(APPEND LVR2_DEFINITIONS -DNOMINMAX)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
-  # with cmake 3.3
-  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++1z>)
-  set(CMAKE_CXX_STANDARD 17)
 endif(MSVC)
 
 ###############################################################################
