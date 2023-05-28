@@ -661,7 +661,7 @@ install(FILES
     CMakeModules/FindEigen3.cmake
     CMakeModules/FindFLANN.cmake
     CMakeModules/FindLz4.cmake
-    CMakeModules/FindNabo.cmake
+    CMakeModules/FindNABO.cmake
     CMakeModules/FindOpenNI.cmake
     CMakeModules/FindOpenNI2.cmake
     CMakeModules/FindQVTK.cmake
