@@ -22,8 +22,6 @@ option(USE_BOOST "enable Boost Support" TRUE)
 option(HIGHFIVE_EXAMPLES "Compile examples" TRUE)
 option(HIGHFIVE_PARALLEL_HDF5 "Enable Parallel HDF5 support" FALSE)
 
-set(HIGHFIVE_CPP_STD_FLAG "-std=c++11" CACHE STRING "flag to use to enforce c++ standard (default:c++11)")
-
 if(HIGHFIVE_PARALLEL_HDF5)
     set(HDF5_PREFER_PARALLEL TRUE)
 endif()
