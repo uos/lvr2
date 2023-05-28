@@ -60,8 +60,7 @@ int saveAttributeToDraco(ArrayType array, draco::PointCloud* drcPointcloud,
     }
 
     draco::PointAttribute attribute;
-    attribute.Init(geometryType, nullptr, size, dracoDataType, normalized, sizeof(DataType) * size,
-                   0);
+    attribute.Init(geometryType, size, dracoDataType, normalized, sizeof(DataType) * size);
     int attribute_id = drcPointcloud->AddAttribute(attribute, true, numPoints);
 
     std::array<DataType, size> tmp;
