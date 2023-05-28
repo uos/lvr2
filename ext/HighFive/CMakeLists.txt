@@ -40,9 +40,9 @@ if(HIGHFIVE_PARALLEL_HDF5)
   find_package(MPI)
 endif()
 
-if(NOT COMPILER_SUPPORTS_CXX11)
-    message(FATAL "HighFive version >=2.0 requires c++ standard >= c++11")
-endif()
+# if(NOT COMPILER_SUPPORTS_CXX11)
+#     message(FATAL "HighFive version >=2.0 requires c++ standard >= c++11")
+# endif()
 
 # Absolute include used to avoid interaction with downstream projects including
 # HighFive as a subproject and using the the same filename
