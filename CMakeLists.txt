@@ -216,7 +216,7 @@ endif()
 #------------------------------------------------------------------------------
 # Searching for NABO
 #------------------------------------------------------------------------------
-find_package(Nabo)
+find_package(NABO)
 if(NABO_FOUND)
   include_directories(${NABO_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_NABO)
