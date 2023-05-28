@@ -78,6 +78,7 @@ MeshBufferPtr DirectoryKernel::loadMeshBuffer(
     {
         return model->m_mesh;
     }
+    return nullptr;
 }
 
 PointBufferPtr DirectoryKernel::loadPointBuffer(
@@ -93,6 +94,7 @@ PointBufferPtr DirectoryKernel::loadPointBuffer(
         std::cout << model->m_pointCloud->numPoints() << std::endl;
         return model->m_pointCloud;
     }
+    return nullptr;
 }
 
 boost::optional<cv::Mat> DirectoryKernel::loadImage(
