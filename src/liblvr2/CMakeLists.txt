@@ -150,15 +150,6 @@ set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2slam6d)
 
 #####################################################################################
-# Set c++0x flags for gcc compilers (needed for boctree io)
-#####################################################################################
-
-if(UNIX)
-  SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=c++14")
-endif(UNIX)
-
-
-#####################################################################################
 # Compile object files for static and dynamic library
 #####################################################################################
 
@@ -200,7 +191,7 @@ endif( NOT MSVC)
 #####################################################################################
 
 if(CUDA_FOUND)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
     # List of CUDA kernel code sources
     set(LVR2_CUDA_SRC
