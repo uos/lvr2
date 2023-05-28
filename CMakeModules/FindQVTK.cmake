@@ -13,7 +13,7 @@
 
 find_package(VTK)
 
-find_path (QVTK_INCLUDE_DIR QVTKWidget.h HINT ${VTK_INCLUDE_DIRS})
+find_path (QVTK_INCLUDE_DIR QVTKOpenGLWidget.h HINT ${VTK_INCLUDE_DIRS})
 
 if(VTK_MAJOR_VERSION VERSION_LESS "6")
   find_library (QVTK_LIBRARY QVTK HINTS ${VTK_DIR} ${VTK_DIR}/bin
