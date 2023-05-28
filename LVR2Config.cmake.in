@@ -48,7 +48,7 @@ list(APPEND LVR2_DEFINITIONS ${VTK_DEFINTIONS})
 
 # nabo
 if(@NABO_FOUND@)
-  find_package(Nabo REQUIRED)
+  find_package(NABO REQUIRED)
   list(APPEND LVR2_INCLUDE_DIRS ${NABO_INCLUDE_DIRS})
 endif()
 
