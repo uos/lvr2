@@ -61,6 +61,7 @@ public:
         d.groupName = group;
         d.dataSetName = "timestamps";
         d.metaData = boost::none; 
+        return d;
     }
 
     virtual Description hyperSpectralFrames(const std::string& group) const
@@ -70,6 +71,7 @@ public:
         d.groupName = group;
         d.dataSetName = "frames";
         d.metaData = boost::none; 
+        return d;
     }
 protected:
     
