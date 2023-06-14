@@ -16,7 +16,9 @@ set(LVR2_RECONSTRUCT_DEPENDENCIES
     lvr2las_static
     lvr2rply_static
     lvr2slam6d_static
+    # TODO(lucasw) LZ4 should be in these already, but wasn't making it through in one case
     ${LVR2_LIB_DEPENDENCIES}
+    ${LZ4_LIBRARY}
 )
 
 if(CUDA_FOUND)
