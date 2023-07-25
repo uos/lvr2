@@ -67,6 +67,7 @@
 #include "lvr2/reconstruction/PointsetSurface.hpp"
 #include "lvr2/reconstruction/SearchTree.hpp"
 #include "lvr2/reconstruction/SearchTreeFlann.hpp"
+#include "lvr2/reconstruction/SearchTreeLBVH.hpp"
 #include "lvr2/reconstruction/HashGrid.hpp"
 #include "lvr2/reconstruction/PointsetGrid.hpp"
 #include "lvr2/reconstruction/SharpBox.hpp"
@@ -92,6 +93,7 @@
 #if defined LVR2_USE_CUDA
     #define GPU_FOUND
 
+    #include "lvr2/reconstruction/CudaKSearchSurface.hpp"
     #include "lvr2/reconstruction/cuda/CudaSurface.hpp"
 
     typedef lvr2::CudaSurface GpuSurface;
@@ -300,7 +302,6 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         // - 0: PCA
         // - 1: RANSAC
         // - 2: Iterative
-
         surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
             buffer,
             pcm_name,
@@ -310,6 +311,18 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             plane_fit_method,
             options.getScanPoseFile()
         );
+    }
+    else if(pcm_name == "LBVH_CUDA")
+    {
+        #ifdef LVR2_USE_CUDA
+            surface = make_shared<CudaKSearchSurface<BaseVecT>>(
+                buffer,
+                options.getKn()
+            );
+        #else
+            cout << timestamp << "ERROR: Cuda not found. Do not use LBVH_CUDA." << endl;
+            return nullptr;
+        #endif
     }
     else
     {
@@ -378,7 +391,18 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     {
         lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Using given normals." << lvr2::endl;
     }
-
+    if(pcm_name == "LBVH_CUDA")
+    {
+        surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
+            buffer,
+            "FLANN",
+            options.getKn(),
+            options.getKi(),
+            options.getKd(),
+            0,
+            options.getScanPoseFile()
+        );
+    }
     return surface;
 }
 

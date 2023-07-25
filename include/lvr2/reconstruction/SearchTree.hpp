@@ -98,6 +98,33 @@ public:
         std::vector<size_t>& indices
     ) const;
 
+     virtual void kSearchParallel(
+        const BaseVecT* query,
+        int n,
+        int k,
+        std::vector<size_t>& indices,  // TODO size_t or uint?
+        std::vector<CoordT>& distances
+    ) const
+    {
+        for(int i = 0; i < n; i++)
+        {
+            std::vector<size_t>  indices_vec;
+            std::vector<CoordT> distances_vec; 
+
+            this->kSearch(
+                query[i], 
+                k,
+                indices_vec,
+                distances_vec
+            );
+
+            for(int j = 0; j < k; j++)
+            {
+                indices[i * k + j] = indices_vec[j]; 
+                distances[i * k + j] = distances_vec[j];
+            }
+        }
+    }
     // /**
     //  * @brief Set the number of neighbours used to estimate and interpolate normals.
     //  */
