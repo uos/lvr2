@@ -17,6 +17,7 @@ set(LVR2_LS_RECONSTRUCT_DEPENDENCIES
     lvr2las_static
     lvr2rply_static
     ${LVR2_LIB_DEPENDENCIES}
+    ${LZ4_LIBRARY}
 )
 
 #####################################################################################
