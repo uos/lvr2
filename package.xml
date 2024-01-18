@@ -31,15 +31,11 @@ The Las Vegas Surface Reconstruction Toolkit is an Open Source toolkit to recons
   <depend>libgdal-dev</depend>
   <depend>eigen</depend>
   <depend>ocl-icd-opencl-dev</depend>
-  <depend>libvtk</depend>
-  <depend>libvtk-qt</depend>
   <depend>boost</depend>
   <depend>glut</depend>
   <depend>libxi-dev</depend>
   <depend>libxmu-dev</depend>
   <depend>libhdf5-dev</depend>
-  <depend>qtbase5-dev</depend>
-  <depend>libqt5-opengl-dev</depend>
   <depend>lz4</depend>
   <depend>libopencv-dev</depend>
   <depend>yaml-cpp</depend>

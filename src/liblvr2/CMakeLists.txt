@@ -198,18 +198,20 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
         reconstruction/cuda/CudaSurface.cu
     )
 
-    # Fix broken VTK flags
-    get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-    set(vtk_flags)
-    foreach(it ${dir_defs})
-        if(it MATCHES "vtk*")
-        list(APPEND vtk_flags ${it})
-        endif()
-    endforeach()
+    if(VTK_FOUND)
+      # Fix broken VTK flags
+      get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+      set(vtk_flags)
+      foreach(it ${dir_defs})
+          if(it MATCHES "vtk*")
+          list(APPEND vtk_flags ${it})
+          endif()
+      endforeach()
 
-    foreach(d ${vtk_flags})
-        remove_definitions(-D${d})
-    endforeach()
+      foreach(d ${vtk_flags})
+          remove_definitions(-D${d})
+      endforeach()
+    endif(VTK_FOUND)
 
     message(STATUS "Building static LVR CUDA library")
     cuda_add_library(lvr2cuda_static STATIC ${LVR2_CUDA_SRC})

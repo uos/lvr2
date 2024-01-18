@@ -3,13 +3,20 @@ project(LAS_VEGAS VERSION 2)
 
 # OPTIONS
 option(BUILD_EXAMPLES "Build the examples" OFF)
+option(BUILD_VIEWER "Build lvr2_viewer" OFF)
+option(BUILD_TOOLS "Build tools including lvr2_reconstruct" ON)
+option(BUILD_TOOLS_EXPERIMENTAL "Build experimental tools" OFF)
+option(WITH_DRACO "Build libraries with draco enabled" OFF)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
+
+
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -158,58 +165,70 @@ endif()
 #------------------------------------------------------------------------------
 # Searching for Draco
 #------------------------------------------------------------------------------
+if(WITH_DRACO)
 find_package(Draco)
 if(draco_FOUND)
   message(STATUS "Found Draco")
   include_directories(${draco_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
 endif(draco_FOUND)
+else(WITH_DRACO)
+  set(draco_FOUND False)
+endif(WITH_DRACO)
 
 #------------------------------------------------------------------------------
 # Searching for VTK
 #------------------------------------------------------------------------------
-set(VTK_QT_VERSION 5)
-find_package(VTK REQUIRED)
+if(BUILD_VIEWER)
+#------
+# Here I assume VTK is only required for the lvr2_viewer
+# - VTK doesnt occur in the core library
+#------
 
-if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
-  # patched QVTKOpenGL header because of name clash with signals.
-  add_subdirectory(ext/QVTKOpenGLWidget)
-  include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
-  list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+  set(VTK_QT_VERSION 5)
+  find_package(VTK REQUIRED)
 
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
-endif()
+  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+    # patched QVTKOpenGL header because of name clash with signals.
+    add_subdirectory(ext/QVTKOpenGLWidget)
+    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
 
-if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
-endif()
-
-if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
-    if(VTK_MINOR_VERSION VERSION_GREATER "0")
-        list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-    endif()
-endif()
-
-if(VTK_MAJOR_VERSION VERSION_GREATER "7")
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-endif()
-
-if(VTK_VERSION VERSION_GREATER "7")
-
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-  set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
-  set(VTK_HAS_QT OFF)
-  foreach(VTK_COMPONENT ${VTK_COMPONENTS})
-    if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
-      set(VTK_HAS_QT ON)
-    endif()
-  endforeach()
-
-  message(STATUS "VTK > 7 found")
-  if(VTK_HAS_QT)
-    message(STATUS "Found VTK compoment QVTK")
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
   endif()
-endif()
+
+  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
+  endif()
+
+  if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
+      if(VTK_MINOR_VERSION VERSION_GREATER "0")
+          list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+      endif()
+  endif()
+
+  if(VTK_MAJOR_VERSION VERSION_GREATER "7")
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+  endif()
+
+  if(VTK_VERSION VERSION_GREATER "7")
+
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+    set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
+    set(VTK_HAS_QT OFF)
+    foreach(VTK_COMPONENT ${VTK_COMPONENTS})
+      if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
+        set(VTK_HAS_QT ON)
+      endif()
+    endforeach()
+
+    message(STATUS "VTK > 7 found")
+    if(VTK_HAS_QT)
+      message(STATUS "Found VTK compoment QVTK")
+    endif()
+  endif()
+
+endif(BUILD_VIEWER)
 
 #------------------------------------------------------------------------------
 # Searching for NABO
@@ -470,11 +489,8 @@ endif()
 ###############################################################################
 # HEADERS
 ###############################################################################
-
 install(DIRECTORY include/lvr2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
-
-
 
 ###############################################################################
 # VTK use file include. Has to be called after all CUDA code
@@ -490,19 +506,20 @@ endif()
 ###############################################################################
 # LVR2 VIEWER CHECKS
 ###############################################################################
-
-find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
-if(Qt5_FOUND)
-  message(STATUS "Found QT5")
-  find_package(QVTK)
-  if(QVTK_FOUND)
-    message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
-    include_directories(${QVTK_INCLUDE_DIR})
-    add_subdirectory(src/tools/lvr2_viewer)
-  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
-    add_subdirectory(src/tools/lvr2_viewer)
-  endif(QVTK_FOUND)
-endif(Qt5_FOUND)
+if(BUILD_VIEWER)
+  find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
+  if(Qt5_FOUND)
+    message(STATUS "Found QT5")
+    find_package(QVTK)
+    if(QVTK_FOUND)
+      message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
+      include_directories(${QVTK_INCLUDE_DIR})
+      add_subdirectory(src/tools/lvr2_viewer)
+    elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+      add_subdirectory(src/tools/lvr2_viewer)
+    endif(QVTK_FOUND)
+  endif(Qt5_FOUND)
+endif(BUILD_VIEWER)
 
 ###############################################################################
 # LVR2 ASCII VIEWER CHECKS
@@ -582,45 +599,51 @@ add_subdirectory(src/liblvr2)
 # BINARIES
 ###############################################################################
 
-add_subdirectory(src/tools/lvr2_reconstruct)
-add_subdirectory(src/tools/lvr2_dmc_reconstruction)
-add_subdirectory(src/tools/lvr2_gs_reconstruction)
-add_subdirectory(src/tools/lvr2_largescale_reconstruct)
-add_subdirectory(src/tools/lvr2_asciiconverter)
-add_subdirectory(src/tools/lvr2_transform)
-add_subdirectory(src/tools/lvr2_kaboom)
-add_subdirectory(src/tools/lvr2_octree_test)
-add_subdirectory(src/tools/lvr2_image_normals)
-add_subdirectory(src/tools/lvr2_plymerger)
-# add_subdirectory(src/tools/lvr2_hdf5_builder)
-add_subdirectory(src/tools/lvr2_hdf5_builder_2)
-add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
-add_subdirectory(src/tools/lvr2_slam2hdf5)
-add_subdirectory(src/tools/lvr2_hdf5togeotiff)
-add_subdirectory(src/tools/lvr2_slam6d_merger)
-add_subdirectory(src/tools/lvr2_chunking)
-add_subdirectory(src/tools/lvr2_registration)
-add_subdirectory(src/tools/lvr2_mesh_reducer)
-add_subdirectory(src/tools/lvr2_chunking_server)
-add_subdirectory(src/tools/lvr2_scanproject_parser)
+if(BUILD_TOOLS)
+  add_subdirectory(src/tools/lvr2_reconstruct)
+  add_subdirectory(src/tools/lvr2_mesh_reducer)
+endif(BUILD_TOOLS)
 
-if(CURSES_FOUND AND embree_FOUND)
-    add_subdirectory(src/tools/lvr2_ascii_viewer)
-endif()
+if(BUILD_TOOLS_EXPERIMENTAL)
+  add_subdirectory(src/tools/lvr2_dmc_reconstruction)
+  add_subdirectory(src/tools/lvr2_gs_reconstruction)
+  add_subdirectory(src/tools/lvr2_largescale_reconstruct)
+  add_subdirectory(src/tools/lvr2_asciiconverter)
+  add_subdirectory(src/tools/lvr2_transform)
+  add_subdirectory(src/tools/lvr2_kaboom)
+  add_subdirectory(src/tools/lvr2_octree_test)
+  add_subdirectory(src/tools/lvr2_image_normals)
+  add_subdirectory(src/tools/lvr2_plymerger)
+  # add_subdirectory(src/tools/lvr2_hdf5_builder)
+  add_subdirectory(src/tools/lvr2_hdf5_builder_2)
+  add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
+  add_subdirectory(src/tools/lvr2_slam2hdf5)
+  add_subdirectory(src/tools/lvr2_hdf5togeotiff)
+  add_subdirectory(src/tools/lvr2_slam6d_merger)
+  add_subdirectory(src/tools/lvr2_chunking)
+  add_subdirectory(src/tools/lvr2_registration)
+  add_subdirectory(src/tools/lvr2_chunking_server)
+  add_subdirectory(src/tools/lvr2_scanproject_parser)
 
-if (RiVLib_FOUND)
-    #add_subdirectory(src/tools/lvr2_riegl_project_converter)
-endif()
+  if(CURSES_FOUND AND embree_FOUND)
+      add_subdirectory(src/tools/lvr2_ascii_viewer)
+  endif()
 
-if(CUDA_FOUND)
-#    cuda_include_directories(ext/CTPL)
-    add_subdirectory(src/tools/lvr2_cuda_normals)
-endif()
+  if (RiVLib_FOUND)
+      #add_subdirectory(src/tools/lvr2_riegl_project_converter)
+  endif()
 
-if(OPENCL_FOUND)
-    add_subdirectory(src/tools/lvr2_cl_normals)
-    add_subdirectory(src/tools/lvr2_cl_sor)
-endif()
+  if(CUDA_FOUND)
+  #    cuda_include_directories(ext/CTPL)
+      add_subdirectory(src/tools/lvr2_cuda_normals)
+  endif()
+
+  if(OPENCL_FOUND)
+      add_subdirectory(src/tools/lvr2_cl_normals)
+      add_subdirectory(src/tools/lvr2_cl_sor)
+  endif()
+
+endif(BUILD_TOOLS_EXPERIMENTAL)
 
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
@@ -633,7 +656,7 @@ endif()
 
 include(CMakePackageConfigHelpers)
 set(INCLUDE_INSTALL_DIR include/)
-set(LIB_INSTALL_DIR lib/)
+set(LIB_INSTALL_DIR lib)
 set(SYSCONFIG_INSTALL_DIR etc/lvr2/)
 
 install(EXPORT lvr2Targets
@@ -693,3 +716,5 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
+
+
