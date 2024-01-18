@@ -3,9 +3,13 @@ project(LAS_VEGAS VERSION 2)
 
 # OPTIONS
 option(BUILD_EXAMPLES "Build the examples" OFF)
+option(BUILD_VIEWER "Build lvr2_viewer" OFF)
+option(BUILD_TOOLS "Build tools including lvr2_reconstruct" OFF)
+option(WITH_DRACO "Build libraries with draco enabled" OFF)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
+
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -158,58 +162,70 @@ endif()
 #------------------------------------------------------------------------------
 # Searching for Draco
 #------------------------------------------------------------------------------
+if(WITH_DRACO)
 find_package(Draco)
 if(draco_FOUND)
   message(STATUS "Found Draco")
   include_directories(${draco_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
 endif(draco_FOUND)
+else(WITH_DRACO)
+  set(draco_FOUND False)
+endif(WITH_DRACO)
 
 #------------------------------------------------------------------------------
 # Searching for VTK
 #------------------------------------------------------------------------------
-set(VTK_QT_VERSION 5)
-find_package(VTK REQUIRED)
+if(BUILD_VIEWER)
+#------
+# Here I assume VTK is only required for the lvr2_viewer
+# - VTK doesnt occur in the core library
+#------
 
-if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
-  # patched QVTKOpenGL header because of name clash with signals.
-  add_subdirectory(ext/QVTKOpenGLWidget)
-  include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
-  list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+  set(VTK_QT_VERSION 5)
+  find_package(VTK REQUIRED)
 
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
-endif()
+  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+    # patched QVTKOpenGL header because of name clash with signals.
+    add_subdirectory(ext/QVTKOpenGLWidget)
+    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
 
-if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
-endif()
-
-if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
-    if(VTK_MINOR_VERSION VERSION_GREATER "0")
-        list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-    endif()
-endif()
-
-if(VTK_MAJOR_VERSION VERSION_GREATER "7")
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-endif()
-
-if(VTK_VERSION VERSION_GREATER "7")
-
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-  set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
-  set(VTK_HAS_QT OFF)
-  foreach(VTK_COMPONENT ${VTK_COMPONENTS})
-    if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
-      set(VTK_HAS_QT ON)
-    endif()
-  endforeach()
-
-  message(STATUS "VTK > 7 found")
-  if(VTK_HAS_QT)
-    message(STATUS "Found VTK compoment QVTK")
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
   endif()
-endif()
+
+  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
+  endif()
+
+  if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
+      if(VTK_MINOR_VERSION VERSION_GREATER "0")
+          list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+      endif()
+  endif()
+
+  if(VTK_MAJOR_VERSION VERSION_GREATER "7")
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+  endif()
+
+  if(VTK_VERSION VERSION_GREATER "7")
+
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+    set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
+    set(VTK_HAS_QT OFF)
+    foreach(VTK_COMPONENT ${VTK_COMPONENTS})
+      if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
+        set(VTK_HAS_QT ON)
+      endif()
+    endforeach()
+
+    message(STATUS "VTK > 7 found")
+    if(VTK_HAS_QT)
+      message(STATUS "Found VTK compoment QVTK")
+    endif()
+  endif()
+
+endif(BUILD_VIEWER)
 
 #------------------------------------------------------------------------------
 # Searching for NABO
@@ -490,19 +506,20 @@ endif()
 ###############################################################################
 # LVR2 VIEWER CHECKS
 ###############################################################################
-
-find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
-if(Qt5_FOUND)
-  message(STATUS "Found QT5")
-  find_package(QVTK)
-  if(QVTK_FOUND)
-    message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
-    include_directories(${QVTK_INCLUDE_DIR})
-    add_subdirectory(src/tools/lvr2_viewer)
-  elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
-    add_subdirectory(src/tools/lvr2_viewer)
-  endif(QVTK_FOUND)
-endif(Qt5_FOUND)
+if(BUILD_VIEWER)
+  find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
+  if(Qt5_FOUND)
+    message(STATUS "Found QT5")
+    find_package(QVTK)
+    if(QVTK_FOUND)
+      message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
+      include_directories(${QVTK_INCLUDE_DIR})
+      add_subdirectory(src/tools/lvr2_viewer)
+    elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+      add_subdirectory(src/tools/lvr2_viewer)
+    endif(QVTK_FOUND)
+  endif(Qt5_FOUND)
+endif(BUILD_VIEWER)
 
 ###############################################################################
 # LVR2 ASCII VIEWER CHECKS
@@ -581,7 +598,7 @@ add_subdirectory(src/liblvr2)
 ###############################################################################
 # BINARIES
 ###############################################################################
-
+if(BUILD_TOOLS)
 add_subdirectory(src/tools/lvr2_reconstruct)
 add_subdirectory(src/tools/lvr2_dmc_reconstruction)
 add_subdirectory(src/tools/lvr2_gs_reconstruction)
@@ -621,6 +638,8 @@ if(OPENCL_FOUND)
     add_subdirectory(src/tools/lvr2_cl_normals)
     add_subdirectory(src/tools/lvr2_cl_sor)
 endif()
+
+endif(BUILD_TOOLS)
 
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
