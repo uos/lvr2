@@ -15,6 +15,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
 
+
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -486,11 +488,8 @@ endif()
 ###############################################################################
 # HEADERS
 ###############################################################################
-
 install(DIRECTORY include/lvr2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
-
-
 
 ###############################################################################
 # VTK use file include. Has to be called after all CUDA code
@@ -652,7 +651,7 @@ endif()
 
 include(CMakePackageConfigHelpers)
 set(INCLUDE_INSTALL_DIR include/)
-set(LIB_INSTALL_DIR lib/)
+set(LIB_INSTALL_DIR lib)
 set(SYSCONFIG_INSTALL_DIR etc/lvr2/)
 
 install(EXPORT lvr2Targets
@@ -712,3 +711,5 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
+
+
