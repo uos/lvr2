@@ -91,7 +91,6 @@ endif(GDAL_FOUND)
 option(WITH_CUDA "Compile with CUDA support" ON)
 if(NOT APPLE AND WITH_CUDA)
 find_package( CUDA )
-set(CUDA_FOUND false)
 if(CUDA_FOUND)
   message(STATUS "Found CUDA")
     include_directories(${CUDA_INCLUDE_DIRS})
@@ -443,17 +442,19 @@ option(WITH_KINFU "Compile LVR Kinfu" OFF)
 # compatible to gcc4.8. Older CUDA versions require GCC lower
 # than 4.8
 ###############################################################################
-if(CUDA_FOUND AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
-              AND CUDA_VERSION VERSION_GREATER 8
-              AND CUDA_VERSION VERSION_LESS 10)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5 )
-        message(STATUS "******************************************************************")
-        message(STATUS "* Your gcc version needs to be lower than 6 to compile the LVR   *")
-        message(STATUS "* CUDA library and apps with CUDA. Setting CUDA_HOST_COMPILER to *")
-        message(STATUS "* g++-6*. Please ensure that g++ 6 is installed on your system.  *")
-        message(STATUS "******************************************************************")
-        set(CUDA_HOST_COMPILER "g++-6" CACHE STRING "" FORCE)
-        endif()
+if(CUDA_FOUND)
+  include(max_cuda_gcc_version)
+  max_cuda_gcc_version(CUDA_VERSION MAX_CUDA_GCC_VERSION)
+  message(STATUS "Highest supported GCC version for CUDA: ${MAX_CUDA_GCC_VERSION}")
+
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER ${MAX_CUDA_GCC_VERSION})
+    message(STATUS "******************************************************************")
+    message(STATUS "* Your gcc version needs to be lower than or equal ${MAX_CUDA_GCC_VERSION} to compile  *")
+    message(STATUS "* the CUDA library and apps. Setting CUDA_HOST_COMPILER to       *")
+    message(STATUS "* g++-${MAX_CUDA_GCC_VERSION}. Please ensure that g++-${MAX_CUDA_GCC_VERSION} is installed on your system.   *")
+    message(STATUS "******************************************************************")
+    set(CUDA_HOST_COMPILER "g++-${MAX_CUDA_GCC_VERSION}" CACHE STRING "" FORCE)
+  endif()
 endif()
 
 if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
