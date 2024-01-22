@@ -150,15 +150,6 @@ set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2slam6d)
 
 #####################################################################################
-# Set c++0x flags for gcc compilers (needed for boctree io)
-#####################################################################################
-
-if(UNIX)
-  SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=c++14")
-endif(UNIX)
-
-
-#####################################################################################
 # Compile object files for static and dynamic library
 #####################################################################################
 
@@ -200,25 +191,27 @@ endif( NOT MSVC)
 #####################################################################################
 
 if(CUDA_FOUND)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
     # List of CUDA kernel code sources
     set(LVR2_CUDA_SRC
         reconstruction/cuda/CudaSurface.cu
     )
 
-    # Fix broken VTK flags
-    get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-    set(vtk_flags)
-    foreach(it ${dir_defs})
-        if(it MATCHES "vtk*")
-        list(APPEND vtk_flags ${it})
-        endif()
-    endforeach()
+    if(VTK_FOUND)
+      # Fix broken VTK flags
+      get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+      set(vtk_flags)
+      foreach(it ${dir_defs})
+          if(it MATCHES "vtk*")
+          list(APPEND vtk_flags ${it})
+          endif()
+      endforeach()
 
-    foreach(d ${vtk_flags})
-        remove_definitions(-D${d})
-    endforeach()
+      foreach(d ${vtk_flags})
+          remove_definitions(-D${d})
+      endforeach()
+    endif(VTK_FOUND)
 
     message(STATUS "Building static LVR CUDA library")
     cuda_add_library(lvr2cuda_static STATIC ${LVR2_CUDA_SRC})

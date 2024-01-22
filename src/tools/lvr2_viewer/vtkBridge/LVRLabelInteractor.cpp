@@ -184,7 +184,7 @@ void LVRLabelInteractorStyle::labelSelectedPoints(QString label)
 
 void LVRLabelInteractorStyle::extractLabel()
 {
-	ofstream outfile("Test.txt");
+	std::ofstream outfile("Test.txt");
 	for (int i = 0; i < m_pointLabels.size(); i++)
 	{
 		if (m_pointLabels[i] != 0)

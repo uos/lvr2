@@ -14,7 +14,6 @@ set(SLAM_SOURCES
 	searchTree.cc
 	scan_io_oct.cc
 )
-set_source_files_properties(${SLAM_SOURCES} PROPERTIES COMPILE_FLAGS "-std=gnu++0x")
 
 add_library(lvr2slam6d_static STATIC ${SLAM_SOURCES})
 

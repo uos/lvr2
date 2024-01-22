@@ -27,12 +27,16 @@ set(LVR2_DEFINITIONS @LVR2_DEFINITIONS@)
 
 find_package(PkgConfig REQUIRED)
 
+set(LVR2_LIB_DIR @CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@)
+
 option(LVR2_USE_STATIC_LIBS OFF)
 if(LVR2_USE_STATIC_LIBS)
-  find_library(LVR2_LIBRARY NAMES lvr2_static)
+  # find_library(LVR2_LIBRARY NAMES lvr2_static)
+  set(LVR2_LIBRARY ${LVR2_LIB_DIR}/liblvr2_static.so)
   set(LVR2_LIBRARIES ${LVR2_LIBRARY})
 else()
-  find_library(LVR2_LIBRARY NAMES lvr2)
+  # find_library(LVR2_LIBRARY NAMES lvr2)
+  set(LVR2_LIBRARY ${LVR2_LIB_DIR}/liblvr2.so)
   set(LVR2_LIBRARIES ${LVR2_LIBRARY})
 endif()
 
@@ -48,7 +52,7 @@ list(APPEND LVR2_DEFINITIONS ${VTK_DEFINTIONS})
 
 # nabo
 if(@NABO_FOUND@)
-  find_package(Nabo REQUIRED)
+  find_package(NABO REQUIRED)
   list(APPEND LVR2_INCLUDE_DIRS ${NABO_INCLUDE_DIRS})
 endif()
 

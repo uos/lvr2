@@ -42,18 +42,18 @@ find_path(LZ4_INCLUDE_DIR lz4.h PATHS
 )
 
 find_library(LZ4_LIB_PATH NAMES liblz4.so liblz4.dylib PATHS ${LZ4_SEARCH_LIB_PATH} NO_DEFAULT_PATH)
+find_library(LZ4_STATIC_LIB NAMES liblz4.a PATHS ${LZ4_SEARCH_LIB_PATH} NO_DEFAULT_PATH)
 
 message(STATUS "Header ${LZ4_INCLUDE_DIR} LIB ")
 if (LZ4_INCLUDE_DIR AND LZ4_LIB_PATH)
   set(LZ4_FOUND TRUE)
   set(LZ4_LIBS ${LZ4_SEARCH_LIB_PATH})
-  set(LZ4_STATIC_LIB ${LZ4__LIB_PATH}/liblz4.a)
 
   # mac os is using dylib instead of so for lz4
   if (APPLE)
     set(LZ4_LIBRARY liblz4.dylib)
   else ()
-    set(LZ4_LIBRARY liblz4.so)
+    set(LZ4_LIBRARY ${LZ4_LIB_PATH})
   endif ()
 else ()
   set(LZ4_FOUND FALSE)

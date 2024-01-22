@@ -113,6 +113,7 @@ YAML::Node loadMetaInformation(const std::string &in)
         }
         return node;
     }
+    return YAML::Node();
 }
 
 } // namespace lvr2

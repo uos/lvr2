@@ -211,7 +211,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget"/>
+         <widget class="QVTKOpenGLWidget" name="qvtkWidget"/>
         </item>
        </layout>
       </item>
@@ -233,9 +233,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QVTKWidget</class>
+   <class>QVTKOpenGLWidget</class>
    <extends>QWidget</extends>
-   <header>QVTKWidget.h</header>
+   <header>QVTKOpenGLWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
