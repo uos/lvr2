@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4)
-project(LAS_VEGAS VERSION 2)
+project(lvr2 VERSION 2)
 
 # OPTIONS
 option(BUILD_EXAMPLES "Build the examples" OFF)
@@ -15,8 +15,6 @@ set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
-
-
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -718,4 +716,9 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
       COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
 
+
+find_package(ament_cmake QUIET)
+if(ament_cmake_FOUND)
+  ament_package()
+endif()
 
