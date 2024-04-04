@@ -35,14 +35,11 @@ if(embree_FOUND)
 endif(embree_FOUND)
 
 
-
 set(CMAKE_MODULE_PATH
   ${PROJECT_SOURCE_DIR}/CMakeModules
   ${PROJECT_SOURCE_DIR}/ext/kintinuous/cmake/Modules
   ${CMAKE_MODULE_PATH}
 )
-
-message(WARNING "!!!!: ${CMAKE_MODULE_PATH}")
 
 message(STATUS ${CMAKE_MODULE_PATH})
 
@@ -128,7 +125,6 @@ find_package(FLANN REQUIRED)
 if(FLANN_FOUND)
   message(STATUS "Found FLANN")
   include_directories(${FLANN_DIR})
-  message(WARNING "!! FLANN DIR: ${FLANN_DIR}")
 endif(FLANN_FOUND)
 
 find_package(Lz4 REQUIRED)
@@ -720,10 +716,3 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
-
-
-# find_package(ament_cmake QUIET)
-# if(ament_cmake_FOUND)
-#   ament_package()
-# endif()
-
