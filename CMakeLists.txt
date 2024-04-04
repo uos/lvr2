@@ -34,11 +34,15 @@ if(embree_FOUND)
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
 endif(embree_FOUND)
 
+
+
 set(CMAKE_MODULE_PATH
-  ${LAS_VEGAS_SOURCE_DIR}/CMakeModules
-  ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules
+  ${PROJECT_SOURCE_DIR}/CMakeModules
+  ${PROJECT_SOURCE_DIR}/ext/kintinuous/cmake/Modules
   ${CMAKE_MODULE_PATH}
 )
+
+message(WARNING "!!!!: ${CMAKE_MODULE_PATH}")
 
 message(STATUS ${CMAKE_MODULE_PATH})
 
@@ -124,6 +128,7 @@ find_package(FLANN REQUIRED)
 if(FLANN_FOUND)
   message(STATUS "Found FLANN")
   include_directories(${FLANN_DIR})
+  message(WARNING "!! FLANN DIR: ${FLANN_DIR}")
 endif(FLANN_FOUND)
 
 find_package(Lz4 REQUIRED)
@@ -458,7 +463,7 @@ endif()
 if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
     message(STATUS "Building LVR KinFu.")
     add_subdirectory(ext/kintinuous)
-    include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+    include_directories(${PROJECT_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 endif()
 
 
@@ -717,8 +722,8 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
 
 
-find_package(ament_cmake QUIET)
-if(ament_cmake_FOUND)
-  ament_package()
-endif()
+# find_package(ament_cmake QUIET)
+# if(ament_cmake_FOUND)
+#   ament_package()
+# endif()
 
