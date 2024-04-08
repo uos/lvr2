@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4)
-project(LAS_VEGAS VERSION 2)
+project(lvr2 VERSION 2)
 
 # OPTIONS
 option(BUILD_EXAMPLES "Build the examples" OFF)
@@ -15,8 +15,6 @@ set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
-
-
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -36,9 +34,10 @@ if(embree_FOUND)
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
 endif(embree_FOUND)
 
+
 set(CMAKE_MODULE_PATH
-  ${LAS_VEGAS_SOURCE_DIR}/CMakeModules
-  ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules
+  ${PROJECT_SOURCE_DIR}/CMakeModules
+  ${PROJECT_SOURCE_DIR}/ext/kintinuous/cmake/Modules
   ${CMAKE_MODULE_PATH}
 )
 
@@ -460,7 +459,7 @@ endif()
 if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
     message(STATUS "Building LVR KinFu.")
     add_subdirectory(ext/kintinuous)
-    include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+    include_directories(${PROJECT_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 endif()
 
 
@@ -717,5 +716,3 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
-
-
