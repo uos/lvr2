@@ -8,6 +8,14 @@ option(BUILD_TOOLS "Build tools including lvr2_reconstruct" ON)
 option(BUILD_TOOLS_EXPERIMENTAL "Build experimental tools" OFF)
 option(WITH_DRACO "Build libraries with draco enabled" OFF)
 
+
+# DEFAULT RELEASE
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
+  if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+  endif()
+endif()
+
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 
@@ -268,11 +276,14 @@ endif(WITH_PCL)
 
 find_package(CGAL)
 if(CGAL_FOUND)
-  set(_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-  set(CMAKE_CXX_FLAGS)
-  # CGAL_USE_FILE overrides theses flags...
-  include(${CGAL_USE_FILE})
-  set(CMAKE_CXX_FLAGS "${_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+  
+  if(DEFINED CGAL_USE_FILE)
+    # CGAL_USE_FILE overrides theses flags...
+    set(_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    set(CMAKE_CXX_FLAGS)
+    include(${CGAL_USE_FILE})
+    set(CMAKE_CXX_FLAGS "${_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+  endif()
 
   message(STATUS "Found CGAL")
 endif(CGAL_FOUND)
