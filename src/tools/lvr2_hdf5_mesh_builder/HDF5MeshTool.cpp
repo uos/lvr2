@@ -257,6 +257,7 @@ int main( int argc, char ** argv )
     DenseVertexMap<color> colors;
     boost::optional<DenseVertexMap<color>> colorsOpt;
     ChannelOptional<uint8_t> channel_opt;
+    bool colorsFoundInSource = false;
     if (readFromHdf5)
     {
       colorsOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<color>>("vertex_colors");
@@ -265,10 +266,12 @@ int main( int argc, char ** argv )
     {
       std::cout << timestamp << "Using existing vertex colors..." << std::endl;
       colors = *colorsOpt;
+      colorsFoundInSource = true;
     }
     else if (meshBuffer != nullptr && (channel_opt = meshBuffer->getChannel<uint8_t>("vertex_colors"))
       && channel_opt && channel_opt.get().width() == 3 && channel_opt.get().numElements() == hem.numVertices()) {
       std::cout << timestamp << "Using existing colors from mesh buffer..." << std::endl;
+      colorsFoundInSource = true;
 
       auto &channel = channel_opt.get();
       colors.reserve(channel.numElements());
@@ -279,16 +282,23 @@ int main( int argc, char ** argv )
     }
     if (!colorsOpt || !writeToHdf5Input)
     {
-      std::cout << timestamp << "Adding vertex colors..." << std::endl;
-      bool addedVertexColors = hdf5.addDenseAttributeMap<DenseVertexMap<color>>(
-          hem, colors, "vertex_colors");
-      if (addedVertexColors)
+      if (colorsFoundInSource) 
       {
-        std::cout << timestamp << "successfully added vertex colors" << std::endl;
-      }
-      else
+        std::cout << timestamp << "Adding vertex colors found in source..." << std::endl;
+        bool addedVertexColors = hdf5.addDenseAttributeMap<DenseVertexMap<color>>(
+            hem, colors, "vertex_colors");
+        if (addedVertexColors)
+        {
+          std::cout << timestamp << "successfully added vertex colors" << std::endl;
+        }
+        else
+        {
+          std::cout << timestamp << "could not add vertex colors!" << std::endl;
+        }
+      } 
+      else 
       {
-        std::cout << timestamp << "could not add vertex colors!" << std::endl;
+          std::cout << timestamp << "Skipping vertex colors: No colors found in input file." << std::endl;
       }
     }
     else
