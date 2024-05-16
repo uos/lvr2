@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4)
-project(LAS_VEGAS VERSION 2)
+project(lvr2 VERSION 2)
 
 # OPTIONS
 option(BUILD_EXAMPLES "Build the examples" OFF)
@@ -8,6 +8,14 @@ option(BUILD_TOOLS "Build tools including lvr2_reconstruct" ON)
 option(BUILD_TOOLS_EXPERIMENTAL "Build experimental tools" OFF)
 option(WITH_DRACO "Build libraries with draco enabled" OFF)
 
+
+# DEFAULT RELEASE
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
+  if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+  endif()
+endif()
+
 set_property(GLOBAL PROPERTY USE_FOLDERS On)
 set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 
@@ -15,8 +23,6 @@ set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
-
-
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -36,9 +42,10 @@ if(embree_FOUND)
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
 endif(embree_FOUND)
 
+
 set(CMAKE_MODULE_PATH
-  ${LAS_VEGAS_SOURCE_DIR}/CMakeModules
-  ${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/cmake/Modules
+  ${PROJECT_SOURCE_DIR}/CMakeModules
+  ${PROJECT_SOURCE_DIR}/ext/kintinuous/cmake/Modules
   ${CMAKE_MODULE_PATH}
 )
 
@@ -269,11 +276,14 @@ endif(WITH_PCL)
 
 find_package(CGAL)
 if(CGAL_FOUND)
-  set(_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-  set(CMAKE_CXX_FLAGS)
-  # CGAL_USE_FILE overrides theses flags...
-  include(${CGAL_USE_FILE})
-  set(CMAKE_CXX_FLAGS "${_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+  
+  if(DEFINED CGAL_USE_FILE)
+    # CGAL_USE_FILE overrides theses flags...
+    set(_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    set(CMAKE_CXX_FLAGS)
+    include(${CGAL_USE_FILE})
+    set(CMAKE_CXX_FLAGS "${_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+  endif()
 
   message(STATUS "Found CGAL")
 endif(CGAL_FOUND)
@@ -460,7 +470,7 @@ endif()
 if(CUDA_FOUND AND "${OpenCV_VERSION_PATCH}" VERSION_GREATER "8" AND WITH_KINFU)
     message(STATUS "Building LVR KinFu.")
     add_subdirectory(ext/kintinuous)
-    include_directories(${LAS_VEGAS_SOURCE_DIR}/ext/kintinuous/kfusion/include)
+    include_directories(${PROJECT_SOURCE_DIR}/ext/kintinuous/kfusion/include)
 endif()
 
 
@@ -717,5 +727,3 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
-
-
