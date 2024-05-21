@@ -35,6 +35,7 @@
 #include <cmath>
 #include "Normal.hpp"
 #include "lvr2/util/Panic.hpp"
+#include "lvr2/util/TypeTraits.hpp"
 
 namespace lvr2
 {
@@ -258,7 +259,7 @@ BaseVector<CoordT> BaseVector<CoordT>::average(const CollectionT& vecs)
     for (auto v: vecs)
     {
         static_assert(
-            std::is_same<decltype(v), BaseVector<CoordT>>::value,
+            arg_has_type<BaseVector<CoordT> >(v),
             "Collection has to contain Vectors"
         );
         acc += v;
@@ -276,7 +277,7 @@ BaseVector<CoordT> BaseVector<CoordT>::centroid(const CollectionT& points)
     for (auto p: points)
     {
         static_assert(
-            std::is_same<decltype(p), BaseVector<CoordT>>::value,
+            arg_has_type<BaseVector<CoordT> >(p),
             "Type mismatch in centroid calculation."
         );
         acc += p;

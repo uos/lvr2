@@ -8,6 +8,9 @@ option(BUILD_TOOLS "Build tools including lvr2_reconstruct" ON)
 option(BUILD_TOOLS_EXPERIMENTAL "Build experimental tools" OFF)
 option(WITH_DRACO "Build libraries with draco enabled" OFF)
 
+## Compile as C++17
+add_compile_options(-std=c++17)
+set(CMAKE_CXX_STANDARD 17)
 
 # DEFAULT RELEASE
 if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
@@ -613,7 +616,7 @@ add_subdirectory(src/liblvr2)
 if(BUILD_TOOLS)
   add_subdirectory(src/tools/lvr2_reconstruct)
   add_subdirectory(src/tools/lvr2_mesh_reducer)
-  add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
+  add_subdirectory(src/tools/lvr2_hdf5_mesh_tool)
 endif(BUILD_TOOLS)
 
 if(BUILD_TOOLS_EXPERIMENTAL)
