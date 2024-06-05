@@ -3,6 +3,7 @@
 #include "lvr2/io/schema/ScanProjectSchemaEuRoC.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHyperlib.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaOusterPLY.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaSlam6D.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHDF5V2.hpp"
@@ -37,12 +38,6 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
     } 
     else if (name == "HYPERLIB")
     {
-        lvr2::logout::get() << lvr2::error << "[DirectorySchemaFromName] ScanProjectSchemaHyperlib not implemented yet." << lvr2::endl;
-        //return DirectorySchemaPtr(new ScanProjectSchemaHyperlib(rootDirectory));
-        return nullptr;
-    } 
-    else if (name == "RAW")
-    {
         lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating ScanProjectSchemaRaw with root directory '" 
                   << rootDirectory << "." << lvr2::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaRaw(rootDirectory));
@@ -58,6 +53,12 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
         lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating ScanProjectSchemaSlam6D with root directory '" 
                   << rootDirectory << "." << lvr2::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaSlam6D(rootDirectory));
+    }
+    else if (name == "OUSTERPLY")
+    {
+        lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating Ouster PLY with root directory '" 
+                  << rootDirectory << "." << lvr2::endl;
+        return DirectorySchemaPtr(new ScanProjectSchemaOusterPly(rootDirectory));
     }
 #ifdef LVR2_USE_RDB
     else if (name == "RDBX")

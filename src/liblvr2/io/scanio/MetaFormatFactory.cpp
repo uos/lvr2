@@ -127,6 +127,16 @@ YAML::Node loadMetaInformation(const std::string &in)
         node = sp;
 
         return node;
+    } 
+    else if(inPath.extension() == ".plyschema")
+    {
+        // Actually like .slam6d this is just a tag to make the loader
+        // think we have meta data but in this schema we just take
+        // the already transformed pointcloud so we just have to 
+        // return empty scan position meta information
+        YAML::Node node;
+
+        return node;
     }
     else
     {

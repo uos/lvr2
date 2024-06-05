@@ -8,6 +8,8 @@
 #include "lvr2/util/Debug.hpp"
 #include "lvr2/util/Progress.hpp"
 
+
+
 #include <cmath>
 
 namespace lvr2 {
@@ -55,8 +57,8 @@ namespace lvr2 {
         //progress bar
         size_t runtime_length = (size_t)((((size_t)m_runtime*(size_t)m_numSplits)
                                           *(((size_t)m_numSplits*(size_t)m_runtime)+1)/(size_t)2) * (size_t)m_basicSteps);
-        PacmanProgressBar progress_bar(runtime_length);
-
+        lvr2::logout::get() << lvr2::info << "[GCS Reconstruction] Starting Reconstruction" << lvr2::endl;
+        lvr2::Monitor monitor(lvr2::LogLevel::info, "[GCS Reconstruction] Iterating", m_runtime);
         //algorithm
         for(int i = 0; i < getRuntime(); i++)
         {
@@ -71,7 +73,7 @@ namespace lvr2 {
             {
                 for(int k = 0; k < getBasicSteps(); k++)
                 {
-                    executeBasicStep(progress_bar);
+                    executeBasicStep();
                 }
                 executeVertexSplit(); //TODO: execute vertex split after a specific number of basic steps
 
@@ -80,8 +82,9 @@ namespace lvr2 {
             {
                 //executeEdgeCollapse(); //TODO: execute an edge collapse, only if the user specified so
             }
-
+            ++monitor;
         }
+        lvr2::logout::get() << lvr2::info << "[GCS Reconstruction] Finished initial mesh" << lvr2::endl;
 
         //final operations on the mesh (like removing wrong faces and filling the holes)
 
@@ -105,20 +108,19 @@ namespace lvr2 {
             performLaplacianSmoothing(vertex, m_mesh->getVertexPosition(vertex), 0.5); //no random point influence
         }
 
+        lvr2::logout::get() << lvr2::info << "Max depth of tt: " << (m_balances != 0 ? max_depth : tumble_tree->maxDepth()) << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "Not Deleted in TT: " << tumble_tree->notDeleted << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "Tumble Tree size: " << tumble_tree->size() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "KD-Tree size: " << kd_tree->size() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "Cell array size: " << cellVecSize() << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "Not found counter: " << notFoundCounter << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "Equilaterality test percentage: " << equilaterality().second << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "Skewness test percentage: " << equilaterality().first << lvr2::endl;
+        lvr2::logout::get() << lvr2::info << "Average Valence: " << avgValence() << lvr2::endl;
 
-        std::cout << "Max depth of tt: " << (m_balances != 0 ? max_depth : tumble_tree->maxDepth()) << std::endl;
-        std::cout << "Not Deleted in TT: " << tumble_tree->notDeleted << std::endl;
-        std::cout << "Tumble Tree size: " << tumble_tree->size() << std::endl;
-        std::cout << "KD-Tree size: " << kd_tree->size() << std::endl;
-        std::cout << "Cell array size: " << cellVecSize() << std::endl;
-        std::cout << "Not found counter: " << notFoundCounter << std::endl;
-        std::cout << std::endl;
-        std::cout << "Equilaterality test percentage: " << equilaterality().second << std::endl;
-        std::cout << "Skewness test percentage: " << equilaterality().first << std::endl;
-        std::cout << "Average Valence: " << avgValence() << std::endl;
-
-        std::cout << "Valances >= 10: " << numVertexValences(10) << std::endl;
-        std::cout << "Valances >= 15: " << numVertexValences(15) << std::endl;
+        lvr2::logout::get() << lvr2::info  << "Valances >= 10: " << numVertexValences(10) << lvr2::endl;
+        lvr2::logout::get() << lvr2::info  << "Valances >= 15: " << numVertexValences(15) << lvr2::endl;
         delete tumble_tree;
     }
 
@@ -134,14 +136,14 @@ namespace lvr2 {
      * @param progress_bar needed to pass it to the getClosestPointInMesh operation
      */
     template <typename BaseVecT, typename NormalT>
-    void GrowingCellStructure<BaseVecT, NormalT>::executeBasicStep(PacmanProgressBar& progress_bar)
+    void GrowingCellStructure<BaseVecT, NormalT>::executeBasicStep()
     {
         //get random point of the pointcloud
         BaseVecT random_point = this->getRandomPointFromPointcloud();
-        //std::cout << "basic step" << std::endl;
+        //lvr2::logout::get() << lvr2::info  << "basic step" << lvr2::endl;
         if(!m_useGSS) //if only gcs is used (gcs basic step)
         {
-            VertexHandle winnerH = this->getClosestPointInMesh(random_point, progress_bar); //TODO: better runtime efficency(kd-tree)
+            VertexHandle winnerH = this->getClosestPointInMesh(random_point); //TODO: better runtime efficency(kd-tree)
             /*Index winnerIndex = kd_tree->findNearest(random_point);
             VertexHandle winnerH(winnerIndex);*/
 
@@ -195,7 +197,7 @@ namespace lvr2 {
         }
         else //GSS TODO: INCLUDE GSS ADDITIONS
         {
-            std::cout << "Using GSS" << std::endl;
+            lvr2::logout::get() << lvr2::info  << "Using GSS" << lvr2::endl;
             //find closest structure
 
             //set approx error(s) and age of faces (using HashMap)
@@ -220,7 +222,7 @@ namespace lvr2 {
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::executeVertexSplit()
     {
-        //std::cout << "Vertex Split" << std::endl;
+        //lvr2::logout::get() << lvr2::info  << "Vertex Split" << lvr2::endl;
         if(!m_useGSS) //GCS
         {
             //find vertex with highst sc, split that vertex
@@ -314,8 +316,8 @@ namespace lvr2 {
             else
             {
 
-                std::cout << "Lowest SC from Tumble Tree: " << min->signal_counter << " | " << (*min->duplicateMap.begin()).idx() << std::endl;
-                std::cout << "Colapse threshold: " << m_collapseThreshold << std::endl;
+                lvr2::logout::get() << lvr2::info  << "Lowest SC from Tumble Tree: " << min->signal_counter << " | " << (*min->duplicateMap.begin()).idx() << lvr2::endl;
+                lvr2::logout::get() << lvr2::info  << "Colapse threshold: " << m_collapseThreshold << lvr2::endl;
                 //found vertex with lowest sc
                 //TODO: collapse the edge leading to the vertex with the valence closest to six
                 if(min->signal_counter < this->getCollapseThreshold())
@@ -347,7 +349,7 @@ namespace lvr2 {
                         EdgeCollapseResult result = m_mesh->collapseEdge(eToSixVal.unwrap());
                         tumble_tree->remove(cellArr[result.removedPoint.idx()], result.removedPoint);
                         cellArr[result.removedPoint.idx()] = NULL;
-                        std::cout << "Collapsed an Edge!" << std::endl;
+                        lvr2::logout::get() << lvr2::info  << "Collapsed an Edge!" << lvr2::endl;
                     }
                 }
             }
@@ -400,7 +402,7 @@ namespace lvr2 {
      * @return a handle pointing to the closest point of the mesh to the point in the parameters
      */
     template <typename BaseVecT, typename NormalT>
-    VertexHandle GrowingCellStructure<BaseVecT, NormalT>::getClosestPointInMesh(BaseVecT point, PacmanProgressBar& progress_bar)
+    VertexHandle GrowingCellStructure<BaseVecT, NormalT>::getClosestPointInMesh(BaseVecT point)
     {
         //search the closest point of the mesh
         auto vertices = m_mesh->vertices();
@@ -413,10 +415,10 @@ namespace lvr2 {
         {
             /*if(m_mesh->numVertices() != 4) TODO: PRINT NUMBER OF VERTICES WHILE ALSO PRINTING THE PROGRESS BAR...
             {
-                std::cout << "\33[2K\r" << std::endl;
+                lvr2::logout::get() << lvr2::info  << "\33[2K\r" << lvr2::endl;
             }*/
-            ++progress_bar;
-            //std::cout << "Vertices in Mesh: " << m_mesh->numVertices() << std::endl;
+            
+            //lvr2::logout::get() << lvr2::info  << "Vertices in Mesh: " << m_mesh->numVertices() << lvr2::endl;
 
             BaseVecT vertex = m_mesh->getVertexPosition(vertexH); //get Vertex from Handle
             BaseVecT distanceVector = point - vertex;
@@ -463,15 +465,15 @@ namespace lvr2 {
         FaceHandle fH8 = m_mesh->addFace(v6,v7,v8);
 
         auto pair = m_mesh->triCircumCenter(fH1);
-        std::cout << "CircumCenter1: " << pair.first << "| Radius: " << pair.second << std::endl;
+        lvr2::logout::get() << lvr2::info  << "CircumCenter1: " << pair.first << "| Radius: " << pair.second << lvr2::endl;
         auto pair1 = m_mesh->triCircumCenter(fH2);
-        std::cout << "CircumCenter1: " << pair1.first << "| Radius: " << pair1.second << std::endl;
+        lvr2::logout::get() << lvr2::info  << "CircumCenter1: " << pair1.first << "| Radius: " << pair1.second << lvr2::endl;
         auto pair2 = m_mesh->triCircumCenter(fH3);
-        std::cout << "CircumCenter1: " << pair2.first << "| Radius: " << pair2.second << std::endl;
+        lvr2::logout::get() << lvr2::info  << "CircumCenter1: " << pair2.first << "| Radius: " << pair2.second << lvr2::endl;
         auto pair3 = m_mesh->triCircumCenter(fH4);
-        std::cout << "CircumCenter1: " << pair3.first << "| Radius: " << pair3.second << std::endl;
+        lvr2::logout::get() << lvr2::info  << "CircumCenter1: " << pair3.first << "| Radius: " << pair3.second << lvr2::endl;
         auto pair4 = m_mesh->triCircumCenter(fH5);
-        std::cout << "CircumCenter1: " << pair4.first << "| Radius: " << pair4.second << std::endl;
+        lvr2::logout::get() << lvr2::info  << "CircumCenter1: " << pair4.first << "| Radius: " << pair4.second << lvr2::endl;
 
         //m_mesh->splitVertex(v8);
         //m_mesh->splitVertex(v8);
@@ -522,7 +524,7 @@ namespace lvr2 {
 
         if(!bounding_box.isValid())
         {
-            std::cout << "Bounding Box invalid" << std::endl;
+            lvr2::logout::get() << lvr2::info  << "Bounding Box invalid" << lvr2::endl;
             exit(EXIT_FAILURE);
         }
 
@@ -530,8 +532,8 @@ namespace lvr2 {
         BaseVecT min = bounding_box.getMin();
         BaseVecT max = bounding_box.getMax();
 
-        std::cout << "Bounding Box min: " << min << std::endl;
-        std::cout << "Bounding Box max: " << max << std::endl;
+        lvr2::logout::get() << lvr2::info  << "Bounding Box min: " << min << lvr2::endl;
+        lvr2::logout::get() << lvr2::info  << "Bounding Box max: " << max << lvr2::endl;
 
         float xdiff = (max.x - min.x) / 2;
         float ydiff = (max.y - min.y) / 2;
@@ -561,7 +563,7 @@ namespace lvr2 {
         auto vH3 = m_mesh->addVertex(right);
         auto vH4 = m_mesh->addVertex(back);
 
-        std::cout << vH1 << " | " << vH2 << " | " << vH3 << " | " << vH4 << std::endl;
+        lvr2::logout::get() << lvr2::info  << vH1 << " | " << vH2 << " | " << vH3 << " | " << vH4 << lvr2::endl;
 
         FaceHandle fH1(0);
         FaceHandle fH2(0);
@@ -669,8 +671,8 @@ namespace lvr2 {
 
         avg_distance /= m_mesh->numVertices();
 
-        std::cout << "avg_distance to cloud: " << avg_distance << std::endl;
-        if(m_surface->get()->pointBuffer().get()->numPoints() < 10000000) std::cout << "avg distance between the points in the cloud: " << avgDistanceBetweenPointsInPointcloud() << std::endl;
+        lvr2::logout::get() << lvr2::info  << "avg_distance to cloud: " << avg_distance << lvr2::endl;
+        if(m_surface->get()->pointBuffer().get()->numPoints() < 10000000) lvr2::logout::get() << lvr2::info  << "avg distance between the points in the cloud: " << avgDistanceBetweenPointsInPointcloud() << lvr2::endl;
 
 
         double avg_len = 0;
@@ -744,7 +746,7 @@ namespace lvr2 {
      */
     template <typename BaseVecT, typename NormalT>
     void GrowingCellStructure<BaseVecT, NormalT>::aggressiveCutOut(VertexHandle vH) {
-        std::cout << "Aggressive Cutout..." << std::endl;
+        lvr2::logout::get() << lvr2::info  << "Aggressive Cutout..." << lvr2::endl;
         auto faces = m_mesh->getFacesOfVertex(vH);
         tumble_tree->remove(cellArr[vH.idx()], vH);
         for(auto face : faces)

@@ -106,7 +106,7 @@ ScanProjectPtr ScanProjectIO<BaseIO>::load() const
     size_t scanPosNo = 0;
     while(true)
     {  
-        // lvr2::logout::get() << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << lvr2::endl;
+         lvr2::logout::get() << "[ScanProjectIO - load] try load ScanPosition "  << scanPosNo << lvr2::endl;
         // Get description for next scan
 
         // Generate Directories for all Filetypes

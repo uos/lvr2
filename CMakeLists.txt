@@ -614,18 +614,18 @@ endif()
 # LVR2 VIEWER CHECKS
 ###############################################################################
 
-# find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
-# if(Qt5_FOUND)
-#    message(STATUS "Found QT5")
-#    find_package(QVTK)
-#    if(QVTK_FOUND)
-#      message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
-#      include_directories(${QVTK_INCLUDE_DIR})
-#      add_subdirectory(src/tools/lvr2_viewer)
-#    elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
-#      add_subdirectory(src/tools/lvr2_viewer)
-#    endif(QVTK_FOUND)
-# endif(Qt5_FOUND)
+ find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
+ if(Qt5_FOUND)
+    message(STATUS "Found QT5")
+    find_package(QVTK)
+    if(QVTK_FOUND)
+      message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
+      include_directories(${QVTK_INCLUDE_DIR})
+      add_subdirectory(src/tools/lvr2_viewer)
+    elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+      add_subdirectory(src/tools/lvr2_viewer)
+    endif(QVTK_FOUND)
+ endif(Qt5_FOUND)
 
 ###############################################################################
 # LVR2 ASCII VIEWER CHECKS

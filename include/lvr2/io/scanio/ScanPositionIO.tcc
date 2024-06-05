@@ -81,17 +81,19 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
 
     Description d = m_baseIO->m_description->position(scanPosNo);
 
-//     lvr2::logout::get() << "[ScanPositionIO - load]"  << lvr2::endl;
-//     lvr2::logout::get() << d <<  lvr2::endl;
+    lvr2::logout::get() << "[ScanPositionIO - load]"  << lvr2::endl;
+    lvr2::logout::get() << d <<  lvr2::endl;
 
     if(!d.dataRoot)
     {
+        lvr2::logout::get() << lvr2::warning << "[ScanPositionIO - load] - Data root not specified." << lvr2::endl;
         return ret;
     }
 
     // Check if specified scan position exists
     if(!m_baseIO->m_kernel->exists(*d.dataRoot))
     {
+        lvr2::logout::get() << lvr2::warning << "[ScanPositionIO - load] - Data root does not exist." << lvr2::endl;
         return ret;
     }
 
@@ -101,7 +103,8 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
 
         if(!m_baseIO->m_kernel->loadMetaYAML(*d.metaRoot, *d.meta, meta))
         {
-            return ret;
+            lvr2::logout::get() << lvr2::warning << "[ScanPositionIO - load] - Unable to load meta data." << lvr2::endl;
+            //return ret;
         }
 
         meta["original_name"] = scanPosNo;
@@ -124,13 +127,13 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     }
 
     //// DATA
-    // lvr2::logout::get() << "[ScanPositionIO - load] Load SENSORS " << lvr2::endl;
+    lvr2::logout::get() << "[ScanPositionIO - load] Load SENSORS " << lvr2::endl;
 
     // Get all lidar sensors
     size_t lidarNo = 0;
     while(true)
     {
-        // lvr2::logout::get() << "[ScanPositionIO - load] Load LIDAR " << lidarNo << lvr2::endl;
+        lvr2::logout::get() << "[ScanPositionIO - load] Load LIDAR " << lidarNo << lvr2::endl;
         LIDARPtr lidar = m_lidarIO->load(scanPosNo, lidarNo);
 
         if (lidar)
@@ -142,7 +145,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
             break;
         }
 
-        // lvr2::logout::get() << "[ScanPositionIO - load] Loaded LIDAR " << lidarNo << lvr2::endl;
+        lvr2::logout::get() << "[ScanPositionIO - load] Loaded LIDAR " << lidarNo << lvr2::endl;
 
         ++lidarNo;
     }
@@ -151,7 +154,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
     size_t camNo = 0;
     while(true)
     {
-        // lvr2::logout::get() << "[ScanPositionIO - load] Load Camera " << camNo << lvr2::endl;
+        lvr2::logout::get() << "[ScanPositionIO - load] Load Camera " << camNo << lvr2::endl;
         CameraPtr cam = m_cameraIO->load(scanPosNo, camNo);
         if (cam)
         {
@@ -161,7 +164,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
         {
             break;
         }
-        // lvr2::logout::get() << "[ScanPositionIO - load] Loaded Camera " << camNo << lvr2::endl;
+        lvr2::logout::get() << "[ScanPositionIO - load] Loaded Camera " << camNo << lvr2::endl;
         camNo++;
     }
 
@@ -178,7 +181,7 @@ ScanPositionPtr ScanPositionIO<BaseIO>::load(
             break;
         }
 
-        // lvr2::logout::get() << "[ScanPositionIO - load] Loaded HyperCamera " << hCamNo << lvr2::endl;
+        lvr2::logout::get() << "[ScanPositionIO - load] Loaded HyperCamera " << hCamNo << lvr2::endl;
 
         hCamNo++;
     }
