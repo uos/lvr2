@@ -267,12 +267,11 @@ DenseVertexMap<float> calcVertexHeightDifferences(
         });
 
         // Calculate the final height difference
-        // #pragma omp critical
-        // {
-            std::cout << "Height diff: " << maxHeight - minHeight << std::endl;
+        #pragma omp critical
+        {
             heightDiff.insert(vH, maxHeight - minHeight);
             ++progress;
-        // }
+        }
     }
 
     if(!timestamp.isQuiet())
@@ -298,7 +297,9 @@ DenseEdgeMap<float> calcVertexAngleEdges(const BaseMesh<BaseVecT> &mesh, const V
         auto vHVector = mesh.getVerticesOfEdge(eH);
         edgeAngle.insert(eH, acos(normals[vHVector[0]].dot(normals[vHVector[1]])));
         if (isnan(edgeAngle[eH]))
+        {
             edgeAngle[eH] = 0;
+        }
     }
     return edgeAngle;
 }
@@ -370,8 +371,8 @@ DenseVertexMap<float> calcVertexRoughness(
 
     std::set<VertexHandle> invalid;
 
-// Calculate roughness for each vertex
-#pragma omp parallel for
+    // Calculate roughness for each vertex
+    #pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
@@ -388,7 +389,7 @@ DenseVertexMap<float> calcVertexRoughness(
             count += 1;
         });
 
-#pragma omp critical
+        #pragma omp critical
         {
             // Calculate the final roughness
             roughness.insert(vH, count ? sum / count : 0);
@@ -425,8 +426,8 @@ void calcVertexRoughnessAndHeightDifferences(
     std::set<VertexHandle> invalid;
     auto averageAngles = calcAverageVertexAngles(mesh, normals);
 
-// Calculate roughness and height difference for each vertex
-#pragma omp parallel for
+    // Calculate roughness and height difference for each vertex
+    #pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
@@ -455,7 +456,7 @@ void calcVertexRoughnessAndHeightDifferences(
             }
         });
 
-#pragma omp critical
+        #pragma omp critical
         {
             // Calculate the final roughness
             roughness.insert(vH, count ? sum / count : 0);
