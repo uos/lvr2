@@ -119,8 +119,82 @@ void visitLocalVertexNeighborhood(
     }
 }
 
+
+template <typename BaseVecT, typename VisitorF>
+void visitLocalVertexNeighborhoodPlane(
+    const BaseMesh<BaseVecT> &mesh,
+    std::set<VertexHandle> &invalid,
+    VertexHandle vH,
+    BaseVecT normal,
+    double radius,
+    VisitorF visitor)
+{
+    // Prepare values for the radius test
+    const BaseVecT& vPos = mesh.getVertexPosition(vH);
+    const BaseVecT vPosProj = vPos - normal * vPos.dot(normal);
+    const double radiusSquared = radius * radius;
+
+    // Store the vertices we want to expand. We reserve memory for 8 vertices
+    // already, since it's rather likely to have at least that many vertices
+    // in the stack. In the beginning, the stack only contains the original
+    // vertex we were given.
+    vector<VertexHandle> stack;
+    stack.reserve(8);
+    stack.push_back(vH);
+
+    // In this map we store whether or not we have already visited a vertex,
+    // where visiting means: calling the visitor with it and pushing it on
+    // the stack of vertices we still need to expand.
+    //
+    // It would be more appropriate to use a set instead of a map, but there
+    // are no attribute-sets...
+    SparseVertexMap<bool> visited(8, false);
+    visited.insert(vH, true);
+
+    // This vector is later used to store the neighbors of a vertex. It's
+    // created here to reduce the amount of heap allocations.
+    vector<VertexHandle> directNeighbors;
+
+    // As long as there are vertices we want to expand...
+    while (!stack.empty())
+    {
+        // Get the next vertex and remove it from the stack.
+        auto curVH = stack.back();
+        stack.pop_back();
+
+        // Expand current vertex: add visit its direct neighbors.
+        directNeighbors.clear();
+        try
+        {
+            mesh.getNeighboursOfVertex(curVH, directNeighbors);
+        }
+        catch (lvr2::PanicException exception)
+        {
+            invalid.insert(curVH);
+        }
+        for (auto newVH : directNeighbors)
+        {
+            // If this vertex is within the radius on plane of the original vertex, we
+            // want to visit it later, thus pushing it onto the stack. But we
+            // only do that if we haven't visited the vertex before. We use
+            // `containsKey` here because we only insert `true` anyway.
+            const BaseVecT& vPosNew = mesh.getVertexPosition(newVH);
+            const BaseVecT vPosNewProj = vPosNew - normal * vPosNew.dot(normal);
+
+            auto distSquared = vPosNewProj.squaredDistanceFrom(vPosProj);
+            if (!visited.containsKey(newVH) && distSquared < radiusSquared)
+            {
+                visitor(newVH);
+                stack.push_back(newVH);
+                visited.insert(newVH, true);
+            }
+        }
+    }
+}
+
 template <typename BaseVecT>
-DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT> &mesh, double radius)
+DenseVertexMap<float> calcVertexHeightDifferences(
+  const BaseMesh<BaseVecT> &mesh, double radius)
 {
     // We create a map to store a height-diff for each vertex. We preallocate
     // memory for all vertices. This is not only an optimization, but more
@@ -138,44 +212,75 @@ DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT> &mesh
 
     std::set<VertexHandle> invalid;
 
-// Calculate height difference for each vertex
-#pragma omp parallel for
+    // Calculate height difference for each vertex
+    // for(auto vH : mesh.vertices())
+    #pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
         if (!mesh.containsVertex(vH))
         {
-            continue;
+          continue;
         }
 
-        float minHeight = std::numeric_limits<float>::max();
-        float maxHeight = std::numeric_limits<float>::lowest();
+        // this was wrong:
+        // this neighborhood rejects connections outside a maximum radius
+        // however, for a flat wall this would give wrong results
+        // -> solution: finish at last neighbor outside the radius 
+        //  but still consider it for height diff computation
+        // other solution: limit the search only along the xy plane
+        // - could be the best solution though
+        // Alex: Second thought
+        // even after these fixes it would be wrong for some cases
+        // e.g. if the vertex lies outside of the cylinder, and the only connection 
+        // to it has a steep edge. Then it is discared from height diff computation
+        // however, the correct solution would be to find the intersection of the edge
+        // with the limiting geometry (sphere/cylinder)
+        
+        BaseVecT normal;
+        normal.x = 0.0;
+        normal.y = 0.0;
+        normal.z = 1.0;
+        // this would also work for rotated meshes, if you define an up vector
 
-        visitLocalVertexNeighborhood(mesh, invalid, vH, radius, [&](auto neighbor) {
+        // forgot own position!
+        const BaseVecT& vPos = mesh.getVertexPosition(vH);
+        float height = normal.dot(vPos);
+        float minHeight = height;
+        float maxHeight = height;
+
+        visitLocalVertexNeighborhoodPlane(mesh, invalid, vH, normal, radius, [&](auto neighbor) 
+        {
             auto curPos = mesh.getVertexPosition(neighbor);
 
-            if (curPos.z < minHeight)
+            // height w.r.t. plane
+            float height = normal.dot(curPos);
+
+            if (height < minHeight)
             {
-                minHeight = curPos.z;
+                minHeight = height;
             }
-            if (curPos.z > maxHeight)
+            if (height > maxHeight)
             {
-                maxHeight = curPos.z;
+                maxHeight = height;
             }
         });
 
-// Calculate the final height difference
-#pragma omp critical
-        {
+        // Calculate the final height difference
+        // #pragma omp critical
+        // {
+            std::cout << "Height diff: " << maxHeight - minHeight << std::endl;
             heightDiff.insert(vH, maxHeight - minHeight);
             ++progress;
-        }
+        // }
     }
 
     if(!timestamp.isQuiet())
-    cout << endl;
+    {
+      std::cout << std::endl;
+    }
 
-  if (!invalid.empty())
+    if(!invalid.empty())
     {
         std::cerr << "Found " << invalid.size() << " invalid, non manifold "
             << "vertices." << std::endl;
