@@ -381,10 +381,12 @@ DenseVertexMap<float> calcVertexRoughness(
             continue;
         }
 
-        float sum = 0.0;
-        size_t count = 0;
+        // forgot to add self
+        float sum = averageAngles[vH];
+        size_t count = 1;
 
-        visitLocalVertexNeighborhood(mesh, invalid, vH, radius, [&](auto neighbor) {
+        visitLocalVertexNeighborhood(mesh, invalid, vH, radius, [&](auto neighbor) 
+        {
             sum += averageAngles[neighbor];
             count += 1;
         });
@@ -441,7 +443,8 @@ void calcVertexRoughnessAndHeightDifferences(
         float minHeight = std::numeric_limits<float>::max();
         float maxHeight = std::numeric_limits<float>::lowest();
 
-        visitLocalVertexNeighborhood(mesh, invalid, vH, radius, [&](auto neighbor) {
+        visitLocalVertexNeighborhood(mesh, invalid, vH, radius, [&](auto neighbor) 
+        {
             sum += averageAngles[neighbor];
             count += 1;
 
