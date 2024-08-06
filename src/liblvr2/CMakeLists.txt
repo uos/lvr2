@@ -191,7 +191,8 @@ endif( NOT MSVC)
 #####################################################################################
 
 if(CUDA_FOUND)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    set(CUDA_SEPARABLE_COMPILATION ON)
 
     # List of CUDA kernel code sources
     set(LVR2_CUDA_SRC
@@ -214,6 +215,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     endif(VTK_FOUND)
 
     message(STATUS "Building static LVR CUDA library")
+
+    
     cuda_add_library(lvr2cuda_static STATIC ${LVR2_CUDA_SRC})
     target_link_libraries(lvr2cuda_static lvr2_static)
 
@@ -225,6 +228,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     cuda_add_library(lvr2cuda SHARED ${LVR2_CUDA_CPP_SRC} ${LVR2_CUDA_SRC})
 
     target_link_libraries(lvr2cuda lvr2)
+    add_dependencies(lvr2cuda lvr2)
 
     install(
         TARGETS lvr2cuda_static lvr2cuda
@@ -233,5 +237,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 
-endif()
+endif(CUDA_FOUND)
 

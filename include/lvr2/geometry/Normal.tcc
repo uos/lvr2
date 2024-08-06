@@ -34,6 +34,7 @@
 
 
 #include "lvr2/util/Panic.hpp"
+#include "lvr2/util/TypeTraits.hpp"
 
 
 namespace lvr2
@@ -66,7 +67,7 @@ Normal<CoordType>& Normal<CoordType>::average(const CollectionT& normals)
     for (auto n: normals)
     {
         static_assert(
-            std::is_same<decltype(n), Normal<CoordType>>::value,
+            arg_has_type<Normal<CoordType> >(n),
             "Collection has to contain Vectors"
         );
         acc += n.asVector();

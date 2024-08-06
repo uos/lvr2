@@ -1,19 +1,19 @@
 # About
 
-This software delivers tools to build surface reconstructions from point cloud
+This library delivers tools to build surface reconstructions from point cloud
 data and a simple viewer to display the results. Additionally, the found
 surfaces will be classified into predefined categories. The main aim of this
-project is to deliver fast and accurate surface extraction algorithms for
+project is to deliver fast and accurate algorithms for surface reconstruction with a strong focus on
 robotic applications such as tele operation in unknown environments and
 localization.
 
 # Download and Compilation from Source
 
-### Step 0: Get the source code from our Github repository:
+## Step 0: Get the source code from our Github repository:
 
-https://github.com/uos/lvr2
+https://github.com/uos/lvr2 - humble branch
 
-## Linux (Ubuntu 18.04)
+## Linux (Ubuntu 18.04, 20.04, 22.04)
 
 ### Step 1: Install all required package dependencies: 
 
@@ -28,10 +28,11 @@ sudo apt-get install build-essential \
      libopencv-dev libyaml-cpp-dev
 ```
 
-A C++17 compiler is required, e.g., g++7, gcc7 need bo installed.
-If CUDA is installed you also need g++6, see "Optional for NVIDIA
-graphics cards users" 
+A C++17 compiler is required.
 
+### Optional for NVIDIA graphics cards users
+
+If you want to compile with CUDA support install the latest version of the CUDA toolkit, which you can find on NVIDIAs CUDA download site. To enable CUDA support, you need to compile the software with a compatible GCC version. All compatibilities are listed in `CMakeModules/max_cuda_gcc_version.cmake`.
 
 ### Step 2: Configure and build from sources:
 
@@ -40,21 +41,6 @@ mkdir build
 cd build
 cmake .. && make
 ```
-
-### Optional for NVIDIA graphics cards users: 
-
-If you want to compile with CUDA support install the latest version of the CUDA toolkit, which you can find on NVIDIAs CUDA download site:
-
-To enable CUDA support, you need to compile the software with a compatible GCC version. We have testet compilation with CUDA 9.1 and GCC 6. To use this compiler for compilation of CUDA generated code, set the `CUDA_HOST_COMPILER` option to `g++-6` is forced to g++-6. Please ensure that this version is installed on your system.
-/
-### Step 3: Installation
-
-After successful compilation, you will find the generated example tools in the ./bin/ directory. Optionally, you can install the library and header files to your system:
-
-```bash
-sudo make install
-```
-
 
 ## MacOS
 
@@ -89,3 +75,41 @@ For more information, build the Doxygen documentation by calling
 make doc
 ```
 in the build directory.
+
+# Installation
+
+After successful compilation, you will find the generated example tools in the ./bin/ directory. Optionally, you can install the library and header files to your system:
+
+```bash
+sudo make install
+```
+
+## Use in your own CMake project
+
+After installation, you can include the lvr2 project in your own CMake project as follows:
+
+```cmake
+find_package(LVR2 REQUIRED)
+add_definitions(${LVR2_DEFINITIONS})
+include_directories(${LVR2_INCLUDE_DIRS})
+
+add_executable(my_own_exec my_own_code.cpp)
+
+target_link_libraries(my_own_exec
+  ${LVR2_LIBRARIES}
+)
+```
+
+# Citation
+
+Please reference the following papers when using the lvr2 library in your scientific work.
+
+```latex
+@inproceedings{wiemann2018,
+  author={Wiemann, Thomas and Mitschke, Isaak and Mock, Alexander and Hertzberg, Joachim},
+  booktitle={2018 Second IEEE International Conference on Robotic Computing (IRC)}, 
+  title={{Surface Reconstruction from Arbitrarily Large Point Clouds}}, 
+  year={2018},
+  pages={278-281},
+  doi={10.1109/IRC.2018.00059}}
+```
