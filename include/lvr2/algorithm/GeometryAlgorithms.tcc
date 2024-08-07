@@ -491,6 +491,64 @@ DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT> &mesh)
     return distances;
 }
 
+
+template <typename BaseVecT>
+DenseVertexMap<float> calcBorderCosts(
+  const BaseMesh<BaseVecT> &mesh, 
+  double border_cost)
+{
+    DenseVertexMap<float> borderCosts;
+    borderCosts.reserve(mesh.nextVertexIndex());
+
+    // Output
+    string msg = timestamp.getElapsedTime() + "Computing border weights...";
+    ProgressBar progress(mesh.numVertices(), msg);
+    ++progress;
+
+    // Calculate height difference for each vertex
+    // for(auto vH : mesh.vertices())
+    #pragma omp parallel for
+    for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
+    {
+        auto vH = VertexHandle(i);
+        if (!mesh.containsVertex(vH))
+        {
+          continue;
+        }
+
+        // new! give border vertex a high high
+        bool is_border_vertex = false;
+        for(auto edge : mesh.getEdgesOfVertex(vH))
+        {
+          if(mesh.isBorderEdge(edge))
+          {
+            is_border_vertex = true;
+            break; // early finish
+          }
+        }
+
+        // Calculate the final border weight
+        #pragma omp critical
+        {
+            if(is_border_vertex)
+            {
+                borderCosts.insert(vH, border_cost);
+            } else {
+                borderCosts.insert(vH, 0.0);
+            }
+            
+            ++progress;
+        }
+    }
+
+    if(!timestamp.isQuiet())
+    {
+      std::cout << std::endl;
+    }
+
+    return borderCosts;
+}
+
 class CompareDist
 {
 public:
