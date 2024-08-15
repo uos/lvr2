@@ -506,25 +506,24 @@ DenseVertexMap<float> calcBorderCosts(
     ++progress;
 
     // Calculate height difference for each vertex
-    // for(auto vH : mesh.vertices())
     #pragma omp parallel for
     for (size_t i = 0; i < mesh.nextVertexIndex(); i++)
     {
         auto vH = VertexHandle(i);
         if (!mesh.containsVertex(vH))
         {
-          continue;
+            continue;
         }
 
-        // new! give border vertex a high high
         bool is_border_vertex = false;
         for(auto edge : mesh.getEdgesOfVertex(vH))
         {
-          if(mesh.isBorderEdge(edge))
-          {
-            is_border_vertex = true;
-            break; // early finish
-          }
+            if(mesh.isBorderEdge(edge))
+            {
+                is_border_vertex = true;
+                // it's a border vertex. stop searching. early finish
+                break;
+            }
         }
 
         // Calculate the final border weight
