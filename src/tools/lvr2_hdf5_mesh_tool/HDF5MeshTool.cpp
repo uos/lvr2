@@ -416,6 +416,45 @@ int main( int argc, char ** argv )
     {
       std::cout << timestamp << "Height differences already included." << std::endl;
     }
+
+
+    // border costs
+    DenseVertexMap<float> borderCosts;
+    boost::optional<DenseVertexMap<float>> borderCostsOpt;
+    if (readFromHdf5)
+    {
+      borderCostsOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("border");
+    }
+    if (borderCostsOpt)
+    {
+      std::cout << timestamp << "Using existing border costs..." << std::endl;
+      borderCosts = *borderCostsOpt;
+    }
+    else
+    {
+      std::cout << timestamp << "Computing border costs ... Setting border vertex costs to "
+                << options.getBorderVertexCost() << " ..." << std::endl;
+      borderCosts = calcBorderCosts(hem, 1.0);
+    }
+    if (!borderCostsOpt || !writeToHdf5Input)
+    {
+      std::cout << timestamp << "Adding border costs..." << std::endl;
+      bool addedBorderCosts = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(
+              hem, borderCosts, "border");
+      if (addedBorderCosts)
+      {
+        std::cout << timestamp << "successfully added border costs." << std::endl;
+      }
+      else
+      {
+        std::cout << timestamp << "could not add border costs!" << std::endl;
+      }
+    }
+    else
+    {
+      std::cout << timestamp << "Border costs already included." << std::endl;
+    }
+
   }
   else
   {

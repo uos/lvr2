@@ -11,7 +11,7 @@ localization.
 
 ## Step 0: Get the source code from our Github repository:
 
-https://github.com/uos/lvr2 - humble branch
+https://github.com/uos/lvr2 - develop
 
 ## Linux (Ubuntu 18.04, 20.04, 22.04)
 

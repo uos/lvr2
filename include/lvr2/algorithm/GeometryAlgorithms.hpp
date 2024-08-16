@@ -199,6 +199,18 @@ void calcVertexRoughnessAndHeightDifferences(
 template<typename BaseVecT>
 DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT>& mesh);
 
+
+/**
+ * @brief Computes / set costs for each border vertex to predefined value
+ *
+ * @param mesh          The mesh containing the vertices and edges of interest
+ * @param border_cost   Predefined value to set the border vertices to. Defaults to 1.0
+ * @return              The dense edge map with the border cost values
+ */
+template<typename BaseVecT>
+DenseVertexMap<float> calcBorderCosts(const BaseMesh<BaseVecT>& mesh, double border_cost = 1.0);
+
+
 /**
  * @brief  Dijkstra's algorithm
  *
