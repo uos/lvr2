@@ -40,6 +40,7 @@ The Las Vegas Surface Reconstruction Toolkit is an Open Source toolkit to recons
   <depend>lz4</depend>
   <depend>libopencv-dev</depend>
   <depend>yaml-cpp</depend>
+  <depend>libtiff-dev</depend>
 
   <export>
     <build_type>cmake</build_type>
