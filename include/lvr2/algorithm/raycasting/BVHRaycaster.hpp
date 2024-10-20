@@ -44,7 +44,6 @@
 #include "Intersection.hpp"
 
 #define EPSILON 0.0000001
-#define PI 3.14159265
 
 namespace lvr2
 {
