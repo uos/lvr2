@@ -58,7 +58,11 @@ public:
     /**
      * @brief Constructor: Stores mesh as member
      */
-    BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_size = 64);
+    BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_size);
+    /**
+     * @brief Constructor: Stores mesh as member; Uses BVH depth as stack size
+     */
+    BVHRaycaster(const MeshBufferPtr mesh);
 
     /**
      * @brief Cast a single ray onto the mesh

@@ -37,7 +37,6 @@
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
-
 #include "Options.hpp"
 
 #include <string>
@@ -117,6 +116,10 @@ int main( int argc, char ** argv )
       {
         invalid_face_cnt++;
       }
+    }
+    if (invalid_face_cnt > 0)
+    {
+      std::cout << timestamp << "Invalid faces found during HalfEdgeMesh construction: " << invalid_face_cnt << std::endl;
     }
 
     HDF5MeshToolIO hdf5;
@@ -455,6 +458,41 @@ int main( int argc, char ** argv )
       std::cout << timestamp << "Border costs already included." << std::endl;
     }
 
+    // Free space above vertices
+    DenseVertexMap<float> freeSpace;
+    boost::optional<DenseVertexMap<float>> freeSpaceOpt;
+    if (readFromHdf5)
+    {
+      freeSpaceOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("freespace");
+    }
+    if (freeSpaceOpt)
+    {
+      std::cout << timestamp << "Using existing free space ..." << std::endl;
+      freeSpace = freeSpaceOpt.value();
+    }
+    else
+    {
+      std::cout << timestamp << "Computing free space ..." << std::endl;
+      freeSpace = calcNormalClearance(hem, vertexNormals);
+    }
+    if (!freeSpaceOpt || !writeToHdf5Input)
+    {
+      std::cout << timestamp << "Adding free space..." << std::endl;
+      bool addedBorderCosts = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(
+              hem, freeSpace, "freespace");
+      if (addedBorderCosts)
+      {
+        std::cout << timestamp << "successfully added free space." << std::endl;
+      }
+      else
+      {
+        std::cout << timestamp << "could not add free space!" << std::endl;
+      }
+    }
+    else
+    {
+      std::cout << timestamp << "Free space already included." << std::endl;
+    }
   }
   else
   {
