@@ -17,6 +17,20 @@ BVHRaycaster<IntT>::BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_si
 }
 
 template<typename IntT>
+BVHRaycaster<IntT>::BVHRaycaster(const MeshBufferPtr mesh)
+:RaycasterBase<IntT>(mesh)
+,m_bvh(mesh)
+,m_faces(mesh->getFaceIndices())
+,m_vertices(mesh->getVertices())
+,m_BVHindicesOrTriLists(m_bvh.getIndexesOrTrilists().data())
+,m_BVHlimits(m_bvh.getLimits().data())
+,m_TriangleIntersectionData(m_bvh.getTrianglesIntersectionData().data())
+,m_TriIdxList(m_bvh.getTriIndexList().data())
+,m_stack_size(m_bvh.getMaxDepth())
+{
+}
+
+template<typename IntT>
 bool BVHRaycaster<IntT>::castRay(
     const Vector3f& origin,
     const Vector3f& direction,
@@ -140,16 +154,23 @@ BVHRaycaster<IntT>::intersectTrianglesBVH(
             // if ray intersects inner node, push indices of left and right child nodes on the stack
             if (rayIntersectsBox(origin, ray, &clBVHlimits[bvh_limits_scale * 3 * boxId]))
             {
-                stack[stackId++] = clBVHindicesOrTriLists[4 * boxId + 1];
-                stack[stackId++] = clBVHindicesOrTriLists[4 * boxId + 2];
-
                 // return if stack size is exceeded
-                if ( stackId > m_stack_size)
+                if ( stackId >= m_stack_size)
                 {
                     printf("BVH stack size exceeded!\n");
-                    result.hit = 0;
+                    result.hit = false;
                     return result;
                 }
+                stack[stackId++] = clBVHindicesOrTriLists[4 * boxId + 1];
+
+                // return if stack size is exceeded
+                if ( stackId >= m_stack_size)
+                {
+                    printf("BVH stack size exceeded!\n");
+                    result.hit = false;
+                    return result;
+                }
+                stack[stackId++] = clBVHindicesOrTriLists[4 * boxId + 2];
             }
         }
         else // leaf node

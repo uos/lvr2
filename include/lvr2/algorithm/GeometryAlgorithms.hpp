@@ -35,6 +35,7 @@
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/geometry/Handles.hpp"
+#include "lvr2/geometry/Normal.hpp"
 #include <list>
 
 namespace lvr2
@@ -209,6 +210,20 @@ DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT>& mesh);
  */
 template<typename BaseVecT>
 DenseVertexMap<float> calcBorderCosts(const BaseMesh<BaseVecT>& mesh, double border_cost = 1.0);
+
+
+/**
+ * @brief Compute the distances to the next intersections along the vertex normals of the mesh
+ *
+ * @param mesh          The mesh containing the geometry of interest
+ * @param normals       The vertex normals used by the algorithm
+ * @return              A dense vertex map containing the free space along the normal of each vertex
+ */
+template <typename BaseVecT>
+DenseVertexMap<float> calcNormalClearance(
+    const BaseMesh<BaseVecT>& mesh,
+    const DenseVertexMap<Normal<typename BaseVecT::CoordType>>& normals
+);
 
 
 /**

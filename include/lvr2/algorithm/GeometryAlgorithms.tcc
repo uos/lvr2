@@ -33,9 +33,20 @@
 #include <limits>
 #include <queue>
 #include <set>
+#include <list>
 
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/io/Progress.hpp"
+#include "lvr2/algorithm/FinalizeAlgorithms.hpp"
+#include "lvr2/util/Util.hpp"
+#include "lvr2/geometry/BaseMesh.hpp"
+
+#ifdef LVR2_USE_EMBREE
+#include "lvr2/algorithm/raycasting/EmbreeRaycaster.hpp"
+#else
+#include "lvr2/algorithm/raycasting/BVHRaycaster.hpp"
+#endif
+
 
 namespace lvr2
 {
@@ -547,6 +558,74 @@ DenseVertexMap<float> calcBorderCosts(
 
     return borderCosts;
 }
+
+
+template <typename BaseVecT>
+DenseVertexMap<float> calcNormalClearance(
+    const BaseMesh<BaseVecT>& mesh,
+    const DenseVertexMap<Normal<typename BaseVecT::CoordType>>& normals
+)
+{
+    // Create a MeshBufferPtr to pass to raycaster implementations
+    SimpleFinalizer<BaseVecT> fin;
+    MeshBufferPtr buffer = fin.apply(mesh);
+
+    // Create a raycaster implementation
+#ifdef LVR2_USE_EMBREE
+    auto raycaster = EmbreeRaycaster<DistInt>(buffer);
+#else
+    auto raycaster = BVHRaycaster<DistInt>(buffer);
+#endif
+
+    // Reserve enough memory for all vertices to prevent unnecessary reallocations
+    DenseVertexMap<float> freespace;
+    freespace.reserve(mesh.nextVertexIndex());
+    
+    std::stringstream msg;
+    msg << timestamp << "[calcNormalClearance] Calculating free space along vertex normals";
+    ProgressBar progress(mesh.numVertices(), msg.str());
+
+    // Cast rays for each vertex in parallel
+    #pragma omp parallel for
+    for (auto i = 0; i < mesh.nextVertexIndex(); i++)
+    {
+        // Create a vertex handle and check if the mesh contains a vertex with index i
+        auto vertexH = VertexHandle(i);
+        if (!mesh.containsVertex(vertexH))
+        {
+            continue;
+        }
+        
+        float distance = std::numeric_limits<float>::infinity();
+        DistInt result;
+        const Vector3f origin = Util::to_eigen(mesh.getVertexPosition(vertexH));
+        const Vector3f normal = Util::to_eigen(normals[vertexH]);
+        // Add a small offset to the vertex position to avoid intersections with its incident faces
+        if (raycaster.castRay(
+            origin + normal * 0.001,
+            normal,
+            result
+        ))
+        {
+            // Add the same offset to the distance result
+            distance = result.dist + 0.001;
+        }
+        
+        #pragma omp critical
+        {
+            freespace.insert(vertexH, distance);
+            ++progress;
+        }
+    }
+
+    if (!timestamp.isQuiet())
+    {
+        cout << endl;
+    }
+    
+    return freespace;
+}
+
 
 class CompareDist
 {
