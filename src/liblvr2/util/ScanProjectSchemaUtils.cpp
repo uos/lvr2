@@ -3,7 +3,7 @@
 #include "lvr2/io/schema/ScanProjectSchemaEuRoC.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHyperlib.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaOusterPLY.hpp"
+// #include "lvr2/io/schema/ScanProjectSchemaOusterPLY.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaSlam6D.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaHDF5V2.hpp"
@@ -54,12 +54,12 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
                   << rootDirectory << "." << lvr2::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaSlam6D(rootDirectory));
     }
-    else if (name == "OUSTERPLY")
-    {
-        lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating Ouster PLY with root directory '" 
-                  << rootDirectory << "." << lvr2::endl;
-        return DirectorySchemaPtr(new ScanProjectSchemaOusterPly(rootDirectory));
-    }
+    // else if (name == "OUSTERPLY")
+    // {
+    //     lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating Ouster PLY with root directory '" 
+    //               << rootDirectory << "." << lvr2::endl;
+    //     return DirectorySchemaPtr(new ScanProjectSchemaOusterPly(rootDirectory));
+    // }
 #ifdef LVR2_USE_RDB
     else if (name == "RDBX")
     {
