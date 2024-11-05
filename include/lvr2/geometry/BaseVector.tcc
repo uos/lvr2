@@ -106,7 +106,7 @@ BaseVector<CoordT> BaseVector<CoordT>::rotated(const BaseVector &n, const double
     return BaseVector(
         (n1sqncos+cos)*x + (n12ncos-n.z*sin)*y + (n13ncos+n.y*sin)*z,
         (n12ncos+n.z*sin)*x + (n2sqncos+cos)*y + (n23ncos-n.x*sin)*z,
-        (n13ncos+n.y*sin)*x + (n23ncos+n.x*sin)*y + (n3sqncos+cos)*z
+        (n13ncos-n.y*sin)*x + (n23ncos+n.x*sin)*y + (n3sqncos+cos)*z
     );
 }
 
