@@ -190,7 +190,14 @@ add_executable(lvr2_viewer
   ${LVR2_VIEWER_RES}
   ${LVR2_VIEWER_MOCS}
   ${LVR2_VIEWER_UI_HDRS})
-target_link_libraries(lvr2_viewer ${LVR2_VIEWER_DEPENDENCIES})
+
+target_link_libraries(lvr2_viewer 
+  ${LVR2_VIEWER_DEPENDENCIES}
+  ${VTK_LIBRARIES}
+  )
+
+target_include_directories(lvr2_viewer PUBLIC ${VTK_INCLUDE_DIRS})
+
 
 if(CUDA_FOUND)
         target_link_libraries(lvr2_viewer lvr2cuda)

@@ -186,60 +186,6 @@ else(WITH_DRACO)
 endif(WITH_DRACO)
 
 #------------------------------------------------------------------------------
-# Searching for VTK
-#------------------------------------------------------------------------------
-if(BUILD_VIEWER)
-#------
-# Here I assume VTK is only required for the lvr2_viewer
-# - VTK doesnt occur in the core library
-#------
-
-  set(VTK_QT_VERSION 5)
-  find_package(VTK REQUIRED)
-
-  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
-    # patched QVTKOpenGL header because of name clash with signals.
-    add_subdirectory(ext/QVTKOpenGLWidget)
-    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
-    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
-
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
-  endif()
-
-  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
-  endif()
-
-  if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
-      if(VTK_MINOR_VERSION VERSION_GREATER "0")
-          list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-      endif()
-  endif()
-
-  if(VTK_MAJOR_VERSION VERSION_GREATER "7")
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-  endif()
-
-  if(VTK_VERSION VERSION_GREATER "7")
-
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-    set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
-    set(VTK_HAS_QT OFF)
-    foreach(VTK_COMPONENT ${VTK_COMPONENTS})
-      if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
-        set(VTK_HAS_QT ON)
-      endif()
-    endforeach()
-
-    message(STATUS "VTK > 7 found")
-    if(VTK_HAS_QT)
-      message(STATUS "Found VTK compoment QVTK")
-    endif()
-  endif()
-
-endif(BUILD_VIEWER)
-
-#------------------------------------------------------------------------------
 # Searching for NABO
 #------------------------------------------------------------------------------
 find_package(NABO)
@@ -506,33 +452,122 @@ endif()
 install(DIRECTORY include/lvr2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
 
-###############################################################################
-# VTK use file include. Has to be called after all CUDA code
-# was generated and compiled. The VTK definitions corrupt the
-# nvcc call
-###############################################################################
-
-if(DEFINED VTK_USE_FILE)
-  include(${VTK_USE_FILE})
-endif()
-
 
 ###############################################################################
 # LVR2 VIEWER CHECKS
 ###############################################################################
 if(BUILD_VIEWER)
-  find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
-  if(Qt5_FOUND)
-    message(STATUS "Found QT5")
-    find_package(QVTK)
-    if(QVTK_FOUND)
-      message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
-      include_directories(${QVTK_INCLUDE_DIR})
-      add_subdirectory(src/tools/lvr2_viewer)
-    elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
-      add_subdirectory(src/tools/lvr2_viewer)
-    endif(QVTK_FOUND)
-  endif(Qt5_FOUND)
+  #------
+  # Here I assume VTK and Qt is only required for the lvr2_viewer
+  # - VTK doesnt occur in the core library
+  #------
+
+  find_package(Qt5 REQUIRED COMPONENTS Core Widgets Xml OpenGL)
+
+  if(DEFINED VTK_USE_FILE)
+  include(${VTK_USE_FILE})
+  endif()
+
+  set(VTK_QT_VERSION 5)
+  find_package(VTK REQUIRED)
+
+  #------------------------------------------------------------------------------
+  # Searching for VTK
+  #------------------------------------------------------------------------------
+
+  ###############################################################################
+  # VTK use file include. Has to be called after all CUDA code
+  # was generated and compiled. The VTK definitions corrupt the
+  # nvcc call
+  ###############################################################################
+
+  
+
+  message(STATUS "Found VTK (${VTK_VERSION})")
+
+  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+    # 8.*.*
+    # patched QVTKOpenGL header because of name clash with signals.
+    add_subdirectory(ext/QVTKOpenGLWidget)
+    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
+
+  elseif(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "9")
+    # 9.*.*
+    add_subdirectory(ext/QVTKOpenGLWidget)
+    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK9)
+  endif()
+
+  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
+  endif()
+
+
+  if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
+    # 7.*.*
+
+    if(VTK_MINOR_VERSION VERSION_GREATER "0")
+      # 7.>=1.*
+
+      # Alex: This didn't work on my ubuntu 20 and vtk 7.1.1. Couldn't found QVTKOpenGL header.
+      # After using the patches of ext/QVTK.. it turned out even the VTK libraries didn't contain any implementation
+      # TODO: fix this
+
+      # add_subdirectory(ext/QVTKOpenGLWidget)
+      # include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+      # list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+      # list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+
+      # foreach(VTK_LIB_TMP ${VTK_LIBRARIES})
+      #   message(STATUS "VTK: ${VTK_LIB_TMP}")
+      #   if("${VTK_LIB_TMP}" STREQUAL "GUISupportQt")
+
+      #   endif()
+      # endforeach()
+      
+      set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
+      set(VTK_HAS_QT OFF)
+      foreach(VTK_COMPONENT ${VTK_COMPONENTS})
+        if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
+          set(VTK_HAS_QT ON)
+        endif()
+      endforeach()
+
+      message(STATUS "Found VTK (Version > 7)")
+      if(VTK_HAS_QT)
+        message(STATUS "Found VTK compoment QVTK")
+      else()
+        message(STATUS)
+      endif()
+    endif()
+
+  elseif(VTK_MAJOR_VERSION VERSION_GREATER "7")
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+  endif()
+
+  
+
+  find_package(QVTK)
+  if(QVTK_FOUND)
+    include_directories(${QVTK_INCLUDE_DIR})
+  endif(QVTK_FOUND)
+
+  add_subdirectory(src/tools/lvr2_viewer)
+
+  # if(QVTK_FOUND)
+  #   message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
+  #   include_directories(${QVTK_INCLUDE_DIR})
+  #   add_subdirectory(src/tools/lvr2_viewer)
+  # elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
+  #   message(STATUS "Found QVTK in VTK")
+  #   add_subdirectory(src/tools/lvr2_viewer)
+  # else()
+  #   message(FATAL_ERROR "QVTK not found: ERROR")
+  # endif(QVTK_FOUND)
+
 endif(BUILD_VIEWER)
 
 ###############################################################################
@@ -696,7 +731,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
 install(FILES package.xml DESTINATION share/lvr2)
 
 install(FILES
-    CMakeModules/FindEigen3.cmake
+    #    CMakeModules/FindEigen3.cmake
     CMakeModules/FindFLANN.cmake
     CMakeModules/FindLz4.cmake
     CMakeModules/FindNABO.cmake
