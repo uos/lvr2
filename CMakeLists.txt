@@ -512,18 +512,22 @@ if(BUILD_VIEWER)
     if(VTK_MINOR_VERSION VERSION_GREATER "0")
       # 7.>=1.*
 
+      # Alex: This didn't work on my ubuntu 20 and vtk 7.1.1. Couldn't found QVTKOpenGL header.
+      # After using the patches of ext/QVTK.. it turned out even the VTK libraries didn't contain any implementation
+      # TODO: fix this
+
       # add_subdirectory(ext/QVTKOpenGLWidget)
       # include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
       # list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
       # list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
 
-      foreach(VTK_LIB_TMP ${VTK_LIBRARIES})
-        message(STATUS "VTK: ${VTK_LIB_TMP}")
-        if("${VTK_LIB_TMP}" STREQUAL "GUISupportQt")
-          
-        endif()
-      endforeach()
+      # foreach(VTK_LIB_TMP ${VTK_LIBRARIES})
+      #   message(STATUS "VTK: ${VTK_LIB_TMP}")
+      #   if("${VTK_LIB_TMP}" STREQUAL "GUISupportQt")
 
+      #   endif()
+      # endforeach()
+      
       set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
       set(VTK_HAS_QT OFF)
       foreach(VTK_COMPONENT ${VTK_COMPONENTS})
@@ -542,7 +546,6 @@ if(BUILD_VIEWER)
 
   elseif(VTK_MAJOR_VERSION VERSION_GREATER "7")
     list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-    
   endif()
 
 

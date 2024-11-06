@@ -193,20 +193,11 @@ add_executable(lvr2_viewer
 
 target_link_libraries(lvr2_viewer 
   ${LVR2_VIEWER_DEPENDENCIES}
-  # VTK::GUISupportQt
   ${VTK_LIBRARIES}
   )
 
 target_include_directories(lvr2_viewer PUBLIC ${VTK_INCLUDE_DIRS})
 
-target_include_directories(lvr2_viewer PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/QVTKOpenGLWidget>
-  $<INSTALL_INTERFACE:ext/QVTKOpenGLWidget>  # <prefix>/ext/QVTKOpenGLWidget
-)
-
-# target_compile_definitions(lvr2_viewer ${VTK_DEFINITIONS})
-
-message(WARNING "QVTK: ${QVTK_LIBRARY}, ${VTK_}" )
 
 if(CUDA_FOUND)
         target_link_libraries(lvr2_viewer lvr2cuda)
@@ -218,8 +209,3 @@ endif()
 
 install(TARGETS lvr2_viewer
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-
-
-
-  # vtkChartsCore;vtkCommonColor;vtkCommonCore;vtksys;vtkCommonDataModel;vtkCommonMath;vtkCommonMisc;vtkCommonSystem;vtkCommonTransforms;vtkCommonExecutionModel;vtkFiltersGeneral;vtkCommonComputationalGeometry;vtkFiltersCore;vtkInfovisCore;vtkFiltersExtraction;vtkFiltersStatistics;vtkImagingFourier;vtkImagingCore;vtkalglib;vtkRenderingContext2D;vtkRenderingCore;vtkFiltersGeometry;vtkFiltersSources;vtkRenderingFreeType;/usr/lib/x86_64-linux-gnu/libfreetype.so;/usr/lib/x86_64-linux-gnu/libz.so;vtkDICOMParser;vtkDomainsChemistry;vtkIOLegacy;vtkIOCore;vtkIOXMLParser;/usr/lib/x86_64-linux-gnu/libexpat.so;vtkDomainsChemistryOpenGL2;vtkRenderingOpenGL2;vtkIOImage;vtkmetaio;/usr/lib/x86_64-linux-gnu/libjpeg.so;/usr/lib/x86_64-linux-gnu/libpng.so;/usr/lib/x86_64-linux-gnu/libtiff.so;vtkFiltersAMR;vtkIOXML;vtkParallelCore;vtkFiltersFlowPaths;vtkFiltersGeneric;vtkFiltersHybrid;vtkImagingSources;vtkFiltersHyperTree;vtkFiltersImaging;vtkImagingGeneral;vtkFiltersModeling;vtkFiltersParallel;vtkFiltersParallelDIY2;vtkParallelMPI;vtkFiltersParallelFlowPaths;vtkFiltersParallelGeometry;vtkFiltersParallelImaging;vtkFiltersParallelMPI;vtkFiltersParallelStatistics;vtkFiltersPoints;vtkFiltersProgrammable;vtkFiltersPython;/usr/lib/x86_64-linux-gnu/libpython3.8.so;vtkWrappingPythonCore;vtkWrappingTools;vtkFiltersReebGraph;vtkFiltersSMP;vtkFiltersSelection;vtkFiltersTexture;vtkFiltersVerdict;verdict;vtkGUISupportQt;vtkInteractionStyle;vtkGUISupportQtSQL;vtkIOSQL;sqlite3;vtkGeovisCore;vtkInfovisLayout;vtkImagingHybrid;vtkInteractionWidgets;vtkImagingColor;vtkRenderingAnnotation;vtkRenderingVolume;vtkViewsCore;vtkproj4;vtkIOAMR;/usr/lib/x86_64-linux-gnu/hdf5/openmpi/libhdf5.so;/usr/lib/x86_64-linux-gnu/libsz.so;/usr/lib/x86_64-linux-gnu/libdl.so;/usr/lib/x86_64-linux-gnu/libm.so;/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so;/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so;/usr/lib/x86_64-linux-gnu/hdf5/openmpi/libhdf5_hl.so;vtkIOEnSight;vtkIOExodus;vtkexoIIc;/usr/lib/x86_64-linux-gnu/libnetcdf_c++.so;/usr/lib/x86_64-linux-gnu/libnetcdf.so;vtkIOExport;vtkRenderingGL2PSOpenGL2;/usr/lib/x86_64-linux-gnu/libgl2ps.so;vtkIOFFMPEG;vtkIOMovie;/usr/lib/x86_64-linux-gnu/libtheoraenc.so;/usr/lib/x86_64-linux-gnu/libtheoradec.so;/usr/lib/x86_64-linux-gnu/libogg.so;vtkIOGDAL;vtkIOGeoJSON;/usr/lib/x86_64-linux-gnu/libjsoncpp.so;vtkIOGeometry;vtkIOImport;vtkIOInfovis;/usr/lib/x86_64-linux-gnu/libxml2.so;vtkIOLSDyna;vtkIOMINC;vtkIOMPIImage;vtkIOMPIParallel;vtkIOParallel;vtkIONetCDF;vtkIOMySQL;vtkIOODBC;vtkIOPLY;vtkIOParallelExodus;vtkIOParallelLSDyna;vtkIOParallelNetCDF;vtkIOParallelXML;vtkIOPostgreSQL;vtkIOTecplotTable;vtkIOVPIC;VPIC;vtkIOVideo;vtkIOXdmf2;vtkxdmf2;vtkImagingMath;vtkImagingMorphological;vtkImagingStatistics;vtkImagingStencil;vtkInfovisBoostGraphAlgorithms;vtkInteractionImage;vtkLocalExample;vtkParallelMPI4Py;vtkPythonInterpreter;vtkRenderingContextOpenGL2;vtkRenderingExternal;vtkRenderingFreeTypeFontConfig;vtkRenderingImage;vtkRenderingLICOpenGL2;vtkRenderingLOD;vtkRenderingLabel;vtkRenderingMatplotlib;vtkRenderingParallel;vtkRenderingParallelLIC;vtkRenderingSceneGraph;vtkRenderingVolumeAMR;vtkRenderingVolumeOpenGL2;vtkTestingGenericBridge;vtkTestingIOSQL;vtkTestingRendering;vtkViewsContext2D;vtkViewsGeovis;vtkViewsInfovis;vtkWrappingJava
