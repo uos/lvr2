@@ -696,7 +696,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
 install(FILES package.xml DESTINATION share/lvr2)
 
 install(FILES
-    CMakeModules/FindEigen3.cmake
+    #    CMakeModules/FindEigen3.cmake
     CMakeModules/FindFLANN.cmake
     CMakeModules/FindLz4.cmake
     CMakeModules/FindNABO.cmake

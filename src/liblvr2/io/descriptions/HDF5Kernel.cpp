@@ -292,8 +292,8 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
         {
             if(H5IMis_image(group.getId(), datasetName.c_str()))
             {
-                long long unsigned int w, h, planes;
-                long long int npals;
+                hsize_t w, h, planes;
+                hssize_t npals;
                 char interlace[256];
 
                 int err = H5IMget_image_info(group.getId(), datasetName.c_str(), &w, &h, &planes, interlace, &npals);

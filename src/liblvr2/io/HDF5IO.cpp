@@ -382,8 +382,8 @@ Texture HDF5IO::getImage(HighFive::Group& g, std::string datasetName)
     {
         if (g.exist(datasetName))
         {
-            long long unsigned int width, height, planes;
-            long long int npals;
+            hsize_t width, height, planes;
+            hssize_t npals;
             char interlace[256];
 
             if (!H5IMis_image(g.getId(), datasetName.c_str()))
@@ -699,8 +699,8 @@ void HDF5IO::addImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
 
 void HDF5IO::getImage(HighFive::Group& g, std::string datasetName, cv::Mat& img)
 {
-    long long unsigned int w,h,planes;
-    long long int npals;
+    hsize_t w,h,planes;
+    hssize_t npals;
     char interlace[256];
 
     H5IMget_image_info(g.getId(), datasetName.c_str(), &w, &h, &planes, interlace, &npals);
