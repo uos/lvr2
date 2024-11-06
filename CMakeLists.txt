@@ -457,11 +457,19 @@ list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_IN
 # LVR2 VIEWER CHECKS
 ###############################################################################
 if(BUILD_VIEWER)
-
   #------
-  # Here I assume VTK is only required for the lvr2_viewer
+  # Here I assume VTK and Qt is only required for the lvr2_viewer
   # - VTK doesnt occur in the core library
   #------
+
+  find_package(Qt5 REQUIRED COMPONENTS Core Widgets Xml OpenGL)
+
+  if(DEFINED VTK_USE_FILE)
+  include(${VTK_USE_FILE})
+  endif()
+
+  set(VTK_QT_VERSION 5)
+  find_package(VTK REQUIRED)
 
   #------------------------------------------------------------------------------
   # Searching for VTK
@@ -473,20 +481,12 @@ if(BUILD_VIEWER)
   # nvcc call
   ###############################################################################
 
-  if(DEFINED VTK_USE_FILE)
-  include(${VTK_USE_FILE})
-  endif()
-
-  set(VTK_QT_VERSION 5)
-  find_package(VTK REQUIRED)
-
-  message(WARNING "USE QVTK PATCH!")
+  
 
   message(STATUS "Found VTK (${VTK_VERSION})")
 
   if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
-
-    message(WARNING "USE QVTK PATCH!")
+    # 8.*.*
     # patched QVTKOpenGL header because of name clash with signals.
     add_subdirectory(ext/QVTKOpenGLWidget)
     include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
@@ -494,6 +494,7 @@ if(BUILD_VIEWER)
     list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
 
   elseif(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "9")
+    # 9.*.*
     add_subdirectory(ext/QVTKOpenGLWidget)
     include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
     list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
@@ -507,7 +508,6 @@ if(BUILD_VIEWER)
 
   if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
     # 7.*.*
-    message(WARNING "AAA")
 
     if(VTK_MINOR_VERSION VERSION_GREATER "0")
       # 7.>=1.*
@@ -548,11 +548,7 @@ if(BUILD_VIEWER)
     list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
   endif()
 
-
-
   
-
-  find_package(Qt5 REQUIRED COMPONENTS Core Widgets Xml OpenGL)
 
   find_package(QVTK)
   if(QVTK_FOUND)
