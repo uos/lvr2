@@ -2,9 +2,11 @@ name: CI-humble
 on:
   push:
     branches:
+      - 'develop'
       - 'humble'
   pull_request:
     branches:
+      - 'develop'
       - 'humble'
   workflow_dispatch:
     branches:

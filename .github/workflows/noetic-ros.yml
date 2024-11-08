@@ -2,9 +2,11 @@ name: CI-noetic
 on:
   push:
     branches:
+      - 'develop'
       - 'noetic'
   pull_request:
     branches:
+      - 'develop'
       - 'noetic'
   workflow_dispatch:
     branches:
