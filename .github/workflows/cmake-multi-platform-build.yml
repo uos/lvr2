@@ -45,15 +45,10 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: recursive
-    - uses: awalsh128/cache-apt-pkgs-action@v1
-      with:
-        packages: build-essential cmake cmake-curses-gui libflann-dev libgsl-dev libeigen3-dev libopenmpi-dev openmpi-bin opencl-c-headers ocl-icd-opencl-dev libvtk7-dev libvtk7-qt-dev freeglut3-dev libhdf5-dev qtbase5-dev qt5-default libqt5opengl5-dev liblz4-dev libopencv-dev libyaml-cpp-dev libcgal-dev libgdal-dev
-        version: build-${{ matrix.os }}
-        execute_install_scripts: true
 
-    - name: Install non cacheable dependencies
+    - name: Install dependencies
       run: >
-        sudo apt install libboost-all-dev
+        sudo apt install libboost-all-dev build-essential cmake cmake-curses-gui libflann-dev libgsl-dev libeigen3-dev libopenmpi-dev openmpi-bin opencl-c-headers ocl-icd-opencl-dev libvtk7-dev libvtk7-qt-dev freeglut3-dev libhdf5-dev qtbase5-dev qt5-default libqt5opengl5-dev liblz4-dev libopencv-dev libyaml-cpp-dev libcgal-dev libgdal-dev
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
