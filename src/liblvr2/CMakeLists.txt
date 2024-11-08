@@ -165,6 +165,11 @@ target_link_libraries(
   lvr2_static 
   ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
   ${LVR2_LIB_DEPENDENCIES})
+target_compile_definitions(
+    lvr2_static
+    PUBLIC
+    ${LVR2_DEFINITIONS}
+)
 
 
 #####################################################################################
@@ -178,6 +183,11 @@ if( NOT MSVC )
     lvr2 
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
     ${LVR2_LIB_DEPENDENCIES})
+target_compile_definitions(
+    lvr2
+    PUBLIC
+    ${LVR2_DEFINITIONS}
+)
 
 install(TARGETS lvr2_static lvr2
   EXPORT lvr2Targets
