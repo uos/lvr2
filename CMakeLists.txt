@@ -9,8 +9,8 @@ option(BUILD_TOOLS_EXPERIMENTAL "Build experimental tools" OFF)
 option(WITH_DRACO "Build libraries with draco enabled" OFF)
 
 ## Compile as C++17
-add_compile_options(-std=c++17)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # DEFAULT RELEASE
 if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
@@ -583,6 +583,7 @@ endif()
 ###############################################################################
 
 set(LVR2_LIB_DEPENDENCIES
+    ${Boost_LIBRARIES}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
