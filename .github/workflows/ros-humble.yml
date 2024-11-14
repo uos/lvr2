@@ -31,9 +31,7 @@ jobs:
         env:
           ROS_DISTRO: humble
           ROS_REPO: main
-        with:
-          AFTER_SCRIPT: |
-            cd ~/target_ws && ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
+          AFTER_SCRIPT: cd ~/target_ws && ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
 
       # - name: Execute LVR2 Reconstruct
       #   run: cd /root/target_ws && ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
