@@ -17,22 +17,15 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
-    env:
-      CCACHE_DIR: "${{ github.workspace }}/.ccache" 
     steps:
       - name: Checkout LVR2
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
       - name: Compile for ROS2 humble
         uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_DISTRO: humble
           ROS_REPO: main
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-humble-${{github.run_id}}
-          restore-keys: |
-            ccache-humble-
+      - name: Execute lvr2_reconstruct
+          run: ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
