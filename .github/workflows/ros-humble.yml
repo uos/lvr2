@@ -18,6 +18,9 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Home Dir
+        run: cd ~ && pwd
+
       - name: Checkout LVR2
         uses: actions/checkout@v4
         with:
@@ -29,5 +32,5 @@ jobs:
           ROS_DISTRO: humble
           ROS_REPO: main
 
-      - name: Execute LVR2 Reconstruct
-        run: cd /root/target_ws && ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
+      # - name: Execute LVR2 Reconstruct
+      #   run: cd /root/target_ws && ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
