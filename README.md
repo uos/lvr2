@@ -1,10 +1,23 @@
+```console
+         /\
+        /  \               ##          ##      ##    #######         ######
+       /    \              ##          ##      ##    ##     ##     ##      ##
+      /      \             ##           ##    ##     ##      ##            ##
+     /________\            ##           ##    ##     ##     ##            ##
+    /\        /\           ##            ##  ##      #######             ##
+   /  \      /  \          ##            ##  ##      ##    ##          ##
+  /    \    /    \         ##             ####       ##     ##       ##
+ /      \  /      \        ##########      ##        ##      ##    ##########
+/________\/________\
+```
+
 # About
 
 This library delivers tools to build surface reconstructions from point cloud
 data and a simple viewer to display the results. Additionally, the found
 surfaces will be classified into predefined categories. The main aim of this
 project is to deliver fast and accurate algorithms for surface reconstruction with a strong focus on
-robotic applications such as tele operation in unknown environments and
+robotic applications such as teleoperation in unknown environments and
 localization.
 
 # Download and Compilation from Source
@@ -13,7 +26,7 @@ localization.
 
 https://github.com/uos/lvr2 - develop
 
-## Linux (Ubuntu 18.04, 20.04, 22.04)
+## Linux (Ubuntu 18.04, 20.04, 22.04, 24.04)
 
 ### Step 1: Install all required package dependencies: 
 
@@ -113,3 +126,11 @@ Please reference the following papers when using the lvr2 library in your scient
   pages={278-281},
   doi={10.1109/IRC.2018.00059}}
 ```
+
+
+## ROS build
+
+You can simply download this library and compile it inside your ROS workspace. The following ROS distributions are supported:
+
+TODO badges
+
