@@ -28,6 +28,6 @@ jobs:
         env:
           ROS_DISTRO: humble
           ROS_REPO: main
-          
+
       - name: Execute LVR2 Reconstruct
-        run: ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
+        run: cd $BASEDIR/${PREFIX}target_ws && ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
