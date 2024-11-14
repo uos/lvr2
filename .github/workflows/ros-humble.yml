@@ -22,10 +22,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+  
       - name: Compile for ROS2 humble
         uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_DISTRO: humble
           ROS_REPO: main
-      - name: Execute lvr2_reconstruct
-          run: ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
+          
+      - name: Execute LVR2 Reconstruct
+        run: ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
