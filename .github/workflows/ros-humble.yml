@@ -23,11 +23,11 @@ jobs:
         with:
           submodules: recursive
   
-      - name: Compile for ROS2 humble
+      - name: Compile LVR2 in ROS2 humble WS
         uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_DISTRO: humble
           ROS_REPO: main
 
       - name: Execute LVR2 Reconstruct
-        run: cd $BASEDIR/${PREFIX}target_ws && ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
+        run: cd /root/target_ws && ./devel/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
