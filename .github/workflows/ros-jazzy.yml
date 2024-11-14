@@ -1,20 +1,20 @@
-name: melodic
+name: jazzy
 on:
   push:
     branches:
       - 'develop'
-      - 'melodic'
+      - 'jazzy'
   pull_request:
     branches:
       - 'develop'
-      - 'melodic'
+      - 'jazzy'
   workflow_dispatch:
     branches:
       - '*'
 jobs:
-  ros_noetic:
-    name: melodic
-    runs-on: ubuntu-18.04
+  ros_jazzy:
+    name: jazzy
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
     steps:
@@ -22,10 +22,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          
-      - name: Compile LVR2 in ROS2 1 melodic WS
+
+      - name: Compile LVR2 in ROS 2 jazzy WS
         uses: 'ros-industrial/industrial_ci@master'
         env:
-          ROS_DISTRO: melodic
+          ROS_DISTRO: jazzy
           ROS_REPO: main
           AFTER_SCRIPT: cd ~/target_ws && ./build/lvr2/bin/lvr2_reconstruct src/lvr2/dat/scan.pts

@@ -133,8 +133,6 @@ Please reference the following papers when using the lvr2 library in your scient
 You can simply download this library and compile it inside your ROS workspace. The following ROS distributions are supported:
 
 |  Version   |  Supported Distributions    |
-|:------|:-----|
-| ROS 1 | [![CI](https://github.com/uos/lvr2/workflows/noetic/badge.svg)](https://github.com/uos/lvr2/actions/workflows/ros-noetic.yml) |
-| ROS 2 | [![CI](https://github.com/uos/lvr2/workflows/humble/badge.svg)](https://github.com/uos/lvr2/actions/workflows/ros-humble.yml) |
-
-
+|:-----------|:----------------------------|
+| ROS 1 | [![noetic](https://github.com/uos/lvr2/actions/workflows/ros-noetic.yml/badge.svg)](https://github.com/uos/lvr2/actions/workflows/ros-noetic.yml) |
+| ROS 2 | [![humble](https://github.com/uos/lvr2/actions/workflows/ros-humble.yml/badge.svg)](https://github.com/uos/lvr2/actions/workflows/ros-humble.yml) [![iron](https://github.com/uos/lvr2/actions/workflows/ros-iron.yml/badge.svg)](https://github.com/uos/lvr2/actions/workflows/ros-iron.yml) [![jazzy](https://github.com/uos/lvr2/actions/workflows/ros-jazzy.yml/badge.svg)](https://github.com/uos/lvr2/actions/workflows/ros-jazzy.yml) |

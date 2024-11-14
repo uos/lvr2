@@ -1,0 +1,31 @@
+name: iron
+on:
+  push:
+    branches:
+      - 'develop'
+      - 'iron'
+  pull_request:
+    branches:
+      - 'develop'
+      - 'iron'
+  workflow_dispatch:
+    branches:
+      - '*'
+jobs:
+  ros_iron:
+    name: iron
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout LVR2
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Compile LVR2 in ROS 2 iron WS
+        uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: iron
+          ROS_REPO: main
+          AFTER_SCRIPT: cd ~/target_ws && ./build/lvr2/bin/lvr2_reconstruct src/lvr2/dat/scan.pts
