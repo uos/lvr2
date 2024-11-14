@@ -1,4 +1,4 @@
-name: CI-noetic
+name: noetic
 on:
   push:
     branches:
