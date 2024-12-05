@@ -41,12 +41,31 @@ using std::make_unique;
 
 #include "lvr2/types/Model.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
+#include "lvr2/geometry/PMPMesh.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/ReductionAlgorithms.hpp"
 #include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Logging.hpp"
 
 using Vec = lvr2::BaseVector<float>;
+
+template<typename VecT>
+std::shared_ptr<lvr2::BaseMesh<VecT> > make_hem(
+  lvr2::MeshBufferPtr mesh_buffer,
+  std::string hem_impl)
+{
+    if(hem_impl == "lvr")
+    {
+        return std::make_shared<lvr2::HalfEdgeMesh<VecT> >(mesh_buffer);
+    }
+    if(hem_impl == "pmp")
+    {
+        return std::make_shared<lvr2::PMPMesh<VecT> >(mesh_buffer);
+    }
+    
+    throw std::runtime_error("Could not find half edge mesh implementation.");
+}
 
 int main(int argc, char** argv)
 {
@@ -55,6 +74,11 @@ int main(int argc, char** argv)
     // =======================================================================
     // Parse command line arguments
     meshreduce::Options options(argc, argv);
+
+    options.printLogo();
+
+
+    std::cout << "LVR2 Mesh Reduction" << std::endl;
   
     // Exit if options had to generate a usage message
     // (this means required parameters are missing)
@@ -63,18 +87,24 @@ int main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
     std::cout << options << std::endl;
-    cout << "LOAD" << endl;
+    std::cout << "Loading mesh ..." << endl;
     lvr2::ModelPtr model = lvr2::ModelFactory::readModel(options.getInputFileName());
-    cout << "MODEL" << endl;
-    cout << model << endl;
+    
+    if(!model->m_mesh)
+    {
+      std::cout << "lvr could not load mesh / input file is not a mesh." << std::endl;
+      return 0;
+    }
+
     lvr2::MeshBufferPtr meshBuffer = model->m_mesh;
-    cout << meshBuffer << endl;
-    lvr2::HalfEdgeMesh<Vec> mesh(meshBuffer);
+    cout << *meshBuffer << endl;
+  
+    auto mesh = make_hem<Vec>(meshBuffer, options.getHemImplementation());
 
     std::cout << lvr2::timestamp << "Computing face normals..." << std::endl;
 
     // Calculate initial face normals
-    auto faceNormals = calcFaceNormals(mesh);
+    auto faceNormals = calcFaceNormals(*mesh);
 
     // Reduce mesh complexity
     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
@@ -89,8 +119,8 @@ int main(int argc, char** argv)
 
         // Each edge collapse removes two faces in the general case.
         // TODO: maybe we should calculate this differently...
-        const auto count = static_cast<size_t>((mesh.numFaces() / 2) * reductionRatio);
-        auto collapsedCount = simpleMeshReduction(mesh, count, faceNormals);
+        const auto count = static_cast<size_t>((mesh->numFaces() / 2) * reductionRatio);
+        auto collapsedCount = simpleMeshReduction(*mesh, count, faceNormals);
     }
 
     // =======================================================================
@@ -98,13 +128,16 @@ int main(int argc, char** argv)
     // =======================================================================
     lvr2::SimpleFinalizer<Vec> finalizer;
     // Run finalize algorithm
-    auto buffer = finalizer.apply(mesh);
+    auto buffer = finalizer.apply(*mesh);
+
+    std::cout << "Result: " << std::endl;
+    std::cout << *buffer << std::endl;
 
     // =======================================================================
     // Write all results (including the mesh) to file
     // =======================================================================
     // Create output model and save to file
-    auto m = lvr2::ModelPtr( new lvr2::Model(buffer));
+    auto m = std::make_shared<lvr2::Model>(buffer);
 
     lvr2::ModelFactory::saveModel(m, "reduced_mesh.ply");
    

@@ -30,7 +30,6 @@ if(PCL_FOUND)
   set(LVR_REDUCE_DEPENDENCIES  ${LVR_REDUCE_DEPENDENCIES} ${PCL_LIBRARIES})
 endif(PCL_FOUND)
 
-
 #####################################################################################
 # Add executable
 #####################################################################################

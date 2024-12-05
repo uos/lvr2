@@ -48,18 +48,26 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     // Create option descriptions
     m_descr.add_options()("help", "Produce help message")(
         "inputFile",
-        value<vector<string>>(),
-        "Input file name. Supported formats are .obj and .ply")(
+            value<vector<string>>(),
+            "Input file name. Supported formats are .obj and .ply")(
         "reductionRatio,r",
-        value<float>(&m_edgeCollapseReductionRatio)->default_value(0.0),
-        "Percentage of faces to remove via edge-collapse (0.0 means no reduction, 1.0 means to "
-        "remove all faces which can be removed)");
+            value<float>(&m_edgeCollapseReductionRatio)->default_value(0.0),
+            "Percentage of faces to remove via edge-collapse (0.0 means no reduction, 1.0 means to "
+            "remove all faces which can be removed)")(
+        "hem,m",
+            value<string>(&m_hemImplementation)->default_value("pmp"),
+            "Half edge mesh (HEM) implementation. Default: pmp. Availaible: pmp, lvr");
     setup();
 }
 
 string Options::getInputFileName() const
 {
     return (m_variables["inputFile"].as<vector<string>>())[0];
+}
+
+string Options::getHemImplementation() const
+{
+    return (m_variables["hem"].as<string>());
 }
 
 float Options::getEdgeCollapseReductionRatio() const

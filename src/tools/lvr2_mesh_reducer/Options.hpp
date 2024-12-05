@@ -71,6 +71,8 @@ class Options : public lvr2::BaseOption
      */
     string getInputFileName() const;
 
+    string getHemImplementation() const;
+
     /**
      * @brief Reduction ratio for mesh reduction via edge collapse
      */
@@ -80,6 +82,7 @@ class Options : public lvr2::BaseOption
 
   private:
     float m_edgeCollapseReductionRatio;
+    string m_hemImplementation;
 };
 
 inline ostream& operator<<(ostream& os, const Options& o)
