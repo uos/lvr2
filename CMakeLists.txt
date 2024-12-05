@@ -394,6 +394,11 @@ endif(STANN_FOUND)
 # USED THIRD PARTY STUFF
 ###############################################################################
 
+# spdlog
+set(SPDLOG_INCLUDE_DIRS "ext/spdlog")
+list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SPDLOG_INCLUDE_DIRS})
+include_directories(${SPDLOG_INCLUDE_DIRS})
+
 # spdmon
 set(SPDMON_INCLUDE_DIRS "ext/spdmon")
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SPDMON_INCLUDE_DIRS})
@@ -810,21 +815,18 @@ endif(BUILD_VIEWER)
 ###############################################################################
 # CMAKE FILES
 ###############################################################################
-
 include(CMakePackageConfigHelpers)
-set(INCLUDE_INSTALL_DIR include/)
-set(LIB_INSTALL_DIR lib/)
 set(SYSCONFIG_INSTALL_DIR etc/lvr2/)
 
 install(EXPORT lvr2Targets
     FILE lvr2Targets.cmake
     NAMESPACE lvr2::
-    DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2)
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
 
 configure_package_config_file(LVR2Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
-  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2
-  PATH_VARS INCLUDE_INSTALL_DIR SYSCONFIG_INSTALL_DIR)
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2
+  PATH_VARS CMAKE_INSTALL_INCLUDEDIR SYSCONFIG_INSTALL_DIR)
 
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
@@ -833,7 +835,7 @@ write_basic_package_version_file(
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
-              DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2 )
+              DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2 )
 
 # install package.xml for ROS
 install(FILES package.xml DESTINATION share/lvr2)
@@ -846,13 +848,17 @@ install(FILES
     CMakeModules/FindOpenNI2.cmake
     CMakeModules/FindQVTK.cmake
     CMakeModules/FindSTANN.cmake
-    DESTINATION ${LIB_INSTALL_DIR}/cmake/lvr2/Modules)
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
 
 # Installation of HighFive headers
 # need to do it like this sind add_subdirectory to "ext/HighFive" crashs
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ext/HighFive/include/
     DESTINATION "include"
     PATTERN "*.in" EXCLUDE)
+
+# Installation of spdlog headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ext/spdlog/include/
+    DESTINATION "include")
 
 ###############################################################################
 # DOCUMENTATION
