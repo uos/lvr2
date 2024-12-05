@@ -219,9 +219,14 @@ endif(WITH_3DTILES)
 message(STATUS "Building static library")
 add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
 target_link_libraries(
-  lvr2_static 
-  ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
-  ${LVR2_LIB_DEPENDENCIES}
+    lvr2_static 
+    ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
+    ${LVR2_LIB_DEPENDENCIES}
+)
+target_compile_definitions(
+    lvr2_static
+    PUBLIC
+    ${LVR2_DEFINITIONS}
 )
 
 #####################################################################################
@@ -229,12 +234,16 @@ target_link_libraries(
 #####################################################################################
 
 message(STATUS "Building shared library")
- add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
- target_link_libraries(
+add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
+target_link_libraries(
     lvr2 
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
-    ${LVR2_LIB_DEPENDENCIES}
-          )
+    ${LVR2_LIB_DEPENDENCIES})
+target_compile_definitions(
+    lvr2
+    PUBLIC
+    ${LVR2_DEFINITIONS}
+)
 
 install(TARGETS lvr2_static lvr2
   EXPORT lvr2Targets
@@ -247,10 +256,10 @@ install(TARGETS lvr2_static lvr2
 #####################################################################################
 
 if(CUDA_FOUND)
-    set(LBVH_KERNEL_INCLUDES "${LAS_VEGAS_SOURCE_DIR}/include/lvr2/reconstruction/cuda/lbvh")
+    set(LBVH_KERNEL_INCLUDES "${PROJECT_SOURCE_DIR}/include/lvr2/reconstruction/cuda/lbvh")
     add_definitions(-DLBVH_KERNEL_INCLUDES="${LBVH_KERNEL_INCLUDES}")
     
-    set(LBVH_KERNEL_DIR "${LAS_VEGAS_SOURCE_DIR}/src/liblvr2/reconstruction/cuda/lbvh")
+    set(LBVH_KERNEL_DIR "${PROJECT_SOURCE_DIR}/src/liblvr2/reconstruction/cuda/lbvh")
     add_definitions(-DLBVH_KERNEL_DIR="${LBVH_KERNEL_DIR}")
     
     add_definitions(-DCUDA_INCLUDE_DIRS="${CUDA_INCLUDE_DIRS}")
@@ -267,18 +276,20 @@ if(CUDA_FOUND)
         reconstruction/cuda/lbvh/normals_kernel.cu
     )
 
-    # Fix broken VTK flags
-    get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-    set(vtk_flags)
-    foreach(it ${dir_defs})
-        if(it MATCHES "vtk*")
-        list(APPEND vtk_flags ${it})
-        endif()
-    endforeach()
+    if(VTK_FOUND)
+        # Fix broken VTK flags
+        get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+        set(vtk_flags)
+        foreach(it ${dir_defs})
+            if(it MATCHES "vtk*")
+            list(APPEND vtk_flags ${it})
+            endif()
+        endforeach()
 
-    foreach(d ${vtk_flags})
-        remove_definitions(-D${d})
-    endforeach()
+        foreach(d ${vtk_flags})
+            remove_definitions(-D${d})
+        endforeach()
+    endif(VTK_FOUND)
 
     message(STATUS "Building static LVR CUDA library")
     cuda_add_library(lvr2cuda_static STATIC ${LVR2_CUDA_SRC})
@@ -293,17 +304,31 @@ if(CUDA_FOUND)
 
     target_link_libraries(lvr2cuda lvr2)
 
+    # find_package(PkgConfig REQUIRED)
+    # pkg_check_modules(nvrtc REQUIRED IMPORTED_TARGET libnvrtc)
+    # set(NVRTC_LIBRARY PkgConfig::nvrtc)
+
+    # /usr/local/cuda/lib64/libnvrtc.so
+    find_library(NVRTC_LIBRARY REQUIRED
+        NAMES nvrtc libnvrtc
+        HINTS "/usr/local/cuda/lib64"
+    )
+
+    if(NOT NVRTC_LIBRARY)
+        message(FATAL_ERROR "Required library 'nvrtc' not found.")
+    endif()
+
     target_link_libraries(lvr2cuda
         ${CUDA_LIBRARIES}
         # TODO Find nvrtc library
-        /usr/local/cuda/lib64/libnvrtc.so
+        ${NVRTC_LIBRARY}
         ${CUDA_CUDA_LIBRARY}
     )
 
     target_link_libraries(lvr2cuda_static
         ${CUDA_LIBRARIES}
         # TODO Find nvrtc library
-        /usr/local/cuda/lib64/libnvrtc.so
+        ${NVRTC_LIBRARY}
         ${CUDA_CUDA_LIBRARY}
     )
 

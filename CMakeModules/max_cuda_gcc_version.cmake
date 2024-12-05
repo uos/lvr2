@@ -3,6 +3,9 @@
 # See here: https://stackoverflow.com/questions/6622454/cuda-incompatible-with-my-gcc-version
 
 # CUDA version                max GCC version
+# 12.4, 12.5                         13.2
+# 12.1, 12.2, 12.3                   12.2
+# 12                                 12.1
 # 11.4.1+, 11.5	                     11
 # 11.1, 11.2, 11.3, 11.4.0	         10
 # 11	                                9
@@ -21,11 +24,17 @@
 # message(STATUS "Maximum allowed gcc version for cuda is: ${MAX_CUDA_GCC_VERSION}")
 function(max_cuda_gcc_version _CUDA_VERSION _MAX_GCC_VERSION)
 
-if(${_CUDA_VERSION} VERSION_GREATER 11.4.0)   # 11.4.1+, 11.5  -> 11
+if(${_CUDA_VERSION} VERSION_GREATER_EQUAL 12.4.0)
+  set(${_MAX_GCC_VERSION} 13.2 PARENT_SCOPE)
+elseif(${_CUDA_VERSION} VERSION_GREATER_EQUAL 12.1.0)
+  set(${_MAX_GCC_VERSION} 12.2 PARENT_SCOPE)
+elseif(${_CUDA_VERSION} VERSION_GREATER_EQUAL 12.0.0)
+  set(${_MAX_GCC_VERSION} 12.1 PARENT_SCOPE)
+elseif(${_CUDA_VERSION} VERSION_GREATER_EQUAL 11.4.1)   # 11.4.1+, 11.5  -> 11
   set(${_MAX_GCC_VERSION} 11 PARENT_SCOPE)
-elseif(${_CUDA_VERSION} VERSION_GREATER 11.0) # 11.1, 11.2, 11.3, 11.4.0 -> 10
+elseif(${_CUDA_VERSION} VERSION_GREATER_EQUAL 11.1) # 11.1, 11.2, 11.3, 11.4.0 -> 10
   set(${_MAX_GCC_VERSION} 10 PARENT_SCOPE)
-elseif(${_CUDA_VERSION} VERSION_GREATER 10.2) # 11	       -> 9
+elseif(${_CUDA_VERSION} VERSION_GREATER_EQUAL 11) # 11	       -> 9
   set(${_MAX_GCC_VERSION} 9 PARENT_SCOPE)
 elseif(${_CUDA_VERSION} VERSION_GREATER 10.0) # 10.1 10.2 -> 8
   set(${_MAX_GCC_VERSION} 8 PARENT_SCOPE)
