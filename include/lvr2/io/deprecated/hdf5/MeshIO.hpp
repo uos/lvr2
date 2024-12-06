@@ -69,6 +69,7 @@ protected:
     std::string m_mesh_name = "";
 
     // dependencies
+    ChannelIO<Derived>* m_channel_io = static_cast<ChannelIO<Derived>*>(m_file_access);
     VariantChannelIO<Derived>* m_vchannel_io = static_cast<VariantChannelIO<Derived>*>(m_file_access);
 
     static constexpr const char* ID = "MeshIO";
@@ -178,9 +179,10 @@ template<typename Derived>
 struct Hdf5Construct<hdf5features::MeshIO, Derived> {
     
     // DEPS
-    using dep1 = typename Hdf5Construct<hdf5features::VariantChannelIO, Derived>::type;
-    using dep2 = typename Hdf5Construct<hdf5features::ArrayIO, Derived>::type;
-    using deps = typename dep1::template Merge<dep2>;
+    using dep1 = typename Hdf5Construct<hdf5features::ChannelIO, Derived>::type;
+    using dep2 = typename Hdf5Construct<hdf5features::VariantChannelIO, Derived>::type;
+    using dep3 = typename Hdf5Construct<hdf5features::ArrayIO, Derived>::type;
+    using deps = typename dep1::template Merge<dep2>::template Merge<dep3>;
 
     // ADD THE FEATURE ITSELF
     using type = typename deps::template add_features<hdf5features::MeshIO>::type;

@@ -265,63 +265,13 @@ void MeshIO<Derived>::setMeshName(std::string meshName)
 template <typename Derived>
 FloatChannelOptional MeshIO<Derived>::getVertices()
 {
-    if (!hdf5util::exist(m_file_access->m_hdf5_file, m_mesh_name))
-    {
-        return boost::none;
-    }
-    HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, false);
-
-    if (!isMesh(group))
-    {
-        std::cout << "[Hdf5IO - MeshIO] WARNING: flags of " << group.getId() << " are not correct."
-                  << std::endl;
-        return boost::none;
-    }
-
-    if (group.exist("channels"))
-    {
-        HighFive::Group channelsGroup = group.getGroup("channels");
-        std::unique_ptr<HighFive::DataSet> dataset = std::make_unique<HighFive::DataSet>(
-                channelsGroup.getDataSet("vertices"));
-        std::vector<size_t> dim = dataset->getSpace().getDimensions();
-        FloatChannel channel(dim[0], dim[1]);
-        dataset->read(channel.dataPtr().get());
-        return channel;
-    }
-
-    // If all fails return none
-    return boost::none;
+    return m_channel_io->template load<float>(m_mesh_name + "/channels", "vertices");
 }
 
 template <typename Derived>
 IndexChannelOptional MeshIO<Derived>::getIndices()
 {
-    if (!hdf5util::exist(m_file_access->m_hdf5_file, m_mesh_name))
-    {
-        return boost::none;
-    }
-    HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, false);
-
-    if (!isMesh(group))
-    {
-        std::cout << "[Hdf5IO - MeshIO] WARNING: flags of " << group.getId() << " are not correct."
-                  << std::endl;
-        return boost::none;
-    }
-
-    if (group.exist("channels"))
-    {
-        HighFive::Group channelsGroup = group.getGroup("channels");
-        std::unique_ptr<HighFive::DataSet> dataset = std::make_unique<HighFive::DataSet>(
-                channelsGroup.getDataSet("face_indices"));
-        std::vector<size_t> dim = dataset->getSpace().getDimensions();
-        IndexChannel channel(dim[0], dim[1]);
-        dataset->read(channel.dataPtr().get());
-        return channel;
-    }
-
-    // If all fails return none
-    return boost::none;
+    return m_channel_io->template load<unsigned int>(m_mesh_name + "/channels", "face_indices");
 }
 
 template <typename Derived>
