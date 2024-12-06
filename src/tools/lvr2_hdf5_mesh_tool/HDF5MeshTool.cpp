@@ -55,11 +55,8 @@ int main( int argc, char ** argv )
 {
   hdf5meshtool::Options options(argc, argv);
   std::cout << timestamp << "Load HDF5 file structure..." << std::endl;
-  using HDF5MeshToolIO = lvr2::Hdf5IO<
-          lvr2::hdf5features::ArrayIO,
-          lvr2::hdf5features::ChannelIO,
-          lvr2::hdf5features::VariantChannelIO,
-          lvr2::hdf5features::MeshIO>;
+
+  using HDF5MeshToolIO = lvr2::Hdf5Build<lvr2::hdf5features::MeshIO>;
 
   // Get extension
   boost::filesystem::path selectedFile(options.getInputFile());
@@ -117,6 +114,10 @@ int main( int argc, char ** argv )
       {
         invalid_face_cnt++;
       }
+    }
+    if (invalid_face_cnt > 0)
+    {
+      std::cout << timestamp << "Invalid faces found during HalfEdgeMesh construction: " << invalid_face_cnt << std::endl;
     }
 
     HDF5MeshToolIO hdf5;
@@ -257,6 +258,7 @@ int main( int argc, char ** argv )
     DenseVertexMap<color> colors;
     boost::optional<DenseVertexMap<color>> colorsOpt;
     ChannelOptional<uint8_t> channel_opt;
+    bool colorsFoundInSource = false;
     if (readFromHdf5)
     {
       colorsOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<color>>("vertex_colors");
@@ -265,10 +267,12 @@ int main( int argc, char ** argv )
     {
       std::cout << timestamp << "Using existing vertex colors..." << std::endl;
       colors = *colorsOpt;
+      colorsFoundInSource = true;
     }
     else if (meshBuffer != nullptr && (channel_opt = meshBuffer->getChannel<uint8_t>("vertex_colors"))
       && channel_opt && channel_opt.get().width() == 3 && channel_opt.get().numElements() == hem.numVertices()) {
       std::cout << timestamp << "Using existing colors from mesh buffer..." << std::endl;
+      colorsFoundInSource = true;
 
       auto &channel = channel_opt.get();
       colors.reserve(channel.numElements());
@@ -279,16 +283,23 @@ int main( int argc, char ** argv )
     }
     if (!colorsOpt || !writeToHdf5Input)
     {
-      std::cout << timestamp << "Adding vertex colors..." << std::endl;
-      bool addedVertexColors = hdf5.addDenseAttributeMap<DenseVertexMap<color>>(
-          hem, colors, "vertex_colors");
-      if (addedVertexColors)
+      if (colorsFoundInSource) 
       {
-        std::cout << timestamp << "successfully added vertex colors" << std::endl;
-      }
-      else
+        std::cout << timestamp << "Adding vertex colors found in source..." << std::endl;
+        bool addedVertexColors = hdf5.addDenseAttributeMap<DenseVertexMap<color>>(
+            hem, colors, "vertex_colors");
+        if (addedVertexColors)
+        {
+          std::cout << timestamp << "successfully added vertex colors" << std::endl;
+        }
+        else
+        {
+          std::cout << timestamp << "could not add vertex colors!" << std::endl;
+        }
+      } 
+      else 
       {
-        std::cout << timestamp << "could not add vertex colors!" << std::endl;
+          std::cout << timestamp << "Skipping vertex colors: No colors found in input file." << std::endl;
       }
     }
     else
@@ -405,6 +416,80 @@ int main( int argc, char ** argv )
     else
     {
       std::cout << timestamp << "Height differences already included." << std::endl;
+    }
+
+
+    // border costs
+    DenseVertexMap<float> borderCosts;
+    boost::optional<DenseVertexMap<float>> borderCostsOpt;
+    if (readFromHdf5)
+    {
+      borderCostsOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("border");
+    }
+    if (borderCostsOpt)
+    {
+      std::cout << timestamp << "Using existing border costs..." << std::endl;
+      borderCosts = *borderCostsOpt;
+    }
+    else
+    {
+      std::cout << timestamp << "Computing border costs ... Setting border vertex costs to "
+                << options.getBorderVertexCost() << " ..." << std::endl;
+      borderCosts = calcBorderCosts(hem, 1.0);
+    }
+    if (!borderCostsOpt || !writeToHdf5Input)
+    {
+      std::cout << timestamp << "Adding border costs..." << std::endl;
+      bool addedBorderCosts = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(
+              hem, borderCosts, "border");
+      if (addedBorderCosts)
+      {
+        std::cout << timestamp << "successfully added border costs." << std::endl;
+      }
+      else
+      {
+        std::cout << timestamp << "could not add border costs!" << std::endl;
+      }
+    }
+    else
+    {
+      std::cout << timestamp << "Border costs already included." << std::endl;
+    }
+
+    // Free space above vertices
+    DenseVertexMap<float> freeSpace;
+    boost::optional<DenseVertexMap<float>> freeSpaceOpt;
+    if (readFromHdf5)
+    {
+      freeSpaceOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("freespace");
+    }
+    if (freeSpaceOpt)
+    {
+      std::cout << timestamp << "Using existing free space ..." << std::endl;
+      freeSpace = freeSpaceOpt.value();
+    }
+    else
+    {
+      std::cout << timestamp << "Computing free space ..." << std::endl;
+      freeSpace = calcNormalClearance(hem, vertexNormals);
+    }
+    if (!freeSpaceOpt || !writeToHdf5Input)
+    {
+      std::cout << timestamp << "Adding free space..." << std::endl;
+      bool addedBorderCosts = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(
+              hem, freeSpace, "freespace");
+      if (addedBorderCosts)
+      {
+        std::cout << timestamp << "successfully added free space." << std::endl;
+      }
+      else
+      {
+        std::cout << timestamp << "could not add free space!" << std::endl;
+      }
+    }
+    else
+    {
+      std::cout << timestamp << "Free space already included." << std::endl;
     }
   }
   else

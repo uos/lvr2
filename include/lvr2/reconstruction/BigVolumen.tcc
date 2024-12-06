@@ -477,7 +477,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         {
             stringstream ss_points;
             ss_points << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-points.binary";
-            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+            std::ifstream ifs_points(ss_points.str(), std::ifstream::binary);
             lvr2::floatArr pointBuffer(new float[cell->second.size*3]);
             ifs_points.read((char*)pointBuffer.get(), sizeof(float)*3*cell->second.size);
             for(size_t i = 0 ; i<cell->second.size; i++)
@@ -558,19 +558,19 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         {
             stringstream ss_points;
             ss_points << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-points.binary";
-            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+            std::ifstream ifs_points(ss_points.str(), std::ifstream::binary);
             lvr2::floatArr pointBuffer(new float[cell->second.size*3]);
             ifs_points.read((char*)pointBuffer.get(), sizeof(float)*3*cell->second.size);
 
             stringstream ss_normals;
             ss_normals << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-normals.binary";
-            ifstream ifs_normals(ss_normals.str(), std::ifstream::binary);
+            std::ifstream ifs_normals(ss_normals.str(), std::ifstream::binary);
             lvr2::floatArr normalBuffer(new float[cell->second.size*3]);
             ifs_normals.read((char*)normalBuffer.get(), sizeof(float)*3*cell->second.size);
 
             stringstream ss_colors;
             ss_colors << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-colors.binary";
-            ifstream ifs_colors(ss_colors.str(), std::ifstream::binary);
+            std::ifstream ifs_colors(ss_colors.str(), std::ifstream::binary);
             lvr2::ucharArr colorBuffer(new unsigned char[cell->second.size*3]);
             ifs_colors.read((char*)colorBuffer.get(), sizeof(unsigned char)*3*cell->second.size);
 
@@ -688,13 +688,13 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         {
             stringstream ss_points;
             ss_points << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-points.binary";
-            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+            std::ifstream ifs_points(ss_points.str(), std::ifstream::binary);
             lvr2::floatArr pointBuffer(new float[cell->second.size*3]);
             ifs_points.read((char*)pointBuffer.get(), sizeof(float)*3*cell->second.size);
 
             stringstream ss_normals;
             ss_normals << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-normals.binary";
-            ifstream ifs_normals(ss_normals.str(), std::ifstream::binary);
+            std::ifstream ifs_normals(ss_normals.str(), std::ifstream::binary);
             lvr2::floatArr normalBuffer(new float[cell->second.size*3]);
             ifs_normals.read((char*)normalBuffer.get(), sizeof(float)*3*cell->second.size);
 
@@ -806,13 +806,13 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         {
             stringstream ss_points;
             ss_points << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-points.binary";
-            ifstream ifs_points(ss_points.str(), std::ifstream::binary);
+            std::ifstream ifs_points(ss_points.str(), std::ifstream::binary);
             lvr2::floatArr pointBuffer(new float[cell->second.size*3]);
             ifs_points.read((char*)pointBuffer.get(), sizeof(float)*3*cell->second.size);
 
             stringstream ss_colors;
             ss_colors << "part-" << cell->second.ix << "-" << cell->second.iy << "-" << cell->second.iz << "-colors.binary";
-            ifstream ifs_colors(ss_colors.str(), std::ifstream::binary);
+            std::ifstream ifs_colors(ss_colors.str(), std::ifstream::binary);
             lvr2::ucharArr colorBuffer(new unsigned char[cell->second.size*3]);
             ifs_colors.read((char*)colorBuffer.get(), sizeof(unsigned char)*3*cell->second.size);
 

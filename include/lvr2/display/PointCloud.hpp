@@ -44,9 +44,6 @@
 #include <fstream>
 
 
-using namespace std;
-
-
 namespace lvr2
 {
 
@@ -66,7 +63,7 @@ public:
     virtual ~PointCloud();
     virtual inline void render();
 
-    vector<uColorVertex> getPoints(){return m_points;};
+    std::vector<uColorVertex> getPoints(){return m_points;};
     void setPoints(){};
 
     void addPoint(float x, float y, float z, unsigned char r, unsigned char g, unsigned char b)

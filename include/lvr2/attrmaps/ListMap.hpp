@@ -118,8 +118,8 @@ private:
     boost::optional<ValueT> m_default;
 
     // Internal helper method
-    typename vector<pair<HandleT, ValueT>>::const_iterator keyIterator(HandleT key) const;
-    typename vector<pair<HandleT, ValueT>>::iterator keyIterator(HandleT key);
+    typename std::vector<pair<HandleT, ValueT>>::const_iterator keyIterator(HandleT key) const;
+    typename std::vector<pair<HandleT, ValueT>>::iterator keyIterator(HandleT key);
 
     template<typename, typename> friend class ListMap;
 };

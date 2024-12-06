@@ -152,7 +152,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
                             vector<coord<float>*> p;
                             cellPoints.push_back(p);
                             vector<coord<float>*> tmp = m_pointHandler->getContainedPoints(cellHandles_tmp[ch_idx].idx());
-                            for (vector<coord<float>*>::iterator it = tmp.begin(); it != tmp.end(); it++)
+                            for (std::vector<coord<float>*>::iterator it = tmp.begin(); it != tmp.end(); it++)
                             {
                                 BaseVecT center = parent.cell_center(cellHandles_tmp[ch_idx]);
                                 center = center * (*max_bb_width / cells_tmp);
@@ -346,7 +346,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
 
                             // sort the points to the corresponding children
                             vector<coord<float>*> childrenPoints[8];
-                            for (vector<coord<float>*>::iterator it = points.begin(); it != points.end(); it++)
+                            for (std::vector<coord<float>*>::iterator it = points.begin(); it != points.end(); it++)
                             {
                                 childrenPoints[parent.getChildIndex(cellCenter, *it)].push_back(*it);
                             }
@@ -370,7 +370,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
                         cellCenter += bb_min;
 
                         // sort the points to the corresponding children
-                        for (vector<coord<float>*>::iterator it = points.begin(); it != points.end(); it++)
+                        for (std::vector<coord<float>*>::iterator it = points.begin(); it != points.end(); it++)
                         {
                             childrenPoints[parent.getChildIndex(cellCenter, *it)].push_back(*it);
                         }
@@ -590,7 +590,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
     // delta cannot be smaller than zero
     if(delta < 0)
     {
-        string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Error: delta cannot be below zero."; 
+        std::string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Error: delta cannot be below zero."; 
         std::cout << comment << std::endl;
         return;
     }
@@ -605,7 +605,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
     // else the delta must be greater than 0
     else
     {
-        string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating two meshes with delta delta of " + to_string(delta) + "."; 
+        std::string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating two meshes with delta delta of " + std::to_string(delta) + "."; 
         std::cout << comment << std::endl;
 
 

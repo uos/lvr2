@@ -78,11 +78,10 @@ private:
 
 };
 
-inline ostream& operator<<(ostream& os, const Options& o)
+inline std::ostream& operator<<(std::ostream& os, const Options& o)
 {
     os << "##### ASCII VIEWER settings #####" << endl;
     os << "\t mesh: " << o.inputFile() << endl;
-
     return os;
 }
 

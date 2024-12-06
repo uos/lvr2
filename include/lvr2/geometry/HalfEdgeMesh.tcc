@@ -1795,7 +1795,7 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
 
         if (!valid)
         {
-            cerr << "Broken Contour" << std::endl;
+            std::cerr << "Broken Contour" << std::endl;
             continue;
         }
 

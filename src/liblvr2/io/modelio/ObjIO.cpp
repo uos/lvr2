@@ -109,7 +109,7 @@ void ObjIO::parseMtlFile(
             {
                 string matName;
                 ss >> matName;
-                map<string, int>::iterator it = matNames.find(matName);
+                std::map<string, int>::iterator it = matNames.find(matName);
                 if(it == matNames.end())
                 {
                     Material m;
@@ -387,7 +387,7 @@ void ObjIO::save( string filename )
 
         if ( !vertices )
         {
-            cerr << "Received no vertices to store. Aborting save operation." << std::endl;
+            std::cerr << "Received no vertices to store. Aborting save operation." << std::endl;
             return;
         }
         out << std::endl << std::endl << "##  Beginning of vertex definitions.\n";

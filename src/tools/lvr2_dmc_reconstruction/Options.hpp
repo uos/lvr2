@@ -109,18 +109,17 @@ class Options : public BaseOption
 };
 
 /// Output the Options - overloaded output Operator
-inline ostream& operator<<(ostream& os, const Options& o)
+inline std::ostream& operator<<(std::ostream& os, const Options& o)
 {
     // o.printTransformation(os);
+    std::cout << "##### InputFile-Name: " << o.getInputFileName() << std::endl;
+    std::cout << "##### Max Level: " << o.getMaxLevel() << std::endl;
+    std::cout << "##### Max Error: " << o.getMaxError() << std::endl;
 
-    cout << "##### InputFile-Name: " << o.getInputFileName() << endl;
-    cout << "##### Max Level: " << o.getMaxLevel() << endl;
-    cout << "##### Max Error: " << o.getMaxError() << endl;
-
-    cout << "##### PCM: " << o.getPCM() << endl;
-    cout << "##### KD: " << o.getKd() << endl;
-    cout << "##### KI: " << o.getKi() << endl;
-    cout << "##### KN: " << o.getKn() << endl;
+    std::cout << "##### PCM: " << o.getPCM() << std::endl;
+    std::cout << "##### KD: " << o.getKd() << std::endl;
+    std::cout << "##### KI: " << o.getKi() << std::endl;
+    std::cout << "##### KN: " << o.getKn() << std::endl;
 
     return os;
 }

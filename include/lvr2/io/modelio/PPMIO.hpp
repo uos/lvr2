@@ -80,7 +80,7 @@ private:
      * @param   in      The stream to read from
      * @param   buffer  The extracted information
      */
-    void readLine( ifstream & in, char* buffer );
+    void readLine( std::ifstream & in, char* buffer );
 };
 
 } // namespace lvr2

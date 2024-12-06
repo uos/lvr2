@@ -41,7 +41,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options& op
     else if (pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" ||
              pcm_name == "NANOFLANN")
     {
-        surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
+        surface = std::make_shared<AdaptiveKSearchSurface<BaseVecT>>(
             buffer, pcm_name, options.getKn(), options.getKi(), options.getKd(), 1, "");
     }
     else

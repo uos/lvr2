@@ -42,6 +42,7 @@ Options::Options(int argc, char** argv) : m_descr("Supported options")
             ("meshName,m", value<string>()->default_value("mesh"), "The name of the mesh to write")
             ("edgeCollapse,e", value<size_t>()->default_value(0), "Edge collapse reduction algorithm, the number of edges to collapse.")
             ("localRadius,r", value<float>()->default_value(0.3), "The local radius used for roughness and height differences computation.")
+            ("borderVertexCost,b", value<float>()->default_value(1.0), "Setting the each vertex on the border of the mesh to this value (seperate 'border' layer)")
             ;
 
 

@@ -55,8 +55,6 @@
 
 #include <iostream>
 
-using namespace std;
-
 namespace lvr2
 {
 
@@ -111,9 +109,9 @@ private:
 } // namespace lvr2
 
 template<typename BaseVecT>
-inline ostream& operator<<(ostream& os, const lvr2::Quaternion<BaseVecT> q){
+inline std::ostream& operator<<(std::ostream& os, const lvr2::Quaternion<BaseVecT> q){
 
-	return os << "Quaternion: " << q.W() << " " << q.X() << " " << q.Y() << " " << q.Z() << endl;
+	return os << "Quaternion: " << q.W() << " " << q.X() << " " << q.Y() << " " << q.Z() << "\n";
 
 }
 

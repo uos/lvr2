@@ -227,7 +227,7 @@ private:
     bool    m_saveToDisk;
 
     /// Filestream to save reduced data
-    ofstream    m_outputFile;
+    std::ofstream    m_outputFile;
 
     /// Number of loaded scans
     int     m_numScans;

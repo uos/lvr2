@@ -51,7 +51,7 @@ namespace lvr2 {
  * parameter. You typically call it like this:
  *
  * \code{.cpp}
- * auto vertexColors = map<DenseAttrMap>(vertexCosts, [](float vertexCost)
+ * auto vertexColors = std::map<DenseAttrMap>(vertexCosts, [](float vertexCost)
  * {
  *     // Convert float vertex-cost to color...
  * })

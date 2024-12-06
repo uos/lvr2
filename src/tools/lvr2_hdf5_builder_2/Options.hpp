@@ -90,9 +90,9 @@ class Options
 };
 
 /// Overlaoeded outpur operator
-inline ostream& operator<<(ostream& os, const Options& o)
+inline std::ostream& operator<<(std::ostream& os, const Options& o)
 {
-    cout << "##### Program options: " << endl;
+    std::cout << "##### Program options: " << std::endl;
     //    cout << "##### Data directory \t\t: "  << o.getDataDir() << endl;
 
     return os;

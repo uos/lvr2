@@ -39,7 +39,6 @@
 #include <sstream>
 #include <vector>
 
-using namespace std;
 namespace lvr2
 {
 
@@ -87,8 +86,8 @@ NodeData<BaseVecT>::NodeData(size_t bufferSize) : m_bufferSize(bufferSize)
     m_readBufferIndexNormal = 0;
     m_writeBuffer.clear();
     m_writeBufferNormal.clear();
-    vector<float>().swap(m_writeBuffer);
-    vector<float>().swap(m_writeBufferNormal);
+    std::vector<float>().swap(m_writeBuffer);
+    std::vector<float>().swap(m_writeBufferNormal);
 }
 
 template <typename BaseVecT>
@@ -136,8 +135,8 @@ void NodeData<BaseVecT>::remove()
     m_dataPathNormal = "";
     m_readBuffer.clear();
     m_readBufferNormal.clear();
-    vector<float>().swap(m_readBuffer);
-    vector<float>().swap(m_readBufferNormal);
+    std::vector<float>().swap(m_readBuffer);
+    std::vector<float>().swap(m_readBufferNormal);
 }
 
 template <typename BaseVecT>
@@ -159,7 +158,7 @@ void NodeData<BaseVecT>::add(BaseVecT input)
     otimer.stop();
     fclose(oFile);
 
-    //    ofstream ofs(m_dataPath, fstream::app);
+    //    std::ofstream ofs(m_dataPath, fstream::app);
     //    ofs << input.x << " " << input.y << " " <<  input.z << " " <<  std::endl;
     //    if(m_gotSize) m_size++;
     //    ofs.close();
@@ -178,7 +177,7 @@ void NodeData<BaseVecT>::addNormal(BaseVecT input)
     otimer.stop();
     fclose(oFile);
 
-    //    ofstream ofs(m_dataPath, fstream::app);
+    //    std::ofstream ofs(m_dataPath, fstream::app);
     //    ofs << input.x << " " << input.y << " " <<  input.z << " " <<  std::endl;
     //    if(m_gotSize) m_size++;
     //    ofs.close();
@@ -228,7 +227,7 @@ void NodeData<BaseVecT>::writeBuffer()
     }
 
     m_writeBuffer.clear();
-    vector<float>().swap(m_writeBuffer);
+    std::vector<float>().swap(m_writeBuffer);
     // Normals
     if (m_writeBufferNormal.size() == 0)
         return;
@@ -247,7 +246,7 @@ void NodeData<BaseVecT>::writeBuffer()
     }
 
     m_writeBufferNormal.clear();
-    vector<float>().swap(m_writeBufferNormal);
+    std::vector<float>().swap(m_writeBufferNormal);
 }
 
 template <typename BaseVecT>
@@ -382,7 +381,7 @@ size_t NodeData<BaseVecT>::size()
             sz /= 3;
         }
 
-        //        ifstream ifs( m_dataPath );
+        //        std::ifstream ifs( m_dataPath );
         //        size_t size = 0;
         //        string s;
         //        while( getline( ifs, s ) ) size++;

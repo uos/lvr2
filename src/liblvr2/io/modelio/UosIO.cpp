@@ -240,7 +240,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
         Matrix4<Vec> tf;
 
         // Input file streams for scan data, poses and frames
-        ifstream scan_in, pose_in, frame_in;
+        std::ifstream scan_in, pose_in, frame_in;
 
         // Create scan file name
         boost::filesystem::path scan_path(
@@ -518,12 +518,12 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
 {
     Matrix4<Vec> m_tf;
 
-    list<Vec > ptss;
-    list<Vec > allPoints;
+    std::list<Vec> ptss;
+    std::list<Vec> allPoints;
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
     {
         float euler[6];
-        ifstream scan_in, pose_in, frame_in;
+        std::ifstream scan_in, pose_in, frame_in;
 
         // Code imported from slam6d! Don't blame me..
         string scanFileName;
@@ -650,7 +650,7 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
         boost::filesystem::path framePath(
                 boost::filesystem::path(dir) / 
                 boost::filesystem::path("scan" + to_string( fileCounter, 3 ) + ".frames" ) );
-        string frameFileName = "/" + framePath.relative_path().string();
+        std::string frameFileName = "/" + framePath.relative_path().string();
 
         // Try to open frame file
         frame_in.open(frameFileName.c_str());

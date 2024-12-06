@@ -69,7 +69,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
         // - 1: RANSAC
         // - 2: Iterative
 
-        surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
+        surface = std::make_shared<AdaptiveKSearchSurface<BaseVecT>>(
             buffer,
             pcm_name,
             options.getKn(),

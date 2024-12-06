@@ -467,7 +467,7 @@ void fread(std::ifstream &file, T &value)
 template <typename BaseVecT>
 BigGrid<BaseVecT>::BigGrid(std::string path)
 {
-    ifstream ifs(path, ios::binary);
+    std::ifstream ifs(path, std::ios::binary);
 
     fread(ifs, m_numPoints);
     fread(ifs, m_pointBufferSize);
@@ -539,7 +539,7 @@ void fwrite(std::ofstream &file, T &value)
 template <typename BaseVecT>
 void BigGrid<BaseVecT>::serialize(std::string path)
 {
-    ofstream ofs(path, ios::binary);
+    std::ofstream ofs(path, std::ios::binary);
     fwrite(ofs, m_numPoints);
     fwrite(ofs, m_pointBufferSize);
     fwrite(ofs, m_voxelSize);

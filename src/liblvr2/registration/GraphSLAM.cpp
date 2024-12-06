@@ -277,7 +277,7 @@ void GraphSLAM::createGraph(const vector<SLAMScanPtr>& scans, size_t last, Graph
 void GraphSLAM::fillEquation(const vector<SLAMScanPtr>& scans, const Graph& graph, GraphMatrix& mat, GraphVector& vec) const
 {
     // Cache all KDTrees
-    map<size_t, KDTreePtr<Vector3f>> trees;
+    std::map<size_t, KDTreePtr<Vector3f>> trees;
     for (size_t i = 0; i < graph.size(); i++)
     {
         size_t a = graph[i].first;
@@ -308,7 +308,7 @@ void GraphSLAM::fillEquation(const vector<SLAMScanPtr>& scans, const Graph& grap
 
     trees.clear();
 
-    map<pair<int, int>, Matrix6d> result;
+    std::map<pair<int, int>, Matrix6d> result;
 
     mat.setZero();
     vec.setZero();

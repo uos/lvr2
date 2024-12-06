@@ -168,7 +168,7 @@ int main(int argc, char** argv)
             //reconstruction from ScanProject Folder
             if (importStatus)
             {
-                project->project = make_shared<ScanProject>(dirScanProject);
+                project->project = std::make_shared<ScanProject>(dirScanProject);
                 std::vector<bool> init(dirScanProject.positions.size(), true);
                 project->changed = init;
             }

@@ -127,7 +127,7 @@ void LVRTransformationDialog::save()
 {
     QString filename = QFileDialog::getSaveFileName(m_parent->treeWidget(), "Save transformation to pose file", "", "*.pose");
 
-    ofstream out(filename.toStdString().c_str());
+    std::ofstream out(filename.toStdString().c_str());
     out << m_pose.x << " " << m_pose.y << " " << m_pose.z << " " << m_pose.r << " " << m_pose.t << " " << m_pose.p;
     out.close();
 }

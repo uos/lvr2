@@ -42,7 +42,6 @@
 #include <fstream>
 #include <algorithm>
 #include <list>
-using namespace std;
 
 namespace lvr2
 {
@@ -90,7 +89,7 @@ ModelToImage::~ModelToImage()
 
 void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
 {
-    cout << timestamp << "Initializting DepthListMatrix with dimensions " << m_width << " x " << m_height << endl;
+    std::cout << timestamp << "Initializting DepthListMatrix with dimensions " << m_width << " x " << m_height << std::endl;
     // Set correct image width and height
     for(int i = 0; i < m_height; i++)
     {
@@ -137,12 +136,12 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
         }
         ++progress;
     }
-    cout << endl;
+    std::cout << std::endl;
 }
 
 void ModelToImage::computeDepthImage(ModelToImage::DepthImage& img, ModelToImage::ProjectionPolicy policy)
 {
-    cout << timestamp << "Computing depth image. Image dimensions: " << m_width << " x " << m_height << endl;
+    std::cout << timestamp << "Computing depth image. Image dimensions: " << m_width << " x " << m_height << std::endl;
 
     // Set correct image width and height
     for(int i = 0; i < m_height; i++)

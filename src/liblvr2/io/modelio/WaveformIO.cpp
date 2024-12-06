@@ -55,7 +55,7 @@ ModelPtr WaveformIO::read(std::string filename)
     ModelPtr model(new Model);
     
     // Open file
-    ifstream in(filename.c_str(), std::ios::binary);
+    std::ifstream in(filename.c_str(), std::ios::binary);
     //in.open();
 
     model->m_pointCloud = PointBufferPtr( new PointBuffer);

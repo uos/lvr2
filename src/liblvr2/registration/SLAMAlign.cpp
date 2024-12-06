@@ -85,7 +85,7 @@ void SLAMAlign::addScan(const SLAMScanPtr& scan, bool match)
 
 void SLAMAlign::addScan(const ScanPtr& scan, bool match)
 {
-    addScan(make_shared<SLAMScanWrapper>(scan));
+    addScan(std::make_shared<SLAMScanWrapper>(scan));
 }
 
 SLAMScanPtr SLAMAlign::scan(size_t index) const
@@ -137,7 +137,7 @@ void SLAMAlign::match()
         m_metascan = SLAMScanPtr(meta);
     }
 
-    string scan_number_string = to_string(m_scans.size() - 1);
+    std::string scan_number_string = std::to_string(m_scans.size() - 1);
 
     // only match everything after m_alreadyMatched
     for (size_t i = 0; i < m_icp_graph.size(); i++)
@@ -148,11 +148,11 @@ void SLAMAlign::match()
 
             if (m_options.verbose)
             {
-                std::cout << "Iteration " << setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << std::endl;
+                std::cout << "Iteration " << std::setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << std::endl;
             }
             else
             {
-                std::cout << setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << std::flush;
+                std::cout << std::setw(scan_number_string.length()) << m_icp_graph.at(i).second << "/" << scan_number_string << ": " << std::flush;
             }
 
             SLAMScanPtr prev = m_options.metascan ? m_metascan : m_scans[m_icp_graph.at(i).first];

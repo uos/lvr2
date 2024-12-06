@@ -55,7 +55,7 @@ ModelPtr AsciiIO::read(
 {
     // Check extension
     boost::filesystem::path selectedFile(filename);
-    string extension(selectedFile.extension().string());
+    std::string extension(selectedFile.extension().string());
 
     if ( extension != ".pts" && extension != ".3d" && extension != ".xyz" && extension != ".txt" )
     {
@@ -72,7 +72,7 @@ ModelPtr AsciiIO::read(
     }
 
     // Open file
-    ifstream in;
+    std::ifstream in;
     in.open(filename.c_str());
 
     // Read first two lines, ignore the first one
@@ -252,7 +252,7 @@ ModelPtr AsciiIO::read(string filename)
     // intensity and RGB.
 
     // Open file
-    ifstream in;
+    std::ifstream in;
     in.open(filename.c_str());
 
     // Read first to lines, ignore the first one
@@ -386,7 +386,7 @@ void AsciiIO::save( std::string filename )
 size_t AsciiIO::countLines(string filename)
 {
     // Open file for reading
-    ifstream in(filename.c_str());
+    std::ifstream in(filename.c_str());
 
     // Count lines in file
     size_t c = 0;
@@ -404,7 +404,7 @@ size_t AsciiIO::countLines(string filename)
 int AsciiIO::getEntriesInLine(string filename)
 {
 
-    ifstream in(filename.c_str());
+    std::ifstream in(filename.c_str());
 
     // Get first line from file and skip it (possibly metadata)
     char line[1024];

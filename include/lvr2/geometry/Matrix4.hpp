@@ -51,7 +51,6 @@
 #ifndef M_PI
 #define M_PI 3.141592654
 #endif
-using namespace std;
 
 namespace lvr2
 {
@@ -635,11 +634,11 @@ private:
  * @brief Output operator for matrices.
  */
 template<typename T>
-inline ostream& operator<<(ostream& os, const Matrix4<T> matrix){
+inline std::ostream& operator<<(std::ostream& os, const Matrix4<T> matrix){
 	os << "Matrix:" << std::endl;
-	os << fixed;
+	os << std::fixed;
 	for(int i = 0; i < 16; i++){
-		os << setprecision(4) << matrix[i] << " ";
+		os << std::setprecision(4) << matrix[i] << " ";
 		if(i % 4 == 3) os << " " <<  std::endl;
 	}
 	os << std::endl;

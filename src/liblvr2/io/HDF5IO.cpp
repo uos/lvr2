@@ -311,7 +311,7 @@ bool HDF5IO::readLabel(ModelPtr model_ptr)
 		boost::shared_array<int> labelIDArray = getArray<int>(labelInstancePath.string(), "IDs", idsDims);
 		boost::shared_array<int> colorArray = getArray<int>(labelInstancePath.string(), "Color", colorDims);
 
-		auto instance = make_shared<LabelInstance>();
+		auto instance = std::make_shared<LabelInstance>();
 		instance->instanceName = labelClassGroup.getObjectName(k);
 
 		instance->color.resize(colorDims[0]);

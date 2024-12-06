@@ -205,11 +205,8 @@ endif(UNIX)
 #####################################################################################
 
 add_library(lvr2core OBJECT ${LVR2_SOURCES})
-
-
 if(WITH_3DTILES)
     add_dependencies(lvr2core cesium-native)
-
 endif(WITH_3DTILES)
 
 #####################################################################################
@@ -218,6 +215,12 @@ endif(WITH_3DTILES)
 
 message(STATUS "Building static library")
 add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
+target_include_directories(lvr2_static PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/spdlog/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/spdmon/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lvr2>
+)
 target_link_libraries(
     lvr2_static 
     ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
@@ -228,6 +231,14 @@ target_compile_definitions(
     PUBLIC
     ${LVR2_DEFINITIONS}
 )
+set_target_properties(lvr2_static
+  PROPERTIES
+    EXPORT_NAME lvr2_static
+    SOVERSION ${lvr2_VERSION_MAJOR}
+    VERSION ${lvr2_VERSION}
+    CXX_STANDARD 17
+)
+
 
 #####################################################################################
 # Build shared library
@@ -235,15 +246,29 @@ target_compile_definitions(
 
 message(STATUS "Building shared library")
 add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
-target_link_libraries(
-    lvr2 
+target_include_directories(lvr2 PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/spdlog/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ext/spdmon/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lvr2>
+)
+target_link_libraries(lvr2 
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
     ${LVR2_LIB_DEPENDENCIES})
-target_compile_definitions(
-    lvr2
-    PUBLIC
+target_compile_definitions(lvr2 PUBLIC
     ${LVR2_DEFINITIONS}
 )
+set_target_properties(lvr2
+  PROPERTIES
+    EXPORT_NAME lvr2
+    SOVERSION ${lvr2_VERSION_MAJOR}
+    VERSION ${lvr2_VERSION}
+    CXX_STANDARD 17
+)
+
+#####################################################################################
+# Install static and shared library
+#####################################################################################
 
 install(TARGETS lvr2_static lvr2
   EXPORT lvr2Targets
@@ -304,10 +329,6 @@ if(CUDA_FOUND)
 
     target_link_libraries(lvr2cuda lvr2)
 
-    # find_package(PkgConfig REQUIRED)
-    # pkg_check_modules(nvrtc REQUIRED IMPORTED_TARGET libnvrtc)
-    # set(NVRTC_LIBRARY PkgConfig::nvrtc)
-
     # /usr/local/cuda/lib64/libnvrtc.so
     find_library(NVRTC_LIBRARY REQUIRED
         NAMES nvrtc libnvrtc
@@ -320,14 +341,12 @@ if(CUDA_FOUND)
 
     target_link_libraries(lvr2cuda
         ${CUDA_LIBRARIES}
-        # TODO Find nvrtc library
         ${NVRTC_LIBRARY}
         ${CUDA_CUDA_LIBRARY}
     )
 
     target_link_libraries(lvr2cuda_static
         ${CUDA_LIBRARIES}
-        # TODO Find nvrtc library
         ${NVRTC_LIBRARY}
         ${CUDA_CUDA_LIBRARY}
     )

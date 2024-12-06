@@ -275,7 +275,7 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
 
 void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const boost::filesystem::path file)
 {
-    ifstream in(file.c_str());
+    std::ifstream in(file.c_str());
     if(in.good())
     {
         in >> position.x >> position.y >> position.z;

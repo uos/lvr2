@@ -355,7 +355,7 @@ int main(int argc, char** argv)
     }
 
     string outfile_name = options.outputFile();
-    ofstream out;
+    std::ofstream out;
     out.open(outfile_name.c_str(), std::ios::binary);
     writePLYHeader(out, totalNumPoints, mergeColors, mergeNormals);
 
@@ -367,7 +367,7 @@ int main(int argc, char** argv)
     while(it != ply_file_names.end())
     {
         size_t pointsInChunk = 0;
-        vector<string> filesInChunk;
+        std::vector<std::string> filesInChunk;
         do
         {
             filesInChunk.push_back(it->first);

@@ -302,7 +302,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         // - 0: PCA
         // - 1: RANSAC
         // - 2: Iterative
-        surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
+        surface = std::make_shared<AdaptiveKSearchSurface<BaseVecT>>(
             buffer,
             pcm_name,
             options.getKn(),
@@ -315,7 +315,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     else if(pcm_name == "LBVH_CUDA")
     {
         #ifdef LVR2_USE_CUDA
-            surface = make_shared<CudaKSearchSurface<BaseVecT>>(
+            surface = std::make_shared<CudaKSearchSurface<BaseVecT>>(
                 buffer,
                 options.getKn()
             );
@@ -393,7 +393,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     }
     if(pcm_name == "LBVH_CUDA")
     {
-        surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(
+        surface = std::make_shared<AdaptiveKSearchSurface<BaseVecT>>(
             buffer,
             "FLANN",
             options.getKn(),

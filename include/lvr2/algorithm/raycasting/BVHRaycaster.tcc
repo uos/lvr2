@@ -1,4 +1,6 @@
 
+#define EPSILON 0.0000001
+
 namespace lvr2 {
 
 template<typename IntT>

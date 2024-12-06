@@ -56,8 +56,8 @@ struct PointCloudAttribute
     bool         active;
 };
 
-typedef map<PointCloud*, PointCloudAttribute*> pc_attr_map;
-typedef map<PointCloud*, PointCloudAttribute*>::iterator pc_attr_it;
+typedef std::map<PointCloud*, PointCloudAttribute*> pc_attr_map;
+typedef std::map<PointCloud*, PointCloudAttribute*>::iterator pc_attr_it;
 
 class MultiPointCloud : public Renderable
 {
@@ -91,13 +91,13 @@ private:
 
     void init(PointBufferPtr buffer);
 
-    map<PointCloud*, PointCloudAttribute*> m_clouds;
+    std::map<PointCloud*, PointCloudAttribute*> m_clouds;
 };
 
 void MultiPointCloud::render()
 {
     if(!m_active) return;
-    map<PointCloud*, PointCloudAttribute*>::iterator it;
+    std::map<PointCloud*, PointCloudAttribute*>::iterator it;
     for(it = m_clouds.begin(); it != m_clouds.end(); it++)
     {
         it->second->cloud->render();

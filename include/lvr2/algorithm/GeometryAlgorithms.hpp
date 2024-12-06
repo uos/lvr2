@@ -36,8 +36,6 @@
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/geometry/Handles.hpp"
 #include "lvr2/geometry/Normal.hpp"
-#include "lvr2/util/Timestamp.hpp"
-
 #include <list>
 
 namespace lvr2
@@ -78,6 +76,24 @@ void calcLocalVertexNeighborhood(
  */
 template <typename BaseVecT, typename VisitorF>
 void visitLocalVertexNeighborhood(
+    const BaseMesh<BaseVecT>& mesh,
+    VertexHandle vH,
+    double radius,
+    VisitorF visitor
+);
+
+/**
+ * @brief Visits every vertex in the local neighborhood of `vH`.
+ *
+ * The local neighborhood is defined as all vertices that are connected to `vH`
+ * and where the "path" in between those vertices only contains vertices that
+ * are no further away from `vH` than `radius`.
+ *
+ * For every such vertex in the local neighborhood (not `vH` itself!) the
+ * given `visitor` is called exactly once.
+ */
+template <typename BaseVecT, typename VisitorF>
+void visitLocalVertexNeighborhoodPlane(
     const BaseMesh<BaseVecT>& mesh,
     VertexHandle vH,
     double radius,
@@ -183,6 +199,32 @@ void calcVertexRoughnessAndHeightDifferences(
  */
 template<typename BaseVecT>
 DenseEdgeMap<float> calcVertexDistances(const BaseMesh<BaseVecT>& mesh);
+
+
+/**
+ * @brief Computes / set costs for each border vertex to predefined value
+ *
+ * @param mesh          The mesh containing the vertices and edges of interest
+ * @param border_cost   Predefined value to set the border vertices to. Defaults to 1.0
+ * @return              The dense edge map with the border cost values
+ */
+template<typename BaseVecT>
+DenseVertexMap<float> calcBorderCosts(const BaseMesh<BaseVecT>& mesh, double border_cost = 1.0);
+
+
+/**
+ * @brief Compute the distances to the next intersections along the vertex normals of the mesh
+ *
+ * @param mesh          The mesh containing the geometry of interest
+ * @param normals       The vertex normals used by the algorithm
+ * @return              A dense vertex map containing the free space along the normal of each vertex
+ */
+template <typename BaseVecT>
+DenseVertexMap<float> calcNormalClearance(
+    const BaseMesh<BaseVecT>& mesh,
+    const DenseVertexMap<Normal<typename BaseVecT::CoordType>>& normals
+);
+
 
 /**
  * @brief  Dijkstra's algorithm

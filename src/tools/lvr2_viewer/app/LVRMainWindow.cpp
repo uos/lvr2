@@ -3338,7 +3338,7 @@ void LVRMainWindow::generateTexture()
     PointBufferPtr buffer = scan->points;
 
     // create surface from buffer
-    surface = make_shared<AdaptiveKSearchSurface<Vec>>(
+    surface = std::make_shared<AdaptiveKSearchSurface<Vec>>(
         buffer,
         "FLANN",
         600,

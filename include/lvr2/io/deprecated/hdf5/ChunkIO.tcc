@@ -104,15 +104,15 @@ BoundingBox<BaseVector<float>> ChunkIO<Derived>::loadBoundingBox()
         = m_array_io->template load<float>(m_chunkName, m_boundingBoxName, dimensionBox);
     if (dimensionBox.size() < 2)
     {
-        throw out_of_range(
+        throw std::out_of_range(
             "Error loading chunk data: bounding_box has not the right amount of dimensions. Real: "
-            + to_string(dimensionBox.size()) + "; Expected: 2");
+            + std::to_string(dimensionBox.size()) + "; Expected: 2");
     }
     if (dimensionBox.at(0) != 2 && dimensionBox.at(1) != 3)
     {
-        throw out_of_range(
+        throw std::out_of_range(
             "Error loading chunk data: bounding_box has not the right of dimension. Real: "
-            + to_string(dimensionBox.at(0)) + ", " + to_string(dimensionBox.at(1))
+            + std::to_string(dimensionBox.at(0)) + ", " + std::to_string(dimensionBox.at(1))
             + "; Expected: {2, 3}");
     }
     else

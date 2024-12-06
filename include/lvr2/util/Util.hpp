@@ -238,6 +238,24 @@ public:
                    (lhs.x == rhs.x && lhs.y == rhs.y && lhs.z < rhs.z);
         }
     };
+
+    /**
+    * @brief Convert a BaseVecT to Eigen::Vector3
+    *
+    * @param    vec     The BaseVec to convert to eigen
+    * 
+    * @return Returns the vector as an Eigen::Vector3 object
+    */
+    template <typename BaseVecT>
+    [[nodiscard]]
+    static inline Vector3<typename BaseVecT::CoordType> to_eigen(const BaseVecT& vec) noexcept
+    {
+        return Vector3<typename BaseVecT::CoordType>(
+            vec[0],
+            vec[1],
+            vec[2]
+        );
+    }
 };
 
 } // namespace lvr2

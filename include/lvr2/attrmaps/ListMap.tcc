@@ -62,7 +62,7 @@ typename vector<pair<HandleT, ValueT>>::const_iterator
 }
 
 template<typename HandleT, typename ValueT>
-typename vector<pair<HandleT, ValueT>>::iterator ListMap<HandleT, ValueT>::keyIterator(HandleT key)
+typename std::vector<pair<HandleT, ValueT>>::iterator ListMap<HandleT, ValueT>::keyIterator(HandleT key)
 {
     return std::find_if(m_list.begin(), m_list.end(), [&](auto& elem)
     {

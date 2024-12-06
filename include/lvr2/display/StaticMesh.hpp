@@ -57,8 +57,6 @@
 #include "lvr2/display/Renderable.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 
-using namespace std;
-
 
 namespace lvr2
 {
@@ -84,8 +82,8 @@ public:
 	inline void render();
 
 	virtual void finalize();
-	virtual void savePLY(string filename);
-	virtual void setName(string name);
+	virtual void savePLY(std::string filename);
+	virtual void setName(std::string name);
 
 	floatArr		getVertices();
 	uintArr 		getIndices();
@@ -115,7 +113,7 @@ protected:
 	void setColorMaterial(float r, float g, float b);
 
 
-	void readPly(string filename);
+	void readPly(std::string filename);
 
 	floatArr        m_normals;
 	float*          m_faceNormals;

@@ -357,7 +357,7 @@ void LVRCorrespondanceDialog::saveCorrespondences()
 
     if(fileName != "")
     {
-        ofstream outfile(fileName.toStdString().c_str());
+        std::ofstream outfile(fileName.toStdString().c_str());
         QTreeWidgetItemIterator it(m_ui->treeWidget);
         while(*it)
         {
@@ -383,7 +383,7 @@ void LVRCorrespondanceDialog::loadCorrespondences()
 
     if(fileName != "")
     {
-        ifstream infile(fileName.toStdString().c_str());
+        std::ifstream infile(fileName.toStdString().c_str());
         while(infile.good())
         {
             double* start = new double[3];

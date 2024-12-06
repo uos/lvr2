@@ -36,7 +36,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(string data)
 
     PointBufferPtr baseBuffer = baseModel->m_pointCloud;
     PointsetSurfacePtr<BaseVecT> surface;
-    surface = make_shared<AdaptiveKSearchSurface<BaseVecT>>(baseBuffer,"FLANN");
+    surface = std::make_shared<AdaptiveKSearchSurface<BaseVecT>>(baseBuffer,"FLANN");
     surface->calculateSurfaceNormals();
     return surface;
 }
@@ -300,17 +300,17 @@ int main(int argc, char* argv[])
     // =======================================================================
     // Load Additional Reference Points
     // =======================================================================    
-    string currenSystem;
+    std::string currenSystem;
     int numberOfPoints;
     VecD *srcPoints;
     VecD *dstPoints;
      // Read Coordinate System and Reference Points from the provided File
     if(!options.getInputReferencePairs().empty())
     {
-        ifstream input;
+        std::ifstream input;
         VecD s,d;
         char ch;
-        string num;
+        std::string num;
         input.open(options.getInputReferencePairs());
         if(input.fail())
         {
@@ -465,7 +465,7 @@ int main(int argc, char* argv[])
 
     if(!options.getInputReferencePairs().empty())
     {
-        ofstream file;
+        std::ofstream file;
         file.open (options.getOutputFileName() + "_transformmatrix.txt");
         if(!noTransformation)
         {

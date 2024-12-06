@@ -89,10 +89,10 @@ private:
 
 
 /// Overlaoeded outpur operator
-inline ostream& operator<<(ostream& os, const Options &o)
+inline std::ostream& operator<<(std::ostream& os, const Options &o)
 {
-	cout << "##### Program options: " 	<< endl;
-    cout << "##### Data directory \t\t: "  << o.getDataDir() << endl;
+	std::cout << "##### Program options: " 	<< std::endl;
+    std::cout << "##### Data directory \t\t: "  << o.getDataDir() << std::endl;
 
 	return os;
 }

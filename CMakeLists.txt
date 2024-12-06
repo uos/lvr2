@@ -208,8 +208,7 @@ message(STATUS "Found GSL")
 #------------------------------------------------------------------------------
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
-message(STATUS "Found Eigen3")
-message(${EIGEN3_INCLUDE_DIR})
+message(STATUS "Found Eigen3: ${EIGEN3_INCLUDE_DIR}")
 
 #------------------------------------------------------------------------------
 # Searching for OpenCl
@@ -396,12 +395,12 @@ endif(STANN_FOUND)
 
 # spdlog
 set(SPDLOG_INCLUDE_DIRS "ext/spdlog")
-list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SPDLOG_INCLUDE_DIRS})
+# list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SPDLOG_INCLUDE_DIRS})
 include_directories(${SPDLOG_INCLUDE_DIRS})
 
 # spdmon
 set(SPDMON_INCLUDE_DIRS "ext/spdmon")
-list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SPDMON_INCLUDE_DIRS})
+# list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SPDMON_INCLUDE_DIRS})
 include_directories(${SPDMON_INCLUDE_DIRS})
 
 # NanoFLANN
@@ -687,7 +686,7 @@ endif(NOT MSVC)
 if(BUILD_TOOLS)
   add_subdirectory(src/tools/lvr2_reconstruct)
   add_subdirectory(src/tools/lvr2_mesh_reducer)
-  add_subdirectory(src/tools/lvr2_hdf5_mesh_builder)
+  add_subdirectory(src/tools/lvr2_hdf5_mesh_tool)
 endif(BUILD_TOOLS)
 
 if(BUILD_TOOLS_EXPERIMENTAL)

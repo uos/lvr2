@@ -116,7 +116,7 @@ private:
 static Timestamp timestamp;
 
 /// The output operator for Timestamp objects
-inline ostream& operator<<(ostream& os, Timestamp &ts)
+inline std::ostream& operator<<(std::ostream& os, Timestamp &ts)
 {
 	if(ts.isQuiet())
 	{

@@ -49,7 +49,7 @@ GridIO::GridIO()
 
 void GridIO::read( std::string filename )
 {
-    ifstream in(filename.c_str());
+    std::ifstream in(filename.c_str());
 
     if(in.good())
     {

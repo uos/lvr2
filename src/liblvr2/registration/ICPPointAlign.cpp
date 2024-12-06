@@ -60,7 +60,7 @@ Transformd ICPPointAlign::match()
         return Matrix4d::Identity();
     }
 
-    auto start_time = chrono::steady_clock::now();
+    auto start_time = std::chrono::steady_clock::now();
 
     double ret = 0.0, prev_ret = 0.0, prev_prev_ret = 0.0;
     EigenSVDPointAlign<double> align;
@@ -104,9 +104,9 @@ Transformd ICPPointAlign::match()
         }
     }
 
-    auto duration = chrono::steady_clock::now() - start_time;
-    std::cout << setw(6) << (int)(duration.count() / 1e6) << " ms, ";
-    std::cout << "Error: " << fixed << setprecision(3) << setw(7) << ret;
+    auto duration = std::chrono::steady_clock::now() - start_time;
+    std::cout << std::setw(6) << (int)(duration.count() / 1e6) << " ms, ";
+    std::cout << "Error: " << std::fixed << std::setprecision(3) << std::setw(7) << ret;
     if (iteration < m_maxIterations)
     {
         std::cout << " after " << iteration << " Iterations";

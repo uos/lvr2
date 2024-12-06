@@ -64,6 +64,7 @@ public:
     string  getMeshName()         const { return m_variables["meshName"].as<string>();}
     size_t  getEdgeCollapseNum()  const { return m_variables["edgeCollapse"].as<size_t >();}
     float  getLocalRadius() const { return m_variables["localRadius"].as<float>();}
+    float  getBorderVertexCost() const { return m_variables["borderVertexCost"].as<float>();}
 private:
     /// The internally used variable map
     variables_map                   m_variables;
@@ -86,10 +87,11 @@ inline ostream& operator<<(ostream& os, const Options &o)
     cout << "##### Mesh name \t\t: "  << o.getMeshName() << endl;
     cout << "##### Edge collapse num \t\t: "  << o.getEdgeCollapseNum() << endl;
     cout << "##### Local Radius \t\t: "  << o.getLocalRadius() << endl;
+    cout << "##### Border Vertex Cost \t\t: " << o.getBorderVertexCost() << endl;
   return os;
 }
 
-} // namespace reconstruct
+} // namespace hdf5meshtool
 
 
 #endif /* OPTIONS_H_ */

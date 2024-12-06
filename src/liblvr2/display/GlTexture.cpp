@@ -35,8 +35,6 @@
 #include "lvr2/display/GlTexture.hpp"
 #include <iostream>
 
-using namespace std;
-
 namespace lvr2
 {
 

@@ -40,9 +40,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <string.h>
-
-using namespace std;
+#include <string>
 
 namespace lvr2
 {
@@ -54,11 +52,11 @@ PPMIO::PPMIO()
     m_height   = 0;
 }
 
-PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
+PPMIO::PPMIO( std::string filename ) : m_width(0), m_height(0), m_pixels(0)
 {
 
     // Try to open file
-    ifstream in(filename.c_str());
+    std::ifstream in(filename.c_str());
 
     // Parse file
     if(in.good())
@@ -70,7 +68,7 @@ PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
         readLine(in, buffer);
 
         // Check tag
-        string tag(buffer);
+        std::string tag(buffer);
         if(tag == "P3")
         {
             // Read width, height and color information
@@ -97,12 +95,12 @@ PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
         else
         {
             in.close();
-            in.open(filename.c_str(), ios::binary);
+            in.open(filename.c_str(), std::ios::binary);
             //	    readLine(in, buffer);
             //	    char tmp[3];
             //	    sscanf(buffer, "%s %d %d 255", tmp, &m_width, &m_height);
 
-            string tag;
+            std::string tag;
             in >> tag;
 
 
@@ -116,28 +114,25 @@ PPMIO::PPMIO( string filename ) : m_width(0), m_height(0), m_pixels(0)
             }
             else
             {
-                cerr << "Unsupported tag, only P3 or P6 possible." << endl;
+                std::cerr << "Unsupported tag, only P3 or P6 possible." << std::endl;
             }
         }
     }
     else
     {
-        cout << "ReadPPM: Unable to open file " << filename << "." << endl;
+        std::cout << "ReadPPM: Unable to open file " << filename << "." << std::endl;
     }
 }
 
 void PPMIO::write( string filename )
 {
-    ofstream out(filename.c_str());
-
+    std::ofstream out(filename.c_str());
     if(out.good())
     {
-    	out<<"P6"<<" "<<m_width<<" "<<m_height<<" "<<"255"<<endl;
-	out.write((char*) m_pixels, m_width * m_height * 3);
+    	out<<"P6"<<" "<<m_width<<" "<<m_height<<" "<<"255\n";
+	    out.write((char*) m_pixels, m_width * m_height * 3);
     }
-
     out.close();
-
 }
 
 void PPMIO::setDataArray( unsigned char* array, int width, int height )
@@ -147,7 +142,7 @@ void PPMIO::setDataArray( unsigned char* array, int width, int height )
     m_height = height;
 }
 
-void PPMIO::readLine( ifstream & in, char* buffer )
+void PPMIO::readLine( std::ifstream & in, char* buffer )
 {
     // Read lines until no comment line was found
     do

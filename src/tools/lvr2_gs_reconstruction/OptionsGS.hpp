@@ -130,29 +130,29 @@ class Options : public BaseOption
 };
 
 /// Output the Options - overloaded output Operator
-inline ostream& operator<<(ostream& os, const Options& o)
+inline std::ostream& operator<<(std::ostream& os, const Options& o)
 {
     // o.printTransformation(os);
 
-    cout << "##### InputFile-Name: " << o.getInputFileName() << endl;
-    cout << "##### Runtime: " << o.getRuntime() << endl;
-    cout << "##### BasicSteps: " << o.getBasicSteps() << endl;
-    cout << "##### NumSplits: " << o.getNumSplits() << endl;
-    cout << "##### BoxFactor: " << o.getBoxFactor() << endl;
-    cout << "#### WithCollapse: " << o.getWithCollapse() << endl;
-    cout << "##### LearningRate: " << o.getLearningRate() << endl;
-    cout << "##### NeighbourLearningRate: " << o.getNeighborLearningRate() << endl;
-    cout << "##### DecreaseFactor: " << o.getDecreaseFactor() << endl;
-    cout << "##### AllowMiss: " << o.getAllowMiss() << endl;
-    cout << "##### CollapseThreshold: " << o.getCollapseThreshold() << endl;
-    cout << "##### FilterChain: " << o.isFilterChain() << endl;
-    cout << "##### DeleteLongEdgesFactor: " << o.getDeleteLongEdgesFactor() << endl;
-    cout << "##### Interior: " << o.isInterior() << endl;
-    cout << "##### Balances: " << o.getNumBalances() << endl;
-    cout << "##### PCM: " << o.getPcm() << endl;
-    cout << "##### KD: " << o.getKd() << endl;
-    cout << "##### KI: " << o.getKi() << endl;
-    cout << "##### KN: " << o.getKn() << endl;
+    std::cout << "##### InputFile-Name: " << o.getInputFileName() << std::endl;
+    std::cout << "##### Runtime: " << o.getRuntime() << std::endl;
+    std::cout << "##### BasicSteps: " << o.getBasicSteps() << std::endl;
+    std::cout << "##### NumSplits: " << o.getNumSplits() << std::endl;
+    std::cout << "##### BoxFactor: " << o.getBoxFactor() << std::endl;
+    std::cout << "#### WithCollapse: " << o.getWithCollapse() << std::endl;
+    std::cout << "##### LearningRate: " << o.getLearningRate() << std::endl;
+    std::cout << "##### NeighbourLearningRate: " << o.getNeighborLearningRate() << std::endl;
+    std::cout << "##### DecreaseFactor: " << o.getDecreaseFactor() << std::endl;
+    std::cout << "##### AllowMiss: " << o.getAllowMiss() << std::endl;
+    std::cout << "##### CollapseThreshold: " << o.getCollapseThreshold() << std::endl;
+    std::cout << "##### FilterChain: " << o.isFilterChain() << std::endl;
+    std::cout << "##### DeleteLongEdgesFactor: " << o.getDeleteLongEdgesFactor() << std::endl;
+    std::cout << "##### Interior: " << o.isInterior() << std::endl;
+    std::cout << "##### Balances: " << o.getNumBalances() << std::endl;
+    std::cout << "##### PCM: " << o.getPcm() << std::endl;
+    std::cout << "##### KD: " << o.getKd() << std::endl;
+    std::cout << "##### KI: " << o.getKi() << std::endl;
+    std::cout << "##### KN: " << o.getKn() << std::endl;
 
     return os;
 }

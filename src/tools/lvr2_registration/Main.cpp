@@ -287,7 +287,7 @@ int main(int argc, char** argv)
             {
                 if (end != -1 || i == start)
                 {
-                    cerr << "Missing scan " << file.filename() << endl;
+                    std::cerr << "Missing scan " << file.filename() << endl;
                     return EXIT_FAILURE;
                 }
                 end = i - 1;
@@ -297,7 +297,7 @@ int main(int argc, char** argv)
             file.replace_extension(pose_format);
             if (!exists(file))
             {
-                cerr << "Missing pose file " << file.filename() << endl;
+                std::cerr << "Missing pose file " << file.filename() << endl;
                 return EXIT_FAILURE;
             }
         }
@@ -376,7 +376,7 @@ int main(int argc, char** argv)
     //     // DEBUG
 
     //      cout << "vor Pipe Konstruktor" << endl;
-    //      ScanProjectEditMarkPtr projPtr = make_shared<ScanProjectEditMark>(proj);
+    //      ScanProjectEditMarkPtr projPtr = std::make_shared<ScanProjectEditMark>(proj);
     //      RegistrationPipeline pipe(&options, projPtr);
     //      pipe.doRegistration();
     //      cout << "Nach doRegistration" << endl;
@@ -399,12 +399,12 @@ int main(int argc, char** argv)
 
             if (!model)
             {
-                cerr << "Unable to read Model from: " << file.string() << endl;
+                std::cerr << "Unable to read Model from: " << file.string() << endl;
                 return EXIT_FAILURE;
             }
             if (!model->m_pointCloud)
             {
-                cerr << "file does not contain Points: " << file.string() << endl;
+                std::cerr << "file does not contain Points: " << file.string() << endl;
                 return EXIT_FAILURE;
             }
 
@@ -467,7 +467,7 @@ int main(int argc, char** argv)
         {
             file = output_dir / format_name(write_scans ? output_format : format, start + i);
             file.replace_extension(output_pose_format);
-            ofstream out(file.string());
+            std::ofstream out(file.string());
 
             auto pose = scan->pose();
             for (int y = 0; y < 4; y++)
@@ -490,8 +490,8 @@ int main(int argc, char** argv)
 
             size_t n = scan->numPoints();
 
-            auto model = make_shared<Model>();
-            auto pointCloud = make_shared<PointBuffer>();
+            auto model = std::make_shared<Model>();
+            auto pointCloud = std::make_shared<PointBuffer>();
             floatArr points = floatArr(new float[n * 3]);
 
             #pragma omp parallel for schedule(static)

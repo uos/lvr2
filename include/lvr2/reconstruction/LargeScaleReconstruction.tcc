@@ -905,7 +905,7 @@ namespace lvr2
             auto meshBuffer = finalize.apply(mesh);
 
             auto m = ModelPtr(new Model(meshBuffer));
-            ModelFactory::saveModel(m, "largeScale_test_" + to_string(voxelSize) + ".ply");
+            ModelFactory::saveModel(m, "largeScale_test_" + std::to_string(voxelSize) + ".ply");
         }
             return mesh;
 
@@ -1281,7 +1281,7 @@ namespace lvr2
             // }
 
             lvr2::PointsetSurfacePtr<BaseVecT> surface;
-            surface = make_shared<lvr2::AdaptiveKSearchSurface<BaseVecT>>(p_loader,
+            surface = std::make_shared<lvr2::AdaptiveKSearchSurface<BaseVecT>>(p_loader,
                                                                      "FLANN",
                                                                      m_options.kn,
                                                                      m_options.ki,
@@ -1323,7 +1323,7 @@ namespace lvr2
             stringstream largeScale;
             largeScale << "/tmp/lvr2_lsr_mpi_" << rank << "_" << chunk;
 
-            ifstream fl(largeScale.str());
+            std::ifstream fl(largeScale.str());
             fl.seekg(0, ios::end);
             int len = fl.tellg();
             char* result = new char[len];

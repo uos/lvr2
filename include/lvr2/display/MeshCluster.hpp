@@ -36,7 +36,6 @@
 #define MESHCLUSTER_HPP_
 
 #include <list>
-using namespace std;
 
 #include "lvr2/display/Renderable.hpp"
 #include "lvr2/display/StaticMesh.hpp"
@@ -55,17 +54,17 @@ public:
 
 	virtual inline void render()
 	{
-		list<StaticMesh*>::iterator it;
+		std::list<StaticMesh*>::iterator it;
 		for(it = m_meshes.begin(); it != m_meshes.end(); it++)
 		{
 			(*it)->render();
 		}
 	}
 
-	list<StaticMesh*> getMeshes() { return m_meshes;}
+	std::list<StaticMesh*> getMeshes() { return m_meshes;}
 
 private:
-	list<StaticMesh*> m_meshes;
+	std::list<StaticMesh*> m_meshes;
 };
 
 } // namespace lvr2

@@ -17,21 +17,21 @@ using namespace std;
 void replace_first(
     std::string &s,
     std::string const &toReplace,
-    std::string const &replaceWith
-) {
-std::size_t pos = s.find(toReplace);
-if (pos == std::string::npos) return;
-s.replace(pos, toReplace.length(), replaceWith);
+    std::string const &replaceWith) 
+{
+  std::size_t pos = s.find(toReplace);
+  if (pos == std::string::npos) return;
+  s.replace(pos, toReplace.length(), replaceWith);
 }
 
 //saves vertex format in destination path
-int pointtovertex(string src, string dest) {
-
+int pointtovertex(string src, string dest) 
+{
     if(!std::filesystem::exists(dest)) {
-        string strReplace = "point";
-        string strNew = "vertex";
-        ifstream filein(src); //File to read from
-        ofstream fileout(dest); //File to write to
+        std::string strReplace = "point";
+        std::string strNew = "vertex";
+        std::ifstream filein(src); //File to read from
+        std::ofstream fileout(dest); //File to write to
 
         //case file error
         if (!filein || !fileout) {
@@ -39,22 +39,18 @@ int pointtovertex(string src, string dest) {
             return 1;
         }
 
-
-        string strTemp;
+        std::string strTemp;
         bool found = false;
         std::string line;
         size_t i = 0;
-        while (getline(filein, line)) {
+        while (std::getline(filein, line))
+        {
             if (i < 10) {
                 replace_first(line, "point", "vertex");
             }
             fileout << line << "\n";
             i++;
-
-
         }
     }
     return 0;
-
-
 }

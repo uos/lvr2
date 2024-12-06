@@ -153,22 +153,22 @@ private:
     string        m_outputFile;
 };
 
-inline ostream& operator<<(ostream& os, const Options& o)
+inline std::ostream& operator<<(std::ostream& os, const Options& o)
 {
     os << "##### OpenCl normal estimation settings #####" << endl;
     if(o.useRansac()){
-        os << "Normal Calculation with RANSAC" << endl;
+        os << "Normal Calculation with RANSAC" << std::endl;
     }else if(o.usePCA()){
-        os << "Normal Calculation with PCA" << endl;
+        os << "Normal Calculation with PCA" << std::endl;
     }else{
-        os << "Normal Calculation with PCA" << endl;
+        os << "Normal Calculation with PCA" << std::endl;
     }
     os << "Neighbors for normal estimation: "<< o.kn() << endl;
     os << "Neighbors for normal interpolation: " << o.ki() << endl;
     os << "Neighbors for distance function: " << o.kd() << endl;
-    os << "Flippoint x: " << o.flipx() << endl;
-    os << "Flippoint y: " << o.flipy() << endl;
-    os << "Flippoint z: " << o.flipz() << endl;
+    os << "Flippoint x: " << o.flipx() << std::endl;
+    os << "Flippoint y: " << o.flipy() << std::endl;
+    os << "Flippoint z: " << o.flipz() << std::endl;
 
     return os;
 }

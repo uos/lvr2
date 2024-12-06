@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     {
       // Check if transformFile was given, check if it's a pose or frames file and
       // read in accordingly.
-      ifstream in(options.getTransformFile().c_str());
+      std::ifstream in(options.getTransformFile().c_str());
       if(!in.good()){
         cout << timestamp << "Warning: Load transform file: File not found or corrupted." << endl;
         return -1;
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
       {
         cout << timestamp << "Reading from .frames file" << endl;
         float t[17];
-        ifstream in(options.getTransformFile().c_str());
+        std::ifstream in(options.getTransformFile().c_str());
         while(in.good())
         {
           in >>  t[0] >>  t[1] >>  t[2] >>  t[3] 

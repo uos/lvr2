@@ -50,7 +50,6 @@
 #endif
 
 #include <string>
-using namespace std;
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/Matrix4.hpp"
@@ -66,13 +65,12 @@ class Renderable {
 
 public:
 
-    using Vec = BaseVector<float>;
+  using Vec = BaseVector<float>;
 
 	Renderable();
 	Renderable(const Renderable &other);
 	Renderable(string name);
 	Renderable(Matrix4<Vec> m, string name);
-
 
 	virtual ~Renderable();
 	virtual void render() = 0;
@@ -118,15 +116,15 @@ public:
 
 	void compileAxesList();
 
-	string Name() {return m_name;};
+	std::string Name() {return m_name;};
 	Matrix4<Vec> getTransformation(){return m_transformation;};
 
 	BoundingBox<Vec>* boundingBox() { return m_boundingBox;};
 
 	virtual ModelPtr model()
-    {
-        return m_model;
-    }
+  {
+      return m_model;
+  }
 
 	void setPointSize(float size)   { m_pointSize = size;}
 	void setLineWidth(float width)  { m_lineWidth = width;}

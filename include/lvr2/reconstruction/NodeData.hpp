@@ -41,8 +41,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 namespace lvr2
 {
 /**
@@ -83,19 +81,19 @@ class NodeData
      * sets data path
      * @param path
      */
-    void open(string path);
+    void open(std::string path);
 
     /**
      * returns path where data is stored on hdd
      * @return
      */
-    const string& getDataPath() const { return m_dataPath; }
+    const std::string& getDataPath() const { return m_dataPath; }
 
     /**
      * returns path to folder on hdd where data is stored
      * @return
      */
-    const string getFolder() const { return to_string(c_tstamp).insert(0, "node-"); }
+    const std::string getFolder() const { return std::to_string(c_tstamp).insert(0, "node-"); }
 
     /**
      * Iterator referring to first element
@@ -195,13 +193,13 @@ class NodeData
     // current id of the dataobject, used to generate file name
     int m_id;
     // input buffer
-    vector<float> m_readBuffer;
+    std::vector<float> m_readBuffer;
     // output buffer
-    vector<float> m_writeBuffer;
+    std::vector<float> m_writeBuffer;
 
-    vector<float> m_readBufferNormal;
+    std::vector<float> m_readBufferNormal;
     // output buffer
-    vector<float> m_writeBufferNormal;
+    std::vector<float> m_writeBufferNormal;
 
     // maximum buffer size
     size_t m_bufferSize;
