@@ -394,13 +394,11 @@ endif(STANN_FOUND)
 ###############################################################################
 
 # spdlog
-set(SPDLOG_INCLUDE_DIRS "ext/spdlog")
-# list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SPDLOG_INCLUDE_DIRS})
+set(SPDLOG_INCLUDE_DIRS "ext/spdlog/include")
 include_directories(${SPDLOG_INCLUDE_DIRS})
 
 # spdmon
-set(SPDMON_INCLUDE_DIRS "ext/spdmon")
-# list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${SPDMON_INCLUDE_DIRS})
+set(SPDMON_INCLUDE_DIRS "ext/spdmon/include")
 include_directories(${SPDMON_INCLUDE_DIRS})
 
 # NanoFLANN
@@ -430,7 +428,6 @@ message(STATUS "Found HDF5")
 
 # HighFive
 set(HIGHFIVE_INCLUDE_DIRS "ext/HighFive/include")
-list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${HIGHFIVE_INCLUDE_DIRS})
 include_directories(${HIGHFIVE_INCLUDE_DIRS})
 
 # yaml-cpp
