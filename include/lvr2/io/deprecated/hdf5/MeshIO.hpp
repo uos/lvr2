@@ -32,7 +32,7 @@ namespace hdf5features {
  * 
  * // writing
  * io.open("test.h5");
- * io.save("ames#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"h", mesh);
+ * io.save("amesh", mesh);
  * 
  * // reading
  * mesh_in = io.loadMesh("amesh");
