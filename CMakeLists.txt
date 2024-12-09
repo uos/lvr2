@@ -224,6 +224,8 @@ if(OPENCL_FOUND)
     endif(OpenCL_NEW_API)
 endif(OPENCL_FOUND)
 
+# TODO: I cannot move this section down to the 'add_subdirectory' part.
+# There must be some side effects on the way there 
 if(BUILD_VIEWER)
   #------------------------------------------------------------------------------
   # Searching for VTK

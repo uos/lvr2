@@ -319,39 +319,44 @@ if(CUDA_FOUND)
         endforeach()
     endif(VTK_FOUND)
 
+    
+    # find NVRTC - runtime compilation library for CUDA C++
+	if (NOT DEFINED CUDA_NVRTC_LIBRARY)
+        string(REGEX REPLACE cudart nvrtc CUDA_NVRTC_LIBRARY ${CUDA_CUDART_LIBRARY})
+    endif()
+    MESSAGE(STATUS "CUDA NVRTC: " ${CUDA_NVRTC_LIBRARY})
+
+    if(NOT CUDA_NVRTC_LIBRARY)
+        message(FATAL_ERROR "Required library 'nvrtc' not found.")
+    endif(NOT CUDA_NVRTC_LIBRARY)
+
+    
     message(STATUS "Building static LVR CUDA library")
     cuda_add_library(lvr2cuda_static STATIC ${LVR2_CUDA_SRC})
-    target_link_libraries(lvr2cuda_static lvr2_static)
 
     # Add dependency to avoid that both targets
     # are build concurrently in parallel builds
-    add_dependencies(lvr2cuda_static lvr2_static)
+    add_dependencies(lvr2cuda_static 
+        lvr2_static)
+
+    target_link_libraries(lvr2cuda_static
+        lvr2_static
+        ${CUDA_LIBRARIES}
+        ${CUDA_CUDA_LIBRARY}
+        ${CUDA_NVRTC_LIBRARY}
+    )
 
     message(STATUS "Building shared LVR CUDA library")
     cuda_add_library(lvr2cuda SHARED ${LVR2_CUDA_CPP_SRC} ${LVR2_CUDA_SRC})
 
-    target_link_libraries(lvr2cuda lvr2)
-
-    # /usr/local/cuda/lib64/libnvrtc.so
-    find_library(NVRTC_LIBRARY REQUIRED
-        NAMES nvrtc libnvrtc
-        HINTS "/usr/local/cuda/lib64"
-    )
-
-    if(NOT NVRTC_LIBRARY)
-        message(FATAL_ERROR "Required library 'nvrtc' not found.")
-    endif()
+    add_dependencies(lvr2cuda 
+        lvr2)
 
     target_link_libraries(lvr2cuda
+        lvr2
         ${CUDA_LIBRARIES}
-        ${NVRTC_LIBRARY}
         ${CUDA_CUDA_LIBRARY}
-    )
-
-    target_link_libraries(lvr2cuda_static
-        ${CUDA_LIBRARIES}
-        ${NVRTC_LIBRARY}
-        ${CUDA_CUDA_LIBRARY}
+        ${CUDA_NVRTC_LIBRARY}
     )
 
     install(
