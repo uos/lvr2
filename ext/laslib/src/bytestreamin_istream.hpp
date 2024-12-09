@@ -145,7 +145,7 @@ inline BOOL ByteStreamInIstream::seek(const I64 position)
 
 inline BOOL ByteStreamInIstream::seekEnd(const I64 distance)
 {
-  stream.seekg(static_cast<streamoff>(-distance), ios::end);
+  stream.seekg(static_cast<streamoff>(-distance), std::ios::end);
   return stream.good();
 }
 

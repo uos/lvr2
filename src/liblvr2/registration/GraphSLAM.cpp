@@ -387,7 +387,7 @@ void GraphSLAM::fillEquation(const vector<SLAMScanPtr>& scans, const Graph& grap
     int x, y;
     for (auto& e : result)
     {
-        tie(x, y) = e.first;
+        std::tie(x, y) = e.first;
         Matrix6d& m = e.second;
         for (int dx = 0; dx < 6; dx++)
         {

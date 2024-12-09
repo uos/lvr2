@@ -1324,10 +1324,10 @@ namespace lvr2
             largeScale << "/tmp/lvr2_lsr_mpi_" << rank << "_" << chunk;
 
             std::ifstream fl(largeScale.str());
-            fl.seekg(0, ios::end);
+            fl.seekg(0, std::ios::end);
             int len = fl.tellg();
             char* result = new char[len];
-            fl.seekg(0, ios::beg);
+            fl.seekg(0, std::ios::beg);
             fl.read(result, len);
             fl.close();
 

@@ -445,24 +445,24 @@ SearchTreeFlann<BaseVecT>& tree ,int numNeighbors, Data resolution, Eigen::Matri
 
     for(auto it = dict1.begin(); it != dict1.end(); )
     {
-        tuple t = it->first;
+        std::tuple t = it->first;
         ssize_t x = std::get<0>(t);
         ssize_t y = std::get<1>(t);    
        
-        pf1 = dict1.find(make_tuple(x,y+1));
+        pf1 = dict1.find(std::make_tuple(x,y+1));
         if(pf1 != dict1.end())
         {   
-            pf2 = dict1.find(make_tuple(x-1,y));
+            pf2 = dict1.find(std::make_tuple(x-1,y));
             if(pf2 != dict1.end())
             {
                 mesh.addFace(it->second,pf1->second,pf2->second);
             }
         }
 
-        pf1 = dict1.find(make_tuple(x,y+1));
+        pf1 = dict1.find(std::make_tuple(x,y+1));
         if(pf1 != dict1.end())
         {   
-            pf2 = dict1.find(make_tuple(x+1,y+1));
+            pf2 = dict1.find(std::make_tuple(x+1,y+1));
             if(pf2 != dict1.end())
             {
                 mesh.addFace(pf2->second,pf1->second,it->second);
@@ -645,24 +645,24 @@ SearchTreeFlann<BaseVecT>& tree, float minRadius, float maxRadius, int minNeighb
 
     for(auto it = dict.begin(); it != dict.end(); )
     {
-        tuple t = it->first;
+        std::tuple t = it->first;
         ssize_t x = std::get<0>(t);
         ssize_t y = std::get<1>(t);  
 
-        pf1 = dict.find(make_tuple(x,y+1));
+        pf1 = dict.find(std::make_tuple(x,y+1));
         if(pf1 != dict.end())
         {   
-            pf2 = dict.find(make_tuple(x-1,y));
+            pf2 = dict.find(std::make_tuple(x-1,y));
             if(pf2 != dict.end())
             {
                 mesh.addFace(it->second,pf1->second,pf2->second);
             }
         }
 
-        pf1 = dict.find(make_tuple(x,y+1));
+        pf1 = dict.find(std::make_tuple(x,y+1));
         if(pf1 != dict.end())
         {   
-            pf2 = dict.find(make_tuple(x+1,y+1));
+            pf2 = dict.find(std::make_tuple(x+1,y+1));
             if(pf2 != dict.end())
             {
                 mesh.addFace(pf2->second,pf1->second,it->second);
@@ -956,24 +956,24 @@ void thresholdMethod(lvr2::HalfEdgeMesh<VecD>& mesh,FloatChannel& points, Points
 
     for(auto it = dict.begin(); it != dict.end(); )
     {
-        tuple t = it->first;
+        std::tuple t = it->first;
         ssize_t x = std::get<0>(t);
         ssize_t y = std::get<1>(t);  
        
-        pf1 = dict.find(make_tuple(x,y+1));
+        pf1 = dict.find(std::make_tuple(x,y+1));
         if(pf1 != dict.end())
         {   
-            pf2 = dict.find(make_tuple(x-1,y));
+            pf2 = dict.find(std::make_tuple(x-1,y));
             if(pf2 != dict.end())
             {
                 mesh.addFace(it->second,pf1->second,pf2->second);
             }
         }
 
-        pf1 = dict.find(make_tuple(x,y+1));
+        pf1 = dict.find(std::make_tuple(x,y+1));
         if(pf1 != dict.end())
         {   
-            pf2 = dict.find(make_tuple(x+1,y+1));
+            pf2 = dict.find(std::make_tuple(x+1,y+1));
             if(pf2 != dict.end())
             {
                 mesh.addFace(pf2->second,pf1->second,it->second);

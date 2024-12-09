@@ -84,6 +84,7 @@ list(APPEND LVR2_LIBRARIES ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 ##  OPTIONAL DEPS  ##
 #####################
 
+# VTK
 if(@VTK_FOUND@)
     find_package(VTK REQUIRED)
     list(APPEND LVR2_INCLUDE_DIRS ${VTK_INCLUDE_DIRS})

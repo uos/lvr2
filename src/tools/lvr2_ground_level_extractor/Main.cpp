@@ -377,7 +377,7 @@ int main(int argc, char* argv[])
     {    
         // Right now, LVR2 doesn't support Large Coordinates and we can't use the Translation fully
         // In Functions where we use the Matrix we need to exclude the Translation 
-        tie(affineMatrix,affineTranslation) = computeAffineGeoRefMatrix(srcPoints,dstPoints,numberOfPoints); 
+        std::tie(affineMatrix,affineTranslation) = computeAffineGeoRefMatrix(srcPoints,dstPoints,numberOfPoints); 
         fullAffineMatrix = affineTranslation * affineMatrix;
 
         // Check, if Rotation is supported

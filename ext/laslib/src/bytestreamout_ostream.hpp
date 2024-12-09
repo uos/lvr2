@@ -138,7 +138,7 @@ inline BOOL ByteStreamOutOstream::seek(I64 position)
 
 inline BOOL ByteStreamOutOstream::seekEnd()
 {
-  stream.seekp(0, ios::end);
+  stream.seekp(0, std::ios::end);
   return stream.good();
 }
 

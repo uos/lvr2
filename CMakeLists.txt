@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 project(lvr2 VERSION 3.0.0)
 
 # OPTIONS
@@ -187,14 +187,15 @@ endif(WITH_CV_NONFREE)
 # Searching for FLANN
 #------------------------------------------------------------------------------
 find_package(FLANN REQUIRED)
-if(FLANN_FOUND)
-	message(STATUS "Found FLANN library: ${FLANN_INCLUDE_DIR}")
-	include_directories(${FLANN_INCLUDRE_DIR})
-endif(FLANN_FOUND)
+message(STATUS "Found FLANN library: ${FLANN_INCLUDE_DIR}")
+include_directories(${FLANN_INCLUDRE_DIR})
 
+#------------------------------------------------------------------------------
+# Searching for LZ4
+#------------------------------------------------------------------------------
 find_package(Lz4 REQUIRED)
-include_directories(  ${LZ4_INCLUDE_DIR} )
-message(STATUS "Found LZ4 library: ${LZ4_LIBRARY}")
+include_directories(${LZ4_INCLUDE_DIR})
+message(STATUS "Found LZ4 library: ${LZ4_INCLUDE_DIR}")
 
 #------------------------------------------------------------------------------
 # Searching for GSL
@@ -223,6 +224,56 @@ if(OPENCL_FOUND)
     endif(OpenCL_NEW_API)
 endif(OPENCL_FOUND)
 
+if(BUILD_VIEWER)
+  #------------------------------------------------------------------------------
+  # Searching for VTK
+  #------------------------------------------------------------------------------
+  set(VTK_QT_VERSION 5)
+  find_package(VTK REQUIRED)
+
+  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
+    # patched QVTKOpenGL header because of name clash with signals.
+    add_subdirectory(ext/QVTKOpenGLWidget)
+    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
+  elseif(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "9")
+    add_subdirectory(ext/QVTKOpenGLWidget)
+    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
+    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK9)
+  endif()
+  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
+  endif()
+
+  if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
+      if(VTK_MINOR_VERSION VERSION_GREATER "0")
+          list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+      endif()
+  endif()
+
+  if(VTK_MAJOR_VERSION VERSION_GREATER "7")
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+  endif()
+
+  if(VTK_VERSION VERSION_GREATER "7")
+
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
+    set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
+    set(VTK_HAS_QT OFF)
+    foreach(VTK_COMPONENT ${VTK_COMPONENTS})
+      if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
+        set(VTK_HAS_QT ON)
+      endif()
+    endforeach()
+
+    message(STATUS "Found VTK (Version > 7)")
+    if(VTK_HAS_QT)
+      message(STATUS "Found VTK compoment QVTK")
+    endif()
+  endif()
+endif(BUILD_VIEWER)
 
 #------------------------------------------------------------------------------
 # Searching for NABO
@@ -726,8 +777,9 @@ if(BUILD_TOOLS_EXPERIMENTAL)
 
 endif(BUILD_TOOLS_EXPERIMENTAL)
 
-
-
+###############################################################################
+# LVR2 EXAMPLES
+###############################################################################
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
@@ -736,53 +788,9 @@ endif()
 # LVR2 VIEWER + LVR2 ASCII VIEWER
 ###############################################################################
 if(BUILD_VIEWER)
-  #------------------------------------------------------------------------------
-  # Searching for VTK
-  #------------------------------------------------------------------------------
-  set(VTK_QT_VERSION 5)
-  find_package(VTK REQUIRED)
 
-  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
-    # patched QVTKOpenGL header because of name clash with signals.
-    add_subdirectory(ext/QVTKOpenGLWidget)
-    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
-    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
-  elseif(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "9")
-    add_subdirectory(ext/QVTKOpenGLWidget)
-    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
-    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK9)
-  endif()
-  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
-  endif()
-
-  if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
-      if(VTK_MINOR_VERSION VERSION_GREATER "0")
-          list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-      endif()
-  endif()
-
-  if(VTK_MAJOR_VERSION VERSION_GREATER "7")
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-  endif()
-
-  if(VTK_VERSION VERSION_GREATER "7")
-
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-    set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
-    set(VTK_HAS_QT OFF)
-    foreach(VTK_COMPONENT ${VTK_COMPONENTS})
-      if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
-        set(VTK_HAS_QT ON)
-      endif()
-    endforeach()
-
-    message(STATUS "Found VTK (Version > 7)")
-    if(VTK_HAS_QT)
-      message(STATUS "Found VTK compoment QVTK")
-    endif()
+  if(DEFINED VTK_USE_FILE)
+    include(${VTK_USE_FILE})
   endif()
 
   find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
@@ -855,6 +863,22 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ext/HighFive/include/
 # Installation of spdlog headers
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ext/spdlog/include/
     DESTINATION "include")
+
+
+###############################################################################
+# Uninstall
+###############################################################################
+# https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
+if(NOT TARGET uninstall)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/lvr2-uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/lvr2-uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+  add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/lvr2-uninstall.cmake
+    COMMENT "Uninstall lvr2 libraries and all header files")
+endif()
 
 ###############################################################################
 # DOCUMENTATION

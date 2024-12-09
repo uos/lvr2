@@ -121,10 +121,10 @@ set(LVR2_VIEWER_MOCS
 #####################################################################################
 
 
-    # LEGACY
-    set(LVR2_VIEWER_UIS
-        ui/LVRMainWindowUI.ui
-    )
+# LEGACY
+set(LVR2_VIEWER_UIS
+    ui/LVRMainWindowUI.ui
+)
 
 list(APPEND LVR2_VIEWER_UIS
    ui/LVRRenameDialogUI.ui
@@ -207,9 +207,8 @@ add_executable(lvr2_viewer
   ${LVR2_VIEWER_MOCS}
   ${LVR2_VIEWER_UI_HDRS})
 
-
 target_link_libraries(lvr2_viewer ${LVR2_VIEWER_DEPENDENCIES})
-target_precompile_headers(lvr2_viewer PUBLIC  ${LVR2_PCHS})
+target_precompile_headers(lvr2_viewer PUBLIC ${LVR2_PCHS})
 
 if(CUDA_FOUND)
         target_link_libraries(lvr2_viewer lvr2cuda)
