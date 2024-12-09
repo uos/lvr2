@@ -3,14 +3,19 @@
   <name>lvr2</name>
   <version>3.0.0</version>
   <description>
-The Las Vegas Surface Reconstruction Toolkit is an Open Source toolkit to reconstruct triangle meshes from unordered point clouds. It supports the generation of textured models either using colored point clouds or point clouds plus images and according calibration matrices. The LVR toolkit provides an Open Source C++ API for meshing and texture generation as well as an I/O interface to store the generated meshes in different exchange formats including Stanford PLY, Wavefront OBJ and Collada. In contrast to other meshing software, it focuses on reconstruction of large scale environments on city scale from high resolution point clouds.
+The Las Vegas Surface Reconstruction Toolkit is an Open Source toolkit to reconstruct triangle meshes 
+from unordered point clouds. It supports the generation of textured models either using colored point 
+clouds or point clouds plus images and according calibration matrices. The LVR toolkit provides an 
+Open Source C++ API for meshing and texture generation as well as an I/O interface to store the generated 
+meshes in different exchange formats including Stanford PLY, Wavefront OBJ and Collada. In contrast to other 
+meshing software, it focuses on reconstruction of large scale environments on city scale from high resolution 
+point clouds.
   </description>
 
   <maintainer email="spuetz@uos.de">Sebastian Pütz</maintainer>
   <maintainer email="twiemann@uos.de">Thomas Wiemann</maintainer>
 
   <license>BSD-3-Clause</license>
-
 
   <url type="website">https://www.las-vegas.uni-osnabrueck.de/</url>
 
@@ -35,12 +40,11 @@ The Las Vegas Surface Reconstruction Toolkit is an Open Source toolkit to recons
   <depend>libxi-dev</depend>
   <depend>libxmu-dev</depend>
   <depend>libhdf5-dev</depend>
-  <depend>qtbase5-dev</depend>
-  <depend>libqt5-opengl-dev</depend>
   <depend>lz4</depend>
   <depend>libopencv-dev</depend>
   <depend>yaml-cpp</depend>
   <depend>libtiff-dev</depend>
+  <depend>libgdal-dev</depend>
 
   <export>
     <build_type>cmake</build_type>

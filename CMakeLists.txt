@@ -88,35 +88,17 @@ else(MSVC)
   set(CMAKE_CXX_STANDARD 17)
 endif(MSVC)
 
-###############################################################################
-# EXTERNAL LIBRARIES
-###############################################################################
 
-add_subdirectory(ext/spdlog)
-include_directories(ext/spdlog/include)
 
-add_subdirectory(ext/spdmon)
-include_directories(ext/spdmon/include)
+find_package(MPI)
+if(MPI_FOUND)
+    message(STATUS "Found MPI")
+    include_directories(${MPI_CXX_INCLUDE_PATH})
+endif(MPI_FOUND)
 
 ###############################################################################
-# RDB
+# REQUIRED DEPENDENCIES
 ###############################################################################
-
-find_package(RDB)
-
-if(RDB_FOUND)
-    include_directories(${RDB_INCLUDE_DIRS})
-    message(STATUS "Found LibRDB at ${RDB_INCLUDE_DIRS}, ${RDB_LIBRARIES}.")
-
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_RDB)
-    
-    install(TARGETS rdbcpp
-            EXPORT lvr2Targets
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            )
-endif(RDB_FOUND)
-
 
 #------------------------------------------------------------------------------
 # Searching for Thread Building Blocks library
@@ -125,42 +107,18 @@ find_package(TBB REQUIRED)
 if(TBB_FOUND)
     message(STATUS "Found TBB library")
 endif(TBB_FOUND)
+
 #------------------------------------------------------------------------------
 # Searching for TIFF
 #------------------------------------------------------------------------------
 find_package(TIFF REQUIRED)
-if(TIFF_FOUND)
-    message(STATUS "Found TIFF library")
-    include_directories(${TIFF_INCLUDE_DIRS})
-endif(TIFF_FOUND)
-
+include_directories(${TIFF_INCLUDE_DIRS})
 
 #------------------------------------------------------------------------------
 # Searching for GDAL
 #------------------------------------------------------------------------------
 find_package(GDAL REQUIRED)
-if(GDAL_FOUND)
-message(STATUS "Found GDAL")
-    include_directories(${GDAL_INCLUDE_DIR})
-endif(GDAL_FOUND)
-
-
-#------------------------------------------------------------------------------
-# Searching for CUDA
-#------------------------------------------------------------------------------
-if(MSVC)
-    option(WITH_CUDA "Compile with CUDA support" FALSE)
-else()
-    option(WITH_CUDA "Compile with CUDA support" TRUE)
-endif()
-if(NOT APPLE AND WITH_CUDA)
-find_package(CUDA)
-if(CUDA_FOUND)
-  message(STATUS "Found CUDA")
-  include_directories(${CUDA_INCLUDE_DIRS})
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_CUDA)
-endif(CUDA_FOUND)
-endif(NOT APPLE AND WITH_CUDA)
+include_directories(${GDAL_INCLUDE_DIR})
 
 #------------------------------------------------------------------------------
 # Searching for OpenCV
@@ -182,13 +140,12 @@ if(WITH_CV_NONFREE)
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_CV_NONFREE)
 endif(WITH_CV_NONFREE)
 
-
 #------------------------------------------------------------------------------
 # Searching for FLANN
 #------------------------------------------------------------------------------
 find_package(FLANN REQUIRED)
 message(STATUS "Found FLANN library: ${FLANN_INCLUDE_DIR}")
-include_directories(${FLANN_INCLUDRE_DIR})
+include_directories(${FLANN_INCLUDE_DIR})
 
 #------------------------------------------------------------------------------
 # Searching for LZ4
@@ -210,6 +167,121 @@ message(STATUS "Found GSL")
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 message(STATUS "Found Eigen3: ${EIGEN3_INCLUDE_DIR}")
+
+#------------------------------------------------------------------------------
+# Searching for Boost
+#------------------------------------------------------------------------------
+#set(Boost_USE_STATIC_LIBS       ON)
+set(Boost_USE_MULTITHREADED     ON)
+set(Boost_COMPONENTS
+  program_options
+  filesystem
+  system
+  thread
+  serialization
+  timer
+  iostreams
+  date_time)
+
+if(MPI_FOUND)
+  set(Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
+  message(STATUS "Found MPI. Adding Boost MPI library to required components.")
+endif()
+
+find_package(Boost COMPONENTS ${Boost_COMPONENTS} REQUIRED QUIET)
+message(STATUS "Found Boost libraries")
+
+link_directories(${Boost_LIBRARY_DIR})
+include_directories(${Boost_INCLUDE_DIRS})
+add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
+
+#------------------------------------------------------------------------------
+# Searching for HDF5
+#------------------------------------------------------------------------------
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+include_directories(${HDF5_INCLUDE_DIRS})
+message(STATUS "Found HDF5")
+
+#------------------------------------------------------------------------------
+# Searching for OpenGL
+#------------------------------------------------------------------------------
+find_package(OpenGL COMPONENTS OpenGL)
+include_directories(${OPENGL_INCLUDE_DIR})
+message(STATUS "Found OpenGL: ${OPENGL_INCLUDE_DIR}")
+
+if(APPLE)
+  include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
+  include_directories(/System/Library/Frameworks/OpenGL.framework/Headers)
+  IF(EXISTS "/opt/local/lib")
+    link_directories(/opt/local/lib)
+  endif()
+endif(APPLE)
+
+#------------------------------------------------------------------------------
+## Searching for glut
+#------------------------------------------------------------------------------
+find_package(GLUT)
+if(GLUT_FOUND)
+  message(STATUS "Found OpenGL Utility Toolkit via cmake: ${GLUT_INCLUDE_DIRS}" )
+  include_directories(${GLUT_INCLUDE_DIRS})
+else(GLUT_FOUND)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(GLUT glut freeglut FREEGLUT REQUIRED)
+  message(STATUS "Found OpenGL Utility Toolkit via pkg_config: ${GLUT_LIBDIR} ${FREEGLUT_LIBDIR}" )
+  include_directories(${GLUT_INCLUDEDIR})
+  link_directories(${GLUT_LIBDIR})
+  set(GLUT_LIBRARIES ${pkgcfg_lib_GLUT_glut})
+  message(STATUS "Using ugly cmake cache hack to provide GLUT libraries: " : ${GLUT_LIBRARIES})
+endif(GLUT_FOUND)
+
+
+#------------------------------------------------------------------------------
+# EXTERNAL LIBRARIES
+#------------------------------------------------------------------------------
+add_subdirectory(ext/spdlog)
+include_directories(ext/spdlog/include)
+
+add_subdirectory(ext/spdmon)
+include_directories(ext/spdmon/include)
+
+###############################################################################
+# OPTIONAL DEPENDENCIES
+###############################################################################
+
+#------------------------------------------------------------------------------
+# Searching for CUDA
+#------------------------------------------------------------------------------
+if(MSVC)
+    option(WITH_CUDA "Compile with CUDA support" FALSE)
+else()
+    option(WITH_CUDA "Compile with CUDA support" TRUE)
+endif()
+if(NOT APPLE AND WITH_CUDA)
+  find_package(CUDA)
+  if(CUDA_FOUND)
+    message(STATUS "Found CUDA")
+    include_directories(${CUDA_INCLUDE_DIRS})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_CUDA)
+  endif(CUDA_FOUND)
+endif(NOT APPLE AND WITH_CUDA)
+
+
+#------------------------------------------------------------------------------
+# Searching for RDB
+#------------------------------------------------------------------------------
+find_package(RDB)
+if(RDB_FOUND)
+    include_directories(${RDB_INCLUDE_DIRS})
+    message(STATUS "Found LibRDB at ${RDB_INCLUDE_DIRS}, ${RDB_LIBRARIES}.")
+
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_RDB)
+    
+    install(TARGETS rdbcpp
+            EXPORT lvr2Targets
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            )
+endif(RDB_FOUND)
 
 #------------------------------------------------------------------------------
 # Searching for OpenCl
@@ -311,16 +383,9 @@ if(WITH_PCL)
     endif(PCL_FOUND)
 endif(WITH_PCL)
 
-find_package(MPI)
-if(MPI_FOUND)
-    message(STATUS "Found MPI")
-    include_directories(${MPI_CXX_INCLUDE_PATH})
-endif(MPI_FOUND)
-
 #------------------------------------------------------------------------------
 # Searching CGAL
 #------------------------------------------------------------------------------
-
 find_package(CGAL)
 if(CGAL_FOUND)
   
@@ -336,37 +401,8 @@ if(CGAL_FOUND)
 endif(CGAL_FOUND)
 
 #------------------------------------------------------------------------------
-# Searching for Boost
-#------------------------------------------------------------------------------
-
-#set(Boost_USE_STATIC_LIBS       ON)
-set(Boost_USE_MULTITHREADED     ON)
-set(Boost_COMPONENTS
-  program_options
-  filesystem
-  system
-  thread
-  serialization
-  timer
-  iostreams
-  date_time)
-
-if(MPI_FOUND)
-  set(Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
-  message(STATUS "Found MPI. Adding Boost MPI library to required components.")
-endif()
-
-find_package(Boost COMPONENTS ${Boost_COMPONENTS} REQUIRED QUIET)
-message(STATUS "Found Boost libraries")
-
-link_directories(${Boost_LIBRARY_DIR})
-include_directories(${Boost_INCLUDE_DIRS})
-add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
-
-#------------------------------------------------------------------------------
 # Searching for OpenMP
 #------------------------------------------------------------------------------
-
 find_package(OpenMP)
 if(OPENMP_FOUND)
   message(STATUS "Found OpenMP")
@@ -381,41 +417,6 @@ if(OPENMP_FOUND)
   endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(OPENMP_FOUND)
-
-#------------------------------------------------------------------------------
-# Searching for OpenGL
-#------------------------------------------------------------------------------
-
-find_package(OpenGL COMPONENTS OpenGL)
-include_directories(${OPENGL_INCLUDE_DIR})
-message(STATUS "Found OpenGL: ${OPENGL_INCLUDE_DIR}")
-
-if(APPLE)
-  include_directories(/System/Library/Frameworks/GLUT.framework/Headers)
-  include_directories(/System/Library/Frameworks/OpenGL.framework/Headers)
-  IF(EXISTS "/opt/local/lib")
-    link_directories(/opt/local/lib)
-  endif()
-endif(APPLE)
-
-#------------------------------------------------------------------------------
-## Searching for glut
-#------------------------------------------------------------------------------
-
-find_package(GLUT)
-if(GLUT_FOUND)
-  message(STATUS "Found OpenGL Utility Toolkit via cmake: ${GLUT_INCLUDE_DIRS}" )
-  include_directories(${GLUT_INCLUDE_DIRS})
-  
-else(GLUT_FOUND)
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(GLUT glut freeglut FREEGLUT REQUIRED)
-  message(STATUS "Found OpenGL Utility Toolkit via pkg_config: ${GLUT_LIBDIR} ${FREEGLUT_LIBDIR}" )
-  include_directories(${GLUT_INCLUDEDIR})
-  link_directories(${GLUT_LIBDIR})
-  set(GLUT_LIBRARIES ${pkgcfg_lib_GLUT_glut})
-  message(STATUS "Using ugly cmake cache hack to provide GLUT libraries: " : ${GLUT_LIBRARIES})
-endif(GLUT_FOUND)
 
 #------------------------------------------------------------------------------
 ## Searching for libfreenect
@@ -473,11 +474,6 @@ list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${RPLY_INSTALL_INCLUDE_DIR})
 add_subdirectory(ext/laslib)
 include_directories( ${LASLIB_INCLUDE_DIR} )
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
-
-# HDF5
-find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
-include_directories(${HDF5_INCLUDE_DIRS})
-message(STATUS "Found HDF5")
 
 # HighFive
 set(HIGHFIVE_INCLUDE_DIRS "ext/HighFive/include")
