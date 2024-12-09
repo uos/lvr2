@@ -74,7 +74,6 @@ struct channel_type<std::array<T, size>>
   typedef T type;
 };
 
-
 template <typename HandleType>
 struct attribute_type
 {
@@ -164,6 +163,7 @@ bool AttributeMeshIOBase::addDenseAttributeMap(const MapT &map, const std::strin
   {
     values[i++] = map[handle]; //TODO handle deleted map values.
   }
+
   return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values);
 }
 
@@ -184,7 +184,6 @@ bool AttributeMeshIOBase::addAttributeMap(const MapT &map, const std::string &na
   return addChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values) && addChannel(attribute_type<typename MapT::HandleType>::attr_group, name + "_idx", indices);
 }
 
-
 template <typename MapT>
 boost::optional<MapT> AttributeMeshIOBase::getDenseAttributeMap(const std::string &name)
 {
@@ -202,8 +201,6 @@ boost::optional<MapT> AttributeMeshIOBase::getDenseAttributeMap(const std::strin
   }
   return boost::none;
 }
-
-
 
 template <typename MapT>
 boost::optional<MapT> AttributeMeshIOBase::getAttributeMap(const std::string &name)

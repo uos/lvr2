@@ -299,7 +299,7 @@ set(Boost_COMPONENTS
   date_time)
 
 if(MPI_FOUND)
-  set($Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
+  set(Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
   message(STATUS "Found MPI. Adding Boost MPI library to required components.")
 endif()
 

@@ -68,6 +68,13 @@ protected:
 
     std::string m_mesh_name = "";
 
+    /**
+     * @brief all geometry channels are stored to
+     */
+    std::string m_geometry_group = "geometry";
+    std::string m_materials_group = "materials";
+    std::string m_textures_group = "textures";
+
     // dependencies
     ChannelIO<Derived>* m_channel_io = static_cast<ChannelIO<Derived>*>(m_file_access);
     VariantChannelIO<Derived>* m_vchannel_io = static_cast<VariantChannelIO<Derived>*>(m_file_access);

@@ -222,15 +222,13 @@ target_include_directories(lvr2_static PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${SPDMON_INCLUDE_DIRS}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lvr2>
 )
-target_link_libraries(
-    lvr2_static 
+target_link_libraries(lvr2_static 
     ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
     ${LVR2_LIB_DEPENDENCIES}
 )
-target_compile_definitions(
-    lvr2_static
+target_compile_definitions(lvr2_static
     PUBLIC
-    ${LVR2_DEFINITIONS}
+        ${LVR2_DEFINITIONS}
 )
 set_target_properties(lvr2_static
   PROPERTIES
@@ -257,8 +255,9 @@ target_include_directories(lvr2 PUBLIC
 target_link_libraries(lvr2 
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
     ${LVR2_LIB_DEPENDENCIES})
-target_compile_definitions(lvr2 PUBLIC
-    ${LVR2_DEFINITIONS}
+target_compile_definitions(lvr2 
+    PUBLIC
+        ${LVR2_DEFINITIONS}
 )
 set_target_properties(lvr2
   PROPERTIES
@@ -266,6 +265,8 @@ set_target_properties(lvr2
     SOVERSION ${lvr2_VERSION_MAJOR}
     VERSION ${lvr2_VERSION}
     CXX_STANDARD 17
+    INTERFACE_INCLUDE_DIRECTORIES
+        ${Boost_INCLUDE_DIRS}
 )
 
 #####################################################################################

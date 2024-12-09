@@ -1,3 +1,5 @@
+#include <boost/filesystem.hpp>
+
 namespace lvr2
 {
 
@@ -8,24 +10,24 @@ template <typename Derived>
 void MeshIO<Derived>::save(std::string name, const MeshBufferPtr& buffer)
 {
     HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, name, true);
-
     save(g, buffer);
 }
 
 template <typename Derived>
-void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
+void MeshIO<Derived>::save(
+  HighFive::Group& group,
+  const MeshBufferPtr& buffer)
 {
     std::string id(MeshIO<Derived>::ID);
     std::string obj(MeshIO<Derived>::OBJID);
     hdf5util::setAttribute(group, "IO", id);
     hdf5util::setAttribute(group, "CLASS", obj);
 
-    if (!group.exist("channels"))
+    if (!group.exist(m_geometry_group))
     {
-        group.createGroup("channels");
+        group.createGroup(m_geometry_group);
     }
-    HighFive::Group channelsGroup = group.getGroup("channels");
-
+    HighFive::Group channelsGroup = group.getGroup(m_geometry_group);
     for (auto elem : *buffer)
     {
         m_vchannel_io->save(channelsGroup, elem.first, elem.second);
@@ -33,13 +35,13 @@ void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
 
     if(!buffer->getTextures().empty())
     {
-        if (!group.exist("textures"))
+        if (!group.exist(m_textures_group))
         {
-            group.createGroup("textures");
+            group.createGroup(m_textures_group);
         }
-        HighFive::Group texturesGroup = group.getGroup("textures");
+        HighFive::Group texturesGroup = group.getGroup(m_textures_group);
 
-        for (auto texture : buffer->getTextures())
+        for (const Texture& texture : buffer->getTextures())
         {
             auto dims   = std::vector<size_t>{texture.m_width, texture.m_height, texture.m_numChannels};
             auto chunks = std::vector<hsize_t>{dims[0], dims[1], dims[2]};
@@ -53,11 +55,11 @@ void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
     
     if(!buffer->getMaterials().empty())
     {
-        if (!group.exist("materials"))
+        if (!group.exist(m_materials_group))
         {
-            group.createGroup("materials");
+            group.createGroup(m_materials_group);
         }
-        HighFive::Group materialsGroup = group.getGroup("materials");
+        HighFive::Group materialsGroup = group.getGroup(m_materials_group);
 
 
         size_t numMaterials = buffer->getMaterials().size();
@@ -86,7 +88,7 @@ void MeshIO<Derived>::save(HighFive::Group& group, const MeshBufferPtr& buffer)
             }
         }
 
-        std::vector <size_t> numMat{numMaterials};
+        std::vector <size_t> numMat{numMaterials}; // TODO: what is this supposed to do? Storing empty buffers?
         std::vector <hsize_t> chunkMat{numMaterials};
         std::vector <size_t> dimensionsRgb{numMaterials, 3};
         std::vector <hsize_t> chunkRgb{numMaterials, 3};
@@ -128,9 +130,9 @@ MeshBufferPtr MeshIO<Derived>::load(HighFive::Group& group)
         return ret;
     }
 
-    if (group.exist("channels"))
+    if (group.exist(m_geometry_group))
     {
-        HighFive::Group channelsGroup = group.getGroup("channels");
+        HighFive::Group channelsGroup = group.getGroup(m_geometry_group);
 
         for (auto name : channelsGroup.listObjectNames())
         {
@@ -196,9 +198,9 @@ MeshBufferPtr MeshIO<Derived>::load(HighFive::Group& group)
         ret->setTextures(textures);
     }
 
-    if (group.exist("materials"))
+    if (group.exist(m_geometry_group))
     {
-        HighFive::Group materialsGroup = group.getGroup("materials");
+        HighFive::Group materialsGroup = group.getGroup(m_geometry_group);
 
         std::vector<lvr2::Material> materials;
         std::vector<size_t> dimensionColor;
@@ -240,7 +242,6 @@ MeshBufferPtr MeshIO<Derived>::load(HighFive::Group& group)
                 ret->setMaterials(materials);
             }
         }
-
     }
 
     return ret;
@@ -265,132 +266,95 @@ void MeshIO<Derived>::setMeshName(std::string meshName)
 template <typename Derived>
 FloatChannelOptional MeshIO<Derived>::getVertices()
 {
-    return m_channel_io->template load<float>(m_mesh_name + "/channels", "vertices");
+    namespace bfs = boost::filesystem;
+    bfs::path p = bfs::path(m_mesh_name) / m_geometry_group;
+    return m_channel_io->template load<float>(p.string(), "vertices");
 }
 
 template <typename Derived>
 IndexChannelOptional MeshIO<Derived>::getIndices()
 {
-    return m_channel_io->template load<unsigned int>(m_mesh_name + "/channels", "face_indices");
+    namespace bfs = boost::filesystem;
+    bfs::path p = bfs::path(m_mesh_name) / m_geometry_group;
+    return m_channel_io->template load<unsigned int>(p.string(), "face_indices");
 }
 
 template <typename Derived>
 bool MeshIO<Derived>::addVertices(const FloatChannel& channel)
 {
-    HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, true);
-    if (!hdf5util::exist(m_file_access->m_hdf5_file, m_mesh_name)) {
-        return false;
-    }
-
-    std::string id(MeshIO<Derived>::ID);
-    std::string obj(MeshIO<Derived>::OBJID);
-    hdf5util::setAttribute(group, "IO", id);
-    hdf5util::setAttribute(group, "CLASS", obj);
-
-    if (!group.exist("channels"))
+    // create new mesh group if noone is existing
+    if(!hdf5util::exist(m_file_access->m_hdf5_file, m_mesh_name))
     {
-        group.createGroup("channels");
+        // create group if not existing
+        HighFive::Group mesh_group = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, true);
+        std::string id(MeshIO<Derived>::ID);
+        std::string obj(MeshIO<Derived>::OBJID);
+        hdf5util::setAttribute(mesh_group, "IO", id);
+        hdf5util::setAttribute(mesh_group, "CLASS", obj);
     }
-    HighFive::Group channelsGroup = group.getGroup("channels");
-    m_vchannel_io->save(channelsGroup, "vertices", VariantChannel<float>(channel));
+
+    // use existing mesh group
+    HighFive::Group mesh_group = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, false);
+    if(!isMesh(mesh_group))
+    {
+        throw std::runtime_error("[MeshIO] tried to save vertices into a none mesh group!");
+    }
+
+    // and save the face indices to it
+    namespace bfs = boost::filesystem;
+    bfs::path p = bfs::path(m_mesh_name) / m_geometry_group;
+    m_channel_io->save(p.string(), "vertices", channel);
     return true;
 }
 
 template <typename Derived>
 bool MeshIO<Derived>::addIndices(const IndexChannel& channel)
 {
-    HighFive::Group group = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, true);
-    if (!hdf5util::exist(m_file_access->m_hdf5_file, m_mesh_name)) {
-        return false;
-    }
-
-    std::string id(MeshIO<Derived>::ID);
-    std::string obj(MeshIO<Derived>::OBJID);
-    hdf5util::setAttribute(group, "IO", id);
-    hdf5util::setAttribute(group, "CLASS", obj);
-
-    if (!group.exist("channels"))
+    // create new mesh group if noone is existing
+    if(!hdf5util::exist(m_file_access->m_hdf5_file, m_mesh_name))
     {
-        group.createGroup("channels");
+        // create group if not existing
+        HighFive::Group mesh_group = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, true);
+        std::string id(MeshIO<Derived>::ID);
+        std::string obj(MeshIO<Derived>::OBJID);
+        hdf5util::setAttribute(mesh_group, "IO", id);
+        hdf5util::setAttribute(mesh_group, "CLASS", obj);
     }
-    HighFive::Group channelsGroup = group.getGroup("channels");
-    m_vchannel_io->save(channelsGroup, "face_indices", VariantChannel<unsigned int>(channel));
+
+    // use existing mesh group
+    HighFive::Group mesh_group = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, false);
+    if(!isMesh(mesh_group))
+    {
+        throw std::runtime_error("[MeshIO] tried to save face_indices into a none mesh group!");
+    }
+
+    // and save the face indices to it
+    namespace bfs = boost::filesystem;
+    bfs::path p = bfs::path(m_mesh_name) / m_geometry_group;
+    m_channel_io->save(p.string(), "face_indices", channel);
     return true;
 }
 
 template<typename Derived>
 template <typename T>
-bool MeshIO<Derived>::getChannel(const std::string group, const std::string name, boost::optional<AttributeChannel<T>>& channel)
+bool MeshIO<Derived>::getChannel(
+  const std::string group,
+  const std::string name,
+  boost::optional<AttributeChannel<T> >& channel)
 {
-    if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
-    {
-        HighFive::Group meshGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, false);
-
-        // TODO check group for vertex / face attribute and set flag in hdf5 channel
-        HighFive::Group g = meshGroup.getGroup("channels");
-
-        if(g.exist(name))
-        {
-            HighFive::DataSet dataset = g.getDataSet(name);
-            std::vector<size_t> dim = dataset.getSpace().getDimensions();
-
-            size_t elementCount = 1;
-            for (auto e : dim)
-            elementCount *= e;
-
-            if(elementCount)
-            {
-                channel = Channel<T>(dim[0], dim[1]);
-                dataset.read(channel->dataPtr().get());
-            }
-        }
-    }
-    else
-    {
-        throw std::runtime_error("[Hdf5 - ChannelIO]: Hdf5 file not open.");
-    }
-    return true;
+    namespace bfs = boost::filesystem;
+    bfs::path p = bfs::path(m_mesh_name) / group;
+    channel = m_channel_io->template load<T>(p.string(), name);
+    return (bool)channel;
 }
 
 template<typename Derived>
 template <typename T>
 bool MeshIO<Derived>::addChannel(const std::string group, const std::string name, const AttributeChannel<T>& channel)
 {
-    if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
-    {
-        HighFive::DataSpace dataSpace({channel.numElements(), channel.width()});
-        HighFive::DataSetCreateProps properties;
-
-        if(m_file_access->m_chunkSize)
-        {
-            properties.add(HighFive::Chunking({channel.numElements(), channel.width()}));
-        }
-        if(m_file_access->m_compress)
-        {
-            //properties.add(HighFive::Shuffle());
-            properties.add(HighFive::Deflate(9));
-        }
-
-        HighFive::Group meshGroup = hdf5util::getGroup(m_file_access->m_hdf5_file, m_mesh_name, true);
-        if (!meshGroup.exist("channels"))
-        {
-            meshGroup.createGroup("channels");
-        }
-
-        // TODO check group for vertex / face attribute and set flag in hdf5 channel
-        HighFive::Group g = meshGroup.getGroup("channels");
-
-        std::unique_ptr<HighFive::DataSet> dataset = hdf5util::createDataset<T>(
-                g, name, dataSpace, properties);
-
-        const T* ptr = channel.dataPtr().get();
-        dataset->write(ptr);
-        m_file_access->m_hdf5_file->flush();
-        std::cout << timestamp << " Added attribute \"" << name << "\" to group \"" << group
-                  << "\" to the given HDF5 file!" << std::endl;
-    } else {
-        throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
-    }
+    namespace bfs = boost::filesystem;
+    bfs::path p = bfs::path(m_mesh_name) / group;
+    m_channel_io->save(p.string(), name, channel);
     return true;
 }
 
@@ -429,7 +393,6 @@ bool MeshIO<Derived>::addChannel(const std::string group, const std::string name
 {
     return addChannel<unsigned char>(group, name, channel);
 }
-
 
 } // namespace hdf5features
 
