@@ -31,20 +31,21 @@ point clouds.
 
   <buildtool_depend>cmake</buildtool_depend>
 
-  <depend>libflann-dev</depend>
-  <depend>libgsl</depend>
-  <depend>eigen</depend>
-  <depend>ocl-icd-opencl-dev</depend>
-  <depend>boost</depend>
-  <depend>glut</depend>
-  <depend>libxi-dev</depend>
-  <depend>libxmu-dev</depend>
-  <depend>libhdf5-dev</depend>
-  <depend>lz4</depend>
-  <depend>libopencv-dev</depend>
-  <depend>yaml-cpp</depend>
+  <depend>tbb</depend>
   <depend>libtiff-dev</depend>
   <depend>libgdal-dev</depend>
+  <depend>libopencv-dev</depend>
+  <depend>libflann-dev</depend>
+  <depend>lz4</depend>
+  <depend>libgsl</depend>
+  <depend>eigen</depend>
+  <depend>yaml-cpp</depend>
+  <depend>boost</depend>
+  <depend>libhdf5-dev</depend>
+  <depend>libxi-dev</depend>
+  <depend>libxmu-dev</depend>
+  <depend>glut</depend>
+  <depend>ocl-icd-opencl-dev</depend>
 
   <export>
     <build_type>cmake</build_type>
