@@ -325,7 +325,9 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 
     lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Interpolating " << numPoints << " Surface Normals using " << normal_interpolation_threads << " threads ..." << lvr2::endl;
     // Create monitor output
-    lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Interpolating normals", numPoints / normal_interpolation_threads);
+    // lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Interpolating normals", numPoints / normal_interpolation_threads);
+
+    lvr2::PacmanProgressBar monitor(numPoints / normal_interpolation_threads, "[AdaptiveKSearchSurface] Interpolating Normals");
 
     // Interpolate normals
     #pragma omp parallel for schedule(dynamic) num_threads(normal_interpolation_threads) shared(monitor)
@@ -347,7 +349,8 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
           ++monitor;
         }
     }
-    monitor.terminate();
+    // monitor.terminate();
+    std::cout << std::endl;
 
     lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Copying normals..." << lvr2::endl;
     for(size_t i = 0; i < numPoints; i++){
