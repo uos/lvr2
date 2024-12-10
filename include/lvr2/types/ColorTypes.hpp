@@ -1,6 +1,7 @@
-#ifndef COLORTYPES
-#define COLORTYPES
+#ifndef LVR2_TYPES_COLORTYPES_HPP
+#define LVR2_TYPES_COLORTYPES_HPP
 
+#include <cstdint>
 #include <array>
 
 namespace lvr2
@@ -11,4 +12,4 @@ using RGBFColor = std::array<float, 3>;
 
 } // namespace lvr2
 
-#endif // COLORTYPES
+#endif // LVR2_TYPES_COLORTYPES_HPP

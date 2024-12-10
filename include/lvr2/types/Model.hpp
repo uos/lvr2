@@ -32,8 +32,8 @@
  *  @author Thomas Wiemann
  */
 
-#ifndef MODEL_H_
-#define MODEL_H_
+#ifndef LVR2_MODEL_HPP
+#define LVR2_MODEL_HPP
 
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/PointBuffer.hpp"
@@ -85,4 +85,4 @@ using ModelPtr = std::shared_ptr<Model>;
 
 } // namespace lvr2
 
-#endif /* MODEL_H_ */
+#endif // LVR2_MODEL_HPP

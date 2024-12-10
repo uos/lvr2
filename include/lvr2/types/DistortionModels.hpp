@@ -2,6 +2,9 @@
 /// @author Justus Braun (jubraun@uos.de)
 /// @brief This file contains distortion models which model lens distortion of real cameras.
 #pragma once
+#ifndef LVR2_TYPES_DISTORTION_MODELS_HPP
+#define LVR2_TYPES_DISTORTION_MODELS_HPP
+
 #include <lvr2/types/MatrixTypes.hpp>
 
 namespace lvr2
@@ -173,3 +176,5 @@ struct OpenCVDistortion: DistortionModelInterface
 } // namespace lvr2
 
 #include "DistortionModels.tcc"
+
+#endif // LVR2_TYPES_DISTORTION_MODELS_HPP

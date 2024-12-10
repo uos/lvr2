@@ -30,6 +30,8 @@
 
 #include "lvr2/types/BaseBuffer.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/io/DataStruct.hpp"
+#include <vector>
 
 namespace lvr2
 {

@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef POINTBUFFER2_HPP
-#define POINTBUFFER2_HPP
+#ifndef LVR2_POINTBUFFER_HPP
+#define LVR2_POINTBUFFER_HPP
 
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/types/BaseBuffer.hpp"
@@ -143,4 +143,4 @@ using PointBufferPtr = std::shared_ptr<PointBuffer>;
 
 } // namespace lvr2
 
-#endif // POINTBUFFER2_HPP
+#endif // LVR2_POINTBUFFER_HPP

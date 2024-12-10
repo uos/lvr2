@@ -25,12 +25,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MESHBUFFER2_HPP
-#define MESHBUFFER2_HPP
+#ifndef LVR2_MESHBUFFER_HPP
+#define LVR2_MESHBUFFER_HPP
 
 #include "lvr2/texture/Material.hpp"
 #include "lvr2/texture/Texture.hpp"
+#include "lvr2/io/DataStruct.hpp" // floatArr, etc
 #include "lvr2/types/BaseBuffer.hpp"
+
+#include <vector>
 
 namespace lvr2
 {
@@ -217,4 +220,4 @@ private:
 using MeshBufferPtr = std::shared_ptr<MeshBuffer>;
 
 }
-#endif // MESHBUFFER2_HPP
+#endif // LVR2_MESHBUFFER_HPP

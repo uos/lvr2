@@ -1,6 +1,9 @@
 #ifndef LVR2_TYPES_BYTE_ENCODING_HPP
 #define LVR2_TYPES_BYTE_ENCODING_HPP
 
+#include <boost/shared_array.hpp>
+#include <boost/optional.hpp>
+
 namespace lvr2 {
 
 /**

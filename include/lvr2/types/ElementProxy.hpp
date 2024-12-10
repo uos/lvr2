@@ -26,9 +26,8 @@
  */
 
 #pragma once
-
-#ifndef LVR2_TYPES_ELEMENTPROXY
-#define LVR2_TYPES_ELEMENTPROXY
+#ifndef LVR2_TYPES_ELEMENTPROXY_HPP
+#define LVR2_TYPES_ELEMENTPROXY_HPP
 
 #include <array>
 #include <iostream>
@@ -314,4 +313,4 @@ private:
 
 } // namespace lvr2
 
-#endif // LVR2_TYPES_ELEMENTPROXY
+#endif // LVR2_TYPES_ELEMENTPROXY_HPP
