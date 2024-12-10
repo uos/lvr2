@@ -33,6 +33,7 @@
  */
 
 #include "lvr2/util/Logging.hpp"
+#include "lvr2/util/Progress.hpp"
 
 namespace lvr2
 {
@@ -110,12 +111,16 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
 template<typename BaseVecT, typename BoxT>
 void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
 {
+    const int max_threads = omp_get_max_threads();
+    const int used_threads = max_threads;
+
     // Status message output
-    lvr2::Monitor progress(lvr2::LogLevel::info, "Calculating distance values", this->m_queryPoints.size());
+    // lvr2::Monitor progress(lvr2::LogLevel::info, "Calculating distance values", this->m_queryPoints.size());
+    lvr2::PacmanProgressBar progress(this->m_queryPoints.size() / used_threads, "[PointsetGrid] Calculating Distance Values.");
 
     // Calculate a distance value for each query point
 #ifndef MSVC
-    #pragma omp parallel for schedule(dynamic, 16)
+    #pragma omp parallel for schedule(dynamic) num_threads(used_threads) shared(progress)
 #endif
     for(size_t i = 0; i < this->m_queryPoints.size(); i++)
     {
@@ -123,17 +128,23 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
         float euklideanDistance;
 
         //std::cout << euklideanDistance << " " << projectedDistance << std::endl;
-
         std::tie(projectedDistance, euklideanDistance) =
             this->m_surface->distance(this->m_queryPoints[i].m_position);
-        // if (euklideanDistance > 1.7320 * this->m_voxelsize)
-        if (euklideanDistance > 10 * this->m_voxelsize)
+        // if (euklideanDistance > 10 * this->m_voxelsize)
+        if (euklideanDistance > 1.7320 * this->m_voxelsize)
         {
             this->m_queryPoints[i].m_invalid = true;
+        } else {
+            this->m_queryPoints[i].m_invalid = false;
         }
         this->m_queryPoints[i].m_distance = projectedDistance;
-        ++progress;
+        if(omp_get_thread_num() == 0)
+        {
+            ++progress;
+        }
     }
+    std::cout << std::endl;
+    // progress.terminate();
 
     // remove cells with invalid corners
     auto it = this->m_cells.begin();

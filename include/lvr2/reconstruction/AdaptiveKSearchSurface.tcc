@@ -183,9 +183,9 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     // Create a monitor counter
     // lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Estimating Normals", numPoints);
 
-    lvr2::PacmanProgressBar progress(numPoints / normal_estimation_threads, "[AdaptiveKSearchSurface] Estimating Normals");
+    lvr2::PacmanProgressBar monitor(numPoints / normal_estimation_threads, "[AdaptiveKSearchSurface] Estimating Normals");
 
-    #pragma omp parallel for schedule(dynamic) num_threads(normal_estimation_threads) shared(progress)
+    #pragma omp parallel for schedule(dynamic) num_threads(normal_estimation_threads) shared(monitor)
     for(size_t i = 0; i < numPoints; i++)
     {
         // We have to fit these vector to have the
@@ -290,16 +290,11 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
         if(omp_get_thread_num() == 0)
         {
-          ++progress;
+            ++monitor;
         }
     }
 
     std::cout << std::endl;
-
-    // for(size_t i=0; i<normal_estimation_threads; i++)
-    // {
-    //   ++monitor;
-    // }
     // monitor.terminate();
    
     if(this->m_ki)
@@ -346,7 +341,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 
         if(omp_get_thread_num() == 0)
         {
-          ++monitor;
+            ++monitor;
         }
     }
     // monitor.terminate();
