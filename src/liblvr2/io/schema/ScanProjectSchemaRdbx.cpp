@@ -9,9 +9,6 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
 #include <boost/filesystem.hpp>
-#include <boost/optional/optional_io.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 #include <iostream>
 #include <fstream>

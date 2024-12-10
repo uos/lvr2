@@ -4,7 +4,6 @@
 #include "lvr2/util/Timestamp.hpp"
 
 #include <yaml-cpp/yaml.h>
-#include <jsoncpp/json/json.h>
 
 #include "lvr2/io/YAML.hpp"
 #include "lvr2/util/IOUtils.hpp"

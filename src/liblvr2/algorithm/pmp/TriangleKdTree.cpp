@@ -86,7 +86,7 @@ unsigned int TriangleKdTree::build_recurse(Node* node, unsigned int max_faces,
     left->faces = new Triangles();
     left->faces->reserve(node->faces->size() / 2);
     auto* right = new Node();
-    right->faces = new Triangles;
+    right->faces = new Triangles();
     right->faces->reserve(node->faces->size() / 2);
 
     // partition for left and right child
@@ -133,10 +133,9 @@ unsigned int TriangleKdTree::build_recurse(Node* node, unsigned int max_faces,
         // return tree depth
         return depth;
     }
-
-    // or recurse further?
     else
     {
+        // or recurse further?
         // free my memory
         delete node->faces;
         node->faces = nullptr;
@@ -186,10 +185,9 @@ void TriangleKdTree::nearest_recurse(Node* node, const Point& point,
             }
         }
     }
-
-    // non-terminal node
     else
     {
+        // non-terminal node
         Scalar dist = point[node->axis] - node->split;
 
         if (dist <= 0.0)
