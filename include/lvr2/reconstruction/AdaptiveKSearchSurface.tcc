@@ -177,15 +177,21 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     floatArr normals = floatArr( new float[numPoints * 3] );
     this->m_pointBuffer->setNormalArray(normals, numPoints);
 
+    const int max_threads = omp_get_max_threads();
+    const int normal_estimation_threads = max_threads;
+
+    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Estimating " << numPoints << " Surface Normals using " << normal_estimation_threads << " threads ..." << lvr2::endl;
     // Create a monitor counter
-    lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Estimating normals", numPoints);
-    #pragma omp parallel for schedule(dynamic, 12)
-    for(size_t i = 0; i < numPoints; i++) {
+    lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Estimating normals", numPoints / normal_estimation_threads);
+
+    #pragma omp parallel for schedule(dynamic) num_threads(normal_estimation_threads) shared(monitor)
+    for(size_t i = 0; i < numPoints; i++)
+    {
         // We have to fit these vector to have the
         // correct return values when performing the
         // search on the stann kd tree. So we don't use
         // the template parameter T for di
-        vector<size_t> id;
+        std::vector<size_t> id;
 
         int n = 0;
         size_t k = k_0;
@@ -251,7 +257,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         // Flip normals towards the center of the scene or nearest scan pose
         if(m_poseTree)
         {
-            vector<size_t> nearestPoseIds;
+            std::vector<size_t> nearestPoseIds;
             m_poseTree->kSearch(queryPoint, 1, nearestPoseIds);
             if(nearestPoseIds.size() == 1)
             {
@@ -277,8 +283,12 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         normals[i*3 + 1] = normal.y;
         normals[i*3 + 2] = normal.z;
 
-        ++monitor;
+        if(omp_get_thread_num() == 0)
+        {
+          ++monitor;
+        }
     }
+    monitor.terminate();
    
     if(this->m_ki)
     {
@@ -294,16 +304,21 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
     FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
     FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
     // Create a temporal normal array for the
-    vector<Normal<typename BaseVecT::CoordType>> tmp(
+    std::vector<Normal<typename BaseVecT::CoordType>> tmp(
         numPoints,
         Normal<typename BaseVecT::CoordType>(0, 0, 1)
     );
 
+
+    const int max_threads = omp_get_max_threads();
+    const int normal_interpolation_threads = max_threads;
+
+    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Interpolating " << numPoints << " Surface Normals using " << normal_interpolation_threads << " threads ..." << lvr2::endl;
     // Create monitor output
-    lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Interpolating normals", numPoints);
+    lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Interpolating normals", numPoints / normal_interpolation_threads);
 
     // Interpolate normals
-    #pragma omp parallel for schedule(dynamic, 12)
+    #pragma omp parallel for schedule(dynamic) num_threads(normal_interpolation_threads) shared(monitor)
     for( size_t i = 0; i < numPoints; i++)
     {
         vector<size_t> id;
@@ -317,11 +332,14 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
         }
         tmp[i] = mean.normalized();
 
-        ++monitor;
+        if(omp_get_thread_num() == 0)
+        {
+          ++monitor;
+        }
     }
     monitor.terminate();
-    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Copying normals..." << lvr2::endl;
 
+    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Copying normals..." << lvr2::endl;
     for(size_t i = 0; i < numPoints; i++){
         normals[i] = tmp[i];
     }
