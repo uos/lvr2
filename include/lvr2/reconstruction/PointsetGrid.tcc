@@ -131,7 +131,11 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
         std::tie(projectedDistance, euklideanDistance) =
             this->m_surface->distance(this->m_queryPoints[i].m_position);
         // if (euklideanDistance > 10 * this->m_voxelsize)
-        if (euklideanDistance > 1.7320 * this->m_voxelsize)
+
+        // the mesh gets holes for if this value is set to something < 1.7320508075688772
+        // it stays consistent for everything > 1.7320508075688772, however, the runtime gets worse
+        // so: 1.75
+        if (euklideanDistance > 1.75 * this->m_voxelsize)
         {
             this->m_queryPoints[i].m_invalid = true;
         } else {

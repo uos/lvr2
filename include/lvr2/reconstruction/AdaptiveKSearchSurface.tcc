@@ -54,15 +54,6 @@ namespace lvr2
 {
 
 template<typename BaseVecT>
-AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface()
-    : m_calcMethod(0)
-{
-    this->setKi(10);
-    this->setKn(10);
-    this->setKd(10);
-}
-
-template<typename BaseVecT>
 AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     PointBufferPtr buffer,
     std::string searchTreeName,
@@ -97,7 +88,6 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
         //panic_unimplemented("posefile handling");
         parseScanPoses(posefile);
     }
-
 }
 
  template<typename BaseVecT>

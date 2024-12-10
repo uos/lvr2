@@ -412,7 +412,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     float resolution = useVoxelsize ? options.getVoxelsize() : options.getIntersections();
 
     // Create a point set grid for reconstruction
-    string decompositionType = options.getDecomposition();
+    std::string decompositionType = options.getDecomposition();
 
     // Fail safe check
     if(decompositionType != "MT" && decompositionType != "MC" && decompositionType != "DMC" && decompositionType != "PMC" && decompositionType != "SF" )
@@ -430,9 +430,11 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
             useVoxelsize,
             options.extrude()
         );
+
         grid->calcDistanceValues();
-        auto reconstruction = make_unique<FastReconstruction<Vec, FastBox<Vec>>>(grid);
-        return make_pair(grid, std::move(reconstruction));
+        lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Grid Cells: " << grid->getCells().size() << lvr2::endl;
+        auto reconstruction = std::make_unique<FastReconstruction<Vec, FastBox<Vec>>>(grid);
+        return std::make_pair(grid, std::move(reconstruction));
     }
     else if(decompositionType == "PMC")
     {
@@ -445,8 +447,9 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
             options.extrude()
         );
         grid->calcDistanceValues();
-        auto reconstruction = make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
-        return make_pair(grid, std::move(reconstruction));
+        lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Grid Cells: " << grid->getCells().size() << lvr2::endl;
+        auto reconstruction = std::make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
+        return std::make_pair(grid, std::move(reconstruction));
     }
     // else if(decompositionType == "DMC")
     // {
@@ -485,6 +488,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
         return make_pair(grid, std::move(reconstruction));
     }
 
+    lvr2::logout::get() << lvr2::warning << "[LVR2 Reconstruct] Unsupported decomposition type " << decompositionType << "." << lvr2::endl;
     return make_pair(nullptr, nullptr);
 }
 

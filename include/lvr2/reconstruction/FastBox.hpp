@@ -125,13 +125,13 @@ public:
      */
     virtual void getSurface(
         BaseMesh<BaseVecT>& mesh,
-        vector<QueryPoint<BaseVecT>>& query_points,
-        uint &globalIndex
+        const std::vector<QueryPoint<BaseVecT>>& query_points,
+        uint& globalIndex
     );
 
     virtual void getSurface(
         BaseMesh<BaseVecT>& mesh,
-        vector<QueryPoint<BaseVecT>>& query_points,
+        const std::vector<QueryPoint<BaseVecT>>& query_points,
         uint& globalIndex,
         BoundingBox<BaseVecT>& bb,
         vector<unsigned int>& duplicates,
@@ -156,7 +156,7 @@ public:
 protected:
 
 
-    inline bool compareFloat(double num1, double num2)
+    inline bool compareFloat(double num1, double num2) const
     {
         if(fabs(num1 - num2) < std::numeric_limits<double>::epsilon())
             return true;
@@ -167,7 +167,12 @@ protected:
     /**
      * @brief Calculated the index for the MC table
      */
-    int  getIndex(vector<QueryPoint<BaseVecT>>& query_points);
+    int  getIndex(const std::vector<QueryPoint<BaseVecT>>& query_points) const;
+
+    /**
+     * @brief Returns if the box is valid or not
+     */
+    bool isInvalid(const std::vector<QueryPoint<BaseVecT>>& query_points) const;
 
     /**
      * @brief Calculated the 12 possible intersections between
@@ -177,7 +182,7 @@ protected:
      * @param distance      The corresponding distance value
      * @param positions     The interpolated intersections.
      */
-    void getIntersections(BaseVecT* corners, float* distance, BaseVecT* positions);
+    void getIntersections(const BaseVecT* corners, float* distance, BaseVecT* positions) const;
 
     /**
      * @brief Calculates the position of the eight cell corners
@@ -185,7 +190,7 @@ protected:
      * @param corners       The cell corners
      * @param query_points  The query points of the grid
      */
-    void getCorners(BaseVecT corners[], vector<QueryPoint<BaseVecT>>& query_points);
+    void getCorners(BaseVecT corners[], const std::vector<QueryPoint<BaseVecT>>& query_points) const;
 
     /**
      * @brief Calculates the distance value for the eight cell corners.
@@ -193,7 +198,7 @@ protected:
      * @param distances     The distance values
      * @param query_points  The query points of the grid
      */
-    void getDistances(float distances[], vector<QueryPoint<BaseVecT>>& query_points);
+    void getDistances(float distances[], const std::vector<QueryPoint<BaseVecT>>& query_points) const;
 
     /***
      * @brief Interpolates the intersection between x1 and x1.
@@ -204,7 +209,7 @@ protected:
      * @param d2            The distance value for the second coordinate
      * @return The interpolated distance.
      */
-    float calcIntersection(float x1, float x2, float d1, float d2);
+    float calcIntersection(float x1, float x2, float d1, float d2) const;
 
     float distanceToBB(const BaseVecT& v, const BoundingBox<BaseVecT>& bb) const;
 

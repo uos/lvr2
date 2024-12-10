@@ -32,6 +32,7 @@
  *      Author: Thomas Wiemann
  */
 
+#include <vector>
 
 namespace lvr2
 {
@@ -82,7 +83,7 @@ uint FastBox<BaseVecT>::getVertex(int index)
 
 template<typename BaseVecT>
 void FastBox<BaseVecT>::getCorners(BaseVecT corners[],
-                                           vector<QueryPoint<BaseVecT> > &qp)
+    const std::vector<QueryPoint<BaseVecT> > &qp) const
 {
     // Get the box corner positions from the query point array
     for(int i = 0; i < 8; i++)
@@ -93,7 +94,7 @@ void FastBox<BaseVecT>::getCorners(BaseVecT corners[],
 
 template<typename BaseVecT>
 void FastBox<BaseVecT>::getDistances(float distances[],
-                                             vector<QueryPoint<BaseVecT> > &qp)
+    const std::vector<QueryPoint<BaseVecT> > &qp) const
 {
     // Get the distance values from the query point array
     // for the corners of the current box
@@ -104,7 +105,7 @@ void FastBox<BaseVecT>::getDistances(float distances[],
 }
 
 template<typename BaseVecT>
-int  FastBox<BaseVecT>::getIndex(vector<QueryPoint<BaseVecT> > &qp)
+int  FastBox<BaseVecT>::getIndex(const std::vector<QueryPoint<BaseVecT> > &qp) const
 {
     // Determine the MC-Table index for the current corner configuration
     int index = 0;
@@ -116,7 +117,20 @@ int  FastBox<BaseVecT>::getIndex(vector<QueryPoint<BaseVecT> > &qp)
 }
 
 template<typename BaseVecT>
-float FastBox<BaseVecT>::calcIntersection(float x1, float x2, float d1, float d2)
+bool  FastBox<BaseVecT>::isInvalid(const std::vector<QueryPoint<BaseVecT> > &qp) const
+{
+    for (int i = 0; i < 8; i++)
+    {
+        if (qp[m_vertices[i]].m_invalid)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+template<typename BaseVecT>
+float FastBox<BaseVecT>::calcIntersection(float x1, float x2, float d1, float d2) const
 {
 
     // Calculate the surface intersection using linear interpolation
@@ -144,9 +158,9 @@ float FastBox<BaseVecT>::calcIntersection(float x1, float x2, float d1, float d2
 }
 
 template<typename BaseVecT>
-void FastBox<BaseVecT>::getIntersections(BaseVecT* corners,
-                                                 float* distance,
-                                                 BaseVecT* positions)
+void FastBox<BaseVecT>::getIntersections(const BaseVecT* corners,
+    float* distance,
+    BaseVecT* positions) const
 {
     float intersection;
 
@@ -169,7 +183,6 @@ void FastBox<BaseVecT>::getIntersections(BaseVecT* corners,
     intersection = calcIntersection(corners[5].y, corners[6].y, distance[5], distance[6]);
     positions[5] = BaseVecT(corners[5].x, intersection, corners[5].z);
 
-
     intersection = calcIntersection(corners[7].x, corners[6].x, distance[7], distance[6]);
     positions[6] = BaseVecT(intersection, corners[6].y, corners[6].z);
 
@@ -188,36 +201,29 @@ void FastBox<BaseVecT>::getIntersections(BaseVecT* corners,
 
     intersection = calcIntersection(corners[2].z, corners[6].z, distance[2], distance[6]);
     positions[11] = BaseVecT(corners[2].x, corners[2].y, intersection);
-
 }
-
 
 template<typename BaseVecT>
 void FastBox<BaseVecT>::getSurface(
     BaseMesh<BaseVecT>& mesh,
-    vector<QueryPoint<BaseVecT>>& qp,
-    uint &globalIndex
-)
+    const std::vector<QueryPoint<BaseVecT>>& qp,
+    uint& globalIndex)
 {
+    // Do not create triangles for invalid boxes
+    if(isInvalid(qp))
+    {
+        return;        
+    }
+
     BaseVecT corners[8];
     BaseVecT vertex_positions[12];
-
     float distances[8];
-
+    
     getCorners(corners, qp);
     getDistances(distances, qp);
     getIntersections(corners, distances, vertex_positions);
 
     int index = getIndex(qp);
-
-    // Do not create triangles for invalid boxes
-    for (int i = 0; i < 8; i++)
-    {
-        if (qp[m_vertices[i]].m_invalid)
-        {
-            return;
-        }
-    }
 
     // Generate the local approximation surface according to the marching
     // cubes table by Paul Burke.
@@ -266,7 +272,7 @@ void FastBox<BaseVecT>::getSurface(
 template<typename BaseVecT>
 void FastBox<BaseVecT>::getSurface(
     BaseMesh<BaseVecT>& mesh,
-    vector<QueryPoint<BaseVecT>>& qp,
+    const std::vector<QueryPoint<BaseVecT>>& qp,
     uint &globalIndex,
     BoundingBox<BaseVecT>& bb,
     vector<unsigned int>& duplicates,

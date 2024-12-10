@@ -45,28 +45,34 @@ FastReconstruction<BaseVecT, BoxT>::FastReconstruction(shared_ptr<HashGrid<BaseV
 }
 
 template<typename BaseVecT, typename BoxT>
-void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
+void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT>& mesh)
 {
     // Status message for mesh generation
-    lvr2::Monitor monitor(lvr2::LogLevel::info, "Creating mesh", m_grid->getNumberOfCells());
+    // lvr2::Monitor monitor(lvr2::LogLevel::info, "Creating mesh", m_grid->getNumberOfCells());
 
     // Some pointers
-    BoxT* b;
+    // BoxT* b; // his is never used
     unsigned int global_index = mesh.numVertices();
+    std::cout << "Using global index: " << global_index << std::endl;
 
     // Iterate through cells and calculate local approximations
     for(auto& [ _, cell ] : m_grid->getCells())
     {
+        // std::cout << "Hello!" << std::endl;
         cell->getSurface(mesh, m_grid->getQueryPoints(), global_index);
-        if(!timestamp.isQuiet())
-            ++monitor;
+        // if(!timestamp.isQuiet())
+        // {
+        //     ++monitor;
+        // }
     }
 
-    BoxTraits<BoxT> traits;
+    std::cout << "Mesh: " << mesh.numVertices() << ", " << mesh.numFaces() << std::endl;
+
+    BoxTraits<BoxT> traits; // this is never set? so the rest will never be called?
 
     if(traits.type == "SharpBox")  // Perform edge flipping for extended marching cubes
     {
-        lvr2::Monitor SFProgress(lvr2::LogLevel::info, "Flipping edges", this->m_grid->getNumberOfCells());
+        // lvr2::Monitor SFProgress(lvr2::LogLevel::info, "Flipping edges", this->m_grid->getNumberOfCells());
         for(auto& [ _, cell ] : m_grid->getCells())
         {
 
@@ -149,19 +155,19 @@ void FastReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
                     }
                 }
             }
-            ++SFProgress;
+            // ++SFProgress;
         }
     }
 
     if (traits.type == "BilinearFastBox")
     {
-        lvr2::Monitor monitor(lvr2::LogLevel::info, "Optimizing plane contours", this->m_grid->getNumberOfCells());
+        // lvr2::Monitor monitor(lvr2::LogLevel::info, "Optimizing plane contours", this->m_grid->getNumberOfCells());
         for (auto &[_, cell] : m_grid->getCells())
         {
             // F... type safety. According to traits object this is OK!
             BilinearFastBox<BaseVecT> *box = reinterpret_cast<BilinearFastBox<BaseVecT> *>(cell);
             box->optimizePlanarFaces(mesh, 5);
-            ++monitor;
+            // ++monitor;
         }
     }
 }

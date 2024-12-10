@@ -128,7 +128,7 @@ public:
      *      This Constructor can be used, if only the method "calcPlaneRANSACfromPoints"
      *      is required
      */
-    AdaptiveKSearchSurface();
+    AdaptiveKSearchSurface() = delete;
 
     /**
      * @brief   Destructor
