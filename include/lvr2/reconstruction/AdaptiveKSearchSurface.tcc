@@ -90,53 +90,53 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     }
 }
 
- template<typename BaseVecT>
- void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
- {
-     lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Parsing scan poses." << lvr2::endl;
-     std::ifstream in(posefile.c_str());
-     if (!in.good())
-     {
-        lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] Unable to open scan pose file " << posefile << lvr2::endl;
-        return;
-     }
+// TODO: it is possible that this will not work anymore after removing the default contructor. Check this
+template<typename BaseVecT>
+void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
+{
+    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Parsing scan poses." << lvr2::endl;
+    std::ifstream in(posefile.c_str());
+    if (!in.good())
+    {
+      lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] Unable to open scan pose file " << posefile << lvr2::endl;
+      return;
+    }
 
-     // Read vertex information
-     float x, y, z;
-     std::vector<BaseVecT> v;
-     while(in.good())
-     {
-         in >> x >> y >> z;
-         v.push_back(BaseVecT(x, y, z));
-     }
+    // Read vertex information
+    float x, y, z;
+    std::vector<BaseVecT> v;
+    while(in.good())
+    {
+        in >> x >> y >> z;
+        v.push_back(BaseVecT(x, y, z));
+    }
 
-     if(v.size() > 0)
-     {
-         PointBufferPtr loader (new PointBuffer);
-         floatArr points(new float[3 * v.size()]);
-         for(size_t i = 0; i < v.size(); i++)
-         {
-             points[3 * i]       = v[i][0];
-             points[3 * i + 1]   = v[i][1];
-             points[3 * i + 2]   = v[i][2];
-         }
+    if(v.size() > 0)
+    {
+        PointBufferPtr loader (new PointBuffer);
+        floatArr points(new float[3 * v.size()]);
+        for(size_t i = 0; i < v.size(); i++)
+        {
+            points[3 * i]       = v[i][0];
+            points[3 * i + 1]   = v[i][1];
+            points[3 * i + 2]   = v[i][2];
+        }
 
-         loader->setPointArray(points, v.size());
-         size_t n = v.size();
+        loader->setPointArray(points, v.size());
+        size_t n = v.size();
 
-         lvr2::logout::get() << lvr2::info <<  "[AdaptiveKSearchSurface]  Creating pose search tree(" << m_searchTreeName << ") with "
-              << n << " poses." << lvr2::endl;
+        lvr2::logout::get() << lvr2::info <<  "[AdaptiveKSearchSurface]  Creating pose search tree(" << m_searchTreeName << ") with "
+            << n << " poses." << lvr2::endl;
 
-         this->m_poseTree = getSearchTree<BaseVecT>(m_searchTreeName, loader);
+        this->m_poseTree = getSearchTree<BaseVecT>(m_searchTreeName, loader);
 
-
-         if( !this->m_poseTree )
-         {
-             lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] No Valid Searchtree class specified!" << lvr2::endl;
-             lvr2::logout::get() << lvr2::warning <<  "[AdaptiveKSearchSurface] Class: " << m_searchTreeName << lvr2::endl;
-         }
-     }
- }
+        if( !this->m_poseTree )
+        {
+            lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] No Valid Searchtree class specified!" << lvr2::endl;
+            lvr2::logout::get() << lvr2::warning <<  "[AdaptiveKSearchSurface] Class: " << m_searchTreeName << lvr2::endl;
+        }
+    }
+}
 
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::init()
