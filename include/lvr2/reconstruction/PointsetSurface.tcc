@@ -32,22 +32,28 @@
  *  @author Thomas Wiemann
  */
 
-#include <iostream>
-
 namespace lvr2
 {
 
 template<typename BaseVecT>
 PointsetSurface<BaseVecT>::PointsetSurface(PointBufferPtr pointBuffer)
-    : m_pointBuffer(pointBuffer)
+: m_pointBuffer(pointBuffer)
+, m_points(pointBuffer->at("points").extract<float>()) // points field is required
 {
-    // Calculate bounding box
-    auto numPoints = m_pointBuffer->numPoints();
-    floatArr pts = m_pointBuffer->getPointArray();
+    // if no normals existing: create them
+    // auto n_it = pointBuffer->find("normals");
+    // if(n_it == pointBuffer->end())
+    // {
+    //     Channel<float> normals(m_points.numElements(), 3);
+    //     pointBuffer->add("normals", normals);
+    //     n_it = pointBuffer->find("normals");
+    // }
+    // m_normals = &n_it->second.extract<float>();
 
-    for (size_t i = 0; i < numPoints; i++)
+    // Calculate bounding box
+    for (size_t i = 0; i < m_points.numElements(); i++)
     {
-        this->m_boundingBox.expand(BaseVecT(pts[i * 3 + 0], pts[i * 3 + 1], pts[i * 3 + 2]));
+        this->m_boundingBox.expand(BaseVecT(m_points[i][0], m_points[i][1], m_points[i][2]));
     }
 }
 

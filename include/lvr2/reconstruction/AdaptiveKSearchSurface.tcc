@@ -45,6 +45,8 @@
 #include <random>
 #include <algorithm>
 
+#include <lvr2/util/Progress.hpp>
+
 #include "lvr2/util/Factories.hpp"
 #include "lvr2/util/Logging.hpp"
 
@@ -68,7 +70,7 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     int ki,
     int kd,
     int calcMethod,
-    string posefile
+    std::string posefile
 ) :
     PointsetSurface<BaseVecT>(buffer),
     m_searchTreeName(searchTreeName),
@@ -150,7 +152,7 @@ template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::init()
 {
     lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Dataset statistics: " << lvr2::endl;
-    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Num points: " << this->m_pointBuffer->numPoints() << lvr2::endl;
+    lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Num points: " << m_points.numElements() << lvr2::endl;
     lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] kn, ki, kd: "<< this->m_kn << ", " << this->m_ki << ", " << this->m_kd << lvr2::endl;
     const auto& min = this->m_boundingBox.getMin(), max = this->m_boundingBox.getMax();
     lvr2::logout::get() 
@@ -163,18 +165,15 @@ void AdaptiveKSearchSurface<BaseVecT>::init()
     this->m_flipPoint = this->m_boundingBox.getCentroid();
 }
 
-
-
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 {
     int k_0 = this->m_kn;
-    size_t numPoints = this->m_pointBuffer->numPoints();
-    const FloatChannel pts = *(this->m_pointBuffer->getFloatChannel("points"));
+    const size_t numPoints = m_points.numElements();
 
     lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Initializing normal array..." << lvr2::endl;
 
-    floatArr normals = floatArr( new float[numPoints * 3] );
+    floatArr normals = floatArr(new float[numPoints * 3]);
     this->m_pointBuffer->setNormalArray(normals, numPoints);
 
     const int max_threads = omp_get_max_threads();
@@ -182,9 +181,11 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
     lvr2::logout::get() << lvr2::info << "[AdaptiveKSearchSurface] Estimating " << numPoints << " Surface Normals using " << normal_estimation_threads << " threads ..." << lvr2::endl;
     // Create a monitor counter
-    lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Estimating normals", numPoints / normal_estimation_threads);
+    // lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Estimating Normals", numPoints);
 
-    #pragma omp parallel for schedule(dynamic) num_threads(normal_estimation_threads) shared(monitor)
+    lvr2::PacmanProgressBar progress(numPoints / normal_estimation_threads, "[AdaptiveKSearchSurface] Estimating Normals");
+
+    #pragma omp parallel for schedule(dynamic) num_threads(normal_estimation_threads) shared(progress)
     for(size_t i = 0; i < numPoints; i++)
     {
         // We have to fit these vector to have the
@@ -209,13 +210,13 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
             id.clear();
 
-            this->m_searchTree->kSearch(pts[i], k, id);
+            this->m_searchTree->kSearch(m_points[i], k, id);
 
             // Calculate the bounding box of found point set
             BoundingBox<BaseVecT> bb;
             for (auto& index : id)
             {
-                bb.expand(BaseVecT(pts[index]));
+                bb.expand(BaseVecT(m_points[index]));
             }
 
             if(boundingBoxOK(bb))
@@ -225,7 +226,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         }
 
         // Create a query point for the current point
-        auto queryPoint = pts[i];
+        auto queryPoint = m_points[i];
 
         // Interpolate a plane based on the k-neighborhood
         Plane<BaseVecT> p;
@@ -245,6 +246,10 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         {
             p = calcPlaneIterative(queryPoint, id);
         }
+        else if(m_calcMethod == 3)
+        {
+            p = calcPlaneIPCAExact(queryPoint, id);
+        }
         else
         {
             p = calcPlane(queryPoint, id);
@@ -261,7 +266,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
             m_poseTree->kSearch(queryPoint, 1, nearestPoseIds);
             if(nearestPoseIds.size() == 1)
             {
-                BaseVecT nearest = pts[nearestPoseIds[0]];
+                BaseVecT nearest = m_points[nearestPoseIds[0]];
                 if(normal.dot(nearest - queryPoint) < 0)
                 {
                     normal = -normal;
@@ -285,10 +290,17 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
         if(omp_get_thread_num() == 0)
         {
-          ++monitor;
+          ++progress;
         }
     }
-    monitor.terminate();
+
+    std::cout << std::endl;
+
+    // for(size_t i=0; i<normal_estimation_threads; i++)
+    // {
+    //   ++monitor;
+    // }
+    // monitor.terminate();
    
     if(this->m_ki)
     {
@@ -300,15 +312,13 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 {
-    size_t numPoints     = this->m_pointBuffer->numPoints();
-    FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
+    const size_t numPoints     = this->m_pointBuffer->numPoints();
     FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
     // Create a temporal normal array for the
     std::vector<Normal<typename BaseVecT::CoordType>> tmp(
         numPoints,
         Normal<typename BaseVecT::CoordType>(0, 0, 1)
     );
-
 
     const int max_threads = omp_get_max_threads();
     const int normal_interpolation_threads = max_threads;
@@ -323,7 +333,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
     {
         vector<size_t> id;
 
-        this->m_searchTree->kSearch(pts[i], this->m_ki, id);
+        this->m_searchTree->kSearch(m_points[i], this->m_ki, id);
 
         BaseVecT mean = normals[i];
         for(auto& index : id)
@@ -426,10 +436,8 @@ template<typename BaseVecT>
 pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     AdaptiveKSearchSurface<BaseVecT>::distance(BaseVecT p) const
 {
-
-    FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
-    FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
-    size_t numPoints     = pts.numElements();
+    const FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
+    size_t numPoints     = m_points.numElements();
 
     vector<size_t> id;
 
@@ -448,7 +456,7 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
     for ( auto& index : id )
     {
         //Get nearest tangent plane
-        auto vq = pts[index];
+        auto vq = m_points[index];
 
         //Get normal
         auto n = normals[index];
@@ -480,11 +488,10 @@ pair<typename BaseVecT::CoordType, typename BaseVecT::CoordType>
 template<typename BaseVecT>
 Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
     const BaseVecT &queryPoint,
-    const vector<size_t> &id
+    const std::vector<size_t> &id
 )
 {
-    FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
-    size_t numPoints     = pts.numElements();
+    const size_t numPoints     = m_points.numElements();
 
     /**
      * @todo Think of a better way to code this magic number.
@@ -496,8 +503,9 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
     Eigen::VectorXf F(id.size());
     Eigen::MatrixXf B(id.size(), 3);
 
-    for(size_t j = 0; j < id.size(); j++) {
-        BaseVecT p = pts[id[j]];
+    for(size_t j = 0; j < id.size(); j++) 
+    {
+        const BaseVecT p = m_points[id[j]];
         F(j)    = p.y;
         B(j, 0) = 1.0f;
         B(j, 1) = p.x;
@@ -534,18 +542,13 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
 
 template<typename BaseVecT>
 Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
-    const BaseVecT &queryPoint,
-    const vector<size_t> &id
-)
+    const BaseVecT& queryPoint,
+    const vector<size_t>& id)
 {
-
-    FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
-    FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
-    size_t numPoints     = pts.numElements();
+    const size_t numPoints     = m_points.numElements();
 
     Plane<BaseVecT> p;
     Normal<typename BaseVecT::CoordType> normal;
-
 
     //x
     float xx = 0.0;
@@ -560,7 +563,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
     float zz = 0.0;
 
     for(auto& index : id) {
-        auto p = pts[index];
+        auto p = m_points[index];
 
         auto r = p - queryPoint;
 
@@ -570,7 +573,6 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
         yy += r.y * r.y;
         yz += r.y * r.z;
         zz += r.z * r.z;
-
     }
 
     //determinante
@@ -612,7 +614,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
         dir_z = 1.0;
     }
 
-    float invnorm = 1/sqrtf( dir_x * dir_x + dir_y * dir_y + dir_z * dir_z );
+    const float invnorm = 1/sqrtf( dir_x * dir_x + dir_y * dir_y + dir_z * dir_z );
 
     normal.x = dir_x * invnorm;
     normal.y = dir_y * invnorm;
@@ -623,6 +625,72 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIterative(
     p.pos = queryPoint;
 
     return p;
+}
+
+template<typename BaseVecT>
+Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneIPCAExact(
+    const BaseVecT& queryPoint,
+    const vector<size_t>& ids)
+{
+    const Eigen::Vector3f qp(queryPoint.x, queryPoint.y, queryPoint.z);
+    Eigen::Matrix3f cov  = Eigen::Matrix3f::Zero();
+    Eigen::Vector3f mean(queryPoint.x, queryPoint.y, queryPoint.z);
+    double n_meas = 1.0;
+
+    for(size_t i=0; i<ids.size(); i++)
+    {
+        const size_t index = ids[i];
+        const Eigen::Vector3f p = Eigen::Vector3f(m_points[index][0], m_points[index][1], m_points[index][2]);
+
+        const double n_meas_new = n_meas + 1.0;
+        double w1 = n_meas /n_meas_new;
+        double w2 = 1.0 / n_meas_new;
+
+        // update mean
+        const Eigen::Vector3f mean_new = mean * w1 + p * w2;
+
+        // update cov
+        const Eigen::Matrix3f P1 = (mean - mean_new) * (mean - mean_new).transpose();
+        const Eigen::Matrix3f P2 = (p - mean_new) * (p - mean_new).transpose();
+        const Eigen::Matrix3f cov_new = (cov + P1) * w1 + P2 * w2;
+
+        // write
+        n_meas = n_meas_new;
+        mean = mean_new;
+        cov = cov_new;
+    }
+
+    Eigen::EigenSolver<Eigen::Matrix3f> es(cov, true);
+    
+
+    const auto eigen_vals = es.eigenvalues().real();
+
+    Eigen::Vector3f smallest_eigenvector; 
+    if(eigen_vals(0) < eigen_vals(1) && eigen_vals(0) < eigen_vals(2))
+    {
+        smallest_eigenvector = es.eigenvectors().col(0).real();
+    } 
+    else if(eigen_vals(1) < eigen_vals(2)) 
+    {
+        smallest_eigenvector = es.eigenvectors().col(1).real();
+    } 
+    else 
+    {
+        smallest_eigenvector = es.eigenvectors().col(2).real();
+    }
+
+    // std::cout << "The eigenvalues of A are: " << es.eigenvalues().transpose() << std::endl;
+    // std::cout << es.eigenvectors() << std::endl;
+
+    // std::cout << "Smallest Vec: " << smallest_eigenvector.transpose() << std::endl;
+
+    Plane<BaseVecT> res;
+    res.normal.x = smallest_eigenvector.x();
+    res.normal.y = smallest_eigenvector.y();
+    res.normal.z = smallest_eigenvector.z();
+    res.pos = queryPoint;
+
+    return res;
 }
 
 // template<typename BaseVecT>
@@ -646,9 +714,8 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
     bool &ok
 )
 {
-    FloatChannel pts     = *(this->m_pointBuffer->getFloatChannel("points"));
     FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
-    size_t numPoints     = pts.numElements();
+    size_t numPoints     = m_points.numElements();
 
    Plane<BaseVecT> p;
 
@@ -689,9 +756,9 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
 
        auto it = ids.begin();
 
-       BaseVecT point1 = pts[*it];
-       BaseVecT point2 = pts[*(++it)];
-       BaseVecT point3 = pts[*(++it)];
+       BaseVecT point1 = m_points[*it];
+       BaseVecT point2 = m_points[*(++it)];
+       BaseVecT point3 = m_points[*(++it)];
 
        auto n0 = (point1 - point2).cross(point1 - point3).normalized();
 
@@ -701,7 +768,7 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
        for(int i = 0; i < n; i++)
        {
            int index = id[number()];
-           BaseVecT refpoint = pts[index];
+           BaseVecT refpoint = m_points[index];
            dist += fabs(refpoint.dot(n0) - point1.dot(n0));
        }
        if(n != 0) dist /= n;
@@ -730,7 +797,6 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
    // p.c = 0;
    p.normal = bestNorm;
    p.pos = bestPoint;
-
 
    return p;
 }

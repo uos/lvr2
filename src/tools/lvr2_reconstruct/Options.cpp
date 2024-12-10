@@ -70,7 +70,7 @@ Options::Options(int argc, char** argv)
         ("noExtrusion", "Do not extend grid. Can be used  to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
         ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
         ("pcm,p", value<string>(&m_pcm)->default_value("LVR2"), "Point cloud manager used for point handling and normal estimation. Choose from {FLANN, STANN, PCL, NABO, LVR2, LBVH_CUDA}.")
-        ("ransac", "Set this flag for RANSAC based normal estimation.")
+        ("nem", value<int>(&m_normalEstimation)->default_value(0), "Method for estimating point normals / planes. 0: PCA (default), 1: RANSAC, 2: IPCA ilikebigbits, 3: IPCA exact. Make sure the computing device is supporting the respective method.")
         ("decomposition,d", value<string>(&m_pcm)->default_value("PMC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection (SF), Dual Marching Cubes with an adaptive Octree (DMC) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")
         ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
         ("clusterPlanes,c", "Cluster planar regions based on normal threshold, do not shift vertices into regression plane.")
@@ -299,11 +299,6 @@ bool Options::saveGrid() const
     return (m_variables.count("saveGrid"));
 }
 
-bool Options::useRansac() const
-{
-    return (m_variables.count("ransac"));
-}
-
 bool Options::saveOriginalData() const
 {
     return (m_variables.count("saveOriginalData"));
@@ -350,6 +345,11 @@ bool Options::generateTextures() const
 float Options::getNormalThreshold() const
 {
     return m_variables["pnt"].as<float>();
+}
+
+int Options::getNormalEstimation() const
+{
+    return m_variables["nem"].as<int>();
 }
 
 int Options::getSmallRegionThreshold() const

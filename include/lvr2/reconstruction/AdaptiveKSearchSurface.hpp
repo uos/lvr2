@@ -93,6 +93,8 @@ class AdaptiveKSearchSurface : public PointsetSurface<BaseVecT>
 {
 public:
 
+    using Base = PointsetSurface<BaseVecT>;
+
     // typedef shared_ptr<AdaptiveKSearchSurface<BaseVecT>> Ptr;
 
     /**
@@ -196,6 +198,9 @@ public:
      */
     void interpolateSurfaceNormals();
 
+protected:
+    using Base::m_points;
+
 private:
 
      /**
@@ -284,9 +289,18 @@ private:
         const vector<size_t> &id
     );
 
+    /**
+     * Math from MICP-L paper
+     */
+    Plane<BaseVecT> calcPlaneIPCAExact(
+        const BaseVecT &queryPoint,
+        const vector<size_t> &id
+    );
+
     // 0: PCA
     // 1: RANSAC
     // 2: Iterative
+    // 3: IPCA Exact
     int m_calcMethod;
 
     // /// The currently stored points
@@ -301,10 +315,10 @@ private:
     // size_t                      m_numPoints;
 
     /// Search tree for scan poses
-    std::shared_ptr<SearchTree<BaseVecT>> m_poseTree;
+    std::shared_ptr<SearchTree<BaseVecT> > m_poseTree;
 
     /// Type of used search tree
-    string m_searchTreeName;
+    std::string m_searchTreeName;
 };
 
 template<typename BaseVecT>

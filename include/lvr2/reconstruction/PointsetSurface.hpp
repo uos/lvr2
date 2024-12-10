@@ -62,7 +62,6 @@ template<typename BaseVecT>
 class PointsetSurface
 {
 public:
-
     /**
      * @brief Returns the distance of vertex v from the nearest tangent plane
      *
@@ -80,8 +79,6 @@ public:
      *          it will be overwritten with the new normals.
      */
     virtual void calculateSurfaceNormals() = 0;
-
-
 
     /**
      * @brief   Interpolates a surface normal at the given position
@@ -142,10 +139,12 @@ protected:
      */
     PointsetSurface(PointBufferPtr pointcloud);
 
-    PointsetSurface() {};
+    PointsetSurface() = delete;
 
     /// The point cloud used for surface approximation
     PointBufferPtr m_pointBuffer;
+    const Channel<float>& m_points;
+    // Channel<float>* m_normals;
 
     /// The search tree that is built from the point cloud data
     std::shared_ptr<SearchTree<BaseVecT>> m_searchTree;
@@ -161,7 +160,6 @@ protected:
 
     /// The number of points used for distance function evaluation
     int m_kd;
-
 
     /// The point to flip normals towards if there are no poses available
     BaseVecT m_flipPoint;

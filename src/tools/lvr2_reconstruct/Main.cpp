@@ -291,12 +291,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN" || pcm_name == "LVR2")
     {
         
-        int plane_fit_method = 0;
-        
-        if(options.useRansac())
-        {
-            plane_fit_method = 1;
-        }
+        int plane_fit_method = options.getNormalEstimation();
 
         // plane_fit_method
         // - 0: PCA
@@ -735,8 +730,6 @@ auto loadExistingMesh(reconstruct::Options options)
             VertexHandle vertexH = mesh.addVertex(vertex_pos);
             indexToVertexHandle.insert(std::pair(i, vertexH));
         }
-        
-        
     }
 
     // Add faces
@@ -837,8 +830,11 @@ int main(int argc, char** argv)
             exit(EXIT_FAILURE);
         }
         
+        lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Pointcloud loaded starting to reconstruct surfaces ..." << lvr2::endl;
+
         // Reconstruct simple mesh
         mesh = reconstructMesh<lvr2::PMPMesh<Vec>>(options, surface);
+        lvr2::logout::get() << lvr2::info << "[LVR2 Reconstruct] Reconstructed mesh (vertices, faces): " << mesh.numVertices() << ", " << mesh.numFaces() << ")" << lvr2::endl;
     }
 
     // Save points and normals only

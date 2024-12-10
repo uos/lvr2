@@ -134,11 +134,6 @@ public:
     bool    recalcNormals() const;
 
     /**
-     * @brief   If true, RANSAC based normal estimation is used
-     */
-    bool    useRansac() const;
-
-    /**
      * @brief   True if texture analysis is enabled
      */
     bool    doTextureAnalysis() const;
@@ -148,6 +143,18 @@ public:
      *          finalization of mesh.
      */
     bool    generateTextures() const;
+
+    /**
+     * @brief  Returns the method for normal estimation
+     *      0: PCA
+     *      1: RANSAC
+     *      2: IPCA (ilikebigbits)
+     *      3: IPCA exact (MICP-L)
+     * 
+     * Caution: Make sure this is implemented by the device (e.g. GPU).
+     * 
+     */
+    int     getNormalEstimation() const;
 
     /**
      * @brief   Returns the number of neighbors
@@ -392,6 +399,9 @@ private:
     int                             m_numberOfDefaults;
 
     /// The number of neighbors for distance function evaluation
+    int                             m_normalEstimation;
+
+    /// The number of neighbors for distance function evaluation
     int                             m_kd;
 
     /// The number of neighbors for normal estimation
@@ -404,13 +414,13 @@ private:
     int                             m_intersections;
 
     /// Whether or not the mesh should be retesselated while being finalized
-    bool                          m_retesselate;
+    bool                            m_retesselate;
 
     /// Whether or not the mesh should be retesselated while being finalized
-    bool                           m_generateTextures;
+    bool                            m_generateTextures;
 
     /// Whether or not the classifier shall dump meta data to a file 'clusters.clu'
-    bool                           m_writeClassificationResult;
+    bool                            m_writeClassificationResult;
 
     /// The used point cloud manager
     string                          m_pcm;
@@ -541,14 +551,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
     }
     cout << "##### Number of threads \t: "    << o.getNumThreads()      << endl;
     cout << "##### Point cloud manager \t: " << o.getPCM()             << endl;
-    if(o.useRansac())
-    {
-        cout << "##### Use RANSAC\t\t: YES" << endl;
-    }
-    else
-    {
-        cout << "##### Use RANSAC\t\t: NO" << endl;
-    }
+    cout << "##### Normal Estimation:  \t: " << o.getNormalEstimation() << endl;
 
     cout << "##### Voxel decomposition: \t: " << o.getDecomposition()   << endl;
     cout << "##### Classifier:\t\t: "         << o.getClassifier()      << endl;

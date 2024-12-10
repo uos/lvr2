@@ -141,7 +141,7 @@ public:
      *          function once if the monitor object is still alive and you
      *          want to generate log output in a function.
      */
-    void terminate()
+    inline void terminate()
     {
         m_monitor.Terminate();
     }
