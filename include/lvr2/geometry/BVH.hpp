@@ -121,6 +121,11 @@ public:
      */
     const vector<float>& getTrianglesIntersectionData() const;
 
+    /**
+     * @brief Returns the depth of the tree at its deepest node
+     */
+    const uint32_t getMaxDepth() const noexcept;
+
 private:
 
     // Internal triangle representation
@@ -184,6 +189,8 @@ private:
     // working variables for tree construction
     BVHNodePtr m_root;
     vector<Triangle> m_triangles;
+    // Tree depth
+    uint32_t m_depth;
 
     // cache friendly data for the SIMD device
     vector<uint32_t> m_triIndexList;

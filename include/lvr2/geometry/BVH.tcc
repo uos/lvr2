@@ -60,6 +60,7 @@ BVHTree<BaseVecT>::Triangle::Triangle()
 
 template<typename BaseVecT>
 BVHTree<BaseVecT>::BVHTree(const vector<float>& vertices, const vector<uint32_t>& faces)
+: m_depth(0)
 {
     m_root = buildTree(vertices, faces);
     createCFTree();
@@ -69,6 +70,7 @@ template<typename BaseVecT>
 BVHTree<BaseVecT>::BVHTree(
     const floatArr vertices, size_t n_vertices,
     const indexArray faces, size_t n_faces)
+: m_depth(0)
 {
     m_root = buildTree(vertices, n_vertices, faces, n_faces);
     createCFTree();
@@ -317,6 +319,10 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
                 leaf->triangles.push_back(triangle);
             }
         }
+        #pragma omp critical(bvh_depth_update)
+        {
+            m_depth = std::max(m_depth, depth);
+        }
         return move(leaf);
     }
 
@@ -436,6 +442,10 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
             {
                 leaf->triangles.push_back(triangle);
             }
+        }
+        #pragma omp critical(bvh_depth_update)
+        {
+            m_depth = std::max(m_depth, depth);
         }
         return move(leaf);
     }
@@ -624,6 +634,12 @@ template<typename BaseVecT>
 const vector<float>& BVHTree<BaseVecT>::getTrianglesIntersectionData() const
 {
     return m_trianglesIntersectionData;
+}
+
+template<typename BaseVecT>
+const uint32_t BVHTree<BaseVecT>::getMaxDepth() const noexcept
+{
+    return m_depth;
 }
 
 } /* namespace lvr2 */
