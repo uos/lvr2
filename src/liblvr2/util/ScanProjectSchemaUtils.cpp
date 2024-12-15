@@ -102,7 +102,7 @@ ScanProjectSchemaPtr schemaFromName(const std::string& schemaName, const std::st
     {
         return directorySchemaFromName(schemaName, root);
     }
-    else if(boost::filesystem::extension(path) == ".h5")
+    else if(path.extension() == ".h5")
     {
         return hdf5SchemaFromName(schemaName);
     }
