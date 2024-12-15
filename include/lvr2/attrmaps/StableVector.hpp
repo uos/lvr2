@@ -68,6 +68,7 @@ private:
     size_t m_pos;
 public:
     StableVectorIterator(const vector<boost::optional<ElemT>>* deleted, bool startAtEnd = false);
+    constexpr StableVectorIterator(const StableVectorIterator<HandleT, ElemT>&) = default;
 
     StableVectorIterator& operator=(const StableVectorIterator& other);
     bool operator==(const StableVectorIterator& other) const;
