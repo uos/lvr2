@@ -146,6 +146,8 @@ public:
     // ========================================================================
     // === Operator overloads
     // ========================================================================
+    /// Copy assignment
+    constexpr BaseVector<CoordT>& operator=(const BaseVector<CoordT>& other) = default;
 
     /// Scalar multiplication.
     BaseVector<CoordT> operator*(const CoordT &scale) const;
