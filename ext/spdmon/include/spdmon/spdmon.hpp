@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include <spdlog/fmt/bundled/chrono.h>
+#include <spdlog/fmt/std.h>
 #include <spdlog/common.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/details/console_globals.h>
@@ -15,7 +16,6 @@
 #include <spdlog/pattern_formatter.h>
 #include <spdlog/details/os.h>
 #include "spdlog/sinks/stdout_sinks.h"
-#include "spdlog/sinks/basic_file_sink.h"
 #include <spdlog/sinks/ansicolor_sink.h>
 
 /*
@@ -120,7 +120,6 @@ namespace spdmon
         {
             Update(n);
         }
-
 
         void SetTotal(unsigned int n)
         {

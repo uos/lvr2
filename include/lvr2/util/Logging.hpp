@@ -92,7 +92,7 @@ public:
     }
 
 private:
-    /// SPD mon logger instance
+    /// spdlog logger instance
     std::shared_ptr<spdlog::logger> m_logger;
 
     /// Current log level
