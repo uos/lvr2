@@ -1,18 +1,31 @@
 #ifndef LOGGING
 #define LOGGING
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-
-#include <spdmon/spdmon.hpp>
-
 #include <sstream>
 #include <iostream>
+#include <memory>
+
+/* Forward declaration for logging backend */
+namespace spdlog
+{
+    struct logger;
+}
+
+namespace spdmon
+{
+    struct Progress;
+}
 
 namespace lvr2
 {
 
-using LogLevel = spdlog::level::level_enum;
+enum class LogLevel: uint8_t {
+    trace,
+    debug,
+    info,
+    warning,
+    error
+};
 
 
 /**
@@ -28,12 +41,7 @@ private:
     /**
      * @brief Construct a new Logger object
      */
-    Logger()
-    {
-        m_logger = spdlog::stdout_color_mt("lvr2logger");
-        m_logger->set_pattern("[%H:%M:%S:%e]%^[%-7l]%$ %v");
-        m_level = spdlog::level::info;
-    }
+    Logger();
 
 public:
 
@@ -53,18 +61,10 @@ public:
     void operator=(Logger const&) = delete;
 
     /// Prints buffer
-    void print()
-    {
-        m_logger->log(m_level, m_buffer.str());
-        m_buffer.str("");
-        m_buffer.clear();
-    }
+    void print();
 
     /// Flushes the internal buffer
-    void flush()
-    {
-        m_logger->flush();
-    }
+    void flush();
 
     /**
      * @brief Appends the serialized (textual) object to 
@@ -118,22 +118,15 @@ public:
      * @param width     Width of the progress bar. Currently buggy, 
      *                  leave it at default!
      */
-    Monitor(const LogLevel& level, const std::string& text, const size_t& max, size_t width = 0)
-        : m_monitor(text, max, false, stderr, width), m_prefixText(text)
-    {
-
-    }
+    Monitor(const LogLevel& level, const std::string& text, const size_t& max, size_t width = 0);
 
     /// Increment progress by one
-    inline void operator++()
-    {
-        ++m_monitor;
-    }
+    void operator++();
 
     /// Destructor
     ~Monitor()
     {
-        m_monitor.Terminate();
+        this->terminate();
     }
 
     /**
@@ -141,17 +134,14 @@ public:
      *          function once if the monitor object is still alive and you
      *          want to generate log output in a function.
      */
-    inline void terminate()
-    {
-        m_monitor.Terminate();
-    }
+    void terminate();
 
 private:
-     /// @brief SPD mon onject
-     spdmon::Progress m_monitor;
+    /// @brief SPD mon onject
+    std::shared_ptr<spdmon::Progress> m_monitor;
 
-     /// @brief Prefix text
-     std::string m_prefixText;
+    /// @brief Prefix text
+    std::string m_prefixText;
 };
 
 // Marker structs for log levels
@@ -205,14 +195,14 @@ inline Logger& operator<<(Logger& log, const LoggerEndline& endl)
 /// @brief Spezialization for error log level marker
 inline Logger& operator<<(Logger& log, const LoggerError& err)
 {
-    log.setLogLevel(LogLevel::err);
+    log.setLogLevel(LogLevel::error);
     return log;
 }
 
 /// @brief Spezialization for warning log level marker
 inline Logger& operator<<(Logger& log, const LoggerWarning& warn)
 {
-    log.setLogLevel(LogLevel::warn);
+    log.setLogLevel(LogLevel::warning);
     return log;
 }
 

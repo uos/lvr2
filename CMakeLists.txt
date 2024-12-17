@@ -439,8 +439,6 @@ endif(STANN_FOUND)
 
 # spdlog
 add_subdirectory(ext/spdlog)
-set(SPDLOG_INCLUDE_DIRS "ext/spdlog/include")
-include_directories(${SPDLOG_INCLUDE_DIRS})
 
 # spdmon
 set(spdmon_BUILD_EXECUTABLE OFF CACHE BOOL "Build the spdmon example")
@@ -448,8 +446,6 @@ set(spdmon_BUILD_HEADERS_ONLY ON CACHE BOOL "Build spdmon header only lib")
 set(spdmon_ENABLE_UNIT_TESTING OFF CACHE BOOL "Build spdmon unit tests")
 set(spdmon_ENABLE_BENCHMARKING OFF CACHE BOOL "Build spdmon benchmark")
 add_subdirectory(ext/spdmon)
-set(SPDMON_INCLUDE_DIRS "ext/spdmon/include")
-include_directories(${SPDMON_INCLUDE_DIRS})
 
 # NanoFLANN
 add_subdirectory(ext/nanoflann)
@@ -853,10 +849,6 @@ install(FILES
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ext/HighFive/include/
     DESTINATION "include"
     PATTERN "*.in" EXCLUDE)
-
-# Installation of spdlog headers
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ext/spdlog/include/
-    DESTINATION "include")
 
 
 ###############################################################################

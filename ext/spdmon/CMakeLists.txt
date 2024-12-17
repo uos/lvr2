@@ -146,8 +146,6 @@ if(${PROJECT_NAME}_BUILD_HEADERS_ONLY)
 else()
   target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 endif()
-include(cmake/CompilerWarnings.cmake)
-set_project_warnings(${PROJECT_NAME})
 
 verbose_message("Applied compiler warnings. Using standard ${CXX_STANDARD}.\n")
 
@@ -240,47 +238,36 @@ add_cpplint_style_check_target()
 # Install library for easy downstream inclusion
 #
 
-include(GNUInstallDirs)
-install(
-  TARGETS
-    ${PROJECT_NAME}
-  EXPORT
-    ${PROJECT_NAME}Targets
-  LIBRARY DESTINATION
-    ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION
-    ${CMAKE_INSTALL_BINDIR}
-  ARCHIVE DESTINATION
-    ${CMAKE_INSTALL_LIBDIR}
-  INCLUDES DESTINATION
-    include
-  PUBLIC_HEADER DESTINATION
-    include
-)
-
-install(
-  EXPORT 
-    ${PROJECT_NAME}Targets
-  FILE
-    ${PROJECT_NAME}Targets.cmake
-  NAMESPACE
-    ${PROJECT_NAME}::
-  DESTINATION
-    ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-)
+# include(GNUInstallDirs)
+# install(
+#   TARGETS
+#     ${PROJECT_NAME}
+#   EXPORT
+#     ${PROJECT_NAME}Targets
+#   LIBRARY DESTINATION
+#     ${CMAKE_INSTALL_LIBDIR}
+#   RUNTIME DESTINATION
+#     ${CMAKE_INSTALL_BINDIR}
+#   ARCHIVE DESTINATION
+#     ${CMAKE_INSTALL_LIBDIR}
+#   INCLUDES DESTINATION
+#     include
+#   PUBLIC_HEADER DESTINATION
+#     include
+# )
 
 #
 # Install the `include` directory
 #
 
-install(
-  DIRECTORY
-    include/${PROJECT_NAME_LOWERCASE}
-  DESTINATION
-    include
-)
+# install(
+#   DIRECTORY
+#     include/${PROJECT_NAME_LOWERCASE}
+#   DESTINATION
+#     include
+# )
 
-verbose_message("Install targets successfully build. Install with `cmake --build <build_directory> --target install --config <build_config>`.")
+# verbose_message("Install targets successfully build. Install with `cmake --build <build_directory> --target install --config <build_config>`.")
 
 #
 # Quick `ConfigVersion.cmake` creation
@@ -302,13 +289,13 @@ configure_package_config_file(
     ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 
-install(
-  FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-  DESTINATION
-    ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-)
+# install(
+#   FILES
+#     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+#     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+#   DESTINATION
+#     ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+# )
 
 #
 # Generate export header if specified

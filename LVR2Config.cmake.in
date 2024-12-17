@@ -43,7 +43,7 @@ if(@MPI_FOUND@)
   find_package(MPI REQUIRED)
   list(APPEND LVR2_INCLUDE_DIRS ${MPI_INCLUDE_PATH})
   list(APPEND LVR2_LIBRARIES ${MPI_CXX_LIBRARIES})
-endif(@MPI_FOUND)
+endif(@MPI_FOUND@)
 
 ###################
 ## REQUIRED DEPS ##
