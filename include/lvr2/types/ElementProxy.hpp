@@ -226,7 +226,7 @@ public:
 
     ElementProxy(T* pos = nullptr, unsigned w = 0) : m_ptr(pos), m_w(w) {}
 
-    T& operator[](int i) 
+    T& operator[](unsigned int i) 
     {
         if(m_ptr && (i < m_w))
         {
@@ -235,7 +235,7 @@ public:
         throw std::range_error("Element Proxy: Index larger than width");
     }
 
-    const T& operator[](int i) const
+    const T& operator[](unsigned int i) const
     {
         if(m_ptr && (i < m_w))
         {

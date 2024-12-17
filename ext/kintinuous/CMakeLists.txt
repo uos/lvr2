@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.4...3.16)
 project(kfusion C CXX)
 
 find_package(OpenNI2 REQUIRED)

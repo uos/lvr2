@@ -31,13 +31,14 @@ namespace lvr2 {
 
 template<typename T>
 Channel<T>::Channel()
-: m_elementWidth(0)
-, m_numElements(0)
+: m_numElements(0)
+, m_elementWidth(0)
 {}
 
 template<typename T>
 Channel<T>::Channel(size_t n, size_t width)
-: m_elementWidth(width), m_numElements(n)
+: m_numElements(n)
+, m_elementWidth(width)
 , m_data(new T[n * width])
 {}
 
@@ -52,11 +53,7 @@ template<typename T>
 Channel<T> Channel<T>::clone() const
 {
     Channel<T> ret(m_numElements, m_elementWidth);
-    std::memcpy(
-            ret.dataPtr().get(),
-            m_data.get(),
-            sizeof(T) * m_numElements * m_elementWidth
-        );
+    std::copy(m_data.get(), m_data.get() + m_numElements * m_elementWidth, ret.dataPtr().get());
     return ret;
 }
 

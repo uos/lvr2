@@ -108,6 +108,7 @@ set(LVR2_SOURCES
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
+    util/Logging.cpp
     )
 
 #####################################################################################
@@ -209,6 +210,12 @@ if(WITH_3DTILES)
     add_dependencies(lvr2core cesium-native)
 endif(WITH_3DTILES)
 
+target_link_libraries(lvr2core
+    PRIVATE
+    $<BUILD_INTERFACE:spdlog::spdlog>
+    $<BUILD_INTERFACE:spdmon::spdmon>
+)
+
 #####################################################################################
 # Build static library
 #####################################################################################
@@ -216,22 +223,26 @@ endif(WITH_3DTILES)
 message(STATUS "Building static library")
 add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
 target_include_directories(lvr2_static PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${SPDLOG_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${SPDMON_INCLUDE_DIRS}>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lvr2>
 )
-target_link_libraries(lvr2_static 
+target_link_libraries(lvr2_static
+    PUBLIC
     ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
     ${LVR2_LIB_DEPENDENCIES}
 )
+target_link_libraries(lvr2_static
+    PRIVATE
+    $<BUILD_INTERFACE:spdlog::spdlog>
+    $<BUILD_INTERFACE:spdmon::spdmon>
+)
 target_compile_definitions(lvr2_static
     PUBLIC
-        ${LVR2_DEFINITIONS}
+    ${LVR2_DEFINITIONS}
 )
 set_target_properties(lvr2_static
-  PROPERTIES
+    PROPERTIES
     EXPORT_NAME lvr2_static
     SOVERSION ${lvr2_VERSION_MAJOR}
     VERSION ${lvr2_VERSION}
@@ -246,27 +257,32 @@ set_target_properties(lvr2_static
 message(STATUS "Building shared library")
 add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
 target_include_directories(lvr2 PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${SPDLOG_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${SPDMON_INCLUDE_DIRS}>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lvr2>
 )
-target_link_libraries(lvr2 
+target_link_libraries(lvr2
+    PUBLIC
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
-    ${LVR2_LIB_DEPENDENCIES})
+    ${LVR2_LIB_DEPENDENCIES}
+)
+target_link_libraries(lvr2
+    PRIVATE
+    $<BUILD_INTERFACE:spdlog::spdlog>
+    $<BUILD_INTERFACE:spdmon::spdmon>
+)
 target_compile_definitions(lvr2 
     PUBLIC
-        ${LVR2_DEFINITIONS}
+    ${LVR2_DEFINITIONS}
 )
 set_target_properties(lvr2
-  PROPERTIES
+    PROPERTIES
     EXPORT_NAME lvr2
     SOVERSION ${lvr2_VERSION_MAJOR}
     VERSION ${lvr2_VERSION}
     CXX_STANDARD 17
     INTERFACE_INCLUDE_DIRECTORIES
-        ${Boost_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
 )
 
 #####################################################################################
