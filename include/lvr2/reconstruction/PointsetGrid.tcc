@@ -115,8 +115,8 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
     const int used_threads = max_threads;
 
     // Status message output
-    // lvr2::Monitor progress(lvr2::LogLevel::info, "Calculating distance values", this->m_queryPoints.size());
-    lvr2::PacmanProgressBar progress(this->m_queryPoints.size() / used_threads, "[PointsetGrid] Calculating Distance Values.");
+    lvr2::Monitor progress(lvr2::LogLevel::info, "Calculating distance values", this->m_queryPoints.size());
+    // lvr2::PacmanProgressBar progress(this->m_queryPoints.size() / used_threads, "[PointsetGrid] Calculating Distance Values.");
 
     // Calculate a distance value for each query point
 #ifndef MSVC
@@ -142,13 +142,13 @@ void PointsetGrid<BaseVecT, BoxT>::calcDistanceValues()
             this->m_queryPoints[i].m_invalid = false;
         }
         this->m_queryPoints[i].m_distance = projectedDistance;
-        if(omp_get_thread_num() == 0)
-        {
+        // if(omp_get_thread_num() == 0)
+        // {
             ++progress;
-        }
+        // }
     }
-    std::cout << std::endl;
-    // progress.terminate();
+    // std::cout << std::endl;
+    progress.terminate();
 
     // remove cells with invalid corners
     auto it = this->m_cells.begin();
