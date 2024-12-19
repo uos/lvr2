@@ -155,7 +155,9 @@ namespace spdmon
                 else
                 {
                     for (size_t i = 0; i < n; i++)
+                    {
                         std::copy_n(bar_syms_[idx], len_sym, it);
+                    }
                 }
             };
 
@@ -191,7 +193,7 @@ namespace spdmon
             }
         }
 
-        void RenderProgress(timepoint_t now, unsigned int width, fmt::memory_buffer &buf)
+        bool RenderProgress(timepoint_t now, unsigned int width, fmt::memory_buffer &buf)
         {
             last_print_n_ = n_;
             //const auto elapsed = now - started_at_;
@@ -201,7 +203,7 @@ namespace spdmon
                 fmt::format_to(
                     fmt::appender(buf), fmt::runtime(kNoTotalFmt), fmt::arg("desc", desc_), fmt::arg("n", n_), fmt::arg("elapsed", elapsed),
                     fmt::arg("eol", kTermEol));
-                return;
+                return true;
             }
 
             const float frac = static_cast<float>(n_.load()) / static_cast<float>(total_);
@@ -210,29 +212,35 @@ namespace spdmon
             fmt::memory_buffer right;
 
             const float percent = frac * 100;
-            try
+
+            fmt::format_to(fmt::appender(buf), fmt::runtime(kLbarFmt), fmt::arg("desc", desc_), fmt::arg("frac", percent));
+
+            fmt::format_to(
+                fmt::appender(right), fmt::runtime(kRbarFmt), fmt::arg("n", n_), fmt::arg("total", total_), fmt::arg("elapsed", elapsed),
+                fmt::arg("remaining", remaining), fmt::arg("eol", kTermEol));
+
+
+            const int space_for_bar = static_cast<int>(width) - static_cast<int>(buf.size()) - static_cast<int>(right.size());
+
+            if (space_for_bar > 0) 
             {
-                fmt::format_to(fmt::appender(buf), fmt::runtime(kLbarFmt), fmt::arg("desc", desc_), fmt::arg("frac", percent));
-
-                fmt::format_to(
-                    fmt::appender(right), fmt::runtime(kRbarFmt), fmt::arg("n", n_), fmt::arg("total", total_), fmt::arg("elapsed", elapsed),
-                    fmt::arg("remaining", remaining), fmt::arg("eol", kTermEol));
-
-                const auto space_for_bar = static_cast<unsigned int>(width - buf.size() - right.size() + kTermEol.size());
-
-                if (space_for_bar > 0) {
-                    FormatBarTo(buf, space_for_bar, frac);
-                }
-
+                FormatBarTo(buf, space_for_bar, frac);
                 buf.reserve(buf.size() + right.size());
                 std::copy(right.begin(), right.end(), std::back_inserter(buf));
-            } 
-            catch (...) 
-            {
-                // In rare cases a format exception might happen. 
-                // We currently just ignore it as it will only 
-                // cause a missing update in the status information
+            } else {
+                buf.clear();
+                // fmt::format_to(fmt::appender(buf), "Enlarge terminal to see progress!");
+
+                // std::cout << "Stats:" << std::endl;
+                // std::cout << "- width: " << width << std::endl;
+                // std::cout << "- buf: " << buf.size() << std::endl;
+                // std::cout << "- right: " << right.size() << std::endl;
+                // std::cout << "- space for bar: " << space_for_bar << std::endl;
+
+                return false;
             }
+
+            return true;
         }
 
         virtual void ShowProgress(timepoint_t now = clock_t::now()) = 0;
@@ -294,21 +302,26 @@ namespace spdmon
 
         void ShowProgress(timepoint_t now = clock_t::now()) final
         {
+            // The performance is not too bad checking this all the time
+            UpdateTermWidth();
             // called from BaseProgress when it decided the spdmon bar needs
             // to be printed again
-            try {
-                fmt::memory_buffer buf;
-                RenderProgress(now, width_, buf);
-                std::copy(kTermMoveUp.begin(), kTermMoveUp.end(), std::back_inserter(buf));
-                fwrite(buf.data(), 1, buf.size(), file_);
-                fflush(file_);
-            }
-            catch(...)
-            {
-                std::cout << "ShowProgress" << std::endl;
-            }
-        }
+            fmt::memory_buffer buf;
 
+            if(RenderProgress(now, width_, buf))
+            {
+              std::copy(kTermMoveUp.begin(), kTermMoveUp.end(), std::back_inserter(buf));
+            } else {
+              // TODO: write this message instead
+              // doesnt work right now bc the terminal prints with line breaks
+              // buf.clear();
+              // fmt::format_to(fmt::appender(buf), "Enlarge terminal to see progress!");
+            }
+            
+            fwrite(buf.data(), 1, buf.size(), file_);
+            fflush(file_);
+            
+        }
 
         void Flush()
         {
