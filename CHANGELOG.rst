@@ -2,6 +2,10 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+24.12.0 (2024-12-23)
+--------------------
+* stability improvements for different ubuntu versions. Compilitation within ROS 1 or ROS 2 workspaces.
+
 20.11.3 (2021-10-08)
 --------------------
 * add libgdal-dev to package.xml, resolves `#10 <https://github.com/uos/lvr2/issues/10>`_
