@@ -3,17 +3,25 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdmon/spdmon.hpp>
 
+// This file is compiled with -fvisibility=hidden to prevent spdlog and spdmon symbols
+// to be public in the dynamic library
+#ifdef LVR2_BUILDING_SHARED
+    #define LVR2_API __attribute__ ((visibility ("default")))
+#else
+    #define LVR2_API
+#endif
+
 namespace lvr2
 {
 
-Logger::Logger()
+LVR2_API Logger::Logger()
 {
     m_logger = spdlog::stdout_color_mt("lvr2logger");
     m_logger->set_pattern("[%H:%M:%S:%e]%^[%-7l]%$ %v");
     m_level = LogLevel::info;
 }
 
-void Logger::print()
+LVR2_API void Logger::print()
 {
     spdlog::level::level_enum level;
     
@@ -32,23 +40,23 @@ void Logger::print()
     m_buffer.clear();
 }
 
-void Logger::flush()
+LVR2_API void Logger::flush()
 {
     m_logger->flush();
 }
 
-Monitor::Monitor(const LogLevel& level, const std::string& text, const size_t& max, size_t width)
+LVR2_API Monitor::Monitor(const LogLevel& level, const std::string& text, const size_t& max, size_t width)
 : m_monitor(std::make_shared<spdmon::Progress>(text, max, false, stderr, width))
 , m_prefixText(text)
 {
 }
 
-void Monitor::terminate()
+LVR2_API void Monitor::terminate()
 {
     m_monitor->Terminate();
 }
 
-void Monitor::operator++()
+LVR2_API void Monitor::operator++()
 {
     ++(*m_monitor);
 }

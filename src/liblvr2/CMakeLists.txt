@@ -198,6 +198,7 @@ set(LVR2_INTERNAL_DEPENDENCIES_SHARED
 
 if(UNIX)
   SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=c++14")
+  SET_SOURCE_FILES_PROPERTIES(util/Logging.cpp PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
 endif(UNIX)
 
 
@@ -212,7 +213,7 @@ endif(WITH_3DTILES)
 
 target_link_libraries(lvr2core
     PRIVATE
-    $<BUILD_INTERFACE:spdlog::spdlog>
+    $<BUILD_INTERFACE:spdlog::spdlog_header_only>
     $<BUILD_INTERFACE:spdmon::spdmon>
 )
 
@@ -234,7 +235,7 @@ target_link_libraries(lvr2_static
 )
 target_link_libraries(lvr2_static
     PRIVATE
-    $<BUILD_INTERFACE:spdlog::spdlog>
+    $<BUILD_INTERFACE:spdlog::spdlog_header_only>
     $<BUILD_INTERFACE:spdmon::spdmon>
 )
 target_compile_definitions(lvr2_static
@@ -255,7 +256,7 @@ set_target_properties(lvr2_static
 #####################################################################################
 
 message(STATUS "Building shared library")
-add_library(lvr2 SHARED $<TARGET_OBJECTS:lvr2core>)
+add_library(lvr2 SHARED ${LVR2_SOURCES})
 target_include_directories(lvr2 PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
@@ -268,12 +269,13 @@ target_link_libraries(lvr2
 )
 target_link_libraries(lvr2
     PRIVATE
-    $<BUILD_INTERFACE:spdlog::spdlog>
+    $<BUILD_INTERFACE:spdlog::spdlog_header_only>
     $<BUILD_INTERFACE:spdmon::spdmon>
 )
 target_compile_definitions(lvr2 
     PUBLIC
     ${LVR2_DEFINITIONS}
+    -DLVR2_BUILDING_SHARED
 )
 set_target_properties(lvr2
     PROPERTIES
@@ -281,6 +283,7 @@ set_target_properties(lvr2
     SOVERSION ${lvr2_VERSION_MAJOR}
     VERSION ${lvr2_VERSION}
     CXX_STANDARD 17
+    VISIBILITY_INLINES_HIDDEN ON
     INTERFACE_INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}
 )
