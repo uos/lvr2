@@ -2,6 +2,19 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+25.1.0 (2025-01-01)
+--------------------
+* mirror internal state of lvr to github
+* PMP mesh
+* exact IPCA for normal estimation
+* spdlog for logging
+* New IO structure for scan projects
+
+24.12.0 (2024-12-23)
+--------------------
+* stability improvements for different ubuntu versions
+* Compilitation within ROS 1 or ROS 2 workspaces.
+
 20.11.1 (2020-11-11)
 --------------------
 * fix for vtk8 issue
