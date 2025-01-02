@@ -74,6 +74,60 @@ reconstruction call in your build directory:
 bin/lvr2_reconstruct ../dat/scan.pts
 ```
 
+<details>
+<summary>Output:</summary>
+
+```bash
+         /\
+        /  \               ##          ##      ##    #######         ######
+       /    \              ##          ##      ##    ##     ##     ##      ##
+      /      \             ##           ##    ##     ##      ##            ##
+     /________\            ##           ##    ##     ##     ##            ##
+    /\        /\           ##            ##  ##      #######             ##
+   /  \      /  \          ##            ##  ##      ##    ##          ##
+  /    \    /    \         ##             ####       ##     ##       ##
+ /      \  /      \        ##########      ##        ##      ##    ##########
+/________\/________\
+    
+##### Program options: 
+##### Transform input data	: NO
+##### Voxelsize 		: 10
+##### Number of threads 	: 16
+##### Point cloud manager 	: LVR2
+##### Normal Estimation:  	: 0
+##### Voxel decomposition: 	: PMC
+##### Classifier:		: GREY
+##### Dump classification	: NO
+##### k_n 			: 10
+##### k_i 			: 10
+##### k_d 			: 5
+##### Fill holes 		: NO
+##### Remove DAs 		: NO
+##### GPU normal estimation 	: OFF
+
+[00:00:00 006] Autodetected the following attributes
+[00:00:00 006] Color:     0
+[00:00:00 006] Intensity: 1
+[13:03:43:568][info   ] [AdaptiveKSearchSurface] Dataset statistics: 
+[13:03:43:568][info   ] [AdaptiveKSearchSurface] Num points: 289252
+[13:03:43:568][info   ] [AdaptiveKSearchSurface] kn, ki, kd: 10, 10, 5
+[13:03:43:568][info   ] [AdaptiveKSearchSurface] BB of points: [-851.281, -79.2388, 1.35899] - [1487.27, 327.931, 808.3]
+[13:03:43:580][info   ] [LVR2 Reconstruct] No flip point set, defaulting to (0,0,0) 
+[13:03:43:580][info   ] [AdaptiveKSearchSurface] Initializing normal array...
+[13:03:43:580][info   ] [AdaptiveKSearchSurface] Estimating 289252 Surface Normals using 16 threads ...
+[13:03:43:697][info   ] [AdaptiveKSearchSurface] Interpolating 289252 Surface Normals using 16 threads ...
+[13:03:43:741][info   ] [AdaptiveKSearchSurface] Copying normals...
+[13:03:43:743][info   ] [LVR2 Reconstruct] Pointcloud loaded starting to reconstruct surfaces ...
+[13:03:43:743][info   ] [PointsetSurface] Creating grid
+[13:03:43:868][info   ] [LVR2 Reconstruct] Grid Cells: 30040
+[13:03:43:915][info   ] [LVR2 Reconstruct] Reconstructed mesh (vertices, faces): 20157, 36416)
+[13:03:43:937][info   ] [LVR2 Reconstruct] Saving mesh to triangle_mesh.ply.
+[13:03:43:943][info   ] [LVR2 Reconstruct] Saving mesh to triangle_mesh.obj.
+[13:03:44:320][info   ] [LVR2 Reconstruct] Program end.
+```
+
+</details>
+
 in the root directory of the project. This will create a file called
 “triangle_mesh.ply” which can be displayed using a mesh viewer of your choice.
 
