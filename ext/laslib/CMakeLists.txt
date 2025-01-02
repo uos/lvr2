@@ -47,6 +47,12 @@ add_library(lvr2las_static STATIC ${LASLIB_SOURCES})
 
 add_library(lvr2las SHARED ${LASLIB_SOURCES})
 
+set_target_properties(lvr2las
+  PROPERTIES
+    SOVERSION ${lvr2_VERSION_MAJOR}
+    VERSION ${lvr2_VERSION}
+)
+
 install(DIRECTORY inc/ DESTINATION ${LASLIB_INSTALL_INCLUDE_DIR})
 
 install(TARGETS lvr2las_static lvr2las

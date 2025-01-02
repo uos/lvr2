@@ -13,6 +13,12 @@ add_library(lvr2rply_static STATIC rply.c)
 
 add_library(lvr2rply SHARED rply.c)
 
+set_target_properties(lvr2rply
+  PROPERTIES
+    SOVERSION ${lvr2_VERSION_MAJOR}
+    VERSION ${lvr2_VERSION}
+)
+
 install(DIRECTORY . DESTINATION ${RPLY_INSTALL_INCLUDE_DIR}
   FILES_MATCHING PATTERN "*.h")
 

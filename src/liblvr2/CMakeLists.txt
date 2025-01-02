@@ -245,11 +245,8 @@ target_compile_definitions(lvr2_static
 set_target_properties(lvr2_static
     PROPERTIES
     EXPORT_NAME lvr2_static
-    SOVERSION ${lvr2_VERSION_MAJOR}
-    VERSION ${lvr2_VERSION}
     CXX_STANDARD 17
 )
-
 
 #####################################################################################
 # Build shared library
@@ -365,6 +362,12 @@ if(CUDA_FOUND)
         ${CUDA_NVRTC_LIBRARY}
     )
 
+    # set_target_properties(lvr2cuda_static
+    # PROPERTIES
+    #     SOVERSION ${lvr2_VERSION_MAJOR}
+    #     VERSION ${lvr2_VERSION}
+    # )
+
     message(STATUS "Building shared LVR CUDA library")
     cuda_add_library(lvr2cuda SHARED ${LVR2_CUDA_CPP_SRC} ${LVR2_CUDA_SRC})
 
@@ -376,6 +379,12 @@ if(CUDA_FOUND)
         ${CUDA_LIBRARIES}
         ${CUDA_CUDA_LIBRARY}
         ${CUDA_NVRTC_LIBRARY}
+    )
+
+    set_target_properties(lvr2cuda
+    PROPERTIES
+        SOVERSION ${lvr2_VERSION_MAJOR}
+        VERSION ${lvr2_VERSION}
     )
 
     install(
