@@ -2,10 +2,12 @@ name: iron
 on:
   push:
     branches:
+      - 'main'
       - 'develop'
       - 'iron'
   pull_request:
     branches:
+      - 'main'
       - 'develop'
       - 'iron'
   workflow_dispatch:

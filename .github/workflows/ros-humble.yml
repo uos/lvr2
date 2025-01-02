@@ -2,10 +2,12 @@ name: humble
 on:
   push:
     branches:
+      - 'main'
       - 'develop'
       - 'humble'
   pull_request:
     branches:
+      - 'main'
       - 'develop'
       - 'humble'
   workflow_dispatch:

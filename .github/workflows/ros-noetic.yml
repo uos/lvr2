@@ -2,10 +2,12 @@ name: noetic
 on:
   push:
     branches:
+      - 'main'
       - 'develop'
       - 'noetic'
   pull_request:
     branches:
+      - 'main'
       - 'develop'
       - 'noetic'
   workflow_dispatch:

@@ -2,10 +2,12 @@ name: jazzy
 on:
   push:
     branches:
+      - 'main'
       - 'develop'
       - 'jazzy'
   pull_request:
     branches:
+      - 'main'
       - 'develop'
       - 'jazzy'
   workflow_dispatch:
