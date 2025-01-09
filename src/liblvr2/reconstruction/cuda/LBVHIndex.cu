@@ -14,6 +14,7 @@
 #include <nvrtc.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <float.h>
 
 #include "lvr2/reconstruction/cuda/lbvh/GPUErrorCheck.h"
 
