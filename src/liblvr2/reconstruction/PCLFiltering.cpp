@@ -113,7 +113,7 @@ void PCLFiltering::applyMLSProjection(float searchRadius)
 
     // Set Parameters
     mls.setInputCloud(m_pointCloud);
-    mls.setPolynomialFit(true);
+    mls.setPolynomialOrder(2);
     mls.setSearchMethod(m_kdTree);
     mls.setSearchRadius(searchRadius);
 

@@ -117,7 +117,7 @@ set(LVR2_SOURCES
 
 if(PCL_FOUND)
     list(APPEND LVR2_SOURCES
-        io/PCDIO.cpp
+        io/modelio/PCDIO.cpp
         reconstruction/PCLFiltering.cpp)
 endif(PCL_FOUND)
 
@@ -226,7 +226,8 @@ add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
 target_include_directories(lvr2_static PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lvr2>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    ${HDF5_INCLUDE_DIRS}
 )
 target_link_libraries(lvr2_static
     PUBLIC
@@ -257,7 +258,9 @@ add_library(lvr2 SHARED ${LVR2_SOURCES})
 target_include_directories(lvr2 PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lvr2>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    ${Boost_INCLUDE_DIRS}
+    ${HDF5_INCLUDE_DIRS}
 )
 target_link_libraries(lvr2
     PUBLIC
@@ -281,8 +284,6 @@ set_target_properties(lvr2
     VERSION ${lvr2_VERSION}
     CXX_STANDARD 17
     VISIBILITY_INLINES_HIDDEN ON
-    INTERFACE_INCLUDE_DIRECTORIES
-    ${Boost_INCLUDE_DIRS}
 )
 
 #####################################################################################
