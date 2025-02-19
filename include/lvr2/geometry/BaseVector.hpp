@@ -238,22 +238,21 @@ std::ostream& operator<<( std::ostream& os, const BaseVector<T>& v)
 
 /**
  * @brief   Multiplication operator to support transformation with Eigen
- *          matrices. Rotates the normal, ignores translation. Implementation
- *          for RowMajor matrices.
+ *          matrices. Implementation for RowMajor matrices.
  * 
- * @tparam CoordType            Coordinate type of the normals
+ * @tparam CoordType            Coordinate type of the vector
  * @tparam Scalar               Scalar type of the Eigen matrix
  * @param mat                   Eigen matrix 
- * @param normal                Input normal
- * @return Normal<CoordType>    Transformed normal
+ * @param vector                Input vector
+ * @return BaseVector<CoordType>    Transformed vector
  */
 template<typename CoordType, typename Scalar = CoordType>
-inline BaseVector<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4>& mat, const BaseVector<CoordType>& normal)
+inline BaseVector<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4>& mat, const BaseVector<CoordType>& vector)
 {
-    // TODO: CHECK IF THIS IS CORRECT
-    CoordType x = mat(0, 0) * normal.x + mat(1, 0) * normal.y + mat(2, 0) * normal.z;
-    CoordType y = mat(0, 1) * normal.x + mat(1, 1) * normal.y + mat(2, 1) * normal.z;
-    CoordType z = mat(0, 2) * normal.x + mat(1, 2) * normal.y + mat(2, 2) * normal.z;
+    // Eigen first index is row, second index is column
+    CoordType x = mat(0, 0) * vector.x + mat(0, 1) * vector.y + mat(0, 2) * vector.z;
+    CoordType y = mat(1, 0) * vector.x + mat(1, 1) * vector.y + mat(1, 2) * vector.z;
+    CoordType z = mat(2, 0) * vector.x + mat(2, 1) * vector.y + mat(2, 2) * vector.z;
 
     x += mat(0, 3);
     y += mat(1, 3);
