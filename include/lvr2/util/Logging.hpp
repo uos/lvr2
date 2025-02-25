@@ -186,42 +186,42 @@ inline Logger& operator<<(Logger& log, const T& s)
 
 /// @brief Spezialization for endl marker
 template<>
-inline Logger& operator<<(Logger& log, const LoggerEndline& endl)
+inline Logger& operator<<(Logger& log, const LoggerEndline& /* endl */)
 {
     log.print();
     return log;
 }
 
 /// @brief Spezialization for error log level marker
-inline Logger& operator<<(Logger& log, const LoggerError& err)
+inline Logger& operator<<(Logger& log, const LoggerError& /* err */)
 {
     log.setLogLevel(LogLevel::error);
     return log;
 }
 
 /// @brief Spezialization for warning log level marker
-inline Logger& operator<<(Logger& log, const LoggerWarning& warn)
+inline Logger& operator<<(Logger& log, const LoggerWarning& /* warn */)
 {
     log.setLogLevel(LogLevel::warning);
     return log;
 }
 
 /// @brief Spezialization for trace log level marker
-inline Logger& operator<<(Logger& log, const LoggerTrace& trace)
+inline Logger& operator<<(Logger& log, const LoggerTrace& /* trace */)
 {
     log.setLogLevel(LogLevel::trace);
     return log;
 }
 
 /// @brief Spezialization for debug log level marker
-inline Logger& operator<<(Logger& log, const LoggerDebug& trace)
+inline Logger& operator<<(Logger& log, const LoggerDebug& /* trace */)
 {
     log.setLogLevel(LogLevel::debug);
     return log;
 }
 
 /// @brief Spezialization for info log level marker
-inline Logger& operator<<(Logger& log, const LoggerInfo& info)
+inline Logger& operator<<(Logger& log, const LoggerInfo& /* info */)
 {
     log.setLogLevel(LogLevel::info);
     return log;

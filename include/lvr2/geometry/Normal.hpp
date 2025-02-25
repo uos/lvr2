@@ -161,10 +161,10 @@ inline std::ostream& operator<<(std::ostream& os, const Normal<CoordType>& n)
 template<typename CoordType, typename Scalar = CoordType>
 inline Normal<CoordType> operator*(const Eigen::Matrix<Scalar, 4, 4>& mat, const Normal<CoordType>& normal)
 {
-    // TODO: CHECK IF THIS IS CORRECT
-    CoordType x = mat(0, 0) * normal.x + mat(1, 0) * normal.y + mat(2, 0) * normal.z;
-    CoordType y = mat(0, 1) * normal.x + mat(1, 1) * normal.y + mat(2, 1) * normal.z;
-    CoordType z = mat(0, 2) * normal.x + mat(1, 2) * normal.y + mat(2, 2) * normal.z;
+    // Eigen first index is row, second index is column
+    CoordType x = mat(0, 0) * normal.x + mat(0, 1) * normal.y + mat(0, 2) * normal.z;
+    CoordType y = mat(1, 0) * normal.x + mat(1, 1) * normal.y + mat(1, 2) * normal.z;
+    CoordType z = mat(2, 0) * normal.x + mat(2, 1) * normal.y + mat(2, 2) * normal.z;
     return Normal<CoordType>(x,y,z);
 }
 #endif // ifndef __NVCC__

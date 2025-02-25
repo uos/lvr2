@@ -41,18 +41,14 @@ PointBuffer::PointBuffer()
 
 PointBuffer::PointBuffer(floatArr points, size_t n)
 {
-    // Generate channel object pointer and add it
-    // to channel map
-    FloatChannelPtr point_data(new FloatChannel(n, 3, points));
-    this->addFloatChannel(point_data, "points");
-
+    // Add point data
+    this->setPointArray(points, n);
 }
 
 PointBuffer::PointBuffer(floatArr points, floatArr normals, size_t n) : PointBuffer(points, n)
 {
     // Add normal data
-    FloatChannelPtr normal_data(new FloatChannel(n, 3, points));
-    this->addFloatChannel(normal_data, "normals");
+    this->setNormalArray(normals, n);
 }
 
 void PointBuffer::setPointArray(floatArr points, size_t n)
