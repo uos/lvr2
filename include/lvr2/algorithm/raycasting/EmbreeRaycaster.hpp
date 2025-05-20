@@ -35,7 +35,7 @@
 #ifndef LVR2_ALGORITHM_RAYCASTING_EMBREERAYCASTER
 #define LVR2_ALGORITHM_RAYCASTING_EMBREERAYCASTER
 
-#include <embree3/rtcore.h>
+#include <embree4/rtcore.h>
 #include <stdio.h>
 
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
@@ -94,7 +94,6 @@ protected:
 
     RTCDevice m_device;
     RTCScene m_scene;
-    RTCIntersectContext m_context;
 };
 
 } // namespace lvr2

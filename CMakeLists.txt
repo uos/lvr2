@@ -44,7 +44,7 @@ endif()
 #------------------------------------------------------------------------------
 # Searching for Embree: needs to be placed above "set(CMAKE_MODULE_PATH)".
 #------------------------------------------------------------------------------
-find_package(embree 3.0 QUIET)
+find_package(embree 4.0 QUIET)
 if(embree_FOUND)
   message(STATUS "Found Embree")
   include_directories(${EMBREE_INCLUDE_DIRS})
