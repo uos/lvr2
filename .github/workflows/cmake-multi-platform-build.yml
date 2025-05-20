@@ -25,7 +25,7 @@ jobs:
 
       # Set up a matrix to run the following 3 linux versions:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04, ubuntu-20.04]
+        os: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04]
         build_type: [Release]
         c_compiler: [gcc]
         include:
@@ -40,10 +40,6 @@ jobs:
           - os: ubuntu-22.04
             c_compiler: gcc
             cpp_compiler: g++
-          
-          - os: ubuntu-20.04
-            c_compiler: gcc
-            cpp_compiler: g++
 
     steps:
     - uses: actions/checkout@v4
@@ -52,7 +48,7 @@ jobs:
 
     - name: Install dependencies
       run: >
-        sudo apt update && sudo apt install -y libboost-all-dev build-essential cmake cmake-curses-gui libflann-dev libgsl-dev libeigen3-dev libopenmpi-dev openmpi-bin opencl-c-headers ocl-icd-opencl-dev freeglut3-dev libhdf5-dev liblz4-dev libopencv-dev libyaml-cpp-dev libcgal-dev libgdal-dev
+        sudo apt update && sudo apt install -y libboost-all-dev build-essential cmake cmake-curses-gui libflann-dev libgsl-dev libeigen3-dev libopenmpi-dev openmpi-bin opencl-c-headers ocl-icd-opencl-dev freeglut3-dev libhdf5-dev liblz4-dev libopencv-dev libyaml-cpp-dev libcgal-dev libgdal-dev libembree-dev
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.

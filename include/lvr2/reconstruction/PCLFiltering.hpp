@@ -38,7 +38,7 @@
 #ifdef LVR2_USE_PCL
 
 #include "lvr2/util/Timestamp.hpp"
-#include "lvr2/util/PointBuffer.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>

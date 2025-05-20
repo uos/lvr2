@@ -51,7 +51,7 @@
 
 // PCL related includes
 #ifdef LVR2_USE_PCL
-#include "lvr2/io/PCDIO.hpp"
+#include "lvr2/io/modelio/PCDIO.hpp"
 #endif
 
 #ifdef LVR2_USE_RDB
@@ -60,7 +60,7 @@
 
 // RiVLib
 #ifdef LVR2_USE_RIVLIB
-#include "lvr2/io/RxpIO.hpp"
+#include "lvr2/io/modelio/RxpIO.hpp"
 #endif
 
 #include <boost/filesystem.hpp>

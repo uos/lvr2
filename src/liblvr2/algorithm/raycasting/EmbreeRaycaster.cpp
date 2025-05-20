@@ -1,8 +1,6 @@
 #include "lvr2/algorithm/raycasting/EmbreeRaycaster.hpp"
 
-#include <embree3/rtcore.h>
-#include <algorithm>
-#include <iterator>
+#include <embree4/rtcore.h>
 
 namespace lvr2 {
 

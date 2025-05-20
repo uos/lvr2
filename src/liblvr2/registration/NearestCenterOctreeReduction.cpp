@@ -102,6 +102,7 @@ void NearestCenterOctreeReduction::createOctree(size_t* start, size_t* end, cons
     {
         for (size_t* it = start; it != end; ++it)
         {
+            #pragma omp critical (samplePointIndices) // std::vector is not thread safe
             m_samplePointIndices.push_back(*it);
         }
         return;
@@ -130,6 +131,7 @@ void NearestCenterOctreeReduction::createOctree(size_t* start, size_t* end, cons
             }
         }
 
+        #pragma omp critical (samplePointIndices) // std::vector is not thread safe
         m_samplePointIndices.push_back(nearest);
         return;
     }

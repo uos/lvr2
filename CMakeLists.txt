@@ -44,7 +44,7 @@ endif()
 #------------------------------------------------------------------------------
 # Searching for Embree: needs to be placed above "set(CMAKE_MODULE_PATH)".
 #------------------------------------------------------------------------------
-find_package(embree 3.0 QUIET)
+find_package(embree 4.0 QUIET)
 if(embree_FOUND)
   message(STATUS "Found Embree")
   include_directories(${EMBREE_INCLUDE_DIRS})
@@ -150,7 +150,7 @@ include_directories(${FLANN_INCLUDE_DIR})
 #------------------------------------------------------------------------------
 # Searching for LZ4
 #------------------------------------------------------------------------------
-find_package(Lz4 REQUIRED)
+find_package(LZ4 REQUIRED)
 include_directories(${LZ4_INCLUDE_DIR})
 message(STATUS "Found LZ4 library: ${LZ4_INCLUDE_DIR}")
 
@@ -836,7 +836,7 @@ install(FILES package.xml DESTINATION share/lvr2)
 
 install(FILES
     CMakeModules/FindFLANN.cmake
-    CMakeModules/FindLz4.cmake
+    CMakeModules/FindLZ4.cmake
     CMakeModules/FindNabo.cmake
     CMakeModules/FindOpenNI.cmake
     CMakeModules/FindOpenNI2.cmake
