@@ -3,7 +3,8 @@
 # See here: https://stackoverflow.com/questions/6622454/cuda-incompatible-with-my-gcc-version
 
 # CUDA version                max GCC version
-# 12.4, 12.5                         13.2
+# 12.8                               14.0
+# 12.4, 12.5, 12.6                   13.2
 # 12.1, 12.2, 12.3                   12.2
 # 12                                 12.1
 # 11.4.1+, 11.5	                     11
@@ -24,7 +25,9 @@
 # message(STATUS "Maximum allowed gcc version for cuda is: ${MAX_CUDA_GCC_VERSION}")
 function(max_cuda_gcc_version _CUDA_VERSION _MAX_GCC_VERSION)
 
-if(${_CUDA_VERSION} VERSION_GREATER_EQUAL 12.4.0)
+if(${_CUDA_VERSION} VERSION_GREATER_EQUAL 12.8.0)
+  set(${_MAX_GCC_VERSION} 14 PARENT_SCOPE)
+elseif(${_CUDA_VERSION} VERSION_GREATER_EQUAL 12.4.0)
   set(${_MAX_GCC_VERSION} 13 PARENT_SCOPE)
 elseif(${_CUDA_VERSION} VERSION_GREATER_EQUAL 12.1.0)
   set(${_MAX_GCC_VERSION} 12 PARENT_SCOPE)
