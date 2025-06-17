@@ -84,8 +84,8 @@ protected:
         rayhit.ray.dir_y = direction.y();
         rayhit.ray.dir_z = direction.z();
         rayhit.ray.tnear = 0;
-        rayhit.ray.tfar = INFINITY;
-        rayhit.ray.mask = 0;
+        rayhit.ray.tfar = std::numeric_limits<float>::infinity();
+        rayhit.ray.mask = std::numeric_limits<unsigned int>::max();
         rayhit.ray.flags = 0;
         rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
         rayhit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
