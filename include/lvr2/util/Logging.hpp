@@ -1,6 +1,7 @@
 #ifndef LOGGING
 #define LOGGING
 
+#include <cstdint>
 #include <sstream>
 #include <iostream>
 #include <memory>

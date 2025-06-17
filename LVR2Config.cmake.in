@@ -112,6 +112,19 @@ find_package(GLUT REQUIRED)
 list(APPEND LVR2_INCLUDE_DIRS ${GLUT_INCLUDE_DIR})
 list(APPEND LVR2_LIBRARIES ${GLUT_LIBRARIES})
 
+# RPLY
+if(LVR2_USE_STATIC_LIBS)
+  list(APPEND LVR2_LIBRARIES ${LVR2_LIB_DIR}/liblvr2rply_static.a)
+else()
+  list(APPEND LVR2_LIBRARIES ${LVR2_LIB_DIR}/liblvr2rply.so)
+endif()
+
+# LAS
+if(LVR2_USE_STATIC_LIBS)
+  list(APPEND LVR2_LIBRARIES ${LVR2_LIB_DIR}/liblvr2las_static.a)
+else()
+  list(APPEND LVR2_LIBRARIES ${LVR2_LIB_DIR}/liblvr2las.so)
+endif()
 
 #####################
 ##  OPTIONAL DEPS  ##
