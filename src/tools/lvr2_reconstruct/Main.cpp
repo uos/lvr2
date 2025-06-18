@@ -288,7 +288,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         lvr2::logout::get() << lvr2::error << "[LVR2 Reconstruct] Using PCL as point cloud manager is not implemented yet!" << lvr2::endl;
         panic_unimplemented("PCL as point cloud manager");
     }
-    else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN" || pcm_name == "LVR2")
+    else if(pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN" || pcm_name == "LVR2")
     {
         
         int plane_fit_method = options.getNormalEstimation();

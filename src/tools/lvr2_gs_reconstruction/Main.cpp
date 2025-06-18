@@ -38,7 +38,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options& op
         std::cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << std::endl;
         panic_unimplemented("PCL as point cloud manager");
     }
-    else if (pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" ||
+    else if (pcm_name == "FLANN" || pcm_name == "NABO" ||
              pcm_name == "NANOFLANN")
     {
         surface = std::make_shared<AdaptiveKSearchSurface<BaseVecT>>(

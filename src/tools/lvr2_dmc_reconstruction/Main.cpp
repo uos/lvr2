@@ -54,7 +54,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
         std::cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << std::endl;
         panic_unimplemented("PCL as point cloud manager");
     }
-    else if(pcm_name == "STANN" || pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
+    else if(pcm_name == "FLANN" || pcm_name == "NABO" || pcm_name == "NANOFLANN")
     {
         
         int plane_fit_method = 0;

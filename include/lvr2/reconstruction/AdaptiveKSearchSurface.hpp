@@ -54,10 +54,6 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/util/Progress.hpp"
 
-// #ifdef LVR2_USE_STANN
-// // SearchTreeStann
-// #include "SearchTreeStann.hpp"
-// #endif
 
 // #include "SearchTreeNanoflann.hpp"
 
@@ -83,10 +79,8 @@ namespace lvr2
 {
 
 /**
- * @brief A point cloud manager class that uses the STANN
- *        nearest neighbor search library to handle the data.
- *        This class calculates robust surface normals for the
- *        given point set as described in the SSRR2010 paper.
+ * @brief A point cloud manager class that uses a search tree for
+ *        nearest neighbor searches.
  */
 template<typename BaseVecT>
 class AdaptiveKSearchSurface : public PointsetSurface<BaseVecT>

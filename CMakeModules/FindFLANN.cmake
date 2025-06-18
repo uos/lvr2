@@ -1,4 +1,4 @@
-# Try to find STANN - Nearest neighbour search
+# Try to find FLANN - Nearest neighbour search
 # This module will define the following variables:
 #   FLANN_FOUND              -   indicates whether FLANN was found on the system
 #   FLANN_INCLUDE_DIRS       -   the directories of the FLANN headers
