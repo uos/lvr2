@@ -55,14 +55,6 @@ SearchTreePtr<BaseVecT> getSearchTree(string name, PointBufferPtr buffer)
     }
 #endif
 
-#ifdef LVR2_USE_STANN
-    if(name == "stann")
-    {
-        // TODO2
-        // this->m_searchTree = std::make_shared<SearchTreeStann<BaseVecT>>(buffer, this->m_numPoints, kn, ki, kd);
-    }
-#endif
-
 #ifdef LVR2_USE_NABO
     if(name == "nabo")
     {

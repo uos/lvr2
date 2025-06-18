@@ -422,16 +422,6 @@ if(WITH_FREENECT )
   endif()
 endif()
 
-#------------------------------------------------------------------------------
-## Searching for STANN
-#------------------------------------------------------------------------------
-set(STANN_DIR "" CACHE PATH "directory that contains the STANN library headers")
-find_package(STANN)
-if(STANN_FOUND)
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_STANN)
-  include_directories(${STANN_INCLUDE_DIR})
-  message(STATUS "Found STANN")
-endif(STANN_FOUND)
 
 ###############################################################################
 # USED THIRD PARTY STUFF
@@ -841,7 +831,6 @@ install(FILES
     CMakeModules/FindOpenNI.cmake
     CMakeModules/FindOpenNI2.cmake
     CMakeModules/FindQVTK.cmake
-    CMakeModules/FindSTANN.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
 
 # Installation of HighFive headers

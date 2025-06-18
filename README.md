@@ -177,8 +177,7 @@ Supported options:
                                         automatically.
   -p [ --pcm ] arg (=LVR2)              Point cloud manager used for point 
                                         handling and normal estimation. Choose 
-                                        from {FLANN, STANN, PCL, NABO, LVR2, 
-                                        LBVH_CUDA}.
+                                        from {FLANN, PCL, NABO, LVR2, LBVH_CUDA}.
   --nem arg (=0)                        Method for estimating point normals / 
                                         planes. 0: PCA (default), 1: RANSAC, 2:
                                         IPCA ilikebigbits, 3: IPCA exact. Make 

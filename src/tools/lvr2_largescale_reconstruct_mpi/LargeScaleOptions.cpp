@@ -58,7 +58,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
     ("chunkSize",value<int>(&m_chunkSize)->default_value(20),"Set the chunksize for the virtual grid. (default: 20)")
     ("extrude", value<bool>(&m_extrude)->default_value(false), "Do not extend grid. Can be used to avoid artefacts in dense data sets but. Disabling will possibly create additional holes in sparse data sets.")
     ("intersections,i",value<int>(&m_intersections)->default_value(-1),"Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
-    ("pcm,p",value<string>(&m_pcm)->default_value("FLANN"),"Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
+    ("pcm,p",value<string>(&m_pcm)->default_value("FLANN"),"Point cloud manager used for point handling and normal estimation. Choose from {PCL, NABO}.")
     ("useRansac", "Set this flag for RANSAC based normal estimation.")
     ("decomposition,d",value<string>(&m_pcm)->default_value("PMC"),"Defines the type of decomposition that is used for the voxels (Standard Marching Cubes "
         "(MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection "
