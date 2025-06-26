@@ -340,15 +340,6 @@ if(BUILD_VIEWER)
 endif(BUILD_VIEWER)
 
 #------------------------------------------------------------------------------
-# Searching for NABO
-#------------------------------------------------------------------------------
-find_package(Nabo)
-if(Nabo_FOUND)
-  include_directories(${Nabo_INCLUDE_DIRS})
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_NABO)
-endif(Nabo_FOUND)
-
-#------------------------------------------------------------------------------
 ## Searching for PCL
 #------------------------------------------------------------------------------
 option(WITH_PCL "Compile with PCL support" OFF)
@@ -828,7 +819,6 @@ install(FILES package.xml DESTINATION share/lvr2)
 install(FILES
     CMakeModules/FindFLANN.cmake
     CMakeModules/FindLZ4.cmake
-    CMakeModules/FindNabo.cmake
     CMakeModules/FindOpenNI.cmake
     CMakeModules/FindOpenNI2.cmake
     CMakeModules/FindQVTK.cmake

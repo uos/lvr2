@@ -18,10 +18,6 @@ set(LVR2_GROUND_LEVEL_EXTRACTOR_DEPENDENCIES
     ${LVR2_LIB_DEPENDENCIES}
 )
 
-if( ${NABO_FOUND} )
-  set(LVR2_GROUND_LEVEL_EXTRACTOR_DEPENDENCIES ${LVR2_GROUND_LEVEL_EXTRACTOR_DEPENDENCIES} ${NABO_LIBRARY})
-endif( ${NABO_FOUND} )
-
 #####################################################################################
 # Add PCD io if PCL is installed
 #####################################################################################

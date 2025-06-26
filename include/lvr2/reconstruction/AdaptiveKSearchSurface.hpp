@@ -64,11 +64,6 @@
 //     #include "SearchTreeFlannPCL.hpp"
 // #endif
 
-// // SearchTreeNabo
-// #ifdef LVR2_USE_NABO
-//     #include "SearchTreeNabo.hpp"
-// #endif
-
 using std::numeric_limits;
 using std::string;
 using std::unique_ptr;
