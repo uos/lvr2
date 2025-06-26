@@ -21,7 +21,7 @@ set(CXX_STANDARD 17)
 include(cmake/StandardSettings.cmake)
 include(cmake/Utils.cmake)
 include(cmake/cpplint.cmake)
-message(STATUS "Started CMake for ${PROJECT_NAME} v${PROJECT_VERSION}...\n")
+message(STATUS "Build ${PROJECT_NAME}: v${PROJECT_VERSION}")
 
 
 # add every sub directory of the current source dir if it contains a CMakeLists.txt
@@ -135,7 +135,7 @@ function (ListToString result delim)
     set(${result} "${temp}" PARENT_SCOPE)
 endfunction(ListToString)
 
-message(STATUS "Added all header and implementation files.\n")
+# message(STATUS "Added all header and implementation files.")
 
 #
 # Set the project standard and warnings
@@ -147,7 +147,7 @@ else()
   target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 endif()
 
-verbose_message("Applied compiler warnings. Using standard ${CXX_STANDARD}.\n")
+# verbose_message("Applied compiler warnings. Using standard ${CXX_STANDARD}.")
 
 #
 # Enable Doxygen
@@ -190,7 +190,7 @@ else()
 	endif()
 endif()
 
-message(STATUS "Finished setting up include directories.")
+# message(STATUS "Finished setting up include directories.")
 
 #
 # Model project dependencies 
@@ -208,7 +208,7 @@ message(STATUS "Finished setting up include directories.")
 #    ${PROJECT_NAME}_PROJECT_WARNINGS        
 #)
 
-verbose_message("Successfully added all dependencies and linked against them.")
+# verbose_message("Successfully added all dependencies and linked against them.")
 
 #
 # Provide alias to library for 
@@ -220,7 +220,7 @@ else()
   add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 endif()
 
-verbose_message("Project is now aliased as ${PROJECT_NAME}::${PROJECT_NAME}.\n")
+# verbose_message("Project is now aliased as ${PROJECT_NAME}::${PROJECT_NAME}.")
 
 #
 # Format the project using the `clang-format` target (i.e: cmake --build build --target clang-format)
@@ -311,8 +311,8 @@ if(${PROJECT_NAME}_GENERATE_EXPORT_HEADER)
       include
   )
 
-message(STATUS "Generated the export header `${PROJECT_NAME_LOWERCASE}_export.h` and installed it.")
+# message(STATUS "Generated the export header `${PROJECT_NAME_LOWERCASE}_export.h` and installed it.")
 endif()
 
-message(STATUS "Finished building requirements for installing the package.\n")
+# message(STATUS "Finished building requirements for installing the package.\n")
 

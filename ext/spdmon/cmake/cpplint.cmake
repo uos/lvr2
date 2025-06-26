@@ -82,6 +82,6 @@ function(add_cpplint_style_check_target)
             VERBATIM)
 
 
-			message(STATUS "Format the project using the `cpplint` target (i.e: cmake --build build --target cpplint-format).\n")
+			# message(STATUS "Format the project using the `cpplint` target (i.e: cmake --build build --target cpplint-format).\n")
     endif()
 endfunction(add_cpplint_style_check_target)
