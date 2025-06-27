@@ -22,10 +22,6 @@ if(PCL_FOUND)
   set(LVR2_IMG_NORMAL_DEPS  ${LVR2_IMG_NORMAL_DEPS} ${PCL_LIBRARIES} )
 endif(PCL_FOUND)
 
-if( ${NABO_FOUND} )
- set(LVR2_IMG_NORMAL_DEPS  ${LVR2_IMG_NORMAL_DEPS} ${NABO_LIBRARY} )
-endif( ${NABO_FOUND} )
-
 #####################################################################################
 # Add executable
 #####################################################################################

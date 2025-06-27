@@ -141,12 +141,6 @@ if(@VTK_FOUND@)
     list(APPEND LVR2_DEFINITIONS ${VTK_DEFINITIONS})
 endif()
 
-# nabo
-if(@NABO_FOUND@)
-  find_package(Nabo REQUIRED)
-  list(APPEND LVR2_INCLUDE_DIRS ${NABO_INCLUDE_DIRS})
-endif()
-
 # pcl
 if(@PCL_FOUND@)
   find_package(PCL REQUIRED)

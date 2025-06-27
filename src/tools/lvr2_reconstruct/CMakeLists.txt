@@ -22,10 +22,6 @@ if(CUDA_FOUND)
   list(APPEND LVR2_RECONSTRUCT_DEPENDENCIES lvr2cuda_static)
 endif(CUDA_FOUND)
 
-if( ${NABO_FOUND} )
-  list(APPEND LVR2_RECONSTRUCT_DEPENDENCIES ${NABO_LIBRARY})
-endif( ${NABO_FOUND} )
-
 #####################################################################################
 # Add executable
 #####################################################################################

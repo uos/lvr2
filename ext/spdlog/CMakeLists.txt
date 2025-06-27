@@ -148,7 +148,7 @@ if(SPDLOG_BUILD_PIC)
 endif()
 
 find_package(Threads REQUIRED)
-message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+# message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 # ---------------------------------------------------------------------------------------
 # Static/Shared library
 # ---------------------------------------------------------------------------------------

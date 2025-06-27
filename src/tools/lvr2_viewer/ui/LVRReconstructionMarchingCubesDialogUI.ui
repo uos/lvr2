@@ -64,11 +64,6 @@
      <string>PCL</string>
     </property>
    </item>
-   <item>
-    <property name="text">
-     <string>NABO</string>
-    </property>
-   </item>
   </widget>
   <widget class="QLabel" name="label_kn">
    <property name="geometry">
