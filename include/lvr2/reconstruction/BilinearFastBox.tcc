@@ -83,8 +83,21 @@ void BilinearFastBox<BaseVecT>::getSurface(
      // cubes table for Paul Burke.
      for(int a = 0; MCTable[index][a] != -1; a+= 3)
      {
-         OptionalVertexHandle vertex_indices[3];
+         // validate that the face will be a visible triangle
+         std::vector<BaseVecT> face_points(3);
+         for(int b = 0; b < 3; b++)
+         {
+             auto edge_index = MCTable[index][a + b];
+             face_points[b] = vertex_positions[edge_index];
+         }
+         if (face_points[0] == face_points[1] ||
+             face_points[0] == face_points[2] ||
+             face_points[2] == face_points[1])
+         {
+             continue;
+         }
 
+         OptionalVertexHandle vertex_indices[3];
          for(int b = 0; b < 3; b++)
          {
              auto edge_index = MCTable[index][a + b];
