@@ -31,7 +31,7 @@ namespace gs_reconstruction{
                 ("kd", value<int>(&m_kd)->default_value(5), "Number of normals used for distance function evaluation")
                 ("ki", value<int>(&m_ki)->default_value(10), "Number of normals used in the normal interpolation process")
                 ("kn", value<int>(&m_kn)->default_value(10), "Size of k-neighborhood used for normal estimation")
-                ("pcm,p", value<string>(&m_pcm)->default_value("FLANN"), "Point cloud manager used for point handling and normal estimation. Choose from {STANN, PCL, NABO}.")
+                ("pcm,p", value<string>(&m_pcm)->default_value("FLANN"), "Point cloud manager used for point handling and normal estimation. Choose from {PCL}.")
                 ;
         setup();
     }

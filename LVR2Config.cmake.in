@@ -141,12 +141,6 @@ if(@VTK_FOUND@)
     list(APPEND LVR2_DEFINITIONS ${VTK_DEFINITIONS})
 endif()
 
-# nabo
-if(@NABO_FOUND@)
-  find_package(Nabo REQUIRED)
-  list(APPEND LVR2_INCLUDE_DIRS ${NABO_INCLUDE_DIRS})
-endif()
-
 # pcl
 if(@PCL_FOUND@)
   find_package(PCL REQUIRED)
@@ -165,13 +159,6 @@ if(@LIBFREENECT_FOUND@)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(LIBFREENECT REQUIRED libfreenect)
   list(APPEND LVR2_INCLUDE_DIRS ${LIBFREENECT_INCLUDE_DIRS})
-endif()
-
-# stann
-if(@STANN_FOUND@)
-  set(STANN_DIR @STANN_DIR@)
-  find_package(STANN REQUIRED)
-  list(APPEND LVR2_2INCLUDE_DIRS ${STANN_INCLUDE_DIR})
 endif()
 
 # Embree

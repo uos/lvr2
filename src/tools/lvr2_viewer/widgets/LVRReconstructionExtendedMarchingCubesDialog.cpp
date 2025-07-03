@@ -146,7 +146,7 @@ void LVRReconstructViaExtendedMarchingCubesDialog::generateMesh()
     
     PointsetSurfacePtr<Vec> surface;
 
-    if(pcm == "STANN" || pcm == "FLANN" || pcm == "NABO" || pcm == "NANOFLANN")
+    if(pcm == "FLANN" || pcm == "NANOFLANN")
     {
         surface = PointsetSurfacePtr<Vec>( new AdaptiveKSearchSurface<Vec>(pc_buffer, pcm, kn, ki, kd, ransac ? 1 : 0) );
     }

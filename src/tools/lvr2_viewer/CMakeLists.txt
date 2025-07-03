@@ -194,10 +194,6 @@ if( UNIX )
   set(LVR2_VIEWER_DEPENDENCIES ${LVR2_VIEWER_DEPENDENCIES} pthread)
 endif( UNIX )
 
-if( ${NABO_FOUND} )
-  set(LVR2_VIEWER_DEPENDENCIES ${LVR2_VIEWER_DEPENDENCIES} ${NABO_LIBRARY})
-endif( ${NABO_FOUND} )
-
 #####################################################################################
 # Add main executable
 #####################################################################################

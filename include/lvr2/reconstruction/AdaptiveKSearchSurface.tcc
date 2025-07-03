@@ -180,7 +180,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     {
         // We have to fit these vector to have the
         // correct return values when performing the
-        // search on the stann kd tree. So we don't use
+        // search on the search tree. So we don't use
         // the template parameter T for di
         std::vector<size_t> id;
 

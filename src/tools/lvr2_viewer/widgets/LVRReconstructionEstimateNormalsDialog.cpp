@@ -213,7 +213,7 @@ void LVREstimateNormalsDialog::estimateNormals()
         
         PointsetSurfacePtr<Vec> surface;
 
-        if(algo_str == "STANN" || algo_str == "FLANN" || algo_str == "NABO" || algo_str == "NANOFLANN")
+        if(algo_str == "FLANN" || algo_str == "NANOFLANN")
         {
             surface = std::make_shared<AdaptiveKSearchSurface<Vec> >(
                 pc, algo_str, kn, ki, 20, false

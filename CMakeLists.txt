@@ -340,15 +340,6 @@ if(BUILD_VIEWER)
 endif(BUILD_VIEWER)
 
 #------------------------------------------------------------------------------
-# Searching for NABO
-#------------------------------------------------------------------------------
-find_package(Nabo)
-if(Nabo_FOUND)
-  include_directories(${Nabo_INCLUDE_DIRS})
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_NABO)
-endif(Nabo_FOUND)
-
-#------------------------------------------------------------------------------
 ## Searching for PCL
 #------------------------------------------------------------------------------
 option(WITH_PCL "Compile with PCL support" OFF)
@@ -376,6 +367,7 @@ endif(WITH_PCL)
 #------------------------------------------------------------------------------
 # Searching CGAL
 #------------------------------------------------------------------------------
+set(CGAL_DATA_DIR ".")
 find_package(CGAL)
 if(CGAL_FOUND)
   
@@ -422,16 +414,6 @@ if(WITH_FREENECT )
   endif()
 endif()
 
-#------------------------------------------------------------------------------
-## Searching for STANN
-#------------------------------------------------------------------------------
-set(STANN_DIR "" CACHE PATH "directory that contains the STANN library headers")
-find_package(STANN)
-if(STANN_FOUND)
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_STANN)
-  include_directories(${STANN_INCLUDE_DIR})
-  message(STATUS "Found STANN")
-endif(STANN_FOUND)
 
 ###############################################################################
 # USED THIRD PARTY STUFF
@@ -837,11 +819,9 @@ install(FILES package.xml DESTINATION share/lvr2)
 install(FILES
     CMakeModules/FindFLANN.cmake
     CMakeModules/FindLZ4.cmake
-    CMakeModules/FindNabo.cmake
     CMakeModules/FindOpenNI.cmake
     CMakeModules/FindOpenNI2.cmake
     CMakeModules/FindQVTK.cmake
-    CMakeModules/FindSTANN.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
 
 # Installation of HighFive headers

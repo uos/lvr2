@@ -18,10 +18,6 @@ set(LVR2_TRANSFORM_DEPENDENCIES
 	${LVR2_LIB_DEPENDENCIES}
 	)
 
-if( ${NABO_FOUND} )
-  set(LVR2_TRANSFORM_DEPENDENCIES ${LVR2_TRANSFORM_DEPENDENCIES} ${NABO_LIBRARY})
-endif( ${NABO_FOUND} )
-
 
 #####################################################################################
 # Add executable

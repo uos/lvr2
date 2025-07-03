@@ -34,7 +34,7 @@ function(add_clang_format_target)
 						-i  ${ALL_CXX_SOURCE_FILES})
 			endif()
 
-			message(STATUS "Format the project using the `clang-format` target (i.e: cmake --build build --target clang-format).\n")
+			# message(STATUS "Format the project using the `clang-format` target (i.e: cmake --build build --target clang-format).\n")
     endif()
 endfunction(add_clang_format_target)
 
