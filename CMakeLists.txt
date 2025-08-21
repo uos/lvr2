@@ -278,13 +278,16 @@ if(NOT APPLE AND LVR2_WITH_CUDA)
       find_package(CUDAToolkit QUIET)
       if(CUDAToolkit_FOUND)
           enable_language(CUDA)
+          # For backwards compatibility
           set(CUDA_FOUND True)
+          set(CUDA_VERSION ${CUDAToolkit_VERSION})
+          set(CUDA_INCLUDE_DIRS "") # is in target instead
           set(CUDA_LIBRARIES CUDA::cudart)
           set(CUDA_cusolver_LIBRARY CUDA::cusolver)
           set(CUDA_cublas_LIBRARY CUDA::cublas)
           set(CUDA_DRIVER_LIBRARY CUDA::cuda_driver)
-          set(CUDA_INCLUDE_DIRS "") # is in target instead
-          set(CUDA_VERSION ${CUDAToolkit_VERSION})
+          set(CUDA_CUDA_LIBRARY CUDA::cuda_driver)
+          set(CUDA_NVRTC_LIBRARY CUDA::nvRTC)
       else()
           find_package(CUDA)
           if(CUDA_FOUND)
