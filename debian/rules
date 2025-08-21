@@ -22,7 +22,7 @@ export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 override_dh_auto_configure:
 	dh_auto_configure --builddirectory=deb-build -- \
 		-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH) \
-		-DWITH_CUDA=Off
+		-DLVR2_WITH_CUDA=Off
 	dh_auto_configure --builddirectory=deb-build-cuda -- \
 		-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
 

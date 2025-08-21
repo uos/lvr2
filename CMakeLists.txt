@@ -242,18 +242,61 @@ endif(GLUT_FOUND)
 # Searching for CUDA
 #------------------------------------------------------------------------------
 if(MSVC)
-    option(WITH_CUDA "Compile with CUDA support" FALSE)
+    option(LVR2_WITH_CUDA "Compile with CUDA support" FALSE)
 else()
-    option(WITH_CUDA "Compile with CUDA support" TRUE)
+    option(LVR2_WITH_CUDA "Compile with CUDA support" TRUE)
 endif()
-if(NOT APPLE AND WITH_CUDA)
-  find_package(CUDA)
-  if(CUDA_FOUND)
-    message(STATUS "Found CUDA")
-    include_directories(${CUDA_INCLUDE_DIRS})
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_CUDA)
-  endif(CUDA_FOUND)
-endif(NOT APPLE AND WITH_CUDA)
+
+if(NOT APPLE AND LVR2_WITH_CUDA)
+
+  # default flags are not set when including cuda
+  if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
+
+  if(NOT CUDA_NVCC_FLAGS_DEBUG)
+  set(CUDA_NVCC_FLAGS_DEBUG "-g" CACHE STRING "" FORCE)
+  endif()
+
+  if(NOT CUDA_NVCC_FLAGS_MINSIZEREL)
+  set(CUDA_NVCC_FLAGS_MINSIZEREL "-Os -DNDEBUG" CACHE STRING "" FORCE)
+  endif()
+
+  if(NOT CUDA_NVCC_FLAGS_RELEASE)
+  set(CUDA_NVCC_FLAGS_RELEASE "-O3 -DNDEBUG" CACHE STRING "" FORCE)
+  endif()
+
+  if(NOT CUDA_NVCC_FLAGS_RELWITHDEBINFO)
+  set(CUDA_NVCC_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG" CACHE STRING "" FORCE)
+  endif()
+
+  endif()
+
+  # find_package(CUDA) is deprecated. But we have to keep backwards compatibility for some time.
+  include(CheckLanguage)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+
+      find_package(CUDAToolkit QUIET)
+      if(CUDAToolkit_FOUND)
+          enable_language(CUDA)
+          set(CUDA_FOUND True)
+          set(CUDA_LIBRARIES CUDA::cudart)
+          set(CUDA_cusolver_LIBRARY CUDA::cusolver)
+          set(CUDA_cublas_LIBRARY CUDA::cublas)
+          set(CUDA_DRIVER_LIBRARY CUDA::cuda_driver)
+          set(CUDA_INCLUDE_DIRS "") # is in target instead
+          set(CUDA_VERSION ${CUDAToolkit_VERSION})
+      else()
+          find_package(CUDA)
+          if(CUDA_FOUND)
+              enable_language(CUDA)
+              set(CUDA_DRIVER_LIBRARY cuda)
+          else()
+              message(STATUS "Neither CudaToolkit nor CUDA found!")
+          endif(CUDA_FOUND)
+      endif(CUDAToolkit_FOUND)
+  endif(CMAKE_CUDA_COMPILER)
+
+endif(NOT APPLE AND LVR2_WITH_CUDA)
 
 
 #------------------------------------------------------------------------------
