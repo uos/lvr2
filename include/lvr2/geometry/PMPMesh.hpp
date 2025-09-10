@@ -62,6 +62,7 @@ public:
     using Edge = pmp::Halfedge;
     using Face = pmp::Face;
     using Vertex = pmp::Vertex;
+    using Base = BaseMesh<BaseVecT>;
 
     PMPMesh()
     {}
@@ -202,8 +203,15 @@ public:
     void getNeighboursOfFace(FaceHandle handle, vector<FaceHandle>& facesOut) const override;
     array<VertexHandle, 2> getVerticesOfEdge(EdgeHandle edgeH) const override;
     array<OptionalFaceHandle, 2> getFacesOfEdge(EdgeHandle edgeH) const override;
+
+    // Explicitly mention these functions, as the base class's 
+    // returning versions are hidden by the non-returning functions 
+    // with the same names in this class
+    using Base::getFacesOfVertex;
     void getFacesOfVertex(VertexHandle handle, vector<FaceHandle>& facesOut) const override;
+    using Base::getEdgesOfVertex;
     void getEdgesOfVertex(VertexHandle handle, vector<EdgeHandle>& edgesOut) const override;
+    using Base::getNeighboursOfVertex;
     void getNeighboursOfVertex(VertexHandle handle, vector<VertexHandle>& verticesOut) const override;
     OptionalFaceHandle getOppositeFace(FaceHandle faceH, VertexHandle vertexH) const override;
     OptionalEdgeHandle getOppositeEdge(FaceHandle faceH, VertexHandle vertexH) const override;
