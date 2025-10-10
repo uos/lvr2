@@ -102,6 +102,7 @@ template<typename Derived>
 bool PointCloudIO<Derived>::isPointCloud(
     HighFive::Group& group)
 {
+    (void) group;
     // std::string id(PointCloudIO<Derived>::ID);
     // std::string obj(PointCloudIO<Derived>::OBJID);
     // return hdf5util::checkAttribute(group, "IO", id)
@@ -112,4 +113,4 @@ bool PointCloudIO<Derived>::isPointCloud(
 
 } // hdf5features
 
-} // namespace lvr2 
+} // namespace lvr2

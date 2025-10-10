@@ -79,7 +79,7 @@ boost::optional<DenseVertexMap<RGB8Color>> calcColorFromPointCloud(
  *
  * @return  The 8-bit RGB-Color, interpreted as rainbowcolor.
  */
-static RGB8Color floatToRainbowColor(float value);
+inline RGB8Color floatToRainbowColor(float value);
 
 /**
  * @brief   Convert a given float to an 8-bit Grayscale-Color.
@@ -92,7 +92,7 @@ static RGB8Color floatToRainbowColor(float value);
  *
  * @return  The 8-bit Grayscale-Color.
  */
-static RGB8Color floatToGrayScaleColor(float value);
+inline RGB8Color floatToGrayScaleColor(float value);
 
 /**
  * @brief    Calculate the color for the centroid of a given face

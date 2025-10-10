@@ -142,6 +142,7 @@ template<typename Derived>
 template <typename T>
 bool ChannelIO<Derived>::getChannel(const std::string group, const std::string name, boost::optional<AttributeChannel<T>>& channel)
 {
+    (void) group;
     // TODO check group for vertex / face attribute and set flag in hdf5 channel
     HighFive::Group g = hdf5util::getGroup(m_file_access->m_hdf5_file, "channels");
     if(m_file_access->m_hdf5_file && m_file_access->m_hdf5_file->isValid())
