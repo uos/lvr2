@@ -284,7 +284,10 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
             if (dataset->getDataType() != HighFive::AtomicType<T>())
             {
                 // different datatype -> delete
-                int result = H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT);
+                if (0 > H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT))
+                {
+                    std::cout << "[Hdf5Util - createDataset] Failed to delete dataset " << datasetName << std::endl;
+                }
                 dataset = std::make_unique<HighFive::DataSet>(
                     g.createDataSet<T>(datasetName, dataSpace, properties));
             }
@@ -326,7 +329,10 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
                         std::cout << "[Hdf5Util - createDataset] WARNING: could not resize. Generating new "
                                     "space..."
                                 << std::endl;
-                        int result = H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT);
+                        if (0 > H5Ldelete(g.getId(), datasetName.data(), H5P_DEFAULT))
+                        {
+                            std::cout << "[Hdf5Util - createDataset] Failed to delete dataset " << datasetName << std::endl;
+                        }
 
                         dataset = std::make_unique<HighFive::DataSet>(
                             g.createDataSet<T>(datasetName, dataSpace, properties));
@@ -343,7 +349,8 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
         std::cout << "[Hdf5Util - createDataset] WARNING: could not create dataset ' << " << datasetName << "'. Data Type not allowed by H5" << std::endl;
     }
 
-    return std::move(dataset);
+    // using std::move() on dataset in this return prevents the compiler from optimizing away the copy (copy elision)
+    return dataset;
 }
 
 template <typename T, typename HT>

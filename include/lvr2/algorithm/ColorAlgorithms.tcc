@@ -91,7 +91,7 @@ boost::optional<DenseVertexMap<RGB8Color>> calcColorFromPointCloud(
     return vertexMap;
 }
 
-static RGB8Color floatToRainbowColor(float value)
+inline RGB8Color floatToRainbowColor(float value)
 {
     value = std::min(value, 1.0f);
     value = std::max(value, 0.0f);
@@ -135,7 +135,7 @@ static RGB8Color floatToRainbowColor(float value)
     }
 }
 
-static RGB8Color floatToGrayScaleColor(float value)
+inline RGB8Color floatToGrayScaleColor(float value)
 {
     if(value > 1)
     {

@@ -223,7 +223,7 @@ MeshBufferPtr MeshIO<Derived>::load(HighFive::Group& group)
             }
             else
             {
-                for(int i = 0; i < dimensionTextureHandle.at(0); i++)
+                for(long unsigned int i = 0; i < dimensionTextureHandle.at(0); i++)
                 {
                     lvr2::Material nextMat;
                     if(materialColor.get()[i * 3] != -1)

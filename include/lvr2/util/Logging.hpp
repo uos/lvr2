@@ -154,22 +154,22 @@ struct LoggerInfo{};
 struct LoggerDebug{};
 
 /// @brief Endline and flush for logger objects
-static LoggerEndline endl;
+inline constexpr LoggerEndline endl;
 
 /// @brief Marks error log level for streamed output
-static LoggerError error;
+inline constexpr LoggerError error;
 
 /// @brief Marks warning log level for streamed output
-static LoggerWarning warning;
+inline constexpr LoggerWarning warning;
 
 /// @brief Marks trace log level for streamed output
-static LoggerTrace trace;
+inline constexpr LoggerTrace trace;
 
 /// @brief Marks info log level for streamed output
-static LoggerInfo info;
+inline constexpr LoggerInfo info;
 
 /// @brief Marks debug log level for streamed output
-static LoggerDebug debug;
+inline constexpr LoggerDebug debug;
 
 // Alias for logger singleton
 using logout = Logger;
