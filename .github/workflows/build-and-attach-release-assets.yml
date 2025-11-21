@@ -1,0 +1,85 @@
+name: build-and-attach-release-assets
+
+on:
+  release:
+    types: [published]   # when you publish a GitHub release
+  workflow_dispatch: {}   # manual "Run workflow" button
+
+permissions:
+  contents: write         # needed to upload assets to releases
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Decide which tag to build
+      - name: Resolve tag to build
+        id: get_tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const eventName = context.eventName;
+            let tag;
+
+            if (eventName === 'release') {
+              // tag of the release that triggered this workflow
+              tag = context.payload.release.tag_name;
+            } else if (eventName === 'workflow_dispatch') {
+              // latest published release in the repo
+              const latest = await github.rest.repos.getLatestRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              tag = latest.data.tag_name;
+            } else {
+              core.setFailed(`Unsupported event: ${eventName}`);
+              return;
+            }
+
+            core.info(`Using tag: ${tag}`);
+            core.setOutput('tag_name', tag);
+
+      # 2) Checkout the code for that tag
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.get_tag.outputs.tag_name }}
+
+      # 3) Install build tools (CMake + Make)
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
+      # 4) Configure
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      # 5) Build
+      - name: Build
+        run: cmake --build build --config Release
+
+      # 6) Test
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      # 7) Package via CPack (tar.gz)
+      - name: Package (CPack tar.gz)
+        run: |
+          cmake --build build --target package
+          mkdir -p dist
+          cp build/*.tar.gz dist/
+
+      # 8) Upload to the corresponding GitHub Release
+      - name: Attach assets to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_tag.outputs.tag_name }}
+          files: dist/*.tar.gz
+          # overwrite_files defaults to true; keeping it explicit:
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

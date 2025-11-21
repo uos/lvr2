@@ -871,9 +871,33 @@ endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
 
 
 ############
-# AUTO PACKAGING
+# AUTO PACKAGING USING CPACK
 # 
-set(CPACK_PACKAGE_NAME "lvr2")
-set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
-set(CPACK_GENERATOR "TGZ")   # <-- tar.gz only
+
+# Detect architecture
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
+    set(ARCH "x86_64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+    set(ARCH "aarch64")
+else()
+    set(ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
+# Detect OS
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(OS_NAME "linux")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(OS_NAME "macos")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(OS_NAME "windows")
+else()
+    set(OS_NAME "${CMAKE_SYSTEM_NAME}")
+endif()
+
+# Package name: lvr2-version-arch-os
+set(CPACK_PACKAGE_FILE_NAME
+    "lvr2-${PROJECT_VERSION}-${ARCH}-${OS_NAME}"
+)
+
+set(CPACK_GENERATOR "TGZ")
 include(CPack)
