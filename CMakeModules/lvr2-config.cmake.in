@@ -1,0 +1,77 @@
+# -----------------------------------------------------------------
+# lvr's cmake configuration
+#
+# provided options:
+# - LVR2_USE_STATIC_LIBS(=OFF) to link the static libraries of lvr
+#
+# provided interface variables:
+# - LVR2_INCLUDE_DIRS
+# - LVR2_DEFINITIONS
+# - LVR2_LIBRARIES
+#
+# Do not forget to add_defintions(${LVR2_DEFINITIONS}) as they
+# describe the build configuration of liblvr.
+#
+# -----------------------------------------------------------------
+@PACKAGE_INIT@
+include(${CMAKE_CURRENT_LIST_DIR}/lvr2-config-version.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/lvr2-targets.cmake)
+
+message(WARNING "${CMAKE_CURRENT_LIST_DIR}/Modules")
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(TBB)
+find_dependency(MPI)
+find_dependency(TIFF)
+find_dependency(GDAL)
+find_dependency(OpenCV)
+
+find_dependency(FLANN)
+find_dependency(LZ4)
+find_dependency(GSL)
+find_dependency(Eigen3)
+find_dependency(yaml-cpp)
+find_dependency(Boost)
+find_dependency(HDF5)
+find_dependency(OpenGL)
+find_dependency(GLUT)
+
+#####################
+##  OPTIONAL DEPS  ##
+#####################
+if(@RDB_FOUND@)
+  find_dependency(RDB)
+endif(@RDB_FOUND@)
+
+# VTK
+if(@VTK_FOUND@)
+    find_dependency(VTK)
+endif()
+
+# pcl
+if(@PCL_FOUND@)
+  find_dependency(PCL)
+endif()
+
+# cgal
+if(@CGAL_FOUND@)
+  find_dependency(CGAL)
+endif()
+
+# libfreenect
+if(@LIBFREENECT_FOUND@)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(LIBFREENECT REQUIRED libfreenect)
+  list(APPEND LVR2_INCLUDE_DIRS ${LIBFREENECT_INCLUDE_DIRS})
+endif()
+
+# Embree
+if(@embree_FOUND@)
+    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
+    find_dependency(embree 4.0)
+endif()
+
+set(lvr2_FOUND TRUE)

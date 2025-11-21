@@ -799,22 +799,27 @@ install(EXPORT lvr2Targets
     NAMESPACE lvr2::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
 
-configure_package_config_file(LVR2Config.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2
-  PATH_VARS CMAKE_INSTALL_INCLUDEDIR SYSCONFIG_INSTALL_DIR)
 
 write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config-version.cmake
+  VERSION ${lvr2_VERSION}
   COMPATIBILITY SameMajorVersion
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LVR2Config.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/LVR2ConfigVersion.cmake
-              DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2 )
+configure_package_config_file(CMakeModules/lvr2-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2-${lvr2_VERSION}
+)
+
+install(
+  FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config-version.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2-${lvr2_VERSION}
+)
 
 # install package.xml for ROS
-install(FILES package.xml DESTINATION share/lvr2)
+install(FILES package.xml DESTINATION ${CMAKE_INSTALL_DATADIR})
 
 install(FILES
     CMakeModules/FindFLANN.cmake
