@@ -19,7 +19,7 @@ set_target_properties(lvr2rply
     VERSION ${lvr2_VERSION}
 )
 
-install(DIRECTORY . DESTINATION ${RPLY_INSTALL_INCLUDE_DIR}
+install(DIRECTORY . DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/rply
   FILES_MATCHING PATTERN "*.h")
 
 install(TARGETS lvr2rply_static lvr2rply

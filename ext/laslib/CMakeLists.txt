@@ -53,7 +53,7 @@ set_target_properties(lvr2las
     VERSION ${lvr2_VERSION}
 )
 
-install(DIRECTORY inc/ DESTINATION ${LASLIB_INSTALL_INCLUDE_DIR})
+install(DIRECTORY inc/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/laslib)
 
 install(TARGETS lvr2las_static lvr2las
   EXPORT lvr2Targets
