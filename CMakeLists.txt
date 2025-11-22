@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(lvr2 VERSION 25.1.0)
+project(lvr2 VERSION 25.2.0)
 
 # OPTIONS
 option(BUILD_EXAMPLES "Build the examples" OFF)
