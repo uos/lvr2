@@ -41,7 +41,6 @@ if(APPLE)
   set(CMAKE_MACOSX_RPATH ON)
 endif()
 
-
 #############################
 # List of policies that where we need to force the old behavior
 # -> This is also a list of TODOs. So ultimately this list should be empty
