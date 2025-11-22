@@ -37,6 +37,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+if(POLICY CMP0153)
+  cmake_policy(SET CMP0153 OLD)
+endif()
+
 if(APPLE)
   set(CMAKE_MACOSX_RPATH ON)
 endif()
@@ -821,7 +825,7 @@ install(
 )
 
 # install package.xml for ROS
-install(FILES package.xml DESTINATION ${CMAKE_INSTALL_DATADIR})
+install(FILES package.xml DESTINATION share/lvr2)
 
 install(FILES
     CMakeModules/FindFLANN.cmake
