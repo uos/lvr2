@@ -17,8 +17,6 @@
 include(${CMAKE_CURRENT_LIST_DIR}/lvr2-config-version.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/lvr2-targets.cmake)
 
-message(WARNING "${CMAKE_CURRENT_LIST_DIR}/Modules")
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
 
 include(CMakeFindDependencyMacro)
@@ -34,9 +32,12 @@ find_dependency(LZ4)
 find_dependency(GSL)
 find_dependency(Eigen3)
 find_dependency(yaml-cpp)
-find_dependency(Boost)
-find_dependency(HDF5)
-find_dependency(OpenGL)
+# find_dependency(Boost)
+find_package(Boost COMPONENTS @Boost_COMPONENTS@ REQUIRED QUIET)
+# find_dependency(HDF5)
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+# find_dependency(OpenGL)
+find_package(OpenGL COMPONENTS OpenGL)
 find_dependency(GLUT)
 
 #####################
@@ -71,7 +72,7 @@ endif()
 # Embree
 if(@embree_FOUND@)
     set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
-    find_dependency(embree 4.0)
+    find_package(embree 4.0 REQUIRED)
 endif()
 
 set(lvr2_FOUND TRUE)

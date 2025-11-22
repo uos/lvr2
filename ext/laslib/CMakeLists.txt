@@ -56,6 +56,6 @@ set_target_properties(lvr2las
 install(DIRECTORY inc/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/laslib)
 
 install(TARGETS lvr2las_static lvr2las
-  EXPORT lvr2Targets
+  EXPORT lvr2-targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

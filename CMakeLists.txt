@@ -165,8 +165,8 @@ message(STATUS "Found GSL")
 # Searching for Eigen3
 #------------------------------------------------------------------------------
 find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
-message(STATUS "Found Eigen3: ${EIGEN3_INCLUDE_DIR}")
+# include_directories(${EIGEN3_INCLUDE_DIR})
+# message(STATUS "Found Eigen3: ${EIGEN3_INCLUDE_DIR}")
 
 #------------------------------------------------------------------------------
 # Searching for Boost
@@ -267,7 +267,7 @@ if(RDB_FOUND)
     list(APPEND LVR2_DEFINITIONS -DLVR2_USE_RDB)
     
     install(TARGETS rdbcpp
-            EXPORT lvr2Targets
+            EXPORT lvr2-targets
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
             )
@@ -615,6 +615,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${YAML_CPP_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
+    Eigen3::Eigen
     lvr2rply
     lvr2rply_static
     lvr2las
@@ -637,6 +638,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${YAML_CPP_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
+    Eigen3::Eigen
     m
     ${RDB_LIBRARIES}
     )
@@ -794,8 +796,8 @@ endif(BUILD_VIEWER)
 include(CMakePackageConfigHelpers)
 set(SYSCONFIG_INSTALL_DIR etc/lvr2/)
 
-install(EXPORT lvr2Targets
-    FILE lvr2Targets.cmake
+install(EXPORT lvr2-targets
+    FILE lvr2-targets.cmake
     NAMESPACE lvr2::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
 
@@ -808,14 +810,14 @@ write_basic_package_version_file(
 
 configure_package_config_file(CMakeModules/lvr2-config.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2-${lvr2_VERSION}
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2
 )
 
 install(
   FILES
     ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config-version.cmake
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2-${lvr2_VERSION}
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2
 )
 
 # install package.xml for ROS
@@ -832,7 +834,7 @@ install(FILES
 # Installation of HighFive headers
 # need to do it like this sind add_subdirectory to "ext/HighFive" crashs
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ext/HighFive/include/
-    DESTINATION "include"
+    DESTINATION include
     PATTERN "*.in" EXCLUDE)
 
 
