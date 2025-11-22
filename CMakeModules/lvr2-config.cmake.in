@@ -19,6 +19,27 @@ include(${CMAKE_CURRENT_LIST_DIR}/lvr2-targets.cmake)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
 
+# The following block exists only for backwards compatibility 
+# and marked as obsolete via the migration guide 25.1.0 -> 25.2.0
+
+#########################
+## OBSOLETE START
+
+set(LVR2_INCLUDE_DIRS @LVR2_INSTALL_INCLUDE_DIRS@)
+set(LVR2_DEFINITIONS @LVR2_DEFINITIONS@)
+
+option(LVR2_USE_STATIC_LIBS OFF)
+if(LVR2_USE_STATIC_LIBS)
+  set(LVR2_LIBRARY lvr2::lvr2_static)
+  set(LVR2_LIBRARIES ${LVR2_LIBRARY})
+else()
+  set(LVR2_LIBRARY lvr2::lvr2)
+  set(LVR2_LIBRARIES ${LVR2_LIBRARY})
+endif()
+
+## OBSOLETE END
+#########################
+
 include(CMakeFindDependencyMacro)
 
 find_dependency(TBB)
