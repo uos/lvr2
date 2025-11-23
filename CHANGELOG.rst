@@ -2,6 +2,10 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+25.2.0 (2025-11-22)
+--------------------
+* CMake cleanup
+
 25.1.0 (2025-01-01)
 --------------------
 * mirror internal state of lvr to github

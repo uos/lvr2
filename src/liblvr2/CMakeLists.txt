@@ -216,6 +216,10 @@ target_link_libraries(lvr2core
     $<BUILD_INTERFACE:spdlog::spdlog_header_only>
     $<BUILD_INTERFACE:spdmon::spdmon>
 )
+target_link_libraries(lvr2core
+    PUBLIC
+    Eigen3::Eigen
+)
 
 #####################################################################################
 # Build static library
@@ -261,12 +265,16 @@ target_include_directories(lvr2 PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     ${Boost_INCLUDE_DIRS}
     ${HDF5_INCLUDE_DIRS}
+    # ${EIGEN3_INCLUDE_DIRS}
 )
 target_link_libraries(lvr2
     PUBLIC
+    Eigen3::Eigen
     ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
     ${LVR2_LIB_DEPENDENCIES}
 )
+# target_link_libraries(lvr2 INTERFACE Eigen3::Eigen)
+
 target_link_libraries(lvr2
     PRIVATE
     $<BUILD_INTERFACE:spdlog::spdlog_header_only>
@@ -291,7 +299,7 @@ set_target_properties(lvr2
 #####################################################################################
 
 install(TARGETS lvr2_static lvr2
-  EXPORT lvr2Targets
+  EXPORT lvr2-targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
@@ -390,7 +398,7 @@ if(CUDA_FOUND)
 
     install(
         TARGETS lvr2cuda_static lvr2cuda
-        EXPORT lvr2Targets
+        EXPORT lvr2-targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )

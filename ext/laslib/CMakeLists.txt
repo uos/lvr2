@@ -1,6 +1,6 @@
 
 # set include dirs
-set(LASLIB_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/laslib CACHE PATH "install location of laslib library headers")
+set(LASLIB_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/laslib)
 find_path(LASLIB_INCLUDE_DIR lasreader.hpp PATH inc)
 mark_as_advanced(LASLIB_INCLUDE_DIR LASLIB_INSTALL_INCLUDE_DIR)
 
@@ -53,9 +53,9 @@ set_target_properties(lvr2las
     VERSION ${lvr2_VERSION}
 )
 
-install(DIRECTORY inc/ DESTINATION ${LASLIB_INSTALL_INCLUDE_DIR})
+install(DIRECTORY inc/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/laslib)
 
 install(TARGETS lvr2las_static lvr2las
-  EXPORT lvr2Targets
+  EXPORT lvr2-targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
