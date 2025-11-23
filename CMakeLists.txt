@@ -891,35 +891,5 @@ if( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
       COMMENT "Generating API documentation with Doxygen" VERBATIM )
 endif( DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND )
 
-
-############
-# AUTO PACKAGING USING CPACK
-# 
-
-# Detect architecture
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
-    set(ARCH "x86_64")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
-    set(ARCH "aarch64")
-else()
-    set(ARCH "${CMAKE_SYSTEM_PROCESSOR}")
-endif()
-
-# Detect OS
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(OS_NAME "linux")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(OS_NAME "macos")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(OS_NAME "windows")
-else()
-    set(OS_NAME "${CMAKE_SYSTEM_NAME}")
-endif()
-
-# Package name: lvr2-version-arch-os
-set(CPACK_PACKAGE_FILE_NAME
-    "lvr2-${PROJECT_VERSION}-${ARCH}-${OS_NAME}"
-)
-
-set(CPACK_GENERATOR "TGZ")
-include(CPack)
+# CPack / packaging configuration
+include(CMakeModules/lvr2-packaging.cmake)

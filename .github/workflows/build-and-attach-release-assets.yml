@@ -56,7 +56,7 @@ jobs:
       # 4) Install dependencies
       - name: Install dependencies
         run: >
-          sudo apt update && sudo apt install -y libboost-all-dev build-essential cmake cmake-curses-gui libflann-dev libgsl-dev libeigen3-dev libopenmpi-dev openmpi-bin opencl-c-headers ocl-icd-opencl-dev freeglut3-dev libhdf5-dev liblz4-dev libopencv-dev libyaml-cpp-dev libcgal-dev libgdal-dev libembree-dev
+          sudo apt update && sudo apt install -y libboost-all-dev build-essential cmake cmake-curses-gui libflann-dev libgsl-dev libeigen3-dev libopenmpi-dev openmpi-bin opencl-c-headers ocl-icd-opencl-dev freeglut3-dev libhdf5-dev liblz4-dev libopencv-dev libyaml-cpp-dev libcgal-dev libgdal-dev
 
       # 5) Configure
       - name: Configure CMake
@@ -72,15 +72,17 @@ jobs:
         run: |
           cmake --build build --target package
           mkdir -p dist
-          cp build/*.tar.gz dist/
+          cp build/*.tar.gz dist/ || true
+          cp build/*.deb dist/ || true
 
       # 8) Upload to the corresponding GitHub Release
       - name: Attach assets to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.get_tag.outputs.tag_name }}
-          files: dist/*.tar.gz
-          # overwrite_files defaults to true; keeping it explicit:
+          files: |
+            dist/*.tar.gz
+            dist/*.deb
           overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
