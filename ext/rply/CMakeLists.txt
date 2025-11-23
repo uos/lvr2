@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.4...3.16)
 #project(rply)
 
 # set include dirs
-set(RPLY_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/rply CACHE PATH "install location of rply library header")
+set(RPLY_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/rply)
 find_path(RPLY_INCLUDE_DIR rply.h PATH .)
 mark_as_advanced(RPLY_INCLUDE_DIR RPLY_INSTALL_INCLUDE_DIR)
 
@@ -19,10 +19,10 @@ set_target_properties(lvr2rply
     VERSION ${lvr2_VERSION}
 )
 
-install(DIRECTORY . DESTINATION ${RPLY_INSTALL_INCLUDE_DIR}
+install(DIRECTORY . DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/rply
   FILES_MATCHING PATTERN "*.h")
 
 install(TARGETS lvr2rply_static lvr2rply
-  EXPORT lvr2Targets
+  EXPORT lvr2-targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
