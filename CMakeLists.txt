@@ -191,7 +191,6 @@ set(Boost_USE_MULTITHREADED     ON)
 set(Boost_COMPONENTS
   program_options
   filesystem
-  system
   thread
   serialization
   timer
@@ -203,7 +202,7 @@ if(MPI_FOUND)
   message(STATUS "Found MPI. Adding Boost MPI library to required components.")
 endif()
 
-find_package(Boost COMPONENTS ${Boost_COMPONENTS} REQUIRED QUIET)
+find_package(Boost COMPONENTS ${Boost_COMPONENTS} CONFIG REQUIRED QUIET)
 message(STATUS "Found Boost libraries")
 
 link_directories(${Boost_LIBRARY_DIR})
