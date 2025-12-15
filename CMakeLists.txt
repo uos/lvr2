@@ -138,7 +138,7 @@ include_directories(${GDAL_INCLUDE_DIR})
 #------------------------------------------------------------------------------
 # Searching for OpenCV
 #------------------------------------------------------------------------------
-set(OPEN_CV_COMPONENTS "core;imgproc;imgcodecs;features2d")
+set(OPEN_CV_COMPONENTS "core;imgproc;imgcodecs;features2d;calib3d")
 find_package( OpenCV 3 QUIET COMPONENTS ${OPEN_CV_COMPONENTS} )
 if (NOT OpenCV_FOUND)
   find_package( OpenCV 4 COMPONENTS ${OPEN_CV_COMPONENTS})
