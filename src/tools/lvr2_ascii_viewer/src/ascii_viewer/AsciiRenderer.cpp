@@ -91,7 +91,6 @@ void AsciiRenderer::initEmbree(MeshBufferPtr mesh)
 {
     m_device = initializeDevice();
     m_scene = initializeScene(m_device, mesh);
-    rtcInitIntersectContext(&m_context);
 }
 
 RTCDevice AsciiRenderer::initializeDevice()
@@ -238,7 +237,7 @@ void AsciiRenderer::raycast()
             rayhit.ray.dir_z = dir.coeff(2);
 
 
-            rtcIntersect1(m_scene, &m_context, &rayhit);
+            rtcIntersect1(m_scene, &rayhit);
             
             if(rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID)
             {

@@ -42,20 +42,15 @@ set(CPACK_DEBIAN_PACKAGE_MAINTAINER "jubraun@uos.de")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 set(_LVR2_DEPS
-    libboost-all-dev
     libflann-dev
     libgsl-dev
     libeigen3-dev
     libopenmpi-dev
     openmpi-bin
     ocl-icd-opencl-dev
-    freeglut3-dev
     libhdf5-dev
     liblz4-dev
-    libopencv-dev
     libyaml-cpp-dev
-    libcgal-dev
-    libgdal-dev
 )
 
 # Convert list → comma-separated string
