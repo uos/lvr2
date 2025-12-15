@@ -42,20 +42,27 @@ set(CPACK_DEBIAN_PACKAGE_MAINTAINER "jubraun@uos.de")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 set(_LVR2_DEPS
-    libboost-all-dev
+    libboost-program-options-dev
+    libboost-filesystem-dev
+    libboost-thread-dev
+    libboost-serialization-dev
+    libboost-timer-dev
+    libboost-iostreams-dev
+    libboost-date-time-dev
     libflann-dev
     libgsl-dev
     libeigen3-dev
     libopenmpi-dev
+    libopencv-core-dev
+    libopencv-imgproc-dev
+    libopencv-imgcodecs-dev
+    libopencv-features2d-dev
+    libopencv-calib3d-dev
     openmpi-bin
     ocl-icd-opencl-dev
-    freeglut3-dev
     libhdf5-dev
     liblz4-dev
-    libopencv-dev
     libyaml-cpp-dev
-    libcgal-dev
-    libgdal-dev
 )
 
 # Convert list → comma-separated string

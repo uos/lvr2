@@ -138,9 +138,10 @@ include_directories(${GDAL_INCLUDE_DIR})
 #------------------------------------------------------------------------------
 # Searching for OpenCV
 #------------------------------------------------------------------------------
-find_package( OpenCV 3 QUIET )
+set(OPEN_CV_COMPONENTS "core;imgproc;imgcodecs;features2d;calib3d")
+find_package( OpenCV 3 QUIET COMPONENTS ${OPEN_CV_COMPONENTS} )
 if (NOT OpenCV_FOUND)
-  find_package( OpenCV 4)
+  find_package( OpenCV 4 COMPONENTS ${OPEN_CV_COMPONENTS})
   if(OpenCV_FOUND)
 	message(STATUS "Found OpenCV 4")
   endif()
@@ -377,24 +378,6 @@ if(WITH_PCL)
         message(STATUS "-- PCL related stuff will be disabled." )
     endif(PCL_FOUND)
 endif(WITH_PCL)
-
-#------------------------------------------------------------------------------
-# Searching CGAL
-#------------------------------------------------------------------------------
-set(CGAL_DATA_DIR ".")
-find_package(CGAL)
-if(CGAL_FOUND)
-  
-  if(DEFINED CGAL_USE_FILE)
-    # CGAL_USE_FILE overrides theses flags...
-    set(_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-    set(CMAKE_CXX_FLAGS)
-    include(${CGAL_USE_FILE})
-    set(CMAKE_CXX_FLAGS "${_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
-  endif()
-
-  message(STATUS "Found CGAL")
-endif(CGAL_FOUND)
 
 #------------------------------------------------------------------------------
 # Searching for OpenMP

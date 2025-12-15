@@ -27,9 +27,15 @@
 #ifndef GEOTIFFIO_HPP
 #define GEOTIFFIO_HPP
 
-#include <gdal_priv.h>
 #include <opencv2/opencv.hpp>
 #include <string>
+
+// Forward declaration to remove <gdal_priv.h> include
+extern "C"
+{
+    struct GDALDataset;
+    struct GDALDriver;
+}
 
 namespace lvr2
 {

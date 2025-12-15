@@ -7,6 +7,8 @@
 #include "lvr2/io/modelio/GeoTIFFIO.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
+#include <gdal_priv.h>
+
 namespace lvr2
 {
     

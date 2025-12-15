@@ -57,7 +57,6 @@
 #include <boost/filesystem.hpp>
 
 #include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
 
 using namespace lvr2;
 using boost::filesystem::path;

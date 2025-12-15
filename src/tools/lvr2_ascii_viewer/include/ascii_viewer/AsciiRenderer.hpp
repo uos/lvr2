@@ -11,7 +11,7 @@
 
 #include "CursesHelper.hpp"
 
-#include <embree3/rtcore.h>
+#include <embree4/rtcore.h>
 #include <memory>
 
 namespace lvr2 {
@@ -74,7 +74,6 @@ private:
 
     RTCDevice m_device;
     RTCScene m_scene;
-    RTCIntersectContext m_context;
 
     // Camera
     Eigen::Affine3d m_camera;
