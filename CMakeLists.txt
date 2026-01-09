@@ -59,11 +59,22 @@ endif()
 #------------------------------------------------------------------------------
 # Searching for Embree: needs to be placed above "set(CMAKE_MODULE_PATH)".
 #------------------------------------------------------------------------------
-find_package(embree 4.0 QUIET)
+find_package(embree 4 QUIET)
 if(embree_FOUND)
   message(STATUS "Found Embree")
   include_directories(${EMBREE_INCLUDE_DIRS})
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
+  list(APPEND LVR2_DEFINITIONS -DLVR2_EMBREE_VERSION=4)
+  set(LVR2_EMBREE_VERSION 4)
+else(embree_FOUND)
+  find_package(embree 3 QUIET)
+  if(embree_FOUND)
+    message(STATUS "Found Embree")
+    include_directories(${EMBREE_INCLUDE_DIRS})
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_EMBREE)
+    list(APPEND LVR2_DEFINITIONS -DLVR2_EMBREE_VERSION=3)
+    set(LVR2_EMBREE_VERSION 3)
+  endif(embree_FOUND)
 endif(embree_FOUND)
 
 set(CMAKE_MODULE_PATH

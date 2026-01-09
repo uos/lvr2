@@ -1,6 +1,10 @@
 #include "lvr2/algorithm/raycasting/EmbreeRaycaster.hpp"
 
+#if LVR2_EMBREE_VERSION == 3
+#include <embree3/rtcore.h>
+#else
 #include <embree4/rtcore.h>
+#endif
 
 namespace lvr2 {
 

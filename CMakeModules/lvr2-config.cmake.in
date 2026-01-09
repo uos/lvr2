@@ -92,8 +92,8 @@ endif()
 
 # Embree
 if(@embree_FOUND@)
-    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
-    find_package(embree 4.0 REQUIRED)
+  set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
+  find_package(embree @LVR2_EMBREE_VERSION@ REQUIRED)
 endif()
 
 set(lvr2_FOUND TRUE)

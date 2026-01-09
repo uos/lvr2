@@ -35,7 +35,14 @@
 #ifndef LVR2_ALGORITHM_RAYCASTING_EMBREERAYCASTER
 #define LVR2_ALGORITHM_RAYCASTING_EMBREERAYCASTER
 
+#if LVR2_EMBREE_VERSION == 3
+#include <embree3/rtcore.h>
+#elif LVR2_EMBREE_VERSION == 4
 #include <embree4/rtcore.h>
+#else
+#error Embree not found
+#endif
+
 #include <stdio.h>
 
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
@@ -94,6 +101,10 @@ protected:
 
     RTCDevice m_device;
     RTCScene m_scene;
+
+    #if LVR2_EMBREE_VERSION == 3
+    RTCIntersectContext m_context;
+    #endif
 };
 
 } // namespace lvr2
