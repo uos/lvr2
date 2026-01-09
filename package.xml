@@ -47,6 +47,7 @@ point clouds.
   <depend>libxmu-dev</depend>
   <depend>glut</depend>
   <depend>ocl-icd-opencl-dev</depend>
+  <depend>embree</depend>
 
   <export>
     <build_type>cmake</build_type>
