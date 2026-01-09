@@ -8,6 +8,9 @@ EmbreeRaycaster<IntT>::EmbreeRaycaster(const MeshBufferPtr mesh)
 {
     m_device = initializeDevice();
     m_scene = initializeScene(m_device, mesh);
+    #if LVR2_EMBREE_VERSION == 3
+    rtcInitIntersectContext(&m_context);
+    #endif
 }
 
 template<typename IntT>
@@ -24,8 +27,13 @@ bool EmbreeRaycaster<IntT>::castRay(
     IntT& intersection)
 {
     RTCRayHit rayhit = lvr2embree(origin, direction);
-    rtcIntersect1(m_scene, &rayhit);
     
+    #if LVR2_EMBREE_VERSION == 3
+    rtcIntersect1(m_scene, &m_context, &rayhit);
+    #else // == 4
+    rtcIntersect1(m_scene, &rayhit);
+    #endif
+
     if constexpr(IntT::template has<intelem::Point>())
     {
         intersection.point.x() = rayhit.ray.org_x + rayhit.ray.tfar * rayhit.ray.dir_x;
