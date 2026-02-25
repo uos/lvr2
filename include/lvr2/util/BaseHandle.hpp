@@ -93,15 +93,10 @@ public:
     }
 
     /**
-     * @brief Extracts the handle. If `this` doesn't hold a handle (is "None"),
-     *        this method panics.
+     * @brief Extracts the handle.
      */
     NonOptionalT unwrap() const
     {
-        if (!is_valid())
-        {
-            panic("Tried to unwrap invalid handle!");
-        }
         return NonOptionalT(BaseHandle::idx());
     }
 };
