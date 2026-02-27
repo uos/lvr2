@@ -89,6 +89,7 @@ private:
     size_t                  m_start;
     size_t                  m_end;
 
+public:
     std::vector<ScanInfo*>   m_scans;
 };
 

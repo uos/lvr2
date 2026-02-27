@@ -33,6 +33,7 @@
  */
 
 #include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/ScanDirectoryParser.hpp"
 #include "lvr2/util/IOUtils.hpp"
 #include "lvr2/registration/SLAMAlign.hpp"
 #include "lvr2/registration/RegistrationPipeline.hpp"
@@ -40,12 +41,12 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
+#include <boost/format.hpp> 
 #include <iostream>
 #include <chrono>
 #include <fstream>
 
 using namespace lvr2;
-using namespace std;
 using boost::filesystem::path;
 
 
@@ -204,23 +205,23 @@ int main(int argc, char** argv)
 
         if (help)
         {
-            cout << "The Scan Registration Tool" << endl;
-            cout << "Usage: " << endl;
-            cout << "\tlvr2_registration [OPTIONS] <dir>" << endl;
-            cout << endl;
-            general_options.print(cout);
-            cout << endl;
-            icp_options.print(cout);
-            cout << endl;
-            loopclosing_options.print(cout);
-            cout << endl;
-            cout << "<dir> is the directory to search scans in" << endl;
+            std::cout << "The Scan Registration Tool" << std::endl;
+            std::cout << "Usage: " << std::endl;
+            std::cout << "\tlvr2_registration [OPTIONS] <dir>" << std::endl;
+            std::cout << std::endl;
+            general_options.print(std::cout);
+            std::cout << std::endl;
+            icp_options.print(std::cout);
+            std::cout << std::endl;
+            loopclosing_options.print(std::cout);
+            std::cout << std::endl;
+            std::cout << "<dir> is the directory to search scans in" << std::endl;
             return EXIT_SUCCESS;
         }
 
         if (variables.count("dir") != 1)
         {
-            throw error("Missing <dir> Parameter");
+            throw boost::program_options::error("Missing <dir> Parameter");
         }
 
         if (variables.count("output") == 0)
@@ -230,7 +231,7 @@ int main(int argc, char** argv)
 
         if (format.find('%') == string::npos)
         {
-            format = map_format(format);
+            //format = map_format(format);
         }
 
         if (variables.count("writePose") == 1)
@@ -250,7 +251,7 @@ int main(int argc, char** argv)
             }
             else if (output_format.find('%') == string::npos)
             {
-                format = map_format(format);
+                //format = map_format(format);
             }
         }
 
@@ -258,50 +259,50 @@ int main(int argc, char** argv)
     }
     catch (const boost::program_options::error& ex)
     {
-        std::cerr << ex.what() << endl;
-        std::cerr << endl;
-        std::cerr << "Use '--help' to see the list of possible options" << endl;
+        std::cerr << ex.what() << std::endl;
+        std::cerr << std::endl;
+        std::cerr << "Use '--help' to see the list of possible options" << std::endl;
         return EXIT_FAILURE;
     }
 
-    if(options.useHDF)
-    {
-        /// TODO: Should be resolved when using scan project io
-    }
+    // if(options.useHDF)
+    // {
+    //     /// TODO: Should be resolved when using scan project io
+    // }
 
-    // =============== search scans ===============
-    if (start == -1)
-    {
-        if (!options.useHDF)
-        {
-           /// TODO: Should be resolved when using scan project io
-        }
-    }
-    if (!options.useHDF)
-    {
-        // make sure all scan and pose files are in the directory
-        for (int i = start; end == -1 || i <= end; i++)
-        {
-            path file = dir / format_name(format, i);
-            if (!exists(file))
-            {
-                if (end != -1 || i == start)
-                {
-                    std::cerr << "Missing scan " << file.filename() << endl;
-                    return EXIT_FAILURE;
-                }
-                end = i - 1;
-                cout << "Last scan: \"" << format_name(format, end) << '"' << endl;
-                break;
-            }
-            file.replace_extension(pose_format);
-            if (!exists(file))
-            {
-                std::cerr << "Missing pose file " << file.filename() << endl;
-                return EXIT_FAILURE;
-            }
-        }
-    }
+    // // =============== search scans ===============
+    // if (start == -1)
+    // {
+    //     if (!options.useHDF)
+    //     {
+    //        /// TODO: Should be resolved when using scan project io
+    //     }
+    // }
+    // if (!options.useHDF)
+    // {
+    //     // make sure all scan and pose files are in the directory
+    //     for (int i = start; end == -1 || i <= end; i++)
+    //     {
+    //         path file = dir / format_name(format, i);
+    //         if (!exists(file))
+    //         {
+    //             if (end != -1 || i == start)
+    //             {
+    //                 std::cerr << "Missing scan " << file.filename() << std::endl;
+    //                 return EXIT_FAILURE;
+    //             }
+    //             end = i - 1;
+    //             std::cout << "Last scan: \"" << format_name(format, end) << '"' << std::endl;
+    //             break;
+    //         }
+    //         file.replace_extension(pose_format);
+    //         if (!exists(file))
+    //         {
+    //             std::cerr << "Missing pose file " << file.filename() << std::endl;
+    //             return EXIT_FAILURE;
+    //         }
+    //     }
+    // }
 
     SLAMAlign align(options);
     vector<SLAMScanPtr> scans;
@@ -375,45 +376,67 @@ int main(int argc, char** argv)
     //     }
     //     // DEBUG
 
-    //      cout << "vor Pipe Konstruktor" << endl;
+    //      std::cout << "vor Pipe Konstruktor" << std::endl;
     //      ScanProjectEditMarkPtr projPtr = std::make_shared<ScanProjectEditMark>(proj);
     //      RegistrationPipeline pipe(&options, projPtr);
     //      pipe.doRegistration();
-    //      cout << "Nach doRegistration" << endl;
+    //      std::cout << "Nach doRegistration" << std::endl;
     //      for (size_t i = 0; i < projPtr->changed.size(); i++)
     //      {
-    //          cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< endl;
+    //          std::cout << "Reconstruct indivcator ans Stelle: " << i << " ist: " << projPtr->changed.at(i)<< std::endl;
     //      }
 
-    //      cout << "Eine Pose aus dem Project:" << endl << projPtr->project->positions.at(1)->scans[0]->registration << endl;
+    //      std::cout << "Eine Pose aus dem Project:" << std::endl << projPtr->project->positions.at(1)->scans[0]->registration << std::endl;
     // }
     // else
     {
         // case for not using HDF5
         // TODO: change to ScanDirectoryParser once that is done
 
-        for (int i = 0; i < count; i++)
+
+
+        // for (int i = 0; i < count; i++)
+        // {
+            
+        //     path file = dir / format_name(format, start + i);
+        //     auto model = ModelFactory::readModel(file.string());
+
+        //     if (!model)
+        //     {
+        //         std::cerr << "Unable to read Model from: " << file.string() << std::endl;
+        //         return EXIT_FAILURE;
+        //     }
+        //     if (!model->m_pointCloud)
+        //     {
+        //         std::cerr << "file does not contain Points: " << file.string() << std::endl;
+        //         return EXIT_FAILURE;
+        //     }
+
+        //     file.replace_extension(pose_format);
+        //     Transformd pose = getTransformationFromFile<double>(file);
+
+        //     ScanPtr scan = ScanPtr(new Scan());
+        //     scan->points = model->m_pointCloud;
+        //     scan->poseEstimation = pose;
+
+        //     SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(scan));
+        //     scans.push_back(slamScan);
+        //     align.addScan(slamScan);
+        // }
+        std::cout << dir.string() << std::endl;
+        ScanDirectoryParser parser(dir.string());
+        parser.setStart(start);
+        parser.setEnd(end);
+        parser.parseDirectory();
+
+        for(auto si : parser.m_scans)
         {
-            path file = dir / format_name(format, start + i);
-            auto model = ModelFactory::readModel(file.string());
-
-            if (!model)
-            {
-                std::cerr << "Unable to read Model from: " << file.string() << endl;
-                return EXIT_FAILURE;
-            }
-            if (!model->m_pointCloud)
-            {
-                std::cerr << "file does not contain Points: " << file.string() << endl;
-                return EXIT_FAILURE;
-            }
-
-            file.replace_extension(pose_format);
-            Transformd pose = getTransformationFromFile<double>(file);
+            std::cout << "Reading " << si->m_filename << std::endl;
+            auto model = ModelFactory::readModel(si->m_filename);
 
             ScanPtr scan = ScanPtr(new Scan());
             scan->points = model->m_pointCloud;
-            scan->poseEstimation = pose;
+            scan->poseEstimation = si->m_pose;
 
             SLAMScanPtr slamScan = SLAMScanPtr(new SLAMScanWrapper(scan));
             scans.push_back(slamScan);
@@ -422,12 +445,12 @@ int main(int argc, char** argv)
     }
 
 
-    auto start_time = chrono::steady_clock::now();
+    auto start_time = std::chrono::steady_clock::now();
 
     align.finish();
 
-    auto required_time = chrono::steady_clock::now() - start_time;
-    cout << "SLAM finished in " << required_time.count() / 1e9 << " seconds" << endl;
+    auto required_time = std::chrono::steady_clock::now() - start_time;
+    std::cout << "SLAM finished in " << required_time.count() / 1e9 << " seconds" << std::endl;
 
     if (write_pose || write_scans)
     {
@@ -436,20 +459,20 @@ int main(int argc, char** argv)
 
     path file;
 
-    if (options.useHDF)
-    {
-        // write poses to hdf
-        for(int i = 0; i < scans.size(); i++)
-        {
-            Transformd pose = scans[i]->pose();
-            cout << "Main:Pose Scan Nummer " << i << endl << pose << endl;
-            // The pose needs to be transposed before writing to hdf,
-            // because the lvr2_viewer expects finalPose in hdf transposed this way.
-            // The initial pose is saved NOT transposed in HDF
-            pose.transposeInPlace();
-            h5_ptr->MatrixIO::save("raw/scans/" + numOfScansInHDF[i], "finalPose", pose);
-        }
-    }
+    // if (options.useHDF)
+    // {
+    //     // write poses to hdf
+    //     for(int i = 0; i < scans.size(); i++)
+    //     {
+    //         Transformd pose = scans[i]->pose();
+    //         std::cout << "Main:Pose Scan Nummer " << i << std::endl << pose << std::endl;
+    //         // The pose needs to be transposed before writing to hdf,
+    //         // because the lvr2_viewer expects finalPose in hdf transposed this way.
+    //         // The initial pose is saved NOT transposed in HDF
+    //         pose.transposeInPlace();
+    //         h5_ptr->MatrixIO::save("raw/scans/" + numOfScansInHDF[i], "finalPose", pose);
+    //     }
+    // }
 
     for (int i = 0; i < count; i++)
     {
@@ -457,16 +480,18 @@ int main(int argc, char** argv)
 
         if (!no_frames)
         {
-            file = dir / format_name(format, start + i);
-            file.replace_extension("frames");
-
+            std::stringstream frame_ss;
+            frame_ss << "scan" << boost::format("%03d") % i << ".frames";
+            file = output_dir / frame_ss.str();
             scan->writeFrames(file.string());
         }
 
         if (write_pose)
         {
-            file = output_dir / format_name(write_scans ? output_format : format, start + i);
-            file.replace_extension(output_pose_format);
+            std::stringstream pose_ss;
+            pose_ss << "scan" << boost::format("%03d") % i << ".dat";
+
+            file = output_dir / pose_ss.str();
             std::ofstream out(file.string());
 
             auto pose = scan->pose();
@@ -480,13 +505,16 @@ int main(int argc, char** argv)
                         out << " ";
                     }
                 }
-                out << endl;
+                out << std::endl;
             }
         }
 
         if (write_scans)
         {
-            file = output_dir / format_name(output_format, start + i);
+ 
+            std::stringstream scan_ss;
+            scan_ss << "scan" << boost::format("%03d") % i << ".3d";
+            file = output_dir / scan_ss.str();
 
             size_t n = scan->numPoints();
 
