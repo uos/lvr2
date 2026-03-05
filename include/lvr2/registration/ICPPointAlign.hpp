@@ -55,7 +55,7 @@ public:
      * @param model The Model Scan (stays unchanged)
      * @param data The Data Scan (transformed)
      */
-    ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data);
+    ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data, size_t maxLeafSize = 20);
 
     /**
      * @brief Executes the ICPAlign

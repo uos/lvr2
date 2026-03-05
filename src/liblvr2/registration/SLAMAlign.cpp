@@ -98,6 +98,7 @@ void SLAMAlign::reduceScan(const SLAMScanPtr& scan)
     size_t prev = scan->numPoints();
     if (m_options.reduction >= 0)
     {
+        std::cout << "REDUCE" << std::endl;
         scan->reduce(m_options.reduction, m_options.maxLeafSize);
     }
     if (m_options.minDistance >= 0)
@@ -170,10 +171,11 @@ void SLAMAlign::match()
                 }
             }
 
-            ICPPointAlign icp(prev, cur);
+            //std::cout << "MATCH" << m_options.maxLeafSize << std::endl;
+
+            ICPPointAlign icp(prev, cur, m_options.maxLeafSize);
             icp.setMaxMatchDistance(m_options.icpMaxDistance);
             icp.setMaxIterations(m_options.icpIterations);
-            icp.setMaxLeafSize(m_options.maxLeafSize);
             icp.setEpsilon(m_options.epsilon);
             icp.setVerbose(m_options.verbose);
 

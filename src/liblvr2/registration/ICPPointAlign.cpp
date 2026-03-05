@@ -41,8 +41,8 @@
 namespace lvr2
 {
 
-ICPPointAlign::ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data) :
-    m_modelCloud(model), m_dataCloud(data)
+ICPPointAlign::ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data, size_t maxLeafSize) :
+    m_modelCloud(model), m_dataCloud(data), m_maxLeafSize(maxLeafSize)
 {
     // Init default values
     m_maxDistanceMatch  = 25;
@@ -50,7 +50,7 @@ ICPPointAlign::ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data) :
     m_epsilon           = 0.00001;
     m_verbose           = false;
 
-    m_searchTree = model->createKDTree(m_maxLeafSize);
+    m_searchTree = model->createKDTree(25);
 }
 
 Transformd ICPPointAlign::match()

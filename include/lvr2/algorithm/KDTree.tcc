@@ -258,8 +258,9 @@ typename KDTree<PointT, N>::KDPtr KDTree<PointT, N>::createRecursive(
     size_t maxLeafSize)
 {
     size_t n = end - start;
-    if (n <= maxLeafSize)
+    if (n <= maxLeafSize && n != 0)
     {
+        //std::cout << n << std::endl;
         return KDPtr(new KDLeaf(start, end));
     }
 

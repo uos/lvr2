@@ -482,7 +482,7 @@ int main(int argc, char** argv)
         {
             std::stringstream frame_ss;
             frame_ss << "scan" << boost::format("%03d") % i << ".frames";
-            file = output_dir / frame_ss.str();
+            file = frame_ss.str();
             scan->writeFrames(file.string());
         }
 
@@ -491,7 +491,7 @@ int main(int argc, char** argv)
             std::stringstream pose_ss;
             pose_ss << "scan" << boost::format("%03d") % i << ".dat";
 
-            file = output_dir / pose_ss.str();
+            file = pose_ss.str();
             std::ofstream out(file.string());
 
             auto pose = scan->pose();
@@ -514,7 +514,7 @@ int main(int argc, char** argv)
  
             std::stringstream scan_ss;
             scan_ss << "scan" << boost::format("%03d") % i << ".3d";
-            file = output_dir / scan_ss.str();
+            file = scan_ss.str();
 
             size_t n = scan->numPoints();
 
