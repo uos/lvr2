@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <lvr2/geometry/Normal.hpp>
 #include <queue>
 #include <set>
 #include <list>
@@ -206,7 +207,10 @@ void visitLocalVertexNeighborhoodPlane(
 
 template <typename BaseVecT>
 DenseVertexMap<float> calcVertexHeightDifferences(
-  const BaseMesh<BaseVecT> &mesh, double radius)
+  const BaseMesh<BaseVecT> &mesh,
+  const VertexMap<Normal<typename BaseVecT::CoordType>>& vertex_normals,
+  double radius
+)
 {
     // We create a map to store a height-diff for each vertex. We preallocate
     // memory for all vertices. This is not only an optimization, but more
@@ -249,11 +253,16 @@ DenseVertexMap<float> calcVertexHeightDifferences(
         // however, the correct solution would be to find the intersection of the edge
         // with the limiting geometry (sphere/cylinder)
         
+        boost::optional<const Normal<typename BaseVecT::CoordType>&> normal_opt = vertex_normals.get(vH);
         BaseVecT normal;
-        normal.x = 0.0;
-        normal.y = 0.0;
-        normal.z = 1.0;
-        // this would also work for rotated meshes, if you define an up vector
+        if (normal_opt.has_value())
+        {
+            normal = normal_opt.value();
+        }
+        else
+        {
+            normal = BaseVecT(0.0, 0.0, 1.0);
+        }
 
         // forgot own position!
         const BaseVecT& vPos = mesh.getVertexPosition(vH);

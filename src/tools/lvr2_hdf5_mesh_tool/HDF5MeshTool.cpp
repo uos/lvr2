@@ -397,7 +397,7 @@ int main( int argc, char ** argv )
     {
       std::cout << timestamp << "Computing height diff with a local radius of "
                 << options.getLocalRadius() << "m ..." << std::endl;
-      heightDifferences = calcVertexHeightDifferences(hem, options.getLocalRadius());
+      heightDifferences = calcVertexHeightDifferences(hem, vertexNormals, options.getLocalRadius());
     }
     if (!heightDifferencesOpt || !writeToHdf5Input)
     {

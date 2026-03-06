@@ -103,14 +103,19 @@ void visitLocalVertexNeighborhoodPlane(
 /**
  * @brief   Calculate the height difference value for each vertex of the given BaseMesh.
  *
- * @param mesh      The given BaseMesh for calculating vertex height differences.
- * @param radius    The radius which defines the border of the local neighborhood.
+ * @param mesh              The given BaseMesh for calculating vertex height differences.
+ * @param vertex_normals    The vertex normals of the mesh. If a normal for a vertex is missing the algorithm assumes (0, 0, 1)
+ * @param radius            The radius which defines the border of the local neighborhood.
  *
  * @return  A map filled with <Vertex, float>-entries, storing the height difference value
  *          of each vertex.
  */
 template<typename BaseVecT>
-DenseVertexMap<float> calcVertexHeightDifferences(const BaseMesh<BaseVecT>& mesh, double radius);
+DenseVertexMap<float> calcVertexHeightDifferences(
+    const BaseMesh<BaseVecT>& mesh,
+    const VertexMap<Normal<typename BaseVecT::CoordType>>& vertex_normals,
+    double radius
+);
 
 /**
  * @brief Calculates the roughness for each vertex.
