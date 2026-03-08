@@ -2,6 +2,11 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use the vertex's normal in calcVertexHeightDifferences() to define the local plane
+* Removed panic exception from BaseHandle since it makes semantically no sense since optionals are used
+
 25.2.0 (2025-11-22)
 --------------------
 * CMake cleanup
