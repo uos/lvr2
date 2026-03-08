@@ -2,17 +2,21 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+25.2.2 (2026-03-09)
+-------------------
 * Use the vertex's normal in calcVertexHeightDifferences() to define the local plane
 * Removed panic exception from BaseHandle since it makes semantically no sense since optionals are used
 
+25.2.1 (2026-01-23)
+-------------------
+* CMake cleanup
+
 25.2.0 (2025-11-22)
---------------------
+-------------------
 * CMake cleanup
 
 25.1.0 (2025-01-01)
---------------------
+-------------------
 * mirror internal state of lvr to github
 * PMP mesh
 * exact IPCA for normal estimation
