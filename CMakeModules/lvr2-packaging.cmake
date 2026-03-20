@@ -42,28 +42,39 @@ set(CPACK_DEBIAN_PACKAGE_MAINTAINER "jubraun@uos.de")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 set(_LVR2_DEPS
-    libboost-program-options-dev
-    libboost-filesystem-dev
-    libboost-thread-dev
-    libboost-serialization-dev
-    libboost-timer-dev
-    libboost-iostreams-dev
-    libboost-date-time-dev
-    libflann-dev
-    libgsl-dev
     libeigen3-dev
-    libopenmpi-dev
-    libopencv-core-dev
-    libopencv-imgproc-dev
-    libopencv-imgcodecs-dev
-    libopencv-features2d-dev
-    libopencv-calib3d-dev
-    openmpi-bin
-    ocl-icd-opencl-dev
+    libflann-dev
+    libgdal-dev
+    libglut-dev
+    libgsl-dev
     libhdf5-dev
     liblz4-dev
+    # We need the full opencv dependency since the FindOpenCV CMake makro is only part of the libopencv-dev package
+    libopencv-dev
+    libtbb-dev
+    libtiff-dev
+    libxi-dev
+    libxmu-dev
     libyaml-cpp-dev
+    ocl-icd-opencl-dev
+    openmpi-bin
 )
+
+# Depend on MPI if it was found during build
+if(MPI_FOUND)
+    list(APPEND _LVR2_DEPS "libopenmpi-dev")
+endif(MPI_FOUND)
+
+# Depend on the boost components
+foreach(_BOOST_COMPONENT ${Boost_COMPONENTS})
+    string(REPLACE "_" "-" _BOOST_COMPONENT ${_BOOST_COMPONENT})
+    list(APPEND _LVR2_DEPS "libboost-${_BOOST_COMPONENT}-dev")
+endforeach()
+
+# Depend on embree if it was used during build
+if(embree_FOUND)
+    list(APPEND _LVR2_DEPS "libembree-dev")
+endif()
 
 # Convert list → comma-separated string
 string(REPLACE ";" ", " _LVR2_DEPS_STR "${_LVR2_DEPS}")
