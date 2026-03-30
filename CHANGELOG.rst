@@ -2,6 +2,10 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+25.2.3 (2026-03-30)
+-------------------
+* Sync DEB and package.xml dependencies
+
 25.2.2 (2026-03-09)
 -------------------
 * Use the vertex's normal in calcVertexHeightDifferences() to define the local plane
