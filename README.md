@@ -59,7 +59,7 @@ cmake .. && make
 Install the required libraries using [Homebrew](https://brew.sh):
 
 ```bash
-brew install boost boost-mpi cmake eigen flann gcc glew gsl hdf5 opencv lz4 qt vtk 
+brew install boost boost-mpi cmake eigen flann gcc gdal glew gsl hdf5 opencv libtiff lz4 qt vtk yaml-cpp
 
 mkdir build
 cd build

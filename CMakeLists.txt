@@ -449,20 +449,28 @@ endif(LVR2_WITH_PCL)
 #------------------------------------------------------------------------------
 # Searching for OpenMP
 #------------------------------------------------------------------------------
-find_package(OpenMP)
-if(OPENMP_FOUND)
-  message(STATUS "Found OpenMP")
-  link_directories(${OpenMP_LIBRARY_DIRS})
-  include_directories(${OpenMP_INCLUDE_DIRS})
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPEN_MP)
-
-  # tasks only in OpenMP 3.0 and above thus we need llvm openmp in experimental mode
-  # See here: https://devblogs.microsoft.com/cppblog/improved-openmp-support-for-cpp-in-visual-studio/
-  if(MSVC)
-    set(CMAKE_CXX_FLAGS " -openmp:llvm -openmp:experimental ${CMAKE_CXX_FLAGS}")
+# On macOS with Apple Clang, FindOpenMP cannot auto-discover libomp from
+# Homebrew because the compiler does not ship with OpenMP headers.  Detect the
+# Homebrew prefix and add it to the search path so find_path / find_library
+# (and the OpenMP module hints) can discover it automatically.
+if(APPLE)
+  find_program(BREW_EXECUTABLE brew)
+  if(BREW_EXECUTABLE)
+    execute_process(COMMAND ${BREW_EXECUTABLE} --prefix libomp
+      OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET)
+    if(HOMEBREW_LIBOMP_PREFIX AND EXISTS "${HOMEBREW_LIBOMP_PREFIX}")
+      list(APPEND CMAKE_PREFIX_PATH ${HOMEBREW_LIBOMP_PREFIX})
+    endif()
   endif()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif(OPENMP_FOUND)
+endif()
+
+find_package(OpenMP COMPONENTS CXX)
+if(OpenMP_FOUND)
+  message(STATUS "Found OpenMP")
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPEN_MP)
+endif(OpenMP_FOUND)
 
 #------------------------------------------------------------------------------
 ## Searching for libfreenect
@@ -671,7 +679,6 @@ set(LVR2_LIB_DEPENDENCIES
     ${LZ4_LIBRARY}
     ${TIFF_LIBRARY}
     ${YAML_CPP_LIBRARIES}
-    ${OpenMP_CXX_LIBRARIES}
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     Eigen3::Eigen
     lvr2rply
@@ -694,12 +701,15 @@ set(LVR2_LIB_DEPENDENCIES
     ${LZ4_LIBRARY}
     ${TIFF_LIBRARY}
     ${YAML_CPP_LIBRARIES}
-    ${OpenMP_CXX_LIBRARIES}
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     Eigen3::Eigen
     m
     ${RDB_LIBRARIES}
     )
+endif()
+
+if(OpenMP_FOUND)
+  list(APPEND LVR2_LIB_DEPENDENCIES OpenMP::OpenMP_CXX)
 endif()
 
 #####################################################################################

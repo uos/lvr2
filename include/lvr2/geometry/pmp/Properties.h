@@ -99,12 +99,22 @@ protected:
     std::string name_;
 };
 
+template <typename T>
+struct PropertyArrayStorage {
+    using type = std::vector<T>;
+};
+
+template <>
+struct PropertyArrayStorage<bool> {
+    using type = std::vector<uint8_t>;
+};
+
 template <class T>
 class PropertyArray : public BasePropertyArray
 {
 public:
     typedef T ValueType;
-    typedef std::vector<ValueType> VectorType;
+    typedef typename PropertyArrayStorage<T>::type VectorType;
     typedef typename VectorType::reference reference;
     typedef typename VectorType::const_reference const_reference;
 
@@ -206,16 +216,9 @@ inline const bool* PropertyArray<bool>::data() const
     throw std::runtime_error("PropertyArray<bool>::data() not supported");
 }
 template <>
-inline void PropertyArray<bool>::swap(size_t i0, size_t i1)
-{
-    data_.swap(data_[i0], data_[i1]);
-}
-template <>
 inline std::pair<uint8_t*, size_t> PropertyArray<bool>::raw_data()
 {
-    auto begin = data_.begin()._M_p;
-    auto end = (data_.end() - 1)._M_p + 1; // -1 + 1 to get a past-the-end whole pointer, not past-the-end bit
-    return std::make_pair((uint8_t*)begin, (end - begin) * sizeof(*begin));
+    return std::make_pair(data_.data(), data_.size());
 }
 template <>
 inline void PropertyArray<bool>::shallow_clear()
