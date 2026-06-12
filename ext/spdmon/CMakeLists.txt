@@ -20,7 +20,6 @@ set(CXX_STANDARD 17)
 
 include(cmake/StandardSettings.cmake)
 include(cmake/Utils.cmake)
-include(cmake/cpplint.cmake)
 message(STATUS "Build ${PROJECT_NAME}: v${PROJECT_VERSION}")
 
 
@@ -227,12 +226,6 @@ endif()
 #
 
 add_clang_format_target()
-
-#
-# Format the project using the `cpplint` target (i.e: cmake --build build --target cpplint-target)
-#
-
-add_cpplint_style_check_target()
 
 #
 # Install library for easy downstream inclusion
