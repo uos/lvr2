@@ -203,28 +203,6 @@ private:
     ValueType value_;
 };
 
-// specialization for bool properties
-// std::vector<bool> is a specialization that uses one bit per element, which does not allow data() access
-template <>
-inline bool* PropertyArray<bool>::data()
-{
-    throw std::runtime_error("PropertyArray<bool>::data() not supported");
-}
-template <>
-inline const bool* PropertyArray<bool>::data() const
-{
-    throw std::runtime_error("PropertyArray<bool>::data() not supported");
-}
-template <>
-inline std::pair<uint8_t*, size_t> PropertyArray<bool>::raw_data()
-{
-    return std::make_pair(data_.data(), data_.size());
-}
-template <>
-inline void PropertyArray<bool>::shallow_clear()
-{
-    VectorType().swap(data_);
-}
 
 template <class T>
 class Property
