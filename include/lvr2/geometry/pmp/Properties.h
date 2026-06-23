@@ -99,22 +99,12 @@ protected:
     std::string name_;
 };
 
-template <typename T>
-struct PropertyArrayStorage {
-    using type = std::vector<T>;
-};
-
-template <>
-struct PropertyArrayStorage<bool> {
-    using type = std::vector<uint8_t>;
-};
-
 template <class T>
 class PropertyArray : public BasePropertyArray
 {
 public:
     typedef T ValueType;
-    typedef typename PropertyArrayStorage<T>::type VectorType;
+    typedef std::vector<ValueType> VectorType;
     typedef typename VectorType::reference reference;
     typedef typename VectorType::const_reference const_reference;
 
@@ -203,6 +193,33 @@ private:
     ValueType value_;
 };
 
+// specialization for bool properties
+// std::vector<bool> is a specialization that uses one bit per element, which does not allow data() access
+template <>
+inline bool* PropertyArray<bool>::data()
+{
+    throw std::runtime_error("PropertyArray<bool>::data() not supported");
+}
+template <>
+inline const bool* PropertyArray<bool>::data() const
+{
+    throw std::runtime_error("PropertyArray<bool>::data() not supported");
+}
+template <>
+inline void PropertyArray<bool>::swap(size_t i0, size_t i1)
+{
+    data_.swap(data_[i0], data_[i1]);
+}
+template <>
+inline std::pair<uint8_t*, size_t> PropertyArray<bool>::raw_data()
+{
+    throw std::runtime_error("PropertyArray<bool>::raw_data() not supported!");
+}
+template <>
+inline void PropertyArray<bool>::shallow_clear()
+{
+    VectorType().swap(data_);
+}
 
 template <class T>
 class Property
