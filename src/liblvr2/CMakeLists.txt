@@ -218,6 +218,7 @@ target_link_libraries(lvr2core
 target_link_libraries(lvr2core
     PUBLIC
     Eigen3::Eigen
+    ${LVR2_LIB_DEPENDENCIES}
 )
 
 #####################################################################################

@@ -213,9 +213,7 @@ inline void PropertyArray<bool>::swap(size_t i0, size_t i1)
 template <>
 inline std::pair<uint8_t*, size_t> PropertyArray<bool>::raw_data()
 {
-    auto begin = data_.begin()._M_p;
-    auto end = (data_.end() - 1)._M_p + 1; // -1 + 1 to get a past-the-end whole pointer, not past-the-end bit
-    return std::make_pair((uint8_t*)begin, (end - begin) * sizeof(*begin));
+    throw std::runtime_error("PropertyArray<bool>::raw_data() not supported!");
 }
 template <>
 inline void PropertyArray<bool>::shallow_clear()

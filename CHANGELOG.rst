@@ -2,6 +2,10 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+25.2.4 (2026-06-24)
+-------------------
+* Fix compilation on MacOS
+
 25.2.3 (2026-03-30)
 -------------------
 * Sync DEB and package.xml dependencies
