@@ -87,6 +87,8 @@ private:
     struct Concept: DistortionModelInterface
     {
         virtual std::unique_ptr<Concept> clone() const = 0;
+
+        virtual ~Concept() = default;
     };
 
     template <typename Impl>
@@ -96,7 +98,7 @@ private:
 
         Model(std::remove_reference_t<Impl>&& obj);
         
-        std::unique_ptr<Concept> clone() const;
+        std::unique_ptr<Concept> clone() const override;
         
         Vector2d distortPoint(const Vector2d& p) const override;
 
