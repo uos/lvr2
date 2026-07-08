@@ -569,7 +569,7 @@ if(LVR2_WITH_3DTILES)
   link_directories(${BINARY_DIR}/install/lib)
 
   ExternalProject_Get_Property(cesium-native SOURCE_DIR)
-  # Patch 7: remove cesium-native's bundled spdlog from its install tree
+  # Remove cesium-native's bundled spdlog from its install tree
   # to prevent it from shadowing lvr2's own (newer) spdlog headers.
   ExternalProject_Add_Step(cesium-native strip-spdlog
     COMMAND ${CMAKE_COMMAND} -E remove_directory
@@ -776,13 +776,13 @@ endif(3DTILES_FOUND)
 # LIBRARIES
 ###############################################################################
 
-# Patch 5: bridge LVR2_WITH_3DTILES -> WITH_3DTILES so the subdirectory
+# Bridge LVR2_WITH_3DTILES -> WITH_3DTILES so the subdirectory
 # CMakeLists.txt (which tests if(WITH_3DTILES)) picks up the flag.
 set(WITH_3DTILES ${LVR2_WITH_3DTILES})
 
 add_subdirectory(src/liblvr2)
 
-# Patch 5: wire cesium-native ExternalProject into the lvr2 build targets.
+# Wire cesium-native ExternalProject into the lvr2 build targets.
 # Must be done here (root scope, after add_subdirectory) so that all three
 # targets — cesium-native, lvr2core, and lvr2 — are already defined.
 if(LVR2_WITH_3DTILES)
