@@ -206,9 +206,7 @@ endif(UNIX)
 #####################################################################################
 
 add_library(lvr2core OBJECT ${LVR2_SOURCES})
-if(WITH_3DTILES)
-    add_dependencies(lvr2core cesium-native)
-endif(WITH_3DTILES)
+# (dependency moved to root CMakeLists.txt by Patch 5)
 
 target_link_libraries(lvr2core
     PRIVATE

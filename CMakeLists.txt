@@ -543,6 +543,7 @@ if(LVR2_WITH_3DTILES)
     PREFIX cesium-native
     GIT_REPOSITORY "https://github.com/CesiumGS/cesium-native"
     GIT_TAG "v0.16.0"
+    PATCH_COMMAND sed -i "s/-Werror -Wall/-Wall/g" <SOURCE_DIR>/CMakeLists.txt
     LOG_CONFIGURE ON
     LOG_INSTALL ON # Hide cmake output (creates a lot of spam on every build)
     LOG_BUILD ON
@@ -552,13 +553,22 @@ if(LVR2_WITH_3DTILES)
                                           # this is in quotes because otherwise cmake adds a random "x86_64-linux-gnu" to lib paths. No idea why.
         -DCESIUM_TESTS_ENABLED=OFF        # don't build the tests
         -DDRACO_TRANSCODER_SUPPORTED=ON   # enable Gltf support for draco
-        -DCMAKE_CXX_FLAGS=-fPIC           # tell cmake to compile as shared libraries
+        "-DCMAKE_CXX_FLAGS=-fPIC -include cstdint -Wno-error"
+        "-DCMAKE_C_FLAGS=-fPIC"
   )
   ExternalProject_Get_Property(cesium-native BINARY_DIR)
   include_directories(${BINARY_DIR}/install/include)
   link_directories(${BINARY_DIR}/install/lib)
 
   ExternalProject_Get_Property(cesium-native SOURCE_DIR)
+  # Patch 7: remove cesium-native's bundled spdlog from its install tree
+  # to prevent it from shadowing lvr2's own (newer) spdlog headers.
+  ExternalProject_Add_Step(cesium-native strip-spdlog
+    COMMAND ${CMAKE_COMMAND} -E remove_directory
+            ${BINARY_DIR}/install/include/spdlog
+    DEPENDEES install
+    ALWAYS FALSE
+  )
   include_directories(${SOURCE_DIR}/extern/draco/src
                       ${SOURCE_DIR}/extern/draco/third_party/tinygltf
                       ${BINARY_DIR}    # draco generates include files in BINARY_DIR
@@ -568,7 +578,13 @@ if(LVR2_WITH_3DTILES)
 
   list(APPEND LVR2_DEFINITIONS -DLVR2_USE_3DTILES -DLVR2_USE_DRACO)
 
-  set(3DTILES_LIBRARIES Cesium3DTiles Cesium3DTilesWriter CesiumGltf CesiumGltfWriter CesiumJsonWriter)
+  set(3DTILES_LIBRARIES
+    Cesium3DTiles Cesium3DTilesWriter Cesium3DTilesReader Cesium3DTilesSelection
+    CesiumGltf CesiumGltfWriter CesiumGltfReader
+    CesiumJsonWriter CesiumJsonReader
+    CesiumAsync CesiumGeometry CesiumGeospatial CesiumUtility CesiumIonClient
+    async++ uriparser tinyxml2 sqlite3 modp_b64 csprng ktx_read s2geometry)
+  set(3DTILES_FOUND ON)
 
 else(LVR2_WITH_3DTILES)
   #------------------------------------------------------------------------------
@@ -754,7 +770,19 @@ endif(3DTILES_FOUND)
 # LIBRARIES
 ###############################################################################
 
+# Patch 5: bridge LVR2_WITH_3DTILES -> WITH_3DTILES so the subdirectory
+# CMakeLists.txt (which tests if(WITH_3DTILES)) picks up the flag.
+set(WITH_3DTILES ${LVR2_WITH_3DTILES})
+
 add_subdirectory(src/liblvr2)
+
+# Patch 5: wire cesium-native ExternalProject into the lvr2 build targets.
+# Must be done here (root scope, after add_subdirectory) so that all three
+# targets — cesium-native, lvr2core, and lvr2 — are already defined.
+if(LVR2_WITH_3DTILES)
+    add_dependencies(lvr2core cesium-native)
+    add_dependencies(lvr2 cesium-native)
+endif(LVR2_WITH_3DTILES)
 
 ###############################################################################
 # BINARIES

@@ -137,6 +137,19 @@ void walkContour(const BaseMesh<BaseVecT>& mesh, EdgeHandle startH, VisitorF vis
         mesh.getEdgesOfVertex(nextVertexH, edgesOfVertex);
 
         const auto ourPos = std::find(edgesOfVertex.begin(), edgesOfVertex.end(), currEdgeH) - edgesOfVertex.begin();
+        // Patch 9: guard against a stale/invalidated edge handle.  If
+        // currEdgeH is absent from edgesOfVertex, std::find returns end(),
+        // making ourPos == edgesOfVertex.size().  The modular-arithmetic
+        // loop below would then spin forever because (size % size)==0 and
+        // afterPos cycles through 1…size-1,0 without ever equalling size.
+        if (static_cast<size_t>(ourPos) >= edgesOfVertex.size())
+        {
+            panic(
+                "walkContour: currEdge not found among edges of nextVertex — "
+                "mesh topology is inconsistent (edge handle may be stale after "
+                "a prior retesselation step)"
+            );
+        }
         auto afterPos = ourPos;
         while(true)
         {

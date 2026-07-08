@@ -127,7 +127,7 @@ void ChunkingPipeline<BaseVecT>::practicabilityAnalysis(HalfEdgeMesh<BaseVecT>& 
     // Calc roughness
     DenseVertexMap<float> roughness = calcVertexRoughness(hem, m_roughnessRadius, vertexNormals);
     // Calc vertex height differences
-    DenseVertexMap<float> heightDifferences = calcVertexHeightDifferences(hem, m_heightDifferencesRadius);
+    DenseVertexMap<float> heightDifferences = calcVertexHeightDifferences(hem, vertexNormals, m_heightDifferencesRadius);
 
     // create and fill channels
     FloatChannel faceNormalChannel(faceNormals.numValues(), channel_type < Normal < float >> ::w);
