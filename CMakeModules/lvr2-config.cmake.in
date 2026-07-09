@@ -46,6 +46,12 @@ find_dependency(TBB)
 if(@MPI_FOUND@)
   find_dependency(MPI)
 endif()
+
+# Without adding the prefix to the prefix list here downstream packages cannot find OpenMP properly
+if(EXISTS @HOMEBREW_LIBOMP_PREFIX@)
+  list(APPEND CMAKE_PREFIX_PATH @HOMEBREW_LIBOMP_PREFIX@)
+endif()
+
 find_dependency(OpenMP)
 find_dependency(TIFF)
 find_dependency(GDAL)
