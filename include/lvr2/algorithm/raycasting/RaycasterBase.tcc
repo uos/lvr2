@@ -2,13 +2,6 @@ namespace lvr2
 {
 
 template<typename IntT>
-RaycasterBase<IntT>::RaycasterBase(const MeshBufferPtr mesh)
-:m_mesh(mesh)
-{
-
-}
-
-template<typename IntT>
 void RaycasterBase<IntT>::castRays(
     const Vector3f& origin,
     const std::vector<Vector3f>& directions,

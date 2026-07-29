@@ -5,8 +5,7 @@ namespace lvr2 {
 
 template<typename IntT>
 BVHRaycaster<IntT>::BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_size)
-:RaycasterBase<IntT>(mesh)
-,m_bvh(mesh)
+:m_bvh(mesh)
 ,m_faces(mesh->getFaceIndices())
 ,m_vertices(mesh->getVertices())
 ,m_BVHindicesOrTriLists(m_bvh.getIndexesOrTrilists().data())
@@ -20,8 +19,7 @@ BVHRaycaster<IntT>::BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_si
 
 template<typename IntT>
 BVHRaycaster<IntT>::BVHRaycaster(const MeshBufferPtr mesh)
-:RaycasterBase<IntT>(mesh)
-,m_bvh(mesh)
+:m_bvh(mesh)
 ,m_faces(mesh->getFaceIndices())
 ,m_vertices(mesh->getVertices())
 ,m_BVHindicesOrTriLists(m_bvh.getIndexesOrTrilists().data())

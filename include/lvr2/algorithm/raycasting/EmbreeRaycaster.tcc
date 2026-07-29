@@ -4,7 +4,7 @@ namespace lvr2 {
 
 template<typename IntT>
 EmbreeRaycaster<IntT>::EmbreeRaycaster(const MeshBufferPtr mesh)
-:RaycasterBase<IntT>(mesh)
+: m_mesh(mesh)
 {
     m_device = initializeDevice();
     m_scene = initializeScene(m_device, mesh);
@@ -76,6 +76,38 @@ bool EmbreeRaycaster<IntT>::castRay(
     }
 
     return (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID);
+}
+
+template<typename IntT>
+std::optional<ClosestSurfacePointQueryResult>
+EmbreeRaycaster<IntT>::getClosestPoint(const Vector3f& query) const
+{
+    if (!m_mesh || !m_mesh->hasFaces())
+        return std::nullopt;
+
+    RTCPointQuery rtcQuery;
+    rtcQuery.x      = query.x();
+    rtcQuery.y      = query.y();
+    rtcQuery.z      = query.z();
+    rtcQuery.time   = 0.0f;
+    rtcQuery.radius = std::numeric_limits<float>::infinity();
+
+    RTCPointQueryContext context;
+    rtcInitPointQueryContext(&context);
+
+    auto vertices = m_mesh->getVertices();
+    auto faces    = m_mesh->getFaceIndices();
+
+    EmbreeClosestPointState state;
+    state.vertices = vertices.get();
+    state.faces    = faces.get();
+    state.found    = false;
+
+    rtcPointQuery(m_scene, &rtcQuery, &context, embreeClosestPointCallback, &state);
+
+    if (state.found)
+        return state.result;
+    return std::nullopt;
 }
 
 // PRIVATE
