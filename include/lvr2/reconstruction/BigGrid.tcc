@@ -390,6 +390,40 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
     m_PointFile.open(mmfparam);
     float *mmfdata = (float *)m_PointFile.data();
 
+    // check whether any scan carries color data so we can open colors.mmf
+    unsigned char *mmfdata_color = nullptr;
+    for (size_t i = 0; i < numScans; i++)
+    {
+        if (ignoredOrInvalid[i])
+        {
+            continue;
+        }
+        ScanPtr scan = project->project->positions.at(i)->lidars[0]->scans[0];
+        bool wasLoaded = scan->loaded();
+        if (!wasLoaded)
+        {
+            if (!scan->loadable())
+            {
+                continue;
+            }
+            scan->load();
+        }
+        bool hasColor = scan->points->hasColors();
+        if (!wasLoaded)
+        {
+            scan->release();
+        }
+        if (hasColor)
+        {
+            mmfparam.new_file_size = sizeof(unsigned char) * m_numPoints * 3;
+            mmfparam.path = (m_pathPrefix / "colors.mmf").string();
+            m_ColorFile.open(mmfparam);
+            mmfdata_color = (unsigned char *)m_ColorFile.data();
+            m_hasColor = true;
+            break;
+        }
+    }
+
     ss.str("");
     ss << timestamp << "[BigGrid] Building grid: filling cells";
     lvr2::Monitor progressFilling(lvr2::LogLevel::info, ss.str(), numScans);
@@ -413,6 +447,13 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         size_t numPoints = scan->points->numPoints();
         boost::shared_array<float> points = scan->points->getPointArray();
 
+        size_t colorWidth = 0;
+        boost::shared_array<unsigned char> colorArray;
+        if (m_hasColor)
+        {
+            colorArray = scan->points->getColorArray(colorWidth);
+        }
+
         for (size_t k = 0; k < numPoints; k++)
         {
             original << points.get()[k * 3], points.get()[k * 3 + 1], points.get()[k * 3 + 2], 1;
@@ -431,6 +472,21 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
             mmfdata[pos] = point.x;
             mmfdata[pos + 1] = point.y;
             mmfdata[pos + 2] = point.z;
+            if (m_hasColor)
+            {
+                if (colorArray && colorWidth >= 3)
+                {
+                    mmfdata_color[pos]     = colorArray.get()[k * colorWidth];
+                    mmfdata_color[pos + 1] = colorArray.get()[k * colorWidth + 1];
+                    mmfdata_color[pos + 2] = colorArray.get()[k * colorWidth + 2];
+                }
+                else
+                {
+                    mmfdata_color[pos]     = 0;
+                    mmfdata_color[pos + 1] = 0;
+                    mmfdata_color[pos + 2] = 0;
+                }
+            }
         }
         scan->release();
 
@@ -786,7 +842,7 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(const BoundingBox<BaseVecT> &bb, size_t
         return lvr2::ucharArr();
     }
 
-    lvr2::ucharArr colors(new float[numColors * 3]);
+    lvr2::ucharArr colors(new uchar[numColors * 3]);
 
     // determine where each cell is going to start in the point array
     std::vector<uchar *> cellOutColors;

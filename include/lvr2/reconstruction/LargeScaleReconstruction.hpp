@@ -181,6 +181,10 @@ struct LSROptions
 
     AllowedMemoryUsage tiles3dMemUsage = AllowedMemoryUsage::Moderate;
 
+    /// Transfer point cloud colors to mesh vertex colors using nearest-neighbor lookup.
+    /// Only has an effect if the input point cloud contains color data.
+    bool vertexColors = false;
+
     /// Make sure all options are correctly set and consistent with each other.
     void ensureCorrectness()
     {
@@ -377,13 +381,15 @@ private:
 
     using GridPtr = std::shared_ptr<HashGrid<BaseVecT, BoxT>>;
 
-    GridPtr createChunk(const BigGrid<BaseVecT>& bg,
+    std::pair<GridPtr, PointsetSurfacePtr<BaseVecT>> createChunk(
+                        const BigGrid<BaseVecT>& bg,
                         const BoundingBox<BaseVecT>& bb,
                         float voxelSize,
                         size_t minPointsPerChunk, size_t& maxPointsPerChunk,
                         bool& retry);
 
     void processChunk(GridPtr ps_grid,
+                      PointsetSurfacePtr<BaseVecT> surface,
                       const Vector3i& coord,
                       const fs::path& chunkDirPly,
                       std::shared_ptr<HighFive::File> chunkFileHdf5,

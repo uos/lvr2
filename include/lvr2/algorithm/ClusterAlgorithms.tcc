@@ -92,9 +92,12 @@ vector<vector<VertexHandle>> findContours(
     ClusterHandle clusterH
 )
 {
-    auto cluster = clusters[clusterH];
+    // Patch 11 fix A: use const ref to avoid copying the cluster's face list.
+    const auto& cluster = clusters[clusterH];
 
-    DenseVertexMap<bool> boundaryVertices(cluster.handles.size() * 3, false);
+    // Patch 11 fix B: use unordered_set instead of DenseVertexMap<bool> to
+    // avoid O(max_vertex_idx) fills on every first access to a new vertex.
+    std::unordered_set<VertexHandle> boundaryVertices;
     vector<vector<VertexHandle>> allContours;
     // only used inside edge loop but initialized here to avoid heap allocations
     vector<VertexHandle> contour;
@@ -126,13 +129,17 @@ vector<vector<VertexHandle>> findContours(
             auto vertices = mesh.getVerticesOfEdge(edgeH);
 
             // edge already in another boundary of this cluster
-            if (boundaryVertices[vertices[0]] || boundaryVertices[vertices[1]])
+            if (boundaryVertices.count(vertices[0]) || boundaryVertices.count(vertices[1]))
             {
                 continue;
             }
 
             contour.clear();
-            calcContourVertices(mesh, edgeH, contour, [clusters, clusterH](auto fH)
+            // Patch 11 fix C: capture clusters by reference, not by value.
+            // The by-value capture deep-copies the entire ClusterBiMap
+            // (including all Cluster<FaceHandle> objects) on every contour
+            // walk — O(N_clusters^2) total work on a large mesh.
+            calcContourVertices(mesh, edgeH, contour, [&clusters, clusterH](auto fH)
             {
                 auto c = clusters.getClusterOf(fH);
 
@@ -145,7 +152,7 @@ vector<vector<VertexHandle>> findContours(
             // mark all vertices we got back as visited
             for (auto vertexH: contour)
             {
-                boundaryVertices[vertexH] = true;
+                boundaryVertices.insert(vertexH);
             }
         }
 
@@ -875,34 +882,66 @@ void optimizePlaneIntersections(
     const ClusterMap<Plane<BaseVecT>>& planes
 )
 {
+    // Patch 10: The original O(N^2) all-pairs loop over planes is unacceptably
+    // slow for large meshes (N = number of plane clusters; even N=1000 results
+    // in 500 k iterations, each doing a full face-edge scan).  Two planes only
+    // need to be reconciled when they actually share a boundary edge.  We first
+    // build the set of such adjacent pairs in O(F) time (F = mesh faces), then
+    // iterate over that much smaller set instead of the full Cartesian product.
+    //
+    // Encoding: a pair (a, b) with a.idx() <= b.idx() is stored as a single
+    // uint64_t value (a.idx() << 32 | b.idx()), which allows efficient
+    // de-duplication via an unordered_set without needing a custom pair hash.
+
+    std::unordered_set<uint64_t> adjSet;
+    for (auto clusterH : clusters)
+    {
+        if (!planes.containsKey(clusterH))
+            continue;
+        for (auto faceH : clusters[clusterH].handles)
+        {
+            for (auto edgeH : mesh.getEdgesOfFace(faceH))
+            {
+                auto adjFaces = mesh.getFacesOfEdge(edgeH);
+                for (auto& optF : adjFaces)
+                {
+                    if (!optF)
+                        continue;
+                    auto optN = clusters.getClusterOf(optF.unwrap());
+                    if (!optN)
+                        continue;
+                    auto nch = optN.unwrap();
+                    if (nch == clusterH || !planes.containsKey(nch))
+                        continue;
+                    uint64_t ai = clusterH.idx();
+                    uint64_t bi = nch.idx();
+                    if (ai > bi) std::swap(ai, bi);
+                    adjSet.insert((ai << 32) | bi);
+                }
+            }
+        }
+    }
+
     // Status message for mesh generation
     string comment = timestamp.getElapsedTime() + "Optimizing plane intersections ";
-    ProgressBar progress(planes.numValues(), comment);
+    ProgressBar progress(adjSet.size(), comment);
 
-    // iterate over all planes
-    for (auto it = planes.begin(); it != planes.end(); ++it)
+    for (uint64_t encoded : adjSet)
     {
-        auto clusterH = *it;
+        ClusterHandle c1(static_cast<uint32_t>(encoded >> 32));
+        ClusterHandle c2(static_cast<uint32_t>(encoded & 0xFFFFFFFFULL));
 
-        // only iterate over distinct pairs of planes, e.g. the following planes of the current one
-        auto itInner = it;
-        ++itInner;
-        for (; itInner != planes.end(); ++itInner)
+        auto& plane1 = planes[c1];
+        auto& plane2 = planes[c2];
+
+        // do not improve almost parallel cluster
+        float normalDot = plane1.normal.dot(plane2.normal);
+        if (fabs(normalDot) < 0.9)
         {
-            auto clusterInnerH = *itInner;
+            auto intersection = plane1.intersect(plane2);
 
-            auto& plane1 = planes[clusterH];
-            auto& plane2 = planes[clusterInnerH];
-
-            // do not improve almost parallel cluster
-            float normalDot = plane1.normal.dot(plane2.normal);
-            if (fabs(normalDot) < 0.9)
-            {
-                auto intersection = plane1.intersect(plane2);
-
-                dragOntoIntersection(mesh, clusters, clusterH, clusterInnerH, intersection);
-                dragOntoIntersection(mesh, clusters, clusterInnerH, clusterH, intersection);
-            }
+            dragOntoIntersection(mesh, clusters, c1, c2, intersection);
+            dragOntoIntersection(mesh, clusters, c2, c1, intersection);
         }
 
         ++progress;

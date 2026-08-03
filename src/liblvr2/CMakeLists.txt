@@ -153,11 +153,11 @@ endif(draco_FOUND)
 # 3D Tiles
 #####################################################################################
 
-if(WITH_3DTILES)
+if(LVR2_WITH_3DTILES)
     list(APPEND LVR2_SOURCES
         io/Tiles3dIO.cpp
         io/modelio/B3dmIO.cpp)
-endif()
+endif(LVR2_WITH_3DTILES)
 
 #####################################################################################
 # RiVLib
@@ -166,7 +166,7 @@ endif()
 if(RiVLib_FOUND)
     list(APPEND LVR2_SOURCES
         io/baseio/RxpIO.cpp)
-endif()
+endif(RiVLib_FOUND)
 
 #####################################################################################
 # OpenCL
@@ -213,9 +213,7 @@ endif(UNIX)
 #####################################################################################
 
 add_library(lvr2core OBJECT ${LVR2_SOURCES})
-if(WITH_3DTILES)
-    add_dependencies(lvr2core cesium-native)
-endif(WITH_3DTILES)
+# (dependency moved to root CMakeLists.txt by Patch 5)
 
 target_link_libraries(lvr2core
     PRIVATE

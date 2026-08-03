@@ -617,9 +617,14 @@ std::unique_ptr<draco::Mesh> toDracoMesh(ModelPtr modelPtr)
         if (hasVertexTextureCoordinates)
         {
             auto texcoords = mesh->attribute(vertexTextureCoordinatesAttId);
+            // glTF uses V=0 at the top of the image, the internal lvr2 convention sets V=0 at the bottom
+            // flip the V coordinate
             for (draco::AttributeValueIndex i(0); i < numVertices; i++)
             {
-                texcoords->SetAttributeValue(i, vertexTextureCoordinates.get() + i.value() * 2);
+                float uv[2];
+                uv[0] = vertexTextureCoordinates.get()[i.value() * 2 + 0];
+                uv[1] = 1.0f - vertexTextureCoordinates.get()[i.value() * 2 + 1];
+                texcoords->SetAttributeValue(i, uv);
             }
         }
 

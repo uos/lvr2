@@ -246,7 +246,14 @@ void B3dmIO::save(std::string filename)
     {
         out = add_attribute(buffer, model, num_vertices, 2, "TEXCOORD_0",
                             pmp::Point(0, 0), pmp::Point(1, 1));
-        std::copy_n(mesh->getTextureCoordinates().get(), num_vertices * 2, out);
+        // glTF uses V=0 at the top of the image, the internal lvr2 convention sets V=0 at the bottom
+        // flip the V coordinate
+        auto tex_coords = mesh->getTextureCoordinates().get();
+        for (size_t i = 0; i < num_vertices; i++)
+        {
+            out[i * 2 + 0] = tex_coords[i * 2 + 0];        // u unchanged
+            out[i * 2 + 1] = 1.0f - tex_coords[i * 2 + 1]; // v flipped
+        }
 
         size_t texture_offset = buffer.size();
         std::vector<uint8_t> texture_bytes;
