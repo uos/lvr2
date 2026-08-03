@@ -53,7 +53,6 @@ if(EXISTS @HOMEBREW_LIBOMP_PREFIX@)
 endif()
 find_dependency(OpenMP)
 find_dependency(TIFF)
-find_dependency(GDAL)
 find_dependency(OpenCV)
 
 find_dependency(FLANN)
@@ -102,6 +101,11 @@ endif()
 if(@embree_FOUND@)
   set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
   find_package(embree @LVR2_EMBREE_VERSION@ REQUIRED)
+endif()
+
+# GDAL
+if(@GDAL_FOUND@)
+    find_package(GDAL REQUIRED)
 endif()
 
 set(lvr2_FOUND TRUE)

@@ -44,7 +44,6 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(_LVR2_DEPS
     libeigen3-dev
     libflann-dev
-    libgdal-dev
     libglut-dev
     libgsl-dev
     libhdf5-dev
@@ -74,6 +73,11 @@ endforeach()
 # Depend on embree if it was used during build
 if(embree_FOUND)
     list(APPEND _LVR2_DEPS "libembree-dev")
+endif()
+
+# Depend on gdal if it was used during build
+if(GDAL_FOUND)
+    list(APPEND _LVR2_DEPS "libgdal-dev")
 endif()
 
 # Convert list → comma-separated string
