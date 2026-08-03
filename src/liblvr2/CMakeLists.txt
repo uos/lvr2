@@ -153,11 +153,11 @@ endif(draco_FOUND)
 # 3D Tiles
 #####################################################################################
 
-if(WITH_3DTILES)
+if(LVR2_WITH_3DTILES)
     list(APPEND LVR2_SOURCES
         io/Tiles3dIO.cpp
         io/modelio/B3dmIO.cpp)
-endif()
+endif(LVR2_WITH_3DTILES)
 
 #####################################################################################
 # RiVLib
@@ -166,7 +166,7 @@ endif()
 if(RiVLib_FOUND)
     list(APPEND LVR2_SOURCES
         io/baseio/RxpIO.cpp)
-endif()
+endif(RiVLib_FOUND)
 
 #####################################################################################
 # OpenCL

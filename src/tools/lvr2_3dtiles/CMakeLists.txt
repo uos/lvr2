@@ -1,6 +1,6 @@
-if(NOT WITH_3DTILES)
+if(NOT LVR2_WITH_3DTILES)
     add_custom_target(lvr2_3dtiles
-                      COMMAND echo "ERROR: building lvr2_3dtiles requires  -DWITH_3DTILES=ON  cmake flag.")
+                      COMMAND echo "ERROR: building lvr2_3dtiles requires  -DLVR2_WITH_3DTILES=ON  cmake flag.")
     return()
 endif()
 

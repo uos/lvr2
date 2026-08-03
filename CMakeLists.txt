@@ -782,10 +782,6 @@ endif(GDAL_FOUND)
 # LIBRARIES
 ###############################################################################
 
-# Bridge LVR2_WITH_3DTILES -> WITH_3DTILES so the subdirectory
-# CMakeLists.txt (which tests if(WITH_3DTILES)) picks up the flag.
-set(WITH_3DTILES ${LVR2_WITH_3DTILES})
-
 add_subdirectory(src/liblvr2)
 
 # Wire cesium-native ExternalProject into the lvr2 build targets.

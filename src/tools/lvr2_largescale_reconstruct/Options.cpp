@@ -57,7 +57,7 @@ std::istream& operator>>(std::istream& in, LSROutput& output)
 #ifdef LVR2_USE_3DTILES
         output = LSROutput::Tiles3d;
 #else
-        throw boost::program_options::error("If you want to use " + token + ", please call cmake with  -DWITH_3DTILES=ON  ");
+        throw boost::program_options::error("If you want to use " + token + ", please call cmake with  -DLVR2_WITH_3DTILES=ON  ");
 #endif
     else
         in.setstate(std::ios_base::failbit);
@@ -291,7 +291,7 @@ OUTPUT OPTIONS
 
 #ifndef LVR2_USE_3DTILES
     std::cout << R"======(
-            To use this option, you have to reconfigure cmake with  -DWITH_3DTILES=ON  .)======";
+            To use this option, you have to reconfigure cmake with  -DLVR2_WITH_3DTILES=ON  .)======";
 #endif
     std::cout << R"======(
 
