@@ -12,7 +12,9 @@ FetchContent_MakeAvailable(googletest)
 ###############################################################################
 # ADD TESTS HERE
 ###############################################################################
-list(APPEND LVR2_TEST_SOURCES "")
+list(APPEND LVR2_TEST_SOURCES
+    test_bvh.cpp
+)
 
 if (embree_FOUND)
   list(APPEND LVR2_TEST_SOURCES test_embree.cpp)

@@ -40,6 +40,7 @@
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/geometry/BVH.hpp"
+#include "lvr2/algorithm/ClosestSurfacePoint.hpp"
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
 #include "Intersection.hpp"
 
@@ -50,7 +51,10 @@ namespace lvr2
  *  @brief BVHRaycaster: CPU version of BVH Raycasting: WIP
  */
 template<typename IntT>
-class BVHRaycaster : public RaycasterBase<IntT> {
+class BVHRaycaster
+: public RaycasterBase<IntT>
+, public IClosestSurfacePointQuery
+{
 public:
     /**
      * @brief Constructor: Stores mesh as member
