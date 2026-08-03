@@ -64,6 +64,14 @@ public:
     BVHRaycaster(const MeshBufferPtr mesh);
 
     /**
+     *  @brief Search for the closest point on the mesh's surface.
+     *
+     *  @param query The position to find the closest surface point for
+     *  @return The closest surface point if one exists; nullopt otherwise
+     */
+    std::optional<ClosestSurfacePointQueryResult> getClosestPoint(const Vector3f& query) const;
+
+    /**
      * @brief Cast a single ray onto the mesh
      * 
      * @param[in] origin Ray origin 
@@ -179,6 +187,14 @@ private:
         const float* clTriangleIntersectionData,
         const unsigned int* clTriIdxList
     );
+
+    /**
+     * @brief Computes the squared distance of p to the cache friendly aabb
+     *
+     * @param aabb Pointer to the aabb data
+     * @param point the query point
+     */
+    float squaredDistanceToAABB(const float* aabb, const Vector3f& point) const;
 
 };
 

@@ -1,7 +1,97 @@
 
+#include "lvr2/types/MatrixTypes.hpp"
+#include <limits>
 #define EPSILON 0.0000001
 
+#include "lvr2/algorithm/pmp/DistancePointTriangle.h"
+
 namespace lvr2 {
+
+template<typename IntT>
+std::optional<ClosestSurfacePointQueryResult> BVHRaycaster<IntT>::getClosestPoint(const Vector3f& query) const
+{
+    if (m_faces.get() == nullptr)
+    {
+        return std::nullopt;
+    }
+
+    unsigned int pBestTriId = 0;
+    Vector3f pBestPoint = query;
+    float bestDistSq = std::numeric_limits<float>::infinity();
+
+    std::stack<unsigned int> stack;
+    stack.push(0);
+
+    while (!stack.empty())
+    {
+        unsigned int boxId = stack.top();
+        stack.pop();
+
+        if (!(m_BVHindicesOrTriLists[4 * boxId + 0] & 0x80000000)) // inner node
+        {
+            const float* limitsMin = &m_BVHlimits[6 * boxId];
+
+            // Compute squared distance from query to AABB
+            float d2 = this->squaredDistanceToAABB(limitsMin, query);
+
+            if (d2 > bestDistSq)
+            {
+                continue; // prune this subtree
+            }
+
+            stack.push(m_BVHindicesOrTriLists[4 * boxId + 1]);
+            stack.push(m_BVHindicesOrTriLists[4 * boxId + 2]);
+        }
+        else // leaf node
+        {
+            unsigned int triCount = m_BVHindicesOrTriLists[4 * boxId + 0] & 0x7fffffff;
+            unsigned int startIdx = m_BVHindicesOrTriLists[4 * boxId + 3];
+
+            // Check all triangles of this leaf
+            for (unsigned int i = startIdx; i < startIdx + triCount; i++)
+            {
+                unsigned int idx = m_TriIdxList[i];
+
+                unsigned int v0 = m_faces[idx * 3 + 0];
+                unsigned int v1 = m_faces[idx * 3 + 1];
+                unsigned int v2 = m_faces[idx * 3 + 2];
+
+                pmp::Point pmpQuery(query.x(), query.y(), query.z());
+                pmp::Point pmpV0(m_vertices[v0 * 3 + 0], m_vertices[v0 * 3 + 1], m_vertices[v0 * 3 + 2]);
+                pmp::Point pmpV1(m_vertices[v1 * 3 + 0], m_vertices[v1 * 3 + 1], m_vertices[v1 * 3 + 2]);
+                pmp::Point pmpV2(m_vertices[v2 * 3 + 0], m_vertices[v2 * 3 + 1], m_vertices[v2 * 3 + 2]);
+
+                pmp::Point nearestPoint;
+                const float dist_sq = std::pow(pmp::dist_point_triangle(pmpQuery, pmpV0, pmpV1, pmpV2, nearestPoint), 2);
+
+                if (dist_sq < bestDistSq)
+                {
+                    bestDistSq = dist_sq;
+                    pBestPoint = Vector3f(nearestPoint.x(), nearestPoint.y(), nearestPoint.z());
+                    pBestTriId = idx;
+                }
+            }
+        }
+    }
+
+    ClosestSurfacePointQueryResult result;
+    result.point = pBestPoint;
+    result.face = FaceHandle(pBestTriId);
+    return result;
+}
+
+template<typename IntT>
+float BVHRaycaster<IntT>::squaredDistanceToAABB(const float* aabb, const Vector3f& point) const {
+    /* AABB layout is min x, max x, min y, max y, min z, max z */
+    // Closest point on aabb surface is the query point clamped along the axis
+    const Vector3f cp(
+        std::clamp(point.x(), aabb[0], aabb[1]),
+        std::clamp(point.y(), aabb[2], aabb[3]),
+        std::clamp(point.z(), aabb[4], aabb[5])
+    );
+
+    return (cp - point).squaredNorm();
+}
 
 template<typename IntT>
 BVHRaycaster<IntT>::BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_size)

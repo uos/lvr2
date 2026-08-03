@@ -323,7 +323,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
         {
             m_depth = std::max(m_depth, depth);
         }
-        return move(leaf);
+        return std::move(leaf);
     }
 
     // divide node into smaller nodes
@@ -447,7 +447,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
         {
             m_depth = std::max(m_depth, depth);
         }
-        return move(leaf);
+        return std::move(leaf);
     }
 
     vector<AABB> leftWork;
@@ -508,7 +508,7 @@ typename BVHTree<BaseVecT>::BVHNodePtr BVHTree<BaseVecT>::buildTreeRecursive(vec
     #pragma omp taskwait
     // }
     
-    return move(inner);
+    return std::move(inner);
 }
 
 template<typename BaseVecT>
@@ -516,7 +516,7 @@ void BVHTree<BaseVecT>::createCFTree()
 {
     m_triIndexList.reserve(m_triangles.size());
     uint32_t idxBoxes = 0;
-    createCFTreeRecursive(move(m_root), idxBoxes);
+    createCFTreeRecursive(std::move(m_root), idxBoxes);
     convertTrianglesIntersectionData();
 }
 
@@ -551,9 +551,9 @@ void BVHTree<BaseVecT>::createCFTreeRecursive(BVHNodePtr currentNode, uint32_t& 
 
         // now recurse
         uint32_t idxLeft = ++idxBoxes;
-        createCFTreeRecursive(move(inner->left), idxBoxes);
+        createCFTreeRecursive(std::move(inner->left), idxBoxes);
         uint32_t idxRight = ++idxBoxes;
-        createCFTreeRecursive(move(inner->right), idxBoxes);
+        createCFTreeRecursive(std::move(inner->right), idxBoxes);
 
         // fix box indices
         m_indexesOrTrilists[indexesOrTrilistsPos] = idxLeft;

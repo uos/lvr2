@@ -162,6 +162,7 @@ private:
     struct BVHNode {
         BoundingBox<BaseVecT> bb;
         virtual bool isLeaf() = 0;
+        virtual ~BVHNode() = default;
     };
     using BVHNodePtr = unique_ptr<BVHNode>;
 
