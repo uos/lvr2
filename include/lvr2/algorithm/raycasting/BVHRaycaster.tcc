@@ -1,6 +1,7 @@
 
 #include "lvr2/types/MatrixTypes.hpp"
 #include <limits>
+#include <stack>
 #define EPSILON 0.0000001
 
 #include "lvr2/algorithm/pmp/DistancePointTriangle.h"
