@@ -35,7 +35,6 @@ point clouds.
 
   <depend>tbb</depend>
   <depend>libtiff-dev</depend>
-  <depend>libgdal-dev</depend>
   <depend>libopencv-dev</depend>
   <depend>libflann-dev</depend>
   <depend>lz4</depend>
