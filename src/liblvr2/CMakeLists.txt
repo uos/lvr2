@@ -48,7 +48,6 @@ set(LVR2_SOURCES
     io/modelio/ObjIO.cpp
     io/modelio/DatIO.cpp
     io/modelio/LasIO.cpp
-    io/modelio/GeoTIFFIO.cpp
     # io/KinectIO.cpp
     io/AttributeMeshIOBase.cpp
     io/modelio/PPMIO.cpp
@@ -177,6 +176,14 @@ if(OPENCL_FOUND)
     list(APPEND LVR2_SOURCES
         reconstruction/opencl/ClSurface.cpp
         reconstruction/opencl/ClStatisticalOutlierFilter.cpp)
+endif()
+
+#####################################################################################
+# GDAL
+#####################################################################################
+
+if(LVR2_WITH_GDAL)
+    list(APPEND LVR2_SOURCES io/modelio/GeoTIFFIO.cpp)
 endif()
 
 #####################################################################################

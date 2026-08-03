@@ -26,6 +26,7 @@
  */
 #ifndef GEOTIFFIO_HPP
 #define GEOTIFFIO_HPP
+#ifdef LVR2_USE_GDAL
 
 #include <opencv2/opencv.hpp>
 #include <string>
@@ -118,6 +119,7 @@ private:
     int m_cols, m_rows, m_bands;
 };
 }
-
-
+#else
+#error "LVR2 was build without the GDAL integration. Configure cmake with -DLVR2_WITH_GDAL to enable GeoTIFFIO"
+#endif // LVR2_USE_GDAL
 #endif //GEOTIFFIO_HPP

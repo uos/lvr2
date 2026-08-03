@@ -13,6 +13,7 @@ option(LVR2_WITH_OPENCL "Compile with OpenCL support, if available" ON)
 option(LVR2_WITH_PCL "Compile with PCL support" OFF)
 option(LVR2_WITH_FREENECT "Compile with libfreenect grabber" OFF)
 option(LVR2_WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
+option(LVR2_WITH_GDAL "Compile with GDAL integrations (GeoTIFFIO)" OFF)
 
 ## Compile as C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -145,8 +146,11 @@ include_directories(${TIFF_INCLUDE_DIRS})
 #------------------------------------------------------------------------------
 # Searching for GDAL
 #------------------------------------------------------------------------------
-find_package(GDAL REQUIRED)
-include_directories(${GDAL_INCLUDE_DIR})
+if (LVR2_WITH_GDAL)
+  find_package(GDAL REQUIRED)
+  include_directories(${GDAL_INCLUDE_DIR})
+  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_GDAL)
+endif (LVR2_WITH_GDAL)
 
 #------------------------------------------------------------------------------
 # Searching for OpenCV
@@ -689,7 +693,6 @@ set(LVR2_LIB_DEPENDENCIES
     ${Boost_IOSTREAMS_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
-    ${GDAL_LIBRARY}
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY}
@@ -710,7 +713,6 @@ set(LVR2_LIB_DEPENDENCIES
     ${Boost_IOSTREAMS_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
-    ${GDAL_LIBRARY}
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY}
@@ -771,6 +773,10 @@ endif(embree_FOUND)
 if(3DTILES_FOUND)
   list(APPEND LVR2_LIB_DEPENDENCIES ${3DTILES_LIBRARIES})
 endif(3DTILES_FOUND)
+
+if(GDAL_FOUND)
+  list(APPEND LVR2_LIB_DEPENDENCIES ${GDAL_LIBRARY})
+endif(GDAL_FOUND)
 
 ###############################################################################
 # LIBRARIES
