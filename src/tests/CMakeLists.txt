@@ -14,6 +14,7 @@ FetchContent_MakeAvailable(googletest)
 ###############################################################################
 list(APPEND LVR2_TEST_SOURCES
     test_bvh.cpp
+    test_basevector.cpp
 )
 
 if (embree_FOUND)
