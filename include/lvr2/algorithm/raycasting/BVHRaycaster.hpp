@@ -31,6 +31,7 @@
  *  @date 25.01.2019
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  *  @author Alexander Mock <amock@uos.de>
+ *  @author Justus Braun <jubraun@uos.de>
  */
 
 #pragma once
@@ -48,7 +49,7 @@ namespace lvr2
 {
 
 /**
- *  @brief BVHRaycaster: CPU version of BVH Raycasting: WIP
+ *  @brief BVHRaycaster: CPU version of BVH Raycasting and BVH closest point query
  */
 template<typename IntT>
 class BVHRaycaster

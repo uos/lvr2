@@ -21,6 +21,7 @@ std::optional<ClosestSurfacePointQueryResult> BVHRaycaster<IntT>::getClosestPoin
     float bestDistSq = std::numeric_limits<float>::infinity();
 
     std::stack<unsigned int> stack;
+    // Push the root node to initialize search loop
     stack.push(0);
 
     while (!stack.empty())
@@ -63,6 +64,7 @@ std::optional<ClosestSurfacePointQueryResult> BVHRaycaster<IntT>::getClosestPoin
                 pmp::Point pmpV2(m_vertices[v2 * 3 + 0], m_vertices[v2 * 3 + 1], m_vertices[v2 * 3 + 2]);
 
                 pmp::Point nearestPoint;
+                // Compute squared distance for comparison
                 const float dist_sq = std::pow(pmp::dist_point_triangle(pmpQuery, pmpV0, pmpV1, pmpV2, nearestPoint), 2);
 
                 if (dist_sq < bestDistSq)
