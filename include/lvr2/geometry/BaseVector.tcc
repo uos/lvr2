@@ -231,6 +231,23 @@ CoordT& BaseVector<CoordT>::operator[](const unsigned& index)
     }
 }
 
+// Eigen sometimes produces errors when compiled with CUDA. Disables
+// all Eigen related function for CUDA code (which is currently fine).
+#ifndef __NVCC__
+template<typename CoordT>
+constexpr BaseVector<CoordT>::BaseVector(const Eigen::Vector3<CoordT>& rhs)
+: x(rhs.x())
+, y(rhs.y())
+, z(rhs.z())
+{}
+
+template<typename CoordT>
+constexpr BaseVector<CoordT>::operator Eigen::Vector3<CoordT>() const
+{
+    return Eigen::Vector3<CoordT>(this->x, this->y, this->z);
+}
+#endif // ifndef __NVCC__
+
 template <typename CoordT>
 Normal<CoordT> BaseVector<CoordT>::normalized() const
 {

@@ -34,6 +34,7 @@
 #include <boost/optional.hpp>
 #include <memory>
 #include "lvr2/geometry/Handles.hpp"
+#include "lvr2/geometry/BaseVector.hpp"
 
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -244,15 +245,24 @@ public:
         throw std::range_error("Element Proxy: Index out of Bounds");
     }
 
-    /// User defined conversion operator
-    template<typename BaseVecT>
-    operator BaseVecT() const
+    // Conversion to BaseVector
+    operator lvr2::BaseVector<T>() const
     {
         if(m_w == 3)
         {
-            return BaseVecT(m_ptr[0], m_ptr[1], m_ptr[2]);
+            return lvr2::BaseVector<T>(m_ptr[0], m_ptr[1], m_ptr[2]);
         }
-        throw std::range_error("Element Proxy: Width != 3 in BaseVecT conversion");
+        throw std::range_error("Element Proxy: Width != 3 in BaseVector<T> conversion");
+    }
+
+    // Conversion to Normal
+    operator lvr2::Normal<T>() const
+    {
+        if(m_w == 3)
+        {
+            return lvr2::Normal<T>(m_ptr[0], m_ptr[1], m_ptr[2]);
+        }
+        throw std::range_error("Element Proxy: Width != 3 in BaseVector<T> conversion");
     }
 
     template <typename type, size_t size>
