@@ -92,7 +92,7 @@ HandleT StableVector<HandleT, ElemT>::push(const ElementType& elem)
 template<typename HandleT, typename ElemT>
 HandleT StableVector<HandleT, ElemT>::push(ElementType&& elem)
 {
-    m_elements.emplace_back(move(elem));
+    m_elements.emplace_back(std::move(elem));
     ++m_usedCount;
     return HandleT(size() - 1);
 }

@@ -6,6 +6,7 @@ option(LVR2_BUILD_EXAMPLES "Build the examples" OFF)
 option(LVR2_BUILD_VIEWER "Build lvr2_viewer" OFF)
 option(LVR2_BUILD_TOOLS "Build tools including lvr2_reconstruct" ON)
 option(LVR2_BUILD_TOOLS_EXPERIMENTAL "Build experimental tools" OFF)
+option(LVR2_BUILD_TESTING "Build the tests" OFF)
 option(LVR2_WITH_KINFU "Compile LVR Kinfu" OFF)
 option(LVR2_WITH_3DTILES "Compile with 3DTiles support" OFF)
 option(LVR2_WITH_CUDA "Compile with CUDA support, if available" ON)
@@ -884,6 +885,14 @@ if(LVR2_BUILD_VIEWER)
     add_subdirectory(src/tools/lvr2_ascii_viewer)
   endif()
 endif(LVR2_BUILD_VIEWER)
+
+###############################################################################
+# TESTS
+###############################################################################
+if (LVR2_BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(src/tests)
+endif()
 
 ###############################################################################
 # CMAKE FILES

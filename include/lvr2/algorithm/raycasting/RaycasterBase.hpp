@@ -52,10 +52,6 @@ namespace lvr2
 template<typename IntT>
 class RaycasterBase {
 public:
-    /**
-     * @brief Constructor: Stores mesh as member
-     */
-    RaycasterBase(const MeshBufferPtr mesh);
 
     // PURE VIRTUALS
     /**
@@ -138,9 +134,6 @@ public:
         std::vector<std::vector<IntT> >& intersections,
         std::vector<std::vector<uint8_t> >& hits
     );
-
-private:
-    const MeshBufferPtr m_mesh;
 };
 
 template<typename IntT>

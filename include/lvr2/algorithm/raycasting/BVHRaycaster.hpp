@@ -31,6 +31,7 @@
  *  @date 25.01.2019
  *  @author Johan M. von Behren <johan@vonbehren.eu>
  *  @author Alexander Mock <amock@uos.de>
+ *  @author Justus Braun <jubraun@uos.de>
  */
 
 #pragma once
@@ -40,6 +41,7 @@
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/geometry/BVH.hpp"
+#include "lvr2/algorithm/ClosestSurfacePoint.hpp"
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
 #include "Intersection.hpp"
 
@@ -47,10 +49,13 @@ namespace lvr2
 {
 
 /**
- *  @brief BVHRaycaster: CPU version of BVH Raycasting: WIP
+ *  @brief BVHRaycaster: CPU version of BVH Raycasting and BVH closest point query
  */
 template<typename IntT>
-class BVHRaycaster : public RaycasterBase<IntT> {
+class BVHRaycaster
+: public RaycasterBase<IntT>
+, public IClosestSurfacePointQuery
+{
 public:
     /**
      * @brief Constructor: Stores mesh as member
@@ -58,6 +63,14 @@ public:
     BVHRaycaster(const MeshBufferPtr mesh, unsigned int stack_size);
 
     BVHRaycaster(const MeshBufferPtr mesh);
+
+    /**
+     *  @brief Search for the closest point on the mesh's surface.
+     *
+     *  @param query The position to find the closest surface point for
+     *  @return The closest surface point if one exists; nullopt otherwise
+     */
+    std::optional<ClosestSurfacePointQueryResult> getClosestPoint(const Vector3f& query) const;
 
     /**
      * @brief Cast a single ray onto the mesh
@@ -175,6 +188,14 @@ private:
         const float* clTriangleIntersectionData,
         const unsigned int* clTriIdxList
     );
+
+    /**
+     * @brief Computes the squared distance of p to the cache friendly aabb
+     *
+     * @param aabb Pointer to the aabb data
+     * @param point the query point
+     */
+    float squaredDistanceToAABB(const float* aabb, const Vector3f& point) const;
 
 };
 

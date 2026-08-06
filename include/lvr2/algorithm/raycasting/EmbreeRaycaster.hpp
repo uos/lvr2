@@ -49,13 +49,26 @@
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
 #include "Intersection.hpp"
+#include "lvr2/algorithm/ClosestSurfacePoint.hpp"
 
 namespace lvr2 {
 
 void EmbreeErrorFunction(void* userPtr, enum RTCError error, const char* str);
 
+struct EmbreeClosestPointState {
+    const float*         vertices;
+    const unsigned int*  faces;
+    ClosestSurfacePointQueryResult result;
+    bool                 found;
+};
+
+bool embreeClosestPointCallback(RTCPointQueryFunctionArguments* args);
+
 template<typename IntT>
-class EmbreeRaycaster : public RaycasterBase<IntT> {
+class EmbreeRaycaster
+: public RaycasterBase<IntT>
+, public IClosestSurfacePointQuery
+{
 public:
     EmbreeRaycaster(const MeshBufferPtr mesh);
     ~EmbreeRaycaster();
@@ -73,6 +86,14 @@ public:
         const Vector3f& origin,
         const Vector3f& direction,
         IntT& intersection);
+
+    /**
+     *  @brief Search for the closest point on the mesh's surface.
+     *
+     *  @param query The position to find the closest surface point for
+     *  @return The closest surface point if one exists; nullopt otherwise
+     */
+    std::optional<ClosestSurfacePointQueryResult> getClosestPoint(const Vector3f& query) const;
 
 protected:
 
@@ -99,6 +120,7 @@ protected:
         return rayhit;
     }
 
+    MeshBufferPtr m_mesh;
     RTCDevice m_device;
     RTCScene m_scene;
 

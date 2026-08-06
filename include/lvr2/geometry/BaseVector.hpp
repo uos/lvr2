@@ -221,6 +221,12 @@ public:
     template<typename T, typename S>
     friend BaseVector<T> operator*(const Eigen::Matrix<S, 4, 4>& mat, const BaseVector<T>& normal);
 
+    // Copy Constructor from Eigen Vector (lvr2::Vector3)
+    constexpr BaseVector(const Eigen::Vector3<CoordT>& vec);
+
+    // Conversion to Eigen::Vector3
+    constexpr operator Eigen::Vector3<CoordT>() const;
+
 #endif // ifndef __NVCC__
 
 };
