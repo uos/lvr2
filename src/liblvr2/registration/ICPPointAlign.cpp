@@ -48,7 +48,7 @@ ICPPointAlign::ICPPointAlign(SLAMScanPtr model, SLAMScanPtr data, size_t maxLeaf
     m_maxDistanceMatch  = 25;
     m_maxIterations     = 50;
     m_epsilon           = 0.00001;
-    m_verbose           = false;
+    m_verbose           = true;
 
     m_searchTree = model->createKDTree(25);
 }

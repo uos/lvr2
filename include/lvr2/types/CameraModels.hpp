@@ -54,8 +54,7 @@ namespace lvr2
 
         /// Distortion
         DistortionModel distortionModel;
-        // std::vector<double> distortionCoefficients;
-        // std::string distortionModel = "opencv";
+        std::vector<double> distortionCoefficients;
 
         Eigen::Vector2f projectPoint(const Eigen::Vector3f& p) const override
         {

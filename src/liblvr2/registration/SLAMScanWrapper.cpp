@@ -252,6 +252,7 @@ size_t SLAMScanWrapper::nearestNeighbors(KDTreePtr<Vector3f> tree, SLAMScanPtr s
     #pragma omp parallel for firstprivate(distance) reduction(+:found) schedule(dynamic,8)
     for (size_t i = 0; i < scan->numPoints(); i++)
     {
+        //std::cout << i << " / " << scan->numPoints() << std::endl; 
         if (tree->nnSearch(scan->point(i), neighbors[i], distance, maxDistance))
         {
             found++;

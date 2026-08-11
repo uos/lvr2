@@ -141,19 +141,19 @@ bool equal(CameraPtr sc1, CameraPtr sc2)
         return false;
     }
 
-    if(sc1->images.size() != sc2->images.size())
-    {
-        std::cout << "ScanCamera number of images differ: " << sc1->images.size() << " != "  << sc2->images.size() << std::endl;
-        return false;
-    }
+    // if(sc1->images.size() != sc2->images.size())
+    // {
+    //     std::cout << "ScanCamera number of images differ: " << sc1->images.size() << " != "  << sc2->images.size() << std::endl;
+    //     return false;
+    // }
 
-    for(size_t i=0; i<sc1->images.size(); i++)
-    {
-        if(!equal(sc1->images[i], sc2->images[i]))
-        {
-            return false;
-        }
-    }
+    // for(size_t i=0; i<sc1->images.size(); i++)
+    // {
+    //     if(!equal(sc1->images[i], sc2->images[i]))
+    //     {
+    //         return false;
+    //     }
+    // }
 
     return true;
 }

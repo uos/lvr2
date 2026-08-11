@@ -427,7 +427,13 @@ int main(int argc, char** argv)
         ScanDirectoryParser parser(dir.string());
         parser.setStart(start);
         parser.setEnd(end);
+        parser.octreeSubSample(0.05);
+        parser.setPointCloudExtension(".ply");
+        parser.setPoseExtension(".pose");
         parser.parseDirectory();
+
+
+  
 
         for(auto si : parser.m_scans)
         {
