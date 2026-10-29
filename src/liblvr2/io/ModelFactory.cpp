@@ -160,7 +160,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
         }
         else
         {
-            cout << timestamp << "Given directory does not contain " << endl;
+            std::cout << timestamp << "Given directory does not contain " << std::endl;
         }
     }
 
@@ -270,8 +270,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else
     {
-        cout << timestamp << "File format " << extension
-            << " is currently not supported." << endl;
+        std::cout << timestamp << "File format " << extension << " is currently not supported." << std::endl;
     }
 
 }

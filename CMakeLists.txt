@@ -6,7 +6,6 @@ option(LVR2_BUILD_EXAMPLES "Build the examples" OFF)
 option(LVR2_BUILD_VIEWER "Build lvr2_viewer" OFF)
 option(LVR2_BUILD_TOOLS "Build tools including lvr2_reconstruct" ON)
 option(LVR2_BUILD_TOOLS_EXPERIMENTAL "Build experimental tools" OFF)
-option(LVR2_BUILD_TESTING "Build the tests" OFF)
 option(LVR2_WITH_KINFU "Compile LVR Kinfu" OFF)
 option(LVR2_WITH_3DTILES "Compile with 3DTiles support" OFF)
 option(LVR2_WITH_CUDA "Compile with CUDA support, if available" ON)
@@ -14,7 +13,6 @@ option(LVR2_WITH_OPENCL "Compile with OpenCL support, if available" ON)
 option(LVR2_WITH_PCL "Compile with PCL support" OFF)
 option(LVR2_WITH_FREENECT "Compile with libfreenect grabber" OFF)
 option(LVR2_WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
-option(LVR2_WITH_GDAL "Compile with GDAL integrations (GeoTIFFIO)" OFF)
 
 ## Compile as C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -147,11 +145,8 @@ include_directories(${TIFF_INCLUDE_DIRS})
 #------------------------------------------------------------------------------
 # Searching for GDAL
 #------------------------------------------------------------------------------
-if (LVR2_WITH_GDAL)
-  find_package(GDAL REQUIRED)
-  include_directories(${GDAL_INCLUDE_DIR})
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_GDAL)
-endif (LVR2_WITH_GDAL)
+find_package(GDAL REQUIRED)
+include_directories(${GDAL_INCLUDE_DIR})
 
 #------------------------------------------------------------------------------
 # Searching for OpenCV
@@ -343,23 +338,6 @@ if(LVR2_WITH_CUDA)
 endif(LVR2_WITH_CUDA)
 
 #------------------------------------------------------------------------------
-# Searching for RDB
-#------------------------------------------------------------------------------
-find_package(RDB)
-if(RDB_FOUND)
-    include_directories(${RDB_INCLUDE_DIRS})
-    message(STATUS "Found LibRDB at ${RDB_INCLUDE_DIRS}, ${RDB_LIBRARIES}.")
-
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_RDB)
-    
-    install(TARGETS rdbcpp
-            EXPORT lvr2-targets
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            )
-endif(RDB_FOUND)
-
-#------------------------------------------------------------------------------
 # Searching for OpenCl
 #------------------------------------------------------------------------------
 if(LVR2_WITH_OPENCL)
@@ -549,6 +527,24 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
     endif(RiVLib_FOUND)
 endif()
 
+
+# Searching for RDB
+find_package(RDB)
+if(RDB_FOUND)
+    include_directories(${RDB_INCLUDE_DIRS})
+    link_directories(${RDB_LIBRARY_DIRS})
+    message(STATUS "Found LibRDB at ${RDB_INCLUDE_DIRS}, ${RDB_LIBRARIES}.")
+
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_RDB)
+    
+    install(TARGETS rdbcpp
+             EXPORT lvr2-targets
+             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+             )
+endif(RDB_FOUND)
+
+
 # Cesium-native
 if(LVR2_WITH_3DTILES)
   include(ExternalProject)
@@ -694,6 +690,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${Boost_IOSTREAMS_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
+    ${GDAL_LIBRARY}
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY}
@@ -714,6 +711,7 @@ set(LVR2_LIB_DEPENDENCIES
     ${Boost_IOSTREAMS_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
+    ${GDAL_LIBRARY}
     ${OpenCV_LIBS}
     ${GSL_LIBRARIES}
     ${LZ4_LIBRARY}
@@ -750,7 +748,7 @@ if(draco_FOUND)
 endif(draco_FOUND)
 
 if(RiVLib_FOUND)
-  list(APPEND LVR2_LIB_DEPENDENCIES ${RiVLib_SCANIFC_LIBRARY})
+  list(APPEND LVR2_LIB_DEPENDENCIES ${${RiVLib_SCANLIB_LIBRARY}} rdb)
 endif(RiVLib_FOUND)
 
 if(OPENCL_FOUND)
@@ -775,13 +773,13 @@ if(3DTILES_FOUND)
   list(APPEND LVR2_LIB_DEPENDENCIES ${3DTILES_LIBRARIES})
 endif(3DTILES_FOUND)
 
-if(GDAL_FOUND)
-  list(APPEND LVR2_LIB_DEPENDENCIES ${GDAL_LIBRARY})
-endif(GDAL_FOUND)
-
 ###############################################################################
 # LIBRARIES
 ###############################################################################
+
+# Bridge LVR2_WITH_3DTILES -> WITH_3DTILES so the subdirectory
+# CMakeLists.txt (which tests if(WITH_3DTILES)) picks up the flag.
+set(WITH_3DTILES ${LVR2_WITH_3DTILES})
 
 add_subdirectory(src/liblvr2)
 
@@ -885,14 +883,6 @@ if(LVR2_BUILD_VIEWER)
     add_subdirectory(src/tools/lvr2_ascii_viewer)
   endif()
 endif(LVR2_BUILD_VIEWER)
-
-###############################################################################
-# TESTS
-###############################################################################
-if (LVR2_BUILD_TESTING)
-  enable_testing()
-  add_subdirectory(src/tests)
-endif()
 
 ###############################################################################
 # CMAKE FILES

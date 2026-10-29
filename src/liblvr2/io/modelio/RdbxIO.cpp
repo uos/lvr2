@@ -443,10 +443,11 @@ namespace lvr2
                 select.bindBuffer(RDB_RIEGL_MTA_ZONE, bufferMta_zone);
                 pointBuffer->addUCharChannel( ucharArr (new unsigned char[numPoints]), "mta_zone", numPoints, 1);
             }
-            if(hasMta_unresolved){
-                select.bindBuffer(RDB_RIEGL_MTA_UNRESOLVED, bufferMta_unresolved);
-                pointBuffer->addUCharChannel( ucharArr (new unsigned char[numPoints]), "mta_unresolved", numPoints, 1);
-            }
+            // Seems to be removed from current library distribution
+            // if(hasMta_unresolved){
+            //     select.bindBuffer(RDB_RIEGL_MTA_UNRESOLVED, bufferMta_unresolved);
+            //     pointBuffer->addUCharChannel( ucharArr (new unsigned char[numPoints]), "mta_unresolved", numPoints, 1);
+            // }
             if(hasTarget_index){
                 select.bindBuffer(RDB_RIEGL_TARGET_INDEX, bufferTarget_index);
                 pointBuffer->addUCharChannel( ucharArr (new unsigned char[numPoints]), "target_index", numPoints, 1);

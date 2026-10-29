@@ -12,10 +12,13 @@ get_filename_component(RDB_ROOT_DIR ${_IMPORT_PREFIX}/ DIRECTORY)
 get_filename_component(RDB_ROOT_DIR ${RDB_ROOT_DIR}/ DIRECTORY)
 
 # Set rdb_INCLUDE_DIRS
-find_path(RDB_INCLUDE_DIRS NAMES "riegl/rdb.hpp" HINTS "/usr/include/ /usr/local/include/")
+find_path(RDB_INCLUDE_DIRS NAMES "riegl/rdb.hpp" HINTS "/usr/include/" "/usr/local/include/" "${PROJECT_SOURCE_DIR}/ext/rdblib/interface/cpp/")
+find_path(RDB_C_INCLUDE_DIR NAMES "riegl/rdb.h" HINTS "/usr/include/" "/usr/local/include/" "${PROJECT_SOURCE_DIR}/ext/rdblib/interface/c/")
+find_path(RDB_LIBRARY_DIRS NAMES "librdb.so" "rdb.dll" HINTS "/usr/lib/" "/usr/local/lib/" "${PROJECT_SOURCE_DIR}/ext/rdblib/library/")
 
-find_library(RDB_LIBRARY_IMPORT NAMES rdb.dll librdb.dylib librdb.so)
+find_library(RDB_LIBRARY_IMPORT HINTS ${RDB_LIBRARY_DIRS} NAMES rdb.dll librdb.dylib librdb.so)
 get_filename_component(RDB_LIBRARY_DIRS ${RDB_LIBRARY_IMPORT} DIRECTORY)
+
 
 if(RDB_INCLUDE_DIRS AND RDB_LIBRARY_IMPORT)
     set(RDB_FOUND YES)
@@ -31,10 +34,10 @@ elseif(RDB_FOUND)
     set_property(TARGET rdbc PROPERTY IMPORTED_IMPLIB   "${RDB_LIBRARY_IMPORT}")
 
     # add libraries for rdbc
-    set_property(TARGET rdbc PROPERTY
-            INTERFACE_INCLUDE_DIRECTORIES
-            "${RDB_INCLUDE_DIRS}"
-            )
+    # set_property(TARGET rdbc PROPERTY
+    #         INTERFACE_INCLUDE_DIRECTORIES
+    #         "${RDB_INCLUDE_DIRS}"
+    #         )
 endif()
 
 # create compiled target rdbcpp
@@ -44,8 +47,9 @@ elseif(RDB_FOUND)
             "${RDB_INCLUDE_DIRS}/riegl/rdb.cpp"
             )
     # add libraries for rdbcpp
-    target_include_directories(rdbcpp SYSTEM PUBLIC
-            "${RDB_INCLUDE_DIRS}"
+    target_include_directories(rdbcpp PUBLIC
+             $<BUILD_INTERFACE:${RDB_INCLUDE_DIRS}>
+             $<BUILD_INTERFACE:${RDB_C_INCLUDE_DIR}>
             )
     target_link_libraries(rdbcpp PUBLIC ${RDB_LIBRARY_IMPORT})
     if(NOT MSVC AND NOT MINGW)

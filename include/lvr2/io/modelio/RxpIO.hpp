@@ -37,7 +37,7 @@
 
 #include <string>
 
-#include "lvr2/io/ModelIOBase.hpp"
+#include "lvr2/io/modelio/ModelIOBase.hpp"
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/types/MatrixTypes.hpp"

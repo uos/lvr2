@@ -165,7 +165,7 @@ endif(LVR2_WITH_3DTILES)
 
 if(RiVLib_FOUND)
     list(APPEND LVR2_SOURCES
-        io/baseio/RxpIO.cpp)
+        io/modelio/RxpIO.cpp)
 endif(RiVLib_FOUND)
 
 #####################################################################################
@@ -197,7 +197,8 @@ set(LVR2_INTERNAL_DEPENDENCIES_STATIC
 
 set(LVR2_INTERNAL_DEPENDENCIES_SHARED
     lvr2rply
-    lvr2las)
+    lvr2las
+    )
 
 #####################################################################################
 # Set c++0x flags for gcc compilers (needed for boctree io)
@@ -238,6 +239,15 @@ target_include_directories(lvr2_static PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     ${HDF5_INCLUDE_DIRS}
 )
+
+if(RDB_FOUND)
+    target_link_libraries(lvr2_static PRIVATE $<BUILD_INTERFACE:rdb>)
+endif()
+
+if(RiVLib_FOUND)
+    target_link_libraries(lvr2_static PRIVATE $<BUILD_INTERFACE:${RiVLib_SCANIFC_LIBRARY}>)
+endif(RiVLib_FOUND)
+
 target_link_libraries(lvr2_static
     PUBLIC
     ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
@@ -278,6 +288,14 @@ target_link_libraries(lvr2
     ${LVR2_LIB_DEPENDENCIES}
 )
 
+if(RDB_FOUND)
+    target_link_libraries(lvr2 PRIVATE $<BUILD_INTERFACE:rdb>)
+endif()
+
+if(RiVLib_FOUND)
+    target_link_libraries(lvr2 PRIVATE $<BUILD_INTERFACE:${RiVLib_SCANIFC_LIBRARY}>)
+endif(RiVLib_FOUND)
+
 target_link_libraries(lvr2
     PRIVATE
     $<BUILD_INTERFACE:spdlog::spdlog_header_only>
@@ -306,6 +324,8 @@ install(TARGETS lvr2_static lvr2
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+
+
 
 #####################################################################################
 # CUDA
