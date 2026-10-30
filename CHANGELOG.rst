@@ -2,8 +2,8 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+26.0.0 (2026-10-30)
+-------------------
 * New IClosestSurfacePointQuery Interface with Embree and LVR2 backend (`#64 <https://github.com/uos/lvr2/issues/64>`_)
 * Allow conversion from lvr2::Vector3 to lvr2::BaseVector and back
 * Fix Cesium support (`#61 <https://github.com/uos/lvr2/issues/61>`_)
