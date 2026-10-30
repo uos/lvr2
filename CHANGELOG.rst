@@ -2,6 +2,21 @@
 Changelog for package lvr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* New IClosestSurfacePointQuery Interface with Embree and LVR2 backend (`#64 <https://github.com/uos/lvr2/issues/64>`_)
+* Allow conversion from lvr2::Vector3 to lvr2::BaseVector and back
+* Fix Cesium support (`#61 <https://github.com/uos/lvr2/issues/61>`_)
+* Breaking: Make GDAL dependency optional (`#63 <https://github.com/uos/lvr2/issues/63>`_)
+  This removes a huge chunk of the dependency tree at the cost of making
+  the GeoTIFFIO feature optional. We could in the future rewrite the
+  GeoTIFFIO to use libgeotiff directly but since there are no tests for
+  the integration at the moment no rewrite was tried.
+* Add homebrew prefix path to CMAKE_PREFIX_PATH (`#62 <https://github.com/uos/lvr2/issues/62>`_)
+* Support & CI for ROS2 lyrical
+* Various fixes for infinity loops, dangling references, wrong data types
+* Contributors: Alexander Mock, Jonas, Jonas Göbel, Justus Braun, Thomas Wiemann
+
 25.2.4 (2026-06-24)
 -------------------
 * Fix compilation on MacOS
