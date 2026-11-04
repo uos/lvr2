@@ -132,7 +132,14 @@ Description ScanProjectSchemaRdbx::cameraImage(
     std::vector<std::string> matching_files;
     boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
     //std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0" + std::to_string(cameraImageNo + 1) + "_([0-9])+\\.jpg");
-    std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0" + std::to_string(cameraImageNo + 1) + "\\_0"+std::to_string(groupNo + 1)+"\\.jpg");      
+    // std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0" + std::to_string(cameraImageNo + 1) + "\\_0"+std::to_string(groupNo + 1)+"\\.jpg");
+    std::regex rxJPG("([0-9]+)\\_([0-9]+)"
+        + (groupNo < 9 ? std::string("\\_0") : std::string("\\_"))
+        + std::to_string(groupNo + 1)
+        + "\\_01" // filler (always 01 fwict)
+        + "\\_c" + std::to_string(cameraImageNo + 1)
+        + "\\.jpg");
+
     // Search the directory
     for (boost::filesystem::directory_iterator i(path); i != end_itr; ++i)
     {
