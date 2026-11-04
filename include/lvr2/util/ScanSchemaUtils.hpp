@@ -40,8 +40,10 @@ const std::vector<std::string> implementedDirectorySchemas = {
     "RAWPLY",
 #ifdef LVR2_USE_RDB 
     "RDBX",
+    "RISCANVZ600",
 #endif
-    "SLAM6D"};
+    "SLAM6D"
+    };
 
 /**
  * @brief A list of the implemented HDF5 schemas

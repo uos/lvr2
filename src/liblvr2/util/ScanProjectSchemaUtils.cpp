@@ -10,6 +10,7 @@
 
 #ifdef LVR2_USE_RDB
 #include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
+#include "lvr2/io/schema/ScanProjectSchemaRiSCANVZ600.hpp"
 #endif
 
 #include <boost/algorithm/string.hpp>
@@ -66,6 +67,12 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
         lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating ScanProjectSchemaRDBX with root directory '" 
                   << rootDirectory << "." << lvr2::endl;
         return DirectorySchemaPtr(new ScanProjectSchemaRdbx(rootDirectory));
+    }
+        else if (name == "RISCANVZ600")
+    {
+        lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating ScanProjectSchemaRiSCANVZ600 with root directory '" 
+                  << rootDirectory << "." << lvr2::endl;
+        return DirectorySchemaPtr(new ScanProjectSchemaRiSCANVZ600(rootDirectory));
     }
 #endif
 

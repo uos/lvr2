@@ -79,6 +79,13 @@ YAML::Node loadMetaInformation(const std::string &in)
         return n;
     }
 
+    else if (inPath.extension() == ".rsp") {
+
+        YAML::Node n;
+
+        // TODO: read xml
+    }
+
     else if (inPath.extension() == ".slam6d")
     {
         YAML::Node node;        

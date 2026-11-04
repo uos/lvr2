@@ -207,7 +207,8 @@ set(Boost_COMPONENTS
   serialization
   timer
   iostreams
-  date_time)
+  date_time
+  property_tree)
 
 if(MPI_FOUND)
   set(Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
@@ -823,7 +824,7 @@ if(LVR2_BUILD_TOOLS_EXPERIMENTAL)
   # add_subdirectory(src/tools/lvr2_registration)
   add_subdirectory(src/tools/lvr2_chunking_server)
   add_subdirectory(src/tools/lvr2_scanproject_parser)
-  add_subdirectory(src/tools/lvr2_ground_level_extractor)
+  # add_subdirectory(src/tools/lvr2_ground_level_extractor)
   # add_subdirectory(src/tools/lvr2_hdf5_convert_old)
   add_subdirectory(src/tools/lvr2_hdf5_inspect)
   add_subdirectory(src/tools/lvr2_3dtiles)

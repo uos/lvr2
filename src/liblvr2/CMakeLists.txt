@@ -135,7 +135,8 @@ endif()
 if(RDB_FOUND)
     list(APPEND LVR2_SOURCES 
         io/modelio/RdbxIO.cpp
-        io/schema/ScanProjectSchemaRdbx.cpp)
+        io/schema/ScanProjectSchemaRdbx.cpp
+        io/schema/ScanProjectSchemaRiSCANVZ600.cpp)
 endif(RDB_FOUND)
 
 #####################################################################################
