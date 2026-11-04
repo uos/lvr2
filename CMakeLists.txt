@@ -208,7 +208,7 @@ set(Boost_COMPONENTS
   timer
   iostreams
   date_time
-  property_tree)
+)
 
 if(MPI_FOUND)
   set(Boost_COMPONENTS ${Boost_COMPONENTS} mpi)

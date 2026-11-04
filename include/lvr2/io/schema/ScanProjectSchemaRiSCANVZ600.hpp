@@ -17,7 +17,7 @@ namespace lvr2
     class ScanProjectSchemaRiSCANVZ600 : public DirectorySchema
     {
         public:
-        ScanProjectSchemaRiSCANVZ600(const std::string& rootDir) : DirectorySchema( rootDir), dir_{rootDir}{};
+        ScanProjectSchemaRiSCANVZ600(const std::string& rootDir);
         ~ScanProjectSchemaRiSCANVZ600() = default;
         virtual Description scanProject() const;
 
@@ -79,7 +79,7 @@ namespace lvr2
                 const size_t& panoNo,
                 const size_t& channelNo) const;
         private:
-        const std::string& dir_;
+        const std::string& m_rootDir;
 
     };
 

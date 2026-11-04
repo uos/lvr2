@@ -1,23 +1,39 @@
-//
-// Created by praktikum on 13.09.22.
-//
-#include <sstream>
-#include <iomanip>
-#include <boost/filesystem/operations.hpp>
-#include <filesystem>
-#include <vector>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaRiSCANVZ600.hpp"
-#include <boost/filesystem.hpp>
 
+
+#include <sstream>
+#include <iomanip>
+
+#include <filesystem>
+#include <vector>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <iostream>
 #include <fstream>
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/foreach.hpp>
 namespace lvr2
 {
+
+ScanProjectSchemaRiSCANVZ600::ScanProjectSchemaRiSCANVZ600(const std::string& rootDir) : DirectorySchema(rootDir), m_rootDir(rootDir)
+{
+    boost::property_tree::ptree tree;
+    boost::property_tree::read_xml(rootDir + "/project.rsp", tree);
+
+    auto project = tree.get_child_optional("project.scanpositions");
+    if(project)
+    {
+        std::cout << "PROJECT TAG" << std::endl;
+    }
+    else
+    {
+        
+    }
+}
 
 Description ScanProjectSchemaRiSCANVZ600::scanProject() const
 {
