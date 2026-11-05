@@ -1,4 +1,5 @@
 #include "lvr2/types/ScanTypes.hpp"
+#include "lvr2/util/Logging.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaRiSCANVZ600.hpp"
 
 
@@ -21,17 +22,40 @@ namespace lvr2
 
 ScanProjectSchemaRiSCANVZ600::ScanProjectSchemaRiSCANVZ600(const std::string& rootDir) : DirectorySchema(rootDir), m_rootDir(rootDir)
 {
-    boost::property_tree::ptree tree;
-    boost::property_tree::read_xml(rootDir + "/project.rsp", tree);
+    boost::property_tree::ptree project_tree;
+    boost::property_tree::read_xml(rootDir + "/project.rsp", project_tree);
 
-    auto project = tree.get_child_optional("project.scanpositions");
-    if(project)
+    auto scanPositions = project_tree.get_child_optional("project.scanpositions");
+    if(scanPositions)
     {
-        std::cout << "PROJECT TAG" << std::endl;
+        auto positionTree = *scanPositions;
+        for(auto &scanposition : positionTree)
+        {
+            std::string positionName = scanposition.second.get("<xmlattr>.name", "");
+            std::string scanImageName = scanposition.second.get("scanposimages.scanposimage.<xmlattr>.name", "");
+            // skip empty nodes
+            if (positionName.empty())
+            {
+                continue;
+            }
+            // skip invalid scans
+            if (scanImageName.empty())
+            {
+                lvr2::logout::get() << lvr2::warning << "Scan " << positionName << " is invalid, skipping" << lvr2::endl;
+                continue;
+            }
+
+            std::cout << positionName << std::endl;
+            std::cout << scanImageName << std::endl;
+            m_scanPositions.push_back(positionName);
+
+        }
+
+        
     }
     else
     {
-        
+        lvr2::logout::get() << lvr2::warning << "Could not find scanpositions in project.rsp" << lvr2::endl;
     }
 }
 

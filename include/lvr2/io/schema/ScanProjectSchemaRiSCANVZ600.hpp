@@ -80,6 +80,9 @@ namespace lvr2
                 const size_t& channelNo) const;
         private:
         const std::string& m_rootDir;
+        std::vector<std::string> m_scanPositions;
+        std::vector<std::string> m_scanImages;
+        
 
     };
 
